@@ -25,7 +25,6 @@
 	<modules>
 		<module>rest-page</module>
 		<module>starter</module>
-		<module>graph</module>
 	</modules>
 
 	<dependencyManagement>
@@ -80,5 +79,13 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>neo4j</id>
+			<url>http://m2.neo4j.org/releases/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+
 	</repositories>
 </project>

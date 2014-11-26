@@ -1,0 +1,5 @@
+{
+  "mode": "gui",
+  "path": "/tmp/graphdb",
+  "baseAddress": "graph"
+}

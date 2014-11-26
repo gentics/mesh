@@ -31,6 +31,12 @@
 
 </head>
 
+<?php
+$json =  file_get_contents('http://localhost:8000/page/1'); 
+$data= json_decode($json);
+//var_dump($data);
+$date = "December 01, 2014";
+?>
 <body>
 
     <!-- Navigation -->
@@ -76,9 +82,9 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
-                        <h1>Man must explore, and this is exploration at its greatest</h1>
-                        <h2 class="subheading">Problems look mighty small from 150 miles up</h2>
-                        <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span>
+                        <h1><?php echo $data->title ?></h1>
+                        <h2 class="subheading"><?php echo $data->teaser ?></h2>
+                        <span class="meta">Posted by <a href="#"><?php echo $data->author ?></a> on <?php echo $date ?></span>
                     </div>
                 </div>
             </div>
@@ -90,6 +96,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+			<?php echo $data->content ?>
+<!--
                     <p>Never in all their history have men been able truly to conceive of the world as one: a single sphere, a globe, having the qualities of a globe, a round earth in which all the directions eventually meet, in which there is no center because every point, or none, is center — an equal earth which all men occupy as equals. The airman's earth, if free men make it, will be truly round: a globe in practice, not in theory.</p>
 
                     <p>Science cuts two ways, of course; its products can be used for both good and evil. But there's no turning back from science. The early warnings about technological dangers also come from science.</p>
@@ -124,6 +132,7 @@
                     <p>As I stand out here in the wonders of the unknown at Hadley, I sort of realize there’s a fundamental truth to our nature, Man must explore, and this is exploration at its greatest.</p>
 
                     <p>Placeholder text by <a href="http://spaceipsum.com/">Space Ipsum</a>. Photographs by <a href="https://www.flickr.com/photos/nasacommons/">NASA on The Commons</a>.</p>
+-->
                 </div>
             </div>
         </div>

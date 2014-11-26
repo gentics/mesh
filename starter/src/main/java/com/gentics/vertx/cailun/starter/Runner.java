@@ -1,41 +1,63 @@
 package com.gentics.vertx.cailun.starter;
 
-import java.io.IOException;
-
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.englishtown.vertx.jersey.JerseyVerticle;
+import com.englishtown.vertx.jersey.impl.DefaultJerseyOptions;
 
 public class Runner {
 	private static final Vertx vertx = Vertx.vertx();
 
-	public static void main(String[] args) throws IOException {
-//		vertx.registerVerticleFactory(new HK2VerticleFactory());
-//		vertx.registerVerticleFactory(new HK2MavenVerticleFactory());
+	public static void main(String[] args) throws IOException, InterruptedException {
+		deployNeo4Vertx();
+		Thread.sleep(7400);
+		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4JConfig.class)) {
+			ctx.start();
+			deploySelf(ctx);
+			MainBean bean = ctx.getBean(MainBean.class);
+			bean.start();
+			ctx.registerShutdownHook();
+			System.in.read();
+		}
 
-//		deploySelf();
-		deployArtifact();
+		// deployArtifact();
 
 	}
 
-	private static void deploySelf() throws IOException {
+	private static void deployNeo4Vertx() throws IOException {
+
+		InputStream is = Runner.class.getResourceAsStream("neo4vertx_gui.json");
+		String jsonTxt = IOUtils.toString(is);
+		JsonObject config = new JsonObject(jsonTxt);
+		vertx.deployVerticle(Neo4jGraphVerticle.class.getCanonicalName(), new DeploymentOptions().setConfig(config));
+
+	}
+
+	private static void deploySelf(AnnotationConfigApplicationContext ctx) throws IOException {
+		
+		DefaultJerseyOptions.context = ctx;
 		JsonObject config = new JsonObject();
-		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun.starter.resources"));
+		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun.rest.resources"));
 		config.put("port", 8000);
 
 		DeploymentOptions options = new DeploymentOptions();
-//		options.setIsolationGroup("A");
+		// options.setIsolationGroup("A");
 		options.setConfig(config);
 
 		vertx.deployVerticle("java-hk2:" + JerseyVerticle.class.getCanonicalName(), options);
-		System.in.read();
-		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun.starter.resources2"));
-		
-		vertx.deployVerticle("java-hk2:" + JerseyVerticle.class.getCanonicalName(), options);
-		System.in.read();
+		// config.put("resources", new JsonArray().add("com.gentics.vertx.cailun.starter.resources2"));
+		// vertx.deployVerticle("java-hk2:" + JerseyVerticle.class.getCanonicalName(), options);
+		// System.in.read();
 	}
 
 	private static void deployArtifact() {
