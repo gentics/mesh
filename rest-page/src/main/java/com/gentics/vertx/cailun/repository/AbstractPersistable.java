@@ -2,8 +2,9 @@ package com.gentics.vertx.cailun.repository;
 
 import java.io.Serializable;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.data.neo4j.annotation.GraphId;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class AbstractPersistable implements Serializable {
 	private static final long serialVersionUID = -3244769429406745303L;

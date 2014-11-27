@@ -1,22 +1,34 @@
 package com.gentics.vertx.cailun.repository;
 
-import org.springframework.data.neo4j.annotation.GraphId;
+import javax.validation.constraints.NotNull;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @NodeEntity
-public class Tag implements TagableContent {
-	
-	@Indexed
+@Data
+@EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor
+public class Tag extends TaggableContent {
+
+	private static final long serialVersionUID = 3547707185082166132L;
+
+	@JsonIgnore
+	@Indexed(unique = true)
+	@NotNull
 	String name;
 
-	@GraphId
-	Long id;
-
-	public void setName(String name) {
+	public Tag(String name) {
 		this.name = name;
 	}
-
+	
+	@JsonIgnore
 	public String getName() {
 		return name;
 	}

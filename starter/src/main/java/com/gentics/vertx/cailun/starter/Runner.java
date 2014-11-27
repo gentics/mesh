@@ -6,9 +6,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -19,6 +21,7 @@ public class Runner {
 	private static final Vertx vertx = Vertx.vertx();
 
 	public static void main(String[] args) throws IOException, InterruptedException {
+		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
 		deployNeo4Vertx();
 		Thread.sleep(7400);
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4JConfig.class)) {
