@@ -47,10 +47,11 @@ public class Runner {
 	}
 
 	private static void deploySelf(AnnotationConfigApplicationContext ctx) throws IOException {
-		
+
 		DefaultJerseyOptions.context = ctx;
 		JsonObject config = new JsonObject();
-		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun.rest.resources"));
+		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun"));
+		//.add("com.gentics.vertx.cailun.demo.resource")
 		config.put("port", 8000);
 
 		DeploymentOptions options = new DeploymentOptions();
@@ -63,14 +64,14 @@ public class Runner {
 		// System.in.read();
 	}
 
-	private static void deployArtifact() {
-		JsonObject config = new JsonObject();
-		config.put("resources", new JsonArray().add("com.gentics.resources"));
-		config.put("port", 8000);
-
-		DeploymentOptions options = new DeploymentOptions();
-		options.setConfig(config);
-
-		vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-page:0.1.0-SNAPSHOT", options);
-	}
+	// private static void deployArtifact() {
+	// JsonObject config = new JsonObject();
+	// config.put("resources", new JsonArray().add("com.gentics.resources"));
+	// config.put("port", 8000);
+	//
+	// DeploymentOptions options = new DeploymentOptions();
+	// options.setConfig(config);
+	//
+	// vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-page:0.1.0-SNAPSHOT", options);
+	// }
 }
