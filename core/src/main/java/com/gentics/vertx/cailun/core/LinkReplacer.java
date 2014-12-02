@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The link replacer can be used to replace links within the contents of a string.
@@ -21,9 +22,9 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 	private static final String START_TAG = "${";
 	private static final String END_TAG = "}";
 
-	// private static final long DEFAULT_TIMEOUT_MS = 1000L;
+	 private static final long DEFAULT_TIMEOUT_MS = 1000L;
 
-	// private long timeoutMs = DEFAULT_TIMEOUT_MS;
+	 private long timeoutMs = DEFAULT_TIMEOUT_MS;
 
 	// private static final String DEFAULT_FALLBACK_REPLACEMENT = "#";
 
@@ -73,6 +74,8 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 			renderedLinks.add(executor.submit(factory.createLinkResolver(link)));
 			nLink++;
 		}
+		executor.shutdown();
+		executor.awaitTermination(timeoutMs, TimeUnit.MILLISECONDS);
 		StringBuilder builder = new StringBuilder(content.length());
 		int maxLinks = nLink;
 		nLink = 0;
