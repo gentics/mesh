@@ -22,6 +22,6 @@ public interface PageRepository extends GraphRepository<Page> {
 	@Query("MATCH (page:Page {name:'test111'}), (tag:Tag {name:'test'}) MATCH (tag)-[rel:`TAGGED`]->(page) return rel")
 	public Tag getTag(Long id, String name);
 
-	@Query("MATCH (page:Page),(tag:Tag { name:\"/\" }), p = shortestPath((tag)-[TAGGEG]-(page)) WHERE id(page) = {0} WITH page, reduce(a=\"\", n IN FILTER(x in nodes(p) WHERE id(page)<> id(x))| a + \"/\"+ n.name) as path return substring(path,2,length(path)) + \"/\" + page.filename")
+	@Query("MATCH (page:Page),(tag:Tag { name:'/' }), p = shortestPath((tag)-[TAGGEG]-(page)) WHERE id(page) = {0} WITH page, reduce(a='', n IN FILTER(x in nodes(p) WHERE id(page)<> id(x))| a + \"/\"+ n.name) as path return substring(path,2,length(path)) + \"/\" + page.filename")
 	public String getPath(Long id);
 }

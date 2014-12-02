@@ -62,14 +62,14 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 		int nLink = 0;
 		// First step: Determine all placeholders
 		while (s != -1) {
-			s = content.indexOf(START_TAG, s + 1);
+			s = content.indexOf(START_TAG, s + START_TAG.length());
 			int e = content.indexOf(END_TAG, s);
 			if (s == -1) {
 				break;
 			}
 			segments[nLink][0] = s;
-			segments[nLink][1] = e + 1;
-			String link = content.substring(s, e);
+			segments[nLink][1] = e + END_TAG.length();
+			String link = content.substring(s+ START_TAG.length(), e);
 			renderedLinks.add(executor.submit(factory.createLinkResolver(link)));
 			nLink++;
 		}
@@ -85,7 +85,8 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 			lastStart = segments[nLink][1];
 			nLink++;
 		}
-		builder.append(content.substring(segments[nLink][1], content.length()));
+		builder.append(content.substring(lastStart, content.length()));
+		
 
 		return builder.toString();
 

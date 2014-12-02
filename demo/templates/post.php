@@ -11,6 +11,9 @@
 
     <title>Clean Blog - Sample Post</title>
 
+    <link rel="shortcut icon" href="/img/g_logo_small.png" type="image/png" />
+
+
     <!-- Bootstrap Core CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
 

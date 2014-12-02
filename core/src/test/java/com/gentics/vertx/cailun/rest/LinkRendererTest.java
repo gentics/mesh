@@ -13,19 +13,19 @@ import com.gentics.vertx.cailun.core.LinkReplacer;
 import com.gentics.vertx.cailun.core.LinkResolverFactory;
 
 public class LinkRendererTest {
-	String content = "some bla START<a href=\"${Page(2)}\">Test</a> - <a href=\"${Page(3)}\">Test</a>ENDENDEN- <a href=\"${Page(4)}\">Test</a>ENDENDEN";
+	String content = "some bla START<a href=\"${Page(2)}\">Test</a>   dasasdg <a href=\"${Page(3)}\">Test</a>DEN";
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
-		String allContent = "";
-		for (int i = 0; i < 100; i++) {
-			allContent += content;
-		}
+//		String allContent = "";
+//		for (int i = 0; i < 100; i++) {
+//			allContent += content;
+//		}
 		LinkResolverFactory factory = new CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver>();
 		LinkReplacer<CaiLunLinkResolver> replacer = new LinkReplacer(factory);
 //		for (int i = 0; i < 2000; i++) {
 			// System.out.println(allContent);
-			String out = replacer.replace(allContent);
+			String out = replacer.replace(content);
 			 System.out.println(out);
 //		}
 	}

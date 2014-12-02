@@ -44,7 +44,6 @@ public class CaiLunLinkResolver extends AbstractLinkResolver {
 	 * @return
 	 */
 	private String getPathForPageId(Long id) {
-		// return "hallo/Welt/index.html";
 		// TODO exception handling
 		return pageRepo.getPath(id);
 	}
