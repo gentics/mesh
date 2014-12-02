@@ -7,7 +7,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -20,15 +19,17 @@ import com.gentics.vertx.cailun.repository.Page;
 import com.gentics.vertx.cailun.repository.PageRepository;
 import com.gentics.vertx.cailun.repository.Tag;
 import com.gentics.vertx.cailun.repository.TagRepository;
-import com.gentics.vertx.cailun.rest.resources.PageResource;
+import com.gentics.vertx.cailun.rest.resources.AbstractCaiLunResource;
 
 /**
  * Simple page resource to load and render pages
  */
 @Component
 @Scope("singleton")
-@Path("/custompage")
-public class CustomPageResource extends PageResource {
+@Path("/page")
+public class CustomPageResource extends AbstractCaiLunResource {
+
+	private static Logger log = LoggerFactory.getLogger(CustomPageResource.class);
 
 	@Autowired
 	private PageRepository pageRepository;
@@ -36,10 +37,8 @@ public class CustomPageResource extends PageResource {
 	@Autowired
 	private TagRepository tagRepository;
 
-	private static Logger log = LoggerFactory.getLogger(CustomPageResource.class);
-
 	@GET
-	@Path("/id")
+	@Path("id")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getId(@Context Vertx vertx) throws Exception {
 		return "CustomPageResource";
@@ -73,7 +72,7 @@ public class CustomPageResource extends PageResource {
 
 		Page indexPage = new Page("Index");
 		indexPage.setFilename("index.html");
-		indexPage.setContent("The index page<br/><a href=\"somewhere.html\">Link</a>");
+		indexPage.setContent("The index page<br/><a href=\"${Page(10)}\">Link</a>");
 		indexPage.setTitle("Index Title");
 		indexPage.setAuthor("Jotschi");
 		indexPage.setTeaser("Yo guckste hier");

@@ -9,4 +9,5 @@ public interface TagRepository extends GraphRepository<Tag> {
 
 	@Query("MATCH (tag:Tag) RETURN tag")
 	public List<Tag> findAllTags();
+	
 }

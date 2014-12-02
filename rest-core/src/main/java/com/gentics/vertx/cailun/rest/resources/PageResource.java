@@ -32,7 +32,7 @@ public class PageResource extends AbstractCaiLunResource {
 
 	@Autowired
 	private PageRepository pageRepository;
-
+	
 	/**
 	 * Return the page with the given id
 	 * 
@@ -102,7 +102,7 @@ public class PageResource extends AbstractCaiLunResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Tag> removeTag(@Context Vertx vertx, PageCreateRequest request, final @PathParam("name") String name,
 			final @PathParam("id") Long id) {
-		return pageRepository.untag(id, name);
+		return new GenericResponse<Tag>(pageRepository.untag(id, name));
 	}
 
 	/**
@@ -115,7 +115,7 @@ public class PageResource extends AbstractCaiLunResource {
 	@Path("tag/{id}/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Tag> getTag(final @PathParam("id") Long id, final @PathParam("name") String name) {
-		return pageRepository.getTag(id, name);
+		return new GenericResponse<Tag>(pageRepository.getTag(id, name));
 	}
 
 	/**
@@ -130,7 +130,6 @@ public class PageResource extends AbstractCaiLunResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Page> createPage(@Context Vertx vertx, PageCreateRequest request) throws Exception {
 		pageRepository.save(request.getPage());
-		GenericResponse response = new GenericResponse<>();
-		return response;
+		return new GenericResponse<>();
 	}
 }

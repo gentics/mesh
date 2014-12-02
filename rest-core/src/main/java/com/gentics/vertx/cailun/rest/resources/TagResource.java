@@ -5,6 +5,7 @@ import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ws.rs.GET;
@@ -23,6 +24,9 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.vertx.cailun.core.CaiLunLinkResolver;
+import com.gentics.vertx.cailun.core.CaiLunLinkResolverFactoryImpl;
+import com.gentics.vertx.cailun.core.LinkReplacer;
 import com.gentics.vertx.cailun.repository.Page;
 import com.gentics.vertx.cailun.repository.PageRepository;
 import com.gentics.vertx.cailun.repository.Tag;
@@ -34,14 +38,19 @@ import com.google.common.collect.Lists;
 public class TagResource {
 
 	@Autowired
-	PageRepository pageRepository;
+	private PageRepository pageRepository;
+
+	@Autowired
+	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
+
+	@Autowired
+	GraphDatabaseService graphDb;
 
 	@PUT
 	@Path("/add/{tagPath:.*}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Tag> addTagStructure(@Context Vertx vertx, PageCreateRequest request, final @PathParam("tagPath") String tagPath)
 			throws Exception {
-		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
 		ExecutionEngine engine = new ExecutionEngine(graphDb);
 
 		String query = transformPathToCypher(tagPath);
@@ -61,10 +70,16 @@ public class TagResource {
 		Long pageId = getPageNodeIdForPath(path);
 		if (pageId != null) {
 			Page page = pageRepository.findOne(pageId);
+			resolveLinks(page);
 			return new GenericResponse<Page>(page);
 		} else {
 			throw new Exception("Page for path" + path + " could not be found.");
 		}
+	}
+
+	public void resolveLinks(Page page) throws InterruptedException, ExecutionException {
+		LinkReplacer replacer = new LinkReplacer(resolver);
+		page.setContent(replacer.replace(page.getContent()));
 	}
 
 	private Long getPageNodeIdForPath(String path) throws Exception {

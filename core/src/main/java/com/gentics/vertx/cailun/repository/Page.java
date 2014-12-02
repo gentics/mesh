@@ -2,7 +2,6 @@ package com.gentics.vertx.cailun.repository;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
 
 import javax.validation.constraints.NotNull;
 
@@ -15,19 +14,15 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
-import com.gentics.vertx.cailun.core.CaiLunLinkResolver;
-import com.gentics.vertx.cailun.core.CaiLunLinkResolverFactoryImpl;
-import com.gentics.vertx.cailun.core.LinkReplacer;
-
 @NodeEntity
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 public class Page extends TaggableContent {
-
+	
 	private static final long serialVersionUID = 1100206059138098335L;
 
-//	@Fetch
+	// @Fetch
 	@RelatedToVia(type = "LINKED", direction = Direction.OUTGOING, elementClass = Linked.class)
 	private Collection<Linked> links = new HashSet<>();
 
@@ -49,11 +44,6 @@ public class Page extends TaggableContent {
 
 	public Page(String name) {
 		this.name = name;
-	}
-	
-	public String getContentWithReplacedLinks() throws InterruptedException, ExecutionException {
-		LinkReplacer replacer = new LinkReplacer<CaiLunLinkResolver>(new CaiLunLinkResolverFactoryImpl());
-		return replacer.replace(content);
 	}
 
 	public void linkTo(Page page) {

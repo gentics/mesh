@@ -15,6 +15,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<when.java.version>3.0.1</when.java.version>
 	</properties>
 
 	<dependencies>
@@ -29,6 +30,12 @@
 			<groupId>com.gentics.vertx</groupId>
 			<artifactId>cailun-customer-example</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.englishtown</groupId>
+			<artifactId>when.java</artifactId>
+			<version>${when.java.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

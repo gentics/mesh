@@ -9,6 +9,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * The link replacer can be used to replace links within the contents of a string.
+ * 
+ * @author johannes2
+ *
+ * @param <T>
+ */
 public class LinkReplacer<T extends AbstractLinkResolver> {
 
 	private static final String START_TAG = "${";
@@ -25,11 +32,24 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 
 	private LinkResolverFactory<T> factory;
 
+	/**
+	 * Create a new link replacer. The factory will be used to retrieve link resolvers.
+	 * 
+	 * @param factory
+	 */
 	public LinkReplacer(LinkResolverFactory<T> factory) {
 		this.executor = Executors.newFixedThreadPool(10);
 		this.factory = factory;
 	}
 
+	/**
+	 * Replace the links in the content.
+	 * 
+	 * @param content
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public String replace(String content) throws InterruptedException, ExecutionException {
 
 		if (isEmpty(content) || isEmpty(content)) {
@@ -40,7 +60,7 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 		int[][] segments = new int[5000][2];
 		int s = 0;
 		int nLink = 0;
-		// Determine all placeholders
+		// First step: Determine all placeholders
 		while (s != -1) {
 			s = content.indexOf(START_TAG, s + 1);
 			int e = content.indexOf(END_TAG, s);
@@ -56,8 +76,9 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 		StringBuilder builder = new StringBuilder(content.length());
 		int maxLinks = nLink;
 		nLink = 0;
-
 		int lastStart = 0;
+		
+		// Second step: Buildup the new content  
 		for (int i = 0; i < maxLinks; i++) {
 			builder.append(content.substring(lastStart, segments[nLink][0]));
 			builder.append(renderedLinks.get(nLink).get());

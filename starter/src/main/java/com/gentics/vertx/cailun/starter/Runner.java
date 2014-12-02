@@ -15,7 +15,6 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.englishtown.vertx.jersey.JerseyVerticle;
-import com.englishtown.vertx.jersey.impl.DefaultJerseyOptions;
 
 public class Runner {
 	private static final Vertx vertx = Vertx.vertx();
@@ -48,10 +47,10 @@ public class Runner {
 
 	private static void deploySelf(AnnotationConfigApplicationContext ctx) throws IOException {
 
-		DefaultJerseyOptions.context = ctx;
+		JerseyOptionsWithContextInfo.context = ctx;
 		JsonObject config = new JsonObject();
 		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun"));
-		//.add("com.gentics.vertx.cailun.demo.resource")
+		config.put("hk2_binder" , "com.gentics.vertx.cailun.starter.AppBinder");
 		config.put("port", 8000);
 
 		DeploymentOptions options = new DeploymentOptions();
