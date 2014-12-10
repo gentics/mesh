@@ -94,6 +94,43 @@ $date = "December 01, 2014";
         </div>
     </header>
 
+<?php
+
+function printNav($element, $level = 0) {
+    $nElements = count($element->children);
+    $isPage = $element->type == "PAGE";
+    if ($level==0) {
+        echo "<ul>\n";
+    }
+    $link = '<a href="' . $element->path . '" target="' . $element->target . '">'.$element->name . '</a>';
+    echo "<li>" . $link . "</li>\n";
+    if ($nElements != 0) {
+        echo "<ul>\n";
+        $nextLevel = $level + 1;
+        foreach ($element->children as $key => $value) {
+            printNav($value, $nextLevel);
+        }
+        echo "</ul>\n";
+        echo "</li>\n";
+    }
+    if ($level ==0) {
+        echo "</ul>\n";
+    }
+}
+
+$json =  file_get_contents("http://localhost:8000/page/nav"); 
+$data= json_decode($json);
+$root = $data->root;
+
+//echo $root->name;
+//var_dump($root);
+printNav($root);
+
+
+
+echo $data->root;
+?>
+
     <!-- Post Content -->
     <article>
         <div class="container">

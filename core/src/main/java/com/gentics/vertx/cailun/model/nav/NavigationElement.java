@@ -15,4 +15,8 @@ public class NavigationElement {
 	private List<NavigationElement> children = new ArrayList<NavigationElement>();
 
 	private String name;
+
+	private String path;
+
+	private String target = new String("#");
 }

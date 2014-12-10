@@ -73,7 +73,7 @@ public class PageResource extends AbstractCaiLunResource {
 	 * @param nav
 	 */
 	private void traverse(Tag tag, NavigationElement nav) {
-		System.out.println("Tag: " + tag.getName());
+//		System.out.println("Tag: " + tag.getName());
 		for (Object tagging : tag.getContents()) {
 			// System.out.println(tagging.getClass().getCanonicalName());
 			if (tagging.getClass().isAssignableFrom(Page.class)) {
@@ -82,12 +82,13 @@ public class PageResource extends AbstractCaiLunResource {
 				NavigationElement pageNavElement = new NavigationElement();
 				pageNavElement.setName(page.getFilename());
 				pageNavElement.setType(NavigationElementType.PAGE);
+				pageNavElement.setPath(pageRepository.getPath(page.getId()));
 				nav.getChildren().add(pageNavElement);
 			}
 		}
 
 		for (Tag currentTag : tag.getChildTags()) {
-			System.out.println("SubTag: " + currentTag.getName());
+//			System.out.println("SubTag: " + currentTag.getName());
 			NavigationElement navElement = new NavigationElement();
 			navElement.setType(NavigationElementType.TAG);
 			navElement.setName(currentTag.getName());
