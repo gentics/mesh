@@ -1,27 +1,25 @@
-package com.gentics.vertx.cailun.repository;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+package com.gentics.vertx.cailun.model;
 
 import org.springframework.data.neo4j.annotation.EndNode;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @RelationshipEntity
-@Data
-@EqualsAndHashCode(callSuper = false)
+//@Data
+//@EqualsAndHashCode(callSuper = false)
 public class Tagged extends AbstractPersistable {
 
 	private static final long serialVersionUID = -3894271096711266689L;
 
 	@JsonIgnore
-	// @Fetch
+//	@Fetch
 	@StartNode
 	private TaggableContent startTag;
 
-	// @Fetch
+//	@Fetch
 	@EndNode
 	private TaggableContent endTag;
 
@@ -30,6 +28,9 @@ public class Tagged extends AbstractPersistable {
 		this.endTag = endTag;
 	}
 
+	public Tagged() {
+	}
+	
 	@JsonIgnore
 	public TaggableContent getStartTag() {
 		return startTag;

@@ -1,0 +1,48 @@
+function enableAloha() {
+  var editable = $('.main_content');
+  editable.css('border-style','solid');
+  editable.css('border-width', '5px');
+  aloha(editable[0]);
+}
+
+function disableAloha() {
+  var ele = $('.main_content');
+  ele.before(ele.clone());
+  ele.remove();
+  $('.main_content').css('border-style','');
+  $('.main_content').css('border-width','');
+}
+
+function saveContent() {
+  var ele = $('.main_content');
+  console.log(ele.html());
+}
+
+$(document).ready(function() {
+
+  var ctrlDown = false;
+
+  $(document).keydown(function(e) {
+    if (e.ctrlKey) ctrlDown = true;
+  }).keyup(function(e) {
+    if (e.ctrlKey) ctrlDown = false;
+  });
+
+  $(document).keydown(function(e) { 
+    //console.log(e.which);
+    //console.log(ctrlDown);
+    if (ctrlDown && (e.which === 83)) {
+       saveContent();
+       disableAloha();
+       e.preventDefault();
+       return false;
+    }
+    if (ctrlDown && (e.which === 69)) {
+        //console.log("you pressed ");
+        enableAloha();
+        e.preventDefault();
+        return false;
+    }
+  });
+
+});

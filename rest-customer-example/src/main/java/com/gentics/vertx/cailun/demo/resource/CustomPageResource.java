@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.vertx.cailun.repository.Page;
+import com.gentics.vertx.cailun.model.Page;
+import com.gentics.vertx.cailun.model.Tag;
 import com.gentics.vertx.cailun.repository.PageRepository;
-import com.gentics.vertx.cailun.repository.Tag;
 import com.gentics.vertx.cailun.repository.TagRepository;
 import com.gentics.vertx.cailun.rest.resources.AbstractCaiLunResource;
 
@@ -57,6 +57,13 @@ public class CustomPageResource extends AbstractCaiLunResource {
 		Tag blogsTag = wwwTag.tag("blogs");
 		tagRepository.save(rootTag);
 
+		Page rootPage = new Page("rootPage");
+		rootPage.setContent("This is root");
+		rootPage.setFilename("index.html");
+		rootPage.setTeaser("Yo root");
+		rootPage.tag(rootTag);
+		pageRepository.save(rootPage);
+
 		Page page = new Page("Hallo Welt");
 		page.setFilename("some.html");
 		page.setContent("some content");
@@ -81,7 +88,7 @@ public class CustomPageResource extends AbstractCaiLunResource {
 		indexPage.linkTo(page);
 		pageRepository.save(indexPage);
 
-		System.out.println("COUNT:  " + pageRepository.count());
+		System.out.println("COUNT: " + pageRepository.count());
 	}
 
 }

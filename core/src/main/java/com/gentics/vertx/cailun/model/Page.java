@@ -1,12 +1,10 @@
-package com.gentics.vertx.cailun.repository;
+package com.gentics.vertx.cailun.model;
 
 import java.util.Collection;
 import java.util.HashSet;
 
 import javax.validation.constraints.NotNull;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import org.neo4j.graphdb.Direction;
@@ -15,8 +13,6 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 @NodeEntity
-@Data
-@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 public class Page extends TaggableContent {
 	
@@ -50,6 +46,54 @@ public class Page extends TaggableContent {
 		// TODO maybe extract information about link start and end to speedup rendering of page with links
 		Linked link = new Linked(this, page);
 		this.links.add(link);
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
+	public String getTeaser() {
+		return teaser;
+	}
+
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 }

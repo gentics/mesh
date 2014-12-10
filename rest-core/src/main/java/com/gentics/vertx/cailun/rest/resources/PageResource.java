@@ -12,13 +12,20 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.vertx.cailun.repository.Page;
+import com.gentics.vertx.cailun.model.Page;
+import com.gentics.vertx.cailun.model.Tag;
+import com.gentics.vertx.cailun.model.nav.Navigation;
+import com.gentics.vertx.cailun.model.nav.NavigationElement;
+import com.gentics.vertx.cailun.model.nav.NavigationElementType;
 import com.gentics.vertx.cailun.repository.PageRepository;
-import com.gentics.vertx.cailun.repository.Tag;
+import com.gentics.vertx.cailun.repository.TagRepository;
 import com.gentics.vertx.cailun.rest.model.request.PageCreateRequest;
 import com.gentics.vertx.cailun.rest.model.response.GenericResponse;
 
@@ -27,12 +34,68 @@ import com.gentics.vertx.cailun.rest.model.response.GenericResponse;
  */
 @Component
 @Scope("singleton")
+@Produces(MediaType.APPLICATION_JSON)
 @Path("/page")
 public class PageResource extends AbstractCaiLunResource {
 
 	@Autowired
 	private PageRepository pageRepository;
-	
+
+	@Autowired
+	private TagRepository tagRepository;
+
+	@Autowired
+	GraphDatabaseService graphDb;
+
+	@GET
+	@Path("/nav")
+	public Navigation getNavigration() throws NodeNotFoundException {
+
+		ExecutionEngine engine = new ExecutionEngine(graphDb);
+		// String query = "MATCH (tag:Tag {name: 'www'}),rels =(page:Page)-[:TAGGED*1..2]-(tag) return rels";
+
+		Tag rootTag = tagRepository.findOne(2L);
+		Navigation nav = new Navigation();
+		NavigationElement rootElement = new NavigationElement();
+		rootElement.setName(rootTag.getName());
+		rootElement.setType(NavigationElementType.TAG);
+
+		nav.setRoot(rootElement);
+		traverse(rootTag, rootElement);
+
+		return nav;
+	}
+
+	/**
+	 * Recursively traverses the graph (depth-first) in order to populate the navigation elements
+	 * 
+	 * @param tag
+	 * @param nav
+	 */
+	private void traverse(Tag tag, NavigationElement nav) {
+		System.out.println("Tag: " + tag.getName());
+		for (Object tagging : tag.getContents()) {
+			// System.out.println(tagging.getClass().getCanonicalName());
+			if (tagging.getClass().isAssignableFrom(Page.class)) {
+				Page page = (Page) tagging;
+				//System.out.println("Page: " + page);
+				NavigationElement pageNavElement = new NavigationElement();
+				pageNavElement.setName(page.getFilename());
+				pageNavElement.setType(NavigationElementType.PAGE);
+				nav.getChildren().add(pageNavElement);
+			}
+		}
+
+		for (Tag currentTag : tag.getChildTags()) {
+			System.out.println("SubTag: " + currentTag.getName());
+			NavigationElement navElement = new NavigationElement();
+			navElement.setType(NavigationElementType.TAG);
+			navElement.setName(currentTag.getName());
+			nav.getChildren().add(navElement);
+			traverse(currentTag, navElement);
+		}
+	}
+
 	/**
 	 * Return the page with the given id
 	 * 
@@ -60,7 +123,6 @@ public class PageResource extends AbstractCaiLunResource {
 	 */
 	@GET
 	@Path("/pages")
-	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<List<Page>> getPages() throws Exception {
 		// TODO use paging here
 		GenericResponse<List<Page>> response = new GenericResponse<List<Page>>();
@@ -80,7 +142,6 @@ public class PageResource extends AbstractCaiLunResource {
 	 */
 	@PUT
 	@Path("/tag/{id}/{name}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Tag> addTag(@Context Vertx vertx, PageCreateRequest request, final @PathParam("name") String name,
 			final @PathParam("id") Long id) throws Exception {
 		Tag tag = pageRepository.tagPage(id, name);
@@ -99,7 +160,6 @@ public class PageResource extends AbstractCaiLunResource {
 	 */
 	@PUT
 	@Path("untag/{id}/{name}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Tag> removeTag(@Context Vertx vertx, PageCreateRequest request, final @PathParam("name") String name,
 			final @PathParam("id") Long id) {
 		return new GenericResponse<Tag>(pageRepository.untag(id, name));
@@ -113,7 +173,6 @@ public class PageResource extends AbstractCaiLunResource {
 	 */
 	@GET
 	@Path("tag/{id}/{name}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Tag> getTag(final @PathParam("id") Long id, final @PathParam("name") String name) {
 		return new GenericResponse<Tag>(pageRepository.getTag(id, name));
 	}
@@ -127,7 +186,6 @@ public class PageResource extends AbstractCaiLunResource {
 	 * @throws Exception
 	 */
 	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Page> createPage(@Context Vertx vertx, PageCreateRequest request) throws Exception {
 		pageRepository.save(request.getPage());
 		return new GenericResponse<>();

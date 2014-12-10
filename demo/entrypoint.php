@@ -4,6 +4,7 @@ $actualPath = "$_SERVER[REQUEST_URI]";
 //echo $actualPath;
 $json =  file_get_contents("http://localhost:8000/tag/get$actualPath"); 
 $data= json_decode($json);
+//var_dump($data);
 $GLOBALS['data'] = $data;
 if(is_null($data)) {
   http_response_code(404);

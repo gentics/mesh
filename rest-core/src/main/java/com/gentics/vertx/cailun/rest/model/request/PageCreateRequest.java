@@ -1,6 +1,6 @@
 package com.gentics.vertx.cailun.rest.model.request;
 
-import com.gentics.vertx.cailun.repository.Page;
+import com.gentics.vertx.cailun.model.Page;
 
 public class PageCreateRequest {
 

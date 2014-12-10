@@ -1,19 +1,16 @@
-package com.gentics.vertx.cailun.repository;
+package com.gentics.vertx.cailun.model;
 
 import java.util.Collection;
 import java.util.HashSet;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Data
-@EqualsAndHashCode(callSuper = false)
+@NodeEntity
 abstract class TaggableContent extends AbstractPersistable {
 
 	private static final long serialVersionUID = -4100747204275186859L;

@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.repository;
+package com.gentics.vertx.cailun.model;
 
 import java.io.Serializable;
 

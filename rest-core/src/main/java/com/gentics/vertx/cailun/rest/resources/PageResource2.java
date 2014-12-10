@@ -15,7 +15,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import com.gentics.vertx.cailun.repository.Page;
+import com.gentics.vertx.cailun.model.Page;
 
 /**
  * Simple page resource to load and render pages

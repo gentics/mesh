@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
+import com.gentics.vertx.cailun.model.Page;
+import com.gentics.vertx.cailun.model.Tag;
+
 public interface PageRepository extends GraphRepository<Page> {
 
 	@Query("MATCH (page:_Page)<-[:`TAGGED`]-(tag:Tag) RETURN page")
