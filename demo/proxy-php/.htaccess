@@ -1,0 +1,10 @@
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# This is a hack for PHP to prevent it from parsing multipart/form-data
+# There is no other way to do this, but if you know a better way feel free to change this.
+# This basically rewrites the Content-Type if it's multipart/form-data and saves it in another header.
+SetEnvIf Content-Type ^(multipart/form-data)(?!-proxyphp)(.*) NEW_CONTENT_TYPE=multipart/form-data-proxyphp$2 OLD_CONTENT_TYPE=$1$2
+RequestHeader set Content-Type %{NEW_CONTENT_TYPE}e env=NEW_CONTENT_TYPE
+RequestHeader set X-proxyphp-Content-Type %{OLD_CONTENT_TYPE}e env=NEW_CONTENT_TYPE

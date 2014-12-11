@@ -4,7 +4,9 @@ import io.vertx.core.Vertx;
 
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -27,6 +29,7 @@ import com.gentics.vertx.cailun.model.nav.NavigationElementType;
 import com.gentics.vertx.cailun.repository.PageRepository;
 import com.gentics.vertx.cailun.repository.TagRepository;
 import com.gentics.vertx.cailun.rest.model.request.PageCreateRequest;
+import com.gentics.vertx.cailun.rest.model.request.PageSaveRequest;
 import com.gentics.vertx.cailun.rest.model.response.GenericResponse;
 
 /**
@@ -54,7 +57,7 @@ public class PageResource extends AbstractCaiLunResource {
 		ExecutionEngine engine = new ExecutionEngine(graphDb);
 		// String query = "MATCH (tag:Tag {name: 'www'}),rels =(page:Page)-[:TAGGED*1..2]-(tag) return rels";
 
-		Tag rootTag = tagRepository.findOne(2L);
+		Tag rootTag = tagRepository.findOne(0L);
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
 		rootElement.setName(rootTag.getName());
@@ -73,12 +76,9 @@ public class PageResource extends AbstractCaiLunResource {
 	 * @param nav
 	 */
 	private void traverse(Tag tag, NavigationElement nav) {
-//		System.out.println("Tag: " + tag.getName());
 		for (Object tagging : tag.getContents()) {
-			// System.out.println(tagging.getClass().getCanonicalName());
 			if (tagging.getClass().isAssignableFrom(Page.class)) {
 				Page page = (Page) tagging;
-				//System.out.println("Page: " + page);
 				NavigationElement pageNavElement = new NavigationElement();
 				pageNavElement.setName(page.getFilename());
 				pageNavElement.setType(NavigationElementType.PAGE);
@@ -88,7 +88,6 @@ public class PageResource extends AbstractCaiLunResource {
 		}
 
 		for (Tag currentTag : tag.getChildTags()) {
-//			System.out.println("SubTag: " + currentTag.getName());
 			NavigationElement navElement = new NavigationElement();
 			navElement.setType(NavigationElementType.TAG);
 			navElement.setName(currentTag.getName());
@@ -107,13 +106,28 @@ public class PageResource extends AbstractCaiLunResource {
 	 */
 	@GET
 	@Path("{id}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public Page getPage(@Context Vertx vertx, final @PathParam("id") Long id) throws Exception {
 		if (id != null) {
 			return pageRepository.findOne(id);
 		} else {
 			throw new Exception("Please specify a correct id.");
 		}
+	}
+
+	// TODO change this to put once it works and update proxy and ajax call accordingly
+	@POST
+	//@Produces(MediaType.APPLICATION_JSON)
+	//@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/save/{id}")
+	public GenericResponse<String> savePage(final @PathParam("id") Long id, PageSaveRequest request) {
+		Page page = pageRepository.findOne(id);
+		if (page != null) {
+			page.setContent(request.getContent());
+			pageRepository.save(page);
+		}
+		GenericResponse<String> response = new GenericResponse<>();
+		response.setObject("OK");
+		return response;
 	}
 
 	/**

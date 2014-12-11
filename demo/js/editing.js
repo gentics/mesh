@@ -7,6 +7,7 @@ function enableAloha() {
 
 function disableAloha() {
   var ele = $('.main_content');
+//  aloha.mahalo(ele[0]);
   ele.before(ele.clone());
   ele.remove();
   $('.main_content').css('border-style','');
@@ -15,7 +16,19 @@ function disableAloha() {
 
 function saveContent() {
   var ele = $('.main_content');
-  console.log(ele.html());
+  var html = ele.html();
+  var data = { 'content':  html};
+  
+  $.ajax({
+      type        :   'POST',
+      url         :   "/proxy-php/page/save/" + window.pageId,
+      data        :   JSON.stringify(data),
+      contentType :   'application/json',
+      success     :   function(response) {
+          console.log(response);
+      }
+  });
+
 }
 
 $(document).ready(function() {

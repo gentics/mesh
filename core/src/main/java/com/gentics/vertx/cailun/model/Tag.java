@@ -1,7 +1,6 @@
 package com.gentics.vertx.cailun.model;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,7 +26,7 @@ public class Tag extends TaggableContent {
 
 	@Fetch
 	@RelatedTo(type = "TAGGED", direction = Direction.INCOMING, elementClass = TaggableContent.class)
-	private Collection<TaggableContent> contents = new HashSet<>();
+	private Set<TaggableContent> contents;
 
 	@Fetch
 	@Indexed(unique = true)
@@ -43,7 +42,7 @@ public class Tag extends TaggableContent {
 	}
 
 	@JsonIgnore
-	public Collection<TaggableContent> getTaggedContents() {
+	public Set<TaggableContent> getTaggedContents() {
 		return contents;
 	}
 

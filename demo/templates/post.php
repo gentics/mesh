@@ -119,18 +119,9 @@ function printNav($element, $level = 0) {
 }
 
 $json =  file_get_contents("http://localhost:8000/page/nav"); 
-$data= json_decode($json);
-$root = $data->root;
-
-//echo $root->name;
-//var_dump($root);
-printNav($root);
-
-
-
-echo $data->root;
+$navData= json_decode($json);
+//echo $json;
 ?>
-
     <!-- Post Content -->
     <article>
         <div class="container">
@@ -138,6 +129,9 @@ echo $data->root;
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="main_content">
                         <?php echo $data->content ?>
+                    </div>
+                    <div class="navigation">
+                        <?php printNav($navData->root); ?>
                     </div>
                 </div>
             </div>
@@ -193,6 +187,9 @@ echo $data->root;
 
     <!-- Custom Theme JavaScript -->
     <script src="/js/clean-blog.min.js"></script>
+    <script>
+        window.pageId = <?php echo $data->id . ";" ?>
+    </script>
 
 </body>
 

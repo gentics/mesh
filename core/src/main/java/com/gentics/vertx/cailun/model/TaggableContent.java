@@ -1,7 +1,7 @@
 package com.gentics.vertx.cailun.model;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
@@ -21,7 +21,7 @@ abstract class TaggableContent extends AbstractPersistable {
 
 	@Fetch
 	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
-	private Collection<Tag> childTags = new HashSet<>();
+	private Set<Tag> childTags;
 
 	// public void addChildTag(Tag tag) {
 	// this.childTags.add(tag);
@@ -33,18 +33,27 @@ abstract class TaggableContent extends AbstractPersistable {
 	//
 	public Tag tag(String name) {
 		Tag tag = new Tag(name);
+		if (this.childTags == null) {
+			this.childTags = new HashSet<>();
+		}
 		this.childTags.add(tag);
 		return tag;
 	}
 
 	public Tag tag(Tag tag) {
+		if (this.childTags == null) {
+			this.childTags = new HashSet<>();
+		}
 		this.childTags.add(tag);
 		return tag;
 	}
 
 	@JsonIgnore
-	public Collection<Tag> getChildTags() {
-		return childTags;
+	public Set<Tag> getChildTags() {
+		if (this.childTags == null) {
+			this.childTags = new HashSet<>();
+		}
+		return this.childTags;
 	}
 
 	// public void addParentTag(String name) {

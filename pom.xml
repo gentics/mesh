@@ -10,6 +10,7 @@
 		<vertx.ext.hk2.version>2.0.0-SNAPSHOT</vertx.ext.hk2.version>
 		<vertx.ext.jersey.version>4.0.0-SNAPSHOT</vertx.ext.jersey.version>
 		<spring.data.version>3.2.1.RELEASE</spring.data.version>
+		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<neo4j.version>2.1.3</neo4j.version>
 		<spring.version>4.0.7.RELEASE</spring.version>
 	</properties>
