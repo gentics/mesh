@@ -57,7 +57,7 @@ public class PageResource extends AbstractCaiLunResource {
 		ExecutionEngine engine = new ExecutionEngine(graphDb);
 		// String query = "MATCH (tag:Tag {name: 'www'}),rels =(page:Page)-[:TAGGED*1..2]-(tag) return rels";
 
-		Tag rootTag = tagRepository.findOne(0L);
+		Tag rootTag = tagRepository.findOne(2L);
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
 		rootElement.setName(rootTag.getName());

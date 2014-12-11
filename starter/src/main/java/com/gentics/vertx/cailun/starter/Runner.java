@@ -23,7 +23,7 @@ public class Runner {
 		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
 		deployNeo4Vertx();
 		Thread.sleep(7400);
-		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4JConfig.class)) {
+		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jConfig.class)) {
 			ctx.start();
 			deploySelf(ctx);
 			MainBean bean = ctx.getBean(MainBean.class);

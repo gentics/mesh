@@ -73,11 +73,12 @@ public class TagResource {
 			resolveLinks(page);
 			return new GenericResponse<Page>(page);
 		} else {
-			throw new Exception("Page for path" + path + " could not be found.");
+			throw new Exception("Page for path {" + path + "} could not be found.");
 		}
 	}
 
 	public void resolveLinks(Page page) throws InterruptedException, ExecutionException {
+		// TODO fix issues with generics - Maybe move the link replacer to a spring service
 		LinkReplacer replacer = new LinkReplacer(resolver);
 		page.setContent(replacer.replace(page.getContent()));
 	}
@@ -87,7 +88,8 @@ public class TagResource {
 
 		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
 		try (Transaction tx = graphDb.beginTx()) {
-			Node currentNode = graphDb.getNodeById(0L);
+			//TODO replace hardcoded node id with propper way to set the root node id
+			Node currentNode = graphDb.getNodeById(2L);
 			for (int i = 0; i < parts.length - 1; i++) {
 				String part = parts[i];
 				Node nextNode = getChildNodeTagFromNodeTag(currentNode, part);
