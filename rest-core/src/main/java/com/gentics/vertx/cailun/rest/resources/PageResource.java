@@ -4,7 +4,6 @@ import io.vertx.core.Vertx;
 
 import java.util.List;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -19,6 +18,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.stereotype.Component;
 
 import com.gentics.vertx.cailun.model.Page;
@@ -49,9 +50,13 @@ public class PageResource extends AbstractCaiLunResource {
 
 	@Autowired
 	GraphDatabaseService graphDb;
+	
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
 	@GET
 	@Path("/nav")
+	@PreAuthorize("hasRole('ROLE_DUMMY')")
 	public Navigation getNavigration() throws NodeNotFoundException {
 
 		ExecutionEngine engine = new ExecutionEngine(graphDb);
@@ -116,8 +121,8 @@ public class PageResource extends AbstractCaiLunResource {
 
 	// TODO change this to put once it works and update proxy and ajax call accordingly
 	@POST
-	//@Produces(MediaType.APPLICATION_JSON)
-	//@Consumes(MediaType.APPLICATION_JSON)
+	// @Produces(MediaType.APPLICATION_JSON)
+	// @Consumes(MediaType.APPLICATION_JSON)
 	@Path("/save/{id}")
 	public GenericResponse<String> savePage(final @PathParam("id") Long id, PageSaveRequest request) {
 		Page page = pageRepository.findOne(id);

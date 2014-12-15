@@ -3,6 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<artifactId>cailun</artifactId>
+	<packaging>pom</packaging>
+	<version>0.1.0-SNAPSHOT</version>
+	<name>Cailun</name>
 
 	<properties>
 		<jersey.version>2.13</jersey.version>
@@ -21,10 +25,14 @@
 		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>cailun</artifactId>
-	<packaging>pom</packaging>
-	<version>0.1.0-SNAPSHOT</version>
-	<name>Cailun</name>
+
+	<developers>
+		<developer>
+			<name>Johannes Schüth</name>
+			<url>https://github.com/Jotschi</url>
+		</developer>
+	</developers>
+
 
 	<modules>
 		<module>rest-customer-example</module>

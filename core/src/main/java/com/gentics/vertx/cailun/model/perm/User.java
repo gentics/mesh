@@ -13,11 +13,19 @@ import com.gentics.vertx.cailun.model.AbstractPersistable;
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NodeEntity
 public class User extends AbstractPersistable {
-	
-	private String surName;
-	
-	private String firstName;
+
+	private String lastname;
+
+	private String firstname;
+
+	private String emailAddress;
 
 	private static final long serialVersionUID = -8707906688270506022L;
+
+	public User(String firstname, String lastname, String emailAddress) {
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.emailAddress = emailAddress;
+	}
 
 }

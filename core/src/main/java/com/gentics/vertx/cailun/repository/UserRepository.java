@@ -18,12 +18,12 @@ public interface UserRepository extends GraphRepository<User> {
 	Page<User> findAll(Pageable pageable);
 
 	@Override
-	@PostAuthorize("returnObject.firstName == principal.username or hasRole('ROLE_ADMIN')")
+	@PostAuthorize("returnObject.firstname == principal.username or hasRole('ROLE_ADMIN')")
 	User findOne(Long aLong);
 
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	List<User> findByFirstNameLike(@Param("firstName") String firstName);
+	List<User> findByFirstnameLike(@Param("firstname") String firstname);
 
-	User findByFirstNameEquals(String firstName);
+	User findByFirstnameEquals(String firstname);
 
 }

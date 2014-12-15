@@ -18,13 +18,12 @@ public class FakeUserDetailsService implements UserDetailsService {
 	private UserRepository userRepository;
 
 	@Override
-	public UserDetails loadUserByUsername(String username) throws
-	UsernameNotFoundException {
-	User person = userRepository.findByFirstNameEquals(username);
-	if (person == null) {
-	throw new UsernameNotFoundException("Username " + username + " not found");
-	}
-	return new org.springframework.security.core.userdetails.User(username, "password", getGrantedAuthorities(username));
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		User person = userRepository.findByFirstnameEquals(username);
+		if (person == null) {
+			throw new UsernameNotFoundException("Username " + username + " not found");
+		}
+		return new org.springframework.security.core.userdetails.User(username, "password", getGrantedAuthorities(username));
 	}
 
 	private Collection<? extends GrantedAuthority> getGrantedAuthorities(String username) {
