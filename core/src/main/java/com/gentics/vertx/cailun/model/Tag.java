@@ -1,5 +1,6 @@
 package com.gentics.vertx.cailun.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -15,6 +16,7 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.vertx.cailun.model.perm.Group;
 
 @NodeEntity
 @Data
@@ -27,6 +29,14 @@ public class Tag extends TaggableContent {
 	@Fetch
 	@RelatedTo(type = "TAGGED", direction = Direction.INCOMING, elementClass = TaggableContent.class)
 	private Set<TaggableContent> contents;
+
+//	@Fetch
+//	@RelatedToVia(type = "HAS_PERMISSION", direction = Direction.BOTH, elementClass = Permission.class)
+//	private Set<Permission> permissions = new HashSet<Permission>();
+
+	@Fetch
+	@RelatedTo(type = "HAS_PERMISSION", direction = Direction.INCOMING, elementClass = Group.class)
+	private Set<Group> assigned = new HashSet<>();
 
 	@Fetch
 	@Indexed(unique = true)

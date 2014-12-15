@@ -8,7 +8,7 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 
 @NodeEntity
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NoArgsConstructor
 public class GenericNode extends AbstractPersistable {
 

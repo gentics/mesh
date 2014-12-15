@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import com.gentics.vertx.cailun.model.Page;
 import com.gentics.vertx.cailun.model.Tag;
 import com.gentics.vertx.cailun.model.perm.Group;
+import com.gentics.vertx.cailun.model.perm.Permission;
 import com.gentics.vertx.cailun.model.perm.User;
 import com.gentics.vertx.cailun.repository.GroupRepository;
 import com.gentics.vertx.cailun.repository.PageRepository;
@@ -36,7 +37,9 @@ public class CustomerConfiguration {
 	private GroupRepository groupRepository;
 
 	@PostConstruct
-	public void setupACL() {
+	public void setupDB() {
+		log.info("Setup of test data");
+
 		User john = new User("Joe", "Doe", "j.doe@gentics.com");
 		User mary = new User("Mary", "Doe", "m.doe@gentics.com");
 		userRepository.save(asList(john, mary));
@@ -50,12 +53,6 @@ public class CustomerConfiguration {
 		groupWithNoViewPerm.getMembers().add(mary);
 		groupRepository.save(groupWithNoViewPerm);
 
-	}
-
-	@PostConstruct
-	public void setupDB() {
-		log.info("Starting main bean.");
-
 		Tag rootTag = new Tag("/");
 		rootTag.tag("home").tag("jotschi");
 		rootTag.tag("root");
@@ -63,6 +60,15 @@ public class CustomerConfiguration {
 		Tag siteTag = wwwTag.tag("site");
 		Tag postsTag = wwwTag.tag("posts");
 		Tag blogsTag = wwwTag.tag("blogs");
+
+		rootGroup.setCanDelete(true);
+		rootGroup.setCanUpdate(true);
+		rootGroup.setCanView(true);
+		wwwTag.getAssigned().add(rootGroup);
+		siteTag.getAssigned().add(rootGroup);
+		postsTag.getAssigned().add(rootGroup);
+		blogsTag.getAssigned().add(rootGroup);
+
 		tagRepository.save(rootTag);
 
 		Page rootPage = new Page("rootPage");
@@ -96,7 +102,7 @@ public class CustomerConfiguration {
 		indexPage.linkTo(page);
 		pageRepository.save(indexPage);
 
-		System.out.println("COUNT: " + pageRepository.count());
+		log.info("COUNT: " + pageRepository.count());
 	}
 
 }

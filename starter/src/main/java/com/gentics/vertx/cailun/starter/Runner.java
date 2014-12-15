@@ -20,6 +20,7 @@ public class Runner {
 	private static final Vertx vertx = Vertx.vertx();
 
 	public static void main(String[] args) throws IOException, InterruptedException {
+		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
 		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
 		deployNeo4Vertx();
 		Thread.sleep(7400);
@@ -31,11 +32,13 @@ public class Runner {
 			ctx.registerShutdownHook();
 			System.in.read();
 		}
-
-		// deployArtifact();
-
 	}
 
+	/**
+	 * Deploy the neo4vertx extension using the given json configuration.
+	 * 
+	 * @throws IOException
+	 */
 	private static void deployNeo4Vertx() throws IOException {
 
 		InputStream is = Runner.class.getResourceAsStream("neo4vertx_gui.json");
@@ -45,32 +48,24 @@ public class Runner {
 
 	}
 
+	/**
+	 * Deploy the main jersey verticle that will startup jersey and the http server.
+	 * 
+	 * @param ctx
+	 * @throws IOException
+	 */
 	private static void deploySelf(AnnotationConfigApplicationContext ctx) throws IOException {
 
 		JerseyOptionsWithContextInfo.context = ctx;
 		JsonObject config = new JsonObject();
 		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun"));
-		config.put("hk2_binder" , "com.gentics.vertx.cailun.starter.AppBinder");
+		config.put("hk2_binder", "com.gentics.vertx.cailun.starter.AppBinder");
 		config.put("port", 8000);
 
 		DeploymentOptions options = new DeploymentOptions();
-		// options.setIsolationGroup("A");
 		options.setConfig(config);
 
 		vertx.deployVerticle("java-hk2:" + JerseyVerticle.class.getCanonicalName(), options);
-		// config.put("resources", new JsonArray().add("com.gentics.vertx.cailun.starter.resources2"));
-		// vertx.deployVerticle("java-hk2:" + JerseyVerticle.class.getCanonicalName(), options);
-		// System.in.read();
 	}
 
-	// private static void deployArtifact() {
-	// JsonObject config = new JsonObject();
-	// config.put("resources", new JsonArray().add("com.gentics.resources"));
-	// config.put("port", 8000);
-	//
-	// DeploymentOptions options = new DeploymentOptions();
-	// options.setConfig(config);
-	//
-	// vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-page:0.1.0-SNAPSHOT", options);
-	// }
 }

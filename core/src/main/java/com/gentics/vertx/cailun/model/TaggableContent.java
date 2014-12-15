@@ -11,7 +11,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @NodeEntity
-abstract class TaggableContent extends AbstractPersistable {
+abstract class TaggableContent extends GenericNode {
 
 	private static final long serialVersionUID = -4100747204275186859L;
 

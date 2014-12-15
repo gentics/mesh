@@ -24,6 +24,12 @@ public class Group extends AbstractPersistable {
 
 	private String name;
 
+	boolean canView = true;
+
+	boolean canUpdate = false;
+
+	boolean canDelete = false;
+
 	@Fetch
 	@RelatedTo(type = "MEMBER_OF", direction = Direction.INCOMING, elementClass = User.class)
 	private Set<User> members = new HashSet<>();
