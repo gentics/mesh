@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.vertx.cailun.repository.PageRepository;
 import com.gentics.vertx.cailun.repository.TagRepository;
 import com.gentics.vertx.cailun.rest.resources.AbstractCaiLunResource;
 
@@ -28,8 +27,8 @@ public class CustomPageResource extends AbstractCaiLunResource {
 
 	private static Logger log = LoggerFactory.getLogger(CustomPageResource.class);
 
-	@Autowired
-	private PageRepository pageRepository;
+//	@Autowired
+//	private PageRepository pageRepository;
 
 	@Autowired
 	private TagRepository tagRepository;

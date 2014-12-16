@@ -35,10 +35,9 @@
 </head>
 
 <?php
-$data=$GLOBALS['data'];
-$data = $data->object;
+$content = $GLOBALS['content'];
 //var_dump($data);
-$date = "December 01, 2014";
+$date = $GLOBALS['date'];
 ?>
 <body>
 
@@ -85,9 +84,9 @@ $date = "December 01, 2014";
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
-                        <h1><?php echo $data->title ?></h1>
-                        <h2 class="subheading"><?php echo $data->teaser ?></h2>
-                        <span class="meta">Posted by <a href="#"><?php echo $data->author ?></a> on <?php echo $date ?></span>
+                        <h1><?php echo $title ?></h1>
+                        <h2 class="subheading"><?php echo $teaser ?></h2>
+                        <span class="meta">Posted by <a href="#"><?php echo $author ?></a> on <?php echo $date ?></span>
                     </div>
                 </div>
             </div>
@@ -128,7 +127,7 @@ $navData= json_decode($json);
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="main_content">
-                        <?php echo $data->content ?>
+                        <?php echo $content ?>
                     </div>
                     <div class="navigation">
                         <?php printNav($navData->root); ?>
@@ -188,7 +187,7 @@ $navData= json_decode($json);
     <!-- Custom Theme JavaScript -->
     <script src="/js/clean-blog.min.js"></script>
     <script>
-        window.pageId = <?php echo $data->id . ";" ?>
+        window.pageId = <?php echo $id . ";" ?>
     </script>
 
 </body>

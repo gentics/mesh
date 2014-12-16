@@ -12,6 +12,7 @@ import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+//import org.glassfish.jersey.moxy.json.MoxyJsonFeature;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.englishtown.vertx.jersey.JerseyVerticle;
@@ -23,7 +24,7 @@ public class Runner {
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
 		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
 		deployNeo4Vertx();
-		Thread.sleep(7400);
+		Thread.sleep(10400);
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jConfig.class)) {
 			ctx.start();
 			deploySelf(ctx);
@@ -61,6 +62,7 @@ public class Runner {
 		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun"));
 		config.put("hk2_binder", "com.gentics.vertx.cailun.starter.AppBinder");
 		config.put("port", 8000);
+//		config.put("features", new JsonArray().add(MoxyJsonFeature.class.getCanonicalName()));
 
 		DeploymentOptions options = new DeploymentOptions();
 		options.setConfig(config);

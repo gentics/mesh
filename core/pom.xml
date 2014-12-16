@@ -171,6 +171,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- 
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-moxy</artifactId>
+			<version>2.13</version>
+		</dependency>
+		 -->
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
@@ -182,7 +189,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 		<!-- Neo4J -->
 		<dependency>
 			<groupId>org.openpcf</groupId>

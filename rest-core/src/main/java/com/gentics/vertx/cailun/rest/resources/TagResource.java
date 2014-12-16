@@ -23,6 +23,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.gentics.vertx.cailun.core.CaiLunLinkResolver;
 import com.gentics.vertx.cailun.core.CaiLunLinkResolverFactoryImpl;
@@ -30,15 +32,22 @@ import com.gentics.vertx.cailun.core.LinkReplacer;
 import com.gentics.vertx.cailun.model.Page;
 import com.gentics.vertx.cailun.model.Tag;
 import com.gentics.vertx.cailun.repository.PageRepository;
+import com.gentics.vertx.cailun.repository.TagRepository;
 import com.gentics.vertx.cailun.rest.model.request.PageCreateRequest;
 import com.gentics.vertx.cailun.rest.model.response.GenericResponse;
 import com.google.common.collect.Lists;
 
+@Component
+@Scope("singleton")
+@Produces(MediaType.APPLICATION_JSON)
 @Path("/tag")
 public class TagResource {
 
 	@Autowired
 	private PageRepository pageRepository;
+
+	@Autowired
+	private TagRepository tagRepository;
 
 	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
@@ -48,7 +57,6 @@ public class TagResource {
 
 	@PUT
 	@Path("/add/{tagPath:.*}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Tag> addTagStructure(@Context Vertx vertx, PageCreateRequest request, final @PathParam("tagPath") String tagPath)
 			throws Exception {
 		ExecutionEngine engine = new ExecutionEngine(graphDb);
@@ -64,7 +72,6 @@ public class TagResource {
 
 	@GET
 	@Path("/get/{path:.*}")
-	@Produces(MediaType.APPLICATION_JSON)
 	public GenericResponse<Page> getContentForPath(final @PathParam("path") String path) throws Exception {
 		// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
 		Long pageId = getPageNodeIdForPath(path);
@@ -85,11 +92,10 @@ public class TagResource {
 
 	private Long getPageNodeIdForPath(String path) throws Exception {
 		String parts[] = path.split("/");
-
+		Tag rootTag = tagRepository.findRootTag();
 		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
 		try (Transaction tx = graphDb.beginTx()) {
-			//TODO replace hardcoded node id with propper way to set the root node id
-			Node currentNode = graphDb.getNodeById(2L);
+			Node currentNode = graphDb.getNodeById(rootTag.getId());
 			for (int i = 0; i < parts.length - 1; i++) {
 				String part = parts[i];
 				Node nextNode = getChildNodeTagFromNodeTag(currentNode, part);

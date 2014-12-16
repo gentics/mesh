@@ -1,8 +1,9 @@
 package com.gentics.vertx.cailun.demo;
 
-import static java.util.Arrays.asList;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+
+import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 
@@ -12,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import com.gentics.vertx.cailun.model.Page;
 import com.gentics.vertx.cailun.model.Tag;
 import com.gentics.vertx.cailun.model.perm.Group;
-import com.gentics.vertx.cailun.model.perm.Permission;
 import com.gentics.vertx.cailun.model.perm.User;
 import com.gentics.vertx.cailun.repository.GroupRepository;
 import com.gentics.vertx.cailun.repository.PageRepository;
@@ -42,10 +42,13 @@ public class CustomerConfiguration {
 
 		User john = new User("Joe", "Doe", "j.doe@gentics.com");
 		User mary = new User("Mary", "Doe", "m.doe@gentics.com");
-		userRepository.save(asList(john, mary));
+		userRepository.save(Arrays.asList(john, mary));
 
 		Group rootGroup = new Group("superusers");
 		rootGroup.getMembers().add(john);
+		rootGroup.setCanDelete(true);
+		rootGroup.setCanUpdate(true);
+		rootGroup.setCanView(true);
 		groupRepository.save(rootGroup);
 
 		Group groupWithNoViewPerm = new Group("nopermusers");
@@ -56,19 +59,16 @@ public class CustomerConfiguration {
 		Tag rootTag = new Tag("/");
 		rootTag.tag("home").tag("jotschi");
 		rootTag.tag("root");
+		rootTag.tag("var").tag("www");
 		Tag wwwTag = rootTag.tag("var").tag("www");
 		Tag siteTag = wwwTag.tag("site");
 		Tag postsTag = wwwTag.tag("posts");
 		Tag blogsTag = wwwTag.tag("blogs");
 
-		rootGroup.setCanDelete(true);
-		rootGroup.setCanUpdate(true);
-		rootGroup.setCanView(true);
 		wwwTag.getAssigned().add(rootGroup);
 		siteTag.getAssigned().add(rootGroup);
 		postsTag.getAssigned().add(rootGroup);
 		blogsTag.getAssigned().add(rootGroup);
-
 		tagRepository.save(rootTag);
 
 		Page rootPage = new Page("rootPage");
@@ -83,6 +83,14 @@ public class CustomerConfiguration {
 		page.setContent("some content");
 		page.tag(blogsTag);
 		page.tag(siteTag);
+		pageRepository.save(page);
+
+		page = new Page("New BlogPost");
+		page.tag(blogsTag);
+		page.setFilename("blog.html");
+		page.setContent("This is the blogpost content");
+		page.setAuthor("Jotschi");
+		page.setTeaser("Jo this page is the second blogpost");
 		pageRepository.save(page);
 
 		page = new Page("Hallo Cailun");

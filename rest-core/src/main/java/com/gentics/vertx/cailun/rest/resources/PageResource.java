@@ -13,12 +13,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +26,9 @@ import com.gentics.vertx.cailun.model.Tag;
 import com.gentics.vertx.cailun.model.nav.Navigation;
 import com.gentics.vertx.cailun.model.nav.NavigationElement;
 import com.gentics.vertx.cailun.model.nav.NavigationElementType;
+import com.gentics.vertx.cailun.model.tagcloud.TagCloud;
+import com.gentics.vertx.cailun.model.tagcloud.TagCloudEntry;
+import com.gentics.vertx.cailun.model.tagcloud.TagCloudResult;
 import com.gentics.vertx.cailun.repository.PageRepository;
 import com.gentics.vertx.cailun.repository.TagRepository;
 import com.gentics.vertx.cailun.rest.model.request.PageCreateRequest;
@@ -50,19 +52,19 @@ public class PageResource extends AbstractCaiLunResource {
 
 	@Autowired
 	GraphDatabaseService graphDb;
-	
+
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
 	@GET
 	@Path("/nav")
-	@PreAuthorize("hasRole('ROLE_DUMMY')")
+	// @PreAuthorize("hasRole('ROLE_DUMMY')")
 	public Navigation getNavigration() throws NodeNotFoundException {
 
-		ExecutionEngine engine = new ExecutionEngine(graphDb);
+		// ExecutionEngine engine = new ExecutionEngine(graphDb);
 		// String query = "MATCH (tag:Tag {name: 'www'}),rels =(page:Page)-[:TAGGED*1..2]-(tag) return rels";
 
-		Tag rootTag = tagRepository.findOne(2L);
+		Tag rootTag = tagRepository.findRootTag();
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
 		rootElement.setName(rootTag.getName());
@@ -72,6 +74,31 @@ public class PageResource extends AbstractCaiLunResource {
 		traverse(rootTag, rootElement);
 
 		return nav;
+	}
+
+	@GET
+	@Path("/tagcloud")
+	public TagCloud getTagCloud() {
+		TagCloud cloud = new TagCloud();
+		// TODO transaction handling should be moved to abstract rest resource
+		try (Transaction tx = graphDb.beginTx()) {
+			List<TagCloudResult> res = pageRepository.getTagCloudInfo();
+			for (TagCloudResult current : res) {
+				TagCloudEntry entry = new TagCloudEntry();
+				entry.setName(current.getTag().getName());
+				// TODO determine link
+				entry.setLink("TBD");
+				entry.setCount(current.getCounts());
+				cloud.getEntries().add(entry);
+			}
+		}
+		return cloud;
+	}
+
+	@GET
+	@Path("/byId/{id}")
+	public Page getPageById(final @PathParam("id") Long id) {
+		return pageRepository.findOne(id);
 	}
 
 	/**

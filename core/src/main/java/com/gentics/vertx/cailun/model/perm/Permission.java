@@ -2,13 +2,11 @@ package com.gentics.vertx.cailun.model.perm;
 
 import lombok.NoArgsConstructor;
 
-import org.springframework.data.neo4j.annotation.EndNode;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.gentics.vertx.cailun.model.AbstractPersistable;
-import com.gentics.vertx.cailun.model.GenericNode;
 
 /**
  * The permission object is an element that is used to form the ACL domain in the graph.
@@ -29,14 +27,14 @@ public class Permission extends AbstractPersistable {
 	@StartNode
 	private Group group;
 
-	@Fetch
-	@EndNode
-	private GenericNode object;
+//	@Fetch
+//	@EndNode
+//	private GenericNode object;
 
-	public Permission(Group group, GenericNode object) {
-		this.group = group;
-		this.object = object;
-	}
+//	public Permission(Group group, GenericNode object) {
+//		this.group = group;
+//		this.object = object;
+//	}
 
 	public Group getGroup() {
 		return group;
@@ -46,11 +44,11 @@ public class Permission extends AbstractPersistable {
 		this.group = group;
 	}
 
-	public GenericNode getObject() {
-		return object;
-	}
-
-	public void setObject(GenericNode object) {
-		this.object = object;
-	}
+//	public GenericNode getObject() {
+//		return object;
+//	}
+//
+//	public void setObject(GenericNode object) {
+//		this.object = object;
+//	}
 }
