@@ -129,6 +129,7 @@ $navData= json_decode($json);
                     <div class="main_content">
                         <?php echo $content ?>
                     </div>
+                    <div class="tagcloud"></div>
                     <div class="navigation">
                         <?php printNav($navData->root); ?>
                     </div>
@@ -188,6 +189,49 @@ $navData= json_decode($json);
     <script src="/js/clean-blog.min.js"></script>
     <script>
         window.pageId = <?php echo $id . ";" ?>
+    </script>
+    <script src="/js/d3.js"></script>
+    <script src="/js/d3.layout.cloud.js"></script>
+    <script>
+        var words = [];
+        $.ajax({
+          type        :   'GET',
+          url         :   "/proxy-php/page/tagcloud",
+          contentType :   'application/json',
+          success     :   function(response) {
+              console.dir(response);
+              $.each(response.entries, function(index,value) {
+                  //console.log(value);
+                  words[index] = { 'text': value.name, 'size': Math.log(value.count+1)*40};
+              });
+              var fill = d3.scale.category20();
+              d3.layout.cloud().size([300, 300]).words(words)
+              .padding(5)
+              .rotate(function() { return 90; })
+              .font("Impact")
+              .fontSize(function(d) { return d.size; })
+              .on("end", draw)
+              .start();
+              function draw(words) {
+                 d3.select(".tagcloud").append("svg")
+                .attr("width", 300)
+                .attr("height", 300)
+                .append("g")
+                .attr("transform", "translate(150,150)")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("font-family", "Impact")
+                .style("fill", function(d, i) { return fill(i); })
+                .attr("text-anchor", "middle")
+                .attr("transform", function(d) {
+                  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+              }
+            }
+          });
     </script>
 
 </body>

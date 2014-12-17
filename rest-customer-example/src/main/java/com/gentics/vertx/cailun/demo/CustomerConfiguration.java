@@ -78,14 +78,24 @@ public class CustomerConfiguration {
 		rootPage.tag(rootTag);
 		pageRepository.save(rootPage);
 
-		Page page = new Page("Hallo Welt");
-		page.setFilename("some.html");
-		page.setContent("some content");
-		page.tag(blogsTag);
-		page.tag(siteTag);
-		pageRepository.save(page);
+		for (int i = 0; i < 6; i++) {
+			Page page = new Page("Hallo Welt");
+			page.setFilename("some" + i + ".html");
+			page.setContent("some content");
+			page.tag(blogsTag);
+			pageRepository.save(page);
 
-		page = new Page("New BlogPost");
+		}
+		
+		for (int i = 0; i < 3; i++) {
+			Page page = new Page("Hallo Welt");
+			page.setFilename("some_posts" + i + ".html");
+			page.setContent("some content");
+			page.tag(postsTag);
+			pageRepository.save(page);
+
+		}
+		Page page = new Page("New BlogPost");
 		page.tag(blogsTag);
 		page.setFilename("blog.html");
 		page.setContent("This is the blogpost content");
