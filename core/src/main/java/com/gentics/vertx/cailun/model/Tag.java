@@ -20,26 +20,6 @@ public class Tag extends GenericNode {
 	private static final long serialVersionUID = 3547707185082166132L;
 
 	@Fetch
-	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
-	private Set<Tag> childTags = new HashSet<>();
-
-	public Tag tag(String name) {
-		Tag tag = new Tag(name);
-		this.childTags.add(tag);
-		return tag;
-	}
-
-	public Tag tag(Tag tag) {
-		this.childTags.add(tag);
-		return tag;
-	}
-
-	@JsonIgnore
-	public Set<Tag> getChildTags() {
-		return this.childTags;
-	}
-
-	@Fetch
 	// @Setter
 	// @Getter(onMethod = @__({ @JsonIgnore }))
 	@RelatedTo(type = "TAGGED", direction = Direction.INCOMING, elementClass = GenericNode.class)
@@ -78,10 +58,6 @@ public class Tag extends GenericNode {
 
 	public void setAssigned(Set<Group> assigned) {
 		this.assigned = assigned;
-	}
-
-	public void setChildTags(Set<Tag> childTags) {
-		this.childTags = childTags;
 	}
 
 }

@@ -3,8 +3,6 @@ package com.gentics.vertx.cailun.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -18,29 +16,28 @@ public class GenericNode extends AbstractPersistable {
 	private static final long serialVersionUID = -7525642021064006664L;
 
 	@Fetch
-//	@Indexed(unique = true)
-	@NotNull
+	// @Indexed(unique = true)
 	private String name;
+
+	@Fetch
+	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
+	private Set<Tag> childTags = new HashSet<>();
 
 	public String getName() {
 		return name;
-	}
-
-	public void setChildTags(Set<Tag> childTags) {
-		this.childTags = childTags;
 	}
 
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	public void setChildTags(Set<Tag> childTags) {
+		this.childTags = childTags;
+	}
+
 	// @Fetch
 	// @RelatedToVia(type = "TAGGED", direction = Direction.INCOMING, elementClass = Tagged.class)
 	// private Collection<Tagged> parentTags = new HashSet<>();
-
-	@Fetch
-	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
-	private Set<Tag> childTags = new HashSet<>();
 
 	public Tag tag(String name) {
 		Tag tag = new Tag(name);
