@@ -57,12 +57,12 @@ public class Runner {
 	 */
 	private static void deploySelf(AnnotationConfigApplicationContext ctx) throws IOException {
 
-		JerseyOptionsWithContextInfo.context = ctx;
+		EnhancedJerseyOptions.context = ctx;
 		JsonObject config = new JsonObject();
 		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun"));
-		config.put("hk2_binder", "com.gentics.vertx.cailun.starter.AppBinder");
+		config.put("hk2_binder", AppBinder.class.getCanonicalName());
 		config.put("port", 8000);
-		//config.put("features", new JsonArray().add(MoxyJsonFeature.class.getCanonicalName()));
+		// config.put("features", new JsonArray().add(MoxyJsonFeature.class.getCanonicalName()));
 
 		DeploymentOptions options = new DeploymentOptions();
 		options.setConfig(config);

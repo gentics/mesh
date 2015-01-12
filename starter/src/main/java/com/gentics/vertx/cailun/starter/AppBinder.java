@@ -10,7 +10,7 @@ public class AppBinder extends HK2JerseyBinder {
 
 	@Override
 	protected void configure() {
-		bind(JerseyOptionsWithContextInfo.class).to(JerseyOptions.class);
+		bind(EnhancedJerseyOptions.class).to(JerseyOptions.class);
 		super.configure();
 	}
 

@@ -59,7 +59,7 @@ public class PageResource extends AbstractCaiLunResource {
 	@GET
 	@Path("/nav")
 	// @PreAuthorize("hasRole('ROLE_DUMMY')")
-	public Navigation getNavigration() throws NodeNotFoundException {
+	public Navigation getNavigation() throws NodeNotFoundException {
 
 		// ExecutionEngine engine = new ExecutionEngine(graphDb);
 		// String query = "MATCH (tag:Tag {name: 'www'}),rels =(page:Page)-[:TAGGED*1..2]-(tag) return rels";

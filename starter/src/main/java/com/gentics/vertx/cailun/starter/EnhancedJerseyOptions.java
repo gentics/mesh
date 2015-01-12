@@ -14,18 +14,20 @@ import com.englishtown.vertx.jersey.impl.DefaultJerseyOptions;
  * @author johannes2
  *
  */
-public class JerseyOptionsWithContextInfo extends DefaultJerseyOptions {
+public class EnhancedJerseyOptions extends DefaultJerseyOptions {
 
 	public static Object context;
 
 	@Inject
-	public JerseyOptionsWithContextInfo(@Optional ServiceLocator locator) {
+	public EnhancedJerseyOptions(@Optional ServiceLocator locator) {
 		super(locator);
 	}
 
 	@Override
 	protected ResourceConfig getResourceConfig() {
 		ResourceConfig rc = super.getResourceConfig();
+		DynamicResourceHandler handler = new DynamicResourceHandler();
+		handler.addDynamicResource(rc);
 		if (context != null) {
 			rc.property("contextConfig", context);
 		}
