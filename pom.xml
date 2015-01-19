@@ -9,13 +9,11 @@
 	<name>Cailun</name>
 
 	<properties>
-		<jersey.version>2.13</jersey.version>
 		<asm.version>3.3.1</asm.version>
-		<vertx.ext.hk2.version>2.0.0-SNAPSHOT</vertx.ext.hk2.version>
-		<vertx.ext.jersey.version>4.0.0-SNAPSHOT</vertx.ext.jersey.version>
 		<spring.data.version>3.2.1.RELEASE</spring.data.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<neo4j.version>2.1.3</neo4j.version>
+		<neo4j.cypher.version>2.1.4</neo4j.cypher.version>
 		<spring.version>4.0.7.RELEASE</spring.version>
 	</properties>
 
@@ -25,14 +23,12 @@
 		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
-
 	<developers>
 		<developer>
 			<name>Johannes Schüth</name>
 			<url>https://github.com/Jotschi</url>
 		</developer>
 	</developers>
-
 
 	<modules>
 		<module>rest-customer-example</module>
@@ -43,16 +39,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>com.englishtown.vertx</groupId>
-				<artifactId>ext-jersey</artifactId>
-				<version>${vertx.ext.jersey.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.englishtown.vertx</groupId>
-				<artifactId>ext-hk2</artifactId>
-				<version>${vertx.ext.hk2.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
@@ -77,6 +63,42 @@
 				<groupId>org.openpcf</groupId>
 				<artifactId>neo4vertx-core</artifactId>
 				<version>2.0.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-core</artifactId>
+				<version>${spring.security.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>3.1.1.RELEASE</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-neo4j</artifactId>
+				<version>${spring.data.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-neo4j</artifactId>
+				<version>${spring.data.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${spring.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

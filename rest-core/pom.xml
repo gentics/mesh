@@ -15,12 +15,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<neo4j.version>2.1.3</neo4j.version>
 	</properties>
 
 	<dependencies>
-
-		<!-- Cai Lun -->
 		<dependency>
 			<groupId>com.gentics.vertx</groupId>
 			<artifactId>cailun-core</artifactId>

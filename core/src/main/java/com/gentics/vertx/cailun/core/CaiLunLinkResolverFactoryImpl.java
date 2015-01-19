@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.vertx.cailun.repository.PageRepository;
+import com.gentics.vertx.cailun.page.PageRepository;
 
 /**
  * Factory which provides link resolvers

@@ -2,7 +2,7 @@ package com.gentics.vertx.cailun.core;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gentics.vertx.cailun.repository.PageRepository;
+import com.gentics.vertx.cailun.page.PageRepository;
 
 /**
  * Neo4j Cailun page resolver. This class will resolve cailun link placeholders.
