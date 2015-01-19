@@ -17,7 +17,6 @@ import org.apache.commons.io.IOUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-//import org.glassfish.jersey.moxy.json.MoxyJsonFeature;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.gentics.vertx.cailun.demo.CustomerVerticle;
