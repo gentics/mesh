@@ -1,21 +1,19 @@
 package com.gentics.vertx.cailun.base;
 
-import io.vertx.core.Vertx;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 
+import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;
@@ -26,12 +24,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.vertx.cailun.base.rest.request.PageCreateRequest;
 import com.gentics.vertx.cailun.core.CaiLunLinkResolver;
 import com.gentics.vertx.cailun.core.CaiLunLinkResolverFactoryImpl;
 import com.gentics.vertx.cailun.core.LinkReplacer;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
+import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
 import com.gentics.vertx.cailun.rest.response.GenericResponse;
 import com.gentics.vertx.cailun.tag.TagRepository;
 import com.gentics.vertx.cailun.tag.model.Tag;
@@ -39,9 +40,10 @@ import com.google.common.collect.Lists;
 
 @Component
 @Scope("singleton")
-@Produces(MediaType.APPLICATION_JSON)
-@Path("/tag")
-public class TagVerticle {
+@SpringVerticle
+public class TagVerticle extends AbstractCailunRestVerticle {
+	
+	private static Logger log = LoggerFactory.getLogger(TagVerticle.class);
 
 	@Autowired
 	private PageRepository pageRepository;
@@ -55,36 +57,66 @@ public class TagVerticle {
 	@Autowired
 	GraphDatabaseService graphDb;
 
-	@PUT
-	@Path("/add/{tagPath:.*}")
-	public GenericResponse<Tag> addTagStructure(@Context Vertx vertx, PageCreateRequest request, final @PathParam("tagPath") String tagPath)
-			throws Exception {
-		ExecutionEngine engine = new ExecutionEngine(graphDb);
-
-		String query = transformPathToCypher(tagPath);
-		System.out.println(query);
-		// WITH tag,page MERGE (tag)-[r:TAGGED]->(page) RETURN r
-		try (Transaction tx = graphDb.beginTx()) {
-			ExecutionResult result = engine.execute(query);
-		}
-		return null;
+	public TagVerticle() {
+		super("tag");
 	}
 
-	@GET
-	@Path("/get/{path:.*}")
-	public GenericResponse<Page> getContentForPath(final @PathParam("path") String path) throws Exception {
-		// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
-		Long pageId = getPageNodeIdForPath(path);
-		if (pageId != null) {
-			Page page = pageRepository.findOne(pageId);
-			resolveLinks(page);
-			return new GenericResponse<Page>(page);
-		} else {
-			throw new Exception("Page for path {" + path + "} could not be found.");
-		}
+	@Override
+	public void start() throws Exception {
+		super.start();
+
+		addAddTagStructureHandler();
+		addGetPathHandler();
 	}
 
-	public void resolveLinks(Page page) throws InterruptedException, ExecutionException {
+	private void addGetPathHandler() {
+		// @Path("/get/{path:.*}")
+		
+		getRouter().routeWithRegex("\\/atom").method(GET).handler(rc -> {
+			System.out.println("This is custom");
+			rc.response().end("ATOM");
+		});
+		getRouter().routeWithRegex("\\/get\\/(.*)").method(GET).handler(rc -> {
+			try {
+				String path = rc.request().params().get("param0");
+				// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
+				Long pageId = getPageNodeIdForPath(path);
+				if (pageId != null) {
+					Page page = pageRepository.findOne(pageId);
+					resolveLinks(page);
+					ObjectMapper mapper = new ObjectMapper();
+					String json = mapper.writeValueAsString(new GenericResponse<Page>(page));
+					rc.response().end(json);
+				} else {
+					throw new Exception("Page for path {" + path + "} could not be found.");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		});
+
+	}
+
+	private void addAddTagStructureHandler() {
+		// @Path("/add/{tagPath:.*}")
+		route("/add/:tagPath").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
+
+			PageCreateRequest request = fromJson(rc.request(), PageCreateRequest.class);
+			String tagPath = rc.request().params().get("tagPath");
+			// final @PathParam("tagPath") String tagPath
+				ExecutionEngine engine = new ExecutionEngine(graphDb);
+
+				String query = transformPathToCypher(tagPath);
+				System.out.println(query);
+				// WITH tag,page MERGE (tag)-[r:TAGGED]->(page) RETURN r
+				try (Transaction tx = graphDb.beginTx()) {
+					ExecutionResult result = engine.execute(query);
+				}
+			});
+	}
+
+	private void resolveLinks(Page page) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
 		LinkReplacer replacer = new LinkReplacer(resolver);
 		page.setContent(replacer.replace(page.getContent()));

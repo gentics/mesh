@@ -42,7 +42,7 @@ import com.gentics.vertx.cailun.tagcloud.model.TagCloudResult;
 @Scope("singleton")
 @SpringVerticle
 public class PageVerticle extends AbstractCailunRestVerticle {
-
+	
 	@Autowired
 	private PageRepository pageRepository;
 
@@ -70,7 +70,6 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 
 	private void addNavigationHandler() {
 		route("/nav").method(GET).handler(rc -> {
-			System.out.println("Request");
 			try {
 				rc.response().end(toJson(getNavigation()));
 			} catch (Exception e) {

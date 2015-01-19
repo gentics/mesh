@@ -35,6 +35,7 @@ public class GenericNode extends AbstractPersistable {
 	@RelatedToVia(type = "HAS_PERMISSION", direction = Direction.INCOMING, elementClass = Permission.class)
 	private Set<Permission> permissions = new HashSet<>();
 
+	@JsonIgnore
 	public Set<Permission> getPermissions() {
 		return permissions;
 	}

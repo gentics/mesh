@@ -1,19 +1,22 @@
 package com.gentics.vertx.cailun.rest;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Router;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class AbstractCailunRestVerticle extends AbstractVerticle {
 
 	private static final Gson GSON = new GsonBuilder().create();
+
+	public static final String APPLICATION_JSON = "application/json";
 
 	private Router localRouter = null;
 	private String basePath = null;
@@ -29,17 +32,11 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 
 	@Override
 	public void start() throws Exception {
-
-		Router rootRouter = Router.router(vertx);
-		Router apiRouter = Router.router(vertx);
-		rootRouter.mountSubRouter("/api/v1", apiRouter);
-		Router localRouter = Router.router(vertx);
-		apiRouter.mountSubRouter("/" + basePath, localRouter);
-
-		this.localRouter = localRouter;
+		RouterStorage routerStorage = RouterStorage.getInstance(vertx);
+		this.localRouter = routerStorage.getRouter("/" + basePath);
 
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8080));
-		server.requestHandler(rootRouter::accept);
+		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
 	}
 
@@ -73,4 +70,10 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 	protected String toJson(Object obj) {
 		return GSON.toJson(obj);
 	}
+
+	protected <T> T fromJson(HttpServerRequest request, Class<T> classOf) {
+		return null;
+		// return GSON.fromJson(request., classOfT)
+	}
+
 }

@@ -1,11 +1,11 @@
 <?php
 
 $actualPath = "$_SERVER[REQUEST_URI]";
-$url  = "http://localhost:8000/tag/get$actualPath";
+$url  = "http://localhost:8080/api/v1/tag/get$actualPath";
 $json =  file_get_contents($url); 
 $data= json_decode($json);
 var_dump($data);
-
+echo $url;
 $GLOBALS['date']  = "December 01, 2014";
 
 //var_dump($data);
@@ -21,4 +21,4 @@ if(is_null($data)) {
 	$GLOBALS['title'] = $data->object->title;
 }
 
-  require_once 'templates/post.php';
+require_once 'templates/post.php';

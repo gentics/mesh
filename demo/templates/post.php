@@ -117,7 +117,7 @@ function printNav($element, $level = 0) {
     }
 }
 
-$json =  file_get_contents("http://localhost:8000/page/nav"); 
+$json =  file_get_contents("http://localhost:8080/api/v1/page/nav"); 
 $navData= json_decode($json);
 //echo $json;
 ?>

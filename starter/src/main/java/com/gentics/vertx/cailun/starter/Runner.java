@@ -1,6 +1,5 @@
 package com.gentics.vertx.cailun.starter;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.gentics.vertx.cailun.base.TagVerticle;
 import com.gentics.vertx.cailun.demo.CustomerVerticle;
 import com.gentics.vertx.cailun.page.PageVerticle;
 import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
@@ -39,29 +39,24 @@ public class Runner {
 			SpringVerticleFactory.setParentContext(ctx);
 			ctx.start();
 			deployAndWait(CustomerVerticle.class);
-			startUp(PageVerticle.class);
+			deployAndWait(PageVerticle.class);
+			deployAndWait(TagVerticle.class);
 			deploySelf(ctx);
 			ctx.registerShutdownHook();
 			System.in.read();
 		}
 	}
 
-	private static void deployAndWait(Class<? extends AbstractCailunRestVerticle> clazz) throws InterruptedException {
+	private static void deployAndWait(final Class<? extends AbstractCailunRestVerticle> clazz) throws InterruptedException {
 		final CountDownLatch latch = new CountDownLatch(1);
+
 		String prefix = SpringVerticleFactory.PREFIX + ":";
 		vertx.deployVerticle(prefix + clazz.getCanonicalName(), handler -> {
-			System.out.println("ID:" + handler.result());
+			log.info("Deployed verticle {" + clazz.getCanonicalName() + "} => " + handler.result());
 			latch.countDown();
 		});
-		latch.await();
-	}
-
-	private static void startUp(Class<? extends AbstractVerticle> clazz) {
-
-		String prefix = SpringVerticleFactory.PREFIX + ":";
-		vertx.deployVerticle(prefix + clazz.getCanonicalName(), handler -> {
-			log.info("Started verticle " + handler.result());
-		});
+		Thread.sleep(5000);
+//		latch.await();
 	}
 
 	/**
