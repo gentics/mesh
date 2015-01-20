@@ -39,9 +39,12 @@ public class Runner {
 			SpringVerticleFactory.setParentContext(ctx);
 			ctx.start();
 			deployAndWait(CustomerVerticle.class);
-			deployAndWait(PageVerticle.class);
-			deployAndWait(TagVerticle.class);
+			for (int i = 0; i < 1; i++) {
+				deployAndWait(PageVerticle.class);
+				deployAndWait(TagVerticle.class);
+			}
 			deploySelf(ctx);
+
 			ctx.registerShutdownHook();
 			System.in.read();
 		}
@@ -55,8 +58,7 @@ public class Runner {
 			log.info("Deployed verticle {" + clazz.getCanonicalName() + "} => " + handler.result());
 			latch.countDown();
 		});
-		Thread.sleep(5000);
-//		latch.await();
+		latch.await();
 	}
 
 	/**

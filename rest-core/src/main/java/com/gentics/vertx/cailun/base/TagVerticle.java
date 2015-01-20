@@ -6,12 +6,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
@@ -23,7 +21,6 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.vertx.cailun.base.rest.request.PageCreateRequest;
@@ -37,6 +34,7 @@ import com.gentics.vertx.cailun.rest.response.GenericResponse;
 import com.gentics.vertx.cailun.tag.TagRepository;
 import com.gentics.vertx.cailun.tag.model.Tag;
 import com.google.common.collect.Lists;
+
 
 @Component
 @Scope("singleton")
