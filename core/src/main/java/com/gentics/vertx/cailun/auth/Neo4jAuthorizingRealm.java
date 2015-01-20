@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.shiro;
+package com.gentics.vertx.cailun.auth;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -19,7 +20,6 @@ import com.gentics.vertx.cailun.perm.GroupRepository;
 import com.gentics.vertx.cailun.perm.RoleRepository;
 import com.gentics.vertx.cailun.perm.UserRepository;
 import com.gentics.vertx.cailun.perm.model.User;
-import com.gentics.vertx.cailun.shiro.spring.SecurityConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
@@ -34,7 +34,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
 	@Autowired
 	RoleRepository RoleRepository;
-
+	
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 
@@ -51,11 +51,11 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken upat = (UsernamePasswordToken) token;
 		User user = userRepository.findByUsername(upat.getUsername());
-		
-		if (user != null && securityConfig.passwordEncoder().matches(new String(upat.getPassword()), user.getPasswordHash())) {
-			return new SimpleAuthenticationInfo(user, user.getPasswordHash(), getName());
+		if (user != null) {
+			return new SimpleAuthenticationInfo(user, new BCryptPasswordHash(user.getPasswordHash(), securityConfig), getName());
 		} else {
-			throw new AuthenticationException("Invalid username/password combination!");
+			//TODO don't let the user know that we know that he did not exist
+			throw new IncorrectCredentialsException("Invalid username!");
 		}
 	}
 

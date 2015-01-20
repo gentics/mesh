@@ -1,7 +1,6 @@
 package com.gentics.vertx.cailun.starter;
 
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.apex.addons.BasicAuthHandler;
 import io.vertx.ext.apex.addons.LocalSessionStore;
 import io.vertx.ext.apex.addons.SessionHandler;
@@ -10,11 +9,22 @@ import io.vertx.ext.apex.core.CookieHandler;
 import io.vertx.ext.apex.core.RoutingContext;
 import io.vertx.ext.apex.core.Session;
 import io.vertx.ext.apex.core.SessionStore;
-import io.vertx.ext.auth.AuthService;
 
+import org.jacpfx.vertx.spring.SpringVerticle;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.gentics.vertx.cailun.auth.SecurityConfiguration;
 import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
 
+@Component
+@Scope("singleton")
+@SpringVerticle
 public class AdminVerticle extends AbstractCailunRestVerticle {
+
+	@Autowired
+	SecurityConfiguration securityConfig;
 
 	public AdminVerticle() {
 		super("admin");
@@ -34,12 +44,8 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 		route().handler(CookieHandler.cookieHandler());
 		SessionStore store = LocalSessionStore.localSessionStore(vertx);
 		route().handler(SessionHandler.sessionHandler(store));
-		// JsonObject authConfig = new JsonObject().put("properties_path", "classpath:login/loginusers.properties");
-		JsonObject authConfig = new JsonObject();
-		// authConfig.put(AuthService.AUTH_REALM_CLASS_NAME_FIELD, ShiroAuthRealmImpl.class.getCanonicalName());
-		AuthService authService = AuthService.create(vertx, authConfig);
 
-		route("/protected").handler(BasicAuthHandler.basicAuthHandler(authService, BasicAuthHandler.DEFAULT_REALM));
+		route("/protected").handler(BasicAuthHandler.basicAuthHandler(securityConfig.authService(), BasicAuthHandler.DEFAULT_REALM));
 
 		route("/protected/somepage").handler(handler);
 	}

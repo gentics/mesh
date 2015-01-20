@@ -24,25 +24,28 @@ import com.gentics.vertx.cailun.page.PageVerticle;
 import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
 
 public class Runner {
-	private static final Vertx vertx = Vertx.vertx();
-
 	private static final transient Logger log = LoggerFactory.getLogger(Runner.class);
+
+	private static Vertx vertx;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
+		printProductInformation();
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
 		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
 
-		deployNeo4Vertx();
 		Thread.sleep(10400);
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
 			SpringVerticleFactory.setParentContext(ctx);
 			ctx.start();
+			vertx = Vertx.vertx();
 			deployAndWait(CustomerVerticle.class);
+			deployAndWait(AdminVerticle.class);
 			for (int i = 0; i < 1; i++) {
 				deployAndWait(PageVerticle.class);
 				deployAndWait(TagVerticle.class);
 			}
+			// deployAndWait(AuthenticationVerticle.class);
 			deploySelf(ctx);
 
 			ctx.registerShutdownHook();
@@ -50,7 +53,15 @@ public class Runner {
 		}
 	}
 
-	private static void deployAndWait(final Class<? extends AbstractCailunRestVerticle> clazz) throws InterruptedException {
+	private static void printProductInformation() {
+		System.out.println("#################################################");
+		System.out.println("# CaiLun Version 0.0.1                          #");
+		System.out.println("# Gentics Software GmbH                         #");
+		System.out.println("#################################################");
+
+	}
+
+	public static void deployAndWait(final Class<? extends AbstractCailunRestVerticle> clazz) throws InterruptedException {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		String prefix = SpringVerticleFactory.PREFIX + ":";
@@ -67,7 +78,7 @@ public class Runner {
 	 * @throws IOException
 	 */
 	private static void deployNeo4Vertx() throws IOException {
-
+		log.info("Deploying neo4vertx...");
 		InputStream is = Runner.class.getResourceAsStream("neo4vertx_gui.json");
 		String jsonTxt = IOUtils.toString(is);
 		JsonObject config = new JsonObject(jsonTxt);

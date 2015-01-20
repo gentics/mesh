@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.vertx.cailun.auth.SecurityConfiguration;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
 import com.gentics.vertx.cailun.perm.GroupRepository;
@@ -21,7 +22,6 @@ import com.gentics.vertx.cailun.perm.model.Permission;
 import com.gentics.vertx.cailun.perm.model.Role;
 import com.gentics.vertx.cailun.perm.model.User;
 import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
-import com.gentics.vertx.cailun.shiro.spring.SecurityConfiguration;
 import com.gentics.vertx.cailun.tag.TagRepository;
 import com.gentics.vertx.cailun.tag.model.Tag;
 
