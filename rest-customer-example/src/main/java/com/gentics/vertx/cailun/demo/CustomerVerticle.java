@@ -61,7 +61,6 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			System.out.println("This is custom");
 			rc.response().end("END");
 		});
-		log.info("Setup of test data");
 
 		// Users
 		User john = new User("joe1");
@@ -159,8 +158,6 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		perm.setCanCreate(true);
 		perm.setCanRead(true);
 		pageRepository.save(indexPage);
-
-		log.info("COUNT: " + pageRepository.count());
 
 	}
 

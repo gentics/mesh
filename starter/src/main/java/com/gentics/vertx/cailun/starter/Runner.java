@@ -1,52 +1,45 @@
 package com.gentics.vertx.cailun.starter;
 
-import io.vertx.core.DeploymentOptions;
+import static com.gentics.vertx.cailun.starter.DeploymentUtils.deployAndWait;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
+import org.neo4j.kernel.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.gentics.vertx.cailun.base.AuthenticationVerticle;
 import com.gentics.vertx.cailun.base.TagVerticle;
 import com.gentics.vertx.cailun.demo.CustomerVerticle;
 import com.gentics.vertx.cailun.page.PageVerticle;
-import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
 
+@SuppressWarnings("deprecation")
 public class Runner {
-	private static final transient Logger log = LoggerFactory.getLogger(Runner.class);
 
-	private static Vertx vertx;
+	private static final Logger log = LoggerFactory.getLogger(Runner.class);
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
 		printProductInformation();
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
 		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
-
-		Thread.sleep(10400);
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
+			Vertx vertx = ctx.getBean(Vertx.class);
 			SpringVerticleFactory.setParentContext(ctx);
 			ctx.start();
-			vertx = Vertx.vertx();
-			deployAndWait(CustomerVerticle.class);
-			deployAndWait(AdminVerticle.class);
+			deployAndWait(vertx, CustomerVerticle.class);
+			deployAndWait(vertx, AdminVerticle.class);
+			deployAndWait(vertx, AuthenticationVerticle.class);
 			for (int i = 0; i < 1; i++) {
-				deployAndWait(PageVerticle.class);
-				deployAndWait(TagVerticle.class);
+				deployAndWait(vertx, PageVerticle.class);
+				deployAndWait(vertx, TagVerticle.class);
 			}
-			// deployAndWait(AuthenticationVerticle.class);
-			deploySelf(ctx);
 
 			ctx.registerShutdownHook();
 			System.in.read();
@@ -54,53 +47,23 @@ public class Runner {
 	}
 
 	private static void printProductInformation() {
-		System.out.println("#################################################");
-		System.out.println("# CaiLun Version 0.0.1                          #");
-		System.out.println("# Gentics Software GmbH                         #");
-		System.out.println("#################################################");
-
+		// TODO
+		log.info("#################################################");
+		log.info(infoLine("CaiLun Version " + getVersion()));
+		log.info(infoLine("Gentics Software GmbH"));
+		log.info("#-----------------------------------------------#");
+		log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
+		log.info(infoLine("Vert.x Version: 3.0.0-SNAPSHOT"));
+		log.info("#################################################");
 	}
 
-	public static void deployAndWait(final Class<? extends AbstractCailunRestVerticle> clazz) throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
-
-		String prefix = SpringVerticleFactory.PREFIX + ":";
-		vertx.deployVerticle(prefix + clazz.getCanonicalName(), handler -> {
-			log.info("Deployed verticle {" + clazz.getCanonicalName() + "} => " + handler.result());
-			latch.countDown();
-		});
-		latch.await();
+	private static String infoLine(String text) {
+		return "# " + StringUtils.rightPad(text, 45) + " #";
 	}
 
-	/**
-	 * Deploy the neo4vertx extension using the given json configuration.
-	 * 
-	 * @throws IOException
-	 */
-	private static void deployNeo4Vertx() throws IOException {
-		log.info("Deploying neo4vertx...");
-		InputStream is = Runner.class.getResourceAsStream("neo4vertx_gui.json");
-		String jsonTxt = IOUtils.toString(is);
-		JsonObject config = new JsonObject(jsonTxt);
-		vertx.deployVerticle(Neo4jGraphVerticle.class.getCanonicalName(), new DeploymentOptions().setConfig(config));
-
-	}
-
-	/**
-	 * Deploy the main jersey verticle that will startup jersey and the http server.
-	 * 
-	 * @param ctx
-	 * @throws IOException
-	 */
-	private static void deploySelf(AnnotationConfigApplicationContext ctx) throws IOException {
-
-		JsonObject config = new JsonObject();
-		config.put("resources", new JsonArray().add("com.gentics.vertx.cailun"));
-		config.put("port", 8000);
-
-		DeploymentOptions options = new DeploymentOptions();
-		options.setConfig(config);
-
+	private static String getVersion() {
+		// TODO extract from metadata?
+		return "0.0.1";
 	}
 
 }

@@ -30,4 +30,8 @@ public class User extends AbstractPersistable {
 		this.username = username;
 	}
 
+	public String toString() {
+		return username;
+	}
+
 }
