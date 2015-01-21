@@ -38,7 +38,7 @@ public class SecurityConfiguration {
 	public AuthService authService() {
 		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
 		AuthService authService = AuthService.createWithRealm(vertx(), realm, new JsonObject());
-//		SecurityUtils.setSecurityManager(realm.getSecurityManager());
+		SecurityUtils.setSecurityManager(realm.getSecurityManager());
 		return authService;
 	}
 

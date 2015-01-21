@@ -1,6 +1,7 @@
 package com.gentics.vertx.cailun.rest;
 
 import io.vertx.core.AbstractVerticle;
+
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;

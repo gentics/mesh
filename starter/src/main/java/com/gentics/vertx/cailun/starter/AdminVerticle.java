@@ -44,7 +44,18 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 			System.out.println(sess.getPrincipal());
 			System.out.println(sess);
 			System.out.println(sess.isLoggedIn());
-			rc.response().end("Welcome to the protected resource!");
+			org.apache.shiro.mgt.SecurityManager manager = SecurityUtils.getSecurityManager();
+			Subject subject = SecurityUtils.getSubject();
+			securityConfig.authService().hasPermission(sess.getPrincipal(), "create", rh -> {
+				System.out.println("Has Perm: " + rh.result());
+				if (rh.result()) {
+					rc.response().end("Welcome to the protected resource!");
+				} else {
+					rc.response().end("Protected content!");
+
+				}
+			});
+
 		};
 
 		route().handler(BodyHandler.bodyHandler());
@@ -54,10 +65,10 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 		AuthHandler authHandler = BasicAuthHandler.basicAuthHandler(securityConfig.authService(), BasicAuthHandler.DEFAULT_REALM);
 		route().handler(authHandler);
 
-//		addVerticleHandler();
-//		addServiceHandler();
+		// addVerticleHandler();
+		// addServiceHandler();
 
-//		route("/protected").handler(authHandler);
+		// route("/protected").handler(authHandler);
 		route("/somepage").handler(handler);
 	}
 
@@ -87,7 +98,7 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 
 		route("/undeployVerticle/:clazz").method(GET).handler(rc -> {
 			// TODO impl me
-			rc.response().end("Undeploy " + rc.request().params().get("clazz"));
+				rc.response().end("Undeploy " + rc.request().params().get("clazz"));
 			});
 	}
 

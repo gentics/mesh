@@ -9,19 +9,21 @@ import lombok.NoArgsConstructor;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.vertx.cailun.base.model.AbstractPersistable;
 
-@NoArgsConstructor
+//@NoArgsConstructor
 @Data
-@EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
+//@EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NodeEntity
 public class Group extends AbstractPersistable {
 
 	private static final long serialVersionUID = -6423363555276535419L;
 
+	@Indexed
 	private String name;
 
 	@Fetch
@@ -36,6 +38,10 @@ public class Group extends AbstractPersistable {
 	@RelatedTo(type = "PARENT_OF", direction = Direction.OUTGOING, elementClass = Group.class)
 	private Set<Group> parents = new HashSet<>();
 
+	public Group() {
+		// TODO Auto-generated constructor stub
+	}
+	
 	public Group(String name) {
 		this.name = name;
 	}
