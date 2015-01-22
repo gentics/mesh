@@ -18,16 +18,21 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.vertx.cailun.perm.GroupRepository;
 import com.gentics.vertx.cailun.perm.RoleRepository;
 import com.gentics.vertx.cailun.perm.UserRepository;
 import com.gentics.vertx.cailun.perm.model.Group;
+import com.gentics.vertx.cailun.perm.model.PermissionSet;
 import com.gentics.vertx.cailun.perm.model.Role;
 import com.gentics.vertx.cailun.perm.model.User;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
+
+	private static final Logger log = LoggerFactory.getLogger(Neo4jAuthorizingRealm.class);
 
 	@Autowired
 	SecurityConfiguration securityConfig;
@@ -39,7 +44,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	GroupRepository groupRepository;
 
 	@Autowired
-	RoleRepository RoleRepository;
+	RoleRepository roleRepository;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -50,20 +55,24 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		try {
 			graphDb = Neo4jGraphVerticle.getDatabase();
 			try (Transaction tx = graphDb.beginTx()) {
-				// TODO this is no spring data object. We need to load the user again. This is a little bit pain
+				// The principal does only hold a string identifier that can be used to load the user pojo from the database.
+				// I assume this also has a positive aspect since the session can easily be shared between vertx instances.
 				// TODO explicit type check
 				User user = userRepository.findByPrincipalId(principals.getPrimaryPrincipal().toString());
 
 				for (Group group : groupRepository.listAllGroups(user)) {
 					for (Role role : group.getRoles()) {
+						log.info("Loaded role {" + role.getName() + "} to fetch permissionsets..");
 						roles.add(role.getName());
-						permissions.addAll(role.getPermissions());
+						for (PermissionSet permSet : role.getPermissions()) {
+							log.info("Loaded permission set for object {" + permSet.getObject().getName() + "}");
+							permissions.addAll(permSet.getAllSetPermissions());
+						}
 					}
 				}
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Could not fetch permission data from neo4j database.", e);
 		}
 
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roles);

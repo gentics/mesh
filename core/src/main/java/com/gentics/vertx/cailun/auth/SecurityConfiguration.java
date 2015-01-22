@@ -3,7 +3,6 @@ package com.gentics.vertx.cailun.auth;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.AuthService;
 
 import javax.annotation.PostConstruct;
 
@@ -35,9 +34,9 @@ public class SecurityConfiguration {
 	}
 
 	@Bean
-	public AuthService authService() {
+	public CaiLunAuthServiceImpl authService() {
 		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
-		AuthService authService = AuthService.createWithRealm(vertx(), realm, new JsonObject());
+		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), realm, new JsonObject());
 		SecurityUtils.setSecurityManager(realm.getSecurityManager());
 		return authService;
 	}

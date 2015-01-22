@@ -18,7 +18,7 @@ import com.gentics.vertx.cailun.perm.GroupRepository;
 import com.gentics.vertx.cailun.perm.RoleRepository;
 import com.gentics.vertx.cailun.perm.UserRepository;
 import com.gentics.vertx.cailun.perm.model.Group;
-import com.gentics.vertx.cailun.perm.model.Permission;
+import com.gentics.vertx.cailun.perm.model.PermissionSet;
 import com.gentics.vertx.cailun.perm.model.Role;
 import com.gentics.vertx.cailun.perm.model.User;
 import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
@@ -142,7 +142,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		page.tag(postsTag);
 		pageRepository.save(page);
 
-		Page indexPage = new Page("Index");
+		Page indexPage = new Page("Index With Perm");
 		indexPage.setFilename("index.html");
 		indexPage.setContent("The index page<br/><a href=\"${Page(10)}\">Link</a>");
 		indexPage.setTitle("Index Title");
@@ -154,9 +154,10 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		pageRepository.save(indexPage);
 
 		// Permissions
-		Permission perm = indexPage.addPermission(adminRole);
-		perm.setCanCreate(true);
-		perm.setCanRead(true);
+		PermissionSet permSet = indexPage.addPermission(adminRole);
+		permSet.setCanCreate(true);
+		permSet.setCanRead(true);
+		permSet.setCanDelete(true);
 		pageRepository.save(indexPage);
 
 	}

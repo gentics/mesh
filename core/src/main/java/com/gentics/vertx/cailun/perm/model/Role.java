@@ -24,8 +24,8 @@ public class Role extends AbstractPersistable {
 	private String name;
 	
 	// @Fetch
-	@RelatedToVia(type = "HAS_PERMISSION", direction = Direction.OUTGOING, elementClass = Permission.class)
-	private Collection<Permission> permissions = new HashSet<>();
+	@RelatedToVia(type = "HAS_PERMISSIONSET", direction = Direction.OUTGOING, elementClass = PermissionSet.class)
+	private Collection<PermissionSet> permissions = new HashSet<>();
 
 	public Role(String name) {
 		this.name = name;

@@ -10,7 +10,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.vertx.cailun.perm.model.Permission;
+import com.gentics.vertx.cailun.perm.model.PermissionSet;
 import com.gentics.vertx.cailun.perm.model.Role;
 import com.gentics.vertx.cailun.tag.model.Tag;
 
@@ -32,20 +32,20 @@ public class GenericNode extends AbstractPersistable {
 	// private Collection<Tagged> parentTags = new HashSet<>();
 
 	@Fetch
-	@RelatedToVia(type = "HAS_PERMISSION", direction = Direction.INCOMING, elementClass = Permission.class)
-	private Set<Permission> permissions = new HashSet<>();
+	@RelatedToVia(type = "HAS_PERMISSIONSET", direction = Direction.INCOMING, elementClass = PermissionSet.class)
+	private Set<PermissionSet> permissions = new HashSet<>();
 
 	@JsonIgnore
-	public Set<Permission> getPermissions() {
+	public Set<PermissionSet> getPermissions() {
 		return permissions;
 	}
 
-	public void setPermissions(Set<Permission> permissions) {
+	public void setPermissions(Set<PermissionSet> permissions) {
 		this.permissions = permissions;
 	}
 
-	public Permission addPermission(Role role) {
-		Permission perm = new Permission(role, this);
+	public PermissionSet addPermission(Role role) {
+		PermissionSet perm = new PermissionSet(role, this);
 		this.permissions.add(perm);
 		return perm;
 	}
