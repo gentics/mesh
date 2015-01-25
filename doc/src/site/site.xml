@@ -61,6 +61,9 @@
         <menu name="Intro">
             <item name="Home" href="index.html"></item>
         </menu>
+        <menu name="Documentation">
+            <item name="JavaDoc" href="javadoc/index.html"></item>
+        </menu>
 
     </body>
 </project>
