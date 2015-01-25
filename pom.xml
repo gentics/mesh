@@ -9,6 +9,9 @@
 	<name>Cailun</name>
 
 	<properties>
+		<gh-pages.url>http://gentics.github.io/cailun/</gh-pages.url>
+		<gh-url>https://github.com/gentics/cailun/tree/master</gh-url>
+
 		<asm.version>3.3.1</asm.version>
 		<spring.data.version>3.2.1.RELEASE</spring.data.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
@@ -20,7 +23,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>oss-parent-vertx</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.1</version>
 	</parent>
 
 	<developers>
@@ -35,6 +38,7 @@
 		<module>rest-core</module>
 		<module>core</module>
 		<module>starter</module>
+		<module>doc</module>
 	</modules>
 
 	<dependencyManagement>
@@ -106,6 +110,44 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+					<skipDeploy>true</skipDeploy>
+					<generateReports>false</generateReports>
+				</configuration>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<doclet>org.asciidoctor.Asciidoclet</doclet>
+						<docletArtifact>
+							<groupId>org.asciidoctor</groupId>
+							<artifactId>asciidoclet</artifactId>
+							<version>0.1.4</version>
+						</docletArtifact>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 
 	<repositories>
 		<repository>
