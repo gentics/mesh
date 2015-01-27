@@ -1,24 +1,36 @@
 package com.gentics.vertx.cailun.rest;
 
 import io.vertx.core.Vertx;
+import io.vertx.ext.apex.addons.AuthHandler;
+import io.vertx.ext.apex.addons.BasicAuthHandler;
+import io.vertx.ext.apex.addons.LocalSessionStore;
+import io.vertx.ext.apex.addons.impl.SessionHandlerImpl;
+import io.vertx.ext.apex.core.BodyHandler;
+import io.vertx.ext.apex.core.CookieHandler;
 import io.vertx.ext.apex.core.Router;
+import io.vertx.ext.apex.core.SessionStore;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.NoArgsConstructor;
+
+import com.gentics.vertx.cailun.auth.CaiLunAuthServiceImpl;
+
+@NoArgsConstructor
 public class RouterStorage {
 
 	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
 	private static final String API_ROUTER_KEY = "API_ROUTER";
-	private static RouterStorage instance;
 
 	// overlapping routers are currently not supported:
 	// e.g: /page/page will not work
 	private Map<String, Router> routers = new HashMap<>();
 
-	private RouterStorage(Vertx vertx) {
+	public RouterStorage(Vertx vertx, CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
 		this.vertx = vertx;
+		initAPIRouter(caiLunAuthServiceImpl);
 	}
 
 	public Router getRootRouter() {
@@ -29,6 +41,17 @@ public class RouterStorage {
 			routers.put(ROOT_ROUTER_KEY, rootRouter);
 			return rootRouter;
 		}
+	}
+
+	// TODO I think this functionality should be moved to a different place
+	private void initAPIRouter(CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
+		Router router = getAPIRouter();
+		router.route().handler(BodyHandler.bodyHandler());
+		router.route().handler(CookieHandler.cookieHandler());
+		SessionStore store = LocalSessionStore.localSessionStore(vertx);
+		router.route().handler(new SessionHandlerImpl("cailun.session", 30 * 60 * 1000, false, store));
+		AuthHandler authHandler = BasicAuthHandler.basicAuthHandler(caiLunAuthServiceImpl, BasicAuthHandler.DEFAULT_REALM);
+		router.route().handler(authHandler);
 	}
 
 	public Router getAPIRouter() {
@@ -53,13 +76,6 @@ public class RouterStorage {
 			routers.put(mountPoint, localRouter);
 			return localRouter;
 		}
-	}
-
-	public static RouterStorage getInstance(Vertx vertx) {
-		if (instance == null) {
-			instance = new RouterStorage(vertx);
-		}
-		return instance;
 	}
 
 }

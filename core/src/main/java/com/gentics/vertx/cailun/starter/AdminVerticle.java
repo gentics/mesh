@@ -3,15 +3,8 @@ package com.gentics.vertx.cailun.starter;
 import static com.gentics.vertx.cailun.starter.DeploymentUtils.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.Handler;
-import io.vertx.ext.apex.addons.AuthHandler;
-import io.vertx.ext.apex.addons.BasicAuthHandler;
-import io.vertx.ext.apex.addons.LocalSessionStore;
-import io.vertx.ext.apex.addons.SessionHandler;
-import io.vertx.ext.apex.core.BodyHandler;
-import io.vertx.ext.apex.core.CookieHandler;
 import io.vertx.ext.apex.core.RoutingContext;
 import io.vertx.ext.apex.core.Session;
-import io.vertx.ext.apex.core.SessionStore;
 
 import java.util.List;
 
@@ -20,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.vertx.cailun.auth.SecurityConfiguration;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
 import com.gentics.vertx.cailun.perm.model.GenericPermission;
@@ -31,9 +23,6 @@ import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
 @Scope("singleton")
 @SpringVerticle
 public class AdminVerticle extends AbstractCailunRestVerticle {
-
-	@Autowired
-	SecurityConfiguration securityConfig;
 
 	@Autowired
 	PageRepository pageRepository;
@@ -47,6 +36,7 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 		super.start();
 
 		Handler<RoutingContext> handler = rc -> {
+			
 			Session sess = rc.session();
 			System.out.println(sess.getPrincipal());
 			System.out.println(sess);
@@ -62,7 +52,7 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 				}
 			}
 
-			securityConfig.authService().hasPermission(sess.getPrincipal(), new GenericPermission(pageToBeUsed, PermissionSet.MODIFY), rh -> {
+			getAuthService().hasPermission(sess.getPrincipal(), new GenericPermission(pageToBeUsed, PermissionSet.MODIFY), rh -> {
 				System.out.println("Has Perm: " + rh.result());
 				if (rh.result()) {
 					rc.response().end("Welcome to the protected resource!");
@@ -82,12 +72,7 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 
 		};
 
-		route().handler(BodyHandler.bodyHandler());
-		route().handler(CookieHandler.cookieHandler());
-		SessionStore store = LocalSessionStore.localSessionStore(vertx);
-		route().handler(SessionHandler.sessionHandler(store));
-		AuthHandler authHandler = BasicAuthHandler.basicAuthHandler(securityConfig.authService(), BasicAuthHandler.DEFAULT_REALM);
-		route().handler(authHandler);
+
 
 		// addVerticleHandler();
 		// addServiceHandler();

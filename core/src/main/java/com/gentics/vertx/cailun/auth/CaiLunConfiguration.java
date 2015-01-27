@@ -7,18 +7,25 @@ import io.vertx.core.json.JsonObject;
 import javax.annotation.PostConstruct;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-@Configuration
-public class SecurityConfiguration {
+import com.gentics.vertx.cailun.rest.RouterStorage;
 
-	private static final Logger log = LoggerFactory.getLogger(SecurityConfiguration.class);
+@Configuration
+public class CaiLunConfiguration {
+
+	private static final Logger log = LoggerFactory.getLogger(CaiLunConfiguration.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
+	
+	@Autowired
+	Neo4jSpringConfiguration rootConfig;
 
 	@PostConstruct
 	private void setup() {
@@ -28,7 +35,7 @@ public class SecurityConfiguration {
 	@Bean
 	public Vertx vertx() {
 		VertxOptions options = new VertxOptions();
-		//TODO remove debugging option
+		// TODO remove debugging option
 		options.setBlockedThreadCheckPeriod(Long.MAX_VALUE);
 		return Vertx.vertx(options);
 	}
@@ -43,27 +50,21 @@ public class SecurityConfiguration {
 
 	@Bean
 	public Neo4jAuthorizingRealm customSecurityRealm() {
-		return new Neo4jAuthorizingRealm();
+		Neo4jAuthorizingRealm realm = new Neo4jAuthorizingRealm();
+		realm.setCacheManager(new MemoryConstrainedCacheManager());
+		realm.setAuthenticationCachingEnabled(true);
+		realm.setCachingEnabled(true);
+		return realm;
 	}
-
-	//
-	// public SessionsSecurityManager securityManager() {
-	// DefaultSecurityManager securityManager = new DefaultSecurityManager();
-	// securityManager.setRealm(customSecurityRealm());
-	// return securityManager;
-	// }
-	//
-	// @Bean
-	// public MethodInvokingFactoryBean methodInvokingFactoryBean() {
-	// MethodInvokingFactoryBean methodInvokingFactoryBean = new MethodInvokingFactoryBean();
-	// methodInvokingFactoryBean.setStaticMethod("org.apache.shiro.SecurityUtils.setSecurityManager");
-	// methodInvokingFactoryBean.setArguments(new Object[] { securityManager() });
-	// return methodInvokingFactoryBean;
-	// }
 
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
+	}
+
+	@Bean
+	public RouterStorage routerStorage() {
+		return new RouterStorage(vertx(), authService());
 	}
 
 }

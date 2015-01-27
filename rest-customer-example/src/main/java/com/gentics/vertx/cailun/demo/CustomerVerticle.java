@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.vertx.cailun.auth.SecurityConfiguration;
+import com.gentics.vertx.cailun.auth.CaiLunConfiguration;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
 import com.gentics.vertx.cailun.perm.GroupRepository;
@@ -48,7 +48,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private SecurityConfiguration securityConfig;
+	private CaiLunConfiguration securityConfig;
 
 	public CustomerVerticle() {
 		super("page");
@@ -67,7 +67,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		john.setFirstname("John");
 		john.setLastname("Doe");
 		john.setEmailAddress("j.doe@gentics.com");
-		john.setPasswordHash(securityConfig.passwordEncoder().encode("enemenemuh"));
+		john.setPasswordHash(securityConfig.passwordEncoder().encode("test123"));
 
 		User mary = new User("mary2");
 		mary.setFirstname("Mary");

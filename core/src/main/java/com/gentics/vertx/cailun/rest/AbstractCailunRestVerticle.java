@@ -1,7 +1,6 @@
 package com.gentics.vertx.cailun.rest;
 
 import io.vertx.core.AbstractVerticle;
-
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -10,6 +9,10 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Router;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.gentics.vertx.cailun.auth.CaiLunAuthServiceImpl;
+import com.gentics.vertx.cailun.auth.CaiLunConfiguration;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -17,7 +20,11 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 
 	private static final Gson GSON = new GsonBuilder().create();
 
+	// TODO use a common source
 	public static final String APPLICATION_JSON = "application/json";
+
+	@Autowired
+	CaiLunConfiguration config;
 
 	private Router localRouter = null;
 	private String basePath = null;
@@ -33,12 +40,13 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 
 	@Override
 	public void start() throws Exception {
-		RouterStorage routerStorage = RouterStorage.getInstance(vertx);
+		RouterStorage routerStorage = config.routerStorage();
 		this.localRouter = routerStorage.getRouter("/" + basePath);
 
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8080));
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
+
 	}
 
 	@Override
@@ -73,8 +81,18 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 	}
 
 	protected <T> T fromJson(HttpServerRequest request, Class<T> classOf) {
-		return null;
+		// TODO determine source json
 		// return GSON.fromJson(request., classOfT)
+		return null;
+	}
+
+	/**
+	 * Returns the cailun auth service which can be used to authenticate resources.
+	 * 
+	 * @return
+	 */
+	protected CaiLunAuthServiceImpl getAuthService() {
+		return config.authService();
 	}
 
 }

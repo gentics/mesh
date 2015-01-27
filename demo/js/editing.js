@@ -21,7 +21,7 @@ function saveContent() {
   
   $.ajax({
       type        :   'POST',
-      url         :   "/proxy-php/page/save/" + window.pageId,
+      url         :   "/proxy-php/api/v1/page/save/" + window.pageId,
       data        :   JSON.stringify(data),
       contentType :   'application/json',
       success     :   function(response) {

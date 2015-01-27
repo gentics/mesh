@@ -11,6 +11,7 @@ import com.gentics.vertx.cailun.perm.model.GenericPermission;
 
 /**
  * Custom auth* service implementation that adds support for object based permission checks
+ * 
  * @author johannes2
  *
  */
@@ -26,9 +27,14 @@ public class CaiLunAuthServiceImpl extends AuthServiceImpl {
 
 	public void hasPermission(String principal, GenericPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
 		vertx.executeBlocking((Future<Boolean> fut) -> {
-			boolean hasRole = getAuthRealm().hasPermission(principal, permission);
-			fut.complete(hasRole);
+
+			fut.complete(hasPermission(principal, permission));
 		}, resultHandler);
+	}
+
+	public boolean hasPermission(String principal, GenericPermission permission) {
+		boolean hasPerm = getAuthRealm().hasPermission(principal, permission);
+		return hasPerm;
 	}
 
 	public EnhancedShiroAuthRealmImpl getAuthRealm() {

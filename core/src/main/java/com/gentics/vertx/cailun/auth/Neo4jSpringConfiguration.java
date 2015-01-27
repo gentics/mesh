@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.starter;
+package com.gentics.vertx.cailun.auth;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -20,6 +20,8 @@ import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.gentics.vertx.cailun.starter.BaseRunner;
+
 @Configuration
 @EnableNeo4jRepositories("com.gentics.vertx.cailun")
 @EnableTransactionManagement
@@ -39,7 +41,7 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 
 	private void deployNeo4Vertx() throws IOException, InterruptedException {
 		log.info("Deploying neo4vertx...");
-		InputStream is = Runner.class.getResourceAsStream("neo4vertx_gui.json");
+		InputStream is = BaseRunner.class.getResourceAsStream("neo4vertx_gui.json");
 		String jsonTxt = IOUtils.toString(is);
 		JsonObject config = new JsonObject(jsonTxt);
 		final CountDownLatch latch = new CountDownLatch(1);

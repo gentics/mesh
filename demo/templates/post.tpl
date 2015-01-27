@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Clean Blog - Sample Post</title>
+    <title>%cailun.page.title%</title>
 
     <link rel="shortcut icon" href="/img/g_logo_small.png" type="image/png" />
 
@@ -34,11 +34,6 @@
 
 </head>
 
-<?php
-$content = $GLOBALS['content'];
-//var_dump($data);
-$date = $GLOBALS['date'];
-?>
 <body>
 
     <!-- Navigation -->
@@ -84,54 +79,25 @@ $date = $GLOBALS['date'];
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
-                        <h1><?php echo $title ?></h1>
-                        <h2 class="subheading"><?php echo $teaser ?></h2>
-                        <span class="meta">Posted by <a href="#"><?php echo $author ?></a> on <?php echo $date ?></span>
+                        <h1>%cailun.page.title%</h1>
+                        <h2 class="subheading">%cailun.page.teaser%</h2>
+                        <span class="meta">Posted by <a href="#">%cailun.page.author%</a> on %cailun.page.date%</span>
                     </div>
                 </div>
             </div>
         </div>
     </header>
-
-<?php
-
-function printNav($element, $level = 0) {
-    $nElements = count($element->children);
-    $isPage = $element->type == "PAGE";
-    if ($level==0) {
-        echo "<ul>\n";
-    }
-    $link = '<a href="' . $element->path . '" target="' . $element->target . '">'.$element->name . '</a>';
-    echo "<li>" . $link . "</li>\n";
-    if ($nElements != 0) {
-        echo "<ul>\n";
-        $nextLevel = $level + 1;
-        foreach ($element->children as $key => $value) {
-            printNav($value, $nextLevel);
-        }
-        echo "</ul>\n";
-        echo "</li>\n";
-    }
-    if ($level ==0) {
-        echo "</ul>\n";
-    }
-}
-
-$json =  file_get_contents("http://localhost:8080/api/v1/page/nav"); 
-$navData= json_decode($json);
-//echo $json;
-?>
     <!-- Post Content -->
     <article>
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="main_content">
-                        <?php echo $content ?>
+                        %cailun.page.content%
                     </div>
                     <div class="tagcloud"></div>
                     <div class="navigation">
-                        <?php printNav($navData->root); ?>
+                        %cailun.navigation%
                     </div>
                 </div>
             </div>
@@ -188,7 +154,7 @@ $navData= json_decode($json);
     <!-- Custom Theme JavaScript -->
     <script src="/js/clean-blog.min.js"></script>
     <script>
-        window.pageId = <?php echo $id . ";" ?>
+        window.pageId = %cailun.page.id%;
     </script>
     <script src="/js/d3.js"></script>
     <script src="/js/d3.layout.cloud.js"></script>
@@ -196,7 +162,7 @@ $navData= json_decode($json);
         var words = [];
         $.ajax({
           type        :   'GET',
-          url         :   "/proxy-php/page/tagcloud",
+          url         :   "/proxy-php/api/v1/page/tagcloud",
           contentType :   'application/json',
           success     :   function(response) {
               console.dir(response);

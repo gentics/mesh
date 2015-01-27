@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class DeploymentUtils {
 
-	private static final transient Logger log = LoggerFactory.getLogger(Runner.class);
+	private static final transient Logger log = LoggerFactory.getLogger(BaseRunner.class);
 
 	public static String deployAndWait(Vertx vertx, final Class<? extends AbstractVerticle> clazz) throws InterruptedException {
 		return deployAndWait(vertx, clazz.getCanonicalName());
@@ -32,8 +32,10 @@ public final class DeploymentUtils {
 		vertx.deployVerticle(prefix + verticleClass, handler -> {
 			if (handler.succeeded()) {
 				deploymentId.set(handler.result());
+				log.info("Deployed verticle {" + verticleClass + "} => " + deploymentId);
+			} else {
+				log.info("Error:", handler.cause());
 			}
-			log.info("Deployed verticle {" + verticleClass + "} => " + deploymentId);
 			latch.countDown();
 		});
 		latch.await(10, TimeUnit.SECONDS);

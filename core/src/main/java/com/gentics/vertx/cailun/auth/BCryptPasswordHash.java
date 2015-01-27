@@ -23,10 +23,10 @@ public class BCryptPasswordHash {
 
 	private String accountPasswordHash;
 	
-	private SecurityConfiguration securityConfiguration;
+	private CaiLunConfiguration securityConfiguration;
 
 	//TODO inject securityConfiguration
-	public BCryptPasswordHash(String passwordHash, SecurityConfiguration securityConfig) {
+	public BCryptPasswordHash(String passwordHash, CaiLunConfiguration securityConfig) {
 		this.accountPasswordHash = passwordHash;
 		this.securityConfiguration = securityConfig;
 	}

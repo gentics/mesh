@@ -34,9 +34,10 @@
 	</developers>
 
 	<modules>
-		<module>rest-customer-example</module>
-		<module>rest-core</module>
 		<module>core</module>
+		<module>rest-core</module>
+		<module>rest-navigation</module>
+		<module>rest-customer-example</module>
 		<module>starter</module>
 		<module>doc</module>
 	</modules>

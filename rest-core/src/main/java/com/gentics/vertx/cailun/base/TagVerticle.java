@@ -70,10 +70,6 @@ public class TagVerticle extends AbstractCailunRestVerticle {
 	private void addGetPathHandler() {
 		// @Path("/get/{path:.*}")
 		
-		getRouter().routeWithRegex("\\/atom").method(GET).handler(rc -> {
-			System.out.println("This is custom");
-			rc.response().end("ATOM");
-		});
 		getRouter().routeWithRegex("\\/get\\/(.*)").method(GET).handler(rc -> {
 			try {
 				String path = rc.request().params().get("param0");
@@ -86,7 +82,9 @@ public class TagVerticle extends AbstractCailunRestVerticle {
 					String json = mapper.writeValueAsString(new GenericResponse<Page>(page));
 					rc.response().end(json);
 				} else {
-					throw new Exception("Page for path {" + path + "} could not be found.");
+					rc.fail(new Exception("Page for path {" + path + "} could not be found."));
+					// TODO add json response - Make error responses generic
+					rc.response().end("Element not found");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
