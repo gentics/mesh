@@ -37,6 +37,7 @@
 		<module>core</module>
 		<module>rest-core</module>
 		<module>rest-navigation</module>
+		<module>rest-tagcloud</module>
 		<module>rest-customer-example</module>
 		<module>starter</module>
 		<module>doc</module>

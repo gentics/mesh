@@ -25,6 +25,19 @@
 			<version>10.0.1</version>
 		</dependency>
 
+		<!-- Additional vertx dependencies that are not included in the gtx vertx 
+			parent artifact -->
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-rx-java</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-lang-js</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+
 		<!-- Vertx / Spring -->
 		<dependency>
 			<groupId>org.jacpfx.vertx.spring</groupId>

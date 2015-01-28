@@ -33,6 +33,11 @@
 			<artifactId>cailun-rest-navigation</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.vertx</groupId>
+			<artifactId>cailun-rest-tagcloud</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

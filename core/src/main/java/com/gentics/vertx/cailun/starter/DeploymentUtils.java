@@ -26,8 +26,12 @@ public final class DeploymentUtils {
 	}
 
 	public static String deployAndWait(Vertx vertx, String verticleClass) throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
 		String prefix = SpringVerticleFactory.PREFIX + ":";
+		return deployAndWait(vertx, prefix, verticleClass);
+	}
+
+	public static String deployAndWait(Vertx vertx, String prefix, String verticleClass) throws InterruptedException {
+		final CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> deploymentId = new AtomicReference<String>();
 		vertx.deployVerticle(prefix + verticleClass, handler -> {
 			if (handler.succeeded()) {

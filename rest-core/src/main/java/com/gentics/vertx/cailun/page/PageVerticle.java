@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +21,9 @@ import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
 import com.gentics.vertx.cailun.rest.response.GenericResponse;
 import com.gentics.vertx.cailun.tag.TagRepository;
 import com.gentics.vertx.cailun.tag.model.Tag;
-import com.gentics.vertx.cailun.tagcloud.model.TagCloud;
-import com.gentics.vertx.cailun.tagcloud.model.TagCloudEntry;
-import com.gentics.vertx.cailun.tagcloud.model.TagCloudResult;
 
 /**
- * Simple page resource to load and render pages
+ * Simple page resource to load pages
  */
 @Component
 @Scope("singleton")
@@ -52,7 +48,6 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 	@Override
 	public void start() throws Exception {
 		super.start();
-		addTagCloudHandler();
 		addSaveHandler();
 		addPageLoadHandler();
 		addGetPagesHandler();
@@ -115,6 +110,9 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 
 	}
 
+	/**
+	 * Add the page load handler that allows loading pages by id.
+	 */
 	private void addPageLoadHandler() {
 		route("/byId/:id").method(GET).handler(rc -> {
 			String id = rc.request().params().get("id");
@@ -129,25 +127,6 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 
 	}
 
-	private void addTagCloudHandler() {
-		route("/tagcloud").method(GET).handler(rc -> {
-			TagCloud cloud = new TagCloud();
-			// TODO transaction handling should be moved to abstract rest resource
-				try (Transaction tx = graphDb.beginTx()) {
-					List<TagCloudResult> res = pageRepository.getTagCloudInfo();
-					for (TagCloudResult current : res) {
-						TagCloudEntry entry = new TagCloudEntry();
-						entry.setName(current.getTag().getName());
-						// TODO determine link
-						entry.setLink("TBD");
-						entry.setCount(current.getCounts());
-						cloud.getEntries().add(entry);
-					}
-				}
-				rc.response().headers().add("Content-Type", APPLICATION_JSON);
-				rc.response().end(toJson(cloud));
-			});
-	}
 
 	private void addSaveHandler() {
 
