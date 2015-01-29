@@ -130,6 +130,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven.javadoc.plugin.version}</version>
 					<executions>
 						<execution>
 							<id>attach-javadocs</id>
@@ -179,4 +180,19 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>lan.releases.staging.cailun</id>
+			<name>Gentics Releases Repository</name>
+			<url>http://artifactory.office/repository/lan.releases.staging.cailun</url>
+		</repository>
+		<snapshotRepository>
+			<id>lan.snapshots</id>
+			<name>Gentics Snapshots Repository</name>
+			<url>http://artifactory.office/repository/lan.snapshots.cailun</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+
 </project>

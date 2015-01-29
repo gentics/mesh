@@ -42,12 +42,12 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 	private void deployNeo4Vertx() throws IOException, InterruptedException {
 		log.info("Deploying neo4vertx...");
 		InputStream is = BaseRunner.class.getResourceAsStream("neo4vertx_gui.json");
-		String jsonTxt = IOUtils.toString(is);
-		JsonObject config = new JsonObject(jsonTxt);
+		JsonObject config = new JsonObject(IOUtils.toString(is));
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		vertx().deployVerticle(Neo4jGraphVerticle.class.getCanonicalName(), new DeploymentOptions().setConfig(config), handler -> {
 			log.info("Deployed neo4vertx => " + handler.result());
+			//TODO handle exceptions
 			latch.countDown();
 		});
 		latch.await();

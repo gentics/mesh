@@ -23,6 +23,11 @@ public abstract class BaseRunner {
 		run();
 	}
 
+	/**
+	 * Main entry point for cailun. This method will initialize the spring context and deploy mandatory verticles and extensions.
+	 * 
+	 * @throws Exception
+	 */
 	private void run() throws Exception {
 		printProductInformation();
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
@@ -32,7 +37,6 @@ public abstract class BaseRunner {
 			SpringVerticleFactory.setParentContext(ctx);
 			ctx.start();
 			deployCustom(vertx);
-
 			ctx.registerShutdownHook();
 			System.in.read();
 		}
@@ -42,7 +46,6 @@ public abstract class BaseRunner {
 	protected abstract void deployCustom(Vertx vertx) throws InterruptedException;
 
 	private void printProductInformation() {
-		// TODO
 		log.info("#################################################");
 		log.info(infoLine("CaiLun Version " + getVersion()));
 		log.info(infoLine("Gentics Software GmbH"));
@@ -53,6 +56,7 @@ public abstract class BaseRunner {
 	}
 
 	private String getVertxVersion() {
+		// TODO extract from pom.xml metadata?
 		return "3.0.0-milestone2";
 	}
 
@@ -61,7 +65,7 @@ public abstract class BaseRunner {
 	}
 
 	private static String getVersion() {
-		// TODO extract from metadata?
+		// TODO extract from pom.xml metadata?
 		return "0.0.1";
 	}
 
