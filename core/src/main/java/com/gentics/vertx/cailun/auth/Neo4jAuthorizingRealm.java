@@ -85,14 +85,10 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken upat = (UsernamePasswordToken) token;
 		User user = userRepository.findByUsername(upat.getUsername());
-		// if (user != null && securityConfig.passwordEncoder().matches(String.valueOf(upat.getPassword()), user.getPasswordHash())) {
-		//if (user != null && securityConfig.passwordEncoder().matches(String.valueOf(upat.getPassword()), user.getPasswordHash())) {
-			//new BCryptPasswordHash(user.getPasswordHash(), securityConfig)
-			//return new SimpleAuthenticationInfo(user, user.getPrincipalId(), getName());
 		if (user != null) {
 				return new SimpleAuthenticationInfo(user, new BCryptPasswordHash(user.getPasswordHash(), securityConfig), getName());
 		} else {
-			// TODO don't let the user know that we know that he did not exist
+			// TODO Don't let the user know that we know that he did not exist
 			throw new IncorrectCredentialsException("Invalid credentials!");
 		}
 	}

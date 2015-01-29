@@ -2,6 +2,9 @@ package com.gentics.vertx.cailun.nav.model;
 
 import java.util.concurrent.RecursiveTask;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
 import com.gentics.vertx.cailun.tag.model.Tag;
@@ -14,6 +17,8 @@ import com.gentics.vertx.cailun.tag.model.Tag;
  *
  */
 public class NavigationTask extends RecursiveTask<Navigation> {
+
+	private static final Logger log = LoggerFactory.getLogger(NavigationTask.class);
 
 	private static final long serialVersionUID = 8773519857036585642L;
 	private Tag tag;
@@ -38,7 +43,9 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 					NavigationElement pageNavElement = new NavigationElement();
 					pageNavElement.setName(page.getFilename());
 					pageNavElement.setType(NavigationElementType.PAGE);
-					pageNavElement.setPath(pageRepository.getPath(page.getId()));
+					String path = pageRepository.getPath(page.getId());
+					log.info("Loaded path { " + path + "} for page {" + page.getId() + "}");
+					pageNavElement.setPath(path);
 					element.getChildren().add(pageNavElement);
 				}
 			}
