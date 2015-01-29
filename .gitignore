@@ -5,3 +5,4 @@ target
 .bin
 hs_err_*.log
 
+dependency-reduced-pom.xml
