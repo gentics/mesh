@@ -5,9 +5,9 @@ import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Router;
+import io.vertx.ext.apex.core.RoutingContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,10 +80,9 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 		return GSON.toJson(obj);
 	}
 
-	protected <T> T fromJson(HttpServerRequest request, Class<T> classOf) {
-		// TODO determine source json
-		// return GSON.fromJson(request., classOfT)
-		return null;
+	@SuppressWarnings("unchecked")
+	protected <T> T fromJson(RoutingContext rc, Class<?> classOfT) {
+		return (T) GSON.fromJson(rc.getBodyAsString(), classOfT);
 	}
 
 	/**

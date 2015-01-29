@@ -51,7 +51,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	private String toJson(Navigation navigation) throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(navigation);
-
 	}
 
 	/**
@@ -62,39 +61,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	protected CaiLunAuthServiceImpl getAuthService() {
 		return config.authService();
 	}
-
-//	/**
-//	 * Recursively traverses the graph (depth-first) in order to populate the navigation elements
-//	 * 
-//	 * @param tag
-//	 * @param nav
-//	 */
-//	private void traverse(Tag tag, NavigationElement nav) {
-//		// for (GenericNode tagging : tag.getContents()) {
-//		tag.getContents().parallelStream().forEachOrdered(tagging -> {
-//			if (tagging.getClass().isAssignableFrom(Page.class)) {
-//				Page page = (Page) tagging;
-//				if (canView(tag)) {
-//					NavigationElement pageNavElement = new NavigationElement();
-//					pageNavElement.setName(page.getFilename());
-//					pageNavElement.setType(NavigationElementType.PAGE);
-//					pageNavElement.setPath(pageRepository.getPath(page.getId()));
-//					nav.getChildren().add(pageNavElement);
-//				}
-//			}
-//		});
-//
-//		// for (Tag currentTag : tag.getChildTags()) {
-//		tag.getChildTags().parallelStream().forEachOrdered(currentTag -> {
-//			if (canView(currentTag)) {
-//				NavigationElement navElement = new NavigationElement();
-//				navElement.setType(NavigationElementType.TAG);
-//				navElement.setName(currentTag.getName());
-//				nav.getChildren().add(navElement);
-//				traverse(currentTag, navElement);
-//			}
-//		});
-//	}
 
 	/**
 	 * Returns a page navigation.
@@ -122,16 +88,19 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		pool.invoke(task);
 		pool.shutdown();
 		return nav;
-
 	}
 
 	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
 		getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, "view"), resultHandler);
 	}
 
+	/**
+	 * Check whether the given object can be viewed by the user.
+	 * 
+	 * @param object
+	 * @return
+	 */
 	public boolean canView(GenericNode object) {
-		return true;
-		// return getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, "view"));
-
+		return getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, "view"));
 	}
 }

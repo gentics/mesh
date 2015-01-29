@@ -37,6 +37,12 @@
 			<artifactId>vertx-lang-js</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-codegen</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+
 
 		<!-- Vertx / Spring -->
 		<dependency>

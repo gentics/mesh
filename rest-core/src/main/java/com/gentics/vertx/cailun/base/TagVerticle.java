@@ -1,7 +1,6 @@
 package com.gentics.vertx.cailun.base;
 
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.PUT;
+import static io.vertx.core.http.HttpMethod.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
@@ -35,12 +34,17 @@ import com.gentics.vertx.cailun.tag.TagRepository;
 import com.gentics.vertx.cailun.tag.model.Tag;
 import com.google.common.collect.Lists;
 
-
+/**
+ * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
+ * 
+ * @author johannes2
+ *
+ */
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class TagVerticle extends AbstractCailunRestVerticle {
-	
+
 	private static Logger log = LoggerFactory.getLogger(TagVerticle.class);
 
 	@Autowired
@@ -68,8 +72,6 @@ public class TagVerticle extends AbstractCailunRestVerticle {
 	}
 
 	private void addGetPathHandler() {
-		// @Path("/get/{path:.*}")
-		
 		getRouter().routeWithRegex("\\/get\\/(.*)").method(GET).handler(rc -> {
 			try {
 				String path = rc.request().params().get("param0");
@@ -95,12 +97,12 @@ public class TagVerticle extends AbstractCailunRestVerticle {
 	}
 
 	private void addAddTagStructureHandler() {
-		// @Path("/add/{tagPath:.*}")
 		route("/add/:tagPath").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
 
-			PageCreateRequest request = fromJson(rc.request(), PageCreateRequest.class);
-			String tagPath = rc.request().params().get("tagPath");
-			// final @PathParam("tagPath") String tagPath
+			PageCreateRequest request = null;
+			// fromJson(rc, PageCreateRequest.class);
+				String tagPath = rc.request().params().get("tagPath");
+				// final @PathParam("tagPath") String tagPath
 				ExecutionEngine engine = new ExecutionEngine(graphDb);
 
 				String query = transformPathToCypher(tagPath);

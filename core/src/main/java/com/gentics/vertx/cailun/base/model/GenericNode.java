@@ -44,6 +44,11 @@ public class GenericNode extends AbstractPersistable {
 		this.permissions = permissions;
 	}
 
+	/**
+	 * Adds a new permission set to this node.
+	 * @param role
+	 * @return the created permissionset
+	 */
 	public PermissionSet addPermission(Role role) {
 		PermissionSet perm = new PermissionSet(role, this);
 		this.permissions.add(perm);

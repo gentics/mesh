@@ -1,17 +1,18 @@
 package com.gentics.vertx.cailun.demo;
 
-import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.util.Arrays;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.vertx.cailun.auth.CaiLunConfiguration;
+import com.gentics.vertx.cailun.auth.Neo4jSpringConfiguration;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
 import com.gentics.vertx.cailun.perm.GroupRepository;
@@ -25,6 +26,12 @@ import com.gentics.vertx.cailun.rest.AbstractCailunRestVerticle;
 import com.gentics.vertx.cailun.tag.TagRepository;
 import com.gentics.vertx.cailun.tag.model.Tag;
 
+/**
+ * Dummy verticle that is used to setup basic demo data
+ * 
+ * @author johannes2
+ *
+ */
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -43,12 +50,15 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 
 	@Autowired
 	private GroupRepository groupRepository;
-
+	
 	@Autowired
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private CaiLunConfiguration securityConfig;
+	private CaiLunConfiguration cailunConfig;
+	
+	@Autowired 
+	private Neo4jSpringConfiguration neo4jSpringConfiguration;
 
 	public CustomerVerticle() {
 		super("page");
@@ -57,23 +67,19 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	@Override
 	public void start() throws Exception {
 		super.start();
-		route("/custom").method(GET).handler(rc -> {
-			System.out.println("This is custom");
-			rc.response().end("END");
-		});
 
 		// Users
 		User john = new User("joe1");
 		john.setFirstname("John");
 		john.setLastname("Doe");
 		john.setEmailAddress("j.doe@gentics.com");
-		john.setPasswordHash(securityConfig.passwordEncoder().encode("test123"));
+		john.setPasswordHash(cailunConfig.passwordEncoder().encode("test123"));
 
 		User mary = new User("mary2");
 		mary.setFirstname("Mary");
 		mary.setLastname("Doe");
 		mary.setEmailAddress("m.doe@gentics.com");
-		mary.setPasswordHash(securityConfig.passwordEncoder().encode("lalala"));
+		mary.setPasswordHash(cailunConfig.passwordEncoder().encode("lalala"));
 		userRepository.save(Arrays.asList(john, mary));
 
 		// Roles
@@ -86,6 +92,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		Group rootGroup = new Group("superusers");
 		rootGroup.getMembers().add(john);
 		rootGroup.getRoles().add(adminRole);
+
 		groupRepository.save(rootGroup);
 		Group guests = new Group("guests");
 		guests.getParents().add(rootGroup);
@@ -153,12 +160,16 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		indexPage.linkTo(page);
 		pageRepository.save(indexPage);
 
-		// Permissions
-		PermissionSet permSet = indexPage.addPermission(adminRole);
-		permSet.setCanCreate(true);
-		permSet.setCanRead(true);
-		permSet.setCanDelete(true);
-		pageRepository.save(indexPage);
+		try (Transaction tx = neo4jSpringConfiguration.getGraphDatabaseService().beginTx()) {
+			// Add admin permissions to all pages
+			for (Page currentPage : pageRepository.findAll()) {
+				PermissionSet permSet = currentPage.addPermission(adminRole);
+				permSet.setCanCreate(true);
+				permSet.setCanRead(true);
+				permSet.setCanDelete(true);
+				pageRepository.save(currentPage);
+			}
+		}
 
 	}
 

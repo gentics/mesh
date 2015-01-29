@@ -12,6 +12,9 @@ class CaiLunPHPDemo {
         $this->password = $password;
     }
 
+    /**
+    * Return the baseurl which includes the basic authentication information.
+    */
     private function getBaseURL() {
         return "http://" . $this->user . ":" . $this->password . "@localhost:8080/api/v1";
     }

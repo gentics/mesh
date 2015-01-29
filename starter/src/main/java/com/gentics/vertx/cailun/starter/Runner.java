@@ -28,6 +28,7 @@ public class Runner extends BaseRunner {
 
 	@Override
 	protected void deployCustom(Vertx vertx) throws InterruptedException {
+
 		deployAndWait(vertx, CustomerVerticle.class);
 		deployAndWait(vertx, AdminVerticle.class);
 		deployAndWait(vertx, AuthenticationVerticle.class);
@@ -41,7 +42,7 @@ public class Runner extends BaseRunner {
 		deployAndWait(vertx, TagCloudVerticle.class);
 		deployAndWait(vertx, PageVerticle.class);
 		deployAndWait(vertx, TagVerticle.class);
-		deployAndWait(vertx, "", "TestJSVerticle.js");
+		// deployAndWait(vertx, "", "TestJSVerticle.js");
 
 	}
 
