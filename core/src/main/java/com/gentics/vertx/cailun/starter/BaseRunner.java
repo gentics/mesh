@@ -38,7 +38,13 @@ public abstract class BaseRunner {
 			ctx.start();
 			deployCustom(vertx);
 			ctx.registerShutdownHook();
-			System.in.read();
+			while(true) {
+				try {
+				Thread.sleep(1000);
+				} catch (Exception e) {
+				e.printStackTrace();
+				}
+			}
 		}
 
 	}
