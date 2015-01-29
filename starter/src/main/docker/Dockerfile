@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
 
 #APACHE2 / PHP
 RUN a2enmod rewrite
+RUN a2enmod headers
 RUN rm /etc/apache2/sites-enabled/*
 RUN rm /var/www/index.html
 EXPOSE 80
