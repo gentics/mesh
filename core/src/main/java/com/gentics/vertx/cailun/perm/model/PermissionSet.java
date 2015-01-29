@@ -20,9 +20,6 @@ import com.gentics.vertx.cailun.base.model.GenericNode;
  *
  */
 @RelationshipEntity
-// @Data
-// @EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
-// @NoArgsConstructor
 public class PermissionSet extends AbstractPersistable {
 
 	private static final long serialVersionUID = 1564260534291371364L;
@@ -31,6 +28,8 @@ public class PermissionSet extends AbstractPersistable {
 	public static final String DELETE = "delete";
 	public static final String CREATE = "create";
 	public static final String MODIFY = "modify";
+
+	public static final String RELATION_KEYWORD = "HAS_PERMISSIONSET";
 
 	@Fetch
 	@StartNode

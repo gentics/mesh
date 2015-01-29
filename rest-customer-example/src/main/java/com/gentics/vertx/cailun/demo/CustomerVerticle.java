@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.vertx.cailun.auth.CaiLunConfiguration;
 import com.gentics.vertx.cailun.auth.Neo4jSpringConfiguration;
+import com.gentics.vertx.cailun.base.GenericNodeRepository;
+import com.gentics.vertx.cailun.base.model.GenericNode;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
 import com.gentics.vertx.cailun.perm.GroupRepository;
@@ -50,14 +52,17 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 
 	@Autowired
 	private GroupRepository groupRepository;
-	
+
 	@Autowired
 	private RoleRepository roleRepository;
 
 	@Autowired
 	private CaiLunConfiguration cailunConfig;
-	
-	@Autowired 
+
+	@Autowired
+	private GenericNodeRepository genericRepository;
+
+	@Autowired
 	private Neo4jSpringConfiguration neo4jSpringConfiguration;
 
 	public CustomerVerticle() {
@@ -162,13 +167,15 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 
 		try (Transaction tx = neo4jSpringConfiguration.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all pages
-			for (Page currentPage : pageRepository.findAll()) {
-				PermissionSet permSet = currentPage.addPermission(adminRole);
+			for (GenericNode currentNode : genericRepository.findAll()) {
+				log.info("Adding admin permission for node {" + currentNode.getId() + "}");
+				PermissionSet permSet = currentNode.addPermission(adminRole);
 				permSet.setCanCreate(true);
 				permSet.setCanRead(true);
 				permSet.setCanDelete(true);
-				pageRepository.save(currentPage);
+				genericRepository.save(currentNode);
 			}
+			tx.success();
 		}
 
 	}

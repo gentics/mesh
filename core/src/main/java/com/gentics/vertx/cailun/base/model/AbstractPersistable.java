@@ -6,6 +6,12 @@ import org.springframework.data.neo4j.annotation.GraphId;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Abstract class for all node entities.
+ * 
+ * @author johannes2
+ *
+ */
 public abstract class AbstractPersistable implements Serializable {
 	private static final long serialVersionUID = -3244769429406745303L;
 

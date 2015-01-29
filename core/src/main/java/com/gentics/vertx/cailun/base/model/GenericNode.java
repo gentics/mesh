@@ -14,25 +14,27 @@ import com.gentics.vertx.cailun.perm.model.PermissionSet;
 import com.gentics.vertx.cailun.perm.model.Role;
 import com.gentics.vertx.cailun.tag.model.Tag;
 
+/**
+ * This class represents a basic cailun node. All models that make use of this model will automatically be able to be tagged and handled by the permission
+ * system.
+ * 
+ * @author johannes2
+ *
+ */
 @NodeEntity
 public class GenericNode extends AbstractPersistable {
 
 	private static final long serialVersionUID = -7525642021064006664L;
 
 	@Fetch
-	// @Indexed(unique = true)
 	private String name;
 
 	@Fetch
 	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
 
-	// @Fetch
-	// @RelatedToVia(type = "TAGGED", direction = Direction.INCOMING, elementClass = Tagged.class)
-	// private Collection<Tagged> parentTags = new HashSet<>();
-
 	@Fetch
-	@RelatedToVia(type = "HAS_PERMISSIONSET", direction = Direction.INCOMING, elementClass = PermissionSet.class)
+	@RelatedToVia(type = PermissionSet.RELATION_KEYWORD, direction = Direction.INCOMING, elementClass = PermissionSet.class)
 	private Set<PermissionSet> permissions = new HashSet<>();
 
 	@JsonIgnore
@@ -46,6 +48,7 @@ public class GenericNode extends AbstractPersistable {
 
 	/**
 	 * Adds a new permission set to this node.
+	 * 
 	 * @param role
 	 * @return the created permissionset
 	 */

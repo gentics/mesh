@@ -19,6 +19,7 @@ import com.gentics.vertx.cailun.auth.CaiLunConfiguration;
 import com.gentics.vertx.cailun.base.model.GenericNode;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.perm.model.GenericPermission;
+import com.gentics.vertx.cailun.perm.model.PermissionSet;
 import com.gentics.vertx.cailun.tag.TagRepository;
 import com.gentics.vertx.cailun.tag.model.Tag;
 
@@ -91,7 +92,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	}
 
 	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
-		getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, "view"), resultHandler);
+		getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, PermissionSet.READ), resultHandler);
 	}
 
 	/**
@@ -101,6 +102,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return
 	 */
 	public boolean canView(GenericNode object) {
-		return getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, "view"));
+		return getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, PermissionSet.READ));
 	}
 }

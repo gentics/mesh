@@ -48,8 +48,12 @@ public abstract class BaseRunner {
 		log.info(infoLine("Gentics Software GmbH"));
 		log.info("#-----------------------------------------------#");
 		log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
-		log.info(infoLine("Vert.x Version: 3.0.0-SNAPSHOT"));
+		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
 		log.info("#################################################");
+	}
+
+	private String getVertxVersion() {
+		return "3.0.0-milestone2";
 	}
 
 	private static String infoLine(String text) {

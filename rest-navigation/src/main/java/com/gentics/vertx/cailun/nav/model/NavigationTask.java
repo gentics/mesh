@@ -2,11 +2,17 @@ package com.gentics.vertx.cailun.nav.model;
 
 import java.util.concurrent.RecursiveTask;
 
-import com.gentics.vertx.cailun.base.model.GenericNode;
 import com.gentics.vertx.cailun.page.PageRepository;
 import com.gentics.vertx.cailun.page.model.Page;
 import com.gentics.vertx.cailun.tag.model.Tag;
 
+/**
+ * A navigation task is a recursivetask that is used to buildup a navigation object. This task is used within the {@link NavigationRequestHandler} to build the
+ * navigation using the forkjoin concurrency utility class.
+ * 
+ * @author johannes2
+ *
+ */
 public class NavigationTask extends RecursiveTask<Navigation> {
 
 	private static final long serialVersionUID = 8773519857036585642L;
