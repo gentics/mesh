@@ -1,7 +1,6 @@
-package com.gentics.cailun.cli;
+package com.gentics.cailun.git;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;

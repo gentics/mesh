@@ -20,18 +20,18 @@ import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.gentics.cailun.cli.BaseRunner;
+import com.gentics.cailun.cli.CaiLun;
 
 @Configuration
-@EnableNeo4jRepositories("com.gentics.vertx.cailun")
+@EnableNeo4jRepositories("com.gentics.cailun")
 @EnableTransactionManagement
-@ComponentScan(basePackages = { "com.gentics.vertx.cailun" })
+@ComponentScan(basePackages = { "com.gentics.cailun" })
 public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 
 	private final static Logger log = LoggerFactory.getLogger(Neo4jSpringConfiguration.class);
 
 	public Neo4jSpringConfiguration() {
-		setBasePackage("com.gentics.vertx.cailun");
+		setBasePackage("com.gentics.cailun");
 	}
 
 	@Bean
@@ -41,10 +41,14 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 
 	private void deployNeo4Vertx() throws IOException, InterruptedException {
 		log.info("Deploying neo4vertx...");
-		InputStream is = BaseRunner.class.getResourceAsStream("neo4vertx_gui.json");
-		JsonObject config = new JsonObject(IOUtils.toString(is));
+		JsonObject config = new JsonObject();
+		config.put("mode", "gui");
+		config.put("path", "/tmp/graphdb");
+		config.put("baseAddress", "graph");
+		config.put("webServerBindAddress" , "0.0.0.0");
 		final CountDownLatch latch = new CountDownLatch(1);
 
+		//TODO use deployment utils
 		vertx().deployVerticle(neo4VertxVerticle(), new DeploymentOptions().setConfig(config), handler -> {
 			log.info("Deployed neo4vertx => " + handler.result());
 			//TODO handle exceptions

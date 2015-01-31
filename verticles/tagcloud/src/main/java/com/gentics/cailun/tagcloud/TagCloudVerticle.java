@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.tagcloud;
+package com.gentics.cailun.tagcloud;
 
 import static io.vertx.core.http.HttpMethod.GET;
 
@@ -12,9 +12,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.vertx.cailun.tagcloud.model.TagCloud;
-import com.gentics.vertx.cailun.tagcloud.model.TagCloudEntry;
-import com.gentics.vertx.cailun.tagcloud.model.TagCloudResult;
+import com.gentics.cailun.tagcloud.model.TagCloud;
+import com.gentics.cailun.tagcloud.model.TagCloudEntry;
+import com.gentics.cailun.tagcloud.model.TagCloudResult;
 
 @Component
 @Scope("singleton")

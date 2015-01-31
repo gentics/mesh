@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.tagcloud.model;
+package com.gentics.cailun.tagcloud.model;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -11,11 +11,11 @@ import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.cli.BaseRunner;
+import com.gentics.cailun.cli.CaiLun;
 
 public final class DeploymentUtils {
 
-	private static final Logger log = LoggerFactory.getLogger(BaseRunner.class);
+	private static final Logger log = LoggerFactory.getLogger(CaiLun.class);
 	
 	public static String deployAndWait(Vertx vertx, final Class<? extends AbstractVerticle> clazz) throws InterruptedException {
 		return deployAndWait(vertx, clazz.getCanonicalName());

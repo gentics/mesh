@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import org.neo4j.graphdb.Direction;
@@ -13,7 +12,7 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-//@NoArgsConstructor
+@NoArgsConstructor
 @Data
 //@EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NodeEntity
@@ -36,10 +35,6 @@ public class Group extends AbstractPersistable {
 	@RelatedTo(type = "PARENT_OF", direction = Direction.OUTGOING, elementClass = Group.class)
 	private Set<Group> parents = new HashSet<>();
 
-	public Group() {
-		// TODO Auto-generated constructor stub
-	}
-	
 	public Group(String name) {
 		this.name = name;
 	}

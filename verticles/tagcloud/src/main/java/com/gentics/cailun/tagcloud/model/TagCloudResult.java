@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.tagcloud.model;
+package com.gentics.cailun.tagcloud.model;
 
 import org.springframework.data.neo4j.annotation.MapResult;
 import org.springframework.data.neo4j.annotation.ResultColumn;

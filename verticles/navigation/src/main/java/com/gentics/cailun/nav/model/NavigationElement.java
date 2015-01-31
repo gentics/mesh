@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.nav.model;
+package com.gentics.cailun.nav.model;
 
 import java.util.ArrayList;
 import java.util.List;

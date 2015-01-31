@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.nav.model;
+package com.gentics.cailun.nav.model;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

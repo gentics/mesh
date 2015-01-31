@@ -2,14 +2,18 @@ package com.gentics.cailun.demo;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
 
-import com.gentics.cailun.cli.BaseRunner;
+import java.io.File;
+
+import org.apache.commons.io.FileUtils;
+
+import com.gentics.cailun.cli.CaiLun;
 import com.gentics.cailun.core.verticle.AuthenticationVerticle;
 import com.gentics.cailun.core.verticle.PageVerticle;
 import com.gentics.cailun.core.verticle.TagVerticle;
 import com.gentics.cailun.demo.verticle.CustomerVerticle;
+import com.gentics.cailun.nav.NavigationVerticle;
+import com.gentics.cailun.tagcloud.TagCloudVerticle;
 import com.gentics.cailun.verticle.admin.AdminVerticle;
-import com.gentics.vertx.cailun.nav.NavigationVerticle;
-import com.gentics.vertx.cailun.tagcloud.TagCloudVerticle;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -20,7 +24,11 @@ import com.gentics.vertx.cailun.tagcloud.TagCloudVerticle;
 public class Runner {
 
 	public static void main(String[] args) throws Exception {
-		new BaseRunner(args, (vertx) -> {
+
+		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
+		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
+
+		new CaiLun(args, (vertx) -> {
 			deployAndWait(vertx, CustomerVerticle.class);
 			deployAndWait(vertx, AdminVerticle.class);
 			deployAndWait(vertx, AuthenticationVerticle.class);

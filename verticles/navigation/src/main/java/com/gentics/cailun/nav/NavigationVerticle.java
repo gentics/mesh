@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.nav;
+package com.gentics.cailun.nav;
 
 import static io.vertx.core.http.HttpMethod.GET;
 

@@ -19,11 +19,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import com.gentics.cailun.auth.Neo4jSpringConfiguration;
 
-public class BaseRunner {
+public class CaiLun {
 
-	private static final Logger log = LoggerFactory.getLogger(BaseRunner.class);
+	private static final Logger log = LoggerFactory.getLogger(CaiLun.class);
 
-	public BaseRunner(String[] args, CaiLunCustomLoader<Vertx> verticleLoader) throws Exception {
+	public CaiLun(String[] args, CaiLunCustomLoader<Vertx> verticleLoader) throws Exception {
 		run(args, verticleLoader);
 	}
 
@@ -39,8 +39,6 @@ public class BaseRunner {
 		handleArguments(args);
 
 		printProductInformation();
-		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
-		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
 			Vertx vertx = ctx.getBean(Vertx.class);
 			SpringVerticleFactory.setParentContext(ctx);

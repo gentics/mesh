@@ -15,9 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.auth.Neo4jSpringConfiguration;
-import com.gentics.cailun.cli.GitUtils;
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.cailun.core.repository.PageRepository;
 
 @Component
 @Scope("singleton")
@@ -25,9 +23,6 @@ import com.gentics.cailun.core.repository.PageRepository;
 public class AdminVerticle extends AbstractCailunRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
-
-	@Autowired
-	PageRepository pageRepository;
 
 	@Autowired
 	Neo4jSpringConfiguration neo4jConfig;
@@ -42,21 +37,10 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 
 		addBackupHandler();
 		addNeo4VertxRestartHandler();
-		addGitWebhookHandler();
 
 		// addVerticleHandler();
 		// addServiceHandler();
 
-	}
-
-	private void addGitWebhookHandler() {
-		route("/git/webhook").method(GET).handler(ctx -> {
-			try {
-				GitUtils.pull();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
 	}
 
 	private void addNeo4VertxRestartHandler() {

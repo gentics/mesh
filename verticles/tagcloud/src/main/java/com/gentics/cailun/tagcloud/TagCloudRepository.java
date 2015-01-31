@@ -1,4 +1,4 @@
-package com.gentics.vertx.cailun.tagcloud;
+package com.gentics.cailun.tagcloud;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
 import com.gentics.cailun.core.rest.model.Page;
-import com.gentics.vertx.cailun.tagcloud.model.TagCloudResult;
+import com.gentics.cailun.tagcloud.model.TagCloudResult;
 
 public interface TagCloudRepository extends GraphRepository<Page> {
 
