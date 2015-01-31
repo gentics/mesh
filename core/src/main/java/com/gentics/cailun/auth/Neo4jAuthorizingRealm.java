@@ -29,13 +29,14 @@ import com.gentics.cailun.core.rest.model.Group;
 import com.gentics.cailun.core.rest.model.PermissionSet;
 import com.gentics.cailun.core.rest.model.Role;
 import com.gentics.cailun.core.rest.model.User;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
 	private static final Logger log = LoggerFactory.getLogger(Neo4jAuthorizingRealm.class);
 
 	@Autowired
-	CaiLunConfiguration securityConfig;
+	CaiLunSpringConfiguration securityConfig;
 
 	@Autowired
 	UserRepository userRepository;

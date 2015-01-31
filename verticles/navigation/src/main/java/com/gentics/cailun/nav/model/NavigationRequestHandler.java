@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.auth.CaiLunConfiguration;
 import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.GenericNode;
 import com.gentics.cailun.core.rest.model.GenericPermission;
 import com.gentics.cailun.core.rest.model.PermissionSet;
 import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
 @Scope("singleton")
@@ -31,7 +31,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	private TagRepository tagRepository;
 
 	@Autowired
-	CaiLunConfiguration config;
+	CaiLunSpringConfiguration config;
 
 	@Autowired
 	private PageRepository pageRepository;

@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.auth.Neo4jSpringConfiguration;
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
+import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
 @Component
 @Scope("singleton")

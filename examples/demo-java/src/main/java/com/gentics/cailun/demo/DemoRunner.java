@@ -21,29 +21,33 @@ import com.gentics.cailun.verticle.admin.AdminVerticle;
  * @author johannes2
  *
  */
-public class Runner {
+public class DemoRunner {
 
 	public static void main(String[] args) throws Exception {
 
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
 		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
 
-		new CaiLun(args, (vertx) -> {
-			deployAndWait(vertx, CustomerVerticle.class);
-			deployAndWait(vertx, AdminVerticle.class);
-			deployAndWait(vertx, AuthenticationVerticle.class);
-			// DeploymentOptions options = new DeploymentOptions();
-			// vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-navigation:0.1.0-SNAPSHOT",options, dh -> {
-			// if (dh.failed()) {
-			// System.out.println(dh.cause());
-			// }
-			// });
-				deployAndWait(vertx, NavigationVerticle.class);
-				deployAndWait(vertx, TagCloudVerticle.class);
-				deployAndWait(vertx, PageVerticle.class);
-				deployAndWait(vertx, TagVerticle.class);
-				// deployAndWait(vertx, "", "TestJSVerticle.js");
-			});
+		CaiLun cailun = CaiLun.getInstance();
+
+//		cailun.setCustomLoader((vertx) -> {
+//			deployAndWait(vertx, CustomerVerticle.class);
+//			deployAndWait(vertx, AdminVerticle.class);
+//			deployAndWait(vertx, AuthenticationVerticle.class);
+//			// DeploymentOptions options = new DeploymentOptions();
+//			// vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-navigation:0.1.0-SNAPSHOT",options, dh -> {
+//			// if (dh.failed()) {
+//			// System.out.println(dh.cause());
+//			// }
+//			// });
+//			deployAndWait(vertx, NavigationVerticle.class);
+//			deployAndWait(vertx, TagCloudVerticle.class);
+//			deployAndWait(vertx, PageVerticle.class);
+//			deployAndWait(vertx, TagVerticle.class);
+//			// deployAndWait(vertx, "", "TestJSVerticle.js");
+//		});
+		cailun.run();
+
 	}
 
 }

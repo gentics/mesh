@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.auth.CaiLunConfiguration;
-import com.gentics.cailun.auth.Neo4jSpringConfiguration;
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
 import com.gentics.cailun.core.GenericNodeRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
@@ -27,6 +25,8 @@ import com.gentics.cailun.core.rest.model.PermissionSet;
 import com.gentics.cailun.core.rest.model.Role;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.User;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
 /**
  * Dummy verticle that is used to setup basic demo data
@@ -57,7 +57,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private CaiLunConfiguration cailunConfig;
+	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
 	private GenericNodeRepository genericRepository;

@@ -12,7 +12,7 @@ import io.vertx.ext.apex.core.RoutingContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.auth.CaiLunConfiguration;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -24,7 +24,7 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 	public static final String APPLICATION_JSON = "application/json";
 
 	@Autowired
-	CaiLunConfiguration config;
+	CaiLunSpringConfiguration config;
 
 	private Router localRouter = null;
 	private String basePath = null;

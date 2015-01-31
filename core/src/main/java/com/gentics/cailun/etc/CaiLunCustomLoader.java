@@ -1,4 +1,4 @@
-package com.gentics.cailun.cli;
+package com.gentics.cailun.etc;
 
 @FunctionalInterface
 public interface CaiLunCustomLoader<T> {

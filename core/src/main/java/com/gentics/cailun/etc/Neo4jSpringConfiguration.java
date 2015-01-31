@@ -1,4 +1,4 @@
-package com.gentics.cailun.auth;
+package com.gentics.cailun.etc;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -8,10 +8,8 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.io.IOUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,8 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import com.gentics.cailun.cli.CaiLun;
 
 @Configuration
 @EnableNeo4jRepositories("com.gentics.cailun")

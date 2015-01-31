@@ -5,6 +5,8 @@ import org.apache.shiro.authc.credential.SimpleCredentialsMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+
 /**
  * Wrapper for a bcrypted password hash. The wrapper is used within the {@link SimpleCredentialsMatcher} to validate the token password info.
  * 
@@ -17,10 +19,10 @@ public class BCryptPasswordHash {
 
 	private String accountPasswordHash;
 	
-	private CaiLunConfiguration securityConfiguration;
+	private CaiLunSpringConfiguration securityConfiguration;
 
 	//TODO inject securityConfiguration
-	public BCryptPasswordHash(String passwordHash, CaiLunConfiguration securityConfig) {
+	public BCryptPasswordHash(String passwordHash, CaiLunSpringConfiguration securityConfig) {
 		this.accountPasswordHash = passwordHash;
 		this.securityConfiguration = securityConfig;
 	}

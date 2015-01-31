@@ -1,4 +1,4 @@
-package com.gentics.cailun.auth;
+package com.gentics.cailun.etc;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -15,12 +15,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
+import com.gentics.cailun.auth.EnhancedShiroAuthRealmImpl;
+import com.gentics.cailun.auth.Neo4jAuthorizingRealm;
 import com.gentics.cailun.core.RouterStorage;
 
 @Configuration
-public class CaiLunConfiguration {
+public class CaiLunSpringConfiguration {
 
-	private static final Logger log = LoggerFactory.getLogger(CaiLunConfiguration.class);
+	private static final Logger log = LoggerFactory.getLogger(CaiLunSpringConfiguration.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 	
