@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.kernel.ha.HaSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,8 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 
 	private final static Logger log = LoggerFactory.getLogger(Neo4jSpringConfiguration.class);
 
+	private static CaiLunConfiguration configuration = null;
+
 	public Neo4jSpringConfiguration() {
 		setBasePackage("com.gentics.cailun");
 	}
@@ -38,18 +41,19 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 	private void deployNeo4Vertx() throws IOException, InterruptedException {
 		log.info("Deploying neo4vertx...");
 		JsonObject config = new JsonObject();
-		config.put("mode", "gui");
-		config.put("path", "/tmp/graphdb");
-		config.put("baseAddress", "graph");
-		config.put("webServerBindAddress" , "0.0.0.0");
+//		config.put("mode", configuration.getNeo4vertxMode());
+//		config.put("path", configuration.getStorageDirectory());
+//		config.put("baseAddress", configuration.getNeo4JBaseAddress());
+//		config.put("webServerBindAddress", configuration.getNeo4jWebServerBindAddress());
+//		config.put(HaSettings.slave_only.name(), configuration.get)
 		final CountDownLatch latch = new CountDownLatch(1);
 
-		//TODO use deployment utils
+		// TODO use deployment utils
 		vertx().deployVerticle(neo4VertxVerticle(), new DeploymentOptions().setConfig(config), handler -> {
 			log.info("Deployed neo4vertx => " + handler.result());
-			//TODO handle exceptions
-			latch.countDown();
-		});
+			// TODO handle exceptions
+				latch.countDown();
+			});
 		latch.await();
 	}
 
@@ -57,7 +61,7 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 	public Neo4jGraphVerticle neo4VertxVerticle() {
 		return new Neo4jGraphVerticle();
 	}
-	
+
 	@Bean
 	public GraphDatabaseService graphDatabaseService() {
 		try {
@@ -67,6 +71,10 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 			log.error("Could not get Neo4J Database from neo4vertx", e);
 		}
 		return null;
+	}
+
+	public static void setConfiguration(CaiLunConfiguration conf) {
+		configuration = conf;
 	}
 
 }

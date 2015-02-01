@@ -19,7 +19,6 @@ public class StaticContentVerticle extends AbstractVerticle {
 		Router router = Router.router(vertx);
 
 		StaticServer staticServer = StaticServer.staticServer();
-		// staticServer.setDirectoryListing(true);
 
 		router.route("/js").handler(staticServer);
 		router.route("/img").handler(staticServer);
@@ -43,7 +42,7 @@ public class StaticContentVerticle extends AbstractVerticle {
 			context.put("cailun.page.content", "My content");
 			context.next();
 		});
-		
+
 		router.route().handler(TemplateHandler.templateHandler(engine, "templates/post", "text/html"));
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8081));
 		server.requestHandler(router::accept);

@@ -58,6 +58,8 @@ public class CaiLun {
 			throw new CaiLunConfigurationException("Configuration is null or not valid.");
 		}
 		configuration = conf;
+		Neo4jSpringConfiguration.setConfiguration(conf);
+		
 		printProductInformation();
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
 			vertx = ctx.getBean(Vertx.class);

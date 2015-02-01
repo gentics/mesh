@@ -1,7 +1,0 @@
-{
-  "httpPort" : 8080,
-  "storageDirectory" : "/home/jotschi/workspaces/cailun/cailun/examples/demo-java/target/graphdb",
-  "clusterMode" : false,
-  "verticles" : {
-  }
-}

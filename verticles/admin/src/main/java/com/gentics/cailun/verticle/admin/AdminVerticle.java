@@ -2,7 +2,7 @@ package com.gentics.cailun.verticle.admin;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
-import io.vertx.ext.graph.neo4j.Configuration;
+import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 
 import java.io.File;
 
@@ -59,7 +59,7 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 		route("/neo4vertx/restart").method(GET).handler(ctx -> {
 			try {
 				neo4jConfig.neo4VertxVerticle().stop();
-				neo4jConfig.neo4VertxVerticle().config().put(Configuration.PATH_KEY, "/tmp/backup");
+				neo4jConfig.neo4VertxVerticle().config().put(Neo4VertxConfiguration.PATH_KEY, "/tmp/backup");
 				neo4jConfig.neo4VertxVerticle().start();
 			} catch (Exception e) {
 				e.printStackTrace();
