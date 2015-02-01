@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.gentics.cailun.etc.CaiLunConfiguration;
+import com.gentics.cailun.etc.CaiLunConfigurationException;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.ConfigurationLoader;
 import com.gentics.cailun.etc.Neo4jSpringConfiguration;
@@ -48,12 +49,15 @@ public class CaiLun {
 	/**
 	 * Main entry point for cailun. This method will initialize the spring context and deploy mandatory verticles and extensions.
 	 * 
-	 * @param verticleLoader
-	 * 
+	 * @param conf
+	 *            The CailunConfiguration that should be used.
 	 * @throws Exception
 	 */
-	public void run() throws Exception {
-		configuration = ConfigurationLoader.loadConfiguration();
+	public void run(CaiLunConfiguration conf) throws Exception {
+		if (conf == null) {
+			throw new CaiLunConfigurationException("Configuration is null or not valid.");
+		}
+		configuration = conf;
 		printProductInformation();
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
 			vertx = ctx.getBean(Vertx.class);
@@ -67,7 +71,10 @@ public class CaiLun {
 			ctx.registerShutdownHook();
 			dontExit();
 		}
+	}
 
+	public void run() throws Exception {
+		run(ConfigurationLoader.createOrloadConfiguration());
 	}
 
 	private void loadConfiguredVerticles() {

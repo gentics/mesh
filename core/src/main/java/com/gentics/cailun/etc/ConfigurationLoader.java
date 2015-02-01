@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ public final class ConfigurationLoader {
 	 * 
 	 * @return
 	 */
-	public static CaiLunConfiguration loadConfiguration() {
+	public static CaiLunConfiguration createOrloadConfiguration() {
 		File confFile = new File(CAILUN_CONF_FILENAME);
 		InputStream ins = CaiLun.class.getResourceAsStream("/" + CAILUN_CONF_FILENAME);
 		// 1. Try to load from classpath
@@ -49,10 +50,19 @@ public final class ConfigurationLoader {
 					return configuration;
 				}
 			} catch (FileNotFoundException e) {
-				log.error("Could not load configuration file {" + confFile + "}.", e);
+				log.error("Could not load configuration file {" + confFile.getAbsolutePath() + "}.", e);
 			}
 		} else {
 			log.info("Configuration file {" + CAILUN_CONF_FILENAME + "} was not found within filesystem.");
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				CaiLunConfiguration conf = new CaiLunConfiguration();
+				FileUtils.writeStringToFile(confFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf));
+				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
+				return conf;
+			} catch (IOException e) {
+				log.error("Error while saving default configuration to file {" + confFile.getAbsolutePath() + "}.", e);
+			}
 		}
 		// 2. No luck - use default config
 		log.info("Loading default configuration.");
