@@ -62,7 +62,9 @@ public class CaiLun {
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
 			vertx = ctx.getBean(Vertx.class);
 			SpringVerticleFactory.setParentContext(ctx);
-			joinCluster();
+			if (configuration.isClusterMode()) {
+				joinCluster();
+			}
 			ctx.start();
 			loadConfiguredVerticles();
 			if (verticleLoader != null) {

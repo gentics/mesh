@@ -7,13 +7,8 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.cailun.cli.CaiLun;
-import com.gentics.cailun.core.verticle.AuthenticationVerticle;
-import com.gentics.cailun.core.verticle.PageVerticle;
-import com.gentics.cailun.core.verticle.TagVerticle;
 import com.gentics.cailun.demo.verticle.CustomerVerticle;
-import com.gentics.cailun.nav.NavigationVerticle;
-import com.gentics.cailun.tagcloud.TagCloudVerticle;
-import com.gentics.cailun.verticle.admin.AdminVerticle;
+import com.gentics.cailun.demo.verticle.StaticContentVerticle;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -30,8 +25,10 @@ public class DemoRunner {
 
 		CaiLun cailun = CaiLun.getInstance();
 
-//		cailun.setCustomLoader((vertx) -> {
-//			deployAndWait(vertx, CustomerVerticle.class);
+		cailun.setCustomLoader((vertx) -> {
+			deployAndWait(vertx, CustomerVerticle.class);
+			deployAndWait(vertx, StaticContentVerticle.class);
+		});
 //			deployAndWait(vertx, AdminVerticle.class);
 //			deployAndWait(vertx, AuthenticationVerticle.class);
 //			// DeploymentOptions options = new DeploymentOptions();

@@ -23,6 +23,7 @@ public class RouterStorage {
 	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
 	private static final String API_ROUTER_KEY = "API_ROUTER";
+	private static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
 
 	// overlapping routers are currently not supported:
 	// e.g: /page/page will not work
@@ -60,20 +61,43 @@ public class RouterStorage {
 		} else {
 			Router apiRouter = Router.router(vertx);
 			routers.put(API_ROUTER_KEY, apiRouter);
-			getRootRouter().mountSubRouter("/api/v1", apiRouter);
+			getRootRouter().mountSubRouter(DEFAULT_API_MOUNTPOINT, apiRouter);
 			return apiRouter;
 		}
 
 	}
 
+	/**
+	 * Get a root subrouter. A new router will be created id no existing one could be found.
+	 * 
+	 * @param mountPoint
+	 * @return existing or new router
+	 */
 	public Router getRouter(String mountPoint) {
-
 		if (routers.keySet().contains(mountPoint)) {
 			return routers.get(mountPoint);
 		} else {
 			Router localRouter = Router.router(vertx);
-			getAPIRouter().mountSubRouter(mountPoint, localRouter);
+			getRootRouter().mountSubRouter(mountPoint, localRouter);
 			routers.put(mountPoint, localRouter);
+			return localRouter;
+		}
+
+	}
+
+	/**
+	 * Get a local api router. A new router will be created if no existing one could be found.
+	 * 
+	 * @param mountPoint
+	 * @return existing or new router
+	 */
+	public Router getLocalAPIRouter(String mountPoint) {
+		if (routers.keySet().contains(DEFAULT_API_MOUNTPOINT + mountPoint)) {
+			return routers.get(mountPoint);
+		} else {
+			Router localRouter = Router.router(vertx);
+			getAPIRouter().mountSubRouter(mountPoint, localRouter);
+			routers.put(DEFAULT_API_MOUNTPOINT + mountPoint, localRouter);
 			return localRouter;
 		}
 	}

@@ -13,14 +13,18 @@ import org.apache.commons.lang3.StringUtils;
 @Data
 public class CaiLunConfiguration {
 
+	private static final boolean ENABLED = true;
+	private static final boolean DISABLED = false;
+	
 	public static final String HTTP_PORT_KEY = "httpPort";
 	public static final int DEFAULT_HTTP_PORT = 8080;
+	private static final boolean DEFAULT_CLUSTER_MODE = DISABLED; 
 	private static final String DEFAULT_DIRECTORY_NAME = "graphdb";
+
 	private int httpPort = DEFAULT_HTTP_PORT;
-
 	private String storageDirectory;
-	private Map<String, CaiLunVerticleConfiguration> verticles = new HashMap<>();
-
+	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
+		private Map<String, CaiLunVerticleConfiguration> verticles = new HashMap<>();
 
 	public String getStorageDirectory() {
 		if (StringUtils.isEmpty(storageDirectory)) {

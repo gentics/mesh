@@ -41,7 +41,7 @@ public class AbstractCailunRestVerticle extends AbstractVerticle {
 	@Override
 	public void start() throws Exception {
 		RouterStorage routerStorage = config.routerStorage();
-		this.localRouter = routerStorage.getRouter("/" + basePath);
+		this.localRouter = routerStorage.getLocalAPIRouter("/" + basePath);
 
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8080));
 		server.requestHandler(routerStorage.getRootRouter()::accept);
