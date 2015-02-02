@@ -6,7 +6,6 @@ import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 
 import java.io.File;
 
-import org.apache.commons.lang3.math.NumberUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.backup.OnlineBackup;
 import org.slf4j.Logger;
@@ -26,7 +25,10 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
 	public static final String GIT_PULL_CHECKER_INTERVAL_KEY = "gitPullCheckerInterval";
-	public static final long DEFAULT_GIT_CHECKER_INTERVAL = 60 * 5; // 5 Min
+	public static final String GIT_PULL_CHECKER_KEY = "gitPullChecker";
+
+	public static final boolean DEFAULT_GIT_CHECKER = false;
+	public static final long DEFAULT_GIT_CHECKER_INTERVAL = 60 * 5 * 100; // 5 Min
 
 	@Autowired
 	Neo4jSpringConfiguration neo4jConfig;
@@ -39,7 +41,9 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 	@Override
 	public void start() throws Exception {
 		super.start();
-		gitChecker = new GitPullChecker(NumberUtils.toLong(config().getString(GIT_PULL_CHECKER_INTERVAL_KEY), DEFAULT_GIT_CHECKER_INTERVAL));
+		if (config().getBoolean(GIT_PULL_CHECKER_KEY, DEFAULT_GIT_CHECKER)) {
+			gitChecker = new GitPullChecker(config().getLong(GIT_PULL_CHECKER_INTERVAL_KEY, DEFAULT_GIT_CHECKER_INTERVAL));
+		}
 
 		addBackupHandler();
 		addNeo4VertxRestartHandler();
@@ -48,7 +52,7 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 		// addServiceHandler();
 
 	}
-	
+
 	@Override
 	public void stop() throws Exception {
 		super.stop();

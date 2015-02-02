@@ -43,7 +43,7 @@ public class CaiLunConfiguration {
 		// Check for target directory and use it as a subdirectory if possible
 		File targetDir = new File("target");
 		if (targetDir.exists()) {
-			neo4jConfiguration.setPath(new File("target" + File.separator + DEFAULT_DIRECTORY_NAME).getAbsolutePath());
+			neo4jConfiguration.setPath(new File(targetDir, DEFAULT_DIRECTORY_NAME).getAbsolutePath());
 		} else {
 			neo4jConfiguration.setPath(new File(DEFAULT_DIRECTORY_NAME).getAbsolutePath());
 		}

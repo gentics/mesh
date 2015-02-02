@@ -1,6 +1,7 @@
 package com.gentics.cailun.demo;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
+import io.vertx.core.Vertx;
 
 import java.io.File;
 

@@ -16,6 +16,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import com.gentics.cailun.etc.CaiLunConfiguration;
 import com.gentics.cailun.etc.CaiLunConfigurationException;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
+import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 import com.gentics.cailun.etc.ConfigurationLoader;
 import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
@@ -59,7 +60,7 @@ public class CaiLun {
 		}
 		configuration = conf;
 		Neo4jSpringConfiguration.setConfiguration(conf);
-		
+
 		printProductInformation();
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
 			vertx = ctx.getBean(Vertx.class);
@@ -81,11 +82,15 @@ public class CaiLun {
 		run(ConfigurationLoader.createOrloadConfiguration());
 	}
 
+	/**
+	 * Load verticles that are configured within the cailun configuration.
+	 */
 	private void loadConfiguredVerticles() {
 		for (String verticleName : configuration.getVerticles().keySet()) {
+			CaiLunVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
 			try {
 				log.info("Loading configured verticle {" + verticleName + "}.");
-				deployAndWait(vertx, verticleName);
+				deployAndWait(vertx, verticleConf.getVerticleConfig(), verticleName);
 			} catch (InterruptedException e) {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}
