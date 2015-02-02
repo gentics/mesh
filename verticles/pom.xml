@@ -19,6 +19,7 @@
 
 	<modules>
 		<module>admin</module>
+		<module>admin-gui</module>
 		<module>navigation</module>
 		<module>tagcloud</module>
 	</modules>

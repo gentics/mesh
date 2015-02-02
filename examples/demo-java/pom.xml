@@ -38,5 +38,10 @@
 			<artifactId>cailun-admin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.vertx</groupId>
+			<artifactId>cailun-admin-gui</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>

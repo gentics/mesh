@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import com.gentics.cailun.cli.CaiLun;
 import com.gentics.cailun.demo.verticle.CustomerVerticle;
 import com.gentics.cailun.demo.verticle.StaticContentVerticle;
+import com.gentics.cailun.verticle.admin.AdminGUIVerticle;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -28,7 +29,9 @@ public class DemoRunner {
 
 		cailun.setCustomLoader((vertx) -> {
 			deployAndWait(vertx, CustomerVerticle.class);
-			deployAndWait(vertx, StaticContentVerticle.class);
+			//deployAndWait(vertx, StaticContentVerticle.class);
+			deployAndWait(vertx, AdminGUIVerticle.class);
+			
 		});
 //			deployAndWait(vertx, AdminVerticle.class);
 //			deployAndWait(vertx, AuthenticationVerticle.class);
