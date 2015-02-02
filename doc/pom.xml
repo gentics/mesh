@@ -27,13 +27,6 @@
 			<type>jar</type>
 			<classifier>javadoc</classifier>
 		</dependency>
-		<dependency>
-			<artifactId>cailun-rest-core</artifactId>
-			<groupId>${project.groupId}</groupId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<classifier>javadoc</classifier>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -44,7 +37,7 @@
 				<executions>
 					<execution>
 						<id>unpack</id>
-						<phase>package</phase>
+						<phase>process-resources</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
@@ -106,6 +99,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-scm-publish-plugin</artifactId>
+				<version>1.1</version>
 				<configuration>
 					<!-- mono-module doesn't require site:stage -->
 					<scmBranch>gh-pages</scmBranch>

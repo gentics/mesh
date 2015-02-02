@@ -1,8 +1,6 @@
 {
   "verticles" : {
-    "com.gentics.cailun.core.verticle.PageVerticle" : {
-        
-    },
+    "com.gentics.cailun.core.verticle.PageVerticle" : {},
     "com.gentics.cailun.verticle.admin.AdminVerticle": {
         "config": {
             "map": {
