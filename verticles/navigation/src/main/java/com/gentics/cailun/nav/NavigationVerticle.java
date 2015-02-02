@@ -16,10 +16,10 @@ import com.gentics.cailun.core.AbstractCailunRestVerticle;
 @SpringVerticle
 public class NavigationVerticle extends AbstractCailunRestVerticle {
 
+	private static final Logger log = LoggerFactory.getLogger(NavigationVerticle.class);
+
 	@Autowired
 	NavigationConfiguration navigationConfig;
-
-	private static final Logger log = LoggerFactory.getLogger(NavigationVerticle.class);
 
 	public NavigationVerticle() {
 		super("nav");
@@ -32,11 +32,7 @@ public class NavigationVerticle extends AbstractCailunRestVerticle {
 	}
 
 	private void addNavigationHandler() {
-		// route("/get").method(GET).failureHandler(eh -> {
-		// log.error("Error while handling request.", eh.failure());
-		// });
-
-		route("/get").method(GET).handler(navigationConfig.navigationRequestHandler());
+		route().method(GET).handler(navigationConfig.navigationRequestHandler());
 	}
 
 }

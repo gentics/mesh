@@ -63,10 +63,10 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
 				for (Group group : groupRepository.listAllGroups(user)) {
 					for (Role role : group.getRoles()) {
-						log.info("Loaded role {" + role.getName() + "} to fetch permissionsets..");
+						log.debug("Loaded role {" + role.getName() + "} to fetch permissionsets..");
 						roles.add(role.getName());
 						for (PermissionSet permSet : role.getPermissions()) {
-							log.info("Loaded permission set for object {" + permSet.getObject().getName() + "}");
+							log.debug("Loaded permission set for object {" + permSet.getObject().getName() + "}");
 							permissions.addAll(permSet.getAllSetPermissions());
 						}
 					}

@@ -23,5 +23,5 @@
     "ha_server_id" : null
   },
   "http_port" : 8080,
-  "cluster_mode" : true
+  "cluster_mode" : false
 }

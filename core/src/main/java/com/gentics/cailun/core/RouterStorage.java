@@ -93,7 +93,7 @@ public class RouterStorage {
 	 */
 	public Router getLocalAPIRouter(String mountPoint) {
 		if (routers.keySet().contains(DEFAULT_API_MOUNTPOINT + mountPoint)) {
-			return routers.get(mountPoint);
+			return routers.get(DEFAULT_API_MOUNTPOINT + mountPoint);
 		} else {
 			Router localRouter = Router.router(vertx);
 			getAPIRouter().mountSubRouter(mountPoint, localRouter);

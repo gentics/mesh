@@ -83,7 +83,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		nav.setRoot(rootElement);
 
 		// traverse(rootTag, rootElement);
-		// http://www.javacodegeeks.com/2011/02/java-forkjoin-parallel-programming.html
 		ForkJoinPool pool = new ForkJoinPool(10);
 		NavigationTask task = new NavigationTask(rootTag, rootElement, this, pageRepository);
 		pool.invoke(task);
@@ -102,6 +101,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return
 	 */
 	public boolean canView(GenericNode object) {
+//		return true;
 		return getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, PermissionSet.READ));
 	}
 }

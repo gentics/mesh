@@ -34,7 +34,6 @@ public class DemoRunner {
 			deployAndWait(vertx, AuthenticationVerticle.class);
 			deployAndWait(vertx, NavigationVerticle.class);
 			deployAndWait(vertx, TagCloudVerticle.class);
-			deployAndWait(vertx, PageVerticle.class);
 			deployAndWait(vertx, TagVerticle.class);
 			//deployAndWait(vertx, StaticContentVerticle.class);
 			//deployAndWait(vertx, AdminGUIVerticle.class);

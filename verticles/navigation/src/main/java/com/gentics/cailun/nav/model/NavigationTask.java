@@ -1,5 +1,8 @@
 package com.gentics.cailun.nav.model;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
 import org.slf4j.Logger;
@@ -36,6 +39,7 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 	@Override
 	protected Navigation compute() {
 
+		Set<ForkJoinTask<Navigation>> tasks = new HashSet<>();
 		tag.getContents().parallelStream().forEachOrdered(tagging -> {
 			if (tagging.getClass().isAssignableFrom(Page.class)) {
 				Page page = (Page) tagging;
@@ -44,7 +48,7 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 					pageNavElement.setName(page.getFilename());
 					pageNavElement.setType(NavigationElementType.PAGE);
 					String path = pageRepository.getPath(page.getId());
-					log.info("Loaded path { " + path + "} for page {" + page.getId() + "}");
+					log.debug("Loaded path { " + path + "} for page {" + page.getId() + "}");
 					pageNavElement.setPath(path);
 					element.getChildren().add(pageNavElement);
 				}
@@ -58,9 +62,14 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 				navElement.setName(currentTag.getName());
 				element.getChildren().add(navElement);
 				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, pageRepository);
-				subTask.fork();
+				tasks.add(subTask.fork());
+
 			}
 		});
+
+		for (ForkJoinTask<Navigation> task : tasks) {
+			task.join();
+		}
 		return null;
 	}
 }
