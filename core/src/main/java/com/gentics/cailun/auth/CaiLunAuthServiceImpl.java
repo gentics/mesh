@@ -27,7 +27,6 @@ public class CaiLunAuthServiceImpl extends AuthServiceImpl {
 
 	public void hasPermission(String principal, GenericPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
 		vertx.executeBlocking((Future<Boolean> fut) -> {
-
 			fut.complete(hasPermission(principal, permission));
 		}, resultHandler);
 	}

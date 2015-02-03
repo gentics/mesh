@@ -101,7 +101,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return
 	 */
 	public boolean canView(GenericNode object) {
-//		return true;
 		return getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, PermissionSet.READ));
 	}
 }

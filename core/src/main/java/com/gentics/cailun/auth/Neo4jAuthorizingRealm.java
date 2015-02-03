@@ -16,8 +16,12 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Uniqueness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +29,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.UserRepository;
-import com.gentics.cailun.core.rest.model.Group;
-import com.gentics.cailun.core.rest.model.PermissionSet;
-import com.gentics.cailun.core.rest.model.Role;
+import com.gentics.cailun.core.rest.model.AuthRelationships;
+import com.gentics.cailun.core.rest.model.GenericPermission;
 import com.gentics.cailun.core.rest.model.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
@@ -40,6 +44,9 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
 	@Autowired
 	UserRepository userRepository;
+
+	@Autowired
+	Neo4jSpringConfiguration neo4jConfig;
 
 	@Autowired
 	GroupRepository groupRepository;
@@ -59,18 +66,18 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 				// The principal does only hold a string identifier that can be used to load the user pojo from the database.
 				// I assume this also has a positive aspect since the session can easily be shared between vertx instances.
 				// TODO explicit type check
-				User user = userRepository.findByPrincipalId(principals.getPrimaryPrincipal().toString());
+				// User user = userRepository.findByPrincipalId(principals.getPrimaryPrincipal().toString());
 
-				for (Group group : groupRepository.listAllGroups(user)) {
-					for (Role role : group.getRoles()) {
-						log.debug("Loaded role {" + role.getName() + "} to fetch permissionsets..");
-						roles.add(role.getName());
-						for (PermissionSet permSet : role.getPermissions()) {
-							log.debug("Loaded permission set for object {" + permSet.getObject().getName() + "}");
-							permissions.addAll(permSet.getAllSetPermissions());
-						}
-					}
-				}
+				// for (Group group : groupRepository.listAllGroups(user)) {
+				// for (Role role : group.getRoles()) {
+				// log.debug("Loaded role {" + role.getName() + "} to fetch permissionsets..");
+				// roles.add(role.getName());
+				// for (PermissionSet permSet : role.getPermissions()) {
+				// log.debug("Loaded permission set for object {" + permSet.getObject().getName() + "}");
+				// permissions.addAll(permSet.getAllSetPermissions());
+				// }
+				// }
+				// }
 			}
 		} catch (Exception e) {
 			log.error("Could not fetch permission data from neo4j database.", e);
@@ -82,12 +89,51 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		return info;
 	}
 
+	private long getNodeIdFromPrincipalId(String id) {
+		String nodeIdStr = id.substring(id.lastIndexOf("#") + 1);
+		return Long.valueOf(nodeIdStr);
+	}
+
+	private boolean canRead(long userNodeId, long targetPageId) throws Exception {
+		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
+		try (Transaction tx = graphDb.beginTx()) {
+			Node userNode = graphDb.getNodeById(userNodeId);
+			for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUTGOING)
+					.relationships(AuthRelationships.HAS_ROLE, Direction.INCOMING)
+					.relationships(AuthRelationships.HAS_PERMISSIONSET, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+					.traverse(userNode).relationships()) {
+
+				if ("HAS_PERMISSIONSET".equalsIgnoreCase(rel.getType().name())) {
+					if ((boolean) rel.getProperty("canRead") == true) {
+						if (rel.getEndNode().getId() == targetPageId) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
+		if (permission instanceof GenericPermission) {
+			GenericPermission genericPermission = (GenericPermission) permission;
+			// User user = userRepository.findByPrincipalId(principals.getPrimaryPrincipal().toString());
+			try {
+				return canRead(getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString()), genericPermission.getTargetObject().getId());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken upat = (UsernamePasswordToken) token;
 		User user = userRepository.findByUsername(upat.getUsername());
 		if (user != null) {
-				return new SimpleAuthenticationInfo(user, new BCryptPasswordHash(user.getPasswordHash(), securityConfig), getName());
+			return new SimpleAuthenticationInfo(user, new BCryptPasswordHash(user.getPasswordHash(), securityConfig), getName());
 		} else {
 			// TODO Don't let the user know that we know that he did not exist
 			throw new IncorrectCredentialsException("Invalid credentials!");

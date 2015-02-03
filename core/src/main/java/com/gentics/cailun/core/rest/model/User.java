@@ -34,7 +34,7 @@ public class User extends AbstractPersistable {
 	}
 
 	public String getPrincipalId() {
-		return username + "%" + emailAddress + "%" + passwordHash;
+		return username + "%" + emailAddress + "%" + passwordHash + "#" + getId();
 	}
 
 	/**

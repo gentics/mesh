@@ -35,7 +35,6 @@ public class EnhancedShiroAuthRealmImpl extends ShiroAuthRealmImpl {
 		subjectContext.setPrincipals(coll);
 		Subject subject = securityManager.createSubject(subjectContext);
 		try {
-
 			subject.checkPermission(permission);
 			return true;
 		} catch (AuthorizationException e) {

@@ -8,7 +8,6 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.cailun.cli.CaiLun;
 import com.gentics.cailun.core.verticle.AuthenticationVerticle;
-import com.gentics.cailun.core.verticle.PageVerticle;
 import com.gentics.cailun.core.verticle.TagVerticle;
 import com.gentics.cailun.demo.verticle.CustomerVerticle;
 import com.gentics.cailun.nav.NavigationVerticle;
@@ -37,7 +36,6 @@ public class DemoRunner {
 			deployAndWait(vertx, TagVerticle.class);
 			//deployAndWait(vertx, StaticContentVerticle.class);
 			//deployAndWait(vertx, AdminGUIVerticle.class);
-			
 		});
 //			// DeploymentOptions options = new DeploymentOptions();
 //			// vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-navigation:0.1.0-SNAPSHOT",options, dh -> {
