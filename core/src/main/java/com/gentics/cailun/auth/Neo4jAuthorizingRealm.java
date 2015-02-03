@@ -2,9 +2,6 @@ package com.gentics.cailun.auth;
 
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -29,9 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.UserRepository;
-import com.gentics.cailun.core.rest.model.AuthRelationships;
-import com.gentics.cailun.core.rest.model.GenericPermission;
-import com.gentics.cailun.core.rest.model.User;
+import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
+import com.gentics.cailun.core.rest.model.auth.BasicPermission;
+import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
@@ -56,37 +53,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-
-		Set<String> roles = new HashSet<>();
-		Set<Permission> permissions = new HashSet<>();
-		GraphDatabaseService graphDb;
-		try {
-			graphDb = Neo4jGraphVerticle.getDatabase();
-			try (Transaction tx = graphDb.beginTx()) {
-				// The principal does only hold a string identifier that can be used to load the user pojo from the database.
-				// I assume this also has a positive aspect since the session can easily be shared between vertx instances.
-				// TODO explicit type check
-				// User user = userRepository.findByPrincipalId(principals.getPrimaryPrincipal().toString());
-
-				// for (Group group : groupRepository.listAllGroups(user)) {
-				// for (Role role : group.getRoles()) {
-				// log.debug("Loaded role {" + role.getName() + "} to fetch permissionsets..");
-				// roles.add(role.getName());
-				// for (PermissionSet permSet : role.getPermissions()) {
-				// log.debug("Loaded permission set for object {" + permSet.getObject().getName() + "}");
-				// permissions.addAll(permSet.getAllSetPermissions());
-				// }
-				// }
-				// }
-			}
-		} catch (Exception e) {
-			log.error("Could not fetch permission data from neo4j database.", e);
-		}
-
-		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roles);
-		info.setRoles(roles);
-		info.setObjectPermissions(permissions);
-		return info;
+		return new SimpleAuthorizationInfo();
 	}
 
 	private long getNodeIdFromPrincipalId(String id) {
@@ -121,8 +88,8 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	}
 
 	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-		if (permission instanceof GenericPermission) {
-			GenericPermission genericPermission = (GenericPermission) permission;
+		if (permission instanceof BasicPermission) {
+			BasicPermission genericPermission = (BasicPermission) permission;
 			try {
 				return canRead(getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString()), genericPermission.getTargetObject().getId());
 			} catch (Exception e) {

@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
-import com.gentics.cailun.core.rest.model.Group;
-import com.gentics.cailun.core.rest.model.User;
+import com.gentics.cailun.core.rest.model.auth.Group;
+import com.gentics.cailun.core.rest.model.auth.User;
 
 public interface GroupRepository extends GraphRepository<Group> {
 

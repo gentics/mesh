@@ -10,6 +10,8 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.cailun.core.rest.model.auth.AbstractPermissionRelationship;
+import com.gentics.cailun.core.rest.model.auth.Role;
 
 /**
  * This class represents a basic cailun node. All models that make use of this model will automatically be able to be tagged and handled by the permission
@@ -31,16 +33,20 @@ public class GenericNode extends AbstractPersistable {
 	private Set<Tag> childTags = new HashSet<>();
 
 	@Fetch
-	@RelatedToVia(type = PermissionSet.RELATION_KEYWORD, direction = Direction.INCOMING, elementClass = PermissionSet.class)
-	private Set<PermissionSet> permissions = new HashSet<>();
+	@RelatedToVia(type = AbstractPermissionRelationship.RELATION_KEYWORD, direction = Direction.INCOMING, elementClass = AbstractPermissionRelationship.class)
+	private Set<AbstractPermissionRelationship> permissions = new HashSet<>();
 
 	@JsonIgnore
-	public Set<PermissionSet> getPermissions() {
+	public Set<? extends AbstractPermissionRelationship> getPermissions() {
 		return permissions;
 	}
 
-	public void setPermissions(Set<PermissionSet> permissions) {
+	public void setPermissions(Set<AbstractPermissionRelationship> permissions) {
 		this.permissions = permissions;
+	}
+
+	public void addPermissionSet(AbstractPermissionRelationship permissionSet) {
+		this.permissions.add(permissionSet);
 	}
 
 	/**
@@ -49,8 +55,8 @@ public class GenericNode extends AbstractPersistable {
 	 * @param role
 	 * @return the created permissionset
 	 */
-	public PermissionSet addPermission(Role role) {
-		PermissionSet perm = new PermissionSet(role, this);
+	public AbstractPermissionRelationship addPermission(Role role) {
+		AbstractPermissionRelationship perm = new AbstractPermissionRelationship(role, this);
 		this.permissions.add(perm);
 		return perm;
 	}

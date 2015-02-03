@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.rest.model;
+package com.gentics.cailun.core.rest.model.auth;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.Query;
+
+import com.gentics.cailun.core.rest.model.AbstractPersistable;
 
 @NoArgsConstructor
 @Data

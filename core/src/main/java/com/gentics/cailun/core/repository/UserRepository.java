@@ -6,8 +6,8 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
 import com.gentics.cailun.core.rest.model.GenericNode;
-import com.gentics.cailun.core.rest.model.PermissionSet;
-import com.gentics.cailun.core.rest.model.User;
+import com.gentics.cailun.core.rest.model.auth.AbstractPermissionRelationship;
+import com.gentics.cailun.core.rest.model.auth.User;
 
 public interface UserRepository extends GraphRepository<User> {
 
@@ -19,5 +19,5 @@ public interface UserRepository extends GraphRepository<User> {
 	User findByPrincipalId(String principalId);
 
 	@Query("start generic_node=node({1}) MATCH (generic_node)<-[p:HAS_PERMISSIONSET]-(role:Role)-[:HAS_ROLE]->(group:Group)<-[:MEMBER_OF]-(user:_User) where user.username + '%' + user.emailAddress + '%' +  user.passwordHash = {0} return p")
-	List<PermissionSet> findPermissionSetsForUserAndContent(String principalId, GenericNode node);
+	List<AbstractPermissionRelationship> findPermissionSetsForUserAndContent(String principalId, GenericNode node);
 }

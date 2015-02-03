@@ -69,9 +69,6 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 
 		// Wait for all forked tasks to finish
 		tasks.forEach(action -> action.join());
-		// for (ForkJoinTask<Navigation> task : tasks) {
-		// task.join();
-		// }
 		return null;
 	}
 }

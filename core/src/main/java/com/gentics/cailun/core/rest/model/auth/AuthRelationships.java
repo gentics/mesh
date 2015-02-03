@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.rest.model;
+package com.gentics.cailun.core.rest.model.auth;
 
 import org.neo4j.graphdb.RelationshipType;
 
