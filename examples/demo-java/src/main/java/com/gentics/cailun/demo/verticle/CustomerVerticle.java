@@ -18,6 +18,8 @@ import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.repository.UserRepository;
+import com.gentics.cailun.core.rest.model.BasicPermission;
+import com.gentics.cailun.core.rest.model.BasicPermissionTypes;
 import com.gentics.cailun.core.rest.model.GenericNode;
 import com.gentics.cailun.core.rest.model.Group;
 import com.gentics.cailun.core.rest.model.Page;
@@ -170,9 +172,10 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			for (GenericNode currentNode : genericRepository.findAll()) {
 				log.info("Adding admin permission for node {" + currentNode.getId() + "}");
 				PermissionSet permSet = currentNode.addPermission(adminRole);
-				permSet.setCanCreate(true);
-				permSet.setCanRead(true);
-				permSet.setCanDelete(true);
+				permSet.addPermission(new BasicPermission(currentNode, BasicPermissionTypes.READ));
+				permSet.addPermission(new BasicPermission(currentNode, BasicPermissionTypes.CREATE));
+				permSet.addPermission(new BasicPermission(currentNode, BasicPermissionTypes.DELETE));
+				permSet.addPermission(new BasicPermission(currentNode, BasicPermissionTypes.WRITE));
 				genericRepository.save(currentNode);
 			}
 			tx.success();

@@ -94,21 +94,26 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		return Long.valueOf(nodeIdStr);
 	}
 
-	private boolean canRead(long userNodeId, long targetPageId) throws Exception {
+	private boolean canRead(long userNodeId, long targetNodeId) throws Exception {
 		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
 		try (Transaction tx = graphDb.beginTx()) {
 			Node userNode = graphDb.getNodeById(userNodeId);
+			// Traverse the graph from user to the page. Collect all permission relations and check them individually
 			for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUTGOING)
 					.relationships(AuthRelationships.HAS_ROLE, Direction.INCOMING)
 					.relationships(AuthRelationships.HAS_PERMISSIONSET, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
 					.traverse(userNode).relationships()) {
 
-				if ("HAS_PERMISSIONSET".equalsIgnoreCase(rel.getType().name())) {
-					if ((boolean) rel.getProperty("canRead") == true) {
-						if (rel.getEndNode().getId() == targetPageId) {
+				// Check whether the current relation is in fact a permission set relation 
+				if (AuthRelationships.HAS_PERMISSIONSET.name().equalsIgnoreCase(rel.getType().name())) {
+					// Check whether this relation is targeting the object we want to check
+					if (rel.getEndNode().getId() == targetNodeId) {
+						// Finally check whether this relation has in fact the needed permission
+						if ((boolean) rel.getProperty("canRead") == true) {
 							return true;
 						}
 					}
+					
 				}
 			}
 		}
@@ -118,7 +123,6 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
 		if (permission instanceof GenericPermission) {
 			GenericPermission genericPermission = (GenericPermission) permission;
-			// User user = userRepository.findByPrincipalId(principals.getPrimaryPrincipal().toString());
 			try {
 				return canRead(getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString()), genericPermission.getTargetObject().getId());
 			} catch (Exception e) {

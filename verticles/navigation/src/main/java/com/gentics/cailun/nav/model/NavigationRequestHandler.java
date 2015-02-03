@@ -1,6 +1,7 @@
 package com.gentics.cailun.nav.model;
 
 import io.vertx.core.AsyncResult;
+import static com.gentics.cailun.core.rest.model.BasicPermissionTypes.*;
 import io.vertx.core.Handler;
 import io.vertx.ext.apex.core.RoutingContext;
 import io.vertx.ext.apex.core.Session;
@@ -17,6 +18,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.rest.model.BasicPermission;
+import com.gentics.cailun.core.rest.model.BasicPermissionTypes;
 import com.gentics.cailun.core.rest.model.GenericNode;
 import com.gentics.cailun.core.rest.model.GenericPermission;
 import com.gentics.cailun.core.rest.model.PermissionSet;
@@ -91,16 +94,16 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	}
 
 	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
-		getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, PermissionSet.READ), resultHandler);
+		getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(object, READ), resultHandler);
 	}
 
 	/**
-	 * Check whether the given object can be viewed by the user.
+	 * Wrapper for the permission checks. Check whether the given object can be viewed by the user.
 	 * 
 	 * @param object
 	 * @return
 	 */
 	public boolean canView(GenericNode object) {
-		return getAuthService().hasPermission(session.getPrincipal(), new GenericPermission(object, PermissionSet.READ));
+		return getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(object, READ));
 	}
 }

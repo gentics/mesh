@@ -1,7 +1,12 @@
 package com.gentics.cailun.core.rest.model;
 
+import org.springframework.data.neo4j.annotation.NodeEntity;
 
-public class GenericPermission implements org.apache.shiro.authz.Permission {
+
+@NodeEntity
+public class GenericPermission extends AbstractPersistable implements org.apache.shiro.authz.Permission  {
+
+	private static final long serialVersionUID = 8437529635544588899L;
 
 	private final String actionName;
 
