@@ -16,8 +16,6 @@ import com.gentics.cailun.core.rest.response.GenericResponse;
 @Scope("singleton")
 @SpringVerticle()
 public class AuthenticationVerticle extends AbstractCailunRestVerticle {
-	// @Autowired
-	// SecurityConfiguration securityConfiguration;
 
 	@Context
 	SecurityContext securityContext;
@@ -38,7 +36,6 @@ public class AuthenticationVerticle extends AbstractCailunRestVerticle {
 		route("/principal").method(GET).handler(rc -> {
 			rc.response().end(securityContext.getUserPrincipal().getName());
 		});
-
 	}
 
 	private void addLoginHandler() {

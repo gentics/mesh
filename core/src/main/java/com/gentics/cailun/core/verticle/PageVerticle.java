@@ -68,7 +68,7 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 	 */
 	private void addUntagPageHandler() {
 
-		route("/untag/:id/:name").method(DELETE).handler(rh -> {
+		route("/tag/:id/:name").method(DELETE).handler(rh -> {
 			long id = Long.valueOf(rh.request().params().get("id"));
 			String name = rh.request().params().get("name");
 			rh.response().end(toJson(new GenericResponse<Tag>(pageRepository.untag(id, name))));
