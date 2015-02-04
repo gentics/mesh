@@ -7,11 +7,8 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.cailun.core.rest.model.auth.AbstractPermissionRelationship;
-import com.gentics.cailun.core.rest.model.auth.Role;
 
 /**
  * This class represents a basic cailun node. All models that make use of this model will automatically be able to be tagged and handled by the permission
@@ -32,34 +29,29 @@ public class GenericNode extends AbstractPersistable {
 	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
 
-	@Fetch
-	@RelatedToVia(type = AbstractPermissionRelationship.RELATION_KEYWORD, direction = Direction.INCOMING, elementClass = AbstractPermissionRelationship.class)
-	private Set<AbstractPermissionRelationship> permissions = new HashSet<>();
+//	@Fetch
+//	@RelatedTo(type = AuthRelationships.HAS_PERMISSION, direction = Direction.OUTGOING, elementClass = AbstractPermission.class)
+//	private Set<AbstractPermission> permissions = new HashSet<>();
 
-	@JsonIgnore
-	public Set<? extends AbstractPermissionRelationship> getPermissions() {
-		return permissions;
-	}
+//	@JsonIgnore
+//	public Set<? extends AbstractPermission> getPermissions() {
+//		return permissions;
+//	}
 
-	public void setPermissions(Set<AbstractPermissionRelationship> permissions) {
-		this.permissions = permissions;
-	}
+//	public void addPermissionSet(AbstractPermission permission) {
+//		this.permissions.add(permission);
+//	}
 
-	public void addPermissionSet(AbstractPermissionRelationship permissionSet) {
-		this.permissions.add(permissionSet);
-	}
-
-	/**
-	 * Adds a new permission set to this node.
-	 * 
-	 * @param role
-	 * @return the created permissionset
-	 */
-	public AbstractPermissionRelationship addPermission(Role role) {
-		AbstractPermissionRelationship perm = new AbstractPermissionRelationship(role, this);
-		this.permissions.add(perm);
-		return perm;
-	}
+//	/**
+//	 * Adds a new permission set to this node.
+//	 * 
+//	 * @param role
+//	 * @return the created permissionset
+//	 */
+//	public AbstractPermission addPermission(AbstractPermission permission) {
+//		this.permissions.add(permission);
+//		return permission;
+//	}
 
 	public String getName() {
 		return name;
@@ -88,5 +80,12 @@ public class GenericNode extends AbstractPersistable {
 	public Set<Tag> getChildTags() {
 		return this.childTags;
 	}
+
+//	public BasicPermission addBasicPermission(Role role) {
+//		BasicPermission perm = new BasicPermission();
+//		this.permissions.add(perm);
+//		role.addPermission(perm);
+//		return perm;
+//	}
 
 }

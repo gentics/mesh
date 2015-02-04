@@ -23,14 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.repository.GroupRepository;
-import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.UserRepository;
+import com.gentics.cailun.core.rest.model.auth.AbstractShiroGraphPermission;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
-import com.gentics.cailun.core.rest.model.auth.BasicPermission;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
@@ -42,15 +39,6 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	@Autowired
 	UserRepository userRepository;
 
-	@Autowired
-	Neo4jSpringConfiguration neo4jConfig;
-
-	@Autowired
-	GroupRepository groupRepository;
-
-	@Autowired
-	RoleRepository roleRepository;
-
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		return new SimpleAuthorizationInfo();
@@ -61,37 +49,44 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		return Long.valueOf(nodeIdStr);
 	}
 
-	private boolean canRead(long userNodeId, long targetNodeId) throws Exception {
+	private boolean checkPermission(long userNodeId, AbstractShiroGraphPermission genericPermission) throws Exception {
+		if (genericPermission.getTargetNode() == null) {
+			return false;
+		}
 		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
 		try (Transaction tx = graphDb.beginTx()) {
+			// Neo4jTemplate template = new Neo4jTemplate(graphDb);
+			// template.getPersistentState(entity)
 			Node userNode = graphDb.getNodeById(userNodeId);
 			// Traverse the graph from user to the page. Collect all permission relations and check them individually
-			for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUTGOING)
-					.relationships(AuthRelationships.HAS_ROLE, Direction.INCOMING)
-					.relationships(AuthRelationships.HAS_PERMISSIONSET, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-					.traverse(userNode).relationships()) {
+			for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
+					.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING).relationships(AuthRelationships.TYPES.HAS_PERMISSION)
+					.relationships(AuthRelationships.TYPES.ASSIGNED_TO).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
 
-				// Check whether the current relation is in fact a permission set relation 
-				if (AuthRelationships.HAS_PERMISSIONSET.name().equalsIgnoreCase(rel.getType().name())) {
-					// Check whether this relation is targeting the object we want to check
-					if (rel.getEndNode().getId() == targetNodeId) {
-						// Finally check whether this relation has in fact the needed permission
-						if ((boolean) rel.getProperty("canRead") == true) {
+				// Check whether this relation in fact targets our object we want to check
+				boolean matchesTargetNode = rel.getStartNode().getId() == genericPermission.getTargetNode().getId();
+				if (matchesTargetNode) {
+					// Check whether the label of the permission node matches the label of the shiro permission
+					boolean matchesPermissionLabel = rel.getEndNode().hasLabel(genericPermission.getPermissionNodeLabel());
+					if (matchesPermissionLabel) {
+						// Delegate the final permission check to the shiro permission
+						if (genericPermission.isPermitted(rel.getEndNode(), rel.getStartNode()) == true) {
 							return true;
 						}
 					}
-					
 				}
+
 			}
 		}
 		return false;
 	}
 
 	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-		if (permission instanceof BasicPermission) {
-			BasicPermission genericPermission = (BasicPermission) permission;
+		if (permission instanceof AbstractShiroGraphPermission) {
+			AbstractShiroGraphPermission genericPermission = (AbstractShiroGraphPermission) permission;
 			try {
-				return canRead(getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString()), genericPermission.getTargetObject().getId());
+				long userId = getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString());
+				return checkPermission(userId, genericPermission);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

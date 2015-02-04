@@ -63,7 +63,6 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 				element.getChildren().add(navElement);
 				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, pageRepository);
 				tasks.add(subTask.fork());
-
 			}
 		});
 
