@@ -25,8 +25,8 @@ public class LinkRendererTest {
 		LinkReplacer<CaiLunLinkResolver> replacer = new LinkReplacer(factory);
 		// for (int i = 0; i < 2000; i++) {
 		// System.out.println(allContent);
-		String out = replacer.replace(content);
-		System.out.println(out);
+//		String out = replacer.replace(content);
+//		System.out.println(out);
 		// }
 	}
 
