@@ -29,30 +29,6 @@ public class GenericNode extends AbstractPersistable {
 	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
 
-//	@Fetch
-//	@RelatedTo(type = AuthRelationships.HAS_PERMISSION, direction = Direction.OUTGOING, elementClass = AbstractPermission.class)
-//	private Set<AbstractPermission> permissions = new HashSet<>();
-
-//	@JsonIgnore
-//	public Set<? extends AbstractPermission> getPermissions() {
-//		return permissions;
-//	}
-
-//	public void addPermissionSet(AbstractPermission permission) {
-//		this.permissions.add(permission);
-//	}
-
-//	/**
-//	 * Adds a new permission set to this node.
-//	 * 
-//	 * @param role
-//	 * @return the created permissionset
-//	 */
-//	public AbstractPermission addPermission(AbstractPermission permission) {
-//		this.permissions.add(permission);
-//		return permission;
-//	}
-
 	public String getName() {
 		return name;
 	}
@@ -80,12 +56,5 @@ public class GenericNode extends AbstractPersistable {
 	public Set<Tag> getChildTags() {
 		return this.childTags;
 	}
-
-//	public BasicPermission addBasicPermission(Role role) {
-//		BasicPermission perm = new BasicPermission();
-//		this.permissions.add(perm);
-//		role.addPermission(perm);
-//		return perm;
-//	}
 
 }

@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.cailun.core.GenericNodeRepository;
+import com.gentics.cailun.core.repository.GenericNodeRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.repository.PermissionRepository;

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.etc.RouterStorage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 

@@ -24,9 +24,9 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.cailun.core.CaiLunLinkResolver;
-import com.gentics.cailun.core.CaiLunLinkResolverFactoryImpl;
-import com.gentics.cailun.core.LinkReplacer;
+import com.gentics.cailun.core.link.CaiLunLinkResolver;
+import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
+import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.Page;

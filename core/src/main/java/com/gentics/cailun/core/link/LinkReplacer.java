@@ -1,4 +1,4 @@
-package com.gentics.cailun.core;
+package com.gentics.cailun.core.link;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 

@@ -1,4 +1,5 @@
-package com.gentics.cailun.core;
+package com.gentics.cailun.core.link;
+
 
 
 public interface LinkResolverFactory<T extends AbstractLinkResolver> {

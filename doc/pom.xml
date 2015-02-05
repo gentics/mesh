@@ -5,10 +5,10 @@
 
 	<artifactId>cailun-doc</artifactId>
 	<packaging>jar</packaging>
-	<name>Cailun - Vert.x - Documentation</name>
+	<name>Cailun - Documentation</name>
 
 	<parent>
-		<groupId>com.gentics.vertx</groupId>
+		<groupId>com.gentics.cailun</groupId>
 		<artifactId>cailun</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>

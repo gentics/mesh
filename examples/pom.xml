@@ -5,10 +5,10 @@
 
 	<artifactId>cailun-examples</artifactId>
 	<packaging>pom</packaging>
-	<name>Cailun - Vert.x - Examples</name>
+	<name>Cailun - Examples</name>
 
 	<parent>
-		<groupId>com.gentics.vertx</groupId>
+		<groupId>com.gentics.cailun</groupId>
 		<artifactId>cailun</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
@@ -19,6 +19,6 @@
 
 	<modules>
 		<module>demo-java</module>
-		<!-- <module>demo-php</module> -->
+		<module>demo-php</module>
 	</modules>
 </project>

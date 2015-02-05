@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>cailun-verticles</artifactId>
+	<artifactId>cailun-importers</artifactId>
 	<packaging>pom</packaging>
-	<name>Cailun - Verticles</name>
+	<name>Cailun - Importers</name>
 
 	<parent>
 		<groupId>com.gentics.cailun</groupId>
@@ -17,14 +17,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<modules>
-		<module>admin</module>
-		<module>admin-gui</module>
-		<module>navigation</module>
-		<module>tagcloud</module>
-		<module>file</module>
-	</modules>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.cailun</groupId>
@@ -33,4 +25,8 @@
 		</dependency>
 	</dependencies>
 
+	<modules>
+		<module>jekyll</module>
+		<module>contentnode</module>
+	</modules>
 </project>

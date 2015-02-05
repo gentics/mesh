@@ -18,7 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.cailun.auth.Neo4jAuthorizingRealm;
-import com.gentics.cailun.core.RouterStorage;
 
 @Configuration
 public class CaiLunSpringConfiguration {

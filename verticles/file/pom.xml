@@ -5,10 +5,10 @@
 
 	<artifactId>cailun-file</artifactId>
 	<packaging>jar</packaging>
-	<name>Cailun - Vert.x - File Verticle</name>
+	<name>Cailun - Verticles - File</name>
 
 	<parent>
-		<groupId>com.gentics.vertx</groupId>
+		<groupId>com.gentics.cailun</groupId>
 		<artifactId>cailun-verticles</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
@@ -19,7 +19,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.vertx</groupId>
+			<groupId>com.gentics.cailun</groupId>
 			<artifactId>cailun-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>

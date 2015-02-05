@@ -1,4 +1,4 @@
-package com.gentics.cailun.core;
+package com.gentics.cailun.etc;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.apex.addons.AuthHandler;
