@@ -15,8 +15,14 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<contentnode.version>5.19.6</contentnode.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.gentics</groupId>
+			<artifactId>contentnode-restapi</artifactId>
+			<version>${contentnode.version}</version>
+		</dependency>
 	</dependencies>
 </project>

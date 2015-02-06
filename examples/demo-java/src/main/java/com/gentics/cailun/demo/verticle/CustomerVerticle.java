@@ -137,7 +137,6 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			page.setContent("some content");
 			page.tag(blogsTag);
 			pageRepository.save(page);
-
 		}
 
 		for (int i = 0; i < 3; i++) {
@@ -146,8 +145,8 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			page.setContent("some content");
 			page.tag(postsTag);
 			pageRepository.save(page);
-
 		}
+
 		Page page = new Page("New BlogPost");
 		page.tag(blogsTag);
 		page.setFilename("blog.html");

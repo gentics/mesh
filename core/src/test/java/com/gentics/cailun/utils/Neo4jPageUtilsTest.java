@@ -14,6 +14,7 @@ import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.Page;
 import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 import com.gentics.cailun.util.Neo4jPageUtils;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })

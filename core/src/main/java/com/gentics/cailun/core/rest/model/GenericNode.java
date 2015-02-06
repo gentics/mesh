@@ -7,6 +7,8 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
+import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -28,6 +30,8 @@ public class GenericNode extends AbstractPersistable {
 	@Fetch
 	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
+
+	DynamicProperties properties = new DynamicPropertiesContainer();
 
 	public String getName() {
 		return name;
@@ -52,9 +56,71 @@ public class GenericNode extends AbstractPersistable {
 		return tag;
 	}
 
+	public boolean unTag(String name) {
+		return this.childTags.remove(new Tag(name));
+	}
+
+	public boolean unTag(Tag tag) {
+		return this.childTags.remove(tag);
+	}
+
+	/**
+	 * Check whether the node has the given child tag.
+	 * 
+	 * @param name
+	 * @return true, when the node has the given tag. Otherwise false.
+	 */
+	public boolean hasTag(Tag tag) {
+		return this.childTags.contains(tag);
+	}
+
 	@JsonIgnore
 	public Set<Tag> getChildTags() {
 		return this.childTags;
+	}
+
+	/**
+	 * Adds a new property or updates an exiting property with the given key and value.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void addProperty(String key, String value) {
+		this.properties.setProperty(key, value);
+	}
+
+	/**
+	 * Returns the value for the given key.
+	 * 
+	 * @param key
+	 * @return null, when the value could not be found
+	 */
+	public String getProperty(String key) {
+		return (String) properties.getProperty(key);
+	}
+
+	/**
+	 * Removes the property with the given key.
+	 * 
+	 * @param key
+	 * @return true, when the property could be removed. Otherwise false.
+	 */
+	public boolean removeProperty(String key) {
+		if (properties.removeProperty(key) == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * Checks whether the property with the given key exists.
+	 * 
+	 * @param key
+	 * @return true, when the key was found. Otherwise false.
+	 */
+	public boolean hasProperty(String key) {
+		return properties.hasProperty(key);
 	}
 
 }

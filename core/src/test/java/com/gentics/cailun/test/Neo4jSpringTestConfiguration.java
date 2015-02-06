@@ -1,4 +1,4 @@
-package com.gentics.cailun.utils;
+package com.gentics.cailun.test;
 
 import io.vertx.core.Vertx;
 
