@@ -1,4 +1,4 @@
-package com.gentics.cailun.etc;
+package com.gentics.cailun.etc.config;
 
 public class CaiLunConfigurationException extends Exception {
 

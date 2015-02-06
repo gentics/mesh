@@ -19,10 +19,10 @@ import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.GenericNode;
 import com.gentics.cailun.core.rest.model.Tag;
-import com.gentics.cailun.core.rest.model.auth.basic.BasicPermission;
 import com.gentics.cailun.core.rest.model.auth.basic.BasicPermissionRights;
 import com.gentics.cailun.core.rest.model.auth.basic.BasicShiroGraphPermission;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.util.Neo4jPageUtils;
 
 @Component
 @Scope("singleton")
@@ -35,7 +35,12 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	CaiLunSpringConfiguration config;
 
 	@Autowired
+	Neo4jPageUtils pageUtils;
+
+	@Autowired
 	private PageRepository pageRepository;
+
+	private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	private Session session;
 
@@ -75,19 +80,14 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 */
 	private Navigation getNavigation(Tag rootTag) {
 
-		// ExecutionEngine engine = new ExecutionEngine(graphDb);
-		// String query = "MATCH (tag:Tag {name: 'www'}),rels =(page:Page)-[:TAGGED*1..2]-(tag) return rels";
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
 		rootElement.setName(rootTag.getName());
 		rootElement.setType(NavigationElementType.TAG);
 		nav.setRoot(rootElement);
 
-		// traverse(rootTag, rootElement);
-		ForkJoinPool pool = new ForkJoinPool(10);
-		NavigationTask task = new NavigationTask(rootTag, rootElement, this, pageRepository);
+		NavigationTask task = new NavigationTask(rootTag, rootElement, this, pageRepository, pageUtils);
 		pool.invoke(task);
-		pool.shutdown();
 		return nav;
 	}
 

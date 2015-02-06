@@ -177,19 +177,19 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			// Add admin permissions to all pages
 			int i = 0;
 			for (GenericNode currentNode : genericRepository.findAll()) {
-				if (i % 2 == 0) {
+//				if (i % 2 == 0) {
 					log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
 					BasicPermission permission = new BasicPermission(adminRole, currentNode);
 					permission.setRead(true);
 					permission.setCreate(true);
 					permission.setDelete(true);
 					permissionRepository.save(permission);
-				} else {
-					log.info("Adding CustomPermission to node {" + currentNode.getId() + "}");
-					CustomPermission customPerm = new CustomPermission(adminRole, currentNode);
-					customPerm.setCustomActionAllowed(true);
-					permissionRepository.save(customPerm);
-				}
+//				} else {
+//					log.info("Adding CustomPermission to node {" + currentNode.getId() + "}");
+//					CustomPermission customPerm = new CustomPermission(adminRole, currentNode);
+//					customPerm.setCustomActionAllowed(true);
+//					permissionRepository.save(customPerm);
+//				}
 				i++;
 			}
 			tx.success();

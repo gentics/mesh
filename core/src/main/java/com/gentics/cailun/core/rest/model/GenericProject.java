@@ -15,7 +15,7 @@ public class GenericProject extends AbstractPersistable {
 	String name;
 
 	@Fetch
-	@RelatedTo(type = "ASSIGNED_TO_PROJECT", direction = Direction.OUTGOING, elementClass = Tag.class)
+	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childRootTags = new HashSet<>();
 
 }

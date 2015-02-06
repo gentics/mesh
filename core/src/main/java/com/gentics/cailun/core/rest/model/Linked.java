@@ -21,11 +21,9 @@ public class Linked extends AbstractPersistable {
 	private static final long serialVersionUID = -9078009095514379616L;
 
 	@JsonIgnore
-	// @Fetch
 	@StartNode
 	private Page startPage;
 
-	// @JsonIgnore
 	@Fetch
 	@EndNode
 	private Page endPage;

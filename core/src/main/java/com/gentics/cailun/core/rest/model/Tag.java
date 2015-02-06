@@ -18,18 +18,12 @@ public class Tag extends GenericNode {
 	private static final long serialVersionUID = 3547707185082166132L;
 
 	@Fetch
-	// @Setter
-	// @Getter(onMethod = @__({ @JsonIgnore }))
-	@RelatedTo(type = "TAGGED", direction = Direction.INCOMING, elementClass = GenericNode.class)
+	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.INCOMING, elementClass = GenericNode.class)
 	private Set<GenericNode> contents;
 
 	// @Fetch
 	// @RelatedToVia(type = "HAS_PERMISSION", direction = Direction.BOTH, elementClass = Permission.class)
 	// private Set<Permission> permissions = new HashSet<Permission>();
-
-	// @Getter(onMethod = @__({ @JsonIgnore }))
-	// @Setter
-
 
 	public Tag(String name) {
 		setName(name);

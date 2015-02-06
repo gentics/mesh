@@ -26,7 +26,7 @@ public class GenericNode extends AbstractPersistable {
 	private String name;
 
 	@Fetch
-	@RelatedTo(type = "TAGGED", direction = Direction.OUTGOING, elementClass = Tag.class)
+	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
 
 	public String getName() {

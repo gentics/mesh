@@ -17,6 +17,8 @@ import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.gentics.cailun.etc.config.CaiLunConfiguration;
+
 @Configuration
 @EnableNeo4jRepositories("com.gentics.cailun")
 @EnableTransactionManagement

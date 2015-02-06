@@ -7,18 +7,14 @@ import org.springframework.data.neo4j.annotation.StartNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @RelationshipEntity
-// @Data
-// @EqualsAndHashCode(callSuper = false)
 public class Tagged extends AbstractPersistable {
 
 	private static final long serialVersionUID = -3894271096711266689L;
 
 	@JsonIgnore
-	// @Fetch
 	@StartNode
 	private GenericNode startTag;
 
-	// @Fetch
 	@EndNode
 	private GenericNode endTag;
 

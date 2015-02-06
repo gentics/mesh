@@ -23,6 +23,7 @@
 		<module>navigation</module>
 		<module>tagcloud</module>
 		<module>file</module>
+		<module>sitemap</module>
 	</modules>
 
 	<dependencies>

@@ -1,4 +1,4 @@
-package com.gentics.cailun.etc;
+package com.gentics.cailun.etc.config;
 
 import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 
@@ -9,6 +9,8 @@ import java.util.Map;
 import lombok.Data;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 
 @Data
 public class CaiLunConfiguration {

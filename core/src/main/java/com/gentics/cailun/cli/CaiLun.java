@@ -13,12 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.gentics.cailun.etc.CaiLunConfiguration;
-import com.gentics.cailun.etc.CaiLunConfigurationException;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 import com.gentics.cailun.etc.ConfigurationLoader;
 import com.gentics.cailun.etc.Neo4jSpringConfiguration;
+import com.gentics.cailun.etc.config.CaiLunConfiguration;
+import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
 public class CaiLun {
 

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.cailun.core.repository.PageRepository;
 import com.gentics.cailun.core.rest.model.Page;
 import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.util.Neo4jPageUtils;
 
 /**
  * A navigation task is a recursivetask that is used to buildup a navigation object. This task is used within the {@link NavigationRequestHandler} to build the
@@ -19,7 +20,7 @@ import com.gentics.cailun.core.rest.model.Tag;
  * @author johannes2
  *
  */
-public class NavigationTask extends RecursiveTask<Navigation> {
+public class NavigationTask extends RecursiveTask<Void> {
 
 	private static final Logger log = LoggerFactory.getLogger(NavigationTask.class);
 
@@ -28,18 +29,20 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
 	private PageRepository pageRepository;
+	private Neo4jPageUtils pageUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, PageRepository pageRepository) {
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, PageRepository pageRepository, Neo4jPageUtils pageUtils) {
 		this.tag = tag;
 		this.element = element;
 		this.handler = handler;
 		this.pageRepository = pageRepository;
+		this.pageUtils = pageUtils;
 	}
 
 	@Override
-	protected Navigation compute() {
+	protected Void compute() {
 
-		Set<ForkJoinTask<Navigation>> tasks = new HashSet<>();
+		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		tag.getContents().parallelStream().forEachOrdered(tagging -> {
 			if (tagging.getClass().isAssignableFrom(Page.class)) {
 				Page page = (Page) tagging;
@@ -47,7 +50,9 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 					NavigationElement pageNavElement = new NavigationElement();
 					pageNavElement.setName(page.getFilename());
 					pageNavElement.setType(NavigationElementType.PAGE);
-					String path = pageRepository.getPath(page.getId());
+					String path = pageUtils.getPath(tag, page);
+
+//					String path = pageRepository.getPath(page.getId());
 					log.debug("Loaded path { " + path + "} for page {" + page.getId() + "}");
 					pageNavElement.setPath(path);
 					element.getChildren().add(pageNavElement);
@@ -61,7 +66,7 @@ public class NavigationTask extends RecursiveTask<Navigation> {
 				navElement.setType(NavigationElementType.TAG);
 				navElement.setName(currentTag.getName());
 				element.getChildren().add(navElement);
-				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, pageRepository);
+				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, pageRepository, pageUtils);
 				tasks.add(subTask.fork());
 			}
 		});

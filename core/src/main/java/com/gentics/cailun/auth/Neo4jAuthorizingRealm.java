@@ -55,8 +55,6 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		}
 		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
 		try (Transaction tx = graphDb.beginTx()) {
-			// Neo4jTemplate template = new Neo4jTemplate(graphDb);
-			// template.getPersistentState(entity)
 			Node userNode = graphDb.getNodeById(userNodeId);
 			// Traverse the graph from user to the page. Collect all permission relations and check them individually
 			for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)

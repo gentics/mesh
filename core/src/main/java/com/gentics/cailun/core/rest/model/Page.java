@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import org.antlr.v4.runtime.misc.NotNull;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.RelationshipType;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
@@ -18,8 +17,7 @@ public class Page extends GenericNode {
 
 	private static final long serialVersionUID = 1100206059138098335L;
 
-	// @Fetch
-	@RelatedToVia(type = "LINKED", direction = Direction.OUTGOING, elementClass = Linked.class)
+	@RelatedToVia(type = BasicRelationships.LINKED, direction = Direction.OUTGOING, elementClass = Linked.class)
 	private Collection<Linked> links = new HashSet<>();
 
 	@Indexed

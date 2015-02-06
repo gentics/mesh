@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.cailun.cli.CaiLun;
+import com.gentics.cailun.etc.config.CaiLunConfiguration;
 
 public final class ConfigurationLoader {
 
