@@ -6,6 +6,7 @@ import java.util.List;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -24,28 +25,38 @@ public class Neo4jPageUtils {
 
 	@Autowired
 	Neo4jSpringConfiguration configuration;
+	
+	@Autowired
+	Neo4jTemplate template;
 
-	public String getPath(Tag from, GenericNode to) {
+	/**
+	 * Returns the path between the given tag and the target node.
+	 * 
+	 * @param to
+	 *            Tag which will stop the traversal when encountered
+	 * @param from
+	 *            Page from which the traversal will start
+	 * @return
+	 */
+	public String getPath(Tag to, GenericNode from) {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
-		// @Query("MATCH (page:Page),(tag:Tag { name:'/' }), p = shortestPath((tag)-[:TAGGED]-(page)) WHERE id(page) = {0} WITH page, reduce(a='', n IN FILTER(x in nodes(p) WHERE id(page)<> id(x))| a + \"/\"+ n.name) as path return substring(path,2,length(path)) + \"/\" + page.filename")
-		Neo4jTemplate template = new Neo4jTemplate(graphDB);
-		Node toNode = template.getPersistentState(to);
 		List<String> segments = new ArrayList<>();
-		for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.TAGGED)
-				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(toNode).nodes()) {
-			if (node.hasLabel(DynamicLabel.label("Page"))) {
-				segments.add((String) node.getProperty("filename"));
-			}
-			if (node.hasLabel(DynamicLabel.label("Tag"))) {
-				segments.add((String) node.getProperty("name"));
-			}
+		try (Transaction tx = graphDB.beginTx()) {
+			Node fromNode = template.getPersistentState(from);
+			for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.TAGGED)
+					.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
+				if (node.hasLabel(DynamicLabel.label("Page"))) {
+					segments.add((String) node.getProperty("filename"));
+				}
+				if (node.hasLabel(DynamicLabel.label("Tag"))) {
+					segments.add((String) node.getProperty("name"));
+				}
 
-			if (node.hasLabel(DynamicLabel.label("Tag")) && node.getId() == from.getId()) {
-				break;
+				if (node.hasLabel(DynamicLabel.label("Tag")) && node.getId() == to.getId()) {
+					break;
+				}
 			}
-			// System.out.println(node.getId() + ":" + node.getLabels());
-			// System.out.println(rel.getStartNode() + ":" + rel.getStartNode().getId() + "|" + rel.getStartNode().getLabels() + "-[r:"
-			// + rel.getType().name() + "]-" + rel.getEndNode() + ":" + rel.getEndNode().getId() + "|" + rel.getEndNode().getLabels());
+			tx.success();
 		}
 
 		segments = Lists.reverse(segments);

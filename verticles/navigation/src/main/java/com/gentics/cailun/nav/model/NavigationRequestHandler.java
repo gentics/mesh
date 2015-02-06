@@ -51,7 +51,9 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
 		} catch (Exception e) {
-			rc.response().end("Error");
+			//TODO error handling
+			rc.fail(e);
+			rc.fail(500);
 		}
 	}
 

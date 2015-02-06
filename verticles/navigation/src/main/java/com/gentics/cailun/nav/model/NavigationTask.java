@@ -31,7 +31,8 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private PageRepository pageRepository;
 	private Neo4jPageUtils pageUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, PageRepository pageRepository, Neo4jPageUtils pageUtils) {
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, PageRepository pageRepository,
+			Neo4jPageUtils pageUtils) {
 		this.tag = tag;
 		this.element = element;
 		this.handler = handler;
@@ -51,9 +52,9 @@ public class NavigationTask extends RecursiveTask<Void> {
 					pageNavElement.setName(page.getFilename());
 					pageNavElement.setType(NavigationElementType.PAGE);
 					String path = pageUtils.getPath(tag, page);
-
-//					String path = pageRepository.getPath(page.getId());
-					log.debug("Loaded path { " + path + "} for page {" + page.getId() + "}");
+					if (log.isDebugEnabled()) {
+						log.debug("Loaded path { " + path + "} for page {" + page.getId() + "}");
+					}
 					pageNavElement.setPath(path);
 					element.getChildren().add(pageNavElement);
 				}
