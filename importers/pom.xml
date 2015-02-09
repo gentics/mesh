@@ -27,6 +27,5 @@
 
 	<modules>
 		<module>jekyll</module>
-		<module>contentnode</module>
 	</modules>
 </project>
