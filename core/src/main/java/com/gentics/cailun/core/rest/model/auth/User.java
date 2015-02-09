@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.rest.model.AbstractPersistable;
 
@@ -31,6 +30,11 @@ public class User extends AbstractPersistable {
 	// @RelatedTo(type = "MEMBER_OF", direction = Direction.OUTGOING, elementClass = Group.class)
 	// private Set<Group> groups = new HashSet<>();
 
+	/**
+	 * Create a new user with the given username.
+	 * 
+	 * @param username
+	 */
 	public User(String username) {
 		this.username = username;
 	}

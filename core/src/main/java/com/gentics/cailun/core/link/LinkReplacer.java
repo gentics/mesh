@@ -22,13 +22,10 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 	private static final String START_TAG = "${";
 	private static final String END_TAG = "}";
 
-	 private static final long DEFAULT_TIMEOUT_MS = 1000L;
+	private static final long DEFAULT_TIMEOUT_MS = 1000L;
 
-	 private long timeoutMs = DEFAULT_TIMEOUT_MS;
+	private long timeoutMs = DEFAULT_TIMEOUT_MS;
 
-	// private static final String DEFAULT_FALLBACK_REPLACEMENT = "#";
-
-	// private String fallbackReplacement = DEFAULT_FALLBACK_REPLACEMENT;
 	private ExecutorService executor;
 
 	private LinkResolverFactory<T> factory;
@@ -70,7 +67,7 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 			}
 			segments[nLink][0] = s;
 			segments[nLink][1] = e + END_TAG.length();
-			String link = content.substring(s+ START_TAG.length(), e);
+			String link = content.substring(s + START_TAG.length(), e);
 			renderedLinks.add(executor.submit(factory.createLinkResolver(link)));
 			nLink++;
 		}
@@ -80,8 +77,8 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 		int maxLinks = nLink;
 		nLink = 0;
 		int lastStart = 0;
-		
-		// Second step: Buildup the new content  
+
+		// Second step: Buildup the new content
 		for (int i = 0; i < maxLinks; i++) {
 			builder.append(content.substring(lastStart, segments[nLink][0]));
 			builder.append(renderedLinks.get(nLink).get());
@@ -89,14 +86,9 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 			nLink++;
 		}
 		builder.append(content.substring(lastStart, content.length()));
-		
 
 		return builder.toString();
 
 	}
 
-	// private String getWithTimeout(CaiLunLinkResolver segment) {
-	// return segment.get();
-	// fallbackReplacement
-	// }
 }

@@ -29,8 +29,8 @@ public class CaiLunLinkResolver extends AbstractLinkResolver {
 		if (StringUtils.isEmpty(link)) {
 			return "#";
 		}
-		int start = link.indexOf("(") + 1;
-		int end = link.indexOf(")", start);
+		int start = link.indexOf('(') + 1;
+		int end = link.indexOf(')', start);
 		// Extract page id
 		String idString = link.substring(start, end);
 		Long id = Long.valueOf(idString);
