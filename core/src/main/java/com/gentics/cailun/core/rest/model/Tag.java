@@ -28,10 +28,6 @@ public class Tag extends GenericNode {
 	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.INCOMING, elementClass = GenericNode.class)
 	private Set<GenericNode> contents = new HashSet<>();
 
-	// @Fetch
-	// @RelatedToVia(type = "HAS_PERMISSION", direction = Direction.BOTH, elementClass = Permission.class)
-	// private Set<Permission> permissions = new HashSet<Permission>();
-
 	public Tag(String name) {
 		setName(name);
 	}

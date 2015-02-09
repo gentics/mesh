@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.gentics.cailun.core.rest.model.AbstractPersistable;
 
@@ -23,15 +23,14 @@ public class Role extends AbstractPersistable {
 
 	private String name;
 
-	// @Fetch
-	@RelatedTo(type = AuthRelationships.HAS_PERMISSION, direction = Direction.OUTGOING, elementClass = AbstractPermission.class)
-	private Set<AbstractPermission> permissions = new HashSet<>();
+	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.OUTGOING, elementClass = Permission.class)
+	private Set<Permission> permissions = new HashSet<>();
 
 	public Role(String name) {
 		this.name = name;
 	}
 
-	public void addPermission(AbstractPermission perm) {
+	public void addPermission(Permission perm) {
 		this.permissions.add(perm);
 	}
 

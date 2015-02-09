@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.rest.model.auth;
+package com.gentics.cailun.core.rest.model.auth.basic;
 
 import lombok.Data;
 

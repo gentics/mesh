@@ -24,9 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.repository.UserRepository;
-import com.gentics.cailun.core.rest.model.auth.AbstractShiroGraphPermission;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.User;
+import com.gentics.cailun.core.rest.model.auth.basic.AbstractShiroGraphPermission;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
@@ -58,8 +58,9 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 			Node userNode = graphDb.getNodeById(userNodeId);
 			// Traverse the graph from user to the page. Collect all permission relations and check them individually
 			for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-					.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING).relationships(AuthRelationships.TYPES.HAS_PERMISSION)
-					.relationships(AuthRelationships.TYPES.ASSIGNED_TO).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
+					.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
+					.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+					.traverse(userNode).relationships()) {
 
 				// Check whether this relation in fact targets our object we want to check
 				boolean matchesTargetNode = rel.getStartNode().getId() == genericPermission.getTargetNode().getId();

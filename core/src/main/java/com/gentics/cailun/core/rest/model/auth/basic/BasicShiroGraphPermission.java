@@ -1,11 +1,12 @@
 package com.gentics.cailun.core.rest.model.auth.basic;
 
+import java.security.BasicPermission;
+
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 
 import com.gentics.cailun.core.rest.model.GenericNode;
-import com.gentics.cailun.core.rest.model.auth.AbstractShiroGraphPermission;
 
 public class BasicShiroGraphPermission extends AbstractShiroGraphPermission {
 

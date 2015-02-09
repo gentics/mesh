@@ -7,10 +7,14 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
+import com.gentics.cailun.core.rest.model.auth.Permission;
+import com.gentics.cailun.core.rest.model.auth.Role;
 
 /**
  * This class represents a basic cailun node. All models that make use of this model will automatically be able to be tagged and handled by the permission
@@ -30,6 +34,9 @@ public class GenericNode extends AbstractPersistable {
 	@Fetch
 	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
+
+	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = Permission.class)
+	private Set<Permission> permissions = new HashSet<>();
 
 	DynamicProperties properties = new DynamicPropertiesContainer();
 
@@ -121,6 +128,12 @@ public class GenericNode extends AbstractPersistable {
 	 */
 	public boolean hasProperty(String key) {
 		return properties.hasProperty(key);
+	}
+
+	public Permission addPermission(Role role) {
+		Permission perm = new Permission(role, this);
+		this.permissions.add(perm);
+		return perm;
 	}
 
 }

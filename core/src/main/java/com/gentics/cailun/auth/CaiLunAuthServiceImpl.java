@@ -7,7 +7,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.impl.AuthServiceImpl;
 
-import com.gentics.cailun.core.rest.model.auth.AbstractShiroGraphPermission;
+import com.gentics.cailun.core.rest.model.auth.basic.AbstractShiroGraphPermission;
 
 /**
  * Custom auth* service implementation that adds support for object based permission checks

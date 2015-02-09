@@ -1,9 +1,7 @@
 package com.gentics.cailun.demo.verticle;
 
-import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.core.Session;
 
 import java.util.Arrays;
 
@@ -14,20 +12,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 import com.gentics.cailun.core.repository.GenericNodeRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
-import com.gentics.cailun.core.repository.GenericContentRepository;
-import com.gentics.cailun.core.repository.PermissionRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.GenericNode;
-import com.gentics.cailun.core.rest.model.GenericContent;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.Group;
+import com.gentics.cailun.core.rest.model.auth.Permission;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
-import com.gentics.cailun.core.rest.model.auth.basic.BasicPermission;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
@@ -46,9 +42,6 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 
 	@Autowired
 	private UserRepository userRepository;
-
-	@Autowired
-	private PermissionRepository permissionRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -176,11 +169,11 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			for (GenericNode currentNode : genericContentRepository.findAll()) {
 				// if (i % 2 == 0) {
 				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-				BasicPermission permission = new BasicPermission(adminRole, currentNode);
+				Permission permission = currentNode.addPermission(adminRole);
 				permission.setRead(true);
 				permission.setCreate(true);
 				permission.setDelete(true);
-				permissionRepository.save(permission);
+				genericNodeRepository.save(currentNode);
 				// } else {
 				// log.info("Adding CustomPermission to node {" + currentNode.getId() + "}");
 				// CustomPermission customPerm = new CustomPermission(adminRole, currentNode);
@@ -195,12 +188,12 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	}
 
 	private void addPermissionTestHandler() {
-		route("/permtest").method(GET).handler(rh -> {
-			Session session = rh.session();
-			GenericContent page = genericContentRepository.findOne(23L);
-			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CustomShiroGraphPermission(page));
-			rh.response().end("User perm for node {" + page.getId() + "} : " + (perm ? "jow" : "noe"));
-		});
+//		route("/permtest").method(GET).handler(rh -> {
+//			Session session = rh.session();
+//			GenericContent page = genericContentRepository.findOne(23L);
+//			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CustomShiroGraphPermission(page));
+//			rh.response().end("User perm for node {" + page.getId() + "} : " + (perm ? "jow" : "noe"));
+//		});
 
 	}
 

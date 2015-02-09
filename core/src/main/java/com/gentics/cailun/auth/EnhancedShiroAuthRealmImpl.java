@@ -11,7 +11,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
 
-import com.gentics.cailun.core.rest.model.auth.AbstractShiroGraphPermission;
+import com.gentics.cailun.core.rest.model.auth.basic.AbstractShiroGraphPermission;
 
 /**
  * Enhanced version of the default shiro authrealm implementation that exposed some protected fields.
