@@ -2,6 +2,9 @@ package com.gentics.cailun.core.rest.model;
 
 import java.io.Serializable;
 
+import lombok.Data;
+
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,25 +15,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author johannes2
  *
  */
+@Data
 public abstract class AbstractPersistable implements Serializable {
 	private static final long serialVersionUID = -3244769429406745303L;
 
 	@GraphId
 	private Long id;
 
-	public Long getId() {
-		return id;
-	}
+	@Fetch
+	String uuid;
 
-	/**
-	 * Sets the id of the entity.
-	 * 
-	 * @param id
-	 *            the id to set
-	 */
-	protected void setId(final Long id) {
-		this.id = id;
-	}
+//	private String getUUID() {
+//		return null;
+//	}
 
 	@JsonIgnore
 	public boolean isNew() {

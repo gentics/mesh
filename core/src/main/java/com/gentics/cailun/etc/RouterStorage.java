@@ -42,11 +42,14 @@ public class RouterStorage {
 			return routers.get(ROOT_ROUTER_KEY);
 		} else {
 			Router rootRouter = Router.router(vertx);
-			//TODO use template engine to render a fancy error page and log the error.
+			// TODO use template engine to render a fancy error page and log the error.
 			rootRouter.route().failureHandler(fctx -> {
-				fctx.failure().printStackTrace();
-				String exception = Throwables.getStackTraceAsString(fctx.failure());
-				fctx.response().end("Error: " + exception);
+				if (fctx.failure() != null) {
+					String exception = Throwables.getStackTraceAsString(fctx.failure());
+					fctx.response().end("Error: " + exception);
+				} else {
+					fctx.response().end("Error: unknown error");
+				}
 			});
 			routers.put(ROOT_ROUTER_KEY, rootRouter);
 			return rootRouter;

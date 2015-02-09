@@ -15,30 +15,30 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.core.repository.PageRepository;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.GenericNode;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.basic.BasicPermissionRights;
 import com.gentics.cailun.core.rest.model.auth.basic.BasicShiroGraphPermission;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.util.Neo4jPageUtils;
+import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 @Component
 @Scope("singleton")
 public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
-	private TagRepository tagRepository;
+	TagRepository tagRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration config;
 
 	@Autowired
-	Neo4jPageUtils pageUtils;
+	Neo4jGenericContentUtils genericContentUtils;
 
 	@Autowired
-	private PageRepository pageRepository;
+	GenericContentRepository genericContentRepository;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
@@ -72,7 +72,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	}
 
 	/**
-	 * Returns a page navigation.
+	 * Returns a content navigation.
 	 * 
 	 * @param sess
 	 * 
@@ -88,7 +88,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		rootElement.setType(NavigationElementType.TAG);
 		nav.setRoot(rootElement);
 
-		NavigationTask task = new NavigationTask(rootTag, rootElement, this, pageRepository, pageUtils);
+		NavigationTask task = new NavigationTask(rootTag, rootElement, this, genericContentRepository, genericContentUtils);
 		pool.invoke(task);
 		return nav;
 	}

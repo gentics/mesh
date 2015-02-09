@@ -22,24 +22,24 @@ public class Linked extends AbstractPersistable {
 
 	@JsonIgnore
 	@StartNode
-	private Page startPage;
+	private GenericContent startPage;
 
 	@Fetch
 	@EndNode
-	private Page endPage;
+	private GenericContent endPage;
 
-	public Linked(Page startPage, Page endPage) {
+	public Linked(GenericContent startPage, GenericContent endPage) {
 		this.startPage = startPage;
 		this.endPage = endPage;
 	}
 
 	@JsonIgnore
-	public Page getStartPage() {
+	public GenericContent getStartPage() {
 		return startPage;
 	}
 
 	@JsonIgnore
-	public Page getEndPage() {
+	public GenericContent getEndPage() {
 		return endPage;
 	}
 

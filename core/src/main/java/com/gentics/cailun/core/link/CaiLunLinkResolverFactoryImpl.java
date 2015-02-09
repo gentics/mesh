@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.cailun.core.repository.PageRepository;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 
 /**
  * Factory which provides link resolvers
@@ -21,7 +21,7 @@ import com.gentics.cailun.core.repository.PageRepository;
 public class CaiLunLinkResolverFactoryImpl<T extends CaiLunLinkResolver> implements LinkResolverFactory<AbstractLinkResolver> {
 
 	@Autowired
-	PageRepository pageRepo;
+	GenericContentRepository pageRepo;
 
 	@Override
 	public AbstractLinkResolver createLinkResolver(String link) {

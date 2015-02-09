@@ -10,12 +10,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.PageRepository;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.model.Page;
+import com.gentics.cailun.core.rest.model.GenericContent;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
-import com.gentics.cailun.util.Neo4jPageUtils;
+import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -23,10 +23,10 @@ import com.gentics.cailun.util.Neo4jPageUtils;
 public class Neo4jPageUtilsTest {
 
 	@Autowired
-	private Neo4jPageUtils neo4jPageUtils;
+	private Neo4jGenericContentUtils neo4jPageUtils;
 
 	@Autowired
-	private PageRepository pageRepository;
+	private GenericContentRepository pageRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -40,7 +40,7 @@ public class Neo4jPageUtilsTest {
 	@Transactional
 	@Test
 	public void testSimplePagePathTraversal() {
-		Page page = new Page("test page");
+		GenericContent page = new GenericContent("test page");
 		page.setFilename("test.html");
 
 		Tag rootTag = new Tag("root");
@@ -61,7 +61,7 @@ public class Neo4jPageUtilsTest {
 	@Transactional
 	@Test
 	public void testComplexPagePathTraversal() {
-		Page page = new Page("test page");
+		GenericContent page = new GenericContent("test page");
 		page.setFilename("test.html");
 
 		Tag rootTag = new Tag("root");
@@ -72,7 +72,7 @@ public class Neo4jPageUtilsTest {
 		tagRepository.save(rootTag);
 		tagRepository.save(subTag);
 
-		Page page2 = new Page("test page 2");
+		GenericContent page2 = new GenericContent("test page 2");
 		page2.setFilename("test2.html");
 		page2.tag(subTag);
 		pageRepository.save(page2);

@@ -7,23 +7,23 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.PageRepository;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-public class PageTest {
+public class ContentTest {
 
 	@Autowired
-	PageRepository pageRepository;
+	GenericContentRepository contentRepository;
 
 	@Test
 	public void testPageLinks() {
-		Page page = new Page("test page");
-		Page page2 = new Page("test page2");
-		page.linkTo(page2);
-		pageRepository.save(page);
-		pageRepository.save(page2);
+		GenericContent content = new GenericContent("test content");
+		GenericContent content2 = new GenericContent("test content2");
+		content.linkTo(content2);
+		contentRepository.save(content);
+		contentRepository.save(content2);
 	}
 }

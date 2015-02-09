@@ -16,13 +16,13 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
 import com.gentics.cailun.core.repository.GenericNodeRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
-import com.gentics.cailun.core.repository.PageRepository;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 import com.gentics.cailun.core.repository.PermissionRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.GenericNode;
-import com.gentics.cailun.core.rest.model.Page;
+import com.gentics.cailun.core.rest.model.GenericContent;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
@@ -51,9 +51,6 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	private PermissionRepository permissionRepository;
 
 	@Autowired
-	private PageRepository pageRepository;
-
-	@Autowired
 	private TagRepository tagRepository;
 
 	@Autowired
@@ -66,7 +63,10 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
-	private GenericNodeRepository genericRepository;
+	private GenericContentRepository genericContentRepository;
+
+	@Autowired
+	private GenericNodeRepository genericNodeRepository;
 
 	@Autowired
 	private Neo4jSpringConfiguration neo4jSpringConfiguration;
@@ -129,14 +129,14 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		rootPage.setFilename("index.html");
 		rootPage.setTeaser("Yo root");
 		rootPage.tag(rootTag);
-		pageRepository.save(rootPage);
+		genericContentRepository.save(rootPage);
 
 		for (int i = 0; i < 6; i++) {
 			Page page = new Page("Hallo Welt");
 			page.setFilename("some" + i + ".html");
 			page.setContent("some content");
 			page.tag(blogsTag);
-			pageRepository.save(page);
+			genericContentRepository.save(page);
 		}
 
 		for (int i = 0; i < 3; i++) {
@@ -144,51 +144,49 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			page.setFilename("some_posts" + i + ".html");
 			page.setContent("some content");
 			page.tag(postsTag);
-			pageRepository.save(page);
+			genericContentRepository.save(page);
 		}
 
 		Page page = new Page("New BlogPost");
 		page.tag(blogsTag);
 		page.setFilename("blog.html");
 		page.setContent("This is the blogpost content");
-		page.setAuthor("Jotschi");
 		page.setTeaser("Jo this page is the second blogpost");
-		pageRepository.save(page);
+		genericContentRepository.save(page);
 
 		page = new Page("Hallo Cailun");
 		page.setFilename("some2.html");
 		page.setContent("some more content");
 		page.tag(postsTag);
-		pageRepository.save(page);
+		genericContentRepository.save(page);
 
 		Page indexPage = new Page("Index With Perm");
 		indexPage.setFilename("index.html");
 		indexPage.setContent("The index page<br/><a href=\"${Page(10)}\">Link</a>");
 		indexPage.setTitle("Index Title");
-		indexPage.setAuthor("Jotschi");
 		indexPage.setTeaser("Yo guckste hier");
 		indexPage.tag(wwwTag);
 
 		indexPage.linkTo(page);
-		pageRepository.save(indexPage);
+		genericContentRepository.save(indexPage);
 
 		try (Transaction tx = neo4jSpringConfiguration.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all pages
 			int i = 0;
-			for (GenericNode currentNode : genericRepository.findAll()) {
-//				if (i % 2 == 0) {
-					log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-					BasicPermission permission = new BasicPermission(adminRole, currentNode);
-					permission.setRead(true);
-					permission.setCreate(true);
-					permission.setDelete(true);
-					permissionRepository.save(permission);
-//				} else {
-//					log.info("Adding CustomPermission to node {" + currentNode.getId() + "}");
-//					CustomPermission customPerm = new CustomPermission(adminRole, currentNode);
-//					customPerm.setCustomActionAllowed(true);
-//					permissionRepository.save(customPerm);
-//				}
+			for (GenericNode currentNode : genericContentRepository.findAll()) {
+				// if (i % 2 == 0) {
+				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
+				BasicPermission permission = new BasicPermission(adminRole, currentNode);
+				permission.setRead(true);
+				permission.setCreate(true);
+				permission.setDelete(true);
+				permissionRepository.save(permission);
+				// } else {
+				// log.info("Adding CustomPermission to node {" + currentNode.getId() + "}");
+				// CustomPermission customPerm = new CustomPermission(adminRole, currentNode);
+				// customPerm.setCustomActionAllowed(true);
+				// permissionRepository.save(customPerm);
+				// }
 				i++;
 			}
 			tx.success();
@@ -199,7 +197,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rh -> {
 			Session session = rh.session();
-			Page page = pageRepository.findOne(23L);
+			GenericContent page = genericContentRepository.findOne(23L);
 			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CustomShiroGraphPermission(page));
 			rh.response().end("User perm for node {" + page.getId() + "} : " + (perm ? "jow" : "noe"));
 		});

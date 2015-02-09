@@ -8,10 +8,10 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.repository.PageRepository;
-import com.gentics.cailun.core.rest.model.Page;
+import com.gentics.cailun.core.repository.GenericContentRepository;
+import com.gentics.cailun.core.rest.model.GenericContent;
 import com.gentics.cailun.core.rest.model.Tag;
-import com.gentics.cailun.util.Neo4jPageUtils;
+import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 /**
  * A navigation task is a recursivetask that is used to buildup a navigation object. This task is used within the {@link NavigationRequestHandler} to build the
@@ -28,16 +28,16 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private Tag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
-	private PageRepository pageRepository;
-	private Neo4jPageUtils pageUtils;
+	private GenericContentRepository genericContentRepository;
+	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, PageRepository pageRepository,
-			Neo4jPageUtils pageUtils) {
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, GenericContentRepository genericContentRepository,
+			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;
 		this.handler = handler;
-		this.pageRepository = pageRepository;
-		this.pageUtils = pageUtils;
+		this.genericContentRepository = genericContentRepository;
+		this.genericContentUtils = genericContentUtils;
 	}
 
 	@Override
@@ -45,15 +45,15 @@ public class NavigationTask extends RecursiveTask<Void> {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		tag.getContents().parallelStream().forEachOrdered(tagging -> {
-			if (tagging.getClass().isAssignableFrom(Page.class)) {
-				Page page = (Page) tagging;
+			if (tagging.getClass().isAssignableFrom(GenericContent.class)) {
+				GenericContent content = (GenericContent) tagging;
 				if (handler.canView(tag)) {
 					NavigationElement pageNavElement = new NavigationElement();
-					pageNavElement.setName(page.getFilename());
-					pageNavElement.setType(NavigationElementType.PAGE);
-					String path = pageUtils.getPath(tag, page);
+					pageNavElement.setName(content.getFilename());
+					pageNavElement.setType(NavigationElementType.CONTENT);
+					String path = genericContentUtils.getPath(tag, content);
 					if (log.isDebugEnabled()) {
-						log.debug("Loaded path { " + path + "} for page {" + page.getId() + "}");
+						log.debug("Loaded path { " + path + "} for page {" + content.getId() + "}");
 					}
 					pageNavElement.setPath(path);
 					element.getChildren().add(pageNavElement);
@@ -67,7 +67,7 @@ public class NavigationTask extends RecursiveTask<Void> {
 				navElement.setType(NavigationElementType.TAG);
 				navElement.setName(currentTag.getName());
 				element.getChildren().add(navElement);
-				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, pageRepository, pageUtils);
+				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, genericContentRepository, genericContentUtils);
 				tasks.add(subTask.fork());
 			}
 		});

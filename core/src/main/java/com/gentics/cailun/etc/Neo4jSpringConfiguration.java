@@ -18,6 +18,7 @@ import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
+import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
 
 @Configuration
 @EnableNeo4jRepositories("com.gentics.cailun")
@@ -61,6 +62,9 @@ public class Neo4jSpringConfiguration extends Neo4jConfiguration {
 	public GraphDatabaseService graphDatabaseService() {
 		try {
 			deployNeo4Vertx();
+			GraphDatabaseService service = Neo4jGraphVerticle.getDatabase();
+			// Add UUID transaction handler
+			service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
 			return Neo4jGraphVerticle.getDatabase();
 		} catch (Exception e) {
 			log.error("Could not get Neo4J Database from neo4vertx", e);

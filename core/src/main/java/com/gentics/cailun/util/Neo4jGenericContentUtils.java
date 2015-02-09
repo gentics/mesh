@@ -21,7 +21,7 @@ import com.google.common.collect.Lists;
 
 @Component
 @Scope("singleton")
-public class Neo4jPageUtils {
+public class Neo4jGenericContentUtils {
 
 	@Autowired
 	Neo4jSpringConfiguration configuration;

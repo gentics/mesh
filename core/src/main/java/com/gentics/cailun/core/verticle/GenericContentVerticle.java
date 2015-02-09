@@ -2,10 +2,7 @@ package com.gentics.cailun.core.verticle;
 
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-
-import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -16,9 +13,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.cailun.core.repository.PageRepository;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.model.Page;
+import com.gentics.cailun.core.rest.model.GenericContent;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
@@ -30,12 +27,12 @@ import com.gentics.cailun.core.rest.response.GenericResponse;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class PageVerticle extends AbstractCailunRestVerticle {
+public class GenericContentVerticle extends AbstractCailunRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(PageVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(GenericContentVerticle.class);
 
 	@Autowired
-	private PageRepository pageRepository;
+	private GenericContentRepository genericContentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -43,18 +40,17 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 	@Autowired
 	GraphDatabaseService graphDb;
 
-	public PageVerticle() {
-		super("page");
+	public GenericContentVerticle() {
+		super("contents");
 	}
 
 	@Override
 	public void start() throws Exception {
 		super.start();
 
-		// Page manipulation
 		addSaveHandler();
 		addLoadHandler();
-		addGetPagesHandler();
+		addDeleteHandler();
 		addCreateHandler();
 
 		// Tagging
@@ -63,15 +59,23 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 		addGetTagHandler();
 	}
 
+	private void addDeleteHandler() {
+		route("/:uuid").method(DELETE).handler(rh -> {
+			String uuid = rh.request().params().get("uuid");
+			genericContentRepository.delete(uuid);
+		});
+
+	}
+
 	/**
 	 * Add a handler for removing a tag with a specific name from a page.
 	 */
 	private void addUntagPageHandler() {
 
-		route("/tag/:id/:name").method(DELETE).handler(rh -> {
-			long id = Long.valueOf(rh.request().params().get("id"));
+		route("/:uuid/tags/:name").method(DELETE).handler(rh -> {
+			String uuid = rh.request().params().get("uuid");
 			String name = rh.request().params().get("name");
-			rh.response().end(toJson(new GenericResponse<Tag>(pageRepository.untag(id, name))));
+			rh.response().end(toJson(new GenericResponse<Tag>(genericContentRepository.untag(uuid, name))));
 		});
 	}
 
@@ -80,10 +84,10 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 	 */
 	private void addGetTagHandler() {
 
-		route("/tag/:id/:name").method(GET).handler(rh -> {
-			long id = Long.valueOf(rh.request().params().get("id"));
-			String name = String.valueOf(rh.request().params().get("name"));
-			rh.response().end(toJson(new GenericResponse<Tag>(pageRepository.getTag(id, name))));
+		route("/:uuid/tags/:name").method(GET).handler(rh -> {
+			String uuid = rh.request().params().get("uuid");
+			String name = rh.request().params().get("name");
+			rh.response().end(toJson(new GenericResponse<Tag>(genericContentRepository.getTag(uuid, name))));
 		});
 
 	}
@@ -93,26 +97,13 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 	 */
 	private void addAddTagHandler() {
 
-		route("/tag/:id/:name").method(PUT).handler(rh -> {
-			long id = Long.valueOf(rh.request().params().get("id"));
+		route("/:uuid/tags/:name").method(PUT).handler(rh -> {
+			String uuid = rh.request().params().get("uuid");
 			String name = String.valueOf(rh.request().params().get("name"));
-			Tag tag = pageRepository.tagPage(id, name);
+			Tag tag = genericContentRepository.tagGenericContent(uuid, name);
 			rh.response().end(toJson(new GenericResponse<Tag>(tag)));
 
 		});
-	}
-
-	/**
-	 * Return a list of all pages in the graph
-	 */
-	private void addGetPagesHandler() {
-
-		route("/pages").method(GET).handler(rc -> {
-			// TODO use paging here
-				GenericResponse<List<Page>> response = new GenericResponse<List<Page>>();
-				response.setObject(pageRepository.findAllPages());
-				rc.response().end(toJson(response));
-			});
 	}
 
 	/**
@@ -133,34 +124,39 @@ public class PageVerticle extends AbstractCailunRestVerticle {
 	 */
 	private void addLoadHandler() {
 
-		route("/byId/:id").method(GET).handler(rc -> {
-			String id = rc.request().params().get("id");
-			//
-			// if (id != null) {
-			// return pageRepository.findOne(id);
-			// } else {
-			// throw new Exception("Please specify a correct id.");
-			// }
-				rc.response().end(toJson(pageRepository.findOne(Long.valueOf(id))));
-			});
+		route("/:uuid").method(GET).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			if (uuid != null) {
+				GenericContent content = genericContentRepository.findByUUID(uuid);
+				if (content != null) {
+					rc.response().end(toJson(content));
+				} else {
+					rc.fail(404);
+					rc.fail(new ContentNotFoundException(uuid));
+				}
+			}
+		});
 
 	}
 
 	private void addSaveHandler() {
 
 		// TODO change this to put once it works and update proxy and ajax call accordingly
-		route("/save/:id").consumes(APPLICATION_JSON).method(POST).handler(rc -> {
-			long id = Long.valueOf(rc.request().params().get("id"));
+		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
 
 			PageSaveRequest request = fromJson(rc, PageSaveRequest.class);
-			Page page = pageRepository.findOne(id);
-			if (page != null) {
-				page.setContent(request.getContent());
-				pageRepository.save(page);
+			GenericContent content = genericContentRepository.findByUUID(uuid);
+			if (content != null) {
+				// content.setContent(request.getContent());
+				genericContentRepository.save(content);
+				GenericResponse<String> response = new GenericResponse<>();
+				response.setObject("OK");
+				rc.response().end(toJson(response));
+			} else {
+				rc.fail(404);
+				rc.fail(new ContentNotFoundException(uuid));
 			}
-			GenericResponse<String> response = new GenericResponse<>();
-			response.setObject("OK");
-			rc.response().end(toJson(response));
 
 		});
 

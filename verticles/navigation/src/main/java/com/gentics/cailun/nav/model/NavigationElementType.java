@@ -2,5 +2,5 @@ package com.gentics.cailun.nav.model;
 
 public enum NavigationElementType {
 
-	PAGE, TAG
+	CONTENT, TAG
 }

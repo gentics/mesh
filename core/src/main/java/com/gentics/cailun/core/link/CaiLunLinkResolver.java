@@ -2,7 +2,7 @@ package com.gentics.cailun.core.link;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gentics.cailun.core.repository.PageRepository;
+import com.gentics.cailun.core.repository.GenericContentRepository;
 
 /**
  * Neo4j Cailun page resolver. This class will resolve cailun link placeholders.
@@ -12,13 +12,13 @@ import com.gentics.cailun.core.repository.PageRepository;
  */
 public class CaiLunLinkResolver extends AbstractLinkResolver {
 
-	private PageRepository pageRepo;
+	private GenericContentRepository pageRepo;
 
 	public CaiLunLinkResolver() {
 		super(null);
 	}
 
-	public CaiLunLinkResolver(String text, PageRepository pageRepo) {
+	public CaiLunLinkResolver(String text, GenericContentRepository pageRepo) {
 		super(text);
 		this.pageRepo = pageRepo;
 	}
@@ -45,7 +45,9 @@ public class CaiLunLinkResolver extends AbstractLinkResolver {
 	 */
 	private String getPathForPageId(Long id) {
 		// TODO exception handling
-		return pageRepo.getPath(id);
+		//TODO use GenericContentUtils
+		//return pageRepo.getPath(id);
+		return "WIP";
 	}
 
 }
