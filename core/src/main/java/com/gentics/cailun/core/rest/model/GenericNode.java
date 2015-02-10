@@ -13,7 +13,7 @@ import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
-import com.gentics.cailun.core.rest.model.auth.Permission;
+import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.Role;
 
 /**
@@ -35,8 +35,8 @@ public class GenericNode extends AbstractPersistable {
 	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
 
-	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = Permission.class)
-	private Set<Permission> permissions = new HashSet<>();
+	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = GraphPermission.class)
+	private Set<GraphPermission> permissions = new HashSet<>();
 
 	DynamicProperties properties = new DynamicPropertiesContainer();
 
@@ -130,10 +130,8 @@ public class GenericNode extends AbstractPersistable {
 		return properties.hasProperty(key);
 	}
 
-	public Permission addPermission(Role role) {
-		Permission perm = new Permission(role, this);
-		this.permissions.add(perm);
-		return perm;
+	public boolean addPermission(GraphPermission permission) {
+		return permissions.add(permission);
 	}
 
 }

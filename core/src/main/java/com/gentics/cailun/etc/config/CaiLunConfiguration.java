@@ -15,7 +15,7 @@ import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 @Data
 public class CaiLunConfiguration {
 
-	private static final boolean ENABLED = true;
+//	private static final boolean ENABLED = true;
 	private static final boolean DISABLED = false;
 
 	public static final String HTTP_PORT_KEY = "httpPort";

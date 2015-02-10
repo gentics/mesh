@@ -19,8 +19,8 @@ import com.gentics.cailun.core.repository.GenericContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.GenericNode;
 import com.gentics.cailun.core.rest.model.Tag;
-import com.gentics.cailun.core.rest.model.auth.basic.BasicPermissionRights;
-import com.gentics.cailun.core.rest.model.auth.basic.BasicShiroGraphPermission;
+import com.gentics.cailun.core.rest.model.auth.BasicPermission;
+import com.gentics.cailun.core.rest.model.auth.PermissionType;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -51,7 +51,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
 		} catch (Exception e) {
-			//TODO error handling
+			// TODO error handling
 			rc.fail(e);
 			rc.fail(500);
 		}
@@ -94,16 +94,16 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	}
 
 	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
-		getAuthService().hasPermission(session.getPrincipal(), new BasicShiroGraphPermission(object, BasicPermissionRights.READ), resultHandler);
+		getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(object, PermissionType.READ), resultHandler);
 	}
 
 	/**
 	 * Wrapper for the permission checks. Check whether the given object can be viewed by the user.
 	 * 
 	 * @param object
-	 * @return
+	 * @return true, when the user can view the object. Otherwise false.
 	 */
 	public boolean canView(GenericNode object) {
-		return getAuthService().hasPermission(session.getPrincipal(), new BasicShiroGraphPermission(object, BasicPermissionRights.READ));
+		return getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(object, PermissionType.READ));
 	}
 }

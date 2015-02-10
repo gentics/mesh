@@ -46,7 +46,7 @@ public class CaiLunLinkResolver extends AbstractLinkResolver {
 	private String getPathForPageId(Long id) {
 		// TODO exception handling
 		//TODO use GenericContentUtils
-		//return pageRepo.getPath(id);
+//		return pageRepo.getPath(id);
 		return "WIP";
 	}
 

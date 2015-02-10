@@ -11,6 +11,8 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 @NodeEntity
 public class GenericProject extends AbstractPersistable {
 
+	private static final long serialVersionUID = -3565883313897315008L;
+
 	@Fetch
 	String name;
 

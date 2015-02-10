@@ -19,16 +19,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public abstract class AbstractPersistable implements Serializable {
 	private static final long serialVersionUID = -3244769429406745303L;
 
+	/**
+	 * The mandatory neo4j graph id for this object.
+	 */
 	@GraphId
 	private Long id;
 
+	/**
+	 * The uuid of the object. A transaction event handler is being used in 
+	 * order to generate and verify the integrity of uuids.
+	 */
 	@Fetch
-	String uuid;
+	private String uuid;
 
-//	private String getUUID() {
-//		return null;
-//	}
-
+	/**
+	 * Check whether the object was not yet saved.
+	 * 
+	 * @return true, when the object was not yet saved. Otherwise false.
+	 */
 	@JsonIgnore
 	public boolean isNew() {
 		return null == getId();
@@ -38,7 +46,7 @@ public abstract class AbstractPersistable implements Serializable {
 	public int hashCode() {
 		int hashCode = 17;
 
-		hashCode += null == getId() ? 0 : getId().hashCode() * 31;
+		hashCode += isNew() ? 0 : getId().hashCode() * 31;
 
 		return hashCode;
 	}

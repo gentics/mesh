@@ -51,10 +51,10 @@ public class QueryVerticle extends AbstractCailunRestVerticle {
 		addGetPathHandler();
 	}
 
-	private void resolveLinks(GenericContent page) throws InterruptedException, ExecutionException {
+	private void resolveLinks(GenericContent content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
 		LinkReplacer replacer = new LinkReplacer(resolver);
-		// page.setContent(replacer.replace(page.getContent()));
+		content.setContent(replacer.replace(content.getContent()));
 	}
 
 	private Long getPageNodeIdForPath(String path) throws Exception {

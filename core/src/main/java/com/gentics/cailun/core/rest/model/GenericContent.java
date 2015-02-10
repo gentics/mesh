@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import org.antlr.v4.runtime.misc.NotNull;
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
@@ -24,6 +25,10 @@ public class GenericContent extends GenericNode {
 	@NotNull
 	protected String filename;
 
+	@Indexed
+	@Fetch
+	protected String content;
+
 	public GenericContent(String name) {
 		setName(name);
 	}
@@ -40,6 +45,14 @@ public class GenericContent extends GenericNode {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 }

@@ -7,7 +7,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.impl.AuthServiceImpl;
 
-import com.gentics.cailun.core.rest.model.auth.basic.AbstractShiroGraphPermission;
+import org.apache.shiro.authz.Permission;
 
 /**
  * Custom auth* service implementation that adds support for object based permission checks
@@ -25,13 +25,13 @@ public class CaiLunAuthServiceImpl extends AuthServiceImpl {
 		super(vertx, config);
 	}
 
-	public void hasPermission(String principal, AbstractShiroGraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
+	public void hasPermission(String principal, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
 		vertx.executeBlocking((Future<Boolean> fut) -> {
 			fut.complete(hasPermission(principal, permission));
 		}, resultHandler);
 	}
 
-	public boolean hasPermission(String principal, AbstractShiroGraphPermission permission) {
+	public boolean hasPermission(String principal, Permission permission) {
 		boolean hasPerm = getAuthRealm().hasPermission(principal, permission);
 		return hasPerm;
 	}

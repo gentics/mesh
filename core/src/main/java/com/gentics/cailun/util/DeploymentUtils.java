@@ -59,8 +59,11 @@ public final class DeploymentUtils {
 			}
 			latch.countDown();
 		});
-		latch.await(10, TimeUnit.SECONDS);
-		return deploymentId.get();
+		if (latch.await(10, TimeUnit.SECONDS)) {
+			return deploymentId.get();
+		} else {
+			throw new InterruptedException("Timeout for startup reached");
+		}
 	}
 
 }

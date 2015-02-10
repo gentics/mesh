@@ -13,12 +13,9 @@ import io.vertx.ext.apex.core.SessionStore;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import lombok.NoArgsConstructor;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.google.common.base.Throwables;
 
 @NoArgsConstructor
 public class RouterStorage {

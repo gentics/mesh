@@ -141,14 +141,12 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 
 	private void addSaveHandler() {
 
-		// TODO change this to put once it works and update proxy and ajax call accordingly
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-
 			PageSaveRequest request = fromJson(rc, PageSaveRequest.class);
 			GenericContent content = genericContentRepository.findByUUID(uuid);
 			if (content != null) {
-				// content.setContent(request.getContent());
+				content.setContent(request.getContent());
 				genericContentRepository.save(content);
 				GenericResponse<String> response = new GenericResponse<>();
 				response.setObject("OK");
@@ -157,7 +155,6 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 				rc.fail(404);
 				rc.fail(new ContentNotFoundException(uuid));
 			}
-
 		});
 
 	}

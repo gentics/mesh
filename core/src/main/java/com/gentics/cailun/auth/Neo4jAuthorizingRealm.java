@@ -19,22 +19,23 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Uniqueness;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
+import com.gentics.cailun.core.rest.model.auth.BasicPermission;
+import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.User;
-import com.gentics.cailun.core.rest.model.auth.basic.AbstractShiroGraphPermission;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
-	private static final Logger log = LoggerFactory.getLogger(Neo4jAuthorizingRealm.class);
-
 	@Autowired
 	CaiLunSpringConfiguration securityConfig;
+
+	@Autowired
+	Neo4jTemplate template;
 
 	@Autowired
 	UserRepository userRepository;
@@ -49,7 +50,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		return Long.valueOf(nodeIdStr);
 	}
 
-	private boolean checkPermission(long userNodeId, AbstractShiroGraphPermission genericPermission) throws Exception {
+	private boolean checkPermission(long userNodeId, BasicPermission genericPermission) throws Exception {
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
@@ -62,30 +63,30 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 					.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
 					.traverse(userNode).relationships()) {
 
-				// Check whether this relation in fact targets our object we want to check
-				boolean matchesTargetNode = rel.getStartNode().getId() == genericPermission.getTargetNode().getId();
-				if (matchesTargetNode) {
-					// Check whether the label of the permission node matches the label of the shiro permission
-					boolean matchesPermissionLabel = rel.getEndNode().hasLabel(genericPermission.getPermissionNodeLabel());
-					if (matchesPermissionLabel) {
-						// Delegate the final permission check to the shiro permission
-						if (genericPermission.isPermitted(rel.getEndNode(), rel.getStartNode()) == true) {
+				if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
+					// Check whether this relation in fact targets our object we want to check
+//					log.debug("REL: " + rel.getEndNode().getId() + " " + rel.getEndNode().getLabels() + " " + rel.getStartNode().getId()
+//							+ " " + rel.getStartNode().getLabels());
+					boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
+					if (matchesTargetNode) {
+						// Convert the api relationship to a SDN relationship
+						GraphPermission perm = template.load(rel, GraphPermission.class);
+						if (genericPermission.implies(perm) == true) {
 							return true;
 						}
 					}
 				}
-
 			}
 		}
 		return false;
 	}
 
 	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-		if (permission instanceof AbstractShiroGraphPermission) {
-			AbstractShiroGraphPermission genericPermission = (AbstractShiroGraphPermission) permission;
+		if (permission instanceof BasicPermission) {
+			BasicPermission basicPermission = (BasicPermission) permission;
 			try {
 				long userId = getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString());
-				return checkPermission(userId, genericPermission);
+				return checkPermission(userId, basicPermission);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

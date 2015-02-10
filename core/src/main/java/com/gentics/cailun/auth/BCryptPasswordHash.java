@@ -18,29 +18,35 @@ public class BCryptPasswordHash {
 	private static final transient Logger log = LoggerFactory.getLogger(BCryptPasswordHash.class);
 
 	private String accountPasswordHash;
-	
+
 	private CaiLunSpringConfiguration securityConfiguration;
 
-	//TODO inject securityConfiguration
+	/**
+	 * Create a new bcrypt password hash.
+	 * 
+	 * @param passwordHash
+	 * @param securityConfig
+	 */
 	public BCryptPasswordHash(String passwordHash, CaiLunSpringConfiguration securityConfig) {
+		// TODO inject securityConfiguration
 		this.accountPasswordHash = passwordHash;
 		this.securityConfiguration = securityConfig;
 	}
 
 	@Override
 	public boolean equals(Object tokenPassword) {
-		String tokenPasswordString = null;
 		try {
-			tokenPasswordString = String.valueOf((char[]) tokenPassword);
+			String tokenPasswordStr = String.valueOf((char[]) tokenPassword);
+			if (StringUtils.isEmpty(accountPasswordHash) && tokenPasswordStr != null) {
+				log.debug("The account password hash or token password string are invalid.");
+				return false;
+			}
+			return securityConfiguration.passwordEncoder().matches(tokenPasswordStr, accountPasswordHash);
 		} catch (ClassCastException e) {
 			log.error("The given token password could not be transformed", e);
 			return false;
 		}
-		if (StringUtils.isEmpty(accountPasswordHash) && tokenPasswordString != null) {
-			log.debug("The account password hash or token password string are invalid.");
-			return false;
-		}
-		return securityConfiguration.passwordEncoder().matches(tokenPasswordString, accountPasswordHash);
+
 	}
 
 }

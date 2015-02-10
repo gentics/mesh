@@ -1,7 +1,10 @@
 package com.gentics.cailun.demo.verticle;
 
+import static io.vertx.core.http.HttpMethod.GET;
+import static com.gentics.cailun.core.rest.model.auth.PermissionType.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.apex.core.Session;
 
 import java.util.Arrays;
 
@@ -18,10 +21,12 @@ import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.repository.UserRepository;
+import com.gentics.cailun.core.rest.model.GenericContent;
 import com.gentics.cailun.core.rest.model.GenericNode;
 import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.core.rest.model.auth.BasicPermission;
 import com.gentics.cailun.core.rest.model.auth.Group;
-import com.gentics.cailun.core.rest.model.auth.Permission;
+import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -166,20 +171,16 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		try (Transaction tx = neo4jSpringConfiguration.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all pages
 			int i = 0;
-			for (GenericNode currentNode : genericContentRepository.findAll()) {
+			for (GenericNode currentNode : genericNodeRepository.findAll()) {
 				// if (i % 2 == 0) {
 				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-				Permission permission = currentNode.addPermission(adminRole);
-				permission.setRead(true);
-				permission.setCreate(true);
-				permission.setDelete(true);
+				GraphPermission permission = new GraphPermission(adminRole, currentNode);
+				permission.grant(CREATE);
+				permission.grant(READ);
+				permission.grant(WRITE);
+				permission.grant(DELETE);
+				currentNode.addPermission(permission);
 				genericNodeRepository.save(currentNode);
-				// } else {
-				// log.info("Adding CustomPermission to node {" + currentNode.getId() + "}");
-				// CustomPermission customPerm = new CustomPermission(adminRole, currentNode);
-				// customPerm.setCustomActionAllowed(true);
-				// permissionRepository.save(customPerm);
-				// }
 				i++;
 			}
 			tx.success();
@@ -188,12 +189,12 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	}
 
 	private void addPermissionTestHandler() {
-//		route("/permtest").method(GET).handler(rh -> {
-//			Session session = rh.session();
-//			GenericContent page = genericContentRepository.findOne(23L);
-//			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CustomShiroGraphPermission(page));
-//			rh.response().end("User perm for node {" + page.getId() + "} : " + (perm ? "jow" : "noe"));
-//		});
+		route("/permtest").method(GET).handler(rh -> {
+			Session session = rh.session();
+			GenericContent content = genericContentRepository.findOne(23L);
+			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(content, READ));
+			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
+		});
 
 	}
 

@@ -47,10 +47,6 @@ public class LinkRendererTest {
 		System.out.println(out);
 	}
 
-	private String getUrlForPage(Long id) {
-		return "/var/www/index.html";
-	}
-
 	// @Test
 	public void testRendering() throws IOException {
 		System.out.println(content);

@@ -23,14 +23,14 @@ public class Role extends AbstractPersistable {
 
 	private String name;
 
-	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.OUTGOING, elementClass = Permission.class)
-	private Set<Permission> permissions = new HashSet<>();
+	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.OUTGOING, elementClass = GraphPermission.class)
+	private Set<GraphPermission> permissions = new HashSet<>();
 
 	public Role(String name) {
 		this.name = name;
 	}
 
-	public void addPermission(Permission perm) {
+	public void addPermission(GraphPermission perm) {
 		this.permissions.add(perm);
 	}
 

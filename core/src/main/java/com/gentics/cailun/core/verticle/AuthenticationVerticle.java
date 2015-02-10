@@ -40,9 +40,6 @@ public class AuthenticationVerticle extends AbstractCailunRestVerticle {
 
 	private void addLoginHandler() {
 		route("/login").consumes(APPLICATION_JSON).method(GET).handler(rc -> {
-			String username = "blub";
-			String password = "blar";
-
 			GenericResponse<String> response = new GenericResponse<>();
 			response.setObject("OK");
 			rc.response().end(toJson(response));
