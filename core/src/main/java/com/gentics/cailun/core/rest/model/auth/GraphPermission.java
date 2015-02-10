@@ -19,11 +19,9 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 
 	private static final long serialVersionUID = 8304718445043642942L;
 
-	@Fetch
 	@StartNode
 	private Role role;
 
-	@Fetch
 	@EndNode
 	private GenericNode targetNode;
 

@@ -169,7 +169,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		genericContentRepository.save(indexPage);
 
 		try (Transaction tx = neo4jSpringConfiguration.getGraphDatabaseService().beginTx()) {
-			// Add admin permissions to all pages
+			// Add admin permissions to all nodes
 			int i = 0;
 			for (GenericNode currentNode : genericNodeRepository.findAll()) {
 				// if (i % 2 == 0) {
