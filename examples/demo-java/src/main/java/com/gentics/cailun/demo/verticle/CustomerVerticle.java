@@ -1,7 +1,10 @@
 package com.gentics.cailun.demo.verticle;
 
+import static com.gentics.cailun.core.rest.model.auth.PermissionType.CREATE;
+import static com.gentics.cailun.core.rest.model.auth.PermissionType.DELETE;
+import static com.gentics.cailun.core.rest.model.auth.PermissionType.READ;
+import static com.gentics.cailun.core.rest.model.auth.PermissionType.WRITE;
 import static io.vertx.core.http.HttpMethod.GET;
-import static com.gentics.cailun.core.rest.model.auth.PermissionType.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.core.Session;
@@ -14,19 +17,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.cailun.core.repository.GenericContentRepository;
-import com.gentics.cailun.core.repository.GenericNodeRepository;
+import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.repository.CaiLunNodeRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.repository.UserRepository;
-import com.gentics.cailun.core.rest.model.GenericContent;
-import com.gentics.cailun.core.rest.model.GenericNode;
+import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
-import com.gentics.cailun.core.rest.model.auth.BasicPermission;
-import com.gentics.cailun.core.rest.model.auth.Group;
+import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
+import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -41,7 +44,7 @@ import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class CustomerVerticle extends AbstractCailunRestVerticle {
+public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	private static Logger log = LoggerFactory.getLogger(CustomerVerticle.class);
 
@@ -61,10 +64,10 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
-	private GenericContentRepository genericContentRepository;
+	private ContentRepository contentRepository;
 
 	@Autowired
-	private GenericNodeRepository genericNodeRepository;
+	private CaiLunNodeRepository nodeRepository;
 
 	@Autowired
 	private Neo4jSpringConfiguration neo4jSpringConfiguration;
@@ -74,8 +77,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	}
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void registerEndPoints() throws Exception {
 
 		addPermissionTestHandler();
 
@@ -127,14 +129,14 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		rootPage.setFilename("index.html");
 		rootPage.setTeaser("Yo root");
 		rootPage.tag(rootTag);
-		genericContentRepository.save(rootPage);
+		contentRepository.save(rootPage);
 
 		for (int i = 0; i < 6; i++) {
 			Page page = new Page("Hallo Welt");
 			page.setFilename("some" + i + ".html");
 			page.setContent("some content");
 			page.tag(blogsTag);
-			genericContentRepository.save(page);
+			contentRepository.save(page);
 		}
 
 		for (int i = 0; i < 3; i++) {
@@ -142,7 +144,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 			page.setFilename("some_posts" + i + ".html");
 			page.setContent("some content");
 			page.tag(postsTag);
-			genericContentRepository.save(page);
+			contentRepository.save(page);
 		}
 
 		Page page = new Page("New BlogPost");
@@ -150,13 +152,13 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		page.setFilename("blog.html");
 		page.setContent("This is the blogpost content");
 		page.setTeaser("Jo this page is the second blogpost");
-		genericContentRepository.save(page);
+		contentRepository.save(page);
 
 		page = new Page("Hallo Cailun");
 		page.setFilename("some2.html");
 		page.setContent("some more content");
 		page.tag(postsTag);
-		genericContentRepository.save(page);
+		contentRepository.save(page);
 
 		Page indexPage = new Page("Index With Perm");
 		indexPage.setFilename("index.html");
@@ -166,12 +168,12 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 		indexPage.tag(wwwTag);
 
 		indexPage.linkTo(page);
-		genericContentRepository.save(indexPage);
+		contentRepository.save(indexPage);
 
 		try (Transaction tx = neo4jSpringConfiguration.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all nodes
 			int i = 0;
-			for (GenericNode currentNode : genericNodeRepository.findAll()) {
+			for (CaiLunNode currentNode : nodeRepository.findAll()) {
 				// if (i % 2 == 0) {
 				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
 				GraphPermission permission = new GraphPermission(adminRole, currentNode);
@@ -180,7 +182,7 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 				permission.grant(WRITE);
 				permission.grant(DELETE);
 				currentNode.addPermission(permission);
-				genericNodeRepository.save(currentNode);
+				nodeRepository.save(currentNode);
 				i++;
 			}
 			tx.success();
@@ -191,8 +193,8 @@ public class CustomerVerticle extends AbstractCailunRestVerticle {
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rh -> {
 			Session session = rh.session();
-			GenericContent content = genericContentRepository.findOne(23L);
-			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(content, READ));
+			Content content = contentRepository.findOne(23L);
+			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(content, READ));
 			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
 		});
 

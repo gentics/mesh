@@ -6,16 +6,14 @@ import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.cailun.core.repository.GenericContentRepository;
+import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
@@ -27,12 +25,10 @@ import com.gentics.cailun.core.rest.response.GenericResponse;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class GenericContentVerticle extends AbstractCailunRestVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(GenericContentVerticle.class);
+public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
-	private GenericContentRepository genericContentRepository;
+	private ContentRepository contentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -40,14 +36,12 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 	@Autowired
 	GraphDatabaseService graphDb;
 
-	public GenericContentVerticle() {
+	public ContentVerticle() {
 		super("contents");
 	}
 
 	@Override
-	public void start() throws Exception {
-		super.start();
-
+	public void registerEndPoints() throws Exception {
 		addSaveHandler();
 		addLoadHandler();
 		addDeleteHandler();
@@ -62,7 +56,7 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rh -> {
 			String uuid = rh.request().params().get("uuid");
-			genericContentRepository.delete(uuid);
+			contentRepository.delete(uuid);
 		});
 
 	}
@@ -75,7 +69,7 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 		route("/:uuid/tags/:name").method(DELETE).handler(rh -> {
 			String uuid = rh.request().params().get("uuid");
 			String name = rh.request().params().get("name");
-			rh.response().end(toJson(new GenericResponse<Tag>(genericContentRepository.untag(uuid, name))));
+			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.untag(uuid, name))));
 		});
 	}
 
@@ -87,7 +81,7 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 		route("/:uuid/tags/:name").method(GET).handler(rh -> {
 			String uuid = rh.request().params().get("uuid");
 			String name = rh.request().params().get("name");
-			rh.response().end(toJson(new GenericResponse<Tag>(genericContentRepository.getTag(uuid, name))));
+			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.getTag(uuid, name))));
 		});
 
 	}
@@ -100,7 +94,7 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 		route("/:uuid/tags/:name").method(PUT).handler(rh -> {
 			String uuid = rh.request().params().get("uuid");
 			String name = String.valueOf(rh.request().params().get("name"));
-			Tag tag = genericContentRepository.tagGenericContent(uuid, name);
+			Tag tag = contentRepository.tagGenericContent(uuid, name);
 			rh.response().end(toJson(new GenericResponse<Tag>(tag)));
 
 		});
@@ -127,7 +121,7 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 		route("/:uuid").method(GET).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (uuid != null) {
-				GenericContent content = genericContentRepository.findByUUID(uuid);
+				Content content = contentRepository.findByUUID(uuid);
 				if (content != null) {
 					rc.response().end(toJson(content));
 				} else {
@@ -144,10 +138,10 @@ public class GenericContentVerticle extends AbstractCailunRestVerticle {
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			PageSaveRequest request = fromJson(rc, PageSaveRequest.class);
-			GenericContent content = genericContentRepository.findByUUID(uuid);
+			Content content = contentRepository.findByUUID(uuid);
 			if (content != null) {
 				content.setContent(request.getContent());
-				genericContentRepository.save(content);
+				contentRepository.save(content);
 				GenericResponse<String> response = new GenericResponse<>();
 				response.setObject("OK");
 				rc.response().end(toJson(response));

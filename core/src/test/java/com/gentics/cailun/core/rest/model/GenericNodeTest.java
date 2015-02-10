@@ -12,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.GenericNodeRepository;
+import com.gentics.cailun.core.repository.CaiLunNodeRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
@@ -22,7 +22,7 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class GenericNodeTest {
 
 	@Autowired
-	GenericNodeRepository genericNodeRepository;
+	CaiLunNodeRepository genericNodeRepository;
 
 	@Autowired
 	TagRepository tagRepository;
@@ -30,12 +30,12 @@ public class GenericNodeTest {
 	@Test
 	public void testNodeTagging() {
 		final String TEST_TAG_NAME = "testTag";
-		GenericNode node = new GenericNode();
+		CaiLunNode node = new CaiLunNode();
 		Tag tag = node.tag(TEST_TAG_NAME);
 		assertNotNull("The tag method should return the created tag", tag);
 		genericNodeRepository.save(node);
 
-		GenericNode reloadedNode = genericNodeRepository.findOne(node.getId());
+		CaiLunNode reloadedNode = genericNodeRepository.findOne(node.getId());
 		assertNotNull("The node shoule be loaded", reloadedNode);
 		assertTrue("The test node should have a tag with the name {" + TEST_TAG_NAME + "}.", reloadedNode.hasTag(tag));
 
@@ -49,10 +49,10 @@ public class GenericNodeTest {
 	public void testNodeProperties() {
 		final String TEST_PROPERTY_KEY = "myProperty";
 		final String TEST_PROPERTY_VALUE = "myValue";
-		GenericNode node = new GenericNode();
+		CaiLunNode node = new CaiLunNode();
 		node.addProperty(TEST_PROPERTY_KEY, TEST_PROPERTY_VALUE);
 		genericNodeRepository.save(node);
-		GenericNode reloadedNode = genericNodeRepository.findOne(node.getId());
+		CaiLunNode reloadedNode = genericNodeRepository.findOne(node.getId());
 		assertEquals("The node should have the property", TEST_PROPERTY_VALUE, reloadedNode.getProperty(TEST_PROPERTY_KEY));
 		assertTrue("The property must be removed.", reloadedNode.removeProperty(TEST_PROPERTY_KEY));
 		assertFalse("The property was already removed and removing it again must fail", reloadedNode.removeProperty(TEST_PROPERTY_KEY));

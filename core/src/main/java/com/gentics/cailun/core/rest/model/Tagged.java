@@ -13,12 +13,12 @@ public class Tagged extends AbstractPersistable {
 
 	@JsonIgnore
 	@StartNode
-	private GenericNode startTag;
+	private CaiLunNode startTag;
 
 	@EndNode
-	private GenericNode endTag;
+	private CaiLunNode endTag;
 
-	public Tagged(GenericNode startTag, GenericNode endTag) {
+	public Tagged(CaiLunNode startTag, CaiLunNode endTag) {
 		this.startTag = startTag;
 		this.endTag = endTag;
 	}
@@ -27,12 +27,12 @@ public class Tagged extends AbstractPersistable {
 	}
 
 	@JsonIgnore
-	public GenericNode getStartTag() {
+	public CaiLunNode getStartTag() {
 		return startTag;
 	}
 
 	@JsonIgnore
-	public GenericNode getEndTag() {
+	public CaiLunNode getEndTag() {
 		return endTag;
 	}
 

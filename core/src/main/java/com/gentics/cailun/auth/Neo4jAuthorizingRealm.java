@@ -24,7 +24,7 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
-import com.gentics.cailun.core.rest.model.auth.BasicPermission;
+import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -46,11 +46,11 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	}
 
 	private long getNodeIdFromPrincipalId(String id) {
-		String nodeIdStr = id.substring(id.lastIndexOf("#") + 1);
+		final String nodeIdStr = id.substring(id.lastIndexOf('#') + 1);
 		return Long.valueOf(nodeIdStr);
 	}
 
-	private boolean checkPermission(long userNodeId, BasicPermission genericPermission) throws Exception {
+	private boolean checkPermission(long userNodeId, CaiLunPermission genericPermission) throws Exception {
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
@@ -82,8 +82,8 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	}
 
 	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-		if (permission instanceof BasicPermission) {
-			BasicPermission basicPermission = (BasicPermission) permission;
+		if (permission instanceof CaiLunPermission) {
+			CaiLunPermission basicPermission = (CaiLunPermission) permission;
 			try {
 				long userId = getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString());
 				return checkPermission(userId, basicPermission);

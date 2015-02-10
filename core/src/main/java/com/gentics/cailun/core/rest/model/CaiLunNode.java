@@ -14,7 +14,6 @@ import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
-import com.gentics.cailun.core.rest.model.auth.Role;
 
 /**
  * This class represents a basic cailun node. All models that make use of this model will automatically be able to be tagged and handled by the permission
@@ -24,7 +23,7 @@ import com.gentics.cailun.core.rest.model.auth.Role;
  *
  */
 @NodeEntity
-public class GenericNode extends AbstractPersistable {
+public class CaiLunNode extends AbstractPersistable {
 
 	private static final long serialVersionUID = -7525642021064006664L;
 

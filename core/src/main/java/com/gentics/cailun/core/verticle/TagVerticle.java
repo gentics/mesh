@@ -1,16 +1,13 @@
 package com.gentics.cailun.core.verticle;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCailunRestVerticle;
-import com.gentics.cailun.core.repository.GenericContentRepository;
+import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 
 /**
@@ -22,12 +19,10 @@ import com.gentics.cailun.core.repository.TagRepository;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class TagVerticle extends AbstractCailunRestVerticle {
-
-	private static Logger log = LoggerFactory.getLogger(TagVerticle.class);
+public class TagVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
-	private GenericContentRepository pageRepository;
+	private ContentRepository pageRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -40,9 +35,7 @@ public class TagVerticle extends AbstractCailunRestVerticle {
 	}
 
 	@Override
-	public void start() throws Exception {
-		super.start();
-
+	public void registerEndPoints() throws Exception {
 		// addAddTagStructureHandler();
 	}
 

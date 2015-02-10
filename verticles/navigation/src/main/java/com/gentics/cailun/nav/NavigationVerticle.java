@@ -3,31 +3,26 @@ package com.gentics.cailun.nav;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCailunRestVerticle;
+import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class NavigationVerticle extends AbstractCailunRestVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(NavigationVerticle.class);
+public class NavigationVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
 	NavigationConfiguration navigationConfig;
 
 	public NavigationVerticle() {
-		super("nav");
+		super("navigation");
 	}
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void registerEndPoints() throws Exception {
 		addNavigationHandler();
 	}
 

@@ -4,14 +4,13 @@ import lombok.NoArgsConstructor;
 
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.neo4j.annotation.EndNode;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.gentics.cailun.core.rest.model.AbstractPersistable;
-import com.gentics.cailun.core.rest.model.GenericNode;
+import com.gentics.cailun.core.rest.model.CaiLunNode;
 
 @NoArgsConstructor
 @RelationshipEntity
@@ -23,12 +22,12 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 	private Role role;
 
 	@EndNode
-	private GenericNode targetNode;
+	private CaiLunNode targetNode;
 
 	DynamicProperties permissions = new DynamicPropertiesContainer();
 
 	@PersistenceConstructor
-	public GraphPermission(Role role, GenericNode targetNode) {
+	public GraphPermission(Role role, CaiLunNode targetNode) {
 		this.role = role;
 		this.targetNode = targetNode;
 	}

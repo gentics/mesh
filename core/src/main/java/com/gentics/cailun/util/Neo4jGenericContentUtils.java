@@ -14,7 +14,8 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.rest.model.BasicRelationships;
-import com.gentics.cailun.core.rest.model.GenericNode;
+import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.CaiLunNode;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 import com.google.common.collect.Lists;
@@ -25,7 +26,7 @@ public class Neo4jGenericContentUtils {
 
 	@Autowired
 	Neo4jSpringConfiguration configuration;
-	
+
 	@Autowired
 	Neo4jTemplate template;
 
@@ -38,21 +39,23 @@ public class Neo4jGenericContentUtils {
 	 *            Page from which the traversal will start
 	 * @return
 	 */
-	public String getPath(Tag to, GenericNode from) {
+	public String getPath(Tag to, CaiLunNode from) {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
 		List<String> segments = new ArrayList<>();
 		try (Transaction tx = graphDB.beginTx()) {
 			Node fromNode = template.getPersistentState(from);
 			for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.TAGGED)
 					.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
-				if (node.hasLabel(DynamicLabel.label("Page"))) {
+				System.out.println(node.getId() + " " + node.getLabels());
+				
+				if (node.hasLabel(DynamicLabel.label(Content.class.getSimpleName()))) {
 					segments.add((String) node.getProperty("filename"));
 				}
-				if (node.hasLabel(DynamicLabel.label("Tag"))) {
+				if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName()))) {
 					segments.add((String) node.getProperty("name"));
 				}
 
-				if (node.hasLabel(DynamicLabel.label("Tag")) && node.getId() == to.getId()) {
+				if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName())) && node.getId() == to.getId()) {
 					break;
 				}
 			}

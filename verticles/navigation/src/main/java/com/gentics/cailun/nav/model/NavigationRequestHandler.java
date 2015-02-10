@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.core.repository.GenericContentRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.model.GenericNode;
+import com.gentics.cailun.core.rest.model.CaiLunNode;
 import com.gentics.cailun.core.rest.model.Tag;
-import com.gentics.cailun.core.rest.model.auth.BasicPermission;
+import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.PermissionType;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
@@ -38,7 +38,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	Neo4jGenericContentUtils genericContentUtils;
 
 	@Autowired
-	GenericContentRepository genericContentRepository;
+	ContentRepository genericContentRepository;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
@@ -93,8 +93,8 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		return nav;
 	}
 
-	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
-		getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(object, PermissionType.READ), resultHandler);
+	public void canView(CaiLunNode object, Handler<AsyncResult<Boolean>> resultHandler) {
+		getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(object, PermissionType.READ), resultHandler);
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @param object
 	 * @return true, when the user can view the object. Otherwise false.
 	 */
-	public boolean canView(GenericNode object) {
-		return getAuthService().hasPermission(session.getPrincipal(), new BasicPermission(object, PermissionType.READ));
+	public boolean canView(CaiLunNode object) {
+		return getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(object, PermissionType.READ));
 	}
 }

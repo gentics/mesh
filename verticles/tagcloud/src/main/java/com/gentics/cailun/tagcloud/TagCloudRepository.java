@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.tagcloud.model.TagCloudResult;
 
-public interface TagCloudRepository extends GraphRepository<GenericContent> {
+public interface TagCloudRepository extends GraphRepository<Content> {
 
 	/**
 	 * Return the count of relationships from all tags to pages

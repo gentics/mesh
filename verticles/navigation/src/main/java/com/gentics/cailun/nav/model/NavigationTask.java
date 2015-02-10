@@ -8,8 +8,8 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.repository.GenericContentRepository;
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.repository.ContentRepository;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -28,10 +28,10 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private Tag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
-	private GenericContentRepository genericContentRepository;
+	private ContentRepository genericContentRepository;
 	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, GenericContentRepository genericContentRepository,
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, ContentRepository genericContentRepository,
 			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;
@@ -45,8 +45,8 @@ public class NavigationTask extends RecursiveTask<Void> {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		tag.getContents().parallelStream().forEachOrdered(tagging -> {
-			if (tagging.getClass().isAssignableFrom(GenericContent.class)) {
-				GenericContent content = (GenericContent) tagging;
+			if (tagging.getClass().isAssignableFrom(Content.class)) {
+				Content content = (Content) tagging;
 				if (handler.canView(tag)) {
 					NavigationElement pageNavElement = new NavigationElement();
 					pageNavElement.setName(content.getFilename());

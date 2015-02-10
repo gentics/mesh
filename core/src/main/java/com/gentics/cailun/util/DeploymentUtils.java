@@ -23,7 +23,10 @@ import com.gentics.cailun.cli.CaiLun;
  */
 public final class DeploymentUtils {
 
-	private static final Logger log = LoggerFactory.getLogger(CaiLun.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CaiLun.class);
+
+	// TODO decrease
+	private static final long DEFAULT_TIMEOUT_IN_SECONDS = 10 * 1000;
 
 	public static String deployAndWait(Vertx vertx, JsonObject config, final Class<? extends AbstractVerticle> clazz) throws InterruptedException {
 		return deployAndWait(vertx, clazz.getCanonicalName());
@@ -53,13 +56,17 @@ public final class DeploymentUtils {
 		vertx.deployVerticle(prefix + verticleClass, options, handler -> {
 			if (handler.succeeded()) {
 				deploymentId.set(handler.result());
-				log.info("Deployed verticle {" + verticleClass + "} => " + deploymentId);
+				if (LOG.isInfoEnabled()) {
+					LOG.info("Deployed verticle {" + verticleClass + "} => " + deploymentId);
+				}
 			} else {
-				log.info("Error:", handler.cause());
+				if (LOG.isInfoEnabled()) {
+					LOG.info("Error:", handler.cause());
+				}
 			}
 			latch.countDown();
 		});
-		if (latch.await(10, TimeUnit.SECONDS)) {
+		if (latch.await(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)) {
 			return deploymentId.get();
 		} else {
 			throw new InterruptedException("Timeout for startup reached");

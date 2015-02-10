@@ -7,10 +7,10 @@ import io.vertx.core.eventbus.MessageConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.AbstractCailunRestVerticle;
+import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
 import com.gentics.cailun.git.GitUtils;
 
-public class GitWebHookVerticle extends AbstractCailunRestVerticle {
+public class GitWebHookVerticle extends AbstractCaiLunCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(GitWebHookVerticle.class);
 
@@ -31,7 +31,11 @@ public class GitWebHookVerticle extends AbstractCailunRestVerticle {
 
 	@Override
 	public void stop() throws Exception {
-		super.stop();
+
+	}
+
+	@Override
+	public void registerEndPoints() throws Exception {
 		if (gitWebHookConsumer != null) {
 			gitWebHookConsumer.unregister();
 		}
@@ -40,15 +44,15 @@ public class GitWebHookVerticle extends AbstractCailunRestVerticle {
 	private void addGitWebhookHandler() {
 
 		gitWebHookConsumer = vertx.eventBus().consumer(GIT_WEBHOOK_EVENT_ADDRESS, (Message<String> msg) -> {
-			//TODO don't accept our own message
-			if ("pull".equalsIgnoreCase(msg.body())) {
-				try {
-					GitUtils.pull();
-				} catch (Exception e) {
-					log.error("Error while handling git event from address {" + msg.address() + "}.", e);
+			// TODO don't accept our own message
+				if ("pull".equalsIgnoreCase(msg.body())) {
+					try {
+						GitUtils.pull();
+					} catch (Exception e) {
+						log.error("Error while handling git event from address {" + msg.address() + "}.", e);
+					}
 				}
-			}
-		});
+			});
 
 		route("/git/webhook").method(GET).handler(ctx -> {
 			try {

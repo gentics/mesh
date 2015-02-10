@@ -1,6 +1,7 @@
 package com.gentics.cailun.verticle.admin;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
+import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 
@@ -14,14 +15,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCailunRestVerticle;
+import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
 import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 import com.gentics.cailun.git.GitPullChecker;
 
+/**
+ * The admin verticle provides core administration rest endpoints.
+ * 
+ * @author johannes2
+ *
+ */
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class AdminVerticle extends AbstractCailunRestVerticle {
+public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
 	public static final String GIT_PULL_CHECKER_INTERVAL_KEY = "gitPullCheckerInterval";
@@ -39,17 +46,32 @@ public class AdminVerticle extends AbstractCailunRestVerticle {
 	}
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void registerEndPoints() throws Exception {
 		if (config().getBoolean(GIT_PULL_CHECKER_KEY, DEFAULT_GIT_CHECKER)) {
 			gitChecker = new GitPullChecker(config().getLong(GIT_PULL_CHECKER_INTERVAL_KEY, DEFAULT_GIT_CHECKER_INTERVAL));
 		}
 
 		addBackupHandler();
 		addNeo4VertxRestartHandler();
+		addProjectHandlers();
 
 		// addVerticleHandler();
 		// addServiceHandler();
+
+	}
+
+	private void addProjectHandlers() {
+		route("/projects/:name").method(GET).handler(ctx -> {
+			String name = ctx.request().params().get("name");
+			// TODO add check whether project was already registered/added
+				config.routerStorage().addProjectRouter(name);
+				log.info("Registered project {" + name + "}");
+			});
+
+		route("/projects/:name").method(DELETE).handler(ctx -> {
+			String name = ctx.request().params().get("name");
+			config.routerStorage().removeProjectRouter(name);
+		});
 
 	}
 

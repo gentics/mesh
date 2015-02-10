@@ -2,10 +2,10 @@ package com.gentics.cailun.demo.verticle;
 
 import lombok.NoArgsConstructor;
 
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.rest.model.Content;
 
 @NoArgsConstructor
-public class Page extends GenericContent {
+public class Page extends Content {
 
 	private static final long serialVersionUID = 8079084130242382986L;
 	private static final String TEASER_KEY = "teaser";

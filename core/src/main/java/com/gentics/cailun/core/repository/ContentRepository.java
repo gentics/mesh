@@ -5,16 +5,16 @@ import java.util.List;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 
-public interface GenericContentRepository extends GraphRepository<GenericContent> {
+public interface ContentRepository extends GraphRepository<Content> {
 
 	@Query("MATCH (content:_GenericContent)<-[:`TAGGED`]-(tag:Tag) RETURN content")
-	public List<GenericContent> findGenericContentsWithTags();
+	public List<Content> findGenericContentsWithTags();
 
 	@Query("MATCH (content:_GenericContent) RETURN content")
-	public List<GenericContent> findAllGenericContents();
+	public List<Content> findAllGenericContents();
 
 	@Query("MATCH (content:_GenericContent) WHERE content.uuid = {0} MERGE (tag:_Tag { name:{1} }) WITH content, tag MERGE (tag)-[r:TAGGED]->(content) RETURN tag")
 	public Tag tagGenericContent(String uuid, String name);
@@ -30,7 +30,7 @@ public interface GenericContentRepository extends GraphRepository<GenericContent
 //	public String getPath(Long id);
 
 	@Query("MATCH (content:GenericContent {uuid: {0}} return content")
-	public GenericContent findByUUID(String uuid);
+	public Content findByUUID(String uuid);
 
 	@Query("MATCH (n:GenericContent {uuid: {0}} DELETE n")
 	public void delete(String uuid);

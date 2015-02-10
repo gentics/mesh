@@ -9,13 +9,13 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCailunRestVerticle;
+import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
 import com.gentics.cailun.core.rest.response.GenericResponse;
 
 @Component
 @Scope("singleton")
 @SpringVerticle()
-public class AuthenticationVerticle extends AbstractCailunRestVerticle {
+public class AuthenticationVerticle extends AbstractCaiLunCoreApiVerticle {
 
 	@Context
 	SecurityContext securityContext;
@@ -25,11 +25,10 @@ public class AuthenticationVerticle extends AbstractCailunRestVerticle {
 	}
 
 	@Override
-	public void start() throws Exception {
-		super.start();
-
+	public void registerEndPoints() throws Exception {
 		addLoginHandler();
 		addUserInfoHandler();
+
 	}
 
 	private void addUserInfoHandler() {

@@ -1,16 +1,16 @@
 package com.gentics.cailun.core.rest.request;
 
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.rest.model.Content;
 
 public class PageCreateRequest {
 
-	GenericContent page;
+	Content page;
 
-	public GenericContent getPage() {
+	public Content getPage() {
 		return page;
 	}
 
-	public void setPage(GenericContent page) {
+	public void setPage(Content page) {
 		this.page = page;
 	}
 

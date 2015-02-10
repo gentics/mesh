@@ -1,54 +1,49 @@
 package com.gentics.cailun.core;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Context;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Router;
 import io.vertx.ext.apex.core.RoutingContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.RouterStorage;
+import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class AbstractCailunRestVerticle extends AbstractVerticle {
+public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle {
 
 	private static final Gson GSON = new GsonBuilder().create();
 
 	// TODO use a common source
 	public static final String APPLICATION_JSON = "application/json";
 
-	@Autowired
-	CaiLunSpringConfiguration config;
-
-	private Router localRouter = null;
-	private String basePath = null;
+	protected Router localRouter = null;
+	protected String basePath;
 
 	protected AbstractCailunRestVerticle(String basePath) {
 		this.basePath = basePath;
 	}
 
 	@Override
-	public void init(Vertx vertx, Context context) {
-		super.init(vertx, context);
-	}
-
-	@Override
 	public void start() throws Exception {
-		RouterStorage routerStorage = config.routerStorage();
-		this.localRouter = routerStorage.getLocalAPIRouter("/" + basePath);
 
+		this.localRouter = setupLocalRouter();
+		if (localRouter == null) {
+			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
+		}
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8080));
+		RouterStorage routerStorage = config.routerStorage();
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
+		registerEndPoints();
 
 	}
+
+	public abstract void registerEndPoints() throws Exception;
+
+	public abstract Router setupLocalRouter();
 
 	@Override
 	public void stop() throws Exception {

@@ -7,11 +7,7 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.cailun.cli.CaiLun;
-import com.gentics.cailun.core.verticle.AuthenticationVerticle;
-import com.gentics.cailun.core.verticle.TagVerticle;
 import com.gentics.cailun.demo.verticle.CustomerVerticle;
-import com.gentics.cailun.nav.NavigationVerticle;
-import com.gentics.cailun.tagcloud.TagCloudVerticle;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -30,10 +26,10 @@ public class DemoRunner {
 
 		cailun.setCustomLoader((vertx) -> {
 			deployAndWait(vertx, CustomerVerticle.class);
-			deployAndWait(vertx, AuthenticationVerticle.class);
-			deployAndWait(vertx, NavigationVerticle.class);
-			deployAndWait(vertx, TagCloudVerticle.class);
-			deployAndWait(vertx, TagVerticle.class);
+//			deployAndWait(vertx, AuthenticationVerticle.class);
+//			deployAndWait(vertx, NavigationVerticle.class);
+//			deployAndWait(vertx, TagCloudVerticle.class);
+//			deployAndWait(vertx, TagVerticle.class);
 			//deployAndWait(vertx, StaticContentVerticle.class);
 			//deployAndWait(vertx, AdminGUIVerticle.class);
 		});

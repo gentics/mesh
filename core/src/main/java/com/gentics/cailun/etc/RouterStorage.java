@@ -16,7 +16,14 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
+import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
+/**
+ * Central storage for all apex request routers.
+ * 
+ * @author johannes2
+ *
+ */
 @NoArgsConstructor
 public class RouterStorage {
 
@@ -25,35 +32,51 @@ public class RouterStorage {
 	private static final String API_ROUTER_KEY = "API_ROUTER";
 	private static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
 
-	// overlapping routers are currently not supported:
-	// e.g: /page/page will not work
-	private Map<String, Router> routers = new HashMap<>();
+	/**
+	 * Core routers are routers that are responsible for dealing with routes that are no project routes. E.g: /api/v1/admin, /api/v1
+	 */
+	private Map<String, Router> coreRouters = new HashMap<>();
+
+	/**
+	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/alohaeditor, /api/v1/yourprojectname
+	 */
+	private Map<String, Router> projectRouters = new HashMap<>();
+
+	/**
+	 * Project sub routers are routers that are mounted by project routers. E.g: /api/v1/alohaeditor/contents, /api/v1/yourprojectname/tags
+	 */
+	private Map<String, Router> projectSubRouters = new HashMap<>();
 
 	public RouterStorage(Vertx vertx, CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
 		this.vertx = vertx;
 		initAPIRouter(caiLunAuthServiceImpl);
 	}
 
+	/**
+	 * The root {@link Router} is a core router that is used as a parent for all other routers. This method will create the root router if non is existing.
+	 * 
+	 * @return the root router
+	 */
 	public Router getRootRouter() {
-		if (routers.keySet().contains(ROOT_ROUTER_KEY)) {
-			return routers.get(ROOT_ROUTER_KEY);
-		} else {
-			Router rootRouter = Router.router(vertx);
+		Router rootRouter = coreRouters.get(ROOT_ROUTER_KEY);
+		if (rootRouter == null) {
+			rootRouter = Router.router(vertx);
 			// TODO use template engine to render a fancy error page and log the error.
-//			rootRouter.route().failureHandler(fctx -> {
-//				if (fctx.failure() != null) {
-//					String exception = Throwables.getStackTraceAsString(fctx.failure());
-//					fctx.response().end("Error: " + exception);
-//				} else {
-//					fctx.response().end("Error: unknown error");
-//				}
-//			});
-			routers.put(ROOT_ROUTER_KEY, rootRouter);
-			return rootRouter;
+			// TODO somehow this failurehandler prevents authentication?
+			// rootRouter.route().failureHandler(fctx -> {
+			// if (fctx.failure() != null) {
+			// String exception = Throwables.getStackTraceAsString(fctx.failure());
+			// fctx.response().end("Error: " + exception);
+			// } else {
+			// fctx.response().end("Error: unknown error");
+			// }
+			// });
+			coreRouters.put(ROOT_ROUTER_KEY, rootRouter);
 		}
+		return rootRouter;
 	}
 
-	// TODO I think this functionality should be moved to a different place
+	// // TODO I think this functionality should be moved to a different place
 	private void initAPIRouter(CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
 		Router router = getAPIRouter();
 		router.route().handler(BodyHandler.bodyHandler());
@@ -64,12 +87,17 @@ public class RouterStorage {
 		router.route().handler(authHandler);
 	}
 
+	/**
+	 * The api router is a core router which is being used to identify the api and rest api version. This method will create a api router if non is existing.
+	 * 
+	 * @return api router
+	 */
 	public Router getAPIRouter() {
-		if (routers.keySet().contains(API_ROUTER_KEY)) {
-			return routers.get(API_ROUTER_KEY);
+		if (coreRouters.keySet().contains(API_ROUTER_KEY)) {
+			return coreRouters.get(API_ROUTER_KEY);
 		} else {
 			Router apiRouter = Router.router(vertx);
-			routers.put(API_ROUTER_KEY, apiRouter);
+			coreRouters.put(API_ROUTER_KEY, apiRouter);
 			getRootRouter().mountSubRouter(DEFAULT_API_MOUNTPOINT, apiRouter);
 			return apiRouter;
 		}
@@ -77,38 +105,92 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Get a root subrouter. A new router will be created id no existing one could be found.
+	 * Get a core api subrouter. A new router will be created id no existing one could be found.
 	 * 
 	 * @param mountPoint
 	 * @return existing or new router
 	 */
-	public Router getRouter(String mountPoint) {
-		if (routers.keySet().contains(mountPoint)) {
-			return routers.get(mountPoint);
+	public Router getAPISubRouter(String mountPoint) {
+		Router apiSubRouter = coreRouters.get(mountPoint);
+		if (apiSubRouter == null) {
+			apiSubRouter = Router.router(vertx);
+			getAPIRouter().mountSubRouter("/" + mountPoint, apiSubRouter);
+			coreRouters.put(mountPoint, apiSubRouter);
+		}
+		return apiSubRouter;
+
+	}
+
+	public boolean removeProjectRouter(String name) {
+		Router projectRouter = projectRouters.get(name);
+		if (projectRouter == null) {
+			return false;
 		} else {
-			Router localRouter = Router.router(vertx);
-			getRootRouter().mountSubRouter(mountPoint, localRouter);
-			routers.put(mountPoint, localRouter);
-			return localRouter;
+			// TODO umount router from api router?
+			projectRouter.clear();
+			projectRouters.remove(name);
+			// TODO remove from all routers?
+			return true;
 		}
 
 	}
 
 	/**
-	 * Get a local api router. A new router will be created if no existing one could be found.
+	 * Add a new project router with the given name to the api router. This method will return an existing router when one already has been setup.
 	 * 
-	 * @param mountPoint
-	 * @return existing or new router
+	 * @param name
+	 * @return
 	 */
-	public Router getLocalAPIRouter(String mountPoint) {
-		if (routers.keySet().contains(DEFAULT_API_MOUNTPOINT + mountPoint)) {
-			return routers.get(DEFAULT_API_MOUNTPOINT + mountPoint);
+	public Router addProjectRouter(String name) {
+		Router projectRouter;
+		if (projectRouters.keySet().contains(name)) {
+			projectRouter = projectRouters.get(name);
 		} else {
-			Router localRouter = Router.router(vertx);
-			getAPIRouter().mountSubRouter(mountPoint, localRouter);
-			routers.put(DEFAULT_API_MOUNTPOINT + mountPoint, localRouter);
-			return localRouter;
+			projectRouter = Router.router(vertx);
+			projectRouters.put(name, projectRouter);
+			getAPIRouter().mountSubRouter("/" + name, projectRouter);
+			mountSubRoutersForProjectRouter(projectRouter);
 		}
+		return projectRouter;
+	}
+
+	/**
+	 * Mount all registered project subrouters on the project router.
+	 * 
+	 * @param projectRouter
+	 */
+	private void mountSubRoutersForProjectRouter(Router projectRouter) {
+		for (String mountPoint : projectSubRouters.keySet()) {
+			Router projectSubRouter = projectRouters.get(mountPoint);
+			projectRouter.mountSubRouter("/" + mountPoint, projectSubRouter);
+		}
+	}
+
+	/**
+	 * Mounts the given router in all registered project routers
+	 * 
+	 * @param localRouter
+	 * @param mountPoint
+	 */
+	public void mountRouterInProjects(Router localRouter, String mountPoint) {
+		for (Router projectRouter : projectRouters.values()) {
+			projectRouter.mountSubRouter(mountPoint, localRouter);
+		}
+	}
+
+	/**
+	 * Return the registered project subrouter.
+	 * 
+	 * @return the router or null if no router was found
+	 */
+	public Router getProjectSubRouter(String name) {
+		Router router = projectSubRouters.get(name);
+		if (router == null) {
+			router = Router.router(vertx);
+			projectSubRouters.put(name, router);
+		}
+		mountRouterInProjects(router, name);
+		return router;
 	}
 
 }

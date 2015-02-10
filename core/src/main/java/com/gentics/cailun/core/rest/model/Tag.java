@@ -20,13 +20,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @NodeEntity
 @NoArgsConstructor
-public class Tag extends GenericNode {
+public class Tag extends CaiLunNode {
 
 	private static final long serialVersionUID = 3547707185082166132L;
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.INCOMING, elementClass = GenericNode.class)
-	private Set<GenericNode> contents = new HashSet<>();
+	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.INCOMING, elementClass = CaiLunNode.class)
+	private Set<CaiLunNode> contents = new HashSet<>();
 
 	public Tag(String name) {
 		setName(name);
@@ -37,20 +37,20 @@ public class Tag extends GenericNode {
 	 * 
 	 * @param node
 	 */
-	public void addContent(GenericNode node) {
+	public void addContent(CaiLunNode node) {
 		this.contents.add(node);
 	}
 
 	@JsonIgnore
-	public Set<GenericNode> getTaggedContents() {
+	public Set<CaiLunNode> getTaggedContents() {
 		return contents;
 	}
 
-	public Set<GenericNode> getContents() {
+	public Set<CaiLunNode> getContents() {
 		return contents;
 	}
 
-	public void setContents(Set<GenericNode> contents) {
+	public void setContents(Set<CaiLunNode> contents) {
 		this.contents = contents;
 	}
 
@@ -60,7 +60,7 @@ public class Tag extends GenericNode {
 	 * @param node
 	 * @return true, when the node could be removed. Otherwise false.
 	 */
-	public boolean removeContent(GenericNode node) {
+	public boolean removeContent(CaiLunNode node) {
 		return this.contents.remove(node);
 	}
 

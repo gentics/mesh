@@ -7,7 +7,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.GenericContentRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
@@ -16,14 +16,14 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class ContentTest {
 
 	@Autowired
-	GenericContentRepository contentRepository;
+	ContentRepository contentRepository;
 
 	@Test
 	public void testPageLinks() {
-		GenericContent content = new GenericContent("test content");
-		GenericContent content2 = new GenericContent("test content2");
-		content.linkTo(content2);
+		Content content = new Content("test content");
+		Content content2 = new Content("test content2");
 		contentRepository.save(content);
+		content.linkTo(content2);
 		contentRepository.save(content2);
 	}
 }

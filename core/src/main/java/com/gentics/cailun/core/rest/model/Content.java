@@ -5,7 +5,6 @@ import java.util.HashSet;
 
 import lombok.NoArgsConstructor;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
@@ -14,7 +13,7 @@ import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 @NodeEntity
 @NoArgsConstructor
-public class GenericContent extends GenericNode {
+public class Content extends File {
 
 	private static final long serialVersionUID = 1100206059138098335L;
 
@@ -22,29 +21,17 @@ public class GenericContent extends GenericNode {
 	private Collection<Linked> links = new HashSet<>();
 
 	@Indexed
-	@NotNull
-	protected String filename;
-
-	@Indexed
 	@Fetch
 	protected String content;
 
-	public GenericContent(String name) {
+	public Content(String name) {
 		setName(name);
 	}
 
-	public void linkTo(GenericContent page) {
+	public void linkTo(Content page) {
 		// TODO maybe extract information about link start and end to speedup rendering of page with links
 		Linked link = new Linked(this, page);
 		this.links.add(link);
-	}
-
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
 	}
 
 	public String getContent() {

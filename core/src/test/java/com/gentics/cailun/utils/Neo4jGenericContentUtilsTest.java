@@ -10,9 +10,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.GenericContentRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
@@ -20,13 +20,13 @@ import com.gentics.cailun.util.Neo4jGenericContentUtils;
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-public class Neo4jPageUtilsTest {
+public class Neo4jGenericContentUtilsTest {
 
 	@Autowired
 	private Neo4jGenericContentUtils neo4jPageUtils;
 
 	@Autowired
-	private GenericContentRepository pageRepository;
+	private ContentRepository genericContentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -40,19 +40,20 @@ public class Neo4jPageUtilsTest {
 	@Transactional
 	@Test
 	public void testSimplePagePathTraversal() {
-		GenericContent page = new GenericContent("test page");
-		page.setFilename("test.html");
 
 		Tag rootTag = new Tag("root");
+
 		Tag subTag = rootTag.tag("subtag");
-		page.tag(subTag);
-
-		pageRepository.save(page);
-		tagRepository.save(rootTag);
 		tagRepository.save(subTag);
+		tagRepository.save(rootTag);
 
-		String path = neo4jPageUtils.getPath(rootTag, page);
-		assertEquals("", "/root/subtag/test.html", path);
+		Content content = new Content("test content");
+		content.setFilename("test.html");
+		content.tag(subTag);
+		genericContentRepository.save(content);
+
+		String path = neo4jPageUtils.getPath(rootTag, content);
+		assertEquals("The path did not match the expected one.", "/root/subtag/test.html", path);
 	}
 
 	/**
@@ -61,27 +62,27 @@ public class Neo4jPageUtilsTest {
 	@Transactional
 	@Test
 	public void testComplexPagePathTraversal() {
-		GenericContent page = new GenericContent("test page");
-		page.setFilename("test.html");
 
 		Tag rootTag = new Tag("root");
 		Tag subTag = rootTag.tag("subtag");
-		page.tag(subTag);
-
-		pageRepository.save(page);
-		tagRepository.save(rootTag);
-		tagRepository.save(subTag);
-
-		GenericContent page2 = new GenericContent("test page 2");
-		page2.setFilename("test2.html");
-		page2.tag(subTag);
-		pageRepository.save(page2);
-
 		Tag subTag2 = rootTag.tag("subtag2");
+		tagRepository.save(subTag);
 		tagRepository.save(subTag2);
 		tagRepository.save(rootTag);
 
-		String path = neo4jPageUtils.getPath(rootTag, page);
-		assertEquals("", "/root/subtag/test.html", path);
+		Content content = new Content("test content");
+		content.setFilename("test.html");
+		content.tag(subTag);
+
+		genericContentRepository.save(content);
+		tagRepository.save(rootTag);
+
+		Content page2 = new Content("test content 2");
+		page2.setFilename("test2.html");
+		page2.tag(subTag);
+		genericContentRepository.save(page2);
+
+		String path = neo4jPageUtils.getPath(rootTag, content);
+		assertEquals("The resolved path did not match the expected one.", "/root/subtag/test.html", path);
 	}
 }

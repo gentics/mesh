@@ -22,7 +22,7 @@
 		<module>admin-gui</module>
 		<module>navigation</module>
 		<module>tagcloud</module>
-		<module>file</module>
+		<module>binary</module>
 		<module>sitemap</module>
 	</modules>
 

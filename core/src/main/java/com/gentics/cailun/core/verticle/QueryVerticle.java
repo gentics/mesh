@@ -16,13 +16,14 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 import com.gentics.cailun.core.AbstractCailunRestVerticle;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.repository.GenericContentRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.model.GenericContent;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.response.GenericResponse;
 import com.google.common.collect.Lists;
@@ -30,10 +31,10 @@ import com.google.common.collect.Lists;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class QueryVerticle extends AbstractCailunRestVerticle {
+public class QueryVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
-	private GenericContentRepository genericContentRepository;
+	private ContentRepository genericContentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -46,12 +47,11 @@ public class QueryVerticle extends AbstractCailunRestVerticle {
 	}
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void registerEndPoints() throws Exception {
 		addGetPathHandler();
 	}
 
-	private void resolveLinks(GenericContent content) throws InterruptedException, ExecutionException {
+	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
 		LinkReplacer replacer = new LinkReplacer(resolver);
 		content.setContent(replacer.replace(content.getContent()));
@@ -125,10 +125,10 @@ public class QueryVerticle extends AbstractCailunRestVerticle {
 				// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
 				Long pageId = getPageNodeIdForPath(path);
 				if (pageId != null) {
-					GenericContent content = genericContentRepository.findOne(pageId);
+					Content content = genericContentRepository.findOne(pageId);
 					resolveLinks(content);
 					ObjectMapper mapper = new ObjectMapper();
-					String json = mapper.writeValueAsString(new GenericResponse<GenericContent>(content));
+					String json = mapper.writeValueAsString(new GenericResponse<Content>(content));
 					rc.response().end(json);
 				} else {
 					rc.fail(new Exception("Page for path {" + path + "} could not be found."));
