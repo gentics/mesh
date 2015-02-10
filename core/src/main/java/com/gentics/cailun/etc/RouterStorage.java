@@ -1,6 +1,8 @@
 package com.gentics.cailun.etc;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.addons.AuthHandler;
 import io.vertx.ext.apex.addons.BasicAuthHandler;
 import io.vertx.ext.apex.addons.LocalSessionStore;
@@ -16,7 +18,6 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
 /**
  * Central storage for all apex request routers.
@@ -26,6 +27,8 @@ import com.gentics.cailun.etc.config.CaiLunConfigurationException;
  */
 @NoArgsConstructor
 public class RouterStorage {
+
+	private static Logger log = LoggerFactory.getLogger(RouterStorage.class);
 
 	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
@@ -93,14 +96,13 @@ public class RouterStorage {
 	 * @return api router
 	 */
 	public Router getAPIRouter() {
-		if (coreRouters.keySet().contains(API_ROUTER_KEY)) {
-			return coreRouters.get(API_ROUTER_KEY);
-		} else {
-			Router apiRouter = Router.router(vertx);
+		Router apiRouter = coreRouters.get(API_ROUTER_KEY);
+		if (apiRouter == null) {
+			apiRouter = Router.router(vertx);
 			coreRouters.put(API_ROUTER_KEY, apiRouter);
 			getRootRouter().mountSubRouter(DEFAULT_API_MOUNTPOINT, apiRouter);
-			return apiRouter;
 		}
+		return apiRouter;
 
 	}
 
@@ -123,15 +125,14 @@ public class RouterStorage {
 
 	public boolean removeProjectRouter(String name) {
 		Router projectRouter = projectRouters.get(name);
-		if (projectRouter == null) {
-			return false;
-		} else {
+		if (projectRouter != null) {
 			// TODO umount router from api router?
 			projectRouter.clear();
 			projectRouters.remove(name);
 			// TODO remove from all routers?
 			return true;
 		}
+		return false;
 
 	}
 
@@ -142,12 +143,11 @@ public class RouterStorage {
 	 * @return
 	 */
 	public Router addProjectRouter(String name) {
-		Router projectRouter;
-		if (projectRouters.keySet().contains(name)) {
-			projectRouter = projectRouters.get(name);
-		} else {
+		Router projectRouter = projectRouters.get(name);
+		if (projectRouter == null) {
 			projectRouter = Router.router(vertx);
 			projectRouters.put(name, projectRouter);
+			log.info("Added project router {" + name + "}");
 			getAPIRouter().mountSubRouter("/" + name, projectRouter);
 			mountSubRoutersForProjectRouter(projectRouter);
 		}
@@ -161,7 +161,8 @@ public class RouterStorage {
 	 */
 	private void mountSubRoutersForProjectRouter(Router projectRouter) {
 		for (String mountPoint : projectSubRouters.keySet()) {
-			Router projectSubRouter = projectRouters.get(mountPoint);
+			log.info("Mounting subrouter {" + mountPoint + "} onto given project router.");
+			Router projectSubRouter = projectSubRouters.get(mountPoint);
 			projectRouter.mountSubRouter("/" + mountPoint, projectSubRouter);
 		}
 	}
@@ -174,7 +175,8 @@ public class RouterStorage {
 	 */
 	public void mountRouterInProjects(Router localRouter, String mountPoint) {
 		for (Router projectRouter : projectRouters.values()) {
-			projectRouter.mountSubRouter(mountPoint, localRouter);
+			log.info("Mounting router onto project router with mountpoint {" + mountPoint + "}");
+			projectRouter.mountSubRouter("/" + mountPoint, localRouter);
 		}
 	}
 
@@ -187,6 +189,7 @@ public class RouterStorage {
 		Router router = projectSubRouters.get(name);
 		if (router == null) {
 			router = Router.router(vertx);
+			log.info("Added project subrouter {" + name + "}");
 			projectSubRouters.put(name, router);
 		}
 		mountRouterInProjects(router, name);
