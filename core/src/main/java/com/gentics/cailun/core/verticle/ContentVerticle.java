@@ -15,6 +15,7 @@ import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
@@ -120,24 +121,26 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 	private void addLoadHandler() {
 
 		route("/:uuid").method(GET).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			if (uuid != null) {
-				Content content = contentRepository.findByUUID(uuid);
-				if (content != null) {
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+			System.out.println("RCDATA:" + rc.contextData().get("cailun-project"));
+			// System.out.println("request for project {" + project.getName() + "}");
+				String uuid = rc.request().params().get("uuid");
+				if (uuid != null) {
+					Content content = contentRepository.findByUUID(uuid);
+					if (content != null) {
+						ObjectMapper mapper = new ObjectMapper();
+						try {
+							rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						// rc.response().end(toJson(content));
+					} else {
+						rc.fail(404);
+						rc.fail(new ContentNotFoundException(uuid));
 					}
-					//rc.response().end(toJson(content));
-				} else {
-					rc.fail(404);
-					rc.fail(new ContentNotFoundException(uuid));
 				}
-			}
-		});
+			});
 
 	}
 

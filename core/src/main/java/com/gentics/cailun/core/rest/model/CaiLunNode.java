@@ -3,6 +3,8 @@ package com.gentics.cailun.core.rest.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Data;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
@@ -14,6 +16,7 @@ import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
+import com.gentics.cailun.core.rest.model.auth.User;
 
 /**
  * This class represents a basic cailun node. All models that make use of this model will automatically be able to be tagged and handled by the permission
@@ -22,6 +25,7 @@ import com.gentics.cailun.core.rest.model.auth.GraphPermission;
  * @author johannes2
  *
  */
+@Data
 @NodeEntity
 public class CaiLunNode extends AbstractPersistable {
 
@@ -39,6 +43,9 @@ public class CaiLunNode extends AbstractPersistable {
 	private Set<GraphPermission> permissions = new HashSet<>();
 
 	DynamicProperties properties = new DynamicPropertiesContainer();
+
+	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
+	private User creator;
 
 	public String getName() {
 		return name;

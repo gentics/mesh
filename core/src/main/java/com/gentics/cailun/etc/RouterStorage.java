@@ -20,6 +20,7 @@ import javax.naming.InvalidNameException;
 import lombok.NoArgsConstructor;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
+import com.gentics.cailun.core.rest.model.Project;
 
 /**
  * Central storage for all apex request routers.
@@ -35,7 +36,7 @@ public class RouterStorage {
 	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
 	private static final String API_ROUTER_KEY = "API_ROUTER";
-	private static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
+	public static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
 
 	/**
 	 * Core routers are routers that are responsible for dealing with routes that are no project routes. E.g: /api/v1/admin, /api/v1
@@ -115,6 +116,8 @@ public class RouterStorage {
 	 * @return existing or new router
 	 */
 	public Router getAPISubRouter(String mountPoint) {
+
+		// TODO check for conflicting project routers
 		Router apiSubRouter = coreRouters.get(mountPoint);
 		if (apiSubRouter == null) {
 			apiSubRouter = Router.router(vertx);
@@ -143,7 +146,7 @@ public class RouterStorage {
 	 * 
 	 * @param name
 	 * @return
-	 * @throws InvalidNameException 
+	 * @throws InvalidNameException
 	 */
 	public Router addProjectRouter(String name) throws InvalidNameException {
 		if (coreRouters.containsKey(name)) {
@@ -157,6 +160,12 @@ public class RouterStorage {
 			projectRouter = Router.router(vertx);
 			projectRouters.put(name, projectRouter);
 			log.info("Added project router {" + name + "}");
+
+			projectRouter.route().handler(ctx -> {
+				ctx.contextData().put("cailun-project", name);
+				ctx.next();
+			});
+
 			getAPIRouter().mountSubRouter("/" + name, projectRouter);
 			mountSubRoutersForProjectRouter(projectRouter);
 		}

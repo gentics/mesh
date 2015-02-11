@@ -14,9 +14,13 @@ public abstract class AbstractCaiLunProjectRestVerticle extends AbstractCailunRe
 	protected AbstractCaiLunProjectRestVerticle(String basePath) {
 		super(basePath);
 	}
-	
+
 	@Override
 	public Router setupLocalRouter() {
-		return config.routerStorage().getProjectSubRouter(basePath);
+
+		Router localRouter = config.routerStorage().getProjectSubRouter(basePath);
+		return localRouter;
+
 	}
+
 }

@@ -154,6 +154,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		// Contents
 		Page rootPage = new Page("rootPage");
+		rootPage.setCreator(users.get(0));
 		rootPage.setContent("This is root");
 		rootPage.setFilename("index.html");
 		rootPage.setTeaser("Yo root");
@@ -163,6 +164,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		for (int i = 0; i < 6; i++) {
 			Page page = new Page("Hallo Welt");
 			page.setFilename("some" + i + ".html");
+			page.setCreator(users.get(0));
 			page.setContent("some content");
 			page.tag(blogsTag);
 			contentRepository.save(page);
@@ -171,6 +173,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		for (int i = 0; i < 3; i++) {
 			Page page = new Page("Hallo Welt");
 			page.setFilename("some_posts" + i + ".html");
+			page.setCreator(users.get(0));
 			page.setContent("some content");
 			page.tag(postsTag);
 			contentRepository.save(page);
@@ -178,6 +181,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		Page page = new Page("New BlogPost");
 		page.tag(blogsTag);
+		page.setCreator(users.get(0));
 		page.setFilename("blog.html");
 		page.setContent("This is the blogpost content");
 		page.setTeaser("Jo this page is the second blogpost");
@@ -185,11 +189,13 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		page = new Page("Hallo Cailun");
 		page.setFilename("some2.html");
+		page.setCreator(users.get(0));
 		page.setContent("some more content");
 		page.tag(postsTag);
 		contentRepository.save(page);
 
 		Page indexPage = new Page("Index With Perm");
+		indexPage.setCreator(users.get(0));
 		indexPage.setFilename("index.html");
 		indexPage.setContent("The index page<br/><a href=\"${Page(10)}\">Link</a>");
 		indexPage.setTitle("Index Title");
