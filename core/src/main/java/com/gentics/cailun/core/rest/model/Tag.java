@@ -19,7 +19,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
  */
 @NodeEntity
 @NoArgsConstructor
-public class Tag extends CaiLunNode {
+public class Tag extends TaggableNode {
 
 	private static final long serialVersionUID = 3547707185082166132L;
 

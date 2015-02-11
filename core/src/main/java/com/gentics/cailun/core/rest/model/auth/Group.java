@@ -13,12 +13,12 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.cailun.core.rest.model.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.CaiLunNode;
 
 @NoArgsConstructor
 @Data
-//@EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NodeEntity
-public class Group extends AbstractPersistable {
+public class Group extends CaiLunNode {
 
 	private static final long serialVersionUID = -6423363555276535419L;
 

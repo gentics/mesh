@@ -5,7 +5,7 @@ import org.springframework.data.neo4j.repository.GraphRepository;
 
 import com.gentics.cailun.core.rest.model.auth.User;
 
-public interface UserRepository extends GraphRepository<User> {
+public interface UserRepository extends GraphRepository<User>, UUIDCRUDActions<User> {
 
 	User findByFirstnameEquals(String firstname);
 

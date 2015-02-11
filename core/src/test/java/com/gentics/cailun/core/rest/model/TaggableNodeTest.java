@@ -12,17 +12,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.CaiLunNodeRepository;
 import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.repository.TaggableNodeRepository;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-public class GenericNodeTest {
+public class TaggableNodeTest {
 
 	@Autowired
-	CaiLunNodeRepository<CaiLunNode> genericNodeRepository;
+	TaggableNodeRepository<TaggableNode> taggableNodeRepository;
 
 	@Autowired
 	TagRepository tagRepository;
@@ -30,12 +30,12 @@ public class GenericNodeTest {
 	@Test
 	public void testNodeTagging() {
 		final String TEST_TAG_NAME = "testTag";
-		CaiLunNode node = new CaiLunNode();
+		TaggableNode node = new TaggableNode();
 		Tag tag = node.tag(TEST_TAG_NAME);
 		assertNotNull("The tag method should return the created tag", tag);
-		genericNodeRepository.save(node);
+		taggableNodeRepository.save(node);
 
-		CaiLunNode reloadedNode = genericNodeRepository.findOne(node.getId());
+		TaggableNode reloadedNode = taggableNodeRepository.findOne(node.getId());
 		assertNotNull("The node shoule be loaded", reloadedNode);
 		assertTrue("The test node should have a tag with the name {" + TEST_TAG_NAME + "}.", reloadedNode.hasTag(tag));
 
@@ -49,14 +49,14 @@ public class GenericNodeTest {
 	public void testNodeProperties() {
 		final String TEST_PROPERTY_KEY = "myProperty";
 		final String TEST_PROPERTY_VALUE = "myValue";
-		CaiLunNode node = new CaiLunNode();
+		TaggableNode node = new TaggableNode();
 		node.addProperty(TEST_PROPERTY_KEY, TEST_PROPERTY_VALUE);
-		genericNodeRepository.save(node);
-		CaiLunNode reloadedNode = genericNodeRepository.findOne(node.getId());
+		taggableNodeRepository.save(node);
+		CaiLunNode reloadedNode = taggableNodeRepository.findOne(node.getId());
 		assertEquals("The node should have the property", TEST_PROPERTY_VALUE, reloadedNode.getProperty(TEST_PROPERTY_KEY));
 		assertTrue("The property must be removed.", reloadedNode.removeProperty(TEST_PROPERTY_KEY));
 		assertFalse("The property was already removed and removing it again must fail", reloadedNode.removeProperty(TEST_PROPERTY_KEY));
-		reloadedNode = genericNodeRepository.findOne(node.getId());
+		reloadedNode = taggableNodeRepository.findOne(node.getId());
 		assertFalse("The node should no longer have property identified by the key", reloadedNode.hasProperty(TEST_PROPERTY_KEY));
 	}
 }

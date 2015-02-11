@@ -25,16 +25,13 @@ import com.gentics.cailun.core.rest.model.auth.User;
 @Data
 @NoArgsConstructor
 @NodeEntity
-public class Project extends AbstractPersistable {
+public class Project extends CaiLunNode {
 
 	private static final long serialVersionUID = -3565883313897315008L;
 
 	public Project(String name) {
 		this.name = name;
 	}
-
-	@Fetch
-	private String name;
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)

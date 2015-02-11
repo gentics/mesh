@@ -74,7 +74,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private CaiLunNodeRepository<CaiLunNode> nodeRepository;
 
 	@Autowired
-	private CaiLunRootRepository<CaiLunRoot> rootRepository;
+	private CaiLunRootRepository rootRepository;
 
 	@Autowired
 	private ProjectRepository projectRepository;
