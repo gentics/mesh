@@ -1,15 +1,16 @@
 package com.gentics.cailun.core.repository.project;
 
-import com.gentics.cailun.core.repository.UUIDGraphRepository;
-import com.gentics.cailun.core.rest.model.AbstractPersistable;
+import com.gentics.cailun.core.repository.FileRepository;
+import com.gentics.cailun.core.rest.model.File;
 
-public abstract class AbstractProjectRepository<T extends AbstractPersistable> extends AbstractSecuredRepository<T> {
+public abstract class AbstractProjectRepository<T extends File> extends AbstractSecuredRepository<T> {
 
-	public abstract UUIDGraphRepository<T> getRepository();
+
+	abstract FileRepository<T> getRepository();
 
 	@Override
 	public T findByUUID(String uuid) {
-		return getRepository().findByUUID(uuid);
+		return (T) getRepository().findByUUID(uuid);
 	}
 
 	@Override
@@ -24,7 +25,8 @@ public abstract class AbstractProjectRepository<T extends AbstractPersistable> e
 
 	@Override
 	public T save(T entity) {
-		return getRepository().save(entity);
+//		return getRepository().save( entity);
+		return null;
 	}
 
 	@Override

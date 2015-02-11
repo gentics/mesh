@@ -34,7 +34,7 @@ import com.google.common.collect.Lists;
 public class QueryVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
-	private ContentRepository<Content> genericContentRepository;
+	private ContentRepository contentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -125,7 +125,7 @@ public class QueryVerticle extends AbstractCaiLunProjectRestVerticle {
 				// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
 				Long pageId = getPageNodeIdForPath(path);
 				if (pageId != null) {
-					Content content = genericContentRepository.findOne(pageId);
+					Content content = contentRepository.findOne(pageId);
 					resolveLinks(content);
 					ObjectMapper mapper = new ObjectMapper();
 					String json = mapper.writeValueAsString(new GenericResponse<Content>(content));

@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.annotation.Query;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 
-public interface ContentRepository<T extends Content> extends UUIDGraphRepository<T>, CustomContentRepository {
+public interface ContentRepository extends FileRepository<Content>, CustomContentRepository {
 
 	@Query("MATCH (content:Content)<-[:`TAGGED`]-(tag:Tag) RETURN content")
 	public List<Content> findContentsWithTags();
@@ -25,8 +25,8 @@ public interface ContentRepository<T extends Content> extends UUIDGraphRepositor
 	public Tag getTag(String uuid, String name);
 
 	// TODO speedup this query, reduce calls, cache query?
-//	@Query("MATCH (content:GenericContent),(tag:Tag { name:'/' }), p = shortestPath((tag)-[:TAGGED]-(content)) WHERE id(content) = {0} WITH content, reduce(a='', n IN FILTER(x in nodes(p) WHERE id(content)<> id(x))| a + \"/\"+ n.name) as path return substring(path,2,length(path)) + \"/\" + content.filename")
-//	public String getPath(Long id);
+	// @Query("MATCH (content:GenericContent),(tag:Tag { name:'/' }), p = shortestPath((tag)-[:TAGGED]-(content)) WHERE id(content) = {0} WITH content, reduce(a='', n IN FILTER(x in nodes(p) WHERE id(content)<> id(x))| a + \"/\"+ n.name) as path return substring(path,2,length(path)) + \"/\" + content.filename")
+	// public String getPath(Long id);
 
 
 }

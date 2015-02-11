@@ -12,10 +12,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
-import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.repository.project.ProjectContentRepository;
 import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
 import com.gentics.cailun.core.rest.response.GenericResponse;
@@ -28,8 +27,11 @@ import com.gentics.cailun.core.rest.response.GenericResponse;
 @SpringVerticle
 public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
+//	@Autowired
+//	private ContentRepository<Content> contentRepository;
+	
 	@Autowired
-	private ContentRepository<Content> contentRepository;
+	ProjectContentRepository contentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;
@@ -43,15 +45,16 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		System.out.println("CONTENT:_" + contentRepository);
 		addSaveHandler();
 		addLoadHandler();
 		addDeleteHandler();
 		addCreateHandler();
 
 		// Tagging
-		addAddTagHandler();
-		addUntagPageHandler();
-		addGetTagHandler();
+//		addAddTagHandler();
+//		addUntagPageHandler();
+//		addGetTagHandler();
 	}
 
 	private void addDeleteHandler() {
@@ -62,44 +65,44 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	}
 
-	/**
-	 * Add a handler for removing a tag with a specific name from a page.
-	 */
-	private void addUntagPageHandler() {
+//	/**
+//	 * Add a handler for removing a tag with a specific name from a page.
+//	 */
+//	private void addUntagPageHandler() {
+//
+//		route("/:uuid/tags/:name").method(DELETE).handler(rh -> {
+//			String uuid = rh.request().params().get("uuid");
+//			String name = rh.request().params().get("name");
+//			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.untag(uuid, name))));
+//		});
+//	}
 
-		route("/:uuid/tags/:name").method(DELETE).handler(rh -> {
-			String uuid = rh.request().params().get("uuid");
-			String name = rh.request().params().get("name");
-			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.untag(uuid, name))));
-		});
-	}
+//	/**
+//	 * Return the specific tag of a page.
+//	 */
+//	private void addGetTagHandler() {
+//
+//		route("/:uuid/tags/:name").method(GET).handler(rh -> {
+//			String uuid = rh.request().params().get("uuid");
+//			String name = rh.request().params().get("name");
+//			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.getTag(uuid, name))));
+//		});
+//
+//	}
 
-	/**
-	 * Return the specific tag of a page.
-	 */
-	private void addGetTagHandler() {
-
-		route("/:uuid/tags/:name").method(GET).handler(rh -> {
-			String uuid = rh.request().params().get("uuid");
-			String name = rh.request().params().get("name");
-			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.getTag(uuid, name))));
-		});
-
-	}
-
-	/**
-	 * Add a tag to the page with id
-	 */
-	private void addAddTagHandler() {
-
-		route("/:uuid/tags/:name").method(PUT).handler(rh -> {
-			String uuid = rh.request().params().get("uuid");
-			String name = String.valueOf(rh.request().params().get("name"));
-			Tag tag = contentRepository.tagGenericContent(uuid, name);
-			rh.response().end(toJson(new GenericResponse<Tag>(tag)));
-
-		});
-	}
+//	/**
+//	 * Add a tag to the page with id
+//	 */
+//	private void addAddTagHandler() {
+//
+//		route("/:uuid/tags/:name").method(PUT).handler(rh -> {
+//			String uuid = rh.request().params().get("uuid");
+//			String name = String.valueOf(rh.request().params().get("name"));
+//			Tag tag = contentRepository.tagGenericContent(uuid, name);
+//			rh.response().end(toJson(new GenericResponse<Tag>(tag)));
+//
+//		});
+//	}
 
 	/**
 	 * Add a page create handler

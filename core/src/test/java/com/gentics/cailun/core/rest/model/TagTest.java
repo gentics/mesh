@@ -20,7 +20,7 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class TagTest {
 
 	@Autowired
-	TagRepository<Tag> tagRepository;
+	TagRepository tagRepository;
 
 	@Autowired
 	CaiLunNodeRepository<CaiLunNode> nodeRepository;
