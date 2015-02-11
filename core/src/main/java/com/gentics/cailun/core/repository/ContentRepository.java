@@ -3,12 +3,11 @@ package com.gentics.cailun.core.repository;
 import java.util.List;
 
 import org.springframework.data.neo4j.annotation.Query;
-import org.springframework.data.neo4j.repository.GraphRepository;
 
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 
-public interface ContentRepository extends GraphRepository<Content> {
+public interface ContentRepository<T extends Content> extends UUIDGraphRepository<T>, CustomContentRepository {
 
 	@Query("MATCH (content:Content)<-[:`TAGGED`]-(tag:Tag) RETURN content")
 	public List<Content> findContentsWithTags();
@@ -29,10 +28,5 @@ public interface ContentRepository extends GraphRepository<Content> {
 //	@Query("MATCH (content:GenericContent),(tag:Tag { name:'/' }), p = shortestPath((tag)-[:TAGGED]-(content)) WHERE id(content) = {0} WITH content, reduce(a='', n IN FILTER(x in nodes(p) WHERE id(content)<> id(x))| a + \"/\"+ n.name) as path return substring(path,2,length(path)) + \"/\" + content.filename")
 //	public String getPath(Long id);
 
-	@Query("MATCH (content:Content) WHERE content.uuid = {0} return content")
-	public Content findByUUID(String uuid);
-
-	@Query("MATCH (n:Content {uuid: {0}} DELETE n")
-	public void delete(String uuid);
 
 }

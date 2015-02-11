@@ -5,9 +5,9 @@ import org.springframework.data.neo4j.repository.GraphRepository;
 
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
 
-public interface CaiLunRootRepository extends GraphRepository<CaiLunRoot> {
+public interface CaiLunRootRepository<T extends CaiLunRoot> extends GraphRepository<T> {
 
 	@Query("MATCH (n:CaiLunRoot) return n")
-	CaiLunRoot findRoot();
+	T findRoot();
 
 }

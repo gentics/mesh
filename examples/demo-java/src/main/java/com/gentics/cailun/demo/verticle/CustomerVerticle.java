@@ -28,6 +28,7 @@ import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
@@ -67,13 +68,13 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
-	private ContentRepository contentRepository;
+	private ContentRepository<Content> contentRepository;
 
 	@Autowired
-	private CaiLunNodeRepository nodeRepository;
+	private CaiLunNodeRepository<CaiLunNode> nodeRepository;
 
 	@Autowired
-	private CaiLunRootRepository rootRepository;
+	private CaiLunRootRepository<CaiLunRoot> rootRepository;
 
 	@Autowired
 	private ProjectRepository projectRepository;
@@ -109,6 +110,8 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	public void registerEndPoints() throws Exception {
 
 		addPermissionTestHandler();
+
+		contentRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
 
 		// Project
 		Project aloha = new Project("aloha");

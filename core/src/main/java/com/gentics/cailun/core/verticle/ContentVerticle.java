@@ -15,7 +15,6 @@ import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
@@ -30,7 +29,7 @@ import com.gentics.cailun.core.rest.response.GenericResponse;
 public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
-	private ContentRepository contentRepository;
+	private ContentRepository<Content> contentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;

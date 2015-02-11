@@ -34,7 +34,7 @@ import com.google.common.collect.Lists;
 public class QueryVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
-	private ContentRepository genericContentRepository;
+	private ContentRepository<Content> genericContentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;

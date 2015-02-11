@@ -22,7 +22,7 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class GenericNodeTest {
 
 	@Autowired
-	CaiLunNodeRepository genericNodeRepository;
+	CaiLunNodeRepository<CaiLunNode> genericNodeRepository;
 
 	@Autowired
 	TagRepository tagRepository;
