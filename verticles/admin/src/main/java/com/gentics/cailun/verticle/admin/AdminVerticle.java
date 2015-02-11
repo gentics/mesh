@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
+import com.gentics.cailun.core.repository.ProjectRepository;
+import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.git.GitPullChecker;
 
@@ -39,6 +41,9 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 
 	@Autowired
 	CaiLunSpringConfiguration caiLunConfig;
+
+	@Autowired
+	ProjectRepository projectRepository;
 
 	GitPullChecker gitChecker;
 
@@ -65,9 +70,19 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 		route("/projects/:name").method(GET).handler(ctx -> {
 			String name = ctx.request().params().get("name");
 			// TODO add check whether project was already registered/added
-				config.routerStorage().addProjectRouter(name);
-				log.info("Registered project {" + name + "}");
-				ctx.response().end("Registered project {" + name + "}");
+				Project project = projectRepository.findByName(name);
+				if (project == null) {
+					project = new Project(name);
+					projectRepository.save(project);
+				}
+				try {
+					config.routerStorage().addProjectRouter(name);
+					log.info("Registered project {" + name + "}");
+					ctx.response().end("Registered project {" + name + "}");
+				} catch (Exception e) {
+					ctx.fail(409);
+					ctx.fail(e);
+				}
 			});
 
 		route("/projects/:name").method(DELETE).handler(ctx -> {

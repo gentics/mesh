@@ -6,4 +6,6 @@ import com.gentics.cailun.core.rest.model.Project;
 
 public interface ProjectRepository extends GraphRepository<Project> {
 
+	Project findByName(String string);
+
 }

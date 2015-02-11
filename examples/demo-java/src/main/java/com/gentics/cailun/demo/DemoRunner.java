@@ -26,21 +26,21 @@ public class DemoRunner {
 
 		cailun.setCustomLoader((vertx) -> {
 			deployAndWait(vertx, CustomerVerticle.class);
-//			deployAndWait(vertx, AuthenticationVerticle.class);
-//			deployAndWait(vertx, NavigationVerticle.class);
-//			deployAndWait(vertx, TagCloudVerticle.class);
-//			deployAndWait(vertx, TagVerticle.class);
-			//deployAndWait(vertx, StaticContentVerticle.class);
-			//deployAndWait(vertx, AdminGUIVerticle.class);
+			// deployAndWait(vertx, AuthenticationVerticle.class);
+			// deployAndWait(vertx, NavigationVerticle.class);
+			// deployAndWait(vertx, TagCloudVerticle.class);
+			// deployAndWait(vertx, TagVerticle.class);
+			// deployAndWait(vertx, StaticContentVerticle.class);
+			// deployAndWait(vertx, AdminGUIVerticle.class);
 		});
-//			// DeploymentOptions options = new DeploymentOptions();
-//			// vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-navigation:0.1.0-SNAPSHOT",options, dh -> {
-//			// if (dh.failed()) {
-//			// System.out.println(dh.cause());
-//			// }
-//			// });
-//			// deployAndWait(vertx, "", "TestJSVerticle.js");
-//		});
+		// // DeploymentOptions options = new DeploymentOptions();
+		// // vertx.deployVerticle("service:com.gentics.vertx:cailun-rest-navigation:0.1.0-SNAPSHOT",options, dh -> {
+		// // if (dh.failed()) {
+		// // System.out.println(dh.cause());
+		// // }
+		// // });
+		// // deployAndWait(vertx, "", "TestJSVerticle.js");
+		// });
 		cailun.run();
 
 	}

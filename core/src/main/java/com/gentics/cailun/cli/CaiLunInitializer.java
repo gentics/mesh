@@ -1,23 +1,37 @@
 package com.gentics.cailun.cli;
 
+import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.spi.cluster.VertxSPI;
+import io.vertx.spi.cluster.impl.hazelcast.HazelcastClusterManager;
 
 import java.util.Scanner;
 
+import javax.naming.InvalidNameException;
+
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
+import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
+import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.User;
+import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
+import com.gentics.cailun.etc.config.CaiLunConfiguration;
 
 public class CaiLunInitializer {
 
-	private static Logger LOG = LoggerFactory.getLogger(CaiLunInitializer.class);
+	private static Logger log = LoggerFactory.getLogger(CaiLunInitializer.class);
+
+	private CaiLunConfiguration configuration;
 
 	@Autowired
 	CaiLunRootRepository rootRepository;
@@ -29,18 +43,87 @@ public class CaiLunInitializer {
 	GroupRepository groupRepository;
 
 	@Autowired
-	CaiLunSpringConfiguration configuration;
+	ProjectRepository projectRepository;
 
-	public CaiLunInitializer() {
+	@Autowired
+	CaiLunSpringConfiguration springConfiguration;
+
+	/**
+	 * Load verticles that are configured within the cailun configuration.
+	 */
+	private void loadConfiguredVerticles() {
+		for (String verticleName : configuration.getVerticles().keySet()) {
+			CaiLunVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
+			try {
+				log.info("Loading configured verticle {" + verticleName + "}.");
+				deployAndWait(springConfiguration.vertx(), verticleConf.getVerticleConfig(), verticleName);
+			} catch (InterruptedException e) {
+				log.error("Could not load verticle {" + verticleName + "}.", e);
+			}
+		}
+
 	}
 
-	public void init() {
+	/**
+	 * Initialize cailun.
+	 * 
+	 * @param configuration
+	 * @param verticleLoader
+	 * @throws Exception
+	 */
+	public void init(CaiLunConfiguration configuration, CaiLunCustomLoader<Vertx> verticleLoader) throws Exception {
+		this.configuration = configuration;
+		if (configuration.isClusterMode()) {
+			joinCluster();
+		}
+		initMandatoryData();
+		loadConfiguredVerticles();
+		if (verticleLoader != null) {
+			verticleLoader.apply(springConfiguration.vertx());
+		}
+		initProjects();
+
+	}
+
+	/**
+	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
+	 * 
+	 * @throws InvalidNameException
+	 */
+	private void initProjects() throws InvalidNameException {
+		try (Transaction tx = springConfiguration.getGraphDatabaseService().beginTx()) {
+			for (Project project : projectRepository.findAll()) {
+				springConfiguration.routerStorage().addProjectRouter(project.getName());
+				log.info("Initalized project {" + project.getName() + "}");
+			}
+			tx.success();
+		}
+	}
+
+	/**
+	 * Use the hazelcast cluster manager to join the cluster of cailun instances.
+	 */
+	private void joinCluster() {
+		HazelcastClusterManager manager = new HazelcastClusterManager();
+		manager.setVertx((VertxSPI) springConfiguration.vertx());
+		manager.join(rh -> {
+			if (!rh.succeeded()) {
+				log.error("Error while joining cailun cluster.", rh.cause());
+			}
+		});
+	}
+
+	/**
+	 * Setup various mandatory data. This includes mandatory root nodes and the admin user, group.
+	 */
+	public void initMandatoryData() {
+
 		// Verify that the root node is existing
 		CaiLunRoot rootNode = rootRepository.findRoot();
 		if (rootNode == null) {
 			rootNode = new CaiLunRoot();
 			rootRepository.save(rootNode);
-			LOG.info("Stored root node");
+			log.info("Stored root node");
 		}
 		// Reload the node to get one with a valid uuid
 		rootNode = rootRepository.findRoot();
@@ -53,9 +136,9 @@ public class CaiLunInitializer {
 			Scanner scanIn = new Scanner(System.in);
 			String pw = scanIn.nextLine();
 			scanIn.close();
-			adminUser.setPasswordHash(configuration.passwordEncoder().encode(pw));
+			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
 			userRepository.save(adminUser);
-			LOG.info("Stored admin user");
+			log.info("Stored admin user");
 		}
 		rootNode.getMembers().add(adminUser);
 		rootRepository.save(rootNode);
@@ -65,7 +148,7 @@ public class CaiLunInitializer {
 			adminGroup = new Group("admin");
 			adminGroup.getMembers().add(adminUser);
 			groupRepository.save(adminGroup);
-			LOG.info("Stored admin group");
+			log.info("Stored admin group");
 		}
 		rootNode.setRootGroup(adminGroup);
 		rootRepository.save(rootNode);

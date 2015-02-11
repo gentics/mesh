@@ -10,6 +10,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.core.Session;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
@@ -19,13 +20,16 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 import com.gentics.cailun.core.repository.CaiLunNodeRepository;
+import com.gentics.cailun.core.repository.CaiLunRootRepository;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
+import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
@@ -68,16 +72,22 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	@Autowired
 	private CaiLunNodeRepository nodeRepository;
 
+	@Autowired
+	private CaiLunRootRepository rootRepository;
+
+	@Autowired
+	private ProjectRepository projectRepository;
+
 	public CustomerVerticle() {
 		super("page");
 	}
 
-	@Override
-	public void registerEndPoints() throws Exception {
-
-		addPermissionTestHandler();
-
-		// Users
+	/**
+	 * Add a set of dummy users to the graph
+	 * 
+	 * @return
+	 */
+	private List<User> addUsers() {
 		User john = new User("joe1");
 		john.setFirstname("John");
 		john.setLastname("Doe");
@@ -89,7 +99,27 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		mary.setLastname("Doe");
 		mary.setEmailAddress("m.doe@gentics.com");
 		mary.setPasswordHash(cailunConfig.passwordEncoder().encode("lalala"));
-		userRepository.save(Arrays.asList(john, mary));
+		List<User> users = Arrays.asList(john, mary);
+		userRepository.save(users);
+		return users;
+
+	}
+
+	@Override
+	public void registerEndPoints() throws Exception {
+
+		addPermissionTestHandler();
+
+		// Project
+		Project aloha = new Project("aloha");
+
+		// Users
+		List<User> users = addUsers();
+		aloha.getUsers().addAll(users);
+
+		// Groups
+		Group rootGroup = new Group("superusers");
+		aloha.setRootGroup(rootGroup);
 
 		// Roles
 		Role adminRole = new Role("admin role");
@@ -98,18 +128,17 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		roleRepository.save(guestRole);
 
 		// Groups
-		Group rootGroup = new Group("superusers");
-		rootGroup.getMembers().add(john);
+		rootGroup.getMembers().add(users.get(0));
 		rootGroup.getRoles().add(adminRole);
 
 		groupRepository.save(rootGroup);
 		Group guests = new Group("guests");
 		guests.getParents().add(rootGroup);
-		guests.getMembers().add(mary);
+		guests.getMembers().add(users.get(1));
 		guests.getRoles().add(guestRole);
 		groupRepository.save(guests);
 
-		// Content
+		// Tags
 		Tag rootTag = new Tag("/");
 		rootTag.tag("home").tag("jotschi");
 		rootTag.tag("root");
@@ -120,6 +149,10 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		Tag blogsTag = wwwTag.tag("blogs");
 		tagRepository.save(rootTag);
 
+		aloha.setRootTag(rootTag);
+		projectRepository.save(aloha);
+
+		// Contents
 		Page rootPage = new Page("rootPage");
 		rootPage.setContent("This is root");
 		rootPage.setFilename("index.html");
@@ -166,6 +199,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		indexPage.linkTo(page);
 		contentRepository.save(indexPage);
 
+		// Permissions
 		try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all nodes
 			int i = 0;

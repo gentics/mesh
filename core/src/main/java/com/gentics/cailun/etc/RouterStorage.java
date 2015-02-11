@@ -15,6 +15,8 @@ import io.vertx.ext.apex.core.SessionStore;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.naming.InvalidNameException;
+
 import lombok.NoArgsConstructor;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
@@ -141,8 +143,15 @@ public class RouterStorage {
 	 * 
 	 * @param name
 	 * @return
+	 * @throws InvalidNameException 
 	 */
-	public Router addProjectRouter(String name) {
+	public Router addProjectRouter(String name) throws InvalidNameException {
+		if (coreRouters.containsKey(name)) {
+			throw new InvalidNameException(
+					"The project name {"
+							+ name
+							+ "} is conflicting with a core router. Best guess is that an core verticle is already occupying the name. Please choose a different name or remove the conflicting core verticle.");
+		}
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter == null) {
 			projectRouter = Router.router(vertx);

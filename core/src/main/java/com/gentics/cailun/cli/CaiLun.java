@@ -1,9 +1,6 @@
 package com.gentics.cailun.cli;
 
-import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
 import io.vertx.core.Vertx;
-import io.vertx.core.spi.cluster.VertxSPI;
-import io.vertx.spi.cluster.impl.hazelcast.HazelcastClusterManager;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +12,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 import com.gentics.cailun.etc.ConfigurationLoader;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
@@ -25,9 +21,7 @@ public class CaiLun {
 	private static final Logger log = LoggerFactory.getLogger(CaiLun.class);
 
 	private CaiLunCustomLoader<Vertx> verticleLoader;
-	private CaiLunConfiguration configuration;
 
-	private Vertx vertx;
 	private static CaiLun instance;
 
 	public static CaiLun getInstance() {
@@ -58,70 +52,21 @@ public class CaiLun {
 		if (conf == null) {
 			throw new CaiLunConfigurationException("Configuration is null or not valid.");
 		}
-		configuration = conf;
 		CaiLunSpringConfiguration.setConfiguration(conf);
 
 		printProductInformation();
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(CaiLunSpringConfiguration.class)) {
-			vertx = ctx.getBean(Vertx.class);
 			SpringVerticleFactory.setParentContext(ctx);
-			if (configuration.isClusterMode()) {
-				joinCluster();
-			}
 			CaiLunInitializer initalizer = ctx.getBean(CaiLunInitializer.class);
 			ctx.start();
-			loadConfiguredVerticles();
-			if (verticleLoader != null) {
-				verticleLoader.apply(vertx);
-			}
-			initalizer.init();
-			initRoutes();
+			initalizer.init(conf, verticleLoader);
 			ctx.registerShutdownHook();
 			dontExit();
 		}
 	}
 
-	private void initRoutes() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void setupBasicNodes() {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void run() throws Exception {
 		run(ConfigurationLoader.createOrloadConfiguration());
-	}
-
-	/**
-	 * Load verticles that are configured within the cailun configuration.
-	 */
-	private void loadConfiguredVerticles() {
-		for (String verticleName : configuration.getVerticles().keySet()) {
-			CaiLunVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
-			try {
-				log.info("Loading configured verticle {" + verticleName + "}.");
-				deployAndWait(vertx, verticleConf.getVerticleConfig(), verticleName);
-			} catch (InterruptedException e) {
-				log.error("Could not load verticle {" + verticleName + "}.", e);
-			}
-		}
-
-	}
-
-	/**
-	 * Use the hazelcast cluster manager to join the cluster of cailun instances.
-	 */
-	private void joinCluster() {
-		HazelcastClusterManager manager = new HazelcastClusterManager();
-		manager.setVertx((VertxSPI) vertx);
-		manager.join(rh -> {
-			if (!rh.succeeded()) {
-				log.error("Error while joining cailun cluster.", rh.cause());
-			}
-		});
 	}
 
 	/**

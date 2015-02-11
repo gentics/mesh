@@ -3,28 +3,52 @@ package com.gentics.cailun.core.rest.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.User;
 
+/**
+ * A project is the root element for a tag, user,group hierarchy.
+ * 
+ * @author johannes2
+ *
+ */
+@Data
+@NoArgsConstructor
 @NodeEntity
 public class Project extends AbstractPersistable {
 
 	private static final long serialVersionUID = -3565883313897315008L;
 
+	public Project(String name) {
+		this.name = name;
+	}
+
 	@Fetch
 	String name;
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Tag.class)
-	private Set<Tag> rootTags = new HashSet<>();
+	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
+	private Tag rootTag;
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_USER, direction = Direction.OUTGOING, elementClass = User.class)
 	private Set<User> users = new HashSet<>();
+	
+	@Fetch
+	@RelatedTo(type = BasicRelationships.HAS_ROOT_GROUP, direction = Direction.OUTGOING, elementClass = Group.class)
+	Group rootGroup;
 
+	public void setRootGroup(Group rootGroup) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
