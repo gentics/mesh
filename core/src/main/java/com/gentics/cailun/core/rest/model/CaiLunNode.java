@@ -3,6 +3,7 @@ package com.gentics.cailun.core.rest.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -11,7 +12,6 @@ import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 
@@ -30,6 +30,7 @@ public class CaiLunNode extends AbstractPersistable {
 	@Fetch
 	private String name;
 
+	@JsonIgnore
 	@Fetch
 	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();

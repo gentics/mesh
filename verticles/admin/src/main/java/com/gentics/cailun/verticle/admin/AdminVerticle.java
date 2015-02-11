@@ -66,11 +66,13 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 			// TODO add check whether project was already registered/added
 				config.routerStorage().addProjectRouter(name);
 				log.info("Registered project {" + name + "}");
+				ctx.response().end("Registered project {" + name + "}");
 			});
 
 		route("/projects/:name").method(DELETE).handler(ctx -> {
 			String name = ctx.request().params().get("name");
 			config.routerStorage().removeProjectRouter(name);
+			ctx.response().end("Deleted project {" + name + "}");
 		});
 
 	}

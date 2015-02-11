@@ -73,6 +73,7 @@ public class CaiLun {
 			if (verticleLoader != null) {
 				verticleLoader.apply(vertx);
 			}
+			//initRoutes();
 			ctx.registerShutdownHook();
 			dontExit();
 		}

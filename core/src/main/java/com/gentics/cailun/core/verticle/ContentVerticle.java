@@ -4,6 +4,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +124,14 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 			if (uuid != null) {
 				Content content = contentRepository.findByUUID(uuid);
 				if (content != null) {
-					rc.response().end(toJson(content));
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					//rc.response().end(toJson(content));
 				} else {
 					rc.fail(404);
 					rc.fail(new ContentNotFoundException(uuid));

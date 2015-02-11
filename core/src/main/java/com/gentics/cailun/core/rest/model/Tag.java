@@ -5,12 +5,11 @@ import java.util.Set;
 
 import lombok.NoArgsConstructor;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A tag is a basic container for other generic nodes. It can be used as a folder that holds contents in the form of various pages.
@@ -46,6 +45,7 @@ public class Tag extends CaiLunNode {
 		return contents;
 	}
 
+	@JsonIgnore
 	public Set<CaiLunNode> getContents() {
 		return contents;
 	}
