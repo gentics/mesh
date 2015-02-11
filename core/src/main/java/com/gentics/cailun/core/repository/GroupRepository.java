@@ -20,4 +20,6 @@ public interface GroupRepository extends GraphRepository<Group> {
 	@Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
 	public List<Group> listAllGroups(User user);
 
+	public Group findByName(String string);
+
 }

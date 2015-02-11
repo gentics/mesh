@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.gentics.cailun.etc.CaiLunCustomLoader;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 import com.gentics.cailun.etc.ConfigurationLoader;
-import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
@@ -59,24 +59,36 @@ public class CaiLun {
 			throw new CaiLunConfigurationException("Configuration is null or not valid.");
 		}
 		configuration = conf;
-		Neo4jSpringConfiguration.setConfiguration(conf);
+		CaiLunSpringConfiguration.setConfiguration(conf);
 
 		printProductInformation();
-		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Neo4jSpringConfiguration.class)) {
+		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(CaiLunSpringConfiguration.class)) {
 			vertx = ctx.getBean(Vertx.class);
 			SpringVerticleFactory.setParentContext(ctx);
 			if (configuration.isClusterMode()) {
 				joinCluster();
 			}
+			CaiLunInitializer initalizer = ctx.getBean(CaiLunInitializer.class);
 			ctx.start();
 			loadConfiguredVerticles();
 			if (verticleLoader != null) {
 				verticleLoader.apply(vertx);
 			}
-			//initRoutes();
+			initalizer.init();
+			initRoutes();
 			ctx.registerShutdownHook();
 			dontExit();
 		}
+	}
+
+	private void initRoutes() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void setupBasicNodes() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	public void run() throws Exception {

@@ -14,10 +14,10 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.rest.model.BasicRelationships;
-import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
-import com.gentics.cailun.etc.Neo4jSpringConfiguration;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.google.common.collect.Lists;
 
 @Component
@@ -25,7 +25,7 @@ import com.google.common.collect.Lists;
 public class Neo4jGenericContentUtils {
 
 	@Autowired
-	Neo4jSpringConfiguration configuration;
+	CaiLunSpringConfiguration configuration;
 
 	@Autowired
 	Neo4jTemplate template;

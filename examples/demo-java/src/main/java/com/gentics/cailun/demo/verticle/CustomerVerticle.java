@@ -33,7 +33,6 @@ import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.etc.Neo4jSpringConfiguration;
 
 /**
  * Dummy verticle that is used to setup basic demo data
@@ -68,9 +67,6 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
 	private CaiLunNodeRepository nodeRepository;
-
-	@Autowired
-	private Neo4jSpringConfiguration neo4jSpringConfiguration;
 
 	public CustomerVerticle() {
 		super("page");
@@ -170,7 +166,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		indexPage.linkTo(page);
 		contentRepository.save(indexPage);
 
-		try (Transaction tx = neo4jSpringConfiguration.getGraphDatabaseService().beginTx()) {
+		try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all nodes
 			int i = 0;
 			for (CaiLunNode currentNode : nodeRepository.findAll()) {

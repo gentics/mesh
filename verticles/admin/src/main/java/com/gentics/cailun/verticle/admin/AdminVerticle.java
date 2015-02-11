@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
-import com.gentics.cailun.etc.Neo4jSpringConfiguration;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.git.GitPullChecker;
 
 /**
@@ -38,7 +38,8 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 	public static final long DEFAULT_GIT_CHECKER_INTERVAL = 60 * 5 * 100; // 5 Min
 
 	@Autowired
-	Neo4jSpringConfiguration neo4jConfig;
+	CaiLunSpringConfiguration caiLunConfig;
+
 	GitPullChecker gitChecker;
 
 	public AdminVerticle() {
@@ -80,15 +81,17 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-		gitChecker.close();
+		if (gitChecker != null) {
+			gitChecker.close();
+		}
 	}
 
 	private void addNeo4VertxRestartHandler() {
 		route("/neo4vertx/restart").method(GET).handler(ctx -> {
 			try {
-				neo4jConfig.neo4VertxVerticle().stop();
-				neo4jConfig.neo4VertxVerticle().config().put(Neo4VertxConfiguration.PATH_KEY, "/tmp/backup");
-				neo4jConfig.neo4VertxVerticle().start();
+				caiLunConfig.neo4VertxVerticle().stop();
+				caiLunConfig.neo4VertxVerticle().config().put(Neo4VertxConfiguration.PATH_KEY, "/tmp/backup");
+				caiLunConfig.neo4VertxVerticle().start();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

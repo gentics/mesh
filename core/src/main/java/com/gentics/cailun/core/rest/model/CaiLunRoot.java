@@ -31,4 +31,12 @@ public class CaiLunRoot extends AbstractPersistable {
 	@RelatedTo(type = "HAS_ROOT_GROUP", direction = Direction.INCOMING, elementClass = Group.class)
 	private Group rootGroup;
 
+	public Set<User> getMembers() {
+		return members;
+	}
+
+	public void setRootGroup(Group group) {
+		this.rootGroup = group;
+	}
+
 }
