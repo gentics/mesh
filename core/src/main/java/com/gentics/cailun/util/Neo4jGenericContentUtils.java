@@ -14,8 +14,8 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.rest.model.CaiLunNode;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
-import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedTag;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.google.common.collect.Lists;
@@ -39,23 +39,23 @@ public class Neo4jGenericContentUtils {
 	 *            Page from which the traversal will start
 	 * @return
 	 */
-	public String getPath(Tag to, CaiLunNode from) {
+	public String getPath(LocalizedTag to, CaiLunNode from) {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
 		List<String> segments = new ArrayList<>();
 		try (Transaction tx = graphDB.beginTx()) {
 			Node fromNode = template.getPersistentState(from);
-			for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.TAGGED)
+			for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_SUB_TAG)
 					.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
 				System.out.println(node.getId() + " " + node.getLabels());
 				
-				if (node.hasLabel(DynamicLabel.label(LocalizedContent.class.getSimpleName()))) {
+				if (node.hasLabel(DynamicLabel.label(Content.class.getSimpleName()))) {
 					segments.add((String) node.getProperty("filename"));
 				}
-				if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName()))) {
+				if (node.hasLabel(DynamicLabel.label(LocalizedTag.class.getSimpleName()))) {
 					segments.add((String) node.getProperty("name"));
 				}
 
-				if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName())) && node.getId() == to.getId()) {
+				if (node.hasLabel(DynamicLabel.label(LocalizedTag.class.getSimpleName())) && node.getId() == to.getId()) {
 					break;
 				}
 			}

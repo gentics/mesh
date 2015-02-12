@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalTagRepository;
+import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -25,7 +25,7 @@ public class TagVerticle extends AbstractCaiLunProjectRestVerticle {
 	private GlobalContentRepository pageRepository;
 
 	@Autowired
-	private GlobalTagRepository tagRepository;
+	private GlobalLocalizedTagRepository tagRepository;
 
 	@Autowired
 	GraphDatabaseService graphDb;

@@ -23,7 +23,7 @@ import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.repository.project.ProjectContentRepository;
 import com.gentics.cailun.core.repository.project.ProjectFileRepository;
 import com.gentics.cailun.core.repository.project.ProjectTagRepository;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.File;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
@@ -89,7 +89,7 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	}
 
-	private void resolveLinks(LocalizedContent content) throws InterruptedException, ExecutionException {
+	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
 		LinkReplacer replacer = new LinkReplacer(resolver);
 		content.setContent(replacer.replace(content.getContent()));
@@ -107,10 +107,10 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 				// TODO check whether file is a content or a binary file
 				if (true) {
-					LocalizedContent content = (LocalizedContent) file;
+					Content content = (Content) file;
 					resolveLinks(content);
 					ObjectMapper mapper = new ObjectMapper();
-					String json = mapper.writeValueAsString(new GenericResponse<LocalizedContent>(content));
+					String json = mapper.writeValueAsString(new GenericResponse<Content>(content));
 					rc.response().end(json);
 				} else {
 					rc.fail(new Exception("Page for path {" + path + "} could not be found."));
@@ -187,7 +187,7 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 			// System.out.println("request for project {" + project.getName() + "}");
 				String uuid = rc.request().params().get("uuid");
 				if (uuid != null) {
-					LocalizedContent content = contentRepository.findCustomerNodeBySomeStrangeCriteria("null");
+					Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria("null");
 					if (content != null) {
 						ObjectMapper mapper = new ObjectMapper();
 						try {
@@ -211,7 +211,7 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			PageSaveRequest request = fromJson(rc, PageSaveRequest.class);
-			LocalizedContent content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
+			Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
 			if (content != null) {
 				content.setContent(request.getContent());
 				// contentRepository.save(content);

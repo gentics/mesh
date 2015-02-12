@@ -12,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.GlobalTagRepository;
+import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
 import com.gentics.cailun.core.repository.GlobalTaggableNodeRepository;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
@@ -25,13 +25,13 @@ public class TaggableNodeTest {
 	GlobalTaggableNodeRepository<TaggableNode> taggableNodeRepository;
 
 	@Autowired
-	GlobalTagRepository tagRepository;
+	GlobalLocalizedTagRepository tagRepository;
 
 	@Test
 	public void testNodeTagging() {
 		final String TEST_TAG_NAME = "testTag";
 		TaggableNode node = new TaggableNode();
-		Tag tag = node.tag(TEST_TAG_NAME);
+		LocalizedTag tag = node.tag(TEST_TAG_NAME);
 		assertNotNull("The tag method should return the created tag", tag);
 		taggableNodeRepository.save(node);
 

@@ -12,7 +12,7 @@ import org.springframework.data.neo4j.annotation.StartNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.cailun.core.rest.model.AbstractPersistable;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
+import com.gentics.cailun.core.rest.model.Content;
 
 @RelationshipEntity
 @Data
@@ -24,24 +24,24 @@ public class Linked extends AbstractPersistable {
 
 	@JsonIgnore
 	@StartNode
-	private LocalizedContent startPage;
+	private Content startPage;
 
 	@Fetch
 	@EndNode
-	private LocalizedContent endPage;
+	private Content endPage;
 
-	public Linked(LocalizedContent startPage, LocalizedContent endPage) {
+	public Linked(Content startPage, Content endPage) {
 		this.startPage = startPage;
 		this.endPage = endPage;
 	}
 
 	@JsonIgnore
-	public LocalizedContent getStartPage() {
+	public Content getStartPage() {
 		return startPage;
 	}
 
 	@JsonIgnore
-	public LocalizedContent getEndPage() {
+	public Content getEndPage() {
 		return endPage;
 	}
 

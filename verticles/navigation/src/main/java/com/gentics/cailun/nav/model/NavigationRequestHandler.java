@@ -16,9 +16,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalTagRepository;
+import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
-import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.core.rest.model.LocalizedTag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.PermissionType;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -29,7 +29,7 @@ import com.gentics.cailun.util.Neo4jGenericContentUtils;
 public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
-	GlobalTagRepository tagRepository;
+	GlobalLocalizedTagRepository tagRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration config;
@@ -46,7 +46,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	public void handle(RoutingContext rc) {
 		this.session = rc.session();
-		Tag rootTag = tagRepository.findRootTag();
+		LocalizedTag rootTag = tagRepository.findRootTag();
 		try {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
@@ -80,7 +80,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return
 	 * @throws NodeNotFoundException
 	 */
-	private Navigation getNavigation(Tag rootTag) {
+	private Navigation getNavigation(LocalizedTag rootTag) {
 
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();

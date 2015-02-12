@@ -11,9 +11,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalTagRepository;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
-import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
+import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedTag;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -29,7 +29,7 @@ public class Neo4jGenericContentUtilsTest {
 	private GlobalContentRepository genericContentRepository;
 
 	@Autowired
-	private GlobalTagRepository tagRepository;
+	private GlobalLocalizedTagRepository tagRepository;
 
 	@Autowired
 	private GraphDatabaseService graphDb;
@@ -41,13 +41,13 @@ public class Neo4jGenericContentUtilsTest {
 	@Test
 	public void testSimplePagePathTraversal() {
 
-		Tag rootTag = new Tag("root");
+		LocalizedTag rootTag = new LocalizedTag("root");
 
-		Tag subTag = rootTag.tag("subtag");
+		LocalizedTag subTag = rootTag.tag("subtag");
 		tagRepository.save(subTag);
 		tagRepository.save(rootTag);
 
-		LocalizedContent content = new LocalizedContent("test content");
+		Content content = new Content("test content");
 		content.setFilename("test.html");
 		content.tag(subTag);
 		genericContentRepository.save(content);
@@ -63,21 +63,21 @@ public class Neo4jGenericContentUtilsTest {
 	@Test
 	public void testComplexPagePathTraversal() {
 
-		Tag rootTag = new Tag("root");
-		Tag subTag = rootTag.tag("subtag");
-		Tag subTag2 = rootTag.tag("subtag2");
+		LocalizedTag rootTag = new LocalizedTag("root");
+		LocalizedTag subTag = rootTag.tag("subtag");
+		LocalizedTag subTag2 = rootTag.tag("subtag2");
 		tagRepository.save(subTag);
 		tagRepository.save(subTag2);
 		tagRepository.save(rootTag);
 
-		LocalizedContent content = new LocalizedContent("test content");
+		Content content = new Content("test content");
 		content.setFilename("test.html");
 		content.tag(subTag);
 
 		genericContentRepository.save(content);
 		tagRepository.save(rootTag);
 
-		LocalizedContent page2 = new LocalizedContent("test content 2");
+		Content page2 = new Content("test content 2");
 		page2.setFilename("test2.html");
 		page2.tag(subTag);
 		genericContentRepository.save(page2);

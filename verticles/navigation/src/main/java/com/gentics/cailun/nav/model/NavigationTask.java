@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
-import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedTag;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 /**
@@ -25,13 +25,13 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private static final Logger log = LoggerFactory.getLogger(NavigationTask.class);
 
 	private static final long serialVersionUID = 8773519857036585642L;
-	private Tag tag;
+	private LocalizedTag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
 	private GlobalContentRepository genericContentRepository;
 	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, GlobalContentRepository genericContentRepository,
+	public NavigationTask(LocalizedTag tag, NavigationElement element, NavigationRequestHandler handler, GlobalContentRepository genericContentRepository,
 			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;
@@ -44,9 +44,9 @@ public class NavigationTask extends RecursiveTask<Void> {
 	protected Void compute() {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
-		tag.getContents().parallelStream().forEachOrdered(tagging -> {
-			if (tagging.getClass().isAssignableFrom(LocalizedContent.class)) {
-				LocalizedContent content = (LocalizedContent) tagging;
+		tag.getFiles().parallelStream().forEachOrdered(tagging -> {
+			if (tagging.getClass().isAssignableFrom(Content.class)) {
+				Content content = (Content) tagging;
 				if (handler.canView(tag)) {
 					NavigationElement pageNavElement = new NavigationElement();
 					pageNavElement.setName(content.getFilename());
@@ -61,7 +61,7 @@ public class NavigationTask extends RecursiveTask<Void> {
 			}
 		});
 
-		tag.getChildTags().parallelStream().forEachOrdered(currentTag -> {
+		tag.getTags().parallelStream().forEachOrdered(currentTag -> {
 			if (handler.canView(currentTag)) {
 				NavigationElement navElement = new NavigationElement();
 				navElement.setType(NavigationElementType.TAG);

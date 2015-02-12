@@ -1,16 +1,16 @@
 package com.gentics.cailun.core.rest.request;
 
-import com.gentics.cailun.core.rest.model.LocalizedContent;
+import com.gentics.cailun.core.rest.model.Content;
 
 public class PageCreateRequest {
 
-	LocalizedContent page;
+	Content page;
 
-	public LocalizedContent getPage() {
+	public Content getPage() {
 		return page;
 	}
 
-	public void setPage(LocalizedContent page) {
+	public void setPage(Content page) {
 		this.page = page;
 	}
 

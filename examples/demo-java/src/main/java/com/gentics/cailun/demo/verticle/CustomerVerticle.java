@@ -19,17 +19,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
-import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
+import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.repository.GlobalGroupRepository;
+import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
 import com.gentics.cailun.core.repository.GlobalProjectRepository;
 import com.gentics.cailun.core.repository.GlobalRoleRepository;
-import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.core.repository.GlobalUserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
+import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedTag;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
@@ -57,7 +58,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	
 
 	@Autowired
-	private GlobalTagRepository tagRepository;
+	private GlobalLocalizedTagRepository tagRepository;
 
 	@Autowired
 	private GlobalGroupRepository groupRepository;
@@ -148,14 +149,15 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		groupRepository.save(guests);
 
 		// Tags
-		Tag rootTag = new Tag("/");
+		LocalizedTag rootTag = new LocalizedTag();
+		rootTag.addTag(new Tag("/"));
 		rootTag.tag("home").tag("jotschi");
 		rootTag.tag("root");
 		rootTag.tag("var").tag("www");
-		Tag wwwTag = rootTag.tag("var").tag("www");
+		LocalizedTag wwwTag = rootTag.tag("var").tag("www");
 		wwwTag.tag("site");
-		Tag postsTag = wwwTag.tag("posts");
-		Tag blogsTag = wwwTag.tag("blogs");
+		LocalizedTag postsTag = wwwTag.tag("posts");
+		LocalizedTag blogsTag = wwwTag.tag("blogs");
 		tagRepository.save(rootTag);
 
 		aloha.setRootTag(rootTag);
@@ -239,7 +241,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rh -> {
 			Session session = rh.session();
-			LocalizedContent content = contentRepository.findOne(23L);
+			Content content = contentRepository.findOne(23L);
 			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(content, READ));
 			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
 		});
