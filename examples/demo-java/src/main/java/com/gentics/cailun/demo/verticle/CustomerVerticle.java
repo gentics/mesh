@@ -28,6 +28,7 @@ import com.gentics.cailun.core.repository.GlobalRoleRepository;
 import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.core.repository.GlobalUserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
@@ -53,6 +54,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
 	private GlobalUserRepository userRepository;
+	
 
 	@Autowired
 	private GlobalTagRepository tagRepository;
@@ -77,6 +79,9 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
 	private GlobalProjectRepository projectRepository;
+	
+	@Autowired
+	private CaiLunRootRepository caiLunRootRepository; 
 
 	public CustomerVerticle() {
 		super("page");
@@ -112,12 +117,14 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		contentRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
 
+		CaiLunRoot rootNode =caiLunRootRepository.findRoot(); 
+
 		// Project
 		Project aloha = new Project("aloha");
 
 		// Users
 		List<User> users = addUsers();
-		aloha.getUsers().addAll(users);
+		rootNode.getUsers().addAll(users);
 
 		// Groups
 		Group rootGroup = new Group("superusers");

@@ -140,7 +140,7 @@ public class CaiLunInitializer {
 			userRepository.save(adminUser);
 			log.info("Stored admin user");
 		}
-		rootNode.getMembers().add(adminUser);
+		rootNode.getUsers().add(adminUser);
 		rootRepository.save(rootNode);
 
 		Group adminGroup = groupRepository.findByName("admin");

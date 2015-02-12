@@ -38,10 +38,6 @@ public class Project extends CaiLunNode {
 	private Tag rootTag;
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_USER, direction = Direction.OUTGOING, elementClass = User.class)
-	private Set<User> users = new HashSet<>();
-
-	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_GROUP, direction = Direction.OUTGOING, elementClass = Group.class)
 	private Group rootGroup;
 
