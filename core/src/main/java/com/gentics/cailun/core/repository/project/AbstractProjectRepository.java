@@ -2,17 +2,17 @@ package com.gentics.cailun.core.repository.project;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.repository.FileRepository;
+import com.gentics.cailun.core.repository.CaiLunNodeRepository;
 import com.gentics.cailun.core.rest.model.File;
 
 public abstract class AbstractProjectRepository<T extends File> extends AbstractSecuredRepository<T> {
 
 	@Autowired
-	FileRepository<T> contentRepository;
+	CaiLunNodeRepository<T> contentRepository;
 
 	@Override
 	public T findByUUID(String uuid) {
-		return (T) contentRepository.findByUUID(uuid);
+		return contentRepository.findByUUID(uuid);
 	}
 
 	@Override

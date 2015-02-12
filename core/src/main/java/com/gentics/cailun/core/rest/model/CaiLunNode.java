@@ -33,7 +33,6 @@ public class CaiLunNode extends AbstractPersistable {
 	@Fetch
 	protected String name;
 
-
 	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = GraphPermission.class)
 	private Set<GraphPermission> permissions = new HashSet<>();
 

@@ -27,9 +27,6 @@ import com.gentics.cailun.core.rest.response.GenericResponse;
 @SpringVerticle
 public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
-//	@Autowired
-//	private ContentRepository<Content> contentRepository;
-	
 	@Autowired
 	ProjectContentRepository contentRepository;
 
