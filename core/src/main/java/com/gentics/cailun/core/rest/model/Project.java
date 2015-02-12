@@ -14,7 +14,6 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
-import com.gentics.cailun.core.rest.model.auth.User;
 
 /**
  * A project is the root element for a tag, user,group hierarchy.

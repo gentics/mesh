@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
-import com.gentics.cailun.core.rest.model.AbstractPersistable;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 
 @NoArgsConstructor
@@ -26,10 +25,6 @@ public class User extends CaiLunNode {
 	private String emailAddress;
 
 	private String passwordHash;
-
-	// @Fetch
-	// @RelatedTo(type = "MEMBER_OF", direction = Direction.OUTGOING, elementClass = Group.class)
-	// private Set<Group> groups = new HashSet<>();
 
 	/**
 	 * Create a new user with the given username.

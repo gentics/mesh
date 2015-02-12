@@ -133,9 +133,11 @@ public class CaiLunInitializer {
 		if (adminUser == null) {
 			adminUser = new User("admin");
 			System.out.println("Enter admin password:");
-			Scanner scanIn = new Scanner(System.in);
-			String pw = scanIn.nextLine();
-			scanIn.close();
+//			Scanner scanIn = new Scanner(System.in);
+//			String pw = scanIn.nextLine();
+			//TODO remove later on
+			String pw = "finger";
+//			scanIn.close();
 			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
 			userRepository.save(adminUser);
 			log.info("Stored admin user");

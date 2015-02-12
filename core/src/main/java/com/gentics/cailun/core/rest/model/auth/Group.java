@@ -12,7 +12,7 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.gentics.cailun.core.rest.model.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.BasicRelationships;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 
 @NoArgsConstructor
@@ -26,15 +26,15 @@ public class Group extends CaiLunNode {
 	private String name;
 
 	@Fetch
-	@RelatedTo(type = "MEMBER_OF", direction = Direction.INCOMING, elementClass = User.class)
+	@RelatedTo(type = AuthRelationships.MEMBER_OF, direction = Direction.INCOMING, elementClass = User.class)
 	private Set<User> members = new HashSet<>();
 
 	@Fetch
-	@RelatedTo(type = "HAS_ROLE", direction = Direction.INCOMING, elementClass = Role.class)
+	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.INCOMING, elementClass = Role.class)
 	private Set<Role> roles = new HashSet<>();
 
 	@Fetch
-	@RelatedTo(type = "PARENT_OF", direction = Direction.OUTGOING, elementClass = Group.class)
+	@RelatedTo(type = BasicRelationships.PARENT_OF, direction = Direction.OUTGOING, elementClass = Group.class)
 	private Set<Group> parents = new HashSet<>();
 
 	public Group(String name) {

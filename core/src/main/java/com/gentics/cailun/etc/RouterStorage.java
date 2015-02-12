@@ -20,7 +20,6 @@ import javax.naming.InvalidNameException;
 import lombok.NoArgsConstructor;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.core.rest.model.Project;
 
 /**
  * Central storage for all apex request routers.
@@ -36,7 +35,9 @@ public class RouterStorage {
 	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
 	private static final String API_ROUTER_KEY = "API_ROUTER";
+
 	public static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
+	public static final String PROJECT_CONTEXT_KEY = "cailun-project";
 
 	/**
 	 * Core routers are routers that are responsible for dealing with routes that are no project routes. E.g: /api/v1/admin, /api/v1
@@ -162,7 +163,7 @@ public class RouterStorage {
 			log.info("Added project router {" + name + "}");
 
 			projectRouter.route().handler(ctx -> {
-				ctx.contextData().put("cailun-project", name);
+				ctx.contextData().put(PROJECT_CONTEXT_KEY, name);
 				ctx.next();
 			});
 

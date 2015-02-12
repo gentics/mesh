@@ -15,4 +15,5 @@ public class BasicRelationships {
 	public static final String HAS_ROOT_GROUP = "HAS_ROOT_GROUP";
 	public static final String HAS_ROOT_TAG = "HAS_ROOT_TAG";
 	public static final String HAS_CREATOR = "HAS_CREATOR";
+	public static final String PARENT_OF = "PARENT_OF";
 }
