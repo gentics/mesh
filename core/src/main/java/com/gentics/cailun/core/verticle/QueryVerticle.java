@@ -20,8 +20,8 @@ import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.repository.ContentRepository;
-import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.repository.GlobalContentRepository;
+import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.response.GenericResponse;
@@ -33,10 +33,10 @@ import com.google.common.collect.Lists;
 public class QueryVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
-	private ContentRepository contentRepository;
+	private GlobalContentRepository contentRepository;
 
 	@Autowired
-	private TagRepository tagRepository;
+	private GlobalTagRepository tagRepository;
 
 	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;

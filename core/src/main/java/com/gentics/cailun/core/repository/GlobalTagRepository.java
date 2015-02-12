@@ -6,7 +6,7 @@ import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.rest.model.Tag;
 
-public interface TagRepository extends TaggableNodeRepository<Tag> {
+public interface GlobalTagRepository extends GlobalTaggableNodeRepository<Tag> {
 
 	@Query("MATCH (tag:Tag) RETURN tag")
 	public List<Tag> findAllTags();

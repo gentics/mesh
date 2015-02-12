@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
-import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.core.repository.project.ProjectContentRepository;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
@@ -31,7 +31,7 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 	ProjectContentRepository contentRepository;
 
 	@Autowired
-	private TagRepository tagRepository;
+	private GlobalTagRepository tagRepository;
 
 	@Autowired
 	GraphDatabaseService graphDb;
@@ -49,57 +49,57 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 		addCreateHandler();
 
 		// Tagging
-//		addAddTagHandler();
-//		addUntagPageHandler();
-//		addGetTagHandler();
+		// addAddTagHandler();
+		// addUntagPageHandler();
+		// addGetTagHandler();
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rh -> {
 			String uuid = rh.request().params().get("uuid");
-			contentRepository.delete(uuid);
+//			contentRepository.delete(uuid);
 		});
 
 	}
 
-//	/**
-//	 * Add a handler for removing a tag with a specific name from a page.
-//	 */
-//	private void addUntagPageHandler() {
-//
-//		route("/:uuid/tags/:name").method(DELETE).handler(rh -> {
-//			String uuid = rh.request().params().get("uuid");
-//			String name = rh.request().params().get("name");
-//			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.untag(uuid, name))));
-//		});
-//	}
+	// /**
+	// * Add a handler for removing a tag with a specific name from a page.
+	// */
+	// private void addUntagPageHandler() {
+	//
+	// route("/:uuid/tags/:name").method(DELETE).handler(rh -> {
+	// String uuid = rh.request().params().get("uuid");
+	// String name = rh.request().params().get("name");
+	// rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.untag(uuid, name))));
+	// });
+	// }
 
-//	/**
-//	 * Return the specific tag of a page.
-//	 */
-//	private void addGetTagHandler() {
-//
-//		route("/:uuid/tags/:name").method(GET).handler(rh -> {
-//			String uuid = rh.request().params().get("uuid");
-//			String name = rh.request().params().get("name");
-//			rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.getTag(uuid, name))));
-//		});
-//
-//	}
+	// /**
+	// * Return the specific tag of a page.
+	// */
+	// private void addGetTagHandler() {
+	//
+	// route("/:uuid/tags/:name").method(GET).handler(rh -> {
+	// String uuid = rh.request().params().get("uuid");
+	// String name = rh.request().params().get("name");
+	// rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.getTag(uuid, name))));
+	// });
+	//
+	// }
 
-//	/**
-//	 * Add a tag to the page with id
-//	 */
-//	private void addAddTagHandler() {
-//
-//		route("/:uuid/tags/:name").method(PUT).handler(rh -> {
-//			String uuid = rh.request().params().get("uuid");
-//			String name = String.valueOf(rh.request().params().get("name"));
-//			Tag tag = contentRepository.tagGenericContent(uuid, name);
-//			rh.response().end(toJson(new GenericResponse<Tag>(tag)));
-//
-//		});
-//	}
+	// /**
+	// * Add a tag to the page with id
+	// */
+	// private void addAddTagHandler() {
+	//
+	// route("/:uuid/tags/:name").method(PUT).handler(rh -> {
+	// String uuid = rh.request().params().get("uuid");
+	// String name = String.valueOf(rh.request().params().get("name"));
+	// Tag tag = contentRepository.tagGenericContent(uuid, name);
+	// rh.response().end(toJson(new GenericResponse<Tag>(tag)));
+	//
+	// });
+	// }
 
 	/**
 	 * Add a page create handler
@@ -124,7 +124,7 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 			// System.out.println("request for project {" + project.getName() + "}");
 				String uuid = rc.request().params().get("uuid");
 				if (uuid != null) {
-					Content content = contentRepository.findByUUID(uuid);
+					Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria("null");
 					if (content != null) {
 						ObjectMapper mapper = new ObjectMapper();
 						try {
@@ -148,10 +148,10 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			PageSaveRequest request = fromJson(rc, PageSaveRequest.class);
-			Content content = contentRepository.findByUUID(uuid);
+			Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
 			if (content != null) {
 				content.setContent(request.getContent());
-				contentRepository.save(content);
+				// contentRepository.save(content);
 				GenericResponse<String> response = new GenericResponse<>();
 				response.setObject("OK");
 				rc.response().end(toJson(response));

@@ -12,8 +12,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.repository.TaggableNodeRepository;
+import com.gentics.cailun.core.repository.GlobalTagRepository;
+import com.gentics.cailun.core.repository.GlobalTaggableNodeRepository;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
@@ -22,10 +22,10 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class TaggableNodeTest {
 
 	@Autowired
-	TaggableNodeRepository<TaggableNode> taggableNodeRepository;
+	GlobalTaggableNodeRepository<TaggableNode> taggableNodeRepository;
 
 	@Autowired
-	TagRepository tagRepository;
+	GlobalTagRepository tagRepository;
 
 	@Test
 	public void testNodeTagging() {

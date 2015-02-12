@@ -9,7 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.UserRepository;
+import com.gentics.cailun.core.repository.GlobalUserRepository;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
@@ -19,7 +19,7 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class UserTest {
 
 	@Autowired
-	UserRepository userRepository;
+	GlobalUserRepository userRepository;
 
 	@Test
 	public void testUserCreation() {

@@ -10,8 +10,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.ContentRepository;
-import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.repository.GlobalContentRepository;
+import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
@@ -26,10 +26,10 @@ public class Neo4jGenericContentUtilsTest {
 	private Neo4jGenericContentUtils neo4jPageUtils;
 
 	@Autowired
-	private ContentRepository genericContentRepository;
+	private GlobalContentRepository genericContentRepository;
 
 	@Autowired
-	private TagRepository tagRepository;
+	private GlobalTagRepository tagRepository;
 
 	@Autowired
 	private GraphDatabaseService graphDb;

@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.repository.ContentRepository;
+import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
@@ -30,7 +30,7 @@ public class LinkRendererTest {
 	CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolverFactory;
 
 	@Autowired
-	ContentRepository pageRepository;
+	GlobalContentRepository pageRepository;
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {

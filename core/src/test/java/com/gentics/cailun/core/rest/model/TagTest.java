@@ -10,8 +10,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.CaiLunNodeRepository;
-import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
+import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
@@ -20,10 +20,10 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class TagTest {
 
 	@Autowired
-	TagRepository tagRepository;
+	GlobalTagRepository tagRepository;
 
 	@Autowired
-	CaiLunNodeRepository<CaiLunNode> nodeRepository;
+	GlobalCaiLunNodeRepository<CaiLunNode> nodeRepository;
 
 	@Test
 	public void testContents() {

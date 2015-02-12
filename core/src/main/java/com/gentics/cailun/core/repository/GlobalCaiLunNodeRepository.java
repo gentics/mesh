@@ -4,7 +4,7 @@ import org.springframework.data.neo4j.repository.GraphRepository;
 
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 
-public interface CaiLunNodeRepository<T extends CaiLunNode> extends GraphRepository<T>, UUIDCRUDActions<T> {
+public interface GlobalCaiLunNodeRepository<T extends CaiLunNode> extends GraphRepository<T>, GlobalUUIDCRUDActions<T> {
 
 
 }

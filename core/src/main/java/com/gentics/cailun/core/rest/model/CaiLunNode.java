@@ -18,7 +18,7 @@ import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.User;
 
 /**
- * This class represents a basic cailun node. All models that make use of this model will automatically be able to be tagged and handled by the permission
+ * This class represents a basic cailun node. All models that make use of this model will automatically be able to be handled by the permission
  * system.
  * 
  * @author johannes2
@@ -37,6 +37,9 @@ public class CaiLunNode extends AbstractPersistable {
 	private Set<GraphPermission> permissions = new HashSet<>();
 
 	DynamicProperties properties = new DynamicPropertiesContainer();
+
+	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
+	private Project project;
 
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
 	private User creator;

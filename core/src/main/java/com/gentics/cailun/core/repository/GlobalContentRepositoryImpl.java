@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.cailun.core.rest.model.Content;
 
-public class ContentRepositoryImpl implements CustomContentRepository {
+public class GlobalContentRepositoryImpl implements CustomContentRepository {
 
 	@Override
 	public List<Content> findCustomerNodeBySomeStrangeCriteria(Object strangeCriteria) {

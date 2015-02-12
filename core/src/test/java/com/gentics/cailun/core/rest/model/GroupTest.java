@@ -9,7 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.GroupRepository;
+import com.gentics.cailun.core.repository.GlobalGroupRepository;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
@@ -20,7 +20,7 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 public class GroupTest {
 
 	@Autowired
-	GroupRepository groupRepository;
+	GlobalGroupRepository groupRepository;
 
 	@Test
 	public void testUserGroup() {

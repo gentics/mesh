@@ -19,16 +19,15 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
-import com.gentics.cailun.core.repository.CaiLunNodeRepository;
+import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
-import com.gentics.cailun.core.repository.ContentRepository;
-import com.gentics.cailun.core.repository.GroupRepository;
-import com.gentics.cailun.core.repository.ProjectRepository;
-import com.gentics.cailun.core.repository.RoleRepository;
-import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.repository.UserRepository;
+import com.gentics.cailun.core.repository.GlobalContentRepository;
+import com.gentics.cailun.core.repository.GlobalGroupRepository;
+import com.gentics.cailun.core.repository.GlobalProjectRepository;
+import com.gentics.cailun.core.repository.GlobalRoleRepository;
+import com.gentics.cailun.core.repository.GlobalTagRepository;
+import com.gentics.cailun.core.repository.GlobalUserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
-import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
@@ -53,31 +52,31 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private static Logger log = LoggerFactory.getLogger(CustomerVerticle.class);
 
 	@Autowired
-	private UserRepository userRepository;
+	private GlobalUserRepository userRepository;
 
 	@Autowired
-	private TagRepository tagRepository;
+	private GlobalTagRepository tagRepository;
 
 	@Autowired
-	private GroupRepository groupRepository;
+	private GlobalGroupRepository groupRepository;
 
 	@Autowired
-	private RoleRepository roleRepository;
+	private GlobalRoleRepository roleRepository;
 
 	@Autowired
 	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
-	private ContentRepository contentRepository;
+	private GlobalContentRepository contentRepository;
 
 	@Autowired
-	private CaiLunNodeRepository<CaiLunNode> nodeRepository;
+	private GlobalCaiLunNodeRepository<CaiLunNode> nodeRepository;
 
 	@Autowired
 	private CaiLunRootRepository rootRepository;
 
 	@Autowired
-	private ProjectRepository projectRepository;
+	private GlobalProjectRepository projectRepository;
 
 	public CustomerVerticle() {
 		super("page");
@@ -163,6 +162,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		rootPage.setTeaser("Yo root");
 		rootPage.tag(rootTag);
 		contentRepository.save(rootPage);
+		rootPage = (Page) contentRepository.findOne(rootPage.getId());
 
 		for (int i = 0; i < 6; i++) {
 			Page page = new Page("Hallo Welt");
