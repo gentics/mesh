@@ -11,6 +11,8 @@ import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
+
 /**
  * A tag is a basic container for other generic nodes. It can be used as a folder that holds contents in the form of various pages.
  * 
@@ -19,17 +21,12 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
  */
 @NodeEntity
 @NoArgsConstructor
-public class Tag extends TaggableNode {
-
+public class Tag extends ContentContainer {
 	private static final long serialVersionUID = 3547707185082166132L;
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.INCOMING, elementClass = CaiLunNode.class)
 	private Set<CaiLunNode> contents = new HashSet<>();
-
-	public Tag(String name) {
-		setName(name);
-	}
 
 	/**
 	 * Adds a content in the form of a generic node to this tag.

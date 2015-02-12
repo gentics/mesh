@@ -12,9 +12,12 @@ import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
+import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 @NodeEntity
 public class CaiLunRoot extends AbstractPersistable {
+
+	private static final long serialVersionUID = -901251232180415110L;
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)

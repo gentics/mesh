@@ -12,8 +12,8 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.gentics.cailun.core.rest.model.BasicRelationships;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 @NoArgsConstructor
 @Data

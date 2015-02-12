@@ -4,16 +4,16 @@ import java.util.List;
 
 import org.springframework.data.neo4j.annotation.Query;
 
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 import com.gentics.cailun.core.rest.model.Tag;
 
-public interface GlobalContentRepository extends GlobalFileRepository<Content>, CustomContentRepository {
+public interface GlobalContentRepository extends GlobalFileRepository<LocalizedContent>, CustomContentRepository {
 
 	@Query("MATCH (content:Content)<-[:`TAGGED`]-(tag:Tag) RETURN content")
-	public List<Content> findContentsWithTags();
+	public List<LocalizedContent> findContentsWithTags();
 
 	@Query("MATCH (content:Content) RETURN content")
-	public List<Content> findAllGenericContents();
+	public List<LocalizedContent> findAllGenericContents();
 
 	@Query("MATCH (content:Content) WHERE content.uuid = {0} MERGE (tag:_Tag { name:{1} }) WITH content, tag MERGE (tag)-[r:TAGGED]->(content) RETURN tag")
 	public Tag tagGenericContent(String uuid, String name);

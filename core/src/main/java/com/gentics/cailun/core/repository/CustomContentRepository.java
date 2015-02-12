@@ -2,8 +2,8 @@ package com.gentics.cailun.core.repository;
 
 import java.util.List;
 
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 
 public interface CustomContentRepository {
-	List<Content> findCustomerNodeBySomeStrangeCriteria(Object strangeCriteria);
+	List<LocalizedContent> findCustomerNodeBySomeStrangeCriteria(Object strangeCriteria);
 }

@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.rest.model;
+package com.gentics.cailun.core.rest.model.relationship;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,6 +11,8 @@ import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.cailun.core.rest.model.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 
 @RelationshipEntity
 @Data
@@ -22,24 +24,24 @@ public class Linked extends AbstractPersistable {
 
 	@JsonIgnore
 	@StartNode
-	private Content startPage;
+	private LocalizedContent startPage;
 
 	@Fetch
 	@EndNode
-	private Content endPage;
+	private LocalizedContent endPage;
 
-	public Linked(Content startPage, Content endPage) {
+	public Linked(LocalizedContent startPage, LocalizedContent endPage) {
 		this.startPage = startPage;
 		this.endPage = endPage;
 	}
 
 	@JsonIgnore
-	public Content getStartPage() {
+	public LocalizedContent getStartPage() {
 		return startPage;
 	}
 
 	@JsonIgnore
-	public Content getEndPage() {
+	public LocalizedContent getEndPage() {
 		return endPage;
 	}
 

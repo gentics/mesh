@@ -11,32 +11,34 @@ import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
+
 @Data
 @NodeEntity
 public class TaggableNode extends CaiLunNode {
 
 	@JsonIgnore
 	@Fetch
-	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.OUTGOING, elementClass = Tag.class)
-	private Set<Tag> childTags = new HashSet<>();
+	@RelatedTo(type = BasicRelationships.TAGGED, direction = Direction.OUTGOING, elementClass = LocalizedTag.class)
+	private Set<LocalizedTag> childTags = new HashSet<>();
 
-	public void setChildTags(Set<Tag> childTags) {
+	public void setChildTags(Set<LocalizedTag> childTags) {
 		this.childTags = childTags;
 	}
 
-	public Tag tag(String name) {
-		Tag tag = new Tag(name);
+	public LocalizedTag tag(String name) {
+		LocalizedTag tag = new LocalizedTag(name);
 		this.childTags.add(tag);
 		return tag;
 	}
 
-	public Tag tag(Tag tag) {
+	public LocalizedTag tag(LocalizedTag tag) {
 		this.childTags.add(tag);
 		return tag;
 	}
 
 	public boolean unTag(String name) {
-		return this.childTags.remove(new Tag(name));
+		return this.childTags.remove(new LocalizedTag(name));
 	}
 
 	public boolean unTag(Tag tag) {
@@ -54,7 +56,7 @@ public class TaggableNode extends CaiLunNode {
 	}
 
 	@JsonIgnore
-	public Set<Tag> getChildTags() {
+	public Set<LocalizedTag> getChildTags() {
 		return this.childTags;
 	}
 

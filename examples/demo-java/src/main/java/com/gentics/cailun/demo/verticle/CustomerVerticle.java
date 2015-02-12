@@ -29,7 +29,7 @@ import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.core.repository.GlobalUserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
@@ -162,17 +162,17 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		projectRepository.save(aloha);
 
 		// Contents
-		Page rootPage = new Page("rootPage");
+		LocalizedPage rootPage = new LocalizedPage("rootPage");
 		rootPage.setCreator(users.get(0));
 		rootPage.setContent("This is root");
 		rootPage.setFilename("index.html");
 		rootPage.setTeaser("Yo root");
 		rootPage.tag(rootTag);
 		contentRepository.save(rootPage);
-		rootPage = (Page) contentRepository.findOne(rootPage.getId());
+		rootPage = (LocalizedPage) contentRepository.findOne(rootPage.getId());
 
 		for (int i = 0; i < 6; i++) {
-			Page page = new Page("Hallo Welt");
+			LocalizedPage page = new LocalizedPage("Hallo Welt");
 			page.setFilename("some" + i + ".html");
 			page.setCreator(users.get(0));
 			page.setContent("some content");
@@ -181,7 +181,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		}
 
 		for (int i = 0; i < 3; i++) {
-			Page page = new Page("Hallo Welt");
+			LocalizedPage page = new LocalizedPage("Hallo Welt");
 			page.setFilename("some_posts" + i + ".html");
 			page.setCreator(users.get(0));
 			page.setContent("some content");
@@ -189,7 +189,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 			contentRepository.save(page);
 		}
 
-		Page page = new Page("New BlogPost");
+		LocalizedPage page = new LocalizedPage("New BlogPost");
 		page.tag(blogsTag);
 		page.setCreator(users.get(0));
 		page.setFilename("blog.html");
@@ -197,14 +197,14 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		page.setTeaser("Jo this page is the second blogpost");
 		contentRepository.save(page);
 
-		page = new Page("Hallo Cailun");
+		page = new LocalizedPage("Hallo Cailun");
 		page.setFilename("some2.html");
 		page.setCreator(users.get(0));
 		page.setContent("some more content");
 		page.tag(postsTag);
 		contentRepository.save(page);
 
-		Page indexPage = new Page("Index With Perm");
+		LocalizedPage indexPage = new LocalizedPage("Index With Perm");
 		indexPage.setCreator(users.get(0));
 		indexPage.setFilename("index.html");
 		indexPage.setContent("The index page<br/><a href=\"${Page(10)}\">Link</a>");
@@ -239,7 +239,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rh -> {
 			Session session = rh.session();
-			Content content = contentRepository.findOne(23L);
+			LocalizedContent content = contentRepository.findOne(23L);
 			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(content, READ));
 			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
 		});

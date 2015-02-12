@@ -1,10 +1,12 @@
-package com.gentics.cailun.core.rest.model;
+package com.gentics.cailun.core.rest.model.relationship;
 
 import org.springframework.data.neo4j.annotation.EndNode;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.cailun.core.rest.model.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.CaiLunNode;
 
 @RelationshipEntity
 public class Tagged extends AbstractPersistable {

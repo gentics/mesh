@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.rest.model.BasicRelationships;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.google.common.collect.Lists;
 
@@ -48,7 +48,7 @@ public class Neo4jGenericContentUtils {
 					.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
 				System.out.println(node.getId() + " " + node.getLabels());
 				
-				if (node.hasLabel(DynamicLabel.label(Content.class.getSimpleName()))) {
+				if (node.hasLabel(DynamicLabel.label(LocalizedContent.class.getSimpleName()))) {
 					segments.add((String) node.getProperty("filename"));
 				}
 				if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName()))) {

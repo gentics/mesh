@@ -16,10 +16,10 @@ import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.User;
+import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 /**
- * This class represents a basic cailun node. All models that make use of this model will automatically be able to be handled by the permission
- * system.
+ * This class represents a basic cailun node. All models that make use of this model will automatically be able to be handled by the permission system.
  * 
  * @author johannes2
  *
@@ -30,27 +30,16 @@ public class CaiLunNode extends AbstractPersistable {
 
 	private static final long serialVersionUID = -7525642021064006664L;
 
-	@Fetch
-	protected String name;
-
-	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = GraphPermission.class)
-	private Set<GraphPermission> permissions = new HashSet<>();
-
-	DynamicProperties properties = new DynamicPropertiesContainer();
-
 	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
 	private Project project;
 
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
 	private User creator;
+	
+	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = GraphPermission.class)
+	private Set<GraphPermission> permissions = new HashSet<>();
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
+	DynamicProperties properties = new DynamicPropertiesContainer();
 
 	/**
 	 * Adds a new property or updates an exiting property with the given key and value.

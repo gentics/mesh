@@ -1,8 +1,9 @@
-package com.gentics.cailun.core.rest.model;
+package com.gentics.cailun.core.rest.model.relationship;
 
 import org.neo4j.graphdb.RelationshipType;
 
 public class BasicRelationships {
+
 	public static enum TYPES implements RelationshipType {
 		LINKED, TAGGED, ASSIGNED_TO_PROJECT, HAS_USER, HAS_PROJECT
 	}
@@ -16,4 +17,6 @@ public class BasicRelationships {
 	public static final String HAS_ROOT_TAG = "HAS_ROOT_TAG";
 	public static final String HAS_CREATOR = "HAS_CREATOR";
 	public static final String PARENT_OF = "PARENT_OF";
+	public static final String HAS_CONTENT = "HAS_CONTENT";
+	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
 }

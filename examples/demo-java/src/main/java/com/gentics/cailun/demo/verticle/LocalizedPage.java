@@ -2,16 +2,16 @@ package com.gentics.cailun.demo.verticle;
 
 import lombok.NoArgsConstructor;
 
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 
 @NoArgsConstructor
-public class Page extends Content {
+public class LocalizedPage extends LocalizedContent {
 
 	private static final long serialVersionUID = 8079084130242382986L;
 	private static final String TEASER_KEY = "teaser";
 	private static final String TITLE_KEY = "title";
 
-	public Page(String name) {
+	public LocalizedPage(String name) {
 		this.setName(name);
 	}
 

@@ -16,7 +16,7 @@ import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
@@ -36,9 +36,9 @@ public class LinkRendererTest {
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 
 		// Create some dummy content
-		Content page1 = new Content("test");
+		LocalizedContent page1 = new LocalizedContent("test");
 		pageRepository.save(page1);
-		Content page2 = new Content("test2");
+		LocalizedContent page2 = new LocalizedContent("test2");
 //		page2.setContent(content);
 		pageRepository.save(page2);
 
