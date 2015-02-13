@@ -6,12 +6,12 @@ import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.rest.model.LocalizedTag;
 
-public interface GlobalLocalizedTagRepository extends GlobalTaggableNodeRepository<LocalizedTag> {
+public interface GlobalLocalizedTagRepository<T extends LocalizedTag> extends GlobalLocalizedNodeRepository<T> {
 
 	@Query("MATCH (tag:Tag) RETURN tag")
-	public List<LocalizedTag> findAllTags();
+	public List<T> findAllTags();
 
 	@Query("MATCH (tag:Tag {name: '/'}) RETURN tag")
-	public LocalizedTag findRootTag();
+	public T findRootTag();
 
 }

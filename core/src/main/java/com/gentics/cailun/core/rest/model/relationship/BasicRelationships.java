@@ -21,4 +21,5 @@ public class BasicRelationships {
 	public static final String HAS_LOCALIZED_TAGS = "HAS_LOCALIZED_TAGS";
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
 	public static final String HAS_FILE = "HAS_FILE";
+	public static final String HAS_LOCALISATION = "HAS_LOCALISATION";
 }

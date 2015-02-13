@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.LocalizedTag;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
+import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 /**
@@ -25,13 +25,13 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private static final Logger log = LoggerFactory.getLogger(NavigationTask.class);
 
 	private static final long serialVersionUID = 8773519857036585642L;
-	private LocalizedTag tag;
+	private Tag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
 	private GlobalContentRepository genericContentRepository;
 	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(LocalizedTag tag, NavigationElement element, NavigationRequestHandler handler, GlobalContentRepository genericContentRepository,
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, GlobalContentRepository genericContentRepository,
 			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;
@@ -45,27 +45,33 @@ public class NavigationTask extends RecursiveTask<Void> {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		tag.getFiles().parallelStream().forEachOrdered(tagging -> {
-			if (tagging.getClass().isAssignableFrom(Content.class)) {
-				Content content = (Content) tagging;
-				if (handler.canView(tag)) {
-					NavigationElement pageNavElement = new NavigationElement();
-					pageNavElement.setName(content.getFilename());
-					pageNavElement.setType(NavigationElementType.CONTENT);
-					String path = genericContentUtils.getPath(tag, content);
-					if (log.isDebugEnabled()) {
-						log.debug("Loaded path { " + path + "} for page {" + content.getId() + "}");
-					}
-					pageNavElement.setPath(path);
-					element.getChildren().add(pageNavElement);
-				}
-			}
 		});
 
-		tag.getTags().parallelStream().forEachOrdered(currentTag -> {
+		tag.getLocalisations().parallelStream().forEachOrdered(tagging -> {
+		});
+
+		tag.getContents().parallelStream().forEachOrdered(content -> {
+			for (LocalizedContent localizedContent : content.getLocalisations()) {
+				if (handler.canView(tag)) {
+					NavigationElement pageNavElement = new NavigationElement();
+					pageNavElement.setName(localizedContent.getFilename());
+					pageNavElement.setType(NavigationElementType.CONTENT);
+					// String path = genericContentUtils.getPath(tag, content);
+				String path = "unknown";
+				if (log.isDebugEnabled()) {
+					log.debug("Loaded path { " + path + "} for page {" + content.getId() + "}");
+				}
+				pageNavElement.setPath(path);
+				element.getChildren().add(pageNavElement);
+			}
+		}
+	}	);
+
+		tag.getChildTags().parallelStream().forEachOrdered(currentTag -> {
 			if (handler.canView(currentTag)) {
 				NavigationElement navElement = new NavigationElement();
 				navElement.setType(NavigationElementType.TAG);
-				navElement.setName(currentTag.getName());
+				// navElement.setName(currentTag.getName());
 				element.getChildren().add(navElement);
 				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, genericContentRepository, genericContentUtils);
 				tasks.add(subTask.fork());

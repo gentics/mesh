@@ -24,11 +24,11 @@ public class LocalizedTagTest {
 	@Test
 	public void testContents() {
 
-		LocalizedTag tag = new LocalizedTag();
-		Tag germanTag = new Tag("german");
-		Tag englishTag = new Tag("english");
-		tag.addTag(germanTag);
-		tag.addTag(englishTag);
+		Tag tag = new Tag();
+		LocalizedTag germanTag = new LocalizedTag("german");
+		LocalizedTag englishTag = new LocalizedTag("english");
+		tag.addLocalisation(englishTag);
+		tag.addLocalisation(germanTag);
 		tagRepository.save(tag);
 
 		// final String TEST_TAG_NAME = "my node";

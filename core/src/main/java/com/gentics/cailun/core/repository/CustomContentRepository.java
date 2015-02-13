@@ -4,6 +4,6 @@ import java.util.List;
 
 import com.gentics.cailun.core.rest.model.Content;
 
-public interface CustomContentRepository {
-	List<Content> findCustomerNodeBySomeStrangeCriteria(Object strangeCriteria);
+public interface CustomContentRepository<T extends Content> {
+	List<T> findCustomerNodeBySomeStrangeCriteria(Object strangeCriteria);
 }

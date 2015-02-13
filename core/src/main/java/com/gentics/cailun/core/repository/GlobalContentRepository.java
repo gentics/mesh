@@ -5,9 +5,10 @@ import java.util.List;
 import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 import com.gentics.cailun.core.rest.model.LocalizedTag;
 
-public interface GlobalContentRepository extends GlobalFileRepository<Content>, CustomContentRepository {
+public interface GlobalContentRepository extends GlobalLocalizableCaiLunNodeRepository<Content, LocalizedContent>, CustomContentRepository {
 
 	@Query("MATCH (content:Content)<-[:`TAGGED`]-(tag:Tag) RETURN content")
 	public List<Content> findContentsWithTags();

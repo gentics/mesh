@@ -37,8 +37,8 @@ public class Project extends CaiLunNode {
 	}
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = LocalizedTag.class)
-	private LocalizedTag rootTag;
+	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
+	private Tag rootTag;
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_GROUP, direction = Direction.OUTGOING, elementClass = Group.class)

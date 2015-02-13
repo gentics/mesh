@@ -88,8 +88,8 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		rootElement.setType(NavigationElementType.TAG);
 		nav.setRoot(rootElement);
 
-		NavigationTask task = new NavigationTask(rootTag, rootElement, this, genericContentRepository, genericContentUtils);
-		pool.invoke(task);
+//		NavigationTask task = new NavigationTask(rootTag, rootElement, this, genericContentRepository, genericContentUtils);
+//		pool.invoke(task);
 		return nav;
 	}
 

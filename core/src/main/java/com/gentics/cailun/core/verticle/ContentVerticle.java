@@ -25,6 +25,7 @@ import com.gentics.cailun.core.repository.project.ProjectFileRepository;
 import com.gentics.cailun.core.repository.project.ProjectTagRepository;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.File;
+import com.gentics.cailun.core.rest.model.LocalizedContent;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
 import com.gentics.cailun.core.rest.response.GenericResponse;
@@ -89,7 +90,7 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	}
 
-	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
+	private void resolveLinks(LocalizedContent content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
 		LinkReplacer replacer = new LinkReplacer(resolver);
 		content.setContent(replacer.replace(content.getContent()));
@@ -106,12 +107,12 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 				// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
 
 				// TODO check whether file is a content or a binary file
-				if (true) {
-					Content content = (Content) file;
-					resolveLinks(content);
+				if (false) {
+//					Content content = (Content) file;
+//					resolveLinks(content);
 					ObjectMapper mapper = new ObjectMapper();
-					String json = mapper.writeValueAsString(new GenericResponse<Content>(content));
-					rc.response().end(json);
+//					String json = mapper.writeValueAsString(new GenericResponse<Content>(content));
+//					rc.response().end(json);
 				} else {
 					rc.fail(new Exception("Page for path {" + path + "} could not be found."));
 					// TODO add json response - Make error responses generic
@@ -211,17 +212,17 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			PageSaveRequest request = fromJson(rc, PageSaveRequest.class);
-			Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
-			if (content != null) {
-				content.setContent(request.getContent());
-				// contentRepository.save(content);
-				GenericResponse<String> response = new GenericResponse<>();
-				response.setObject("OK");
-				rc.response().end(toJson(response));
-			} else {
-				rc.fail(404);
-				rc.fail(new ContentNotFoundException(uuid));
-			}
+//			Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
+//			if (content != null) {
+//				content.setContent(request.getContent());
+//				// contentRepository.save(content);
+//				GenericResponse<String> response = new GenericResponse<>();
+//				response.setObject("OK");
+//				rc.response().end(toJson(response));
+//			} else {
+//				rc.fail(404);
+//				rc.fail(new ContentNotFoundException(uuid));
+//			}
 		});
 
 	}

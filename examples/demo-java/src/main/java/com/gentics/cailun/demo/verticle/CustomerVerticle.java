@@ -1,9 +1,6 @@
 package com.gentics.cailun.demo.verticle;
 
-import static com.gentics.cailun.core.rest.model.auth.PermissionType.CREATE;
-import static com.gentics.cailun.core.rest.model.auth.PermissionType.DELETE;
 import static com.gentics.cailun.core.rest.model.auth.PermissionType.READ;
-import static com.gentics.cailun.core.rest.model.auth.PermissionType.WRITE;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -13,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,6 +19,7 @@ import com.gentics.cailun.core.repository.CaiLunRootRepository;
 import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.repository.GlobalGroupRepository;
+import com.gentics.cailun.core.repository.GlobalLanguageRepository;
 import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
 import com.gentics.cailun.core.repository.GlobalProjectRepository;
 import com.gentics.cailun.core.repository.GlobalRoleRepository;
@@ -30,11 +27,10 @@ import com.gentics.cailun.core.repository.GlobalUserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.LocalizedTag;
+import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
@@ -55,7 +51,9 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
 	private GlobalUserRepository userRepository;
-	
+
+	@Autowired
+	private GlobalLanguageRepository languageRepository;
 
 	@Autowired
 	private GlobalLocalizedTagRepository tagRepository;
@@ -80,9 +78,9 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
 	private GlobalProjectRepository projectRepository;
-	
+
 	@Autowired
-	private CaiLunRootRepository caiLunRootRepository; 
+	private CaiLunRootRepository caiLunRootRepository;
 
 	public CustomerVerticle() {
 		super("page");
@@ -118,10 +116,15 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		contentRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
 
-		CaiLunRoot rootNode =caiLunRootRepository.findRoot(); 
+		CaiLunRoot rootNode = caiLunRootRepository.findRoot();
 
 		// Project
 		Project aloha = new Project("aloha");
+
+		Language german = new Language("german");
+		languageRepository.save(german);
+		Language english = new Language("english");
+		languageRepository.save(english);
 
 		// Users
 		List<User> users = addUsers();
@@ -149,92 +152,93 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		groupRepository.save(guests);
 
 		// Tags
-		LocalizedTag rootTag = new LocalizedTag();
-		rootTag.addTag(new Tag("/"));
-		rootTag.tag("home").tag("jotschi");
-		rootTag.tag("root");
-		rootTag.tag("var").tag("www");
-		LocalizedTag wwwTag = rootTag.tag("var").tag("www");
-		wwwTag.tag("site");
-		LocalizedTag postsTag = wwwTag.tag("posts");
-		LocalizedTag blogsTag = wwwTag.tag("blogs");
+		Tag rootTag = new Tag();
+		rootTag.addLocalizedTag(german, "/");
+		rootTag.addLocalizedSubTag(german, "heim");
+		rootTag.addLocalizedSubTag(english, "home").addLocalizedSubTag(german, "jotschi");
+		rootTag.addLocalizedSubTag(english, "root");
+		rootTag.addLocalizedSubTag(german, "wurzel");
+		Tag wwwTag = rootTag.addLocalizedSubTag(english, "var").addLocalizedSubTag(english, "www");
+		wwwTag.addLocalizedSubTag(english, "site");
+		wwwTag.addLocalizedSubTag(english, "posts");
+		wwwTag.addLocalizedSubTag(english, "blogs");
 		tagRepository.save(rootTag);
 
 		aloha.setRootTag(rootTag);
 		projectRepository.save(aloha);
 
 		// Contents
-		LocalizedPage rootPage = new LocalizedPage("rootPage");
-		rootPage.setCreator(users.get(0));
-		rootPage.setContent("This is root");
-		rootPage.setFilename("index.html");
-		rootPage.setTeaser("Yo root");
-		rootPage.tag(rootTag);
-		contentRepository.save(rootPage);
-		rootPage = (LocalizedPage) contentRepository.findOne(rootPage.getId());
+		 Page rootPage = new Page();
+		 rootPage.addLocalizedContent(german, "german.html").setContent("Mahlzeit!");;
+		 rootPage.addLocalizedContent(english, "english.html").setContent("Blessed mealtime!");
+		 rootPage.setCreator(users.get(0));
+//		 rootPage.tag(rootTag);
+		 contentRepository.save(rootPage);
 
-		for (int i = 0; i < 6; i++) {
-			LocalizedPage page = new LocalizedPage("Hallo Welt");
-			page.setFilename("some" + i + ".html");
-			page.setCreator(users.get(0));
-			page.setContent("some content");
-			page.tag(blogsTag);
-			contentRepository.save(page);
-		}
-
-		for (int i = 0; i < 3; i++) {
-			LocalizedPage page = new LocalizedPage("Hallo Welt");
-			page.setFilename("some_posts" + i + ".html");
-			page.setCreator(users.get(0));
-			page.setContent("some content");
-			page.tag(postsTag);
-			contentRepository.save(page);
-		}
-
-		LocalizedPage page = new LocalizedPage("New BlogPost");
-		page.tag(blogsTag);
-		page.setCreator(users.get(0));
-		page.setFilename("blog.html");
-		page.setContent("This is the blogpost content");
-		page.setTeaser("Jo this page is the second blogpost");
-		contentRepository.save(page);
-
-		page = new LocalizedPage("Hallo Cailun");
-		page.setFilename("some2.html");
-		page.setCreator(users.get(0));
-		page.setContent("some more content");
-		page.tag(postsTag);
-		contentRepository.save(page);
-
-		LocalizedPage indexPage = new LocalizedPage("Index With Perm");
-		indexPage.setCreator(users.get(0));
-		indexPage.setFilename("index.html");
-		indexPage.setContent("The index page<br/><a href=\"${Page(10)}\">Link</a>");
-		indexPage.setTitle("Index Title");
-		indexPage.setTeaser("Yo guckste hier");
-		indexPage.tag(wwwTag);
-
-		indexPage.linkTo(page);
-		contentRepository.save(indexPage);
-
-		// Permissions
-		try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
-			// Add admin permissions to all nodes
-			int i = 0;
-			for (CaiLunNode currentNode : nodeRepository.findAll()) {
-				// if (i % 2 == 0) {
-				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-				GraphPermission permission = new GraphPermission(adminRole, currentNode);
-				permission.grant(CREATE);
-				permission.grant(READ);
-				permission.grant(WRITE);
-				permission.grant(DELETE);
-				currentNode.addPermission(permission);
-				nodeRepository.save(currentNode);
-				i++;
-			}
-			tx.success();
-		}
+		// rootPage = (LocalizedPage) contentRepository.findOne(rootPage.getId());
+		//
+		// for (int i = 0; i < 6; i++) {
+		// LocalizedPage page = new LocalizedPage("Hallo Welt");
+		// page.setFilename("some" + i + ".html");
+		// page.setCreator(users.get(0));
+		// page.setContent("some content");
+		// page.tag(blogsTag);
+		// contentRepository.save(page);
+		// }
+		//
+		// for (int i = 0; i < 3; i++) {
+		// LocalizedPage page = new LocalizedPage("Hallo Welt");
+		// page.setFilename("some_posts" + i + ".html");
+		// page.setCreator(users.get(0));
+		// page.setContent("some content");
+		// page.tag(postsTag);
+		// contentRepository.save(page);
+		// }
+		//
+		// LocalizedPage page = new LocalizedPage("New BlogPost");
+		// page.tag(blogsTag);
+		// page.setCreator(users.get(0));
+		// page.setFilename("blog.html");
+		// page.setContent("This is the blogpost content");
+		// page.setTeaser("Jo this page is the second blogpost");
+		// contentRepository.save(page);
+		//
+		// page = new LocalizedPage("Hallo Cailun");
+		// page.setFilename("some2.html");
+		// page.setCreator(users.get(0));
+		// page.setContent("some more content");
+		// page.tag(postsTag);
+		// contentRepository.save(page);
+		//
+		// LocalizedPage indexPage = new LocalizedPage("Index With Perm");
+		// indexPage.setCreator(users.get(0));
+		// indexPage.setFilename("index.html");
+		// indexPage.setContent("The index page<br/><a href=\"${Page(10)}\">Link</a>");
+		// indexPage.setTitle("Index Title");
+		// indexPage.setTeaser("Yo guckste hier");
+		// indexPage.tag(wwwTag);
+		//
+		// indexPage.linkTo(page);
+		// contentRepository.save(indexPage);
+		//
+		// // Permissions
+		// try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
+		// // Add admin permissions to all nodes
+		// int i = 0;
+		// for (CaiLunNode currentNode : nodeRepository.findAll()) {
+		// // if (i % 2 == 0) {
+		// log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
+		// GraphPermission permission = new GraphPermission(adminRole, currentNode);
+		// permission.grant(CREATE);
+		// permission.grant(READ);
+		// permission.grant(WRITE);
+		// permission.grant(DELETE);
+		// currentNode.addPermission(permission);
+		// nodeRepository.save(currentNode);
+		// i++;
+		// }
+		// tx.success();
+		// }
 
 	}
 

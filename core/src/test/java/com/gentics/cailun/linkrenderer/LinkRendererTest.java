@@ -17,7 +17,8 @@ import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
+import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
@@ -36,16 +37,19 @@ public class LinkRendererTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 
+		Language german = new Language("german");
+
 		// Create some dummy content
-		LocalizedContent content = new LocalizedContent();
-		content.addContent(new Content("test content"));
+		Content content = new Content();
+		content.addLocalizedContent(german, "test content");
+		
 		pageRepository.save(content);
 		Content page2 = new Content();
 //		page2.setContent(content);
 		pageRepository.save(page2);
 
 		LinkReplacer<CaiLunLinkResolver> replacer = new LinkReplacer(resolverFactory);
-		String out = replacer.replace(content);
+		String out = replacer.replace("dgasd");
 		System.out.println(out);
 	}
 
