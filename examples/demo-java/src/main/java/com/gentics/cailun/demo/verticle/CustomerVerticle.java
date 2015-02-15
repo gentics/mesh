@@ -168,12 +168,14 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		projectRepository.save(aloha);
 
 		// Contents
-		 Page rootPage = new Page();
-		 rootPage.addLocalizedContent(german, "german.html").setContent("Mahlzeit!");;
-		 rootPage.addLocalizedContent(english, "english.html").setContent("Blessed mealtime!");
-		 rootPage.setCreator(users.get(0));
-//		 rootPage.tag(rootTag);
-		 contentRepository.save(rootPage);
+		Page rootPage = new Page(german, "german name", "german.html");
+		LocalizedPage germanPage= rootPage.getLocalisation(german);
+		germanPage.setContent("Mahlzeit!");
+		
+		rootPage.addLocalizedContent(english, "english name", "english.html").setContent("Blessed mealtime!");
+		rootPage.setCreator(users.get(0));
+		// rootPage.tag(rootTag);
+		contentRepository.save((Content)rootPage);
 
 		// rootPage = (LocalizedPage) contentRepository.findOne(rootPage.getId());
 		//

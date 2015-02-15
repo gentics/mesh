@@ -47,36 +47,36 @@ public class NavigationTask extends RecursiveTask<Void> {
 		tag.getFiles().parallelStream().forEachOrdered(tagging -> {
 		});
 
-		tag.getLocalisations().parallelStream().forEachOrdered(tagging -> {
+		tag.getLocalizations().parallelStream().forEachOrdered(tagging -> {
 		});
 
-		tag.getContents().parallelStream().forEachOrdered(content -> {
-			for (LocalizedContent localizedContent : content.getLocalisations()) {
-				if (handler.canView(tag)) {
-					NavigationElement pageNavElement = new NavigationElement();
-					pageNavElement.setName(localizedContent.getFilename());
-					pageNavElement.setType(NavigationElementType.CONTENT);
-					// String path = genericContentUtils.getPath(tag, content);
-				String path = "unknown";
-				if (log.isDebugEnabled()) {
-					log.debug("Loaded path { " + path + "} for page {" + content.getId() + "}");
-				}
-				pageNavElement.setPath(path);
-				element.getChildren().add(pageNavElement);
-			}
-		}
-	}	);
+//		tag.getContents().parallelStream().forEachOrdered(content -> {
+//			for (LocalizedContent localizedContent : content.getLocalisations()) {
+//				if (handler.canView(tag)) {
+//					NavigationElement pageNavElement = new NavigationElement();
+//					pageNavElement.setName(localizedContent.getFilename());
+//					pageNavElement.setType(NavigationElementType.CONTENT);
+//					// String path = genericContentUtils.getPath(tag, content);
+//				String path = "unknown";
+//				if (log.isDebugEnabled()) {
+//					log.debug("Loaded path { " + path + "} for page {" + content.getId() + "}");
+//				}
+//				pageNavElement.setPath(path);
+//				element.getChildren().add(pageNavElement);
+//			}
+//		}
+//		});
 
-		tag.getChildTags().parallelStream().forEachOrdered(currentTag -> {
-			if (handler.canView(currentTag)) {
-				NavigationElement navElement = new NavigationElement();
-				navElement.setType(NavigationElementType.TAG);
-				// navElement.setName(currentTag.getName());
-				element.getChildren().add(navElement);
-				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, genericContentRepository, genericContentUtils);
-				tasks.add(subTask.fork());
-			}
-		});
+//		tag.getChildTags().parallelStream().forEachOrdered(currentTag -> {
+//			if (handler.canView(currentTag)) {
+//				NavigationElement navElement = new NavigationElement();
+//				navElement.setType(NavigationElementType.TAG);
+//				// navElement.setName(currentTag.getName());
+//				element.getChildren().add(navElement);
+//				NavigationTask subTask = new NavigationTask(currentTag, navElement, handler, genericContentRepository, genericContentUtils);
+//				tasks.add(subTask.fork());
+//			}
+//		});
 
 		// Wait for all forked tasks to finish
 		tasks.forEach(action -> action.join());

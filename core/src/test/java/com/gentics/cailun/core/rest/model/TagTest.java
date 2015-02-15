@@ -16,7 +16,7 @@ import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-public class LocalizedTagTest {
+public class TagTest {
 
 	@Autowired
 	GlobalLocalizedTagRepository tagRepository;
@@ -24,11 +24,13 @@ public class LocalizedTagTest {
 	@Test
 	public void testContents() {
 
-		Tag tag = new Tag();
-		LocalizedTag germanTag = new LocalizedTag("german");
-		LocalizedTag englishTag = new LocalizedTag("english");
-		tag.addLocalisation(englishTag);
-		tag.addLocalisation(germanTag);
+		Language german = new Language("german");
+		Language english = new Language("english");
+
+		Tag tag = new Tag(german, "german");
+		LocalizedTag englishTag = new LocalizedTag(english, "english");
+		tag.addLocalization(englishTag);
+		
 		tagRepository.save(tag);
 
 		// final String TEST_TAG_NAME = "my node";

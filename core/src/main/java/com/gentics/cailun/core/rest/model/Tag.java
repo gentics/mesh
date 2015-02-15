@@ -20,30 +20,32 @@ import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
  */
 @NodeEntity
 @NoArgsConstructor
-public class Tag extends LocalizableCaiLunNode<LocalizedTag> {
+public class Tag<T extends LocalizedTag, C extends Content, F extends File> extends LocalizableCaiLunNode<T> {
 
 	private static final long serialVersionUID = 3547707185082166132L;
 
 	@RelatedTo(type = BasicRelationships.HAS_FILE, elementClass = File.class, direction = Direction.OUTGOING)
-	private Set<File> files = new HashSet<>();
-	
-	private Set<Content> contents = new HashSet<>();
+	private Set<F> files = new HashSet<>();
+
+	private Set<C> contents = new HashSet<>();
 
 	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, elementClass = Tag.class, direction = Direction.OUTGOING)
-	private Set<Tag> childTags = new HashSet<>();
+	private Set<Tag<T,C,F>> childTags = new HashSet<>();
 
-	
-	public Set<Content> getContents() {
+	public Tag(Language language, String name) {
+		getLocalizations().add((T) new LocalizedTag(language, name));
+	}
+
+	public Set<C> getContents() {
 		return contents;
 	}
-	
-	
-	public void addFile(File node) {
+
+	public void addFile(F node) {
 		this.files.add(node);
 	}
 
 	@JsonIgnore
-	public Set<File> getFiles() {
+	public Set<F> getFiles() {
 		return files;
 	}
 
@@ -51,11 +53,11 @@ public class Tag extends LocalizableCaiLunNode<LocalizedTag> {
 		childTags.add(tag);
 	}
 
-	public Set<Tag> getChildTags() {
+	public Set<Tag<T,C,F>> getChildTags() {
 		return childTags;
 	}
 
-	public void setChildTags(Set<Tag> childTags) {
+	public void setChildTags(Set<Tag<T,C,F>> childTags) {
 		this.childTags = childTags;
 	}
 
@@ -67,7 +69,7 @@ public class Tag extends LocalizableCaiLunNode<LocalizedTag> {
 	}
 
 	public LocalizedTag addLocalizedTag(Language language, String name) {
-		LocalizedTag tag = new LocalizedTag(name);
+		LocalizedTag tag = new LocalizedTag(language, name);
 		tag.setLanguage(language);
 		return tag;
 

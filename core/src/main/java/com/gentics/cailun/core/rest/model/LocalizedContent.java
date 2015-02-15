@@ -20,8 +20,8 @@ public class LocalizedContent extends LocalizedNode {
 
 	private static final long serialVersionUID = 1100206059138098335L;
 
-//	@RelatedToVia(type = BasicRelationships.LINKED, direction = Direction.OUTGOING, elementClass = Linked.class)
-//	private Collection<Linked> links = new HashSet<>();
+	// @RelatedToVia(type = BasicRelationships.LINKED, direction = Direction.OUTGOING, elementClass = Linked.class)
+	// private Collection<Linked> links = new HashSet<>();
 
 	@Indexed
 	protected String filename;
@@ -30,8 +30,10 @@ public class LocalizedContent extends LocalizedNode {
 	@Fetch
 	protected String content;
 
-	public LocalizedContent(String name) {
+	public LocalizedContent(Language language, String name, String filename) {
+		this.language = language;
 		this.name = name;
+		this.filename = filename;
 	}
 
 	public String getFilename() {

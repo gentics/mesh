@@ -19,6 +19,11 @@ public class LocalizedNode extends CaiLunNode {
 	@RelatedTo(elementClass = Language.class, direction = Direction.OUTGOING, type = BasicRelationships.HAS_LANGUAGE)
 	protected Language language;
 
+	public LocalizedNode(Language language, String name) {
+		this.name = name;
+		this.language = language;
+	}
+
 	public void setLanguage(Language language) {
 		this.language = language;
 	}
