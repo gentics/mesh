@@ -7,8 +7,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.spi.cluster.VertxSPI;
 import io.vertx.spi.cluster.impl.hazelcast.HazelcastClusterManager;
 
-import java.util.Scanner;
-
 import javax.naming.InvalidNameException;
 
 import org.neo4j.graphdb.Transaction;

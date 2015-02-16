@@ -1,5 +1,8 @@
 package com.gentics.cailun.core.repository;
 
-public interface GlobalFolderTagRepository extends GlobalTagRepository {
+import com.gentics.cailun.core.rest.model.File;
+import com.gentics.cailun.core.rest.model.FolderTag;
+
+public interface GlobalFolderTagRepository extends GlobalTagRepository<FolderTag, File> {
 
 }

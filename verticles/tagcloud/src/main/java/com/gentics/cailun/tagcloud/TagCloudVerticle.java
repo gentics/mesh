@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.tagcloud.model.TagCloud;
 import com.gentics.cailun.tagcloud.model.TagCloudEntry;
 import com.gentics.cailun.tagcloud.model.TagCloudResult;
@@ -40,6 +41,9 @@ public class TagCloudVerticle extends AbstractCaiLunProjectRestVerticle {
 	 * Add the tagcloud load handler.
 	 */
 	private void addTagCloudHandler() {
+		//TODO handle languages
+		Language language = null;
+		
 		route("/tagcloud").method(GET).handler(rc -> {
 			TagCloud cloud = new TagCloud();
 			// TODO transaction handling should be moved to abstract rest resource
@@ -47,7 +51,7 @@ public class TagCloudVerticle extends AbstractCaiLunProjectRestVerticle {
 					List<TagCloudResult> res = pageRepository.getTagCloudInfo();
 					for (TagCloudResult current : res) {
 						TagCloudEntry entry = new TagCloudEntry();
-						entry.setName(current.getTag().getName());
+						entry.setName(current.getTag().getName(language));
 						// TODO determine link
 						entry.setLink("TBD");
 						entry.setCount(current.getCounts());

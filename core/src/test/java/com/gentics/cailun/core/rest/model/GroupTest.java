@@ -3,21 +3,14 @@ package com.gentics.cailun.core.rest.model;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.repository.GlobalGroupRepository;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.User;
-import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
+import com.gentics.cailun.test.AbstractDBTest;
 
-@ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
-@RunWith(SpringJUnit4ClassRunner.class)
-@Transactional
-public class GroupTest {
+public class GroupTest extends AbstractDBTest {
 
 	@Autowired
 	GlobalGroupRepository groupRepository;

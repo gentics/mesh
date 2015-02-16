@@ -15,10 +15,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
+import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
 import com.gentics.cailun.core.rest.model.CaiLunNode;
-import com.gentics.cailun.core.rest.model.LocalizedTag;
+import com.gentics.cailun.core.rest.model.Language;
+import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.PermissionType;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -29,7 +30,7 @@ import com.gentics.cailun.util.Neo4jGenericContentUtils;
 public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
-	GlobalLocalizedTagRepository tagRepository;
+	GlobalCaiLunNodeRepository<Tag> tagRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration config;
@@ -46,7 +47,8 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	public void handle(RoutingContext rc) {
 		this.session = rc.session();
-		LocalizedTag rootTag = tagRepository.findRootTag();
+		// LocalizedTag rootTag = tagRepository.findRootTag();
+		Tag rootTag = null;
 		try {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
@@ -80,16 +82,17 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return
 	 * @throws NodeNotFoundException
 	 */
-	private Navigation getNavigation(LocalizedTag rootTag) {
-
+	private Navigation getNavigation(Tag rootTag) {
+		// TODO handle language
+		Language language = null;
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
-		rootElement.setName(rootTag.getName());
+		rootElement.setName(rootTag.getName(language));
 		rootElement.setType(NavigationElementType.TAG);
 		nav.setRoot(rootElement);
 
-//		NavigationTask task = new NavigationTask(rootTag, rootElement, this, genericContentRepository, genericContentUtils);
-//		pool.invoke(task);
+		// NavigationTask task = new NavigationTask(rootTag, rootElement, this, genericContentRepository, genericContentUtils);
+		// pool.invoke(task);
 		return nav;
 	}
 

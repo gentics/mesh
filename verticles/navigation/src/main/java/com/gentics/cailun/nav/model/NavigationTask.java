@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -45,9 +44,6 @@ public class NavigationTask extends RecursiveTask<Void> {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		tag.getFiles().parallelStream().forEachOrdered(tagging -> {
-		});
-
-		tag.getLocalizations().parallelStream().forEachOrdered(tagging -> {
 		});
 
 //		tag.getContents().parallelStream().forEachOrdered(content -> {

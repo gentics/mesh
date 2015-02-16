@@ -20,7 +20,6 @@ import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.repository.GlobalGroupRepository;
 import com.gentics.cailun.core.repository.GlobalLanguageRepository;
-import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
 import com.gentics.cailun.core.repository.GlobalProjectRepository;
 import com.gentics.cailun.core.repository.GlobalRoleRepository;
 import com.gentics.cailun.core.repository.GlobalUserRepository;
@@ -56,7 +55,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private GlobalLanguageRepository languageRepository;
 
 	@Autowired
-	private GlobalLocalizedTagRepository tagRepository;
+	private GlobalCaiLunNodeRepository<Tag> tagRepository;
 
 	@Autowired
 	private GlobalGroupRepository groupRepository;
@@ -132,7 +131,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		// Groups
 		Group rootGroup = new Group("superusers");
-		aloha.setRootGroup(rootGroup);
+		rootNode.getRootGroup().getChildren().add(rootGroup);
 
 		// Roles
 		Role adminRole = new Role("admin role");
@@ -151,31 +150,31 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		guests.getRoles().add(guestRole);
 		groupRepository.save(guests);
 
-		// Tags
-		Tag rootTag = new Tag();
-		rootTag.addLocalizedTag(german, "/");
-		rootTag.addLocalizedSubTag(german, "heim");
-		rootTag.addLocalizedSubTag(english, "home").addLocalizedSubTag(german, "jotschi");
-		rootTag.addLocalizedSubTag(english, "root");
-		rootTag.addLocalizedSubTag(german, "wurzel");
-		Tag wwwTag = rootTag.addLocalizedSubTag(english, "var").addLocalizedSubTag(english, "www");
-		wwwTag.addLocalizedSubTag(english, "site");
-		wwwTag.addLocalizedSubTag(english, "posts");
-		wwwTag.addLocalizedSubTag(english, "blogs");
-		tagRepository.save(rootTag);
-
-		aloha.setRootTag(rootTag);
-		projectRepository.save(aloha);
-
-		// Contents
-		Page rootPage = new Page(german, "german name", "german.html");
-		LocalizedPage germanPage= rootPage.getLocalisation(german);
-		germanPage.setContent("Mahlzeit!");
-		
-		rootPage.addLocalizedContent(english, "english name", "english.html").setContent("Blessed mealtime!");
-		rootPage.setCreator(users.get(0));
-		// rootPage.tag(rootTag);
-		contentRepository.save((Content)rootPage);
+		// // Tags
+		// Tag rootTag = new Tag();
+		// rootTag.addLocalizedTag(german, "/");
+		// rootTag.addLocalizedSubTag(german, "heim");
+		// rootTag.addLocalizedSubTag(english, "home").addLocalizedSubTag(german, "jotschi");
+		// rootTag.addLocalizedSubTag(english, "root");
+		// rootTag.addLocalizedSubTag(german, "wurzel");
+		// Tag wwwTag = rootTag.addLocalizedSubTag(english, "var").addLocalizedSubTag(english, "www");
+		// wwwTag.addLocalizedSubTag(english, "site");
+		// wwwTag.addLocalizedSubTag(english, "posts");
+		// wwwTag.addLocalizedSubTag(english, "blogs");
+		// //tagRepository.save(rootTag);
+		//
+		// aloha.setRootTag(rootTag);
+		// projectRepository.save(aloha);
+		//
+		// // Contents
+		// Page rootPage = new Page(german, "german name", "german.html");
+		// LocalizedPage germanPage= rootPage.getLocalisation(german);
+		// germanPage.setContent("Mahlzeit!");
+		//
+		// rootPage.addLocalizedContent(english, "english name", "english.html").setContent("Blessed mealtime!");
+		// rootPage.setCreator(users.get(0));
+		// // rootPage.tag(rootTag);
+		// contentRepository.save((Content)rootPage);
 
 		// rootPage = (LocalizedPage) contentRepository.findOne(rootPage.getId());
 		//

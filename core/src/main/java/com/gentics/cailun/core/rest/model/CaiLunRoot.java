@@ -43,4 +43,8 @@ public class CaiLunRoot extends AbstractPersistable {
 		this.rootGroup = group;
 	}
 
+	public Group getRootGroup() {
+		return rootGroup;
+	}
+
 }

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.rest.model.CaiLunNode;
 import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.LocalizedTag;
+import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.google.common.collect.Lists;
@@ -39,7 +39,7 @@ public class Neo4jGenericContentUtils {
 	 *            Page from which the traversal will start
 	 * @return
 	 */
-	public String getPath(LocalizedTag to, CaiLunNode from) {
+	public String getPath(Tag to, CaiLunNode from) {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
 		List<String> segments = new ArrayList<>();
 		try (Transaction tx = graphDB.beginTx()) {
@@ -51,11 +51,11 @@ public class Neo4jGenericContentUtils {
 				if (node.hasLabel(DynamicLabel.label(Content.class.getSimpleName()))) {
 					segments.add((String) node.getProperty("filename"));
 				}
-				if (node.hasLabel(DynamicLabel.label(LocalizedTag.class.getSimpleName()))) {
+				if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName()))) {
 					segments.add((String) node.getProperty("name"));
 				}
 
-				if (node.hasLabel(DynamicLabel.label(LocalizedTag.class.getSimpleName())) && node.getId() == to.getId()) {
+				if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName())) && node.getId() == to.getId()) {
 					break;
 				}
 			}

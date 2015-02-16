@@ -37,6 +37,10 @@ public class Group extends CaiLunNode {
 	@RelatedTo(type = BasicRelationships.PARENT_OF, direction = Direction.OUTGOING, elementClass = Group.class)
 	private Set<Group> parents = new HashSet<>();
 
+	@Fetch
+	@RelatedTo(type = BasicRelationships.HAS_CHILD, direction = Direction.INCOMING, elementClass = Group.class)
+	private Set<Group> children = new HashSet<>();
+
 	public Group(String name) {
 		this.name = name;
 	}

@@ -1,9 +1,7 @@
 package com.gentics.cailun.core.rest.model;
 
-import org.springframework.data.neo4j.annotation.Fetch;
 
 public class BinaryFile extends File {
 
-	@Fetch
-	protected String name;
+	private static final long serialVersionUID = -8420315613055842274L;
 }

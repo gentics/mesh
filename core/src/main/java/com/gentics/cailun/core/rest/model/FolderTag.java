@@ -1,16 +1,17 @@
 package com.gentics.cailun.core.rest.model;
 
-public class FolderTag extends Tag<LocalizedFolderTag, Content, File> {
+import org.springframework.data.neo4j.annotation.NodeEntity;
 
-	public FolderTag(Language language, String name) {
-		super(language, name);
+@NodeEntity
+public class FolderTag extends Tag<FolderTag, File> {
+
+	private static final long serialVersionUID = 7645315435657775862L;
+
+	protected FolderTag() {
+
 	}
 
-}
-
-class LocalizedFolderTag extends LocalizedTag {
-
-	public LocalizedFolderTag(Language language, String name) {
+	public FolderTag(Language language, String name) {
 		super(language, name);
 	}
 

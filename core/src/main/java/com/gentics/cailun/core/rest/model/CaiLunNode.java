@@ -5,17 +5,21 @@ import java.util.Set;
 
 import lombok.Data;
 
+import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
+import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
+import com.gentics.cailun.core.rest.model.relationship.Translated;
 
 /**
  * This class represents a basic cailun node. All models that make use of this model will automatically be able to be handled by the permission system.
@@ -24,21 +28,78 @@ import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
  *
  */
 @Data
+@Component
 @NodeEntity
 public class CaiLunNode extends AbstractPersistable {
 
 	private static final long serialVersionUID = -7525642021064006664L;
+	public static final String NAME_KEYWORD = "name";
 
 	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
 	private Project project;
 
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
 	private User creator;
-	
+
 	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = GraphPermission.class)
 	private Set<GraphPermission> permissions = new HashSet<>();
 
 	DynamicProperties properties = new DynamicPropertiesContainer();
+
+	@Fetch
+	@RelatedToVia(type = BasicRelationships.HAS_I18NVALUE, direction = Direction.OUTGOING, elementClass = Translated.class)
+	private Set<Translated> i18nTranslations = new HashSet<>();
+
+	/**
+	 * Adds or updates the i18n value for the given language and key with the given value.
+	 * 
+	 * @param language
+	 *            Language for the i18n value
+	 * @param key
+	 *            Key of the value
+	 * @param value
+	 *            The i18n text value
+	 */
+	public void setI18NProperty(Language language, String key, String value) {
+
+		if (StringUtils.isEmpty(key) || language == null) {
+			// TODO exception? boolean return?
+			return;
+		}
+
+		I18NValue i18nValue = getI18NValue(language, key);
+		if (i18nValue == null) {
+			i18nValue = new I18NValue(language, key, value);
+			getI18nTranslations().add(new Translated(this, i18nValue, language));
+		} else {
+			i18nValue.setValue(value);
+		}
+
+	}
+
+	/**
+	 * Returns the i18n specific text value for the given language.
+	 * 
+	 * @param language
+	 * @param key
+	 * @return the found text value or null if no value could be found
+	 */
+	protected String getI18NProperty(Language language, String key) {
+		if (language == null || StringUtils.isEmpty(key)) {
+			return null;
+		}
+		I18NValue i18nValue = getI18NValue(language, key);
+		return i18nValue == null ? null : i18nValue.getValue();
+
+	}
+
+	public String getName(Language language) {
+		return getI18NProperty(language, NAME_KEYWORD);
+	}
+
+	public void setName(Language language, String name) {
+		setI18NProperty(language, NAME_KEYWORD, name);
+	}
 
 	/**
 	 * Adds a new property or updates an exiting property with the given key and value.
@@ -86,6 +147,30 @@ public class CaiLunNode extends AbstractPersistable {
 
 	public boolean addPermission(GraphPermission permission) {
 		return permissions.add(permission);
+	}
+
+	/**
+	 * Returns the i18n value for the given language and key.
+	 * 
+	 * @param language
+	 * @param key
+	 * @return the found i18n value or null if no value could be found.
+	 */
+	public I18NValue getI18NValue(Language language, String key) {
+		if (language == null || StringUtils.isEmpty(key)) {
+			return null;
+		}
+		for (Translated translation : i18nTranslations) {
+			if (translation.getLanguageTag().equalsIgnoreCase(language.getLanguageTag())) {
+				I18NValue value = translation.getI18nValue();
+				if (key.equalsIgnoreCase(value.getKey()) && language.getId().equals(value.getLanguage().getId())) {
+					return value;
+				}
+			}
+
+		}
+
+		return null;
 	}
 
 }

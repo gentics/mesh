@@ -13,6 +13,7 @@ public interface GlobalGroupRepository extends GlobalCaiLunNodeRepository<Group>
 
 	/**
 	 * Return all groups that are assigned to the user
+	 * 
 	 * @param user
 	 * @return
 	 */

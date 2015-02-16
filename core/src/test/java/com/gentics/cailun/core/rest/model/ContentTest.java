@@ -1,28 +1,21 @@
 package com.gentics.cailun.core.rest.model;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.repository.GlobalFolderTagRepository;
-import com.gentics.cailun.core.repository.GlobalTagRepository;
-import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
+import com.gentics.cailun.test.AbstractDBTest;
 
-@ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
-@RunWith(SpringJUnit4ClassRunner.class)
-@Transactional
 public class ContentTest extends AbstractDBTest {
 
 	@Autowired
 	GlobalContentRepository contentRepository;
 
-	@Autowired
-	GlobalTagRepository tagRepository;
-	
+//	@Autowired
+//	GlobalTagRepository<Tag<LocalizedTag, Content<LocalizedContent>, File>> tagRepository;
+
 	@Autowired
 	GlobalFolderTagRepository folderRepository;
 
@@ -53,8 +46,8 @@ public class ContentTest extends AbstractDBTest {
 		folderRepository.save(rootTag);
 
 		Content content = new Content(german, "test", "german.html");
-		LocalizedContent englishContent = new LocalizedContent(english, "test content", "english.html");
-		content.addLocalization(englishContent);
+		content.addI18Content(english, "englishContent");
+		content.setFilename(english, "english.html");
 
 		contentRepository.save(content);
 
@@ -69,25 +62,25 @@ public class ContentTest extends AbstractDBTest {
 	@Test
 	public void testComplexPagePathTraversal() {
 
-		FolderTag rootTag = new FolderTag(german, "rootTag");
-		FolderTag subTag = new FolderTag(german, "subTag");
-
-		rootTag.addChildTag(subTag);
-		FolderTag subTag2 = new FolderTag(german, "subTag 2");
-
-		tagRepository.save(subTag);
-		tagRepository.save(subTag2);
-		tagRepository.save(rootTag);
-
-		Content content = new Content(german, "test content", "test.html");
-		// content.tag(subTag);
-
-		contentRepository.save(content);
-		tagRepository.save(rootTag);
-
-		LocalizedContent page2 = new LocalizedContent(english, "test content 2", "english2.html");
-		page2.setFilename("test2.html");
-		// page2.tag(subTag);
+//		FolderTag rootTag = new FolderTag(german, "rootTag");
+//		FolderTag subTag = new FolderTag(german, "subTag");
+//
+//		rootTag.addChildTag(subTag);
+//		FolderTag subTag2 = new FolderTag(german, "subTag 2");
+//
+//		tagRepository.save(subTag);
+//		tagRepository.save(subTag2);
+//		tagRepository.save(rootTag);
+//
+//		Content content = new Content(german, "test content", "test.html");
+//		// content.tag(subTag);
+//
+//		contentRepository.save(content);
+//		tagRepository.save(rootTag);
+//
+//		LocalizedContent page2 = new LocalizedContent(english, "test content 2", "english2.html");
+//		page2.setFilename("test2.html");
+//		// page2.tag(subTag);
 		// contentRepository.save(page2);
 
 		// String path = neo4jPageUtils.getPath(rootTag, content);

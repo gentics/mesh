@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalLocalizedTagRepository;
+import com.gentics.cailun.core.rest.model.Tag;
 
 @Component
 @Scope("singleton")
@@ -18,7 +19,7 @@ public class SearchVerticle extends AbstractCaiLunProjectRestVerticle {
 	private GlobalContentRepository contentRepository;
 
 	@Autowired
-	private GlobalLocalizedTagRepository tagRepository;
+	private GlobalCaiLunNodeRepository<Tag> tagRepository;
 
 
 	public SearchVerticle() {

@@ -1,14 +1,9 @@
 package com.gentics.cailun.core.rest.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
-@Data
 @NodeEntity
-@NoArgsConstructor
 public class Language extends CaiLunNode {
 
 	private static final long serialVersionUID = 8621659419142532208L;
@@ -16,8 +11,32 @@ public class Language extends CaiLunNode {
 	@Indexed
 	protected String name;
 
+	/**
+	 * RFC5646 specific language tag
+	 */
+	private String languageTag;
+
+	@SuppressWarnings("unused")
+	private Language() {
+	}
+
 	public Language(String name) {
 		this.name = name;
 	}
 
+	public void setLanguageTag(String languageTag) {
+		this.languageTag = languageTag;
+	}
+
+	public String getLanguageTag() {
+		return languageTag;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

@@ -5,13 +5,11 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.codec.language.bm.Lang;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -25,12 +23,11 @@ import com.gentics.cailun.core.repository.project.ProjectFileRepository;
 import com.gentics.cailun.core.repository.project.ProjectTagRepository;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.File;
-import com.gentics.cailun.core.rest.model.LocalizedContent;
+import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.request.PageCreateRequest;
 import com.gentics.cailun.core.rest.request.PageSaveRequest;
 import com.gentics.cailun.core.rest.response.GenericResponse;
 import com.gentics.cailun.etc.RouterStorage;
-import com.google.common.collect.Lists;
 
 /**
  * The page verticle adds rest endpoints for manipulating pages and related objects.
@@ -90,10 +87,12 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	}
 
-	private void resolveLinks(LocalizedContent content) throws InterruptedException, ExecutionException {
+	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
+		//TODO handle language
+		Language language = null;
 		LinkReplacer replacer = new LinkReplacer(resolver);
-		content.setContent(replacer.replace(content.getContent()));
+		content.setContent(language, replacer.replace(content.getContent(language)));
 	}
 
 

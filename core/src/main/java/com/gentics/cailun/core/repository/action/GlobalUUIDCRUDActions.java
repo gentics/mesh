@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.repository;
+package com.gentics.cailun.core.repository.action;
 
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
