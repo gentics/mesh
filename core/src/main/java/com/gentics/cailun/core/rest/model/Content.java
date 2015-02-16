@@ -36,14 +36,7 @@ public class Content extends File {
 		
 	}
 
-	public Content(Language language, String name, String filename) {
-		setI18NProperty(language, FILENAME_KEYWORD, filename);
-		setI18NProperty(language, NAME_KEYWORD, name);
-	}
-
-	public void addI18Content(Language language, String content) {
-		setI18NProperty(language, CONTENT_KEYWORD, content);
-	}
+	
 
 	public String getContent(Language language) {
 		return getI18NProperty(language, CONTENT_KEYWORD);

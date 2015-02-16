@@ -17,15 +17,13 @@ public class Page extends Content {
 		super(language, name, filename);
 	}
 
-	public void setTeaser(Language language,String text) {
+	public void setTeaser(Language language, String text) {
 		setI18NProperty(language, TEASER_KEY, text);
 	}
 
 	public String getTeaser(Language language) {
 		return getI18NProperty(language, TEASER_KEY);
 	}
-
-
 
 	public String getTitle(Language language) {
 		return getI18NProperty(language, TITLE_KEY);

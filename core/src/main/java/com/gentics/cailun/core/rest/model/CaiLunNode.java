@@ -13,7 +13,6 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
-import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
@@ -28,7 +27,6 @@ import com.gentics.cailun.core.rest.model.relationship.Translated;
  *
  */
 @Data
-@Component
 @NodeEntity
 public class CaiLunNode extends AbstractPersistable {
 
@@ -36,46 +34,19 @@ public class CaiLunNode extends AbstractPersistable {
 	public static final String NAME_KEYWORD = "name";
 
 	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
-	private Project project;
+	protected Project project;
 
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
-	private User creator;
+	protected User creator;
 
 	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.INCOMING, elementClass = GraphPermission.class)
-	private Set<GraphPermission> permissions = new HashSet<>();
+	protected Set<GraphPermission> permissions = new HashSet<>();
 
-	DynamicProperties properties = new DynamicPropertiesContainer();
+	protected DynamicProperties properties = new DynamicPropertiesContainer();
 
 	@Fetch
 	@RelatedToVia(type = BasicRelationships.HAS_I18NVALUE, direction = Direction.OUTGOING, elementClass = Translated.class)
-	private Set<Translated> i18nTranslations = new HashSet<>();
-
-	/**
-	 * Adds or updates the i18n value for the given language and key with the given value.
-	 * 
-	 * @param language
-	 *            Language for the i18n value
-	 * @param key
-	 *            Key of the value
-	 * @param value
-	 *            The i18n text value
-	 */
-	public void setI18NProperty(Language language, String key, String value) {
-
-		if (StringUtils.isEmpty(key) || language == null) {
-			// TODO exception? boolean return?
-			return;
-		}
-
-		I18NValue i18nValue = getI18NValue(language, key);
-		if (i18nValue == null) {
-			i18nValue = new I18NValue(language, key, value);
-			getI18nTranslations().add(new Translated(this, i18nValue, language));
-		} else {
-			i18nValue.setValue(value);
-		}
-
-	}
+	protected Set<Translated> i18nTranslations = new HashSet<>();
 
 	/**
 	 * Returns the i18n specific text value for the given language.
@@ -95,10 +66,6 @@ public class CaiLunNode extends AbstractPersistable {
 
 	public String getName(Language language) {
 		return getI18NProperty(language, NAME_KEYWORD);
-	}
-
-	public void setName(Language language, String name) {
-		setI18NProperty(language, NAME_KEYWORD, name);
 	}
 
 	/**
@@ -143,10 +110,6 @@ public class CaiLunNode extends AbstractPersistable {
 	 */
 	public boolean hasProperty(String key) {
 		return properties.hasProperty(key);
-	}
-
-	public boolean addPermission(GraphPermission permission) {
-		return permissions.add(permission);
 	}
 
 	/**
