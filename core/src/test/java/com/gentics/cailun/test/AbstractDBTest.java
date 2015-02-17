@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.repository.GlobalLanguageRepository;
 import com.gentics.cailun.core.rest.model.Language;
+import com.gentics.cailun.core.rest.service.LanguageService;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -16,7 +17,10 @@ import com.gentics.cailun.core.rest.model.Language;
 public abstract class AbstractDBTest {
 
 	@Autowired
-	GlobalLanguageRepository languageRepository;
+	protected GlobalLanguageRepository languageRepository;
+
+	@Autowired
+	protected LanguageService langService;
 
 	protected Language english;
 	protected Language german;
@@ -24,11 +28,12 @@ public abstract class AbstractDBTest {
 	@Before
 	public void setup() {
 		german = new Language("german");
+		german.setName("german");
 		german.setLanguageTag("de_DE");
+
 		english = new Language("english");
 		english.setLanguageTag("en_US");
-		languageRepository.save(english);
-		languageRepository.save(german);
+		english = languageRepository.save(english);
 	}
 
 }

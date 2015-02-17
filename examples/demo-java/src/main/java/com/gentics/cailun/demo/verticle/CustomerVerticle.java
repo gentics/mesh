@@ -122,6 +122,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		Language german = new Language("german");
 		languageRepository.save(german);
+
 		Language english = new Language("english");
 		languageRepository.save(english);
 

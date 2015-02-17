@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
+import javax.transaction.NotSupportedException;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +19,7 @@ import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.test.AbstractDBTest;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
@@ -28,22 +31,27 @@ public class LinkRendererTest extends AbstractDBTest {
 	final String content = "some bla START<a href=\"${Page(2)}\">Test</a>   dasasdg <a href=\"${Page(3)}\">Test</a>DEN";
 
 	@Autowired
-	CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolverFactory;
+	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolverFactory;
 
 	@Autowired
-	GlobalContentRepository pageRepository;
+	private GlobalContentRepository contentRepository;
+
+	@Autowired
+	private ContentService contentService;
 
 	@Test
-	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
-
+	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException, NotSupportedException {
 
 		// Create some dummy content
-		Content content = new Content(german, "test content", "german.html");
-		pageRepository.save(content);
-		
-		Content page2= new Content(english, "test content 2" , "english.html");
-//		page2.setContent(content);
-		pageRepository.save(page2);
+		Content content = new Content();
+		contentService.setName(content, german, "german name");
+		contentService.setFilename(content, german, "german.html");
+		contentRepository.save(content);
+
+		Content content2 = new Content();
+		contentService.setName(content2, english, "content 2 english");
+		contentService.setFilename(content2, english, "english.html");
+		contentRepository.save(content2);
 
 		LinkReplacer<CaiLunLinkResolver> replacer = new LinkReplacer(resolverFactory);
 		String out = replacer.replace("dgasd");

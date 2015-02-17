@@ -7,6 +7,7 @@ import lombok.Data;
 
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
@@ -14,6 +15,7 @@ import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
+import com.gentics.cailun.core.repository.GlobalI18NValueRepository;
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.User;
@@ -32,6 +34,9 @@ public class CaiLunNode extends AbstractPersistable {
 
 	private static final long serialVersionUID = -7525642021064006664L;
 	public static final String NAME_KEYWORD = "name";
+
+	@Autowired
+	private GlobalI18NValueRepository i18nValueRepository;
 
 	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
 	protected Project project;
@@ -134,6 +139,10 @@ public class CaiLunNode extends AbstractPersistable {
 		}
 
 		return null;
+	}
+
+	public boolean addPermission(GraphPermission permission) {
+		return permissions.add(permission);
 	}
 
 }

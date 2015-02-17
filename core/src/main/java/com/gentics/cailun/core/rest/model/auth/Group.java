@@ -44,4 +44,8 @@ public class Group extends CaiLunNode {
 	public Group(String name) {
 		this.name = name;
 	}
+
+	public void addUser(User user) {
+		getMembers().add(user);
+	}
 }

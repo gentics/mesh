@@ -36,21 +36,21 @@ public class ContentTest extends AbstractDBTest {
 	@Test
 	public void testSimplePagePathTraversal() {
 
-		FolderTag rootTag = new FolderTag(german, "rootTag");
+//		FolderTag rootTag = new FolderTag(german, "rootTag");
 
-		FolderTag subTag = new FolderTag(german, "subTag");
+//		FolderTag subTag = new FolderTag(german, "subTag");
 
-		rootTag.addChildTag(subTag);
-
-		folderRepository.save(subTag);
-		folderRepository.save(rootTag);
-
-		Content content = new Content(german, "test", "german.html");
-		content.addI18Content(english, "englishContent");
-		content.setFilename(english, "english.html");
-
-		contentRepository.save(content);
-
+//		rootTag.addChildTag(subTag);
+//
+//		folderRepository.save(subTag);
+//		folderRepository.save(rootTag);
+//
+//		Content content = new Content(german, "test", "german.html");
+//		content.addI18Content(english, "englishContent");
+//		content.setFilename(english, "english.html");
+//
+//		contentRepository.save(content);
+//
 		// String path = neo4jPageUtils.getPath(rootTag, content);
 		// assertEquals("The path did not match the expected one.", "/root/subtag/test.html", path);
 	}

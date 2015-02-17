@@ -40,10 +40,10 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 	public static final long DEFAULT_GIT_CHECKER_INTERVAL = 60 * 5 * 100; // 5 Min
 
 	@Autowired
-	CaiLunSpringConfiguration caiLunConfig;
+	private CaiLunSpringConfiguration caiLunConfig;
 
 	@Autowired
-	GlobalProjectRepository projectRepository;
+	private GlobalProjectRepository projectRepository;
 
 	GitPullChecker gitChecker;
 

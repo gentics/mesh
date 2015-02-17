@@ -15,7 +15,7 @@
 		<gh-url>https://github.com/gentics/cailun/tree/master</gh-url>
 
 		<asm.version>3.3.1</asm.version>
-		<spring.data.version>3.3.0.BUILD-SNAPSHOT</spring.data.version>
+		<spring.data.version>3.2.2.RELEASE</spring.data.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<neo4j.version>2.1.6</neo4j.version>
 		<neo4j.cypher.version>2.1.4</neo4j.cypher.version>

@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
@@ -12,7 +11,6 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
-import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
@@ -23,7 +21,6 @@ import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
  *
  */
 @Data
-@NoArgsConstructor
 @NodeEntity
 public class Project extends CaiLunNode {
 
@@ -31,6 +28,10 @@ public class Project extends CaiLunNode {
 
 	@Fetch
 	protected String name;
+
+	@SuppressWarnings("unused")
+	private Project() {
+	}
 
 	public Project(String name) {
 		this.name = name;

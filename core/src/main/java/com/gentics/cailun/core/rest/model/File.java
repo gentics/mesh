@@ -9,4 +9,9 @@ public class File extends CaiLunNode {
 
 	public static final String FILENAME_KEYWORD = "filename";
 
+	public String getFilename(Language language) {
+		return getI18NProperty(language, FILENAME_KEYWORD);
+	}
+	
+
 }

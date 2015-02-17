@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.verticle;
+package com.gentics.cailun.core.rest.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,6 +17,7 @@ public class ProjectTest extends AbstractDBTest {
 
 	@Test
 	public void testCreation() {
+
 		Project project = new Project("test");
 		projectRepository.save(project);
 		project = projectRepository.findOne(project.getId());

@@ -25,26 +25,18 @@ public class Content extends File {
 	@Fetch
 	protected Set<I18NValue> contents;
 
-	// public void linkTo(LocalizedContent page) {
-	// // TODO maybe extract information about link start and end to speedup rendering of page with links
-	// Linked link = new Linked(this, page);
-	// this.links.add(link);
-	// }
 
-	@SuppressWarnings("unused")
-	private Content() {
-		
+
+	public Content() {
+
 	}
-
-	
 
 	public String getContent(Language language) {
 		return getI18NProperty(language, CONTENT_KEYWORD);
 	}
 
 	public void setContent(Language language, String replace) {
-		
+
 	}
-	
 
 }

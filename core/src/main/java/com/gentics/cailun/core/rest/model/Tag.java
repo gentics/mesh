@@ -3,10 +3,9 @@ package com.gentics.cailun.core.rest.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.NoArgsConstructor;
-
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
@@ -19,40 +18,58 @@ import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
  *
  */
 @NodeEntity
-@NoArgsConstructor
 public class Tag<T extends Tag<T, F>, F extends File> extends CaiLunNode {
 
 	private static final long serialVersionUID = 3547707185082166132L;
 
+	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_FILE, elementClass = File.class, direction = Direction.OUTGOING)
-	private Set<F> files = new HashSet<>();
+	private Set<File> files = new HashSet<>();
 
+	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, elementClass = Tag.class, direction = Direction.OUTGOING)
-	private Set<Tag<T, F>> childTags = new HashSet<>();
+	private Set<Tag> tags = new HashSet<>();
 
-	public Tag(Language language, String name) {
-//		setName(language, name);
+	protected Tag() {
+
 	}
 
 	public void addFile(F node) {
 		this.files.add(node);
 	}
 
+	public boolean removeFile(F file) {
+		return this.files.remove(file);
+	}
+
 	@JsonIgnore
-	public Set<F> getFiles() {
+	public Set<File> getFiles() {
 		return files;
 	}
 
-	public void addChildTag(Tag<T, F> tag) {
-		childTags.add(tag);
+	public void addTag(Tag<T, F> tag) {
+		tags.add(tag);
 	}
 
-	public Set<Tag<T, F>> getChildTags() {
-		return childTags;
+	public boolean removeTag(Tag<T, F> tag) {
+		return tags.remove(tag);
 	}
 
-	public void setChildTags(Set<Tag<T, F>> childTags) {
-		this.childTags = childTags;
+	public Set<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(Set<Tag> childTags) {
+		this.tags = childTags;
+	}
+
+	public boolean hasTag(Tag<T, F> tag) {
+		for (Tag<T, F> childTag : tags) {
+			if (tag.equals(childTag)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

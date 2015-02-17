@@ -18,6 +18,7 @@ public class Language extends CaiLunNode {
 
 	@SuppressWarnings("unused")
 	private Language() {
+
 	}
 
 	public Language(String name) {
