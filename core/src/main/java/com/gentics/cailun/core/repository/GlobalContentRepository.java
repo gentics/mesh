@@ -8,7 +8,7 @@ import com.gentics.cailun.core.repository.action.ContentRepositoryActions;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Tag;
 
-public interface GlobalContentRepository extends GlobalCaiLunNodeRepository<Content>, ContentRepositoryActions<Content> {
+public interface GlobalContentRepository<T extends Content> extends GlobalCaiLunNodeRepository<T>, ContentRepositoryActions<T> {
 
 	@Query("MATCH (content:Content)<-[:`TAGGED`]-(tag:Tag) RETURN content")
 	public List<Content> findContentsWithTags();

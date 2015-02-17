@@ -25,18 +25,12 @@ public class Content extends File {
 	@Fetch
 	protected Set<I18NValue> contents;
 
-
-
 	public Content() {
 
 	}
 
 	public String getContent(Language language) {
 		return getI18NProperty(language, CONTENT_KEYWORD);
-	}
-
-	public void setContent(Language language, String replace) {
-
 	}
 
 }

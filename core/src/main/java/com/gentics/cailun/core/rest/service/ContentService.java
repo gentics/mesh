@@ -9,4 +9,6 @@ public interface ContentService extends FileService {
 
 	public void addI18Content(Content content, Language language, String text);
 
+	public void setContent(Content content, Language language, String text);
+
 }

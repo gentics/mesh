@@ -11,6 +11,7 @@ import com.gentics.cailun.core.rest.model.Language;
 public class FileServiceImpl extends CaiLunNodeServiceImpl implements FileService {
 
 	public void setFilename(File file, Language language, String filename) throws UnsupportedOperationException {
+		//TODO check for conflicting i18n filenames
 		setI18NProperty(file, language, File.FILENAME_KEYWORD, filename);
 	}
 }

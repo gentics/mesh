@@ -19,6 +19,9 @@ public class ContentServiceImpl extends FileServiceImpl implements ContentServic
 	public void addI18Content(Content content, Language language, String text) {
 		setI18NProperty(content, language, Content.CONTENT_KEYWORD, text);
 	}
-	
+
+	public void setContent(Content content, Language language, String text) {
+		setI18NProperty(content, language, Content.CONTENT_KEYWORD, text);
+	}
 
 }

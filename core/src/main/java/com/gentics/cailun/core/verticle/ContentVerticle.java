@@ -6,7 +6,6 @@ import static io.vertx.core.http.HttpMethod.PUT;
 
 import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.codec.language.bm.Lang;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -92,7 +91,7 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 		//TODO handle language
 		Language language = null;
 		LinkReplacer replacer = new LinkReplacer(resolver);
-		content.setContent(language, replacer.replace(content.getContent(language)));
+		//content.setContent(language, replacer.replace(content.getContent(language)));
 	}
 
 
