@@ -11,24 +11,24 @@ import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 @NodeEntity
-public class GenericFile extends GenericNode {
+public class GenericFile<T extends GenericTag<T,F>, F extends GenericFile<T,F>> extends GenericNode {
 
 	private static final long serialVersionUID = -8945772390192195270L;
 
 	public static final String FILENAME_KEYWORD = "filename";
 
 	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING, elementClass = GenericTag.class)
-	private Set<GenericTag> tags = new HashSet<>();
+	private Set<T> tags = new HashSet<>();
 
 	public String getFilename(Language language) {
 		return getI18NProperty(language, FILENAME_KEYWORD);
 	}
 
-	public Set<GenericTag> getTags() {
+	public Set<T> getTags() {
 		return tags;
 	}
 
-	public void addTag(GenericTag tag) {
+	public void addTag(T tag) {
 		tags.add(tag);
 	}
 
