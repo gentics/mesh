@@ -9,7 +9,7 @@ import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 public interface GenericNodeService<T extends GenericNode> {
 
-	public void setI18NProperty(T node, Language language, String key, String value);
+	public void setProperty(T node, Language language, String key, String value);
 
 	public void setName(T node, Language language, String name);
 

@@ -17,11 +17,11 @@ public class Content extends GenericContent {
 	}
 
 	public String getTeaser(Language language) {
-		return getI18NProperty(language, TEASER_KEY);
+		return getProperty(language, TEASER_KEY);
 	}
 
 	public String getTitle(Language language) {
-		return getI18NProperty(language, TITLE_KEY);
+		return getProperty(language, TITLE_KEY);
 	}
 
 }

@@ -53,25 +53,11 @@ public class GenericNode extends AbstractPersistable {
 	protected Locked locked;
 
 	@Fetch
-	@RelatedToVia(type = BasicRelationships.HAS_I18NVALUE, direction = Direction.OUTGOING, elementClass = Translated.class)
+	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
 	protected Set<Translated> i18nTranslations = new HashSet<>();
 
-	/**
-	 * Returns the i18n specific text value for the given language.
-	 * 
-	 * @param language
-	 * @param key
-	 * @return the found text value or null if no value could be found
-	 */
-	protected String getI18NProperty(Language language, String key) {
-		if (language == null || StringUtils.isEmpty(key)) {
-			return null;
-		}
-		return getProperty(language, key);
-	}
-
 	public String getName(Language language) {
-		return getI18NProperty(language, NAME_KEYWORD);
+		return getProperty(language, NAME_KEYWORD);
 	}
 
 	/**
@@ -118,8 +104,11 @@ public class GenericNode extends AbstractPersistable {
 		return properties.hasProperty(key);
 	}
 
-	public I18NProperties getI18NValue(Language language) {
+	public I18NProperties getI18NProperties(Language language) {
 		for (Translated translation : i18nTranslations) {
+			if (translation.getLanguageTag() == null) {
+				continue;
+			}
 			if (translation.getLanguageTag().equalsIgnoreCase(language.getLanguageTag())) {
 				return translation.getI18nValue();
 			}

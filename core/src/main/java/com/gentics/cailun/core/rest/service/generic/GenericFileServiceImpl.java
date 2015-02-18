@@ -12,6 +12,6 @@ public class GenericFileServiceImpl<T extends GenericFile> extends GenericNodeSe
 
 	public void setFilename(T file, Language language, String filename) throws UnsupportedOperationException {
 		//TODO check for conflicting i18n filenames
-		setI18NProperty(file, language, GenericFile.FILENAME_KEYWORD, filename);
+		setProperty(file, language, GenericFile.FILENAME_KEYWORD, filename);
 	}
 }

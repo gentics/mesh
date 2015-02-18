@@ -23,8 +23,9 @@ public class Language extends GenericNode {
 
 	}
 
-	public Language(String name) {
+	public Language(String name, String languageTag) {
 		this.name = name;
+		this.languageTag = languageTag;
 	}
 
 	public void setLanguageTag(String languageTag) {

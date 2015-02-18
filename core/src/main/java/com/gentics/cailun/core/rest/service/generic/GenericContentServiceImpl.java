@@ -17,11 +17,11 @@ public class GenericContentServiceImpl<T extends GenericContent> extends Generic
 	}
 
 	public void addI18Content(T content, Language language, String text) {
-		setI18NProperty(content, language, GenericContent.CONTENT_KEYWORD, text);
+		setProperty(content, language, GenericContent.CONTENT_KEYWORD, text);
 	}
 
 	public void setContent(T content, Language language, String text) {
-		setI18NProperty(content, language, GenericContent.CONTENT_KEYWORD, text);
+		setProperty(content, language, GenericContent.CONTENT_KEYWORD, text);
 	}
 
 }

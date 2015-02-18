@@ -17,7 +17,7 @@ public class LanguageTest extends AbstractDBTest {
 	@Test
 	public void testCreation() {
 		final String languageName = "klingon";
-		Language lang = new Language(languageName);
+		Language lang = new Language(languageName, "i-klingon");
 		languageRepository.save(lang);
 		lang = languageRepository.findOne(lang.getId());
 		assertNotNull(lang);

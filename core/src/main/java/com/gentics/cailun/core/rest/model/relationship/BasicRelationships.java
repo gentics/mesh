@@ -22,7 +22,7 @@ public class BasicRelationships {
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
 	public static final String HAS_FILE = "HAS_FILE";
 	public static final String HAS_LOCALISATION = "HAS_LOCALISATION";
-	public static final String HAS_I18NVALUE = "HAS_I18NVALUE";
+	public static final String HAS_I18N_PROPERTIES = "HAS_I18N_PROPERTIES";
 	public static final String HAS_CHILD = "HAS_CHILD";
 	public static final String IS_LOCKED = "IS_LOCKED";
 	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";

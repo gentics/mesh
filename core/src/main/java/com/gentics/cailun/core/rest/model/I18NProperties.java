@@ -26,8 +26,8 @@ public class I18NProperties extends AbstractPersistable {
 
 	}
 
-	public I18NProperties(Language lang) {
-		this.language = lang;
+	public I18NProperties(Language language) {
+		this.language = language;
 	}
 
 	public Language getLanguage() {

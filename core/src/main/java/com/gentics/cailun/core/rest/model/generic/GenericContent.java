@@ -33,7 +33,7 @@ public class GenericContent extends GenericFile {
 	}
 
 	public String getContent(Language language) {
-		return getI18NProperty(language, CONTENT_KEYWORD);
+		return getProperty(language, CONTENT_KEYWORD);
 	}
 
 }

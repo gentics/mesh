@@ -1,8 +1,13 @@
 package com.gentics.cailun.core.rest.service;
 
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.core.rest.service.generic.GenericNodeServiceImpl;
 
-public class UserServiceImpl extends GenericNodeServiceImpl<User> {
+@Component
+@Transactional
+public class UserServiceImpl extends GenericNodeServiceImpl<User> implements UserService {
 
 }

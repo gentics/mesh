@@ -21,7 +21,7 @@ public class GenericFile<T extends GenericTag<T,F>, F extends GenericFile<T,F>> 
 	private Set<T> tags = new HashSet<>();
 
 	public String getFilename(Language language) {
-		return getI18NProperty(language, FILENAME_KEYWORD);
+		return getProperty(language, FILENAME_KEYWORD);
 	}
 
 	public Set<T> getTags() {

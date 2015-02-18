@@ -8,6 +8,6 @@ import com.gentics.cailun.core.rest.service.generic.GenericNodeServiceImpl;
 
 @Component
 @Transactional
-public class GroupServiceImpl extends GenericNodeServiceImpl<Group> {
+public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements GroupService {
 
 }

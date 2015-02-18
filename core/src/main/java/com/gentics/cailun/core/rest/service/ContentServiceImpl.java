@@ -12,11 +12,11 @@ import com.gentics.cailun.core.rest.service.generic.GenericContentServiceImpl;
 public class ContentServiceImpl extends GenericContentServiceImpl<Content> implements ContentService {
 
 	public void setTeaser(Content page, Language language, String text) {
-		setI18NProperty(page, language, Content.TEASER_KEY, text);
+		setProperty(page, language, Content.TEASER_KEY, text);
 	}
 
 	public void setTitle(Content page, Language language, String text) {
-		setI18NProperty(page, language, Content.TITLE_KEY, text);
+		setProperty(page, language, Content.TITLE_KEY, text);
 	}
 
 }

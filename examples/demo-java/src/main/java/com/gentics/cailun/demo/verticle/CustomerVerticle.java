@@ -133,10 +133,10 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		Project aloha = new Project("aloha");
 		aloha = projectService.save(aloha);
 
-		Language german = new Language("german");
+		Language german = new Language("german", "de_DE");
 		languageService.save(german);
 
-		Language english = new Language("english");
+		Language english = new Language("english", "en_US");
 		languageService.save(english);
 
 		// Users

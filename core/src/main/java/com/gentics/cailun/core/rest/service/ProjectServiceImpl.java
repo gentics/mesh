@@ -8,6 +8,6 @@ import com.gentics.cailun.core.rest.service.generic.GenericNodeServiceImpl;
 
 @Component
 @Transactional
-public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> {
+public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implements ProjectService {
 
 }

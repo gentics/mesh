@@ -23,13 +23,10 @@ public abstract class AbstractDBTest {
 
 	@Before
 	public void setup() {
-		german = new Language("german");
-		german.setName("german");
-		german.setLanguageTag("de_DE");
+		german = new Language("german", "de_DE");
 		langService.save(german);
 
-		english = new Language("english");
-		english.setLanguageTag("en_US");
+		english = new Language("english", "en_US");
 		langService.save(english);
 	}
 
