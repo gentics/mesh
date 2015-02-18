@@ -1,8 +1,11 @@
 package com.gentics.cailun.core.rest.service.generic;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,4 +74,15 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	public T findOne(Long id) {
 		return nodeRepository.findOne(id);
 	}
+
+	@Override
+	public void save(List<T> nodes) {
+		this.nodeRepository.save(nodes);
+	}
+
+	@Override
+	public Result<T> findAll() {
+		return nodeRepository.findAll();
+	}
+
 }

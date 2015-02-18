@@ -19,14 +19,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
-import com.gentics.cailun.core.repository.CaiLunRootRepository;
-import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalGroupRepository;
-import com.gentics.cailun.core.repository.GlobalLanguageRepository;
-import com.gentics.cailun.core.repository.GlobalProjectRepository;
-import com.gentics.cailun.core.repository.GlobalRoleRepository;
-import com.gentics.cailun.core.repository.GlobalUserRepository;
-import com.gentics.cailun.core.repository.generic.GlobalGenericNodeRepository;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Language;
@@ -39,8 +31,15 @@ import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
 import com.gentics.cailun.core.rest.model.generic.GenericNode;
+import com.gentics.cailun.core.rest.service.CaiLunRootService;
 import com.gentics.cailun.core.rest.service.ContentService;
+import com.gentics.cailun.core.rest.service.GroupService;
+import com.gentics.cailun.core.rest.service.LanguageService;
+import com.gentics.cailun.core.rest.service.ProjectService;
+import com.gentics.cailun.core.rest.service.RoleService;
 import com.gentics.cailun.core.rest.service.TagService;
+import com.gentics.cailun.core.rest.service.UserService;
+import com.gentics.cailun.core.rest.service.generic.GenericNodeService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 /**
@@ -57,40 +56,34 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private static Logger log = LoggerFactory.getLogger(CustomerVerticle.class);
 
 	@Autowired
-	private GlobalUserRepository userRepository;
-
-	@Autowired
-	private GlobalLanguageRepository languageRepository;
-
-	@Autowired
-	private GlobalGroupRepository groupRepository;
-
-	@Autowired
-	private GlobalRoleRepository roleRepository;
-
-	@Autowired
 	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
-	private GlobalContentRepository contentRepository;
+	private UserService userService;
 
 	@Autowired
-	private GlobalGenericNodeRepository<GenericNode> nodeRepository;
-
-	@Autowired
-	private CaiLunRootRepository rootRepository;
-
-	@Autowired
-	private GlobalProjectRepository projectRepository;
-
-	@Autowired
-	private CaiLunRootRepository caiLunRootRepository;
+	private LanguageService languageService;
 
 	@Autowired
 	private ContentService contentService;
 
 	@Autowired
-	private TagService folderTagService;
+	private GenericNodeService<GenericNode> genericNodeService;
+
+	@Autowired
+	private TagService tagService;
+
+	@Autowired
+	private RoleService roleService;
+
+	@Autowired
+	private GroupService groupService;
+
+	@Autowired
+	private ProjectService projectService;
+
+	@Autowired
+	private CaiLunRootService rootService;
 
 	public CustomerVerticle() {
 		super("Content");
@@ -114,7 +107,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		mary.setEmailAddress("m.doe@gentics.com");
 		mary.setPasswordHash(cailunConfig.passwordEncoder().encode("lalala"));
 		List<User> users = Arrays.asList(john, mary);
-		userRepository.save(users);
+		userService.save(users);
 		return users;
 
 	}
@@ -132,19 +125,19 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	}
 
 	private void setupDemoData() {
-		contentRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
+		// contentRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
 
-		CaiLunRoot rootNode = caiLunRootRepository.findRoot();
+		CaiLunRoot rootNode = rootService.findRoot();
 
 		// Project
 		Project aloha = new Project("aloha");
-		aloha = projectRepository.save(aloha);
+		aloha = projectService.save(aloha);
 
 		Language german = new Language("german");
-		languageRepository.save(german);
+		languageService.save(german);
 
 		Language english = new Language("english");
-		languageRepository.save(english);
+		languageService.save(english);
 
 		// Users
 		List<User> users = addUsers();
@@ -156,62 +149,62 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		// Roles
 		Role adminRole = new Role("admin role");
-		roleRepository.save(adminRole);
+		roleService.save(adminRole);
 		Role guestRole = new Role("guest role");
-		roleRepository.save(guestRole);
+		roleService.save(guestRole);
 
 		// Groups
 		rootGroup.getMembers().add(users.get(0));
 		rootGroup.getRoles().add(adminRole);
 
-		groupRepository.save(rootGroup);
+		groupService.save(rootGroup);
 		Group guests = new Group("guests");
 		guests.getParents().add(rootGroup);
 		guests.getMembers().add(users.get(1));
 		guests.getRoles().add(guestRole);
-		groupRepository.save(guests);
+		groupService.save(guests);
 
 		// Tags
 		Tag rootTag = new Tag();
-		folderTagService.setName(rootTag, english, "/");
+		tagService.setName(rootTag, english, "/");
 
 		Tag homeFolder = new Tag();
-		folderTagService.setName(homeFolder, english, "home");
-		folderTagService.setName(homeFolder, german, "heim");
+		tagService.setName(homeFolder, english, "home");
+		tagService.setName(homeFolder, german, "heim");
 		rootTag.addTag(homeFolder);
 
 		Tag jotschiFolder = new Tag();
-		folderTagService.setName(jotschiFolder, german, "jotschi");
-		folderTagService.setName(jotschiFolder, english, "jotschi");
+		tagService.setName(jotschiFolder, german, "jotschi");
+		tagService.setName(jotschiFolder, english, "jotschi");
 		homeFolder.addTag(jotschiFolder);
 
 		Tag rootFolder = new Tag();
-		folderTagService.setName(rootFolder, german, "wurzel");
-		folderTagService.setName(rootFolder, english, "root");
+		tagService.setName(rootFolder, german, "wurzel");
+		tagService.setName(rootFolder, english, "root");
 		rootTag.addTag(rootFolder);
 
 		Tag varFolder = new Tag();
-		folderTagService.setName(varFolder, german, "var");
+		tagService.setName(varFolder, german, "var");
 		rootTag.addTag(varFolder);
 
 		Tag wwwFolder = new Tag();
-		folderTagService.setName(wwwFolder, english, "www");
+		tagService.setName(wwwFolder, english, "www");
 		varFolder.addTag(wwwFolder);
 
 		Tag siteFolder = new Tag();
-		folderTagService.setName(siteFolder, english, "site");
+		tagService.setName(siteFolder, english, "site");
 		wwwFolder.addTag(siteFolder);
 
 		Tag postsFolder = new Tag();
-		folderTagService.setName(postsFolder, german, "posts");
+		tagService.setName(postsFolder, german, "posts");
 		wwwFolder.addTag(postsFolder);
 
 		Tag blogsFolder = new Tag();
-		folderTagService.setName(blogsFolder, german, "blogs");
+		tagService.setName(blogsFolder, german, "blogs");
 		wwwFolder.addTag(blogsFolder);
 
 		aloha.setRootTag(rootTag);
-		projectRepository.save(aloha);
+		projectService.save(aloha);
 
 		// Contents
 		Content rootContent = new Content();
@@ -225,9 +218,9 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 		rootContent.setCreator(users.get(0));
 		// rootContent.tag(rootTag);
-		contentRepository.save(rootContent);
+		contentService.save(rootContent);
 
-		rootContent = (Content) contentRepository.findOne(rootContent.getId());
+		rootContent = contentService.findOne(rootContent.getId());
 
 		for (int i = 0; i < 6; i++) {
 			Content Content = new Content();
@@ -236,7 +229,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 			Content.setCreator(users.get(0));
 			contentService.setContent(Content, german, "some content");
 			Content.addTag(blogsFolder);
-			contentRepository.save(Content);
+			contentService.save(Content);
 		}
 
 		for (int i = 0; i < 3; i++) {
@@ -246,7 +239,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 			Content.setCreator(users.get(0));
 			contentService.setContent(Content, german, "some content");
 			Content.addTag(postsFolder);
-			contentRepository.save(Content);
+			contentService.save(Content);
 		}
 
 		Content Content = new Content();
@@ -256,7 +249,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		contentService.setFilename(Content, german, "blog.html");
 		contentService.setContent(Content, german, "This is the blogpost content");
 		contentService.setTeaser(Content, german, "Jo this Content is the second blogpost");
-		contentRepository.save(Content);
+		contentService.save(Content);
 
 		Content = new Content();
 		contentService.setName(Content, german, "Hallo Cailun");
@@ -264,7 +257,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		Content.setCreator(users.get(0));
 		contentService.setContent(Content, german, "some more content");
 		Content.addTag(postsFolder);
-		contentRepository.save(Content);
+		contentService.save(Content);
 
 		Content indexContent = new Content();
 		contentService.setName(indexContent, german, "Index With Perm");
@@ -283,7 +276,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all nodes
 			int i = 0;
-			for (GenericNode currentNode : nodeRepository.findAll()) {
+			for (GenericNode currentNode : genericNodeService.findAll()) {
 				// if (i % 2 == 0) {
 				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
 				GraphPermission permission = new GraphPermission(adminRole, currentNode);
@@ -292,7 +285,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 				permission.grant(WRITE);
 				permission.grant(DELETE);
 				currentNode.addPermission(permission);
-				nodeRepository.save(currentNode);
+				genericNodeService.save(currentNode);
 				i++;
 			}
 			tx.success();
