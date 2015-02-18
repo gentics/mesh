@@ -43,6 +43,9 @@ public class Project extends GenericNode {
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = GenericTag.class)
 	private GenericTag rootTag;
 
+	@RelatedTo(type = BasicRelationships.HAS_OBJECT_TYPE, direction = Direction.OUTGOING, elementClass = ObjectType.class)
+	private Set<ObjectType> objectTypes = new HashSet<>();
+
 	@Fetch
 	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.OUTGOING, elementClass = Role.class)
 	private Set<Role> roles = new HashSet<>();

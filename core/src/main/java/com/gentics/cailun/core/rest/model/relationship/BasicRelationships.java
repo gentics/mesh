@@ -25,4 +25,6 @@ public class BasicRelationships {
 	public static final String HAS_I18NVALUE = "HAS_I18NVALUE";
 	public static final String HAS_CHILD = "HAS_CHILD";
 	public static final String IS_LOCKED = "IS_LOCKED";
+	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
+	public static final String HAS_OBJECT_TYPE = "HAS_OBJECT_TYPE";
 }
