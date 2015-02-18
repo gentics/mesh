@@ -9,8 +9,8 @@ import org.springframework.data.neo4j.annotation.StartNode;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
-import com.gentics.cailun.core.rest.model.AbstractPersistable;
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 @NoArgsConstructor
 @RelationshipEntity
@@ -22,12 +22,12 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 	private Role role;
 
 	@EndNode
-	private CaiLunNode targetNode;
+	private GenericNode targetNode;
 
 	DynamicProperties permissions = new DynamicPropertiesContainer();
 
 	@PersistenceConstructor
-	public GraphPermission(Role role, CaiLunNode targetNode) {
+	public GraphPermission(Role role, GenericNode targetNode) {
 		this.role = role;
 		this.targetNode = targetNode;
 	}

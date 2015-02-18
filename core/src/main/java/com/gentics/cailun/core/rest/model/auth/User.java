@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NodeEntity
-public class User extends CaiLunNode {
+public class User extends GenericNode {
 
 	private static final long serialVersionUID = -8707906688270506022L;
 

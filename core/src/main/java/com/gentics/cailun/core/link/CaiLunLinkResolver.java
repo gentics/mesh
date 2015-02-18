@@ -2,7 +2,8 @@ package com.gentics.cailun.core.link;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gentics.cailun.core.repository.GlobalContentRepository;
+import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 /**
  * Neo4j Cailun page resolver. This class will resolve cailun link placeholders.
@@ -12,15 +13,15 @@ import com.gentics.cailun.core.repository.GlobalContentRepository;
  */
 public class CaiLunLinkResolver extends AbstractLinkResolver {
 
-	private GlobalContentRepository pageRepo;
+	private GlobalGenericContentRepository<GenericContent> contentRepository;
 
 	public CaiLunLinkResolver() {
 		super(null);
 	}
 
-	public CaiLunLinkResolver(String text, GlobalContentRepository pageRepo) {
+	public CaiLunLinkResolver(String text, GlobalGenericContentRepository<GenericContent> contentRepository) {
 		super(text);
-		this.pageRepo = pageRepo;
+		this.contentRepository = contentRepository;
 	}
 
 	@Override
@@ -45,8 +46,8 @@ public class CaiLunLinkResolver extends AbstractLinkResolver {
 	 */
 	private String getPathForPageId(Long id) {
 		// TODO exception handling
-		//TODO use GenericContentUtils
-//		return pageRepo.getPath(id);
+		// TODO use GenericContentUtils
+		// return pageRepo.getPath(id);
 		return "WIP";
 	}
 

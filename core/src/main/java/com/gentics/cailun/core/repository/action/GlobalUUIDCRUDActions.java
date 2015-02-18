@@ -4,10 +4,10 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 @NoRepositoryBean
-public interface GlobalUUIDCRUDActions<T extends CaiLunNode> extends GraphRepository<T> {
+public interface GlobalUUIDCRUDActions<T extends GenericNode> extends GraphRepository<T> {
 
 	@Query("MATCH (content:Content) WHERE content.uuid = {0} return content")
 	public T findByUUID(String uuid);

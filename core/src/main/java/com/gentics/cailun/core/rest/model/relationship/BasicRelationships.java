@@ -24,4 +24,5 @@ public class BasicRelationships {
 	public static final String HAS_LOCALISATION = "HAS_LOCALISATION";
 	public static final String HAS_I18NVALUE = "HAS_I18NVALUE";
 	public static final String HAS_CHILD = "HAS_CHILD";
+	public static final String IS_LOCKED = "IS_LOCKED";
 }

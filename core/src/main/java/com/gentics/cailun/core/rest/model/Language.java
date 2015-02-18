@@ -3,8 +3,10 @@ package com.gentics.cailun.core.rest.model;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
+
 @NodeEntity
-public class Language extends CaiLunNode {
+public class Language extends GenericNode {
 
 	private static final long serialVersionUID = 8621659419142532208L;
 

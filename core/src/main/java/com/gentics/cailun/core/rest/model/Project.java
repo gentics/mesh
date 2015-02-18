@@ -12,6 +12,8 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.Role;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
+import com.gentics.cailun.core.rest.model.generic.GenericTag;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 /**
@@ -22,7 +24,7 @@ import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
  */
 @Data
 @NodeEntity
-public class Project extends CaiLunNode {
+public class Project extends GenericNode {
 
 	private static final long serialVersionUID = -3565883313897315008L;
 
@@ -38,8 +40,8 @@ public class Project extends CaiLunNode {
 	}
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
-	private Tag rootTag;
+	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = GenericTag.class)
+	private GenericTag rootTag;
 
 	@Fetch
 	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.OUTGOING, elementClass = Role.class)

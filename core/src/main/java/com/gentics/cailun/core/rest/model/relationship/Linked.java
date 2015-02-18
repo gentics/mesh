@@ -11,8 +11,8 @@ import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.cailun.core.rest.model.AbstractPersistable;
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 @RelationshipEntity
 @Data
@@ -24,24 +24,24 @@ public class Linked extends AbstractPersistable {
 
 	@JsonIgnore
 	@StartNode
-	private Content startPage;
+	private GenericContent startPage;
 
 	@Fetch
 	@EndNode
-	private Content endPage;
+	private GenericContent endPage;
 
-	public Linked(Content startPage, Content endPage) {
+	public Linked(GenericContent startPage, GenericContent endPage) {
 		this.startPage = startPage;
 		this.endPage = endPage;
 	}
 
 	@JsonIgnore
-	public Content getStartPage() {
+	public GenericContent getStartPage() {
 		return startPage;
 	}
 
 	@JsonIgnore
-	public Content getEndPage() {
+	public GenericContent getEndPage() {
 		return endPage;
 	}
 

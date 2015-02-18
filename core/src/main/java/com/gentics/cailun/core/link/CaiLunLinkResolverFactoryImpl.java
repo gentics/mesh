@@ -3,10 +3,12 @@ package com.gentics.cailun.core.link;
 import lombok.NoArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.cailun.core.repository.GlobalContentRepository;
+import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 /**
  * Factory which provides link resolvers
@@ -21,12 +23,13 @@ import com.gentics.cailun.core.repository.GlobalContentRepository;
 public class CaiLunLinkResolverFactoryImpl<T extends CaiLunLinkResolver> implements LinkResolverFactory<AbstractLinkResolver> {
 
 	@Autowired
-	GlobalContentRepository pageRepo;
+	@Qualifier("globalGenericContentRepository")
+	GlobalGenericContentRepository<GenericContent> contentRepository;
 
 	@Override
 	public AbstractLinkResolver createLinkResolver(String link) {
 		// TODO replace class with prototype spring DI
-		return new CaiLunLinkResolver(link, pageRepo);
+		return new CaiLunLinkResolver(link, contentRepository);
 	}
 
 }

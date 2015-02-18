@@ -5,10 +5,10 @@ import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 
-import com.gentics.cailun.core.rest.model.AbstractPersistable;
-import com.gentics.cailun.core.rest.model.CaiLunNode;
-import com.gentics.cailun.core.rest.model.I18NValue;
+import com.gentics.cailun.core.rest.model.I18NProperties;
 import com.gentics.cailun.core.rest.model.Language;
+import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 @RelationshipEntity
 public class Translated extends AbstractPersistable {
@@ -22,16 +22,16 @@ public class Translated extends AbstractPersistable {
 	private String languageTag;
 
 	@StartNode
-	private CaiLunNode startNode;
+	private GenericNode startNode;
 
 	@Fetch
 	@EndNode
-	private I18NValue i18nValue;
+	private I18NProperties i18nValue;
 
 	public Translated() {
 	}
 
-	public Translated(CaiLunNode startNode, I18NValue value, Language language) {
+	public Translated(GenericNode startNode, I18NProperties value, Language language) {
 		this.startNode = startNode;
 		this.i18nValue = value;
 		this.languageTag = language.getLanguageTag();
@@ -41,11 +41,11 @@ public class Translated extends AbstractPersistable {
 		return languageTag;
 	}
 
-	public I18NValue getI18nValue() {
+	public I18NProperties getI18nValue() {
 		return i18nValue;
 	}
 
-	public CaiLunNode getStartNode() {
+	public GenericNode getStartNode() {
 		return startNode;
 	}
 

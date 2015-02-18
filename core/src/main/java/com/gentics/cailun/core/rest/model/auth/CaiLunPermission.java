@@ -4,15 +4,15 @@ import lombok.Data;
 
 import org.apache.shiro.authz.Permission;
 
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 @Data
 public class CaiLunPermission implements Permission {
 
 	private PermissionType type;
-	private CaiLunNode targetNode;
+	private GenericNode targetNode;
 
-	public CaiLunPermission(CaiLunNode targetNode, PermissionType type) {
+	public CaiLunPermission(GenericNode targetNode, PermissionType type) {
 		this.type = type;
 		this.targetNode = targetNode;
 	}

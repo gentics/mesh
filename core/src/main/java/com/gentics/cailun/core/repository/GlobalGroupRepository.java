@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.springframework.data.neo4j.annotation.Query;
 
+import com.gentics.cailun.core.repository.generic.GlobalGenericNodeRepository;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.User;
 
-public interface GlobalGroupRepository extends GlobalCaiLunNodeRepository<Group> {
+public interface GlobalGroupRepository extends GlobalGenericNodeRepository<Group> {
 
 	// @Query("MATCH (u:_User {0} ) MATCH (u)-[MEMBER_OF*]->(g) return g")
 

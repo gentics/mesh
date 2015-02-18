@@ -12,13 +12,13 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 @NoArgsConstructor
 @Data
 @NodeEntity
-public class Group extends CaiLunNode {
+public class Group extends GenericNode {
 
 	private static final long serialVersionUID = -6423363555276535419L;
 

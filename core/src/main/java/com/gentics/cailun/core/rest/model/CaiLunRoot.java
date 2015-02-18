@@ -12,6 +12,7 @@ import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
+import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 @NodeEntity

@@ -8,8 +8,8 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.rest.model.Tag;
+import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.rest.model.generic.GenericTag;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 /**
@@ -24,13 +24,13 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private static final Logger log = LoggerFactory.getLogger(NavigationTask.class);
 
 	private static final long serialVersionUID = 8773519857036585642L;
-	private Tag tag;
+	private GenericTag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
-	private GlobalContentRepository genericContentRepository;
+	private GlobalGenericContentRepository genericContentRepository;
 	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, GlobalContentRepository genericContentRepository,
+	public NavigationTask(GenericTag tag, NavigationElement element, NavigationRequestHandler handler, GlobalGenericContentRepository genericContentRepository,
 			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;

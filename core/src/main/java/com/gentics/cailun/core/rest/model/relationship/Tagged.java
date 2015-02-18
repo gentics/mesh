@@ -5,8 +5,8 @@ import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.cailun.core.rest.model.AbstractPersistable;
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 @RelationshipEntity
 public class Tagged extends AbstractPersistable {
@@ -15,12 +15,12 @@ public class Tagged extends AbstractPersistable {
 
 	@JsonIgnore
 	@StartNode
-	private CaiLunNode startTag;
+	private GenericNode startTag;
 
 	@EndNode
-	private CaiLunNode endTag;
+	private GenericNode endTag;
 
-	public Tagged(CaiLunNode startTag, CaiLunNode endTag) {
+	public Tagged(GenericNode startTag, GenericNode endTag) {
 		this.startTag = startTag;
 		this.endTag = endTag;
 	}
@@ -29,12 +29,12 @@ public class Tagged extends AbstractPersistable {
 	}
 
 	@JsonIgnore
-	public CaiLunNode getStartTag() {
+	public GenericNode getStartTag() {
 		return startTag;
 	}
 
 	@JsonIgnore
-	public CaiLunNode getEndTag() {
+	public GenericNode getEndTag() {
 		return endTag;
 	}
 

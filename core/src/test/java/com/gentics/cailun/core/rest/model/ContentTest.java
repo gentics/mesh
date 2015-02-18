@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalFolderTagRepository;
+import com.gentics.cailun.core.repository.GlobalTagRepository;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class ContentTest extends AbstractDBTest {
@@ -17,7 +17,7 @@ public class ContentTest extends AbstractDBTest {
 //	GlobalTagRepository<Tag<LocalizedTag, Content<LocalizedContent>, File>> tagRepository;
 
 	@Autowired
-	GlobalFolderTagRepository folderRepository;
+	GlobalTagRepository folderRepository;
 
 	@Test
 	public void testPageLinks() {
@@ -36,9 +36,9 @@ public class ContentTest extends AbstractDBTest {
 	@Test
 	public void testSimplePagePathTraversal() {
 
-//		FolderTag rootTag = new FolderTag(german, "rootTag");
+//		Tag rootTag = new Tag(german, "rootTag");
 
-//		FolderTag subTag = new FolderTag(german, "subTag");
+//		Tag subTag = new Tag(german, "subTag");
 
 //		rootTag.addChildTag(subTag);
 //
@@ -62,11 +62,11 @@ public class ContentTest extends AbstractDBTest {
 	@Test
 	public void testComplexPagePathTraversal() {
 
-//		FolderTag rootTag = new FolderTag(german, "rootTag");
-//		FolderTag subTag = new FolderTag(german, "subTag");
+//		Tag rootTag = new Tag(german, "rootTag");
+//		Tag subTag = new Tag(german, "subTag");
 //
 //		rootTag.addChildTag(subTag);
-//		FolderTag subTag2 = new FolderTag(german, "subTag 2");
+//		Tag subTag2 = new Tag(german, "subTag 2");
 //
 //		tagRepository.save(subTag);
 //		tagRepository.save(subTag2);

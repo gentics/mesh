@@ -5,23 +5,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Language;
+import com.gentics.cailun.core.rest.service.generic.GenericContentServiceImpl;
 
 @Component
 @Transactional
-public class ContentServiceImpl extends FileServiceImpl implements ContentService {
+public class ContentServiceImpl extends GenericContentServiceImpl<Content> implements ContentService {
 
-	public void createLink(Content from, Content to) {
-		// TODO maybe extract information about link start and end to speedup rendering of page with links
-		// Linked link = new Linked(this, page);
-		// this.links.add(link);
+	public void setTeaser(Content page, Language language, String text) {
+		setI18NProperty(page, language, Content.TEASER_KEY, text);
 	}
 
-	public void addI18Content(Content content, Language language, String text) {
-		setI18NProperty(content, language, Content.CONTENT_KEYWORD, text);
-	}
-
-	public void setContent(Content content, Language language, String text) {
-		setI18NProperty(content, language, Content.CONTENT_KEYWORD, text);
+	public void setTitle(Content page, Language language, String text) {
+		setI18NProperty(page, language, Content.TITLE_KEY, text);
 	}
 
 }

@@ -1,5 +1,8 @@
 package com.gentics.cailun.core.rest.service;
 
-public interface LanguageService {
+import com.gentics.cailun.core.rest.model.Language;
+import com.gentics.cailun.core.rest.service.generic.GenericNodeService;
+
+public interface LanguageService extends GenericNodeService<Language> {
 
 }

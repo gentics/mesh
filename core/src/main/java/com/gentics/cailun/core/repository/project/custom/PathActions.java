@@ -1,8 +1,8 @@
 package com.gentics.cailun.core.repository.project.custom;
 
-import com.gentics.cailun.core.rest.model.File;
+import com.gentics.cailun.core.rest.model.generic.GenericFile;
 
-public interface PathActions<T extends File> {
+public interface PathActions<T extends GenericFile> {
 
 	/**
 	 * Finds and loads the object within the given project and path.

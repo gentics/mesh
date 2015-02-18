@@ -20,24 +20,27 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
-import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
+import com.gentics.cailun.core.repository.GlobalContentRepository;
 import com.gentics.cailun.core.repository.GlobalGroupRepository;
 import com.gentics.cailun.core.repository.GlobalLanguageRepository;
 import com.gentics.cailun.core.repository.GlobalProjectRepository;
 import com.gentics.cailun.core.repository.GlobalRoleRepository;
 import com.gentics.cailun.core.repository.GlobalUserRepository;
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.repository.generic.GlobalGenericNodeRepository;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.FolderTag;
 import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.Project;
+import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.GraphPermission;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
-import com.gentics.cailun.core.rest.service.FolderTagService;
+import com.gentics.cailun.core.rest.model.generic.GenericContent;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
+import com.gentics.cailun.core.rest.service.ContentService;
+import com.gentics.cailun.core.rest.service.TagService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 /**
@@ -69,10 +72,10 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
-	private GlobalPageRepository pageRepository;
+	private GlobalContentRepository contentRepository;
 
 	@Autowired
-	private GlobalCaiLunNodeRepository<CaiLunNode> nodeRepository;
+	private GlobalGenericNodeRepository<GenericNode> nodeRepository;
 
 	@Autowired
 	private CaiLunRootRepository rootRepository;
@@ -84,13 +87,13 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private CaiLunRootRepository caiLunRootRepository;
 
 	@Autowired
-	private PageService pageService;
+	private ContentService contentService;
 
 	@Autowired
-	private FolderTagService folderTagService;
+	private TagService folderTagService;
 
 	public CustomerVerticle() {
-		super("page");
+		super("Content");
 	}
 
 	/**
@@ -129,7 +132,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	}
 
 	private void setupDemoData() {
-		pageRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
+		contentRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
 
 		CaiLunRoot rootNode = caiLunRootRepository.findRoot();
 
@@ -169,41 +172,41 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		groupRepository.save(guests);
 
 		// Tags
-		FolderTag rootTag = new FolderTag();
+		Tag rootTag = new Tag();
 		folderTagService.setName(rootTag, english, "/");
 
-		FolderTag homeFolder = new FolderTag();
+		Tag homeFolder = new Tag();
 		folderTagService.setName(homeFolder, english, "home");
 		folderTagService.setName(homeFolder, german, "heim");
 		rootTag.addTag(homeFolder);
 
-		FolderTag jotschiFolder = new FolderTag();
+		Tag jotschiFolder = new Tag();
 		folderTagService.setName(jotschiFolder, german, "jotschi");
 		folderTagService.setName(jotschiFolder, english, "jotschi");
 		homeFolder.addTag(jotschiFolder);
 
-		FolderTag rootFolder = new FolderTag();
+		Tag rootFolder = new Tag();
 		folderTagService.setName(rootFolder, german, "wurzel");
 		folderTagService.setName(rootFolder, english, "root");
 		rootTag.addTag(rootFolder);
 
-		FolderTag varFolder = new FolderTag();
+		Tag varFolder = new Tag();
 		folderTagService.setName(varFolder, german, "var");
 		rootTag.addTag(varFolder);
 
-		FolderTag wwwFolder = new FolderTag();
+		Tag wwwFolder = new Tag();
 		folderTagService.setName(wwwFolder, english, "www");
 		varFolder.addTag(wwwFolder);
 
-		FolderTag siteFolder = new FolderTag();
+		Tag siteFolder = new Tag();
 		folderTagService.setName(siteFolder, english, "site");
 		wwwFolder.addTag(siteFolder);
 
-		FolderTag postsFolder = new FolderTag();
+		Tag postsFolder = new Tag();
 		folderTagService.setName(postsFolder, german, "posts");
 		wwwFolder.addTag(postsFolder);
 
-		FolderTag blogsFolder = new FolderTag();
+		Tag blogsFolder = new Tag();
 		folderTagService.setName(blogsFolder, german, "blogs");
 		wwwFolder.addTag(blogsFolder);
 
@@ -211,76 +214,76 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		projectRepository.save(aloha);
 
 		// Contents
-		Page rootPage = new Page();
-		pageService.setName(rootPage, german, "german name");
-		pageService.setFilename(rootPage, german, "german.html");
-		pageService.setContent(rootPage, german, "Mahlzeit!");
+		Content rootContent = new Content();
+		contentService.setName(rootContent, german, "german name");
+		contentService.setFilename(rootContent, german, "german.html");
+		contentService.setContent(rootContent, german, "Mahlzeit!");
 
-		pageService.setName(rootPage, english, "english name");
-		pageService.setFilename(rootPage, english, "english.html");
-		pageService.setContent(rootPage, english, "Blessed mealtime!");
+		contentService.setName(rootContent, english, "english name");
+		contentService.setFilename(rootContent, english, "english.html");
+		contentService.setContent(rootContent, english, "Blessed mealtime!");
 
-		rootPage.setCreator(users.get(0));
-		// rootPage.tag(rootTag);
-		pageRepository.save(rootPage);
+		rootContent.setCreator(users.get(0));
+		// rootContent.tag(rootTag);
+		contentRepository.save(rootContent);
 
-		rootPage = (Page) pageRepository.findOne(rootPage.getId());
+		rootContent = (Content) contentRepository.findOne(rootContent.getId());
 
 		for (int i = 0; i < 6; i++) {
-			Page page = new Page();
-			pageService.setName(page, german, "Hallo Welt");
-			pageService.setFilename(page, german, "some" + i + ".html");
-			page.setCreator(users.get(0));
-			pageService.setContent(page, german, "some content");
-			page.addTag(blogsFolder);
-			pageRepository.save(page);
+			Content Content = new Content();
+			contentService.setName(Content, german, "Hallo Welt");
+			contentService.setFilename(Content, german, "some" + i + ".html");
+			Content.setCreator(users.get(0));
+			contentService.setContent(Content, german, "some content");
+			Content.addTag(blogsFolder);
+			contentRepository.save(Content);
 		}
 
 		for (int i = 0; i < 3; i++) {
-			Page page = new Page();
-			pageService.setName(page, german, "Hallo Welt");
-			pageService.setFilename(page, german, "some_posts" + i + ".html");
-			page.setCreator(users.get(0));
-			pageService.setContent(page, german, "some content");
-			page.addTag(postsFolder);
-			pageRepository.save(page);
+			Content Content = new Content();
+			contentService.setName(Content, german, "Hallo Welt");
+			contentService.setFilename(Content, german, "some_posts" + i + ".html");
+			Content.setCreator(users.get(0));
+			contentService.setContent(Content, german, "some content");
+			Content.addTag(postsFolder);
+			contentRepository.save(Content);
 		}
 
-		Page page = new Page();
-		pageService.setName(page, german, "Neuer Blog Post");
-		page.addTag(blogsFolder);
-		page.setCreator(users.get(0));
-		pageService.setFilename(page, german, "blog.html");
-		pageService.setContent(page, german, "This is the blogpost content");
-		pageService.setTeaser(page, german, "Jo this page is the second blogpost");
-		pageRepository.save(page);
+		Content Content = new Content();
+		contentService.setName(Content, german, "Neuer Blog Post");
+		Content.addTag(blogsFolder);
+		Content.setCreator(users.get(0));
+		contentService.setFilename(Content, german, "blog.html");
+		contentService.setContent(Content, german, "This is the blogpost content");
+		contentService.setTeaser(Content, german, "Jo this Content is the second blogpost");
+		contentRepository.save(Content);
 
-		page = new Page();
-		pageService.setName(page, german, "Hallo Cailun");
-		pageService.setFilename(page, german, "some2.html");
-		page.setCreator(users.get(0));
-		pageService.setContent(page, german, "some more content");
-		page.addTag(postsFolder);
-		pageRepository.save(page);
+		Content = new Content();
+		contentService.setName(Content, german, "Hallo Cailun");
+		contentService.setFilename(Content, german, "some2.html");
+		Content.setCreator(users.get(0));
+		contentService.setContent(Content, german, "some more content");
+		Content.addTag(postsFolder);
+		contentRepository.save(Content);
 
-		Page indexPage = new Page();
-		pageService.setName(indexPage, german, "Index With Perm");
+		Content indexContent = new Content();
+		contentService.setName(indexContent, german, "Index With Perm");
 
-		indexPage.setCreator(users.get(0));
-		pageService.setFilename(indexPage, german, "index.html");
-		pageService.setContent(indexPage, german, "The index page<br/><a href=\"${Page(10)}\">Link</a>");
-		pageService.setTitle(indexPage, german, "Index Title");
-		pageService.setTeaser(indexPage, german, "Yo guckste hier");
-		indexPage.addTag(wwwFolder);
+		indexContent.setCreator(users.get(0));
+		contentService.setFilename(indexContent, german, "index.html");
+		contentService.setContent(indexContent, german, "The index Content<br/><a href=\"${Content(10)}\">Link</a>");
+		contentService.setTitle(indexContent, german, "Index Title");
+		contentService.setTeaser(indexContent, german, "Yo guckste hier");
+		indexContent.addTag(wwwFolder);
 
-		pageService.createLink(indexPage, page);
-		pageRepository.save(indexPage);
+		contentService.createLink(indexContent, Content);
+		contentService.save(indexContent);
 
 		// Permissions
 		try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
 			// Add admin permissions to all nodes
 			int i = 0;
-			for (CaiLunNode currentNode : nodeRepository.findAll()) {
+			for (GenericNode currentNode : nodeRepository.findAll()) {
 				// if (i % 2 == 0) {
 				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
 				GraphPermission permission = new GraphPermission(adminRole, currentNode);
@@ -300,7 +303,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rh -> {
 			Session session = rh.session();
-			Content content = (Content) pageRepository.findOne(23L);
+			GenericContent content = contentService.findOne(23L);
 			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(content, READ));
 			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
 		});

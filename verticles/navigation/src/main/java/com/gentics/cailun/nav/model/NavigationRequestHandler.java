@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.core.repository.GlobalCaiLunNodeRepository;
-import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.rest.model.CaiLunNode;
+import com.gentics.cailun.core.repository.generic.GlobalGenericNodeRepository;
+import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
 import com.gentics.cailun.core.rest.model.Language;
-import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.PermissionType;
+import com.gentics.cailun.core.rest.model.generic.GenericNode;
+import com.gentics.cailun.core.rest.model.generic.GenericTag;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -30,7 +30,7 @@ import com.gentics.cailun.util.Neo4jGenericContentUtils;
 public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
-	GlobalCaiLunNodeRepository<Tag> tagRepository;
+	GlobalGenericNodeRepository<GenericTag> tagRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration config;
@@ -38,8 +38,8 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	@Autowired
 	Neo4jGenericContentUtils genericContentUtils;
 
-	@Autowired
-	GlobalContentRepository genericContentRepository;
+//	@Autowired
+//	GlobalGenericContentRepository genericContentRepository;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
@@ -48,7 +48,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	public void handle(RoutingContext rc) {
 		this.session = rc.session();
 		// LocalizedTag rootTag = tagRepository.findRootTag();
-		Tag rootTag = null;
+		GenericTag rootTag = null;
 		try {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
@@ -82,7 +82,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return
 	 * @throws NodeNotFoundException
 	 */
-	private Navigation getNavigation(Tag rootTag) {
+	private Navigation getNavigation(GenericTag rootTag) {
 		// TODO handle language
 		Language language = null;
 		Navigation nav = new Navigation();
@@ -96,7 +96,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		return nav;
 	}
 
-	public void canView(CaiLunNode object, Handler<AsyncResult<Boolean>> resultHandler) {
+	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
 		getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(object, PermissionType.READ), resultHandler);
 	}
 
@@ -106,7 +106,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @param object
 	 * @return true, when the user can view the object. Otherwise false.
 	 */
-	public boolean canView(CaiLunNode object) {
+	public boolean canView(GenericNode object) {
 		return getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(object, PermissionType.READ));
 	}
 }
