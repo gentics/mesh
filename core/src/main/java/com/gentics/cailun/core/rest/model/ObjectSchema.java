@@ -8,10 +8,8 @@ import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.rest.model.generic.GenericNode;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
-import com.hazelcast.client.impl.client.GetDistributedObjectsRequest;
 
 /**
  * The object schema is used for validating crud actions and to provide a json schema that can be used for client side validation.

@@ -5,4 +5,8 @@ import com.gentics.cailun.core.rest.service.generic.GenericNodeService;
 
 public interface UserService extends GenericNodeService<User> {
 
+	void setPassword(User user, String password);
+
+	User findByUsername(String username);
+
 }

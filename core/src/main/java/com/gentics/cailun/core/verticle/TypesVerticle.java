@@ -59,13 +59,13 @@ public class TypesVerticle extends AbstractProjectRestVerticle {
 
 	private void addReadHandlers() {
 		route("/:uuidOrName").method(GET).handler(rh -> {
-			String project = getProjectName(rh);
+			String projectName = getProjectName(rh);
 			String uuidOrName = rh.request().params().get("uuidOrName");
 			if (isUUID(uuidOrName)) {
-				ObjectSchema projectSchema = schemaService.findByUUID(project, uuidOrName);
+				ObjectSchema projectSchema = schemaService.findByUUID(projectName, uuidOrName);
 				rh.response().end(toJson(projectSchema));
 			} else {
-				ObjectSchema projectSchema = schemaService.findByName(project, uuidOrName);
+				ObjectSchema projectSchema = schemaService.findByName(projectName, uuidOrName);
 				rh.response().end(toJson(projectSchema));
 			}
 

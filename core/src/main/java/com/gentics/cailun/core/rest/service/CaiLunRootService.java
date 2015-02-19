@@ -6,4 +6,6 @@ public interface CaiLunRootService {
 
 	CaiLunRoot findRoot();
 
+	void save(CaiLunRoot rootNode);
+
 }

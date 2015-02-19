@@ -15,7 +15,6 @@ import java.util.List;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -105,6 +104,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		john.setFirstname("John");
 		john.setLastname("Doe");
 		john.setEmailAddress("j.doe@gentics.com");
+		// TODO use user service
 		john.setPasswordHash(cailunConfig.passwordEncoder().encode("test123"));
 
 		User mary = new User("mary2");

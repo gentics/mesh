@@ -59,4 +59,8 @@ public class CaiLunRoot extends AbstractPersistable {
 		this.rootGroup = group;
 	}
 
+	public void addUser(User user) {
+		this.users.add(user);
+	}
+
 }

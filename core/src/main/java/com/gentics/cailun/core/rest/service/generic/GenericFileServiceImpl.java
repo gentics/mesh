@@ -29,6 +29,8 @@ public class GenericFileServiceImpl<T extends GenericFile> extends GenericProper
 
 	@Override
 	public T findByProject(String projectName, String path) {
+		
+		// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
 		GraphDatabaseService graphDb = springConfig.getGraphDatabaseService();
 
 		String parts[] = path.split("/");

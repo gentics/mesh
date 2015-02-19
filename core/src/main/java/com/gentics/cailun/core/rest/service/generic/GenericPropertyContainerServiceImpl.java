@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.cailun.core.rest.model.I18NProperties;
 import com.gentics.cailun.core.rest.model.Language;
-import com.gentics.cailun.core.rest.model.generic.GenericNode;
 import com.gentics.cailun.core.rest.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.rest.model.relationship.Translated;
 

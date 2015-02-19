@@ -8,8 +8,6 @@ import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
-import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.generic.GenericNode;
 import com.gentics.cailun.core.rest.model.generic.GenericTag;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;

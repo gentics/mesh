@@ -3,12 +3,20 @@ package com.gentics.cailun.core.verticle;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.ext.apex.core.RoutingContext;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.GraphDatabaseService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -17,17 +25,14 @@ import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.repository.ContentRepository;
-import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.repository.generic.GenericFileRepository;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
-import com.gentics.cailun.core.rest.model.generic.GenericFile;
 import com.gentics.cailun.core.rest.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.request.ContentSaveRequest;
 import com.gentics.cailun.core.rest.response.GenericResponse;
-import com.gentics.cailun.etc.RouterStorage;
+import com.gentics.cailun.core.rest.service.ContentService;
+import com.gentics.cailun.core.rest.service.TagService;
 
 /**
  * The page verticle adds rest endpoints for manipulating pages and related objects.
@@ -37,20 +42,18 @@ import com.gentics.cailun.etc.RouterStorage;
 @SpringVerticle
 public class ContentVerticle extends AbstractProjectRestVerticle {
 
-	@Autowired
-	private ContentRepository contentRepository;
+	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
+
+	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
 
 	@Autowired
-	private GenericFileRepository<GenericFile> fileRepository;
+	private ContentService contentService;
 
 	@Autowired
-	private TagRepository tagRepository;
+	private TagService tagService;
 
 	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
-
-	@Autowired
-	GraphDatabaseService graphDb;
 
 	public ContentVerticle() {
 		super("contents");
@@ -58,7 +61,6 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		System.out.println("CONTENT:_" + contentRepository);
 
 		addCRUDHandlers();
 
@@ -72,16 +74,16 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 		addPathHandler();
 
-		addSaveHandler();
-		addLoadHandler();
-		addDeleteHandler();
 		addCreateHandler();
+		addReadHandler();
+		addUpdateHandler();
+		addDeleteHandler();
 
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).handler(rh -> {
-			String uuid = rh.request().params().get("uuid");
+		route("/:uuidOrName").method(DELETE).handler(rh -> {
+			String uuidOrName = rh.request().params().get("uuidOrName");
 			// contentRepository.delete(uuid);
 			});
 
@@ -98,18 +100,17 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private void addPathHandler() {
 		getRouter().routeWithRegex("\\/(.*)").method(GET).handler(rc -> {
 			try {
-				String projectName = (String) rc.contextData().get(RouterStorage.PROJECT_CONTEXT_KEY);
-				String path = rc.request().params().get("param0");
-				GenericFile file = fileRepository.findByProject(projectName, path);
-				// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
 
-				// TODO check whether file is a content or a binary file
-				if (false) {
-					// Content content = (Content) file;
+				String projectName = getProjectName(rc);
+				String path = rc.request().params().get("param0");
+				Set<String> language = getSelectedLanguages(rc);
+				// TODO handle language by get parameter
+
+				Content content = contentService.findByProject(projectName, path);
+				if (content != null) {
 					// resolveLinks(content);
-					ObjectMapper mapper = new ObjectMapper();
-					// String json = mapper.writeValueAsString(new GenericResponse<Content>(content));
-					// rc.response().end(json);
+					String json = toJson(content);
+					rc.response().end(json);
 				} else {
 					rc.fail(new Exception("Page for path {" + path + "} could not be found."));
 					// TODO add json response - Make error responses generic
@@ -163,6 +164,29 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	// }
 
 	/**
+	 * Extracts the lang parameter values from the query
+	 * 
+	 * @param rc
+	 * @return
+	 */
+	private Set<String> getSelectedLanguages(RoutingContext rc) {
+		String query = rc.request().query();
+		Map<String, String> queryPairs;
+		try {
+			queryPairs = splitQuery(query);
+		} catch (UnsupportedEncodingException e) {
+			log.error("Could not decode query string.", e);
+			return Collections.emptySet();
+		}
+		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
+		if (value == null) {
+			return Collections.emptySet();
+		}
+		return new HashSet<>(Arrays.asList(value.split(",")));
+
+	}
+
+	/**
 	 * Add a page create handler
 	 */
 	private void addCreateHandler() {
@@ -178,7 +202,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	/**
 	 * Add the page load handler that allows loading pages by id.
 	 */
-	private void addLoadHandler() {
+	private void addReadHandler() {
 
 		route("/:uuid").method(GET).handler(rc -> {
 			System.out.println("RCDATA:" + rc.contextData().get("cailun-project"));
@@ -205,7 +229,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	}
 
-	private void addSaveHandler() {
+	private void addUpdateHandler() {
 
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");

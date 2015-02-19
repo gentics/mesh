@@ -6,6 +6,11 @@ import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Router;
 import io.vertx.ext.apex.core.RoutingContext;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
@@ -73,11 +78,15 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 	}
 
 	protected String toJson(Object obj) {
+		// TODO compare with jackson
+		// ObjectMapper mapper = new ObjectMapper();
+		// mapper.writeValueAsString(new GenericResponse<Content>(content));
 		return GSON.toJson(obj);
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T fromJson(RoutingContext rc, Class<?> classOfT) {
+		// TODO compare with jackson
 		return (T) GSON.fromJson(rc.getBodyAsString(), classOfT);
 	}
 
@@ -88,6 +97,19 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 	 */
 	protected CaiLunAuthServiceImpl getAuthService() {
 		return config.authService();
+	}
+
+	public Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
+		Map<String, String> queryPairs = new LinkedHashMap<String, String>();
+		if (query == null) {
+			return queryPairs;
+		}
+		String[] pairs = query.split("&");
+		for (String pair : pairs) {
+			int idx = pair.indexOf("=");
+			queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+		}
+		return queryPairs;
 	}
 
 }
