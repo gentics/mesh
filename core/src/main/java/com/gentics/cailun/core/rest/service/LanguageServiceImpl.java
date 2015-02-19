@@ -12,16 +12,21 @@ import com.gentics.cailun.core.rest.service.generic.GenericNodeServiceImpl;
 @Component
 @Transactional
 public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implements LanguageService {
-	
+
 	@Autowired
 	private LanguageRepository languageRepository;
 
 	@Override
 	public Language save(Language language) {
-		if(StringUtils.isEmpty(language.getLanguageTag())|| StringUtils.isEmpty(language.getName())) {
-			//TODO throw exception?
+		if (StringUtils.isEmpty(language.getLanguageTag()) || StringUtils.isEmpty(language.getName())) {
+			// TODO throw exception?
 		}
 		return languageRepository.save(language);
 	}
-	
+
+	@Override
+	public Language findByName(String name) {
+		return languageRepository.findByName(name);
+	}
+
 }

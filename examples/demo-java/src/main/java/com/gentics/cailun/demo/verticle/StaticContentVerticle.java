@@ -8,9 +8,7 @@ import io.vertx.ext.apex.addons.StaticServer;
 import io.vertx.ext.apex.addons.TemplateEngine;
 import io.vertx.ext.apex.addons.TemplateHandler;
 import io.vertx.ext.apex.core.Router;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 public class StaticContentVerticle extends AbstractVerticle {
 
 	@Override

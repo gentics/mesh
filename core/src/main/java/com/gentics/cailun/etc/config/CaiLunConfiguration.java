@@ -6,16 +6,13 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Data;
-
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 
-@Data
 public class CaiLunConfiguration {
 
-//	private static final boolean ENABLED = true;
+	// private static final boolean ENABLED = true;
 	private static final boolean DISABLED = false;
 
 	public static final String HTTP_PORT_KEY = "httpPort";
@@ -49,5 +46,17 @@ public class CaiLunConfiguration {
 		} else {
 			neo4jConfiguration.setPath(new File(DEFAULT_DIRECTORY_NAME).getAbsolutePath());
 		}
+	}
+
+	public Map<String, CaiLunVerticleConfiguration> getVerticles() {
+		return verticles;
+	}
+
+	public boolean isClusterMode() {
+		return clusterMode;
+	}
+
+	public Neo4VertxConfiguration getNeo4jConfiguration() {
+		return neo4jConfiguration;
 	}
 }

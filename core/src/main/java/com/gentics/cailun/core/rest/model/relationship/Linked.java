@@ -1,9 +1,5 @@
 package com.gentics.cailun.core.rest.model.relationship;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-
 import org.springframework.data.neo4j.annotation.EndNode;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
@@ -15,9 +11,6 @@ import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 @RelationshipEntity
-@Data
-@EqualsAndHashCode(callSuper = false)
-@NoArgsConstructor
 public class Linked extends AbstractPersistable {
 
 	private static final long serialVersionUID = -9078009095514379616L;

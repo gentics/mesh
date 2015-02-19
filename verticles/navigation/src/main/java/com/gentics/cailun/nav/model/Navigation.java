@@ -1,12 +1,15 @@
 package com.gentics.cailun.nav.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
 public class Navigation {
 
 	NavigationElement root;
+
+	public NavigationElement getRoot() {
+		return root;
+	}
+
+	public void setRoot(NavigationElement root) {
+		this.root = root;
+	}
 
 }

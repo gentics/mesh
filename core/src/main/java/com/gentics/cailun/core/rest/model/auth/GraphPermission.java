@@ -1,7 +1,5 @@
 package com.gentics.cailun.core.rest.model.auth;
 
-import lombok.NoArgsConstructor;
-
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.neo4j.annotation.EndNode;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
@@ -12,7 +10,6 @@ import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 import com.gentics.cailun.core.rest.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
-@NoArgsConstructor
 @RelationshipEntity
 public class GraphPermission extends AbstractPersistable implements org.apache.shiro.authz.Permission {
 
@@ -26,6 +23,10 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 
 	DynamicProperties permissions = new DynamicPropertiesContainer();
 
+	@SuppressWarnings("unused")
+	private GraphPermission() {
+	}
+	
 	@PersistenceConstructor
 	public GraphPermission(Role role, GenericNode targetNode) {
 		this.role = role;

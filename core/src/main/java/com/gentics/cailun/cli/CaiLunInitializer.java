@@ -14,11 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
+import com.gentics.cailun.core.repository.LanguageRepository;
 import com.gentics.cailun.core.repository.ProjectRepository;
+import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
+import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.auth.Group;
+import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -41,7 +45,13 @@ public class CaiLunInitializer {
 	GroupRepository groupRepository;
 
 	@Autowired
+	RoleRepository roleRepository;
+
+	@Autowired
 	ProjectRepository projectRepository;
+
+	@Autowired
+	LanguageRepository languageRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration springConfiguration;
@@ -74,7 +84,10 @@ public class CaiLunInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		initMandatoryData();
+		try (Transaction tx = springConfiguration.getGraphDatabaseService().beginTx()) {
+			initMandatoryData();
+			tx.success();
+		}
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(springConfiguration.vertx());
@@ -126,16 +139,30 @@ public class CaiLunInitializer {
 		// Reload the node to get one with a valid uuid
 		rootNode = rootRepository.findRoot();
 
+		Language german = languageRepository.findByName("german");
+		if (german == null) {
+			german = new Language("german", "de_DE");
+			rootNode.addLanguage(languageRepository.save(german));
+			rootRepository.save(rootNode);
+		}
+
+		Language english = languageRepository.findByName("english");
+		if (english == null) {
+			english = new Language("english", "en_US");
+			rootNode.addLanguage(languageRepository.save(english));
+			rootRepository.save(rootNode);
+		}
+
 		// Verify that an admin user exists
 		User adminUser = userRepository.findByUsername("admin");
 		if (adminUser == null) {
 			adminUser = new User("admin");
 			System.out.println("Enter admin password:");
-//			Scanner scanIn = new Scanner(System.in);
-//			String pw = scanIn.nextLine();
-			//TODO remove later on
+			// Scanner scanIn = new Scanner(System.in);
+			// String pw = scanIn.nextLine();
+			// TODO remove later on
 			String pw = "finger";
-//			scanIn.close();
+			// scanIn.close();
 			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
 			userRepository.save(adminUser);
 			log.info("Stored admin user");
@@ -152,6 +179,12 @@ public class CaiLunInitializer {
 		}
 		rootNode.setRootGroup(adminGroup);
 		rootRepository.save(rootNode);
+
+		Role adminRole = roleRepository.findByName("admin");
+		if (adminRole == null) {
+			adminRole = new Role("admin");
+			adminGroup.addRole(adminRole);
+		}
 
 	}
 }

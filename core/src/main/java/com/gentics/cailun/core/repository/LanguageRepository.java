@@ -5,4 +5,6 @@ import com.gentics.cailun.core.rest.model.Language;
 
 public interface LanguageRepository extends GenericNodeRepository<Language> {
 
+	public Language findByName(String name);
+
 }

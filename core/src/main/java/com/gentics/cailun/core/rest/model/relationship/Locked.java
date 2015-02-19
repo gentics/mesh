@@ -21,4 +21,9 @@ public class Locked extends AbstractPersistable {
 	@EndNode
 	private User lockedBy;
 
+	public boolean isValidLock() {
+		// TODO verify that this lock is currently valid
+		return false;
+	}
+
 }

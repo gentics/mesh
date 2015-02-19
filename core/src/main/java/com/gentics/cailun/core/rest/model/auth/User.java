@@ -1,14 +1,9 @@
 package com.gentics.cailun.core.rest.model.auth;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
 import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
-@Data
-@EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NodeEntity
 public class User extends GenericNode {
 
@@ -36,6 +31,46 @@ public class User extends GenericNode {
 	 */
 	public User(String username) {
 		this.username = username;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
+
+	public String getPasswordHash() {
+		return passwordHash;
+	}
+
+	public void setPasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
 	}
 
 	public String getPrincipalId() {

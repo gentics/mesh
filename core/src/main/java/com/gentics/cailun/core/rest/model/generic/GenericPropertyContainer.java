@@ -3,8 +3,6 @@ package com.gentics.cailun.core.rest.model.generic;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.Data;
-
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
@@ -18,7 +16,6 @@ import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.rest.model.relationship.Translated;
 
-@Data
 @NodeEntity
 public class GenericPropertyContainer extends GenericNode {
 
@@ -110,6 +107,10 @@ public class GenericPropertyContainer extends GenericNode {
 			}
 		}
 		return null;
+	}
+
+	public Set<Translated> getI18nTranslations() {
+		return i18nTranslations;
 	}
 
 }

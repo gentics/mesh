@@ -17,8 +17,6 @@ import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
-import lombok.NoArgsConstructor;
-
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 
 /**
@@ -27,7 +25,6 @@ import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
  * @author johannes2
  *
  */
-@NoArgsConstructor
 public class RouterStorage {
 
 	private static Logger log = LoggerFactory.getLogger(RouterStorage.class);

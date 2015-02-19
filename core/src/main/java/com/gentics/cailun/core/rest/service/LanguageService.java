@@ -5,4 +5,6 @@ import com.gentics.cailun.core.rest.service.generic.GenericNodeService;
 
 public interface LanguageService extends GenericNodeService<Language> {
 
+	Language findByName(String string);
+
 }

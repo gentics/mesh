@@ -3,8 +3,6 @@ package com.gentics.cailun.core.rest.model.generic;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.Data;
-
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -24,7 +22,6 @@ import com.gentics.cailun.core.rest.model.relationship.Locked;
  * @author johannes2
  *
  */
-@Data
 @NodeEntity
 public class GenericNode extends AbstractPersistable {
 
@@ -45,6 +42,26 @@ public class GenericNode extends AbstractPersistable {
 
 	public boolean addPermission(GraphPermission permission) {
 		return permissions.add(permission);
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public Project getProject() {
+		return project;
+	}
+
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+	public boolean isLocked() {
+		return locked.isValidLock();
 	}
 
 }

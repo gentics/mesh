@@ -2,8 +2,6 @@ package com.gentics.cailun.core.rest.model.generic;
 
 import java.io.Serializable;
 
-import lombok.Data;
-
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 
@@ -15,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author johannes2
  *
  */
-@Data
 public abstract class AbstractPersistable implements Serializable {
 	private static final long serialVersionUID = -3244769429406745303L;
 
@@ -32,6 +29,11 @@ public abstract class AbstractPersistable implements Serializable {
 	@Fetch
 	private String uuid;
 
+	
+	public Long getId() {
+		return id;
+	}
+	
 	/**
 	 * Check whether the object was not yet saved.
 	 * 

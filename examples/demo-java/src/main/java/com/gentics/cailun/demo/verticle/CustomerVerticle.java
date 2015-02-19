@@ -135,18 +135,14 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		CaiLunRoot rootNode = rootService.findRoot();
 
-		// Project
 		Project aloha = new Project("aloha");
 		aloha = projectService.save(aloha);
 
 		ObjectSchema contentSchema = new ObjectSchema("content");
 		contentSchema.setDescription("Default schema for contents");
 
-		Language german = new Language("german", "de_DE");
-		languageService.save(german);
-
-		Language english = new Language("english", "en_US");
-		languageService.save(english);
+		Language german = languageService.findByName("german");
+		Language english = languageService.findByName("english");
 
 		// Users
 		List<User> users = addUsers();
@@ -154,7 +150,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		// Groups
 		Group rootGroup = new Group("superusers");
-		rootNode.getRootGroup().getChildren().add(rootGroup);
+		rootNode.getRootGroup().addGroup(rootGroup);
 
 		// Roles
 		Role adminRole = new Role("admin role");
@@ -233,41 +229,41 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		rootContent = contentService.findOne(rootContent.getId());
 
 		for (int i = 0; i < 6; i++) {
-			Content Content = new Content();
-			contentService.setName(Content, german, "Hallo Welt");
-			contentService.setFilename(Content, german, "some" + i + ".html");
-			Content.setCreator(users.get(0));
-			contentService.setContent(Content, german, "some content");
-			Content.addTag(blogsFolder);
-			contentService.save(Content);
+			Content content = new Content();
+			contentService.setName(content, german, "Hallo Welt");
+			contentService.setFilename(content, german, "some" + i + ".html");
+			content.setCreator(users.get(0));
+			contentService.setContent(content, german, "some content");
+			content.addTag(blogsFolder);
+			contentService.save(content);
 		}
 
 		for (int i = 0; i < 3; i++) {
-			Content Content = new Content();
-			contentService.setName(Content, german, "Hallo Welt");
-			contentService.setFilename(Content, german, "some_posts" + i + ".html");
-			Content.setCreator(users.get(0));
-			contentService.setContent(Content, german, "some content");
-			Content.addTag(postsFolder);
-			contentService.save(Content);
+			Content content = new Content();
+			contentService.setName(content, german, "Hallo Welt");
+			contentService.setFilename(content, german, "some_posts" + i + ".html");
+			content.setCreator(users.get(0));
+			contentService.setContent(content, german, "some content");
+			content.addTag(postsFolder);
+			contentService.save(content);
 		}
 
-		Content Content = new Content();
-		contentService.setName(Content, german, "Neuer Blog Post");
-		Content.addTag(blogsFolder);
-		Content.setCreator(users.get(0));
-		contentService.setFilename(Content, german, "blog.html");
-		contentService.setContent(Content, german, "This is the blogpost content");
-		contentService.setTeaser(Content, german, "Jo this Content is the second blogpost");
-		contentService.save(Content);
+		Content content = new Content();
+		contentService.setName(content, german, "Neuer Blog Post");
+		content.addTag(blogsFolder);
+		content.setCreator(users.get(0));
+		contentService.setFilename(content, german, "blog.html");
+		contentService.setContent(content, german, "This is the blogpost content");
+		contentService.setTeaser(content, german, "Jo this Content is the second blogpost");
+		contentService.save(content);
 
-		Content = new Content();
-		contentService.setName(Content, german, "Hallo Cailun");
-		contentService.setFilename(Content, german, "some2.html");
-		Content.setCreator(users.get(0));
-		contentService.setContent(Content, german, "some more content");
-		Content.addTag(postsFolder);
-		contentService.save(Content);
+		content = new Content();
+		contentService.setName(content, german, "Hallo Cailun");
+		contentService.setFilename(content, german, "some2.html");
+		content.setCreator(users.get(0));
+		contentService.setContent(content, german, "some more content");
+		content.addTag(postsFolder);
+		contentService.save(content);
 
 		Content indexContent = new Content();
 		contentService.setName(indexContent, german, "Index With Perm");
@@ -279,7 +275,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		contentService.setTeaser(indexContent, german, "Yo guckste hier");
 		indexContent.addTag(wwwFolder);
 
-		contentService.createLink(indexContent, Content);
+		contentService.createLink(indexContent, content);
 		contentService.save(indexContent);
 
 		// Permissions

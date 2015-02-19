@@ -18,7 +18,7 @@ public class GroupTest extends AbstractDBTest {
 	@Test
 	public void testUserGroup() {
 		User user = new User("testuser");
-		Group group = new Group();
+		Group group = new Group("test group");
 		group.addUser(user);
 		groupRepository.save(group);
 

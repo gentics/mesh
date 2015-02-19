@@ -1,7 +1,5 @@
 package com.gentics.cailun.core.link;
 
-import lombok.NoArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
@@ -19,13 +17,15 @@ import com.gentics.cailun.core.rest.model.generic.GenericContent;
  */
 @Service
 @Scope("singleton")
-@NoArgsConstructor
 public class CaiLunLinkResolverFactoryImpl<T extends CaiLunLinkResolver> implements LinkResolverFactory<AbstractLinkResolver> {
 
 	@Autowired
 	@Qualifier("genericContentRepository")
 	GenericContentRepository<GenericContent> contentRepository;
 
+	private CaiLunLinkResolverFactoryImpl() {
+	}
+	
 	@Override
 	public AbstractLinkResolver createLinkResolver(String link) {
 		// TODO replace class with prototype spring DI

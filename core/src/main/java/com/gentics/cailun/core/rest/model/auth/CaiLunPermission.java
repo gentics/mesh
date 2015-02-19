@@ -1,12 +1,9 @@
 package com.gentics.cailun.core.rest.model.auth;
 
-import lombok.Data;
-
 import org.apache.shiro.authz.Permission;
 
 import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
-@Data
 public class CaiLunPermission implements Permission {
 
 	private PermissionType type;
@@ -25,5 +22,9 @@ public class CaiLunPermission implements Permission {
 		}
 		GraphPermission perm = (GraphPermission) p;
 		return perm.isPermitted(type);
+	}
+
+	public GenericNode getTargetNode() {
+		return targetNode;
 	}
 }

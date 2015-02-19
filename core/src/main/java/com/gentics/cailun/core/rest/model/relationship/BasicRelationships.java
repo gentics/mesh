@@ -27,4 +27,5 @@ public class BasicRelationships {
 	public static final String IS_LOCKED = "IS_LOCKED";
 	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
 	public static final String HAS_OBJECT_SCHEMA = "HAS_OBJECT_SCHEMA";
+	public static final String HAS_SUB_GROUP = "HAS_SUB_GROUP";
 }

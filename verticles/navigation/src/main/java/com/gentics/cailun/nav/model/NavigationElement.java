@@ -3,11 +3,6 @@ package com.gentics.cailun.nav.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
 public class NavigationElement {
 
 	private NavigationElementType type;
@@ -19,4 +14,43 @@ public class NavigationElement {
 	private String path;
 
 	private String target = new String("#");
+
+	public NavigationElement() {
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public String getTarget() {
+		return target;
+	}
+
+	public void setTarget(String target) {
+		this.target = target;
+	}
+
+	public NavigationElementType getType() {
+		return type;
+	}
+
+	public void setType(NavigationElementType type) {
+		this.type = type;
+	}
+
+	public List<NavigationElement> getChildren() {
+		return children;
+	}
 }

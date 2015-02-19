@@ -3,8 +3,6 @@ package com.gentics.cailun.core.rest.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.Data;
-
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -17,12 +15,11 @@ import com.gentics.cailun.core.rest.model.generic.GenericTag;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 /**
- * A project is the root element for a tag, user,group hierarchy.
+ * A project is the root element for a tag hierarchy.
  * 
  * @author johannes2
  *
  */
-@Data
 @NodeEntity
 public class Project extends GenericNode {
 
@@ -46,8 +43,16 @@ public class Project extends GenericNode {
 	@RelatedTo(type = BasicRelationships.HAS_OBJECT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
 	private Set<ObjectSchema> objectSchema = new HashSet<>();
 
-	@Fetch
-	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.OUTGOING, elementClass = Role.class)
-	private Set<Role> roles = new HashSet<>();
+	public String getName() {
+		return name;
+	}
+
+	public GenericTag getRootTag() {
+		return rootTag;
+	}
+
+	public void setRootTag(GenericTag rootTag) {
+		this.rootTag = rootTag;
+	}
 
 }

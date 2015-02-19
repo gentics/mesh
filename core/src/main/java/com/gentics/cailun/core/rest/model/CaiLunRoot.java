@@ -29,8 +29,11 @@ public class CaiLunRoot extends AbstractPersistable {
 	private Set<User> users = new HashSet<>();
 
 	@Fetch
-	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.INCOMING, elementClass = Role.class)
+	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.OUTGOING, elementClass = Role.class)
 	private Set<Role> roles = new HashSet<>();
+
+	@RelatedTo(type = BasicRelationships.HAS_LANGUAGE, direction = Direction.OUTGOING, elementClass = Language.class)
+	private Set<Language> languages = new HashSet<>();
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_GROUP, direction = Direction.INCOMING, elementClass = Group.class)
@@ -40,12 +43,20 @@ public class CaiLunRoot extends AbstractPersistable {
 		return users;
 	}
 
-	public void setRootGroup(Group group) {
-		this.rootGroup = group;
-	}
-
 	public Group getRootGroup() {
 		return rootGroup;
+	}
+
+	public Set<Language> getLanguages() {
+		return languages;
+	}
+
+	public void addLanguage(Language language) {
+		this.languages.add(language);
+	}
+
+	public void setRootGroup(Group group) {
+		this.rootGroup = group;
 	}
 
 }
