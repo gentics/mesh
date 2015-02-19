@@ -17,9 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.repository.generic.GenericContentRepository;
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
-import com.gentics.cailun.core.rest.service.generic.GenericContentService;
+import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.test.AbstractDBTest;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 
@@ -34,24 +33,21 @@ public class LinkRendererTest extends AbstractDBTest {
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolverFactory;
 
 	@Autowired
-	private GenericContentRepository contentRepository;
-
-	@Autowired
-	private GenericContentService contentService;
+	private ContentService contentService;
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException, NotSupportedException {
 
 		// Create some dummy content
-		GenericContent content = new GenericContent();
+		Content content = new Content();
 		contentService.setName(content, german, "german name");
 		contentService.setFilename(content, german, "german.html");
-		contentRepository.save(content);
+		contentService.save(content);
 
-		GenericContent content2 = new GenericContent();
+		Content content2 = new Content();
 		contentService.setName(content2, english, "content 2 english");
 		contentService.setFilename(content2, english, "english.html");
-		contentRepository.save(content2);
+		contentService.save(content2);
 
 		LinkReplacer<CaiLunLinkResolver> replacer = new LinkReplacer(resolverFactory);
 		String out = replacer.replace("dgasd");
