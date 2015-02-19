@@ -13,13 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.repository.project.generic.ProjectGenericContentRepository;
-import com.gentics.cailun.core.repository.project.generic.ProjectGenericFileRepository;
-import com.gentics.cailun.core.repository.project.generic.ProjectGenericTagRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
+import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.repository.generic.GenericFileRepository;
+import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
 import com.gentics.cailun.core.rest.model.generic.GenericFile;
@@ -34,16 +35,16 @@ import com.gentics.cailun.etc.RouterStorage;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
+public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
-	private ProjectGenericContentRepository contentRepository;
+	private ContentRepository contentRepository;
 
 	@Autowired
-	private ProjectGenericFileRepository<GenericFile> fileRepository;
+	private GenericFileRepository<GenericFile> fileRepository;
 
 	@Autowired
-	private ProjectGenericTagRepository tagRepository;
+	private TagRepository tagRepository;
 
 	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
@@ -88,13 +89,11 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	private void resolveLinks(GenericContent content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
-		//TODO handle language
+		// TODO handle language
 		Language language = null;
 		LinkReplacer replacer = new LinkReplacer(resolver);
-		//content.setContent(language, replacer.replace(content.getContent(language)));
+		// content.setContent(language, replacer.replace(content.getContent(language)));
 	}
-
-
 
 	private void addPathHandler() {
 		getRouter().routeWithRegex("\\/(.*)").method(GET).handler(rc -> {
@@ -106,11 +105,11 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 
 				// TODO check whether file is a content or a binary file
 				if (false) {
-//					Content content = (Content) file;
-//					resolveLinks(content);
+					// Content content = (Content) file;
+					// resolveLinks(content);
 					ObjectMapper mapper = new ObjectMapper();
-//					String json = mapper.writeValueAsString(new GenericResponse<Content>(content));
-//					rc.response().end(json);
+					// String json = mapper.writeValueAsString(new GenericResponse<Content>(content));
+					// rc.response().end(json);
 				} else {
 					rc.fail(new Exception("Page for path {" + path + "} could not be found."));
 					// TODO add json response - Make error responses generic
@@ -186,7 +185,8 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 			// System.out.println("request for project {" + project.getName() + "}");
 				String uuid = rc.request().params().get("uuid");
 				if (uuid != null) {
-					GenericContent content = contentRepository.findCustomerNodeBySomeStrangeCriteria("null");
+					// Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria("null");
+					Content content = null;
 					if (content != null) {
 						ObjectMapper mapper = new ObjectMapper();
 						try {
@@ -210,18 +210,18 @@ public class ContentVerticle extends AbstractCaiLunProjectRestVerticle {
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			ContentSaveRequest request = fromJson(rc, ContentSaveRequest.class);
-//			Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
-//			if (content != null) {
-//				content.setContent(request.getContent());
-//				// contentRepository.save(content);
-//				GenericResponse<String> response = new GenericResponse<>();
-//				response.setObject("OK");
-//				rc.response().end(toJson(response));
-//			} else {
-//				rc.fail(404);
-//				rc.fail(new ContentNotFoundException(uuid));
-//			}
-		});
+			// Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
+			// if (content != null) {
+			// content.setContent(request.getContent());
+			// // contentRepository.save(content);
+			// GenericResponse<String> response = new GenericResponse<>();
+			// response.setObject("OK");
+			// rc.response().end(toJson(response));
+			// } else {
+			// rc.fail(404);
+			// rc.fail(new ContentNotFoundException(uuid));
+			// }
+			});
 
 	}
 

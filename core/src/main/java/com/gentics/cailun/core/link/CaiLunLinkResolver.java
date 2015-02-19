@@ -2,7 +2,7 @@ package com.gentics.cailun.core.link;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 /**
@@ -13,13 +13,13 @@ import com.gentics.cailun.core.rest.model.generic.GenericContent;
  */
 public class CaiLunLinkResolver extends AbstractLinkResolver {
 
-	private GlobalGenericContentRepository<GenericContent> contentRepository;
+	private GenericContentRepository<GenericContent> contentRepository;
 
 	public CaiLunLinkResolver() {
 		super(null);
 	}
 
-	public CaiLunLinkResolver(String text, GlobalGenericContentRepository<GenericContent> contentRepository) {
+	public CaiLunLinkResolver(String text, GenericContentRepository<GenericContent> contentRepository) {
 		super(text);
 		this.contentRepository = contentRepository;
 	}

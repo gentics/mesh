@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
 import com.gentics.cailun.core.rest.service.generic.GenericContentService;
 import com.gentics.cailun.test.AbstractDBTest;
@@ -34,7 +34,7 @@ public class LinkRendererTest extends AbstractDBTest {
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolverFactory;
 
 	@Autowired
-	private GlobalGenericContentRepository contentRepository;
+	private GenericContentRepository contentRepository;
 
 	@Autowired
 	private GenericContentService contentService;

@@ -6,14 +6,14 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.repository.GlobalProjectRepository;
+import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class ProjectTest extends AbstractDBTest {
 
 	@Autowired
-	GlobalProjectRepository projectRepository;
+	ProjectRepository projectRepository;
 
 	@Test
 	public void testCreation() {

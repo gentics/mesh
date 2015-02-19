@@ -1,8 +1,8 @@
 package com.gentics.cailun.demo.verticle;
 
-import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 
-public class ProductVerticle extends AbstractCaiLunProjectRestVerticle {
+public class ProductVerticle extends AbstractProjectRestVerticle {
 
 	protected ProductVerticle() {
 		super("products");

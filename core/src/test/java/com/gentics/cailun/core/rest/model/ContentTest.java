@@ -4,20 +4,20 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.GlobalContentRepository;
-import com.gentics.cailun.core.repository.GlobalTagRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
+import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class ContentTest extends AbstractDBTest {
 
 	@Autowired
-	GlobalContentRepository contentRepository;
+	ContentRepository contentRepository;
 
 //	@Autowired
 //	GlobalTagRepository<Tag<LocalizedTag, Content<LocalizedContent>, File>> tagRepository;
 
 	@Autowired
-	GlobalTagRepository folderRepository;
+	TagRepository folderRepository;
 
 	@Test
 	public void testPageLinks() {

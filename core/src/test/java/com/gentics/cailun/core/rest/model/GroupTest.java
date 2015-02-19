@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.repository.GlobalGroupRepository;
+import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.model.auth.Group;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.test.AbstractDBTest;
@@ -13,7 +13,7 @@ import com.gentics.cailun.test.AbstractDBTest;
 public class GroupTest extends AbstractDBTest {
 
 	@Autowired
-	GlobalGroupRepository groupRepository;
+	GroupRepository groupRepository;
 
 	@Test
 	public void testUserGroup() {

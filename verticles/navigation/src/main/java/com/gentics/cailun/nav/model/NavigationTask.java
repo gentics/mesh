@@ -8,7 +8,7 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.core.rest.model.generic.GenericTag;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -27,10 +27,10 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private GenericTag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
-	private GlobalGenericContentRepository genericContentRepository;
+	private GenericContentRepository genericContentRepository;
 	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(GenericTag tag, NavigationElement element, NavigationRequestHandler handler, GlobalGenericContentRepository genericContentRepository,
+	public NavigationTask(GenericTag tag, NavigationElement element, NavigationRequestHandler handler, GenericContentRepository genericContentRepository,
 			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;

@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
-import com.gentics.cailun.core.repository.generic.GlobalGenericNodeRepository;
-import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
+import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.rest.model.auth.PermissionType;
@@ -30,7 +30,7 @@ import com.gentics.cailun.util.Neo4jGenericContentUtils;
 public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
-	GlobalGenericNodeRepository<GenericTag> tagRepository;
+	GenericNodeRepository<GenericTag> tagRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration config;

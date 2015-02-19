@@ -15,13 +15,15 @@ import java.util.List;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Content;
 import com.gentics.cailun.core.rest.model.Language;
+import com.gentics.cailun.core.rest.model.ObjectSchema;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.Tag;
 import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
@@ -35,6 +37,7 @@ import com.gentics.cailun.core.rest.service.CaiLunRootService;
 import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.core.rest.service.GroupService;
 import com.gentics.cailun.core.rest.service.LanguageService;
+import com.gentics.cailun.core.rest.service.ObjectSchemaService;
 import com.gentics.cailun.core.rest.service.ProjectService;
 import com.gentics.cailun.core.rest.service.RoleService;
 import com.gentics.cailun.core.rest.service.TagService;
@@ -51,7 +54,7 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
+public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 	private static Logger log = LoggerFactory.getLogger(CustomerVerticle.class);
 
@@ -84,6 +87,9 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 
 	@Autowired
 	private CaiLunRootService rootService;
+
+	@Autowired
+	private ObjectSchemaService schemaService;
 
 	public CustomerVerticle() {
 		super("Content");
@@ -132,6 +138,9 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		// Project
 		Project aloha = new Project("aloha");
 		aloha = projectService.save(aloha);
+
+		ObjectSchema contentSchema = new ObjectSchema("content");
+		contentSchema.setDescription("Default schema for contents");
 
 		Language german = new Language("german", "de_DE");
 		languageService.save(german);
@@ -216,6 +225,7 @@ public class CustomerVerticle extends AbstractCaiLunProjectRestVerticle {
 		contentService.setFilename(rootContent, english, "english.html");
 		contentService.setContent(rootContent, english, "Blessed mealtime!");
 
+		rootContent.setProject(aloha);
 		rootContent.setCreator(users.get(0));
 		// rootContent.tag(rootTag);
 		contentService.save(rootContent);

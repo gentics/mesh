@@ -7,12 +7,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
-import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
-import com.gentics.cailun.core.repository.generic.GlobalGenericTagRepository;
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
-import com.gentics.cailun.core.rest.model.generic.GenericFile;
-import com.gentics.cailun.core.rest.model.generic.GenericTag;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -23,11 +20,11 @@ import com.gentics.cailun.core.rest.model.generic.GenericTag;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class TagVerticle extends AbstractCaiLunProjectRestVerticle {
+public class TagVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
-	@Qualifier("globalGenericContentRepository")
-	private GlobalGenericContentRepository<GenericContent> pageRepository;
+	@Qualifier("genericContentRepository")
+	private GenericContentRepository<GenericContent> pageRepository;
 
 //	@Autowired
 //	private GlobalGenericTagRepository<GenericTag, GenericFile> tagRepository;

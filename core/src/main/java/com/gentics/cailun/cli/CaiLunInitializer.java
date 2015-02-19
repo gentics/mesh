@@ -13,9 +13,9 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
-import com.gentics.cailun.core.repository.GlobalGroupRepository;
-import com.gentics.cailun.core.repository.GlobalProjectRepository;
-import com.gentics.cailun.core.repository.GlobalUserRepository;
+import com.gentics.cailun.core.repository.GroupRepository;
+import com.gentics.cailun.core.repository.ProjectRepository;
+import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.CaiLunRoot;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.core.rest.model.auth.Group;
@@ -35,13 +35,13 @@ public class CaiLunInitializer {
 	CaiLunRootRepository rootRepository;
 
 	@Autowired
-	GlobalUserRepository userRepository;
+	UserRepository userRepository;
 
 	@Autowired
-	GlobalGroupRepository groupRepository;
+	GroupRepository groupRepository;
 
 	@Autowired
-	GlobalProjectRepository projectRepository;
+	ProjectRepository projectRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration springConfiguration;

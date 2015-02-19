@@ -2,13 +2,11 @@ package com.gentics.cailun.core.rest.model.auth;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
 import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
-@NoArgsConstructor
 @Data
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = false)
 @NodeEntity
@@ -25,6 +23,11 @@ public class User extends GenericNode {
 	private String emailAddress;
 
 	private String passwordHash;
+
+	@SuppressWarnings("unused")
+	private User() {
+
+	}
 
 	/**
 	 * Create a new user with the given username.

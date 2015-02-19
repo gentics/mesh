@@ -5,14 +5,14 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.repository.GlobalUserRepository;
+import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class UserTest extends AbstractDBTest {
 
 	@Autowired
-	GlobalUserRepository userRepository;
+	UserRepository userRepository;
 
 	@Test
 	public void testUserCreation() {

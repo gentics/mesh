@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.tagcloud.model.TagCloud;
 import com.gentics.cailun.tagcloud.model.TagCloudEntry;
@@ -20,7 +20,7 @@ import com.gentics.cailun.tagcloud.model.TagCloudResult;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class TagCloudVerticle extends AbstractCaiLunProjectRestVerticle {
+public class TagCloudVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private TagCloudRepository pageRepository;

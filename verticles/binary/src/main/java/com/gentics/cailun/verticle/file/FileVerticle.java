@@ -1,8 +1,8 @@
 package com.gentics.cailun.verticle.file;
 
-import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 
-public class FileVerticle extends AbstractCaiLunProjectRestVerticle {
+public class FileVerticle extends AbstractProjectRestVerticle {
 
 	protected FileVerticle(String basePath) {
 		super("file");

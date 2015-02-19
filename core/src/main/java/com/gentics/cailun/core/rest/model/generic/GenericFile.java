@@ -11,7 +11,7 @@ import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 
 @NodeEntity
-public class GenericFile<T extends GenericTag<T,F>, F extends GenericFile<T,F>> extends GenericNode {
+public class GenericFile<T extends GenericTag<T,F>, F extends GenericFile<T,F>> extends GenericPropertyContainer {
 
 	private static final long serialVersionUID = -8945772390192195270L;
 

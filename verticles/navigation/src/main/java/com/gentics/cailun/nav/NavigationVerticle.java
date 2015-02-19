@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCaiLunProjectRestVerticle;
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class NavigationVerticle extends AbstractCaiLunProjectRestVerticle {
+public class NavigationVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	NavigationConfiguration navigationConfig;

@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
-import com.gentics.cailun.core.repository.GlobalProjectRepository;
+import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.git.GitPullChecker;
@@ -43,7 +43,7 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 	private CaiLunSpringConfiguration caiLunConfig;
 
 	@Autowired
-	private GlobalProjectRepository projectRepository;
+	private ProjectRepository projectRepository;
 
 	GitPullChecker gitChecker;
 

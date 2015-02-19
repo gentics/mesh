@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.cailun.core.repository.generic.GlobalGenericContentRepository;
+import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 /**
@@ -23,8 +23,8 @@ import com.gentics.cailun.core.rest.model.generic.GenericContent;
 public class CaiLunLinkResolverFactoryImpl<T extends CaiLunLinkResolver> implements LinkResolverFactory<AbstractLinkResolver> {
 
 	@Autowired
-	@Qualifier("globalGenericContentRepository")
-	GlobalGenericContentRepository<GenericContent> contentRepository;
+	@Qualifier("genericContentRepository")
+	GenericContentRepository<GenericContent> contentRepository;
 
 	@Override
 	public AbstractLinkResolver createLinkResolver(String link) {
