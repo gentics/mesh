@@ -7,7 +7,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.service.LanguageService;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
@@ -16,18 +15,13 @@ import com.gentics.cailun.core.rest.service.LanguageService;
 public abstract class AbstractDBTest {
 
 	@Autowired
-	protected LanguageService langService;
+	protected LanguageService languageService;
 
-	protected Language english;
-	protected Language german;
+	@Autowired
+	private DummyDataProvider dataProvider;
 
 	@Before
 	public void setup() {
-		german = new Language("german", "de_DE");
-		langService.save(german);
-
-		english = new Language("english", "en_US");
-		langService.save(english);
+		dataProvider.setup();
 	}
-
 }

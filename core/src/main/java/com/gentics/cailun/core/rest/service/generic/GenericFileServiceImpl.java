@@ -5,11 +5,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.cailun.core.repository.generic.GenericFileRepository;
 import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.generic.GenericFile;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -22,6 +23,15 @@ public class GenericFileServiceImpl<T extends GenericFile> extends GenericProper
 	@Autowired
 	private CaiLunSpringConfiguration springConfig;
 
+//	@Autowired
+//	private ProjectService projectService;
+
+	@Autowired
+	private GenericFileRepository<T> fileRepository;
+
+	@Autowired
+	private Neo4jTemplate template;
+
 	public void setFilename(T file, Language language, String filename) throws UnsupportedOperationException {
 		// TODO check for conflicting i18n filenames
 		setProperty(file, language, GenericFile.FILENAME_KEYWORD, filename);
@@ -29,40 +39,45 @@ public class GenericFileServiceImpl<T extends GenericFile> extends GenericProper
 
 	@Override
 	public T findByProject(String projectName, String path) {
-		
+
+//		Project project = projectService.findByName(projectName);
+
 		// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
 		GraphDatabaseService graphDb = springConfig.getGraphDatabaseService();
-
-		String parts[] = path.split("/");
-		// Tag rootTag = tagRepository.findRootTag();
-		try (Transaction tx = graphDb.beginTx()) {
-			// Node currentNode = graphDb.getNodeById(rootTag.getId());
-			Node currentNode = null;
-			for (int i = 0; i < parts.length - 1; i++) {
-				String part = parts[i];
-				Node nextNode = getChildNodeTagFromNodeTag(currentNode, part);
-				if (nextNode != null) {
-					currentNode = nextNode;
-				} else {
-					currentNode = null;
-					break;
-				}
-			}
-			if (currentNode != null) {
-				// Finally search for the page and assume the last part of the request as filename
-				Node pageNode = getChildNodePageFromNodeTag(currentNode, parts[parts.length - 1]);
-				if (pageNode != null) {
-					// return pageNode.getId();
-					return null;
-				} else {
-					return null;
-				}
-			}
-		}
-
-		System.out.println("looking for " + path + " in project " + projectName);
-		return null;
+		return (T) fileRepository.findByProjectPath(projectName, path);
 	}
+//		
+//		String parts[] = path.split("/");
+////		GenericTag rootTag = project.getRootTag();
+//		GenericTag rootTag= null;
+//		// try (Transaction tx = graphDb.beginTx()) {
+//		Node currentNode = template.getPersistentState(rootTag);
+//		// Node currentNode = graphDb.getNodeById(rootTag.getId());
+//		for (int i = 0; i < parts.length - 1; i++) {
+//			String part = parts[i];
+//			Node nextNode = getChildNodeTagFromNodeTag(currentNode, part);
+//			if (nextNode != null) {
+//				currentNode = nextNode;
+//			} else {
+//				currentNode = null;
+//				break;
+//			}
+//		}
+//		if (currentNode != null) {
+//			// Finally search for the page and assume the last part of the request as filename
+//			Node pageNode = getChildNodePageFromNodeTag(currentNode, parts[parts.length - 1]);
+//			if (pageNode != null) {
+//				// return pageNode.getId();
+//				return null;
+//			} else {
+//				return null;
+//			}
+//			// }
+//		}
+//
+//		System.out.println("looking for " + path + " in project " + projectName);
+//		return null;
+//	}
 
 	private Node getChildNodePageFromNodeTag(Node node, String pageFilename) {
 		AtomicReference<Node> foundNode = new AtomicReference<>();

@@ -5,7 +5,7 @@ import org.neo4j.graphdb.RelationshipType;
 public class BasicRelationships {
 
 	public static enum TYPES implements RelationshipType {
-		LINKED, HAS_SUB_TAG, ASSIGNED_TO_PROJECT, HAS_USER, HAS_PROJECT
+		LINKED, HAS_SUB_TAG, ASSIGNED_TO_PROJECT, HAS_USER, HAS_PROJECT, HAS_I18N_PROPERTIES, HAS_FILE
 	}
 
 	public static final String LINKED = "LINKED";

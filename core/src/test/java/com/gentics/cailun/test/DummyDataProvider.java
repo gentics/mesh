@@ -28,6 +28,7 @@ public class DummyDataProvider {
 	public static final String USER_JOE_USERNAME = "joe1";
 	public static final String USER_JOE_PASSWORD = "test1234";
 	public static final String PROJECT_NAME = "dummy";
+	public static final String ENGLISH_CONTENT = "blessed mealtime!";
 
 	@Autowired
 	UserService userService;
@@ -87,14 +88,26 @@ public class DummyDataProvider {
 		rootNode.addUser(testUser);
 		rootService.save(rootNode);
 
+		// Root Tag
 		Tag rootTag = new Tag();
-		tagService.setName(rootTag, english, "root");
-		tagService.save(rootTag);
+		tagService.setName(rootTag, english, "/");
+		rootTag = tagService.save(rootTag);
 
+		// Sub Tag
 		Tag subTag = new Tag();
 		tagService.setName(subTag, english, "subtag");
 		tagService.setName(subTag, german, "unterTag");
-		tagService.save(subTag);
+		subTag = tagService.save(subTag);
+		rootTag.addTag(subTag);
+		tagService.save(rootTag);
+
+		// Sub Tag 2
+		Tag subTag2 = new Tag();
+		tagService.setName(subTag2, english, "subtag2");
+		tagService.setName(subTag2, german, "unterTag2");
+		subTag2 = tagService.save(subTag2);
+		subTag.addTag(subTag2);
+		subTag = tagService.save(subTag);
 
 		Project dummyProject = new Project(PROJECT_NAME);
 		dummyProject.setRootTag(rootTag);
@@ -104,7 +117,7 @@ public class DummyDataProvider {
 		Content content = new Content();
 		contentService.setName(content, english, "english content name");
 		contentService.setFilename(content, english, "english.html");
-		contentService.setContent(content, english, "blessed mealtime!");
+		contentService.setContent(content, english, ENGLISH_CONTENT);
 
 		contentService.setName(content, german, "german content name");
 		contentService.setFilename(content, german, "german.html");

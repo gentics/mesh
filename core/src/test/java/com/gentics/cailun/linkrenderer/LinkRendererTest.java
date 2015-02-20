@@ -18,6 +18,7 @@ import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.test.AbstractDBTest;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
@@ -38,12 +39,18 @@ public class LinkRendererTest extends AbstractDBTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException, NotSupportedException {
 
+		Language german = languageService.findByName("german");
+
+		
 		// Create some dummy content
 		Content content = new Content();
 		contentService.setName(content, german, "german name");
 		contentService.setFilename(content, german, "german.html");
 		contentService.save(content);
 
+		Language english = languageService.findByName("english");
+
+		
 		Content content2 = new Content();
 		contentService.setName(content2, english, "content 2 english");
 		contentService.setFilename(content2, english, "english.html");

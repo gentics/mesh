@@ -29,6 +29,8 @@ public class TagTest extends AbstractDBTest {
 
 	@Test
 	public void testLocalizedFolder() {
+		Language german = languageService.findByName("german");
+
 		Tag tag = new Tag();
 		tagService.setName(tag, german, GERMAN_NAME);
 		tagService.save(tag);
@@ -42,6 +44,9 @@ public class TagTest extends AbstractDBTest {
 	public void testContents() throws NotSupportedException {
 
 		Tag tag = new Tag();
+
+		Language english = languageService.findByName("english");
+
 		tagService.setName(tag, english, ENGLISH_NAME);
 		tagService.save(tag);
 		tag = tagService.findOne(tag.getId());
@@ -49,6 +54,9 @@ public class TagTest extends AbstractDBTest {
 
 		final String GERMAN_TEST_FILENAME = "german.html";
 		Content content = new Content();
+
+		Language german = languageService.findByName("german");
+
 		contentService.setFilename(content, german, GERMAN_TEST_FILENAME);
 		contentService.setName(content, german, "german content name");
 		contentService.save(content);
@@ -74,6 +82,8 @@ public class TagTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeTagging() {
+		Language german = languageService.findByName("german");
+
 		// Create root with subfolder
 		final String TEST_TAG_NAME = "testTag";
 
