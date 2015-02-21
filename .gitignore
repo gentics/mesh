@@ -8,3 +8,4 @@ hs_err_*.log
 dependency-reduced-pom.xml
 .checkstyle
 cailun.json
+.bak
