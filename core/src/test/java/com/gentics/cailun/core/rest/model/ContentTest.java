@@ -2,88 +2,37 @@ package com.gentics.cailun.core.rest.model;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class ContentTest extends AbstractDBTest {
 
 	@Autowired
-	ContentRepository contentRepository;
-
-//	@Autowired
-//	GlobalTagRepository<Tag<LocalizedTag, Content<LocalizedContent>, File>> tagRepository;
+	ContentService contentService;
 
 	@Autowired
 	TagRepository folderRepository;
 
+	/**
+	 * Test linking two contents
+	 */
 	@Test
 	public void testPageLinks() {
-		// Content content = new Content();
-		// content.addLocalisation(23);
-		// Content content2 = new Content();
-		// contentRepository.save(content);
-		// content.linkTo(content2);
-		// contentRepository.save(content2);
+		Content content = new Content();
+		contentService.setContent(content, english, "english content");
+		contentService.setFilename(content, english, "english.html");
+		contentService.save(content);
+
+		Content content2 = new Content();
+		contentService.setContent(content2, english, "english2 content");
+		contentService.setFilename(content2, english, "english2.html");
+		contentService.save(content2);
+		contentService.createLink(content, content2);
+		
+		//TODO verify that link relation has been created
+		//TODO render content and resolve links
 	}
 
-	/**
-	 * Test the getPath method with a simple tag page hierarchy (roottag->subtag->test page).
-	 */
-	@Transactional
-	@Test
-	public void testSimplePagePathTraversal() {
-
-//		Tag rootTag = new Tag(german, "rootTag");
-
-//		Tag subTag = new Tag(german, "subTag");
-
-//		rootTag.addChildTag(subTag);
-//
-//		folderRepository.save(subTag);
-//		folderRepository.save(rootTag);
-//
-//		Content content = new Content(german, "test", "german.html");
-//		content.addI18Content(english, "englishContent");
-//		content.setFilename(english, "english.html");
-//
-//		contentRepository.save(content);
-//
-		// String path = neo4jPageUtils.getPath(rootTag, content);
-		// assertEquals("The path did not match the expected one.", "/root/subtag/test.html", path);
-	}
-
-	/**
-	 * Test the getPath method with a more realistic tag page hierarchy.
-	 */
-	@Transactional
-	@Test
-	public void testComplexPagePathTraversal() {
-
-//		Tag rootTag = new Tag(german, "rootTag");
-//		Tag subTag = new Tag(german, "subTag");
-//
-//		rootTag.addChildTag(subTag);
-//		Tag subTag2 = new Tag(german, "subTag 2");
-//
-//		tagRepository.save(subTag);
-//		tagRepository.save(subTag2);
-//		tagRepository.save(rootTag);
-//
-//		Content content = new Content(german, "test content", "test.html");
-//		// content.tag(subTag);
-//
-//		contentRepository.save(content);
-//		tagRepository.save(rootTag);
-//
-//		LocalizedContent page2 = new LocalizedContent(english, "test content 2", "english2.html");
-//		page2.setFilename("test2.html");
-//		// page2.tag(subTag);
-		// contentRepository.save(page2);
-
-		// String path = neo4jPageUtils.getPath(rootTag, content);
-		// assertEquals("The resolved path did not match the expected one.", "/root/subtag/test.html", path);
-	}
 }

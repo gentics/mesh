@@ -15,6 +15,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<surefire.forkcount>1</surefire.forkcount>
 	</properties>
 
 	<dependencies>
@@ -229,6 +230,12 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<argLine>${surefireArgLine}</argLine>
+					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
+					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
+					<runOrder>random</runOrder>
+					<reuseForks>false</reuseForks>
+					<forkCount>${surefire.forkcount}</forkCount>
+					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
 
