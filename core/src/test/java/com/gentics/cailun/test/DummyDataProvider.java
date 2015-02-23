@@ -136,6 +136,8 @@ public class DummyDataProvider {
 			contentService.setName(content, german, "german content name");
 			contentService.setFilename(content, german, "german.html");
 			contentService.setContent(content, german, "mahlzeit!");
+			//TODO maybe set project should be done inside the save?
+			content.setProject(dummyProject);
 			content = contentService.save(content);
 
 			subTag.addFile(content);

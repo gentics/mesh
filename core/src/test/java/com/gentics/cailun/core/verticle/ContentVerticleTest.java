@@ -6,11 +6,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.test.AbstractVerticleTest;
+import com.gentics.cailun.test.AbstractProjectRestVerticleTest;
 import com.gentics.cailun.test.DummyDataProvider;
 
-public class ContentVerticleTest extends AbstractVerticleTest {
+public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 
 	@Autowired
 	ContentVerticle verticle;
@@ -18,12 +19,11 @@ public class ContentVerticleTest extends AbstractVerticleTest {
 	@Before
 	public void setUp() throws Exception {
 		super.setup();
+	}
 
-		// Inject spring config
-		verticle.setSpringConfig(springConfig);
-		verticle.init(springConfig.vertx(), null);
-		verticle.start();
-		verticle.registerEndPoints();
+	@Override
+	public AbstractProjectRestVerticle getVerticle() {
+		return verticle;
 	}
 
 	@Test
@@ -50,9 +50,7 @@ public class ContentVerticleTest extends AbstractVerticleTest {
 	public void testReadContentByUUID() throws Exception {
 		String json = "tbd";
 		Content content = dataProvider.getContent();
-		System.out.println(content.getUuid());
-		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK",
-				json);
+		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK", json);
 	}
 
 	@Test
@@ -64,8 +62,8 @@ public class ContentVerticleTest extends AbstractVerticleTest {
 	@Test
 	public void testReadContentByInvalidUUID() throws Exception {
 		String json = "{\"message\":\"Content not found for uuid {dde8ba06bb7211e4897631a9ce2772f5}\"}";
-		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/dde8ba06bb7211e4897631a9ce2772f5", 404, "Not Found",
-				json);
+		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/dde8ba06bb7211e4897631a9ce2772f5", 404,
+				"Not Found", json);
 	}
 
 }

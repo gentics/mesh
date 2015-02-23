@@ -30,6 +30,7 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 	protected Router localRouter = null;
 	protected String basePath;
 	protected ObjectMapper mapper;
+	protected HttpServer server;
 
 	protected AbstractCailunRestVerticle(String basePath) {
 		this.basePath = basePath;
@@ -42,7 +43,7 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 		if (localRouter == null) {
 			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
 		}
-		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8080));
+		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
 		RouterStorage routerStorage = config.routerStorage();
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
@@ -61,6 +62,10 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 
 	public Router getRouter() {
 		return localRouter;
+	}
+
+	public HttpServer getServer() {
+		return server;
 	}
 
 	/**

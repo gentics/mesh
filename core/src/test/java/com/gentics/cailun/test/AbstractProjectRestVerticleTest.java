@@ -1,13 +1,19 @@
 package com.gentics.cailun.test;
 
 import static org.junit.Assert.fail;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,11 +31,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class AbstractVerticleTest {
+public abstract class AbstractProjectRestVerticleTest {
 
 	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
 
@@ -44,16 +51,34 @@ public class AbstractVerticleTest {
 	protected DummyDataProvider dataProvider;
 
 	private CountDownLatch latch;
+	protected Vertx vertx;
+	private int port;
 
 	@Before
 	public void setup() throws Exception {
 		purgeDatabase();
+		vertx = springConfig.vertx();
 		dataProvider.setup();
 		springConfig.routerStorage().addProjectRouter(DummyDataProvider.PROJECT_NAME);
-		client = springConfig.vertx().createHttpClient(new HttpClientOptions());
+		client = vertx.createHttpClient(new HttpClientOptions());
 		latch = new CountDownLatch(1);
 		throwable.set(null);
+
+		AbstractProjectRestVerticle verticle = getVerticle();
+		// Inject spring config
+		verticle.setSpringConfig(springConfig);
+		JsonObject config = new JsonObject();
+		port = getRandomPort();
+		config.put("port", port);
+		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
+		verticle.init(vertx, context);
+		verticle.start();
+		verticle.registerEndPoints();
+
+		// verticle.getServer().
 	}
+
+	public abstract AbstractProjectRestVerticle getVerticle();
 
 	@After
 	public void tearDown() throws Exception {
@@ -123,7 +148,7 @@ public class AbstractVerticleTest {
 
 	protected void testRequestBuffer(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction,
 			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage, Buffer responseBodyBuffer) throws Exception {
-		testRequestBuffer(client, method, 8080, path, requestAction, responseAction, statusCode, statusMessage, responseBodyBuffer);
+		testRequestBuffer(client, method, port, path, requestAction, responseAction, statusCode, statusMessage, responseBodyBuffer);
 	}
 
 	protected void testRequestBuffer(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,
@@ -174,6 +199,33 @@ public class AbstractVerticleTest {
 			// Only store the first encountered exception
 			if (throwable.get() == null) {
 				throwable.set(e);
+			}
+		}
+	}
+
+	/**
+	 * Not the most elegant or efficient solution, but works.
+	 * 
+	 * @param port
+	 * @return
+	 */
+	private int getRandomPort() {
+		ServerSocket socket = null;
+
+		try {
+			socket = new ServerSocket(0);
+			return socket.getLocalPort();
+		} catch (IOException ioe) {
+			return -1;
+		} finally {
+			// if we did open it cause it's available, close it
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					// ignore
+					e.printStackTrace();
+				}
 			}
 		}
 	}

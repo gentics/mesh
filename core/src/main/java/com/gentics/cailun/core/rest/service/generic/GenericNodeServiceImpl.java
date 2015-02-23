@@ -51,20 +51,17 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Override
 	public Result<T> findAll(String project) {
-		// TODO Auto-generated method stub
-		return null;
+		return nodeRepository.findAll(project);
 	}
 
 	@Override
 	public T findByName(String project, String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return nodeRepository.findByName(project, name);
 	}
 
 	@Override
 	public T findByUUID(String project, String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return nodeRepository.findByUUID(project, uuid);
 	}
 
 }
