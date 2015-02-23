@@ -38,10 +38,10 @@ public class CaiLunIntegerationTest extends AbstractIntegrationTest {
 				e.printStackTrace();
 			}
 		}).start();
-		if (latch.await(DEFAULT_TIMEOUT_MILISECONDS, TimeUnit.MILLISECONDS)) {
+		if (latch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
 			assertTrue(caiLunStarted.get());
 		} else {
-			fail("Cailun did not startup on time. Timeout {" + DEFAULT_TIMEOUT_MILISECONDS + "} miliseconds reached.");
+			fail("Cailun did not startup on time. Timeout {" + DEFAULT_TIMEOUT_SECONDS + "} seconds reached.");
 		}
 	}
 }
