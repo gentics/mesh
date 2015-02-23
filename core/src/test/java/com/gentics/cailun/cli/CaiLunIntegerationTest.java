@@ -8,15 +8,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
+import org.openpcf.neo4vertx.neo4j.Neo4jGraph;
 
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 import com.gentics.cailun.test.AbstractIntegrationTest;
+import com.gentics.cailun.test.TestUtil;
 
 public class CaiLunIntegerationTest extends AbstractIntegrationTest {
 
 	@Test
 	public void testStartup() throws Exception {
 		CaiLunConfiguration config = new CaiLunConfiguration();
+		config.setHttpPort(TestUtil.getRandomPort());
+		config.getNeo4jConfiguration().setMode(Neo4jGraph.DEFAULT_MODE);
+
 		final CaiLun cailun = CaiLun.getInstance();
 		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);
 		final AtomicBoolean caiLunStarted = new AtomicBoolean(false);

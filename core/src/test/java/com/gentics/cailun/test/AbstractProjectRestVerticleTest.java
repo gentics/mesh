@@ -12,8 +12,6 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,7 +66,7 @@ public abstract class AbstractProjectRestVerticleTest {
 		// Inject spring config
 		verticle.setSpringConfig(springConfig);
 		JsonObject config = new JsonObject();
-		port = getRandomPort();
+		port = TestUtil.getRandomPort();
 		config.put("port", port);
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
 		verticle.init(vertx, context);
@@ -199,33 +197,6 @@ public abstract class AbstractProjectRestVerticleTest {
 			// Only store the first encountered exception
 			if (throwable.get() == null) {
 				throwable.set(e);
-			}
-		}
-	}
-
-	/**
-	 * Not the most elegant or efficient solution, but works.
-	 * 
-	 * @param port
-	 * @return
-	 */
-	private int getRandomPort() {
-		ServerSocket socket = null;
-
-		try {
-			socket = new ServerSocket(0);
-			return socket.getLocalPort();
-		} catch (IOException ioe) {
-			return -1;
-		} finally {
-			// if we did open it cause it's available, close it
-			if (socket != null) {
-				try {
-					socket.close();
-				} catch (IOException e) {
-					// ignore
-					e.printStackTrace();
-				}
 			}
 		}
 	}

@@ -56,7 +56,19 @@ public class CaiLunConfiguration {
 		return clusterMode;
 	}
 
+	public void setClusterMode(boolean clusterMode) {
+		this.clusterMode = clusterMode;
+	}
+
 	public Neo4VertxConfiguration getNeo4jConfiguration() {
 		return neo4jConfiguration;
+	}
+
+	public int getHttpPort() {
+		return httpPort;
+	}
+
+	public void setHttpPort(int httpPort) {
+		this.httpPort = httpPort;
 	}
 }

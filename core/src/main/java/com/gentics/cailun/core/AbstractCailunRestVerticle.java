@@ -43,6 +43,7 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 		if (localRouter == null) {
 			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
 		}
+		//TODO use global config for port? 
 		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
 		RouterStorage routerStorage = config.routerStorage();
 		server.requestHandler(routerStorage.getRootRouter()::accept);
