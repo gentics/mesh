@@ -1,4 +1,4 @@
-package com.gentics.cailun.core;
+package com.gentics.cailun.core.verticle;
 
 import io.vertx.core.http.HttpMethod;
 
@@ -25,7 +25,7 @@ public class ContentVerticleTest extends AbstractVerticleTest {
 
 		springConfig.routerStorage().addProjectRouter(DummyDataProvider.PROJECT_NAME);
 		// Inject spring config
-		verticle.config = springConfig;
+		verticle.setSpringConfig(springConfig);
 		verticle.init(springConfig.vertx(), null);
 		verticle.start();
 		verticle.registerEndPoints();

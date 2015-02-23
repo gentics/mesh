@@ -41,14 +41,23 @@ public class CaiLun {
 		cailun.run();
 	}
 
+	public void run() throws Exception {
+		run(ConfigurationLoader.createOrloadConfiguration(), null);
+	}
+
+	public void run(Runnable startupHandler) throws Exception {
+		run(ConfigurationLoader.createOrloadConfiguration(), startupHandler);
+	}
+
 	/**
 	 * Main entry point for cailun. This method will initialize the spring context and deploy mandatory verticles and extensions.
 	 * 
 	 * @param conf
 	 *            The CailunConfiguration that should be used.
+	 * @param startupHandler
 	 * @throws Exception
 	 */
-	public void run(CaiLunConfiguration conf) throws Exception {
+	public void run(CaiLunConfiguration conf, Runnable startupHandler) throws Exception {
 		if (conf == null) {
 			throw new CaiLunConfigurationException("Configuration is null or not valid.");
 		}
@@ -61,12 +70,14 @@ public class CaiLun {
 			ctx.start();
 			initalizer.init(conf, verticleLoader);
 			ctx.registerShutdownHook();
-			dontExit();
-		}
-	}
 
-	public void run() throws Exception {
-		run(ConfigurationLoader.createOrloadConfiguration());
+			if (startupHandler != null) {
+				startupHandler.run();
+			} else {
+				dontExit();
+			}
+
+		}
 	}
 
 	/**

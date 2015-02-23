@@ -71,7 +71,7 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 		try {
 			deployNeo4Vertx();
 			GraphDatabaseService service = Neo4jGraphVerticle.getDatabase();
-			// Add UUID transaction handler
+			// Add UUID transaction handler that injects uuid in new neo4j nodes and relationships
 			service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
 			return Neo4jGraphVerticle.getDatabase();
 		} catch (Exception e) {

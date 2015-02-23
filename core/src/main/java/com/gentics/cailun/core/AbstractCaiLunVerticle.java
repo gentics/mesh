@@ -13,4 +13,8 @@ public abstract class AbstractCaiLunVerticle extends AbstractVerticle {
 	@Autowired
 	protected CaiLunSpringConfiguration config;
 
+	public void setSpringConfig(CaiLunSpringConfiguration config) {
+		this.config = config;
+	}
+
 }
