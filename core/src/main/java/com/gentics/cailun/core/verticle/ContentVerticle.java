@@ -34,7 +34,7 @@ import com.gentics.cailun.core.rest.response.GenericContentResponse;
 import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
 import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.core.rest.service.TagService;
-
+import com.gentics.cailun.util.UUIDUtil;
 
 /**
  * The page verticle adds rest endpoints for manipulating pages and related objects.
@@ -102,27 +102,34 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private void addPathHandler() {
 		getRouter().routeWithRegex("\\/(.*)").method(GET).handler(rc -> {
 			try {
-
 				String projectName = getProjectName(rc);
 				String path = rc.request().params().get("param0");
+				// TODO remove debug code
+				// TODO handle language by get parameter
 				List<String> languages = getSelectedLanguages(rc);
-				//TODO remove debug code
 				languages = new ArrayList<>();
 				languages.add("english");
-				// TODO handle language by get parameter
-
-				Content content = contentService.findByProject(projectName, "/" + path);
-				if (content != null) {
-					GenericContentResponse responseObject = contentService.getReponseObject(content, languages);
-					// resolveLinks(content);
-					String json = toJson(responseObject);
-					rc.response().end(json);
+				if (UUIDUtil.isUUID(path)) {
+					String uuid = path;
+					Content content = contentService.findByUUID(projectName, uuid);
+					if (content != null) {
+						handleReponse(rc, content, languages);
+					} else {
+						// TODO i18n error message?
+						String message = "Content not found for uuid {" + uuid + "}";
+						rc.response().setStatusCode(404);
+						rc.response().end(toJson(new GenericNotFoundResponse(message)));
+					}
 				} else {
-					//rc.fail(new Exception("Page for path {" + path + "} could not be found."));
-					//TODO i18n error message?
-					String message = "Content not found for path {" + path + "}";
-					rc.response().setStatusCode(404);
-					rc.response().end(toJson(new GenericNotFoundResponse(message)));
+					Content content = contentService.findByProject(projectName, "/" + path);
+					if (content != null) {
+						handleReponse(rc, content, languages);
+					} else {
+						// TODO i18n error message?
+						String message = "Content not found for path {" + path + "}";
+						rc.response().setStatusCode(404);
+						rc.response().end(toJson(new GenericNotFoundResponse(message)));
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -171,6 +178,13 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	// });
 	// }
 
+	private void handleReponse(RoutingContext rc, Content content, List<String> languages) {
+		GenericContentResponse responseObject = contentService.getReponseObject(content, languages);
+		// resolveLinks(content);
+		String json = toJson(responseObject);
+		rc.response().end(json);
+	}
+
 	/**
 	 * Extracts the lang parameter values from the query
 	 * 
@@ -202,7 +216,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route().method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
 			ContentCreateRequest request = fromJson(rc, ContentCreateRequest.class);
 			// TODO handle request
-//				rc.response().end(toJson(new GenericResponse<>()));
+			// rc.response().end(toJson(new GenericResponse<>()));
 			});
 
 	}
@@ -214,26 +228,24 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 		route("/:uuid").method(GET).handler(rc -> {
 			System.out.println("RCDATA:" + rc.contextData().get("cailun-project"));
-			// System.out.println("request for project {" + project.getName() + "}");
-				String uuid = rc.request().params().get("uuid");
-				if (uuid != null) {
-					// Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria("null");
-					Content content = null;
-					if (content != null) {
-						ObjectMapper mapper = new ObjectMapper();
-						try {
-							rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						// rc.response().end(toJson(content));
-					} else {
-						rc.fail(404);
-						rc.fail(new ContentNotFoundException(uuid));
-					}
-				}
-			});
+			String uuid = rc.request().params().get("uuid");
+			if (uuid != null) {
+				Content content = null;
+				if (content != null) {
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// rc.response().end(toJson(content));
+		} else {
+			rc.fail(404);
+			rc.fail(new ContentNotFoundException(uuid));
+		}
+	}
+}		);
 
 	}
 

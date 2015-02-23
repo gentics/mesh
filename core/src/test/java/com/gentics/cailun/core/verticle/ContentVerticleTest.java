@@ -50,6 +50,7 @@ public class ContentVerticleTest extends AbstractVerticleTest {
 	public void testReadContentByUUID() throws Exception {
 		String json = "tbd";
 		Content content = dataProvider.getContent();
+		System.out.println(content.getUuid());
 		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK",
 				json);
 	}
@@ -62,8 +63,8 @@ public class ContentVerticleTest extends AbstractVerticleTest {
 
 	@Test
 	public void testReadContentByInvalidUUID() throws Exception {
-		String json = "{\"message\":\"Content not found for uuid {13371d56bb7011e48325e1565592fake}\"}";
-		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/13371d56bb7011e48325e1565592fake", 404, "Not Found",
+		String json = "{\"message\":\"Content not found for uuid {dde8ba06bb7211e4897631a9ce2772f5}\"}";
+		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/dde8ba06bb7211e4897631a9ce2772f5", 404, "Not Found",
 				json);
 	}
 
