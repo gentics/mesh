@@ -34,8 +34,13 @@ public class GenericTag<T extends GenericTag<T, F>, F extends GenericFile> exten
 
 	}
 
-	public void addFile(F node) {
-		this.files.add(node);
+	/**
+	 * Add a file to the set of files for this tag.
+	 * 
+	 * @param file
+	 */
+	public void addFile(F file) {
+		this.files.add(file);
 	}
 
 	public boolean removeFile(F file) {

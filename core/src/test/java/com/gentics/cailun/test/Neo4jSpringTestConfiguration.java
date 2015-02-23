@@ -11,6 +11,8 @@ import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
+
 @Configuration
 @EnableNeo4jRepositories("com.gentics.cailun")
 @EnableTransactionManagement
@@ -23,7 +25,9 @@ public class Neo4jSpringTestConfiguration extends Neo4jConfiguration {
 
 	@Bean
 	public GraphDatabaseService graphDatabaseService() {
-		return new TestGraphDatabaseFactory().newImpermanentDatabase();
+		GraphDatabaseService service = new TestGraphDatabaseFactory().newImpermanentDatabase();
+		service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
+		return service;
 	}
 
 	@Bean

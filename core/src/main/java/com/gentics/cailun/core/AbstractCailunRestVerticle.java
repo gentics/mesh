@@ -6,10 +6,13 @@ import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Router;
 import io.vertx.ext.apex.core.RoutingContext;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.etc.RouterStorage;
@@ -26,6 +29,7 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 
 	protected Router localRouter = null;
 	protected String basePath;
+	protected ObjectMapper mapper;
 
 	protected AbstractCailunRestVerticle(String basePath) {
 		this.basePath = basePath;
@@ -33,7 +37,7 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 
 	@Override
 	public void start() throws Exception {
-
+		this.mapper = new ObjectMapper();
 		this.localRouter = setupLocalRouter();
 		if (localRouter == null) {
 			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
@@ -77,11 +81,13 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 		return localRouter.route();
 	}
 
-	protected String toJson(Object obj) {
-		// TODO compare with jackson
-		// ObjectMapper mapper = new ObjectMapper();
-		// mapper.writeValueAsString(new GenericResponse<Content>(content));
-		return GSON.toJson(obj);
+	protected <T> String toJson(T obj) {
+		try {
+			return mapper.writeValueAsString(obj);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "ERROR";
 	}
 
 	@SuppressWarnings("unchecked")

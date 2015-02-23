@@ -23,8 +23,8 @@ public class GenericFileServiceImpl<T extends GenericFile> extends GenericProper
 	@Autowired
 	private CaiLunSpringConfiguration springConfig;
 
-//	@Autowired
-//	private ProjectService projectService;
+	// @Autowired
+	// private ProjectService projectService;
 
 	@Autowired
 	private GenericFileRepository<T> fileRepository;
@@ -39,45 +39,9 @@ public class GenericFileServiceImpl<T extends GenericFile> extends GenericProper
 
 	@Override
 	public T findByProject(String projectName, String path) {
-
-//		Project project = projectService.findByName(projectName);
-
-		// TODO check whether pageRepository.findAllByTraversal(startNode, traversalDescription) might be an alternative
-		GraphDatabaseService graphDb = springConfig.getGraphDatabaseService();
+		// Delegate to project repository since this request is project specific
 		return (T) fileRepository.findByProjectPath(projectName, path);
 	}
-//		
-//		String parts[] = path.split("/");
-////		GenericTag rootTag = project.getRootTag();
-//		GenericTag rootTag= null;
-//		// try (Transaction tx = graphDb.beginTx()) {
-//		Node currentNode = template.getPersistentState(rootTag);
-//		// Node currentNode = graphDb.getNodeById(rootTag.getId());
-//		for (int i = 0; i < parts.length - 1; i++) {
-//			String part = parts[i];
-//			Node nextNode = getChildNodeTagFromNodeTag(currentNode, part);
-//			if (nextNode != null) {
-//				currentNode = nextNode;
-//			} else {
-//				currentNode = null;
-//				break;
-//			}
-//		}
-//		if (currentNode != null) {
-//			// Finally search for the page and assume the last part of the request as filename
-//			Node pageNode = getChildNodePageFromNodeTag(currentNode, parts[parts.length - 1]);
-//			if (pageNode != null) {
-//				// return pageNode.getId();
-//				return null;
-//			} else {
-//				return null;
-//			}
-//			// }
-//		}
-//
-//		System.out.println("looking for " + path + " in project " + projectName);
-//		return null;
-//	}
 
 	private Node getChildNodePageFromNodeTag(Node node, String pageFilename) {
 		AtomicReference<Node> foundNode = new AtomicReference<>();

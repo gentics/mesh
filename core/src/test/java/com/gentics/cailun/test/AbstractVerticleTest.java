@@ -1,8 +1,6 @@
 package com.gentics.cailun.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -12,11 +10,17 @@ import io.vertx.core.http.HttpMethod;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.apache.commons.codec.binary.Base64;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -27,33 +31,57 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class AbstractVerticleTest {
 
+	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
+
 	private HttpClient client;
+
+	private AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
 
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
 
+	@Autowired
+	protected DummyDataProvider dataProvider;
+
+	private CountDownLatch latch;
+
 	@Before
 	public void setup() throws Exception {
+		purgeDatabase();
+		dataProvider.setup();
+		springConfig.routerStorage().addProjectRouter(DummyDataProvider.PROJECT_NAME);
 		client = springConfig.vertx().createHttpClient(new HttpClientOptions());
+		latch = new CountDownLatch(1);
+		throwable.set(null);
 	}
 
-	protected void testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
+	@After
+	public void tearDown() throws Exception {
+		if (client != null) {
+			client.close();
+		}
+	}
+
+	protected void purgeDatabase() {
+		try (Transaction tx = springConfig.graphDatabase().beginTx()) {
+			for (Node node : springConfig.getGraphDatabaseService().getAllNodes()) {
+				for (Relationship rel : node.getRelationships()) {
+					rel.delete();
+				}
+				node.delete();
+			}
+			tx.success();
+		}
+	}
+
+	protected void testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage, String responseBody)
+			throws Exception {
 		Consumer<HttpClientRequest> requestAction = request -> {
 			String authStringEnc = DummyDataProvider.USER_JOE_USERNAME + ":" + DummyDataProvider.USER_JOE_PASSWORD;
 			byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
 			request.headers().add("Authorization", "Basic " + new String(authEncBytes));
 		};
-
-		Consumer<HttpClientResponse> responseAction = resp -> {
-			String reqTime = resp.headers().get("x-response-time");
-			assertNotNull(reqTime);
-			assertTrue(reqTime.endsWith("ms"));
-			String time = reqTime.substring(0, reqTime.length() - 2);
-			Integer dur = Integer.valueOf(time);
-			assertTrue(dur >= 250);
-		};
-		String responseBody = null;
-		testRequest(method, path, requestAction, responseAction, statusCode, statusMessage, responseBody);
+		testRequest(method, path, requestAction, null, statusCode, statusMessage, responseBody);
 
 	}
 
@@ -100,10 +128,10 @@ public class AbstractVerticleTest {
 
 	protected void testRequestBuffer(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,
 			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage, Buffer responseBodyBuffer) throws Exception {
-		CountDownLatch latch = new CountDownLatch(1);
+
 		HttpClientRequest req = client.request(method, port, "localhost", path, resp -> {
-			assertEquals(statusCode, resp.statusCode());
-			assertEquals(statusMessage, resp.statusMessage());
+			assertEquals("The response status code did not match the expected one.", statusCode, resp.statusCode());
+			assertEquals("The reponse status message did not match.", statusMessage, resp.statusMessage());
 			if (responseAction != null) {
 				responseAction.accept(resp);
 			}
@@ -111,7 +139,7 @@ public class AbstractVerticleTest {
 				latch.countDown();
 			} else {
 				resp.bodyHandler(buff -> {
-					assertEquals(responseBodyBuffer, buff);
+					assertEquals("The response body did not match the expected one.", responseBodyBuffer.toString(), buff.toString());
 					latch.countDown();
 				});
 			}
@@ -120,11 +148,34 @@ public class AbstractVerticleTest {
 			requestAction.accept(req);
 		}
 		req.end();
-		awaitLatch(latch);
+		awaitCompletion();
 	}
 
-	protected void awaitLatch(CountDownLatch latch) throws InterruptedException {
-		assertTrue(latch.await(10, TimeUnit.SECONDS));
+	/**
+	 * Wait for the completion and latching of all latches. Check any thrown exception.
+	 * 
+	 * @throws InterruptedException
+	 * @throws AssertionError
+	 */
+	private void awaitCompletion() throws InterruptedException, AssertionError {
+
+		boolean allLatchesFree = latch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+		if (throwable.get() != null) {
+			throw (AssertionError) throwable.get();
+		} else if (!allLatchesFree) {
+			fail("Timeout of {" + DEFAULT_TIMEOUT_SECONDS + "} seconds reached.");
+		}
+	}
+
+	private void assertEquals(String message, Object expected, Object actual) {
+		try {
+			Assert.assertEquals(message, expected, actual);
+		} catch (AssertionError e) {
+			// Only store the first encountered exception
+			if (throwable.get() == null) {
+				throwable.set(e);
+			}
+		}
 	}
 
 }

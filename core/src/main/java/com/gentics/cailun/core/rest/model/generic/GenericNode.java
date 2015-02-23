@@ -30,6 +30,7 @@ public class GenericNode extends AbstractPersistable {
 	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
 	protected Project project;
 
+	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
 	protected User creator;
 

@@ -34,6 +34,7 @@ public class ProjectTest extends AbstractDBTest {
 	public void testProjectFileLocating() {
 
 		Language english = languageService.findByName("english");
+		@SuppressWarnings("rawtypes")
 		GenericFile file = projectRepository.findFileByPath(DummyDataProvider.PROJECT_NAME, "/subtag/english.html");
 		assertNotNull("A file within the given path should be found.", file);
 		Content content = (Content) file;

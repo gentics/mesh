@@ -30,20 +30,26 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> im
 	@Autowired
 	private CaiLunSpringConfiguration springConfig;
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public GenericFile findFileByPath(String projectName, String path) {
-		System.out.println("Searchign for path {" + path + "}");
+		if (log.isDebugEnabled()) {
+			log.debug("Searching for path {" + path + "}");
+		}
 		String parts[] = path.split("/");
 		Project project = projectRepository.findByName(projectName);
 		GenericTag tag = project.getRootTag();
-		System.out.println(tag.getTags().size());
-		GraphDatabaseService db = springConfig.getGraphDatabaseService();
+		if (log.isDebugEnabled()) {
+			log.debug("Found {" + tag.getTags().size() + "} subtags.");
+		}
 		Node rootTag = template.getPersistentState(tag);
 
 		Node currentTag = rootTag;
 		Node lastTag = null;
 		for (int i = 1; i < parts.length; i++) {
-			System.out.println("searching part {" + parts[i] + "}");
+			if (log.isDebugEnabled()) {
+				log.debug("Searching part {" + parts[i] + "}");
+			}
 			if (currentTag != null) {
 				currentTag = findSubTagWithName(currentTag, parts[i]);
 				if (currentTag != null) {
@@ -52,35 +58,40 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> im
 				// Check for files with the given filename for the last segment of the path
 				if (i == parts.length - 1) {
 					Node fileNode = findFileNodeWithFilename(lastTag, parts[i]);
-					return template.load(fileNode, GenericFile.class);
+					// No file found
+					if (fileNode == null) {
+						return null;
+					} else {
+						return template.load(fileNode, GenericFile.class);
+					}
 				}
 			}
 		}
-
-		// TraversalDescription tagTraversal = db.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_SUB_TAG)
-		// .evaluator(includeWhereI18NameIs(parts)).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL);
-		// for (Path graphPath : tagTraversal.traverse(rootTag)) {
-		// System.out.println(graphPath);
-		// // System.out.println(rel.getStartNode() + " " + rel.getType() + " " + rel.getEndNode());
-		// }
 		return null;
-		// for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-		// .relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-		// .relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-		// .traverse(userNode).relationships()) {
-
 	}
 
-	private Node findFileNodeWithFilename(Node currentTag, String name) {
-		for (Relationship rel : currentTag.getRelationships(BasicRelationships.TYPES.HAS_FILE, Direction.OUTGOING)) {
+	/**
+	 * Check the file relationships of this node and a return the node of the file that matches the given filename.
+	 * 
+	 * @param tagNode
+	 *            node of the tag which has file relationships that could be checked
+	 * @param filename
+	 *            name of the file that we want to locate
+	 * @return node of the file or null if no file with the given filename could be found
+	 */
+	private Node findFileNodeWithFilename(Node tagNode, String filename) {
+		if (tagNode == null) {
+			return null;
+		}
+		for (Relationship rel : tagNode.getRelationships(BasicRelationships.TYPES.HAS_FILE, Direction.OUTGOING)) {
 			if (rel.getEndNode() == null) {
 				return null;
 			}
-			boolean hasI18nFilenameProperty = hasNodeI18NProperty(rel.getEndNode(), "filename", name);
+			boolean hasI18nFilenameProperty = hasNodeI18NProperty(rel.getEndNode(), "filename", filename);
 			if (hasI18nFilenameProperty) {
 				return rel.getEndNode();
 			}
-			if (rel.getEndNode().hasProperty("filename") && name.equals(rel.getEndNode().getProperty("filename"))) {
+			if (rel.getEndNode().hasProperty("filename") && filename.equals(rel.getEndNode().getProperty("filename"))) {
 				return rel.getEndNode();
 			}
 		}
@@ -88,6 +99,13 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> im
 
 	}
 
+	/**
+	 * Locate the tag with the given name within the subset of tags of the given tag.
+	 * 
+	 * @param rootTag
+	 * @param name
+	 * @return
+	 */
 	private Node findSubTagWithName(Node rootTag, String name) {
 		for (Relationship rel : rootTag.getRelationships(BasicRelationships.TYPES.HAS_SUB_TAG, Direction.OUTGOING)) {
 			Node endNode = rel.getEndNode();
@@ -99,6 +117,17 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> im
 
 	}
 
+	/**
+	 * Check whether the given node has an i18n property of the given name.
+	 * 
+	 * @param node
+	 *            node which has i18n property relationships that will be checked
+	 * @param key
+	 *            property key
+	 * @param value
+	 *            property value
+	 * @return true when the property could be found. Otherwise false.
+	 */
 	private boolean hasNodeI18NProperty(Node node, String key, String value) {
 		for (Relationship rel : node.getRelationships(BasicRelationships.TYPES.HAS_I18N_PROPERTIES, Direction.OUTGOING)) {
 			if (rel.getEndNode() != null && value.equals(rel.getEndNode().getProperty("properties-" + key))) {
@@ -108,42 +137,4 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> im
 		return false;
 	}
 
-	// public static PathEvaluator<Integer> includeWhereI18NameIs(final String[] parts) {
-	// return new PathEvaluator.Adapter<Integer>() {
-	//
-	// @Override
-	// public Evaluation evaluate(Path path, BranchState<Integer> state) {
-	// if (state.getState() == null) {
-	// state.setState(0);
-	// }
-	// // System.out.println(path.endNode().getLabels());
-	// if (path.endNode().hasLabel(DynamicLabel.label(GenericTag.class.getSimpleName()))) {
-	// // System.out.println("is Tag");
-	// Iterable<Relationship> i18NRelationships = path.endNode().getRelationships(BasicRelationships.TYPES.HAS_I18N_PROPERTIES,
-	// Direction.OUTGOING);
-	// for (Relationship i18NRelationship : i18NRelationships) {
-	// Node i18NPropertiesNode = i18NRelationship.getEndNode();
-	// if (parts[state.getState()].equals(i18NPropertiesNode.getProperty("properties-name"))) {
-	// log.debug("Found matching i18n name for given node. Continuing traversal.");
-	// return Evaluation.INCLUDE_AND_CONTINUE;
-	// } else {
-	// return Evaluation.EXCLUDE_AND_CONTINUE;
-	// }
-	// // for (String key : i18NPropertiesNode.getPropertyKeys()) {
-	// // System.out.println(key);
-	// // }
-	// }
-	// return Evaluation.EXCLUDE_AND_CONTINUE;
-	// }
-	//
-	// if (path.endNode().hasLabel(DynamicLabel.label(GenericFile.class.getSimpleName()))) {
-	// System.out.println("check file");
-	// return Evaluation.INCLUDE_AND_CONTINUE;
-	// }
-	//
-	// // Only traverse tags and files
-	// return Evaluation.EXCLUDE_AND_CONTINUE;
-	// }
-	// };
-	// }
 }

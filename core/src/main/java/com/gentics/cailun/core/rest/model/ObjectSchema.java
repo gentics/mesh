@@ -3,6 +3,7 @@ package com.gentics.cailun.core.rest.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -33,6 +34,7 @@ public class ObjectSchema extends GenericNode {
 	// TODO multiple types?
 	private String type;
 
+//	@JsonIgnore
 	@RelatedTo(direction = Direction.OUTGOING, elementClass = Project.class, type = BasicRelationships.ASSIGNED_TO_PROJECT)
 	private Project project;
 

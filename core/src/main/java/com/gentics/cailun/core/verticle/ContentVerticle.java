@@ -6,11 +6,11 @@ import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.RoutingContext;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -30,9 +30,11 @@ import com.gentics.cailun.core.rest.model.Language;
 import com.gentics.cailun.core.rest.model.generic.GenericContent;
 import com.gentics.cailun.core.rest.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.request.ContentSaveRequest;
-import com.gentics.cailun.core.rest.response.GenericResponse;
+import com.gentics.cailun.core.rest.response.GenericContentResponse;
+import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
 import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.core.rest.service.TagService;
+
 
 /**
  * The page verticle adds rest endpoints for manipulating pages and related objects.
@@ -103,18 +105,24 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 				String projectName = getProjectName(rc);
 				String path = rc.request().params().get("param0");
-				Set<String> language = getSelectedLanguages(rc);
+				List<String> languages = getSelectedLanguages(rc);
+				//TODO remove debug code
+				languages = new ArrayList<>();
+				languages.add("english");
 				// TODO handle language by get parameter
 
-				Content content = contentService.findByProject(projectName, path);
+				Content content = contentService.findByProject(projectName, "/" + path);
 				if (content != null) {
+					GenericContentResponse responseObject = contentService.getReponseObject(content, languages);
 					// resolveLinks(content);
-					String json = toJson(content);
+					String json = toJson(responseObject);
 					rc.response().end(json);
 				} else {
-					rc.fail(new Exception("Page for path {" + path + "} could not be found."));
-					// TODO add json response - Make error responses generic
-					rc.response().end("Element not found");
+					//rc.fail(new Exception("Page for path {" + path + "} could not be found."));
+					//TODO i18n error message?
+					String message = "Content not found for path {" + path + "}";
+					rc.response().setStatusCode(404);
+					rc.response().end(toJson(new GenericNotFoundResponse(message)));
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -169,20 +177,20 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	 * @param rc
 	 * @return
 	 */
-	private Set<String> getSelectedLanguages(RoutingContext rc) {
+	private List<String> getSelectedLanguages(RoutingContext rc) {
 		String query = rc.request().query();
 		Map<String, String> queryPairs;
 		try {
 			queryPairs = splitQuery(query);
 		} catch (UnsupportedEncodingException e) {
 			log.error("Could not decode query string.", e);
-			return Collections.emptySet();
+			return Collections.emptyList();
 		}
 		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
 		if (value == null) {
-			return Collections.emptySet();
+			return Collections.emptyList();
 		}
-		return new HashSet<>(Arrays.asList(value.split(",")));
+		return new ArrayList<>(Arrays.asList(value.split(",")));
 
 	}
 
@@ -194,7 +202,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route().method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
 			ContentCreateRequest request = fromJson(rc, ContentCreateRequest.class);
 			// TODO handle request
-				rc.response().end(toJson(new GenericResponse<>()));
+//				rc.response().end(toJson(new GenericResponse<>()));
 			});
 
 	}

@@ -23,17 +23,28 @@ public abstract class AbstractPersistable implements Serializable {
 	private Long id;
 
 	/**
-	 * The uuid of the object. A transaction event handler is being used in 
-	 * order to generate and verify the integrity of uuids.
+	 * The uuid of the object. A transaction event handler is being used in order to generate and verify the integrity of uuids.
 	 */
-	@Fetch
 	private String uuid;
 
-	
+	/**
+	 * Return the id.
+	 * 
+	 * @return
+	 */
 	public Long getId() {
 		return id;
 	}
-	
+
+	/**
+	 * Return the uuid for the object.
+	 * 
+	 * @return
+	 */
+	public String getUuid() {
+		return uuid;
+	}
+
 	/**
 	 * Check whether the object was not yet saved.
 	 * 
