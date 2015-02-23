@@ -77,7 +77,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		addPathHandler();
 
 		addCreateHandler();
-		addReadHandler();
+		// addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
 
@@ -109,6 +109,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				List<String> languages = getSelectedLanguages(rc);
 				languages = new ArrayList<>();
 				languages.add("english");
+
+				// Determine whether the request path could be an uuid
 				if (UUIDUtil.isUUID(path)) {
 					String uuid = path;
 					Content content = contentService.findByUUID(projectName, uuid);
@@ -120,6 +122,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 						rc.response().setStatusCode(404);
 						rc.response().end(toJson(new GenericNotFoundResponse(message)));
 					}
+					// Otherwise load the content by parsing and following the path
 				} else {
 					Content content = contentService.findByProject(projectName, "/" + path);
 					if (content != null) {
@@ -221,33 +224,33 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	}
 
-	/**
-	 * Add the page load handler that allows loading pages by id.
-	 */
-	private void addReadHandler() {
-
-		route("/:uuid").method(GET).handler(rc -> {
-			System.out.println("RCDATA:" + rc.contextData().get("cailun-project"));
-			String uuid = rc.request().params().get("uuid");
-			if (uuid != null) {
-				Content content = null;
-				if (content != null) {
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// rc.response().end(toJson(content));
-		} else {
-			rc.fail(404);
-			rc.fail(new ContentNotFoundException(uuid));
-		}
-	}
-}		);
-
-	}
+	// /**
+	// * Add the page load handler that allows loading pages by id.
+	// */
+	// private void addReadHandler() {
+	//
+	// route("/:uuid").method(GET).handler(rc -> {
+	// System.out.println("RCDATA:" + rc.contextData().get("cailun-project"));
+	// String uuid = rc.request().params().get("uuid");
+	// if (uuid != null) {
+	// Content content = null;
+	// if (content != null) {
+	// ObjectMapper mapper = new ObjectMapper();
+	// try {
+	// rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
+	// } catch (Exception e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// // rc.response().end(toJson(content));
+	// } else {
+	// rc.fail(404);
+	// rc.fail(new ContentNotFoundException(uuid));
+	// }
+	// }
+	// } );
+	//
+	// }
 
 	private void addUpdateHandler() {
 

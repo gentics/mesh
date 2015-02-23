@@ -48,7 +48,8 @@ public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 
 	@Test
 	public void testReadContentByUUID() throws Exception {
-		String json = "tbd";
+		//TODO why is author null?
+		String json = "{\"name\":\"english content name\",\"filename\":\"english.html\",\"content\":\"blessed mealtime!\",\"teaser\":null,\"author\":null}";
 		Content content = dataProvider.getContent();
 		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK", json);
 	}
