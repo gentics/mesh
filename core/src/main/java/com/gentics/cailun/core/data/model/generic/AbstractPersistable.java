@@ -2,7 +2,6 @@ package com.gentics.cailun.core.data.model.generic;
 
 import java.io.Serializable;
 
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

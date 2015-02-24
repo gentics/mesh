@@ -5,6 +5,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.http.entity.ContentType;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -38,7 +39,7 @@ public class AuthenticationVerticle extends AbstractCaiLunCoreApiVerticle {
 	}
 
 	private void addLoginHandler() {
-		route("/login").consumes(APPLICATION_JSON).method(GET).handler(rc -> {
+		route("/login").consumes(ContentType.APPLICATION_JSON.getMimeType()).method(GET).handler(rc -> {
 			GenericResponse<String> response = new GenericResponse<>();
 			response.setObject("OK");
 			rc.response().end(toJson(response));

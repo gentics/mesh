@@ -2,6 +2,7 @@ package com.gentics.cailun.cli;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.spi.cluster.VertxSPI;
@@ -18,6 +19,7 @@ import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.LanguageRepository;
@@ -54,6 +56,9 @@ public class CaiLunInitializer {
 	LanguageRepository languageRepository;
 
 	@Autowired
+	ObjectSchemaService objectSchemaService;
+	
+	@Autowired
 	CaiLunSpringConfiguration springConfiguration;
 
 	/**
@@ -62,14 +67,18 @@ public class CaiLunInitializer {
 	private void loadConfiguredVerticles() {
 		for (String verticleName : configuration.getVerticles().keySet()) {
 			CaiLunVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
+			JsonObject mergedVerticleConfig = new JsonObject();
+			if (verticleConf.getVerticleConfig() != null) {
+				mergedVerticleConfig = verticleConf.getVerticleConfig().copy();
+			}
+			mergedVerticleConfig.put("port", configuration.getHttpPort());
 			try {
 				log.info("Loading configured verticle {" + verticleName + "}.");
-				deployAndWait(springConfiguration.vertx(), verticleConf.getVerticleConfig(), verticleName);
+				deployAndWait(springConfiguration.vertx(), mergedVerticleConfig, verticleName);
 			} catch (InterruptedException e) {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}
 		}
-
 	}
 
 	/**
@@ -137,6 +146,7 @@ public class CaiLunInitializer {
 			log.info("Stored root node");
 		}
 		// Reload the node to get one with a valid uuid
+		//TODO check whether this really works. I assume i would have to commit first.
 		rootNode = rootRepository.findRoot();
 
 		Language german = languageRepository.findByName("german");

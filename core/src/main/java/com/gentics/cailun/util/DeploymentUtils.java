@@ -29,21 +29,12 @@ public final class DeploymentUtils {
 	private static final long DEFAULT_TIMEOUT_IN_SECONDS = 10 * 1000;
 
 	public static String deployAndWait(Vertx vertx, JsonObject config, final Class<? extends AbstractVerticle> clazz) throws InterruptedException {
-		return deployAndWait(vertx, clazz.getCanonicalName());
-	}
-
-	public static String deployAndWait(Vertx vertx, String verticleClass) throws InterruptedException {
-		String prefix = SpringVerticleFactory.PREFIX + ":";
-		return deployAndWait(vertx, null, prefix, verticleClass);
+		return deployAndWait(vertx, config, clazz.getCanonicalName());
 	}
 
 	public static String deployAndWait(Vertx vertx, JsonObject config, String verticleClass) throws InterruptedException {
 		String prefix = SpringVerticleFactory.PREFIX + ":";
 		return deployAndWait(vertx, config, prefix, verticleClass);
-	}
-
-	public static String deployAndWait(Vertx vertx, Class<? extends AbstractVerticle> clazz) throws InterruptedException {
-		return deployAndWait(vertx, null, clazz);
 	}
 
 	public static String deployAndWait(Vertx vertx, JsonObject config, String prefix, String verticleClass) throws InterruptedException {

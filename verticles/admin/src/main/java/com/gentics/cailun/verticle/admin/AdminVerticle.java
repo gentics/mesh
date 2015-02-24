@@ -3,6 +3,9 @@ package com.gentics.cailun.verticle.admin;
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.PUT;
+import static io.vertx.core.http.HttpMethod.POST;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 
 import java.io.File;
@@ -91,6 +94,14 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 			ctx.response().end("Deleted project {" + name + "}");
 		});
 
+		route("/projects/").method(POST).handler(ctx -> {
+			// TODO also create a default object schema for the project. Move this into service class
+			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
+			});
+
+		route("/projects/:nameOrUuid").method(PUT).handler(ctx -> {
+
+		});
 	}
 
 	@Override
@@ -144,7 +155,9 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 		route("/deployVerticle/:clazz").method(GET).handler(rc -> {
 			String clazz = rc.request().params().get("clazz");
 			try {
-				String id = deployAndWait(vertx, clazz);
+				// TODO create merged jsonconfig (see cailun init)
+				JsonObject config = new JsonObject();
+				String id = deployAndWait(vertx, config, clazz);
 				rc.response().end("Deployed " + clazz + " id: " + id);
 			} catch (Exception e) {
 				rc.fail(e);

@@ -1,6 +1,7 @@
 package com.gentics.cailun.demo;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
+import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 
@@ -25,7 +26,9 @@ public class DemoRunner {
 		CaiLun cailun = CaiLun.getInstance();
 
 		cailun.setCustomLoader((vertx) -> {
-			deployAndWait(vertx, CustomerVerticle.class);
+			JsonObject config = new JsonObject();
+			config.put("port", 8080);
+			deployAndWait(vertx, config,CustomerVerticle.class);
 			// deployAndWait(vertx, AuthenticationVerticle.class);
 			// deployAndWait(vertx, NavigationVerticle.class);
 			// deployAndWait(vertx, TagCloudVerticle.class);

@@ -12,20 +12,16 @@ import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.http.entity.ContentType;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle {
 
-	private static final Gson GSON = new GsonBuilder().create();
-
-	// TODO use a common source
-	public static final String APPLICATION_JSON = "application/json";
+	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
 
 	protected Router localRouter = null;
 	protected String basePath;
