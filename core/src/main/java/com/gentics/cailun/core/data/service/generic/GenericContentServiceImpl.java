@@ -16,7 +16,7 @@ public class GenericContentServiceImpl<T extends GenericContent> extends Generic
 		// this.links.add(link);
 	}
 
-	public void addI18Content(T content, Language language, String text) {
+	public void addI18NContent(T content, Language language, String text) {
 		setProperty(content, language, GenericContent.CONTENT_KEYWORD, text);
 	}
 

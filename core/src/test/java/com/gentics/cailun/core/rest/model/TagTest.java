@@ -116,7 +116,7 @@ public class TagTest extends AbstractDBTest {
 		final String TEST_PROPERTY_KEY = "myProperty";
 		final String TEST_PROPERTY_VALUE = "myValue";
 		Tag tag = new Tag();
-		tag.addProperty(TEST_PROPERTY_KEY, TEST_PROPERTY_VALUE);
+		tag.setProperty(TEST_PROPERTY_KEY, TEST_PROPERTY_VALUE);
 		tagService.save(tag);
 		Tag reloadedTag = tagService.findOne(tag.getId());
 		assertEquals("The node should have the property", TEST_PROPERTY_VALUE, reloadedTag.getProperty(TEST_PROPERTY_KEY));

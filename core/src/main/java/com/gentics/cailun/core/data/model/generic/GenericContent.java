@@ -18,6 +18,8 @@ public class GenericContent extends GenericFile {
 	public static final String FILENAME_KEYWORD = "filename";
 	public static final String NAME_KEYWORD = "name";
 
+	public static final String TEASER_KEYWORD = null;
+
 	// @RelatedToVia(type = BasicRelationships.LINKED, direction = Direction.OUTGOING, elementClass = Linked.class)
 	// private Collection<Linked> links = new HashSet<>();
 

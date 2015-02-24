@@ -95,81 +95,55 @@ public abstract class AbstractProjectRestVerticleTest {
 		}
 	}
 
-	protected void testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage, String responseBody)
+	protected String testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
+		return testAuthenticatedRequest(method, path, statusCode, statusMessage, null);
+	}
+
+	protected String testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage, String requestBody)
 			throws Exception {
 		Consumer<HttpClientRequest> requestAction = request -> {
 			String authStringEnc = DummyDataProvider.USER_JOE_USERNAME + ":" + DummyDataProvider.USER_JOE_PASSWORD;
 			byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
 			request.headers().add("Authorization", "Basic " + new String(authEncBytes));
+
+			if (requestBody != null) {
+				Buffer buffer = Buffer.buffer();
+				buffer.appendString(requestBody);
+				request.headers().set("content-length", String.valueOf(buffer.length()));
+				request.headers().set("content-type", "application/json");
+				request.write(buffer);
+			}
 		};
-		testRequest(method, path, requestAction, null, statusCode, statusMessage, responseBody);
+		return testRequestBuffer(method, path, requestAction, null, statusCode, statusMessage);
 
 	}
 
-	protected void testRequest(HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
-		testRequest(method, path, null, statusCode, statusMessage, null);
+	protected String testRequestBuffer(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction,
+			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage) throws Exception {
+		return testRequestBuffer(client, method, port, path, requestAction, responseAction, statusCode, statusMessage);
 	}
 
-	protected void testRequest(HttpMethod method, String path, int statusCode, String statusMessage, String responseBody) throws Exception {
-		testRequest(method, path, null, statusCode, statusMessage, responseBody);
-	}
+	protected String testRequestBuffer(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,
+			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage) throws Exception {
 
-	protected void testRequest(HttpMethod method, String path, int statusCode, String statusMessage, Buffer responseBody) throws Exception {
-		testRequestBuffer(method, path, null, null, statusCode, statusMessage, responseBody);
-	}
-
-	protected void testRequestWithContentType(HttpMethod method, String path, String contentType, int statusCode, String statusMessage)
-			throws Exception {
-		testRequest(method, path, req -> req.putHeader("content-type", contentType), statusCode, statusMessage, null);
-	}
-
-	protected void testRequestWithAccepts(HttpMethod method, String path, String accepts, int statusCode, String statusMessage) throws Exception {
-		testRequest(method, path, req -> req.putHeader("accepts", accepts), statusCode, statusMessage, null);
-	}
-
-	protected void testRequestWithCookies(HttpMethod method, String path, String cookieHeader, int statusCode, String statusMessage) throws Exception {
-		testRequest(method, path, req -> req.putHeader("cookie", cookieHeader), statusCode, statusMessage, null);
-	}
-
-	protected void testRequest(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction, int statusCode, String statusMessage,
-			String responseBody) throws Exception {
-		testRequest(method, path, requestAction, null, statusCode, statusMessage, responseBody);
-	}
-
-	protected void testRequest(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction,
-			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage, String responseBody) throws Exception {
-		testRequestBuffer(method, path, requestAction, responseAction, statusCode, statusMessage, responseBody != null ? Buffer.buffer(responseBody)
-				: null);
-	}
-
-	protected void testRequestBuffer(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction,
-			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage, Buffer responseBodyBuffer) throws Exception {
-		testRequestBuffer(client, method, port, path, requestAction, responseAction, statusCode, statusMessage, responseBodyBuffer);
-	}
-
-	protected void testRequestBuffer(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,
-			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage, Buffer responseBodyBuffer) throws Exception {
-
+		AtomicReference<String> responseBody = new AtomicReference<String>(null);
 		HttpClientRequest req = client.request(method, port, "localhost", path, resp -> {
 			assertEquals("The response status code did not match the expected one.", statusCode, resp.statusCode());
 			assertEquals("The reponse status message did not match.", statusMessage, resp.statusMessage());
 			if (responseAction != null) {
 				responseAction.accept(resp);
 			}
-			if (responseBodyBuffer == null) {
+			resp.bodyHandler(buff -> {
+				responseBody.set(buff.toString());
 				latch.countDown();
-			} else {
-				resp.bodyHandler(buff -> {
-					assertEquals("The response body did not match the expected one.", responseBodyBuffer.toString(), buff.toString());
-					latch.countDown();
-				});
-			}
+			});
 		});
 		if (requestAction != null) {
 			requestAction.accept(req);
 		}
 		req.end();
 		awaitCompletion();
+		return responseBody.get();
 	}
 
 	/**

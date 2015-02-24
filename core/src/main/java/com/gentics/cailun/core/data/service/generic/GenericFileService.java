@@ -7,6 +7,6 @@ public interface GenericFileService<T extends GenericFile> extends GenericProper
 
 	public void setFilename(T file, Language language, String filename) throws UnsupportedOperationException;
 
-	public T findByProject(String projectName, String path);
+	public T findByProjectPath(String projectName, String path);
 
 }

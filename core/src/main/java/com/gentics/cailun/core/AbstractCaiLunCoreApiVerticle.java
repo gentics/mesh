@@ -10,7 +10,7 @@ public abstract class AbstractCaiLunCoreApiVerticle extends AbstractCailunRestVe
 
 	@Override
 	public Router setupLocalRouter() {
-		return config.routerStorage().getAPISubRouter(basePath);
+		return springConfig.routerStorage().getAPISubRouter(basePath);
 	}
 
 }

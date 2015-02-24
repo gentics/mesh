@@ -29,4 +29,9 @@ public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implem
 		return languageRepository.findByName(name);
 	}
 
+	@Override
+	public Language findByLanguageTag(String languageTag) {
+		return languageRepository.findByLanguageTag(languageTag);
+	}
+
 }

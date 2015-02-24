@@ -32,7 +32,9 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	@Override
 	public RestUser getResponseObject(User user) {
-
+		if (user == null) {
+			return null;
+		}
 		RestUser restUser = new RestUser();
 		restUser.setUsername(user.getUsername());
 		restUser.setEmailAddress(user.getEmailAddress());

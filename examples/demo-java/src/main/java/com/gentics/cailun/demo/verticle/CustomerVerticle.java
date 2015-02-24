@@ -138,8 +138,8 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		Project aloha = new Project("aloha");
 		aloha = projectService.save(aloha);
 
-		ObjectSchema contentSchema = new ObjectSchema("content");
-		contentSchema.setDescription("Default schema for contents");
+//		ObjectSchema contentSchema = new ObjectSchema("content");
+//		contentSchema.setDescription("Default schema for contents");
 
 		Language german = languageService.findByName("german");
 		Language english = languageService.findByName("english");

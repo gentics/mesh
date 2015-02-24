@@ -11,10 +11,10 @@ public abstract class AbstractCaiLunVerticle extends AbstractVerticle {
 	public abstract void start() throws Exception;
 
 	@Autowired
-	protected CaiLunSpringConfiguration config;
+	protected CaiLunSpringConfiguration springConfig;
 
 	public void setSpringConfig(CaiLunSpringConfiguration config) {
-		this.config = config;
+		this.springConfig = config;
 	}
 
 }

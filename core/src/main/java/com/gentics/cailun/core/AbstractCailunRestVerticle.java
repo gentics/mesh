@@ -43,9 +43,9 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 		if (localRouter == null) {
 			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
 		}
-		//TODO use global config for port? 
+		// TODO use global config for port?
 		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
-		RouterStorage routerStorage = config.routerStorage();
+		RouterStorage routerStorage = springConfig.routerStorage();
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
 		registerEndPoints();
@@ -98,8 +98,16 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 
 	@SuppressWarnings("unchecked")
 	protected <T> T fromJson(RoutingContext rc, Class<?> classOfT) {
+		try {
+			String body = rc.getBodyAsString();
+			return (T) mapper.readValue(body, classOfT);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 		// TODO compare with jackson
-		return (T) GSON.fromJson(rc.getBodyAsString(), classOfT);
+		// return (T) GSON.fromJson(rc.getBodyAsString(), classOfT);
+
 	}
 
 	/**
@@ -108,7 +116,7 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 	 * @return
 	 */
 	protected CaiLunAuthServiceImpl getAuthService() {
-		return config.authService();
+		return springConfig.authService();
 	}
 
 	public Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {

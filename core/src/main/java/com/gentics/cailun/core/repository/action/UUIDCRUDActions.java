@@ -17,6 +17,9 @@ public interface UUIDCRUDActions<T extends GenericNode> {
 	// T findCustomerNodeBySomeStrangeCriteria(Object strangeCriteria);
 
 	@Query("MATCH (project:Project)<-[:ASSIGNED_TO_PROJECT]-(n:GenericNode)-[:HAS_I18N_PROPERTIES]->(p:I18NProperties) WHERE p.`properties-name` = {1} AND project.name = {0} RETURN n")
+	public T findByI18Name(String project, String name);
+
+	@Query("MATCH (project:Project)<-[:ASSIGNED_TO_PROJECT]-(n:GenericNode) WHERE n.name = {1} AND project.name = {0} RETURN n")
 	public T findByName(String project, String name);
 
 	@Query("MATCH (n:GenericNode)-[:ASSIGNED_TO_PROJECT]-(p:Project) WHERE n.uuid = {1} and p.name = {0} return n")

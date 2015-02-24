@@ -11,4 +11,11 @@ import com.gentics.cailun.core.data.service.generic.GenericTagServiceImpl;
 @Transactional
 public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> implements TagService {
 
+	@Override
+	public Tag findByProjectPath(String projectName, String path) {
+		// TODO find the tag by traversing the path
+		return null;
+
+	}
+
 }

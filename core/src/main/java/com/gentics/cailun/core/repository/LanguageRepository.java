@@ -7,4 +7,6 @@ public interface LanguageRepository extends GenericNodeRepository<Language> {
 
 	public Language findByName(String name);
 
+	public Language findByLanguageTag(String languageTag);
+
 }

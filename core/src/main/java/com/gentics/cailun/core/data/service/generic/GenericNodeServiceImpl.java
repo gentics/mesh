@@ -25,6 +25,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Override
 	public T save(T node) {
+		// TODO invoke a reload afterwards - otherwise the uuid is null and succeeding saving will fail.
 		return nodeRepository.save(node);
 	}
 
@@ -56,12 +57,17 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Override
 	public T findByName(String project, String name) {
-		return nodeRepository.findByName(project, name);
+		return nodeRepository.findByI18Name(project, name);
 	}
 
 	@Override
 	public T findByUUID(String project, String uuid) {
 		return nodeRepository.findByUUID(project, uuid);
+	}
+
+	@Override
+	public T reload(T node) {
+		return nodeRepository.findOne(node.getId());
 	}
 
 }

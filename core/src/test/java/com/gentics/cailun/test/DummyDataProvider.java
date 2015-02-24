@@ -10,15 +10,21 @@ import org.thymeleaf.exceptions.NotInitializedException;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.PropertyType;
+import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.model.generic.GenericContent;
+import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.service.CaiLunRootService;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.LanguageService;
+import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.data.service.TagService;
@@ -56,6 +62,9 @@ public class DummyDataProvider {
 
 	@Autowired
 	private ProjectService projectService;
+
+	@Autowired
+	private ObjectSchemaService objectSchemaService;
 
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
@@ -129,7 +138,8 @@ public class DummyDataProvider {
 			Project dummyProject = new Project(PROJECT_NAME);
 			dummyProject.setRootTag(rootTag);
 			// TODO add schema
-			projectService.save(dummyProject);
+			dummyProject = projectService.save(dummyProject);
+			dummyProject = projectService.reload(dummyProject);
 
 			content = new Content();
 			contentService.setName(content, english, "english content name");
@@ -139,13 +149,24 @@ public class DummyDataProvider {
 			contentService.setName(content, german, "german content name");
 			contentService.setFilename(content, german, "german.html");
 			contentService.setContent(content, german, "mahlzeit!");
-			//TODO maybe set project should be done inside the save?
+			// TODO maybe set project should be done inside the save?
 			content.setProject(dummyProject);
 			content.setCreator(testUser);
 			content = contentService.save(content);
 
 			subTag.addFile(content);
 			subTag = tagService.save(subTag);
+
+			// Save the default object schema
+			ObjectSchema contentSchema = new ObjectSchema("content");
+			contentSchema.setProject(dummyProject);
+			contentSchema.setDescription("Default schema for contents");
+			contentSchema.setCreator(testUser);
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			assertNotNull(objectSchemaService.save(contentSchema));
+
 			tx.success();
 		}
 		content = contentService.findOne(content.getId());

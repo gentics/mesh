@@ -6,20 +6,26 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
+import com.gentics.cailun.core.rest.response.RestObjectSchema;
 
-//TODO rename to schema verticle?
-public class TypesVerticle extends AbstractProjectRestVerticle {
+@Component
+@Scope("singleton")
+@SpringVerticle
+public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private ObjectSchemaService schemaService;
 
-	protected TypesVerticle() {
+	protected ObjectSchemaVerticle() {
 		super("types");
 	}
 
@@ -59,6 +65,7 @@ public class TypesVerticle extends AbstractProjectRestVerticle {
 
 	private void addReadHandlers() {
 		route("/:uuidOrName").method(GET).handler(rh -> {
+			
 			String projectName = getProjectName(rh);
 			String uuidOrName = rh.request().params().get("uuidOrName");
 			if (isUUID(uuidOrName)) {
@@ -66,7 +73,8 @@ public class TypesVerticle extends AbstractProjectRestVerticle {
 				rh.response().end(toJson(projectSchema));
 			} else {
 				ObjectSchema projectSchema = schemaService.findByName(projectName, uuidOrName);
-				rh.response().end(toJson(projectSchema));
+				RestObjectSchema schemaForRest = schemaService.getReponseObject(projectSchema);
+				rh.response().end(toJson(schemaForRest));
 			}
 
 		});

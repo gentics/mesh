@@ -1,17 +1,17 @@
 package com.gentics.cailun.core.rest.request;
 
-import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.rest.response.RestGenericContent;
 
 public class ContentCreateRequest {
 
-	Content content;
+	RestGenericContent content;
 
-	public Content getContent() {
+	public RestGenericContent getContent() {
 		return content;
 	}
 
-	public void setContent(Content page) {
-		this.content = page;
+	public void setContent(RestGenericContent content) {
+		this.content = content;
 	}
 
 }

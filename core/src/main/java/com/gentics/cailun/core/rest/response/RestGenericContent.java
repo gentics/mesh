@@ -1,18 +1,21 @@
 package com.gentics.cailun.core.rest.response;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class GenericContentResponse {
+public class RestGenericContent extends AbstractRestModel {
 
+	
 	private RestUser author;
-	private Properties properties = new Properties();
+	private Map<String, String> properties = new HashMap<>();
+	private String type;
 
 	@JsonProperty("language")
 	private String languageTag;
 
-	public GenericContentResponse() {
+	public RestGenericContent() {
 	}
 
 	public RestUser getAuthor() {
@@ -23,7 +26,7 @@ public class GenericContentResponse {
 		this.author = author;
 	}
 
-	public Properties getProperties() {
+	public Map<String, String> getProperties() {
 		return properties;
 	}
 
@@ -39,6 +42,14 @@ public class GenericContentResponse {
 
 	public void setLanguageTag(String languageTag) {
 		this.languageTag = languageTag;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

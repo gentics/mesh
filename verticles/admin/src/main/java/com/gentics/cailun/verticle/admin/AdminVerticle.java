@@ -76,7 +76,7 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 					projectRepository.save(project);
 				}
 				try {
-					config.routerStorage().addProjectRouter(name);
+					springConfig.routerStorage().addProjectRouter(name);
 					log.info("Registered project {" + name + "}");
 					ctx.response().end("Registered project {" + name + "}");
 				} catch (Exception e) {
@@ -87,7 +87,7 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 
 		route("/projects/:name").method(DELETE).handler(ctx -> {
 			String name = ctx.request().params().get("name");
-			config.routerStorage().removeProjectRouter(name);
+			springConfig.routerStorage().removeProjectRouter(name);
 			ctx.response().end("Deleted project {" + name + "}");
 		});
 

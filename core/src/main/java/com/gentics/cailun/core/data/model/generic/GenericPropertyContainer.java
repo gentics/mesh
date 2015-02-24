@@ -34,12 +34,12 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	/**
-	 * Adds a new property or updates an exiting property with the given key and value.
+	 * Set the property with the given key and value.
 	 * 
 	 * @param key
 	 * @param value
 	 */
-	public void addProperty(String key, String value) {
+	public void setProperty(String key, String value) {
 		this.properties.setProperty(key, value);
 	}
 

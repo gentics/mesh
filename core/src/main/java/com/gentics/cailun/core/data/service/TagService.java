@@ -6,4 +6,6 @@ import com.gentics.cailun.core.data.service.generic.GenericTagService;
 
 public interface TagService extends GenericTagService<Tag, GenericFile> {
 
+	Tag findByProjectPath(String projectName, String path);
+
 }

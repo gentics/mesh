@@ -7,4 +7,6 @@ public interface LanguageService extends GenericNodeService<Language> {
 
 	Language findByName(String string);
 
+	Language findByLanguageTag(String languageTag);
+
 }

@@ -7,7 +7,7 @@ public interface GenericContentService<T extends GenericContent> extends Generic
 
 	public void createLink(T from, T to);
 
-	public void addI18Content(T content, Language language, String text);
+	public void addI18NContent(T content, Language language, String text);
 
 	public void setContent(T content, Language language, String text);
 

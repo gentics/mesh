@@ -5,11 +5,11 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.verticle.TypesVerticle;
+import com.gentics.cailun.core.verticle.ObjectSchemaVerticle;
 
 public final class UUIDUtil {
 
-	private static final Logger log = LoggerFactory.getLogger(TypesVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(ObjectSchemaVerticle.class);
 
 	private static  Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
 

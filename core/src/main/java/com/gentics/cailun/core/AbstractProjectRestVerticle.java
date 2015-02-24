@@ -20,7 +20,7 @@ public abstract class AbstractProjectRestVerticle extends AbstractCailunRestVert
 
 	@Override
 	public Router setupLocalRouter() {
-		Router localRouter = config.routerStorage().getProjectSubRouter(basePath);
+		Router localRouter = springConfig.routerStorage().getProjectSubRouter(basePath);
 		return localRouter;
 	}
 

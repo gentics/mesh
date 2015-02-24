@@ -2,6 +2,7 @@ package com.gentics.cailun.core.verticle;
 
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.RoutingContext;
 
@@ -13,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,16 +25,18 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.data.service.ContentService;
+import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.rest.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.request.ContentSaveRequest;
-import com.gentics.cailun.core.rest.response.GenericContentResponse;
+import com.gentics.cailun.core.rest.response.GenericErrorResponse;
 import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.response.RestGenericContent;
 import com.gentics.cailun.util.UUIDUtil;
 
 /**
@@ -55,6 +58,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private TagService tagService;
 
 	@Autowired
+	private LanguageService languageService;
+
+	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
 
 	public ContentVerticle() {
@@ -63,13 +69,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-
 		addCRUDHandlers();
-
-		// Tagging
-		// addAddTagHandler();
-		// addUntagPageHandler();
-		// addGetTagHandler();
 	}
 
 	private void addCRUDHandlers() {
@@ -115,7 +115,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					String uuid = path;
 					Content content = contentService.findByUUID(projectName, uuid);
 					if (content != null) {
-						handleReponse(rc, content, languages);
+						handleResponse(rc, content, languages);
 					} else {
 						// TODO i18n error message?
 						String message = "Content not found for uuid {" + uuid + "}";
@@ -124,9 +124,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					}
 					// Otherwise load the content by parsing and following the path
 				} else {
-					Content content = contentService.findByProject(projectName, "/" + path);
+					Content content = contentService.findByProjectPath(projectName, "/" + path);
 					if (content != null) {
-						handleReponse(rc, content, languages);
+						handleResponse(rc, content, languages);
 					} else {
 						// TODO i18n error message?
 						String message = "Content not found for path {" + path + "}";
@@ -142,47 +142,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	}
 
-	// /**
-	// * Add a handler for removing a tag with a specific name from a page.
-	// */
-	// private void addUntagPageHandler() {
-	//
-	// route("/:uuid/tags/:name").method(DELETE).handler(rh -> {
-	// String uuid = rh.request().params().get("uuid");
-	// String name = rh.request().params().get("name");
-	// rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.untag(uuid, name))));
-	// });
-	// }
-
-	// /**
-	// * Return the specific tag of a page.
-	// */
-	// private void addGetTagHandler() {
-	//
-	// route("/:uuid/tags/:name").method(GET).handler(rh -> {
-	// String uuid = rh.request().params().get("uuid");
-	// String name = rh.request().params().get("name");
-	// rh.response().end(toJson(new GenericResponse<Tag>(contentRepository.getTag(uuid, name))));
-	// });
-	//
-	// }
-
-	// /**
-	// * Add a tag to the page with id
-	// */
-	// private void addAddTagHandler() {
-	//
-	// route("/:uuid/tags/:name").method(PUT).handler(rh -> {
-	// String uuid = rh.request().params().get("uuid");
-	// String name = String.valueOf(rh.request().params().get("name"));
-	// Tag tag = contentRepository.tagGenericContent(uuid, name);
-	// rh.response().end(toJson(new GenericResponse<Tag>(tag)));
-	//
-	// });
-	// }
-
-	private void handleReponse(RoutingContext rc, Content content, List<String> languages) {
-		GenericContentResponse responseObject = contentService.getReponseObject(content, languages);
+	private void handleResponse(RoutingContext rc, Content content, List<String> languages) {
+		RestGenericContent responseObject = contentService.getReponseObject(content, languages);
 		// resolveLinks(content);
 		String json = toJson(responseObject);
 		rc.response().end(json);
@@ -216,41 +177,54 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	 */
 	private void addCreateHandler() {
 
-		route().method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			ContentCreateRequest request = fromJson(rc, ContentCreateRequest.class);
-			// TODO handle request
-			// rc.response().end(toJson(new GenericResponse<>()));
-			});
+		getRouter().routeWithRegex("\\/(.*)").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
+			String projectName = getProjectName(rc);
+			String path = rc.request().params().get("param0");
+			RestGenericContent requestModel = fromJson(rc, RestGenericContent.class);
+			if (requestModel == null) {
+				String message = "Could not parse request";
+				rc.response().setStatusCode(404);
+				rc.response().end(toJson(new GenericErrorResponse(message)));
+				return;
+			} else {
+				Tag rootTagForContent = tagService.findByProjectPath(projectName, path);
+				if (rootTagForContent == null) {
+					String message = "Could not find tag in path structure";
+					rc.response().setStatusCode(400);
+					rc.response().end(toJson(new GenericErrorResponse(message)));
+				}
+				Content content = null;
+				try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+					content = contentService.save(projectName, path, requestModel);
+					if (content != null) {
+						rootTagForContent.addFile(content);
+						tagService.save(rootTagForContent);
+						tx.success();
+					} else {
+						tx.failure();
+					}
+				}
+				if (content != null) {
+					// Reload in order to update uuid field
+					content = contentService.reload(content);
+					// TODO simplify language handling - looks a bit chaotic
+					Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+					// TODO check for npe - or see above
+					handleResponse(rc, content, Arrays.asList(language.getName()));
+					// rc.response().end("jow" + " " + path + " " + projectName);
+				} else {
+					rc.response().end("Could not save");
+				}
+
+			}
+		});
+
+		// route().method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
+		// // TODO handle request
+		// // rc.response().end(toJson(new GenericResponse<>()));
+		// });
 
 	}
-
-	// /**
-	// * Add the page load handler that allows loading pages by id.
-	// */
-	// private void addReadHandler() {
-	//
-	// route("/:uuid").method(GET).handler(rc -> {
-	// System.out.println("RCDATA:" + rc.contextData().get("cailun-project"));
-	// String uuid = rc.request().params().get("uuid");
-	// if (uuid != null) {
-	// Content content = null;
-	// if (content != null) {
-	// ObjectMapper mapper = new ObjectMapper();
-	// try {
-	// rc.response().end(mapper.defaultPrettyPrintingWriter().writeValueAsString(content));
-	// } catch (Exception e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// // rc.response().end(toJson(content));
-	// } else {
-	// rc.fail(404);
-	// rc.fail(new ContentNotFoundException(uuid));
-	// }
-	// }
-	// } );
-	//
-	// }
 
 	private void addUpdateHandler() {
 
