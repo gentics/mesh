@@ -16,8 +16,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
+import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.repository.ProjectRepository;
-import com.gentics.cailun.core.rest.model.Project;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.git.GitPullChecker;
 

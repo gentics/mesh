@@ -1,7 +1,7 @@
 package com.gentics.cailun.core.repository;
 
+import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
-import com.gentics.cailun.core.rest.model.Language;
 
 public interface LanguageRepository extends GenericNodeRepository<Language> {
 

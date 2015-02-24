@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.rest.response;
 
-import com.gentics.cailun.core.rest.model.auth.User;
+import com.gentics.cailun.core.data.model.auth.User;
 
 public class GenericContentResponse {
 
@@ -8,7 +8,7 @@ public class GenericContentResponse {
 	private String filename;
 	private String content;
 	private String teaser;
-	private User author;
+	private RestUser author;
 
 	public GenericContentResponse() {
 	}
@@ -37,11 +37,11 @@ public class GenericContentResponse {
 		this.content = content;
 	}
 
-	public User getAuthor() {
+	public RestUser getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(User author) {
+	public void setAuthor(RestUser author) {
 		this.author = author;
 	}
 

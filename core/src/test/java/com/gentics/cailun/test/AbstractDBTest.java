@@ -7,8 +7,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.rest.model.Language;
-import com.gentics.cailun.core.rest.service.LanguageService;
+import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.service.LanguageService;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)

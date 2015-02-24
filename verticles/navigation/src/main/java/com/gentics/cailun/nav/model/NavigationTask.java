@@ -8,8 +8,8 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.cailun.core.data.model.generic.GenericTag;
 import com.gentics.cailun.core.repository.generic.GenericContentRepository;
-import com.gentics.cailun.core.rest.model.generic.GenericTag;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 /**

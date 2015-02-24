@@ -2,9 +2,9 @@ package com.gentics.cailun.core.repository.generic;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.repository.action.GenericFileRepositoryActions;
-import com.gentics.cailun.core.rest.model.generic.GenericFile;
 
 public class GenericFileRepositoryImpl<T extends GenericFile> extends GenericPropertyContainerRepositoryImpl<T> implements GenericFileRepositoryActions<T> {
 	

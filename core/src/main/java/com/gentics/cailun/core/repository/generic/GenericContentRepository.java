@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.neo4j.annotation.Query;
 
+import com.gentics.cailun.core.data.model.generic.GenericContent;
+import com.gentics.cailun.core.data.model.generic.GenericTag;
 import com.gentics.cailun.core.repository.action.GenericContentRepositoryActions;
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
-import com.gentics.cailun.core.rest.model.generic.GenericTag;
 
 public interface GenericContentRepository<T extends GenericContent> extends GenericPropertyContainerRepository<T>, GenericContentRepositoryActions<T> {
 

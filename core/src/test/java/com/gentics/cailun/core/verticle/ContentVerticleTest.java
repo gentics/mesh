@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.test.AbstractProjectRestVerticleTest;
 import com.gentics.cailun.test.DummyDataProvider;
 
@@ -28,7 +28,7 @@ public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 
 	@Test
 	public void testReadContentByValidPath() throws Exception {
-		String json = "{\"name\":\"english content name\",\"filename\":\"english.html\",\"content\":\"blessed mealtime!\",\"teaser\":null,\"author\":null}";
+		String json = "{\"name\":\"english content name\",\"filename\":\"english.html\",\"content\":\"blessed mealtime!\",\"teaser\":null,\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}}";
 		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/subtag/english.html", 200, "OK", json);
 	}
 
@@ -48,8 +48,7 @@ public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 
 	@Test
 	public void testReadContentByUUID() throws Exception {
-		//TODO why is author null?
-		String json = "{\"name\":\"english content name\",\"filename\":\"english.html\",\"content\":\"blessed mealtime!\",\"teaser\":null,\"author\":null}";
+		String json = "{\"name\":\"english content name\",\"filename\":\"english.html\",\"content\":\"blessed mealtime!\",\"teaser\":null,\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}}";
 		Content content = dataProvider.getContent();
 		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK", json);
 	}

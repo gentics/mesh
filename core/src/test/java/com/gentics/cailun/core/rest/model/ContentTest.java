@@ -3,8 +3,9 @@ package com.gentics.cailun.core.rest.model;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class ContentTest extends AbstractDBTest {

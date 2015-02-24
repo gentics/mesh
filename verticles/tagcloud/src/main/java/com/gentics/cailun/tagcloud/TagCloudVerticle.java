@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
-import com.gentics.cailun.core.rest.model.Language;
+import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.tagcloud.model.TagCloud;
 import com.gentics.cailun.tagcloud.model.TagCloudEntry;
 import com.gentics.cailun.tagcloud.model.TagCloudResult;

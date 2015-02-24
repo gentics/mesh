@@ -3,7 +3,7 @@ package com.gentics.cailun.core.repository.action;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 
-import com.gentics.cailun.core.rest.model.generic.GenericNode;
+import com.gentics.cailun.core.data.model.generic.GenericNode;
 
 @NoRepositoryBean
 public interface UUIDCRUDActions<T extends GenericNode> {

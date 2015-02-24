@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
-import com.gentics.cailun.core.rest.model.ObjectSchema;
-import com.gentics.cailun.core.rest.service.ObjectSchemaService;
+import com.gentics.cailun.core.data.model.ObjectSchema;
+import com.gentics.cailun.core.data.service.ObjectSchemaService;
 
 //TODO rename to schema verticle?
 public class TypesVerticle extends AbstractProjectRestVerticle {

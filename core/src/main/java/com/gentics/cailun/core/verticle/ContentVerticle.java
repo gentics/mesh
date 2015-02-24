@@ -22,18 +22,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.generic.GenericContent;
+import com.gentics.cailun.core.data.service.ContentService;
+import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.Language;
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
 import com.gentics.cailun.core.rest.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.request.ContentSaveRequest;
 import com.gentics.cailun.core.rest.response.GenericContentResponse;
 import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.service.ContentService;
-import com.gentics.cailun.core.rest.service.TagService;
 import com.gentics.cailun.util.UUIDUtil;
 
 /**

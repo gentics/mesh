@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.repository.LanguageRepository;
 import com.gentics.cailun.test.AbstractDBTest;
 

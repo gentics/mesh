@@ -7,22 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.exceptions.NotInitializedException;
 
-import com.gentics.cailun.core.rest.model.CaiLunRoot;
-import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.Language;
-import com.gentics.cailun.core.rest.model.Project;
-import com.gentics.cailun.core.rest.model.Tag;
-import com.gentics.cailun.core.rest.model.auth.Group;
-import com.gentics.cailun.core.rest.model.auth.Role;
-import com.gentics.cailun.core.rest.model.auth.User;
-import com.gentics.cailun.core.rest.service.CaiLunRootService;
-import com.gentics.cailun.core.rest.service.ContentService;
-import com.gentics.cailun.core.rest.service.GroupService;
-import com.gentics.cailun.core.rest.service.LanguageService;
-import com.gentics.cailun.core.rest.service.ProjectService;
-import com.gentics.cailun.core.rest.service.RoleService;
-import com.gentics.cailun.core.rest.service.TagService;
-import com.gentics.cailun.core.rest.service.UserService;
+import com.gentics.cailun.core.data.model.CaiLunRoot;
+import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.Group;
+import com.gentics.cailun.core.data.model.auth.Role;
+import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.service.CaiLunRootService;
+import com.gentics.cailun.core.data.service.ContentService;
+import com.gentics.cailun.core.data.service.GroupService;
+import com.gentics.cailun.core.data.service.LanguageService;
+import com.gentics.cailun.core.data.service.ProjectService;
+import com.gentics.cailun.core.data.service.RoleService;
+import com.gentics.cailun.core.data.service.TagService;
+import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
@@ -77,6 +77,9 @@ public class DummyDataProvider {
 			// User, Groups, Roles
 			User testUser = new User(USER_JOE_USERNAME);
 			userService.setPassword(testUser, USER_JOE_PASSWORD);
+			testUser.setFirstname("Joe");
+			testUser.setLastname("Doe");
+			testUser.setEmailAddress("j.doe@gentics.com");
 			userService.save(testUser);
 			assertNotNull(userService.findByUsername(USER_JOE_USERNAME));
 
@@ -138,6 +141,7 @@ public class DummyDataProvider {
 			contentService.setContent(content, german, "mahlzeit!");
 			//TODO maybe set project should be done inside the save?
 			content.setProject(dummyProject);
+			content.setCreator(testUser);
 			content = contentService.save(content);
 
 			subTag.addFile(content);

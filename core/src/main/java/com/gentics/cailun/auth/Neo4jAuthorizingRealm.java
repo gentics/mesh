@@ -22,11 +22,11 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
+import com.gentics.cailun.core.data.model.auth.AuthRelationships;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.GraphPermission;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.repository.UserRepository;
-import com.gentics.cailun.core.rest.model.auth.AuthRelationships;
-import com.gentics.cailun.core.rest.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.rest.model.auth.GraphPermission;
-import com.gentics.cailun.core.rest.model.auth.User;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {

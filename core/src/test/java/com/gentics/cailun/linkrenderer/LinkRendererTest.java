@@ -14,12 +14,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.rest.model.Content;
-import com.gentics.cailun.core.rest.model.Language;
-import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.test.AbstractDBTest;
 import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
 

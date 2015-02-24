@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.repository.generic.GenericContentRepository;
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 /**
  * Factory which provides link resolvers

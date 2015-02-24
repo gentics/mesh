@@ -10,9 +10,12 @@ import javax.transaction.NotSupportedException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.rest.model.generic.GenericFile;
-import com.gentics.cailun.core.rest.service.ContentService;
-import com.gentics.cailun.core.rest.service.TagService;
+import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.generic.GenericFile;
+import com.gentics.cailun.core.data.service.ContentService;
+import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class TagTest extends AbstractDBTest {

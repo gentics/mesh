@@ -3,7 +3,7 @@ package com.gentics.cailun.core.repository;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.repository.Repository;
 
-import com.gentics.cailun.core.rest.model.CaiLunRoot;
+import com.gentics.cailun.core.data.model.CaiLunRoot;
 
 public interface CaiLunRootRepository extends Repository<CaiLunRoot, Long> {
 

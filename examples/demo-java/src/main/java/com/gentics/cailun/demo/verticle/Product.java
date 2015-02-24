@@ -1,6 +1,6 @@
 package com.gentics.cailun.demo.verticle;
 
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
+import com.gentics.cailun.core.data.model.generic.GenericContent;
 
 public class Product extends GenericContent {
 

@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.data.model.generic.GenericContent;
+import com.gentics.cailun.core.data.model.generic.GenericTag;
 import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
-import com.gentics.cailun.core.rest.model.generic.GenericTag;
 
 @Component
 @Scope("singleton")

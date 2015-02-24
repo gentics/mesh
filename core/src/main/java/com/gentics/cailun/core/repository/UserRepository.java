@@ -3,7 +3,7 @@ package com.gentics.cailun.core.repository;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
-import com.gentics.cailun.core.rest.model.auth.User;
+import com.gentics.cailun.core.data.model.auth.User;
 
 public interface UserRepository extends GraphRepository<User> {
 

@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.rest.request;
 
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.data.model.Content;
 
 public class ContentCreateRequest {
 

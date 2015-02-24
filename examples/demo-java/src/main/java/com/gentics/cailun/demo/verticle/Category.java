@@ -1,6 +1,6 @@
 package com.gentics.cailun.demo.verticle;
 
-import com.gentics.cailun.core.rest.model.generic.GenericTag;
+import com.gentics.cailun.core.data.model.generic.GenericTag;
 
 public class Category extends GenericTag<Category, Product> {
 

@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.repository.action;
 
-import com.gentics.cailun.core.rest.model.generic.GenericFile;
+import com.gentics.cailun.core.data.model.generic.GenericFile;
 
 public interface GenericFileRepositoryActions<T extends GenericFile> {
 

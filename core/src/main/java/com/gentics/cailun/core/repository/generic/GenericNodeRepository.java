@@ -4,9 +4,9 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
+import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.repository.action.I18NActions;
 import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
-import com.gentics.cailun.core.rest.model.generic.GenericNode;
 
 public interface GenericNodeRepository<T extends GenericNode> extends GraphRepository<T>, UUIDCRUDActions<T>, I18NActions<T> {
 

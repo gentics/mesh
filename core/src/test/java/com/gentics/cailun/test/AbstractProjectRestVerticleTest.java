@@ -72,8 +72,6 @@ public abstract class AbstractProjectRestVerticleTest {
 		verticle.init(vertx, context);
 		verticle.start();
 		verticle.registerEndPoints();
-
-		// verticle.getServer().
 	}
 
 	public abstract AbstractProjectRestVerticle getVerticle();

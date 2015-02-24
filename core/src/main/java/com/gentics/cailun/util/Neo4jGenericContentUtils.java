@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
-import com.gentics.cailun.core.rest.model.generic.GenericNode;
-import com.gentics.cailun.core.rest.model.generic.GenericTag;
-import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
+import com.gentics.cailun.core.data.model.generic.GenericContent;
+import com.gentics.cailun.core.data.model.generic.GenericNode;
+import com.gentics.cailun.core.data.model.generic.GenericTag;
+import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.google.common.collect.Lists;
 

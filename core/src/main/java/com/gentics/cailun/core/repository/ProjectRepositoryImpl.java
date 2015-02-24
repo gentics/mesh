@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
+import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.generic.GenericFile;
+import com.gentics.cailun.core.data.model.generic.GenericTag;
+import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.repository.action.ProjectActions;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepositoryImpl;
-import com.gentics.cailun.core.rest.model.Project;
-import com.gentics.cailun.core.rest.model.generic.GenericFile;
-import com.gentics.cailun.core.rest.model.generic.GenericTag;
-import com.gentics.cailun.core.rest.model.relationship.BasicRelationships;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> implements ProjectActions {

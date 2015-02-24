@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
-import com.gentics.cailun.core.rest.model.Content;
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.tagcloud.model.TagCloudResult;
 
 public interface TagCloudRepository extends GraphRepository<Content> {

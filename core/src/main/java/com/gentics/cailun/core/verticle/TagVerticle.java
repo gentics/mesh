@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.repository.generic.GenericContentRepository;
-import com.gentics.cailun.core.rest.model.generic.GenericContent;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.

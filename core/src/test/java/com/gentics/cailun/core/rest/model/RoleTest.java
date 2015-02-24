@@ -6,8 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.repository.RoleRepository;
-import com.gentics.cailun.core.rest.model.auth.Role;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class RoleTest extends AbstractDBTest {

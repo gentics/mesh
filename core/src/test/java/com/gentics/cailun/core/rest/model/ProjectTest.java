@@ -6,9 +6,12 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.generic.GenericFile;
+import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.repository.ProjectRepository;
-import com.gentics.cailun.core.rest.model.generic.GenericFile;
-import com.gentics.cailun.core.rest.service.ContentService;
 import com.gentics.cailun.test.AbstractDBTest;
 import com.gentics.cailun.test.DummyDataProvider;
 
