@@ -2,7 +2,6 @@ package com.gentics.cailun.core.verticle;
 
 import io.vertx.core.http.HttpMethod;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,11 +15,6 @@ public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 	@Autowired
 	ContentVerticle verticle;
 
-	@Before
-	public void setUp() throws Exception {
-		super.setup();
-	}
-
 	@Override
 	public AbstractProjectRestVerticle getVerticle() {
 		return verticle;
@@ -28,7 +22,7 @@ public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 
 	@Test
 	public void testReadContentByValidPath() throws Exception {
-		String json = "{\"name\":\"english content name\",\"filename\":\"english.html\",\"content\":\"blessed mealtime!\",\"teaser\":null,\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}}";
+		String json = "{\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"},\"properties\":{\"filename\":\"english.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime!\"},\"language\":\"en_US\"}";
 		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/subtag/english.html", 200, "OK", json);
 	}
 
@@ -48,7 +42,7 @@ public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 
 	@Test
 	public void testReadContentByUUID() throws Exception {
-		String json = "{\"name\":\"english content name\",\"filename\":\"english.html\",\"content\":\"blessed mealtime!\",\"teaser\":null,\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}}";
+		String json = "{\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"},\"properties\":{\"filename\":\"english.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime!\"},\"language\":\"en_US\"}";
 		Content content = dataProvider.getContent();
 		testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK", json);
 	}

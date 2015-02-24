@@ -38,16 +38,16 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 		}
 		// Return page with flatted properties since only one language has been specified
 		else if (languages.size() == 1) {
-
 			String languageKey = languages.iterator().next();
 			Language language = languageService.findByName(languageKey);
 			GenericContentResponse response = new GenericContentResponse();
-			response.setName(content.getName(language));
-			response.setFilename(content.getFilename(language));
+			response.setLanguageTag(language.getLanguageTag());
+			response.addProperty("name", content.getName(language));
+			response.addProperty("filename", content.getFilename(language));
 			RestUser restUser = userService.getResponseObject(content.getCreator());
 			response.setAuthor(restUser);
-			response.setContent(content.getContent(language));
-			response.setTeaser(content.getTeaser(language));
+			response.addProperty("content", content.getContent(language));
+			response.addProperty("teaser", content.getTeaser(language));
 			return response;
 		} else {
 			// TODO return all languages

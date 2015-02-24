@@ -1,40 +1,18 @@
 package com.gentics.cailun.core.rest.response;
 
-import com.gentics.cailun.core.data.model.auth.User;
+import java.util.Properties;
+
+import org.codehaus.jackson.annotate.JsonProperty;
 
 public class GenericContentResponse {
 
-	private String name;
-	private String filename;
-	private String content;
-	private String teaser;
 	private RestUser author;
+	private Properties properties = new Properties();
+
+	@JsonProperty("language")
+	private String languageTag;
 
 	public GenericContentResponse() {
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
 	}
 
 	public RestUser getAuthor() {
@@ -45,12 +23,22 @@ public class GenericContentResponse {
 		this.author = author;
 	}
 
-	public String getTeaser() {
-		return teaser;
+	public Properties getProperties() {
+		return properties;
 	}
 
-	public void setTeaser(String teaser) {
-		this.teaser = teaser;
+	public void addProperty(String key, String value) {
+		if (value != null) {
+			this.properties.put(key, value);
+		}
+	}
+
+	public String getLanguageTag() {
+		return languageTag;
+	}
+
+	public void setLanguageTag(String languageTag) {
+		this.languageTag = languageTag;
 	}
 
 }
