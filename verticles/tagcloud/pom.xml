@@ -16,12 +16,4 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
-	<dependencies>
-		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
 </project>
