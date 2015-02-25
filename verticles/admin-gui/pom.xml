@@ -17,7 +17,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
-	<!-- 
 		<plugins>
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
@@ -25,18 +24,56 @@
 				<version>0.0.22</version>
 				<executions>
 					<execution>
+						<!-- optional: you don't really need execution ids, but it looks nice 
+							in your build log. -->
+						<id>install node and npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+						<!-- optional: default phase is "generate-resources" -->
+						<phase>generate-resources</phase>
+						<configuration>
+							<nodeVersion>v0.10.26</nodeVersion>
+							<npmVersion>1.4.3</npmVersion>
+							<!-- TODO configure this using a maven profile -->
+							<downloadRoot>http://dev.office/downloads/nodejs/</downloadRoot>
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm install</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+						<phase>generate-resources</phase>
+					</execution>
+					<execution>
 						<id>bower install</id>
 						<goals>
 							<goal>bower</goal>
 						</goals>
 						<configuration>
 							<arguments>install</arguments>
+							<outputdir>${project.build.directory}/build</outputdir>
+						</configuration>
+					</execution>
+					<execution>
+						<id>gulp build</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>gulp</goal>
+						</goals>
+						<configuration>
+							<srcdir>${basedir}/src/main/ts</srcdir>
+							<outputdir>${basedir}/target/js</outputdir>
+							<arguments>scripts</arguments>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
-		 -->
 	</build>
 
 </project>
