@@ -7,10 +7,10 @@ import io.vertx.core.eventbus.MessageConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
+import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.git.GitUtils;
 
-public class GitWebHookVerticle extends AbstractCaiLunCoreApiVerticle {
+public class GitWebHookVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(GitWebHookVerticle.class);
 

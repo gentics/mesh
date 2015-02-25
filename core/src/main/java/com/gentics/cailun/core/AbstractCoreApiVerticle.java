@@ -2,9 +2,9 @@ package com.gentics.cailun.core;
 
 import io.vertx.ext.apex.core.Router;
 
-public abstract class AbstractCaiLunCoreApiVerticle extends AbstractCailunRestVerticle {
+public abstract class AbstractCoreApiVerticle extends AbstractCailunRestVerticle {
 
-	protected AbstractCaiLunCoreApiVerticle(String basePath) {
+	protected AbstractCoreApiVerticle(String basePath) {
 		super(basePath);
 	}
 

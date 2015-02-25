@@ -10,13 +10,13 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
+import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.rest.response.GenericResponse;
 
 @Component
 @Scope("singleton")
 @SpringVerticle()
-public class AuthenticationVerticle extends AbstractCaiLunCoreApiVerticle {
+public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Context
 	SecurityContext securityContext;

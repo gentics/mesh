@@ -1,10 +1,7 @@
 package com.gentics.cailun.verticle.admin;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
-import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.PUT;
-import static io.vertx.core.http.HttpMethod.POST;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 
@@ -18,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.core.AbstractCaiLunCoreApiVerticle;
-import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.repository.ProjectRepository;
+import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.git.GitPullChecker;
 
@@ -33,7 +28,7 @@ import com.gentics.cailun.git.GitPullChecker;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
+public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
 	public static final String GIT_PULL_CHECKER_INTERVAL_KEY = "gitPullCheckerInterval";
@@ -44,9 +39,6 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 
 	@Autowired
 	private CaiLunSpringConfiguration caiLunConfig;
-
-	@Autowired
-	private ProjectRepository projectRepository;
 
 	GitPullChecker gitChecker;
 
@@ -62,47 +54,13 @@ public class AdminVerticle extends AbstractCaiLunCoreApiVerticle {
 
 		addBackupHandler();
 		addNeo4VertxRestartHandler();
-		addProjectHandlers();
 
 		// addVerticleHandler();
 		// addServiceHandler();
 
 	}
 
-	private void addProjectHandlers() {
-		route("/projects/:name").method(GET).handler(ctx -> {
-			String name = ctx.request().params().get("name");
-			// TODO add check whether project was already registered/added
-				Project project = projectRepository.findByName(name);
-				if (project == null) {
-					project = new Project(name);
-					projectRepository.save(project);
-				}
-				try {
-					springConfig.routerStorage().addProjectRouter(name);
-					log.info("Registered project {" + name + "}");
-					ctx.response().end("Registered project {" + name + "}");
-				} catch (Exception e) {
-					ctx.fail(409);
-					ctx.fail(e);
-				}
-			});
-
-		route("/projects/:name").method(DELETE).handler(ctx -> {
-			String name = ctx.request().params().get("name");
-			springConfig.routerStorage().removeProjectRouter(name);
-			ctx.response().end("Deleted project {" + name + "}");
-		});
-
-		route("/projects/").method(POST).handler(ctx -> {
-			// TODO also create a default object schema for the project. Move this into service class
-			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
-			});
-
-		route("/projects/:nameOrUuid").method(PUT).handler(ctx -> {
-
-		});
-	}
+	
 
 	@Override
 	public void stop() throws Exception {

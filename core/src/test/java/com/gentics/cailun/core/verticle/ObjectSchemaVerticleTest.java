@@ -21,7 +21,7 @@ import com.gentics.cailun.test.DummyDataProvider;
 public class ObjectSchemaVerticleTest extends AbstractProjectRestVerticleTest {
 
 	@Autowired
-	ObjectSchemaVerticle objectSchemaVerticle;
+	private ObjectSchemaVerticle objectSchemaVerticle;
 
 	@Override
 	public AbstractProjectRestVerticle getVerticle() {

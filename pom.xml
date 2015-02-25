@@ -6,7 +6,7 @@
 	<groupId>com.gentics.cailun</groupId>
 	<artifactId>cailun</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
-	
+
 	<packaging>pom</packaging>
 	<name>Cailun</name>
 
@@ -36,6 +36,7 @@
 	</developers>
 
 	<modules>
+		<module>rest</module>
 		<module>core</module>
 		<module>examples</module>
 		<module>verticles</module>

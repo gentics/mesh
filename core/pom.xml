@@ -19,6 +19,13 @@
 	</properties>
 
 	<dependencies>
+		<!-- Internal dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>cailun-rest</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- Common Tools -->
 		<dependency>
 			<groupId>com.google.guava</groupId>

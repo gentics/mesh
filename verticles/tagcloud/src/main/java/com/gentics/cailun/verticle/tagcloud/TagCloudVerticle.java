@@ -1,4 +1,4 @@
-package com.gentics.cailun.tagcloud;
+package com.gentics.cailun.verticle.tagcloud;
 
 import static io.vertx.core.http.HttpMethod.GET;
 
