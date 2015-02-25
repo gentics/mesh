@@ -21,11 +21,11 @@ module CLAdminUi {
 		.config(['$routeProvider', function ($routeProvider) {
 			$routeProvider.
 				when('/list/', {
-					templateUrl: 'views/object-list.html',
+					templateUrl: 'src/main/html/object-list.html',
 					controller: 'ObjectListCtrl'
 				}).
 				when('/edit/:uuid', {
-					templateUrl: 'views/object-editor.html',
+					templateUrl: 'src/main/html/object-editor.html',
 					controller: 'ObjectEditorCtrl'
 				});
 		}])
