@@ -1,0 +1,8 @@
+<label for="{{ key }}" class="col-sm-2">{{ key }}</label>
+
+<div ng-switch="types[key]" class="col-sm-10">
+	<input ng-switch-when="text" ng-model="obj[key]" id="{{ key }}" type="text" class="form-control" value="{{ val }}" />
+	<textarea ng-switch-when="html" ng-model="obj[key]" id="{{ key }}" class="form-control">{{ val }}</textarea>
+	<p ng-switch-when="readonly" class="form-control-static">{{ val }}</p>
+	<input ng-switch-when="date" ng-model="obj[key]" id="{{ key }}" type="datetime-local" class="form-control" value="{{ val }}" />
+</div>

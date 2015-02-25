@@ -9,3 +9,5 @@ dependency-reduced-pom.xml
 .checkstyle
 cailun.json
 .bak
+verticles/admin-gui/src/main/js/node_modules
+verticles/admin-gui/src/main/js/bower_components

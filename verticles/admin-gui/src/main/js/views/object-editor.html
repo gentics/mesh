@@ -1,0 +1,12 @@
+<form class="form-horizontal">
+	<div class="form-group" ng-repeat="(key, val) in obj">
+		<ng-include src="views/edit-property.html"/>
+	</div>
+
+	<button type="submit" class="btn btn-primary" onclick="location.href='#/list/'">Save</button>
+	<button type="submit" class="btn btn-link" onclick="location.href='#/list/'">Cancel</button>
+</form>
+<div>
+	<h2>JSON:</h2>
+	{{ obj }}
+</div>
