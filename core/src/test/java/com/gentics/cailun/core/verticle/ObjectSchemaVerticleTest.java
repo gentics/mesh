@@ -12,19 +12,19 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.rest.response.RestObjectSchema;
 import com.gentics.cailun.core.rest.response.RestPropertyTypeSchema;
-import com.gentics.cailun.test.AbstractProjectRestVerticleTest;
+import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.DummyDataProvider;
 
-public class ObjectSchemaVerticleTest extends AbstractProjectRestVerticleTest {
+public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ObjectSchemaVerticle objectSchemaVerticle;
 
 	@Override
-	public AbstractProjectRestVerticle getVerticle() {
+	public AbstractRestVerticle getVerticle() {
 		return objectSchemaVerticle;
 	}
 

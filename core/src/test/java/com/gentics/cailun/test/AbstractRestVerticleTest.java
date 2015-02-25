@@ -21,20 +21,14 @@ import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gentics.cailun.core.AbstractProjectRestVerticle;
-import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.core.AbstractRestVerticle;
 
-@ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
-@RunWith(SpringJUnit4ClassRunner.class)
-public abstract class AbstractProjectRestVerticleTest {
+public abstract class AbstractRestVerticleTest extends AbstractDBTest {
+
+	protected Vertx vertx;
+
+	private int port;
 
 	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
 
@@ -42,39 +36,31 @@ public abstract class AbstractProjectRestVerticleTest {
 
 	private AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
 
-	@Autowired
-	protected CaiLunSpringConfiguration springConfig;
-
-	@Autowired
-	protected DummyDataProvider dataProvider;
-
 	private CountDownLatch latch;
-	protected Vertx vertx;
-	private int port;
 
 	@Before
-	public void setup() throws Exception {
-		purgeDatabase();
-		vertx = springConfig.vertx();
-		dataProvider.setup();
-		springConfig.routerStorage().addProjectRouter(DummyDataProvider.PROJECT_NAME);
+	public void setupVerticleTest() throws Exception {
+		port = TestUtil.getRandomPort();
 		client = vertx.createHttpClient(new HttpClientOptions());
 		latch = new CountDownLatch(1);
 		throwable.set(null);
 
-		AbstractProjectRestVerticle verticle = getVerticle();
+		vertx = springConfig.vertx();
+		springConfig.routerStorage().addProjectRouter(DummyDataProvider.PROJECT_NAME);
+
+		AbstractRestVerticle verticle = getVerticle();
 		// Inject spring config
 		verticle.setSpringConfig(springConfig);
 		JsonObject config = new JsonObject();
-		port = TestUtil.getRandomPort();
-		config.put("port", port);
+		config.put("port", getPort());
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
 		verticle.init(vertx, context);
 		verticle.start();
 		verticle.registerEndPoints();
+
 	}
 
-	public abstract AbstractProjectRestVerticle getVerticle();
+	public abstract AbstractRestVerticle getVerticle();
 
 	@After
 	public void tearDown() throws Exception {
@@ -83,16 +69,8 @@ public abstract class AbstractProjectRestVerticleTest {
 		}
 	}
 
-	protected void purgeDatabase() {
-		try (Transaction tx = springConfig.graphDatabase().beginTx()) {
-			for (Node node : springConfig.getGraphDatabaseService().getAllNodes()) {
-				for (Relationship rel : node.getRelationships()) {
-					rel.delete();
-				}
-				node.delete();
-			}
-			tx.success();
-		}
+	public int getPort() {
+		return port;
 	}
 
 	protected String testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {

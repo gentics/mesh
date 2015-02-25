@@ -12,7 +12,7 @@ import io.vertx.ext.apex.core.RoutingContext;
  * @author johannes2
  *
  */
-public abstract class AbstractProjectRestVerticle extends AbstractCailunRestVerticle {
+public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
 	protected AbstractProjectRestVerticle(String basePath) {
 		super(basePath);

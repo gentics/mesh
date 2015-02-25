@@ -6,7 +6,7 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 import io.vertx.core.AbstractVerticle;
 
-public abstract class AbstractCaiLunVerticle extends AbstractVerticle {
+public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	public abstract void start() throws Exception;
 

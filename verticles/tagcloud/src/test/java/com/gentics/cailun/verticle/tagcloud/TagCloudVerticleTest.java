@@ -5,16 +5,16 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.AbstractProjectRestVerticle;
-import com.gentics.cailun.test.AbstractProjectRestVerticleTest;
+import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.test.AbstractRestVerticleTest;
 
-public class TagCloudVerticleTest extends AbstractProjectRestVerticleTest {
+public class TagCloudVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private TagCloudVerticle tagCloudVerticle;
 
 	@Override
-	public AbstractProjectRestVerticle getVerticle() {
+	public AbstractRestVerticle getVerticle() {
 		return tagCloudVerticle;
 	}
 

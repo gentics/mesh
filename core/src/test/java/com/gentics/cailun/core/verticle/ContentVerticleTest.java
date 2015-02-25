@@ -2,10 +2,9 @@ package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
-
-import io.vertx.core.http.HttpMethod;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -13,19 +12,19 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.rest.response.RestGenericContent;
-import com.gentics.cailun.test.AbstractProjectRestVerticleTest;
+import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.DummyDataProvider;
 
-public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
+public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	ContentVerticle verticle;
 
 	@Override
-	public AbstractProjectRestVerticle getVerticle() {
+	public AbstractRestVerticle getVerticle() {
 		return verticle;
 	}
 
@@ -78,7 +77,7 @@ public class ContentVerticleTest extends AbstractProjectRestVerticleTest {
 	@Test
 	public void testReadContentByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"},\"properties\":{\"filename\":\"english.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime!\"},\"type\":\"content\",\"language\":\"en_US\"}";
-		Content content = dataProvider.getContent();
+		Content content = getDataProvider().getContent();
 		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(),
 				200, "OK");
 		assertEqualsSanitizedJson(json, response);

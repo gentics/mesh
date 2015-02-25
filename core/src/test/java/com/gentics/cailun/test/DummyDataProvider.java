@@ -69,9 +69,15 @@ public class DummyDataProvider {
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
 
+	// References to dummy data
+
 	private Content content;
 
 	private Tag rootTag;
+
+	private Language english;
+
+	private Language german;
 
 	private DummyDataProvider() {
 	}
@@ -102,9 +108,9 @@ public class DummyDataProvider {
 
 			// Contents, Tags, Projects
 
-			Language english = new Language("english", "en_US");
+			english = new Language("english", "en_US");
 			english = languageService.save(english);
-			Language german = new Language("german", "de_DE");
+			german = new Language("german", "de_DE");
 			german = languageService.save(german);
 
 			CaiLunRoot rootNode = new CaiLunRoot();
@@ -181,5 +187,13 @@ public class DummyDataProvider {
 			throw new NotInitializedException("Dummy data not yet setup. Invoke setup first.");
 		}
 		return content;
+	}
+
+	public Language getEnglish() {
+		return english;
+	}
+
+	public Language getGerman() {
+		return german;
 	}
 }

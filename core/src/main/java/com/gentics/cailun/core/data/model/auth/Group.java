@@ -44,6 +44,10 @@ public class Group extends GenericNode {
 		this.name = name;
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	public void addUser(User user) {
 		getMembers().add(user);
 	}

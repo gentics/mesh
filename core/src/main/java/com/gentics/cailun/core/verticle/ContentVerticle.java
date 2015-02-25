@@ -146,6 +146,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		RestGenericContent responseObject = contentService.getReponseObject(content, languages);
 		// resolveLinks(content);
 		String json = toJson(responseObject);
+		rc.response().setStatusCode(200);
 		rc.response().end(json);
 	}
 

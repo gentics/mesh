@@ -19,7 +19,7 @@ import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
-public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle {
+public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
 
@@ -28,7 +28,7 @@ public abstract class AbstractCailunRestVerticle extends AbstractCaiLunVerticle 
 	protected ObjectMapper mapper;
 	protected HttpServer server;
 
-	protected AbstractCailunRestVerticle(String basePath) {
+	protected AbstractRestVerticle(String basePath) {
 		this.basePath = basePath;
 	}
 

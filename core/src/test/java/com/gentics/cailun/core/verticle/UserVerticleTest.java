@@ -5,16 +5,16 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.AbstractCoreApiVerticle;
-import com.gentics.cailun.test.AbstractCoreApiVerticleTest;
+import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.test.AbstractRestVerticleTest;
 
-public class UserVerticleTest extends AbstractCoreApiVerticleTest {
+public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private UserVerticle userVerticle;
 
 	@Override
-	public AbstractCoreApiVerticle getVerticle() {
+	public AbstractRestVerticle getVerticle() {
 		return userVerticle;
 	}
 
