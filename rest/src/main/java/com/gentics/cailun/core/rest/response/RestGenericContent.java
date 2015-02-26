@@ -3,11 +3,10 @@ package com.gentics.cailun.core.rest.response;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 public class RestGenericContent extends AbstractRestModel {
 
-	
 	private RestUser author;
 	private Map<String, String> properties = new HashMap<>();
 	private String type;

@@ -79,6 +79,8 @@ public class DummyDataProvider {
 
 	private Language german;
 
+	private Group adminGroup;
+
 	private DummyDataProvider() {
 	}
 
@@ -101,10 +103,10 @@ public class DummyDataProvider {
 			Role adminRole = new Role("superadmin");
 			roleService.save(adminRole);
 
-			Group adminGroup = new Group("admin");
+			adminGroup = new Group("admin");
 			adminGroup.addUser(testUser);
 			adminGroup.addRole(adminRole);
-			groupService.save(adminGroup);
+			adminGroup = groupService.save(adminGroup);
 
 			// Contents, Tags, Projects
 
@@ -175,7 +177,9 @@ public class DummyDataProvider {
 
 			tx.success();
 		}
-		content = contentService.findOne(content.getId());
+		content = contentService.reload(content);
+		adminGroup = groupService.reload(adminGroup);
+
 	}
 
 	public Tag getRootTag() {
@@ -195,5 +199,9 @@ public class DummyDataProvider {
 
 	public Language getGerman() {
 		return german;
+	}
+
+	public Group getAdminGroup() {
+		return adminGroup;
 	}
 }

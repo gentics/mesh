@@ -13,10 +13,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
-import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.rest.response.RestGroup;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
-import com.gentics.cailun.test.DummyDataProvider;
 
 public class GroupsVerticleTest extends AbstractRestVerticleTest {
 
@@ -30,9 +29,10 @@ public class GroupsVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadGroupByUUID() throws Exception {
-		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"},\"properties\":{\"filename\":\"english.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime!\"},\"type\":\"content\",\"language\":\"en_US\"}";
-		Content content = getDataProvider().getContent();
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(),
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
+		Group group = getDataProvider().getAdminGroup();
+		assertNotNull("The UUID of the group must not be null.", group.getUuid());
+		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/groups/" + group.getUuid(),
 				200, "OK");
 		assertEqualsSanitizedJson(json, response);
 	}

@@ -30,7 +30,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private int port;
 
-	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
+	private static final Integer DEFAULT_TIMEOUT_SECONDS = 1000;
 
 	private HttpClient client;
 
@@ -40,24 +40,24 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@Before
 	public void setupVerticleTest() throws Exception {
+		setupData();
 		port = TestUtil.getRandomPort();
+		vertx = springConfig.vertx();
 		client = vertx.createHttpClient(new HttpClientOptions());
 		latch = new CountDownLatch(1);
 		throwable.set(null);
 
-		vertx = springConfig.vertx();
 		springConfig.routerStorage().addProjectRouter(DummyDataProvider.PROJECT_NAME);
 
 		AbstractRestVerticle verticle = getVerticle();
 		// Inject spring config
 		verticle.setSpringConfig(springConfig);
 		JsonObject config = new JsonObject();
-		config.put("port", getPort());
+		config.put("port", port);
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
 		verticle.init(vertx, context);
 		verticle.start();
 		verticle.registerEndPoints();
-
 	}
 
 	public abstract AbstractRestVerticle getVerticle();
