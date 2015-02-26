@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import org.junit.Test;
@@ -38,6 +39,26 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
 		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
+	}
+
+	@Test
+	public void testCreateRole() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testDeleteRoleByUUID() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testDeleteRoleByName() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testUpdateRole() {
+		fail("Not yet implemented");
 	}
 
 }

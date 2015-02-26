@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import org.junit.Test;
@@ -39,5 +40,26 @@ public class GroupsVerticleTest extends AbstractRestVerticleTest {
 		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/groups/" + group.getName(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestGroup.class);
 	}
+	
+	@Test
+	public void testCreateGroup() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testDeleteGroupByUUID() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testDeleteGroupByName() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testUpdateGroup() {
+		fail("Not yet implemented");
+	}
+
 
 }
