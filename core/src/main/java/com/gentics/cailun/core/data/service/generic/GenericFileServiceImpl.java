@@ -38,7 +38,7 @@ public class GenericFileServiceImpl<T extends GenericFile> extends GenericProper
 	}
 
 	@Override
-	public T findByProjectPath(String projectName, String path) {
+	public T findByPath(String projectName, String path) {
 		// Delegate to project repository since this request is project specific
 		return (T) fileRepository.findByProjectPath(projectName, path);
 	}

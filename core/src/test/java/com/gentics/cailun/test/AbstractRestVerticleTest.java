@@ -36,7 +36,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private int port;
 
-	private static final Integer DEFAULT_TIMEOUT_SECONDS = 1000;
+	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
 
 	private HttpClient client;
 

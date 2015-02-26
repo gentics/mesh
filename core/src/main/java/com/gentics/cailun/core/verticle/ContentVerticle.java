@@ -124,7 +124,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					}
 					// Otherwise load the content by parsing and following the path
 				} else {
-					Content content = contentService.findByProjectPath(projectName, "/" + path);
+					Content content = contentService.findByPath(projectName, "/" + path);
 					if (content != null) {
 						handleResponse(rc, content, languages);
 					} else {
