@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.rest.model;
+package com.gentics.cailun.core.data.model;
 
 import org.junit.Before;
 import org.junit.Test;
