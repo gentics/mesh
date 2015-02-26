@@ -44,6 +44,16 @@ public final class TestUtil {
 		}
 	}
 
+	/**
+	 * Compare both json strings but remove the uuids from the unsanitizedResponseJson before comparison.
+	 * 
+	 * @param expectedJson
+	 * @param unsanitizedResponseJson
+	 * @param modelClazz
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
 	public static <T extends AbstractRestModel> void assertEqualsSanitizedJson(String expectedJson, String unsanitizedResponseJson,
 			Class<T> modelClazz) throws JsonGenerationException, JsonMappingException, IOException {
 		T responseObject = new ObjectMapper().readValue(unsanitizedResponseJson, modelClazz);

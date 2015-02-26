@@ -83,6 +83,8 @@ public class DummyDataProvider {
 
 	private Project dummyProject;
 
+	private Role adminRole;
+
 	private DummyDataProvider() {
 	}
 
@@ -102,7 +104,7 @@ public class DummyDataProvider {
 			userService.save(testUser);
 			assertNotNull(userService.findByUsername(USER_JOE_USERNAME));
 
-			Role adminRole = new Role("superadmin");
+			adminRole = new Role("superadmin");
 			roleService.save(adminRole);
 
 			adminGroup = new Group("admin");
@@ -181,6 +183,7 @@ public class DummyDataProvider {
 		content = contentService.reload(content);
 		adminGroup = groupService.reload(adminGroup);
 		dummyProject = projectService.reload(dummyProject);
+		adminRole = roleService.reload(adminRole);
 
 	}
 
@@ -209,5 +212,9 @@ public class DummyDataProvider {
 
 	public Project getProject() {
 		return dummyProject;
+	}
+
+	public Role getAdminRole() {
+		return adminRole;
 	}
 }

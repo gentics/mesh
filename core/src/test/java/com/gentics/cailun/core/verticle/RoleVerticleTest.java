@@ -1,12 +1,16 @@
 package com.gentics.cailun.core.verticle;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
+import io.vertx.core.http.HttpMethod;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.core.data.model.auth.Role;
+import com.gentics.cailun.core.rest.response.RestRole;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
+import com.gentics.cailun.test.TestUtil;
 
 public class RoleVerticleTest extends AbstractRestVerticleTest {
 
@@ -19,8 +23,21 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadRoleByUUID() {
-		fail("Not yet implemented");
+	public void testReadRoleByUUID() throws Exception {
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"superadmin\"}";
+		Role adminRole = getDataProvider().getAdminRole();
+		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
+		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/roles/" + adminRole.getUuid(), 200, "OK");
+		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
+	}
+
+	@Test
+	public void testReadRoleByName() throws Exception {
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"superadmin\"}";
+		Role adminRole = getDataProvider().getAdminRole();
+		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
+		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
+		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
 	}
 
 }
