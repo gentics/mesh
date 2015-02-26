@@ -70,4 +70,9 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 		return nodeRepository.findOne(node.getId());
 	}
 
+	@Override
+	public T findByUUID(String uuid) {
+		return nodeRepository.findByUUID(uuid);
+	}
+
 }

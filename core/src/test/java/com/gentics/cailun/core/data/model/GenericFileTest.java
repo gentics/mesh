@@ -1,8 +1,6 @@
 package com.gentics.cailun.core.data.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +16,7 @@ public class GenericFileTest extends AbstractDBTest {
 
 	@Autowired
 	private GenericFileService<GenericFile> fileService;
-	
+
 	@Before
 	public void setup() {
 		setupData();
@@ -32,10 +30,22 @@ public class GenericFileTest extends AbstractDBTest {
 		GenericFile file = fileService.findByPath(DummyDataProvider.PROJECT_NAME, "/subtag/english.html");
 		assertNotNull("A file within the given path should be found.", file);
 
-		
 		// Check whether we can load the english content of the found file
 		Content content = (Content) file;
 		Language english = getDataProvider().getEnglish();
 		assertEquals("The content of the found file did not match the expected one.", DummyDataProvider.ENGLISH_CONTENT, content.getContent(english));
+	}
+
+	@Test
+	public void testDeleteFile() {
+		Content file = getDataProvider().getContent();
+		fileService.delete(file);
+		assertNull(fileService.findOne(file.getId()));
+		assertNull(fileService.findByUUID(file.getUuid()));
+	}
+
+	@Test
+	public void testDeleteFileWithMissingPermission() {
+		fail("Not yet implemented");
 	}
 }

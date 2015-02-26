@@ -23,7 +23,9 @@ public interface GenericNodeService<T extends GenericNode> {
 	public T findByName(String project, String name);
 
 	public T findByUUID(String project, String uuid);
-	
+
+	public T findByUUID(String uuid);
+
 	public T reload(T node);
 
 }
