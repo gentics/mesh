@@ -23,5 +23,8 @@ public interface ObjectSchemaRepository extends GenericNodeRepository<ObjectSche
 	 */
 	@Query("MATCH (n:ObjectSchema {uuid: {0}}), OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema), OPTIONAL MATCH (n)-[r2]-() DELETE n,r,p,r2")
 	public void deleteByUuid(String uuid);
+	
+	@Query("MATCH (n:ObjectSchema)-[:ASSIGNED_TO_PROJECT]-(p:Project) WHERE p.name = {0} return n")
+	public Iterable<ObjectSchema> findAll(String projectName);
 
 }

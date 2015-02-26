@@ -1,11 +1,13 @@
 package com.gentics.cailun.core.data.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.test.AbstractDBTest;
@@ -25,6 +27,19 @@ public class ObjectSchemaTest extends AbstractDBTest {
 	public void testFindByName() {
 		assertNotNull(objectSchemaService.findByName(DummyDataProvider.PROJECT_NAME, "content"));
 		assertNull(objectSchemaService.findByName(DummyDataProvider.PROJECT_NAME, "content1235"));
+	}
+
+	@Test
+	public void testFindAllSchemasForProject() {
+		Iterable<ObjectSchema> result = objectSchemaService.findAll(DummyDataProvider.PROJECT_NAME);
+
+		int nSchemas = 0;
+		for (ObjectSchema schema : result) {
+			assertNotNull(schema);
+			nSchemas++;
+		}
+		assertEquals("There should be exactly one object schema for the given project with the name {" + DummyDataProvider.PROJECT_NAME + "}", 2,
+				nSchemas);
 	}
 
 	@Test

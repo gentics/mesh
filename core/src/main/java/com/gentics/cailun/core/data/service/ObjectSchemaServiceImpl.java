@@ -1,10 +1,13 @@
 package com.gentics.cailun.core.data.service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
@@ -30,14 +33,20 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public Result<ObjectSchema> findAll(String project) {
-		// TODO Impl
-		return null;
+	public List<ObjectSchema> findAll(String projectName) {
+		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+			List<ObjectSchema> list = new ArrayList<>();
+			for (ObjectSchema schema : schemaRepository.findAll(projectName)) {
+				list.add(schema);
+			}
+			tx.success();
+			return list;
+		}
 	}
 
 	@Override
-	public ObjectSchema findByUUID(String project, String uuid) {
-		return schemaRepository.findByUUID(project, uuid);
+	public ObjectSchema findByUUID(String projectName, String uuid) {
+		return schemaRepository.findByUUID(projectName, uuid);
 	}
 
 	@Override

@@ -6,6 +6,9 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -64,25 +67,38 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandlers() {
+		// produces(APPLICATION_JSON)
+		route("/").method(GET).handler(rh -> {
+			String projectName = getProjectName(rh);
+			Iterable<ObjectSchema> projectSchemas = schemaService.findAll(projectName);
+			Map<String, RestObjectSchema> resultMap = new HashMap<>();
+			if (projectSchemas == null) {
+				rh.response().end(toJson(resultMap));
+				return;
+			}
+			for (ObjectSchema schema : projectSchemas) {
+				RestObjectSchema restSchema = schemaService.getReponseObject(schema);
+				resultMap.put(schema.getName(), restSchema);
+			}
+			rh.response().end(toJson(resultMap));
+			return;
+		});
+
 		route("/:uuidOrName").method(GET).handler(rh -> {
-			
+
 			String projectName = getProjectName(rh);
 			String uuidOrName = rh.request().params().get("uuidOrName");
 			if (isUUID(uuidOrName)) {
 				ObjectSchema projectSchema = schemaService.findByUUID(projectName, uuidOrName);
 				rh.response().end(toJson(projectSchema));
+				return;
 			} else {
 				ObjectSchema projectSchema = schemaService.findByName(projectName, uuidOrName);
 				RestObjectSchema schemaForRest = schemaService.getReponseObject(projectSchema);
 				rh.response().end(toJson(schemaForRest));
+				return;
 			}
 
-		});
-
-		route("/").method(GET).handler(rh -> {
-			String project = getProjectName(rh);
-			Result<ObjectSchema> projectSchemas = schemaService.findAll(project);
-			rh.response().end(toJson(projectSchemas));
 		});
 
 	}

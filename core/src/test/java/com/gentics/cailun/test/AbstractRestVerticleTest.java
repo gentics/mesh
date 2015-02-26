@@ -1,5 +1,6 @@
 package com.gentics.cailun.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import io.vertx.core.Vertx;
@@ -36,7 +37,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private int port;
 
-	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
+	private static final Integer DEFAULT_TIMEOUT_SECONDS = 100;
 
 	private HttpClient client;
 
@@ -155,6 +156,11 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 				throwable.set(e);
 			}
 		}
+	}
+
+	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
+		String sanitizedJson = unsanitizedResponseJson.replaceAll("uuid\":\"[^\"]*\"", "uuid\":\"uuid-value\"");
+		assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
 }

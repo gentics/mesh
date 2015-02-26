@@ -37,9 +37,17 @@ public class GenericFileTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testDeleteFile() {
+	public void testDeleteFileByObject() {
 		Content file = getDataProvider().getContent();
 		fileService.delete(file);
+		assertNull(fileService.findOne(file.getId()));
+		assertNull(fileService.findByUUID(file.getUuid()));
+	}
+	
+	@Test
+	public void testDeleteFileByUUID() {
+		Content file = getDataProvider().getContent();
+		fileService.deleteByUUID(file.getUuid());
 		assertNull(fileService.findOne(file.getId()));
 		assertNull(fileService.findByUUID(file.getUuid()));
 	}

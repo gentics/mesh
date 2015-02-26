@@ -180,6 +180,16 @@ public class DummyDataProvider {
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			assertNotNull(objectSchemaService.save(contentSchema));
 
+			ObjectSchema customSchema = new ObjectSchema("custom-content");
+			customSchema.setProject(dummyProject);
+			customSchema.setDescription("Custom schema for contents");
+			customSchema.setCreator(testUser);
+			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
+			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			customSchema.addPropertyTypeSchema(new PropertyTypeSchema("secret", PropertyType.STRING));
+			assertNotNull(objectSchemaService.save(customSchema));
+
 			tx.success();
 		}
 		content = contentService.reload(content);

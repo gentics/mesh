@@ -13,5 +13,7 @@ public interface ProjectService extends GenericNodeService<Project> {
 
 	RestProject getResponseObject(Project project);
 
+	void deleteByName(String name);
+
 
 }

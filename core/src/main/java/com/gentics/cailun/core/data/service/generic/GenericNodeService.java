@@ -13,16 +13,18 @@ public interface GenericNodeService<T extends GenericNode> {
 	public void save(List<T> nodes);
 
 	public void delete(T node);
+	
+	public void deleteByUUID(String uuid);
 
 	public T findOne(Long id);
 
 	public Result<T> findAll();
 
-	public Result<T> findAll(String project);
+	public Iterable<T> findAll(String projectName);
 
-	public T findByName(String project, String name);
+	public T findByName(String projectName, String name);
 
-	public T findByUUID(String project, String uuid);
+	public T findByUUID(String projectName, String uuid);
 
 	public T findByUUID(String uuid);
 

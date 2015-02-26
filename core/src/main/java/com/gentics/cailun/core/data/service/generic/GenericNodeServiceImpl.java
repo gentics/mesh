@@ -11,17 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.repository.I18NValueRepository;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
 @Transactional
 public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNodeService<T> {
 
 	@Autowired
-	I18NValueRepository i18nPropertyRepository;
+	protected I18NValueRepository i18nPropertyRepository;
 
 	@Autowired
 	@Qualifier("genericNodeRepository")
-	GenericNodeRepository<T> nodeRepository;
+	protected GenericNodeRepository<T> nodeRepository;
+
+	@Autowired
+	protected CaiLunSpringConfiguration springConfig;
 
 	@Override
 	public T save(T node) {
@@ -51,7 +55,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	}
 
 	@Override
-	public Result<T> findAll(String project) {
+	public Iterable<T> findAll(String project) {
 		return nodeRepository.findAll(project);
 	}
 
@@ -73,6 +77,11 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	@Override
 	public T findByUUID(String uuid) {
 		return nodeRepository.findByUUID(uuid);
+	}
+
+	@Override
+	public void deleteByUUID(String uuid) {
+		nodeRepository.deleteByUuid(uuid);
 	}
 
 }

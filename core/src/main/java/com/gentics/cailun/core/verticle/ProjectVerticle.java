@@ -47,20 +47,37 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuidOrName").method(DELETE).handler(rc -> {
-			String name = rc.request().params().get("uuidOrName");
-			springConfig.routerStorage().removeProjectRouter(name);
-			rc.response().end("Deleted project {" + name + "}");
+			String uuidOrName = rc.request().params().get("uuidOrName");
+			Project project = null;
+
+			if (UUIDUtil.isUUID(uuidOrName)) {
+				project = projectService.findByName(uuidOrName);
+			} else {
+				project = projectService.findByName(uuidOrName);
+			}
+			if (project != null) {
+				String name = project.getName();
+				springConfig.routerStorage().removeProjectRouter(name);
+				projectService.delete(project);
+				//TODO json
+				rc.response().end("Deleted project {" + name + "}");
+			} else {
+				// TODO i18n error message?
+				String message = "Project not found {" + uuidOrName + "}";
+				rc.response().setStatusCode(404);
+				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+			}
 		});
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuidOrName").method(PUT).handler(rc -> {
+		route("/:uuidOrName").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
 
 		});
 	}
 
 	private void addCreateHandler() {
-		route("/:uuidOrName").method(POST).handler(rc -> {
+		route("/:uuidOrName").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 			// TODO also create a default object schema for the project. Move this into service class
 			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
 				String uuidOrName = rc.request().params().get("uuidOrName");

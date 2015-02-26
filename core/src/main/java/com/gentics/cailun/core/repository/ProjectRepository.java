@@ -8,4 +8,6 @@ public interface ProjectRepository extends GenericNodeRepository<Project>, Proje
 
 	Project findByName(String string);
 
+	void deleteByName(String name);
+
 }

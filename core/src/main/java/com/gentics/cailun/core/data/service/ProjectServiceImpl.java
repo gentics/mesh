@@ -34,4 +34,9 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 		return restProject;
 	}
 
+	@Override
+	public void deleteByName(String name) {
+		projectRepository.deleteByName(name);
+	}
+
 }
