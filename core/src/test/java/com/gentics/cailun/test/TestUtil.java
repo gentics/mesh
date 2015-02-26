@@ -1,7 +1,15 @@
 package com.gentics.cailun.test;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.net.ServerSocket;
+
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import com.gentics.cailun.core.rest.response.AbstractRestModel;
 
 public final class TestUtil {
 
@@ -34,5 +42,15 @@ public final class TestUtil {
 				}
 			}
 		}
+	}
+
+	public static <T extends AbstractRestModel> void assertEqualsSanitizedJson(String expectedJson, String unsanitizedResponseJson,
+			Class<T> modelClazz) throws JsonGenerationException, JsonMappingException, IOException {
+		T responseObject = new ObjectMapper().readValue(unsanitizedResponseJson, modelClazz);
+		assertNotNull(responseObject);
+		// Update the uuid and compare json afterwards
+		responseObject.setUuid("uuid-value");
+		String sanitizedJson = new ObjectMapper().writeValueAsString(responseObject);
+		org.junit.Assert.assertEquals("The response json did not match the expected one.", expectedJson, sanitizedJson);
 	}
 }

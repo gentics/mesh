@@ -47,3 +47,4 @@ public class GroupsVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("The response json did not match the expected one.", expectedJson, sanitizedJson);
 	}
 }
+ 

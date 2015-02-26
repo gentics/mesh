@@ -1,5 +1,6 @@
 package com.gentics.cailun.test;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -12,17 +13,22 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.apache.commons.codec.binary.Base64;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.core.rest.response.AbstractRestModel;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 

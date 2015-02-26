@@ -5,20 +5,29 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.repository.ProjectRepository;
+import com.gentics.cailun.core.data.service.ProjectService;
+import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.response.RestProject;
+import com.gentics.cailun.util.UUIDUtil;
 
+@Component
+@Scope("singleton")
+@SpringVerticle
 public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectVerticle.class);
 
 	@Autowired
-	private ProjectRepository projectRepository;
+	private ProjectService projectService;
 
 	protected ProjectVerticle() {
 		super("projects");
@@ -26,44 +35,77 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		// TODO Auto-generated method stub
-		addProjectHandlers();
+		addCRUDHandlers();
 	}
 
-	private void addProjectHandlers() {
-		route("/:nameOrUuid").method(GET).handler(ctx -> {
-			String nameOrUuid = ctx.request().params().get("nameOrUuid");
-			// TODO prefix uuids to identify them "@uid:" or similar
-			// TODO check for uuid or name
-			// TODO add check whether project was already registered/added
-				Project project = projectRepository.findByName(nameOrUuid);
-				if (project == null) {
-					project = new Project(nameOrUuid);
-					projectRepository.save(project);
-				}
-				try {
-					springConfig.routerStorage().addProjectRouter(nameOrUuid);
-					log.info("Registered project {" + nameOrUuid + "}");
-					ctx.response().end("Registered project {" + nameOrUuid + "}");
-				} catch (Exception e) {
-					ctx.fail(409);
-					ctx.fail(e);
-				}
-			});
+	private void addCRUDHandlers() {
+		addCreateHandler();
+		addReadHandler();
+		addUpdateHandler();
+		addDeleteHandler();
+	}
 
-		route("/projects/:name").method(DELETE).handler(ctx -> {
-			String name = ctx.request().params().get("name");
+	private void addDeleteHandler() {
+		route("/:uuidOrName").method(DELETE).handler(rc -> {
+			String name = rc.request().params().get("uuidOrName");
 			springConfig.routerStorage().removeProjectRouter(name);
-			ctx.response().end("Deleted project {" + name + "}");
+			rc.response().end("Deleted project {" + name + "}");
 		});
+	}
 
-		route("/projects/").method(POST).handler(ctx -> {
+	private void addUpdateHandler() {
+		route("/:uuidOrName").method(PUT).handler(rc -> {
+
+		});
+	}
+
+	private void addCreateHandler() {
+		route("/:uuidOrName").method(POST).handler(rc -> {
 			// TODO also create a default object schema for the project. Move this into service class
 			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
+				String uuidOrName = rc.request().params().get("uuidOrName");
+
+				Project project = projectService.findByName(uuidOrName);
+				if (project == null) {
+					project = new Project(uuidOrName);
+					projectService.save(project);
+				}
+				try {
+					springConfig.routerStorage().addProjectRouter(uuidOrName);
+					log.info("Registered project {" + uuidOrName + "}");
+					rc.response().end("Registered project {" + uuidOrName + "}");
+				} catch (Exception e) {
+					rc.fail(409);
+					rc.fail(e);
+				}
+			});
+	}
+
+	private void addReadHandler() {
+		route("/:uuidOrName").method(GET).handler(rc -> {
+			String uuidOrName = rc.request().params().get("uuidOrName");
+			// TODO prefix uuids to identify them "urn:uuid:" or similar
+			// TODO check for uuid or name
+			// TODO add check whether project was already registered/added
+				Project project = null;
+
+				if (UUIDUtil.isUUID(uuidOrName)) {
+					project = projectService.findByUUID(uuidOrName);
+				} else {
+					project = projectService.findByName(uuidOrName);
+				}
+				if (project != null) {
+					RestProject restProject = projectService.getResponseObject(project);
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(restProject));
+				} else {
+					// TODO i18n error message?
+					String message = "Project not found {" + uuidOrName + "}";
+					rc.response().setStatusCode(404);
+					rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				}
+
 			});
 
-		route("/projects/:nameOrUuid").method(PUT).handler(ctx -> {
-
-		});
 	}
 }

@@ -81,6 +81,8 @@ public class DummyDataProvider {
 
 	private Group adminGroup;
 
+	private Project dummyProject;
+
 	private DummyDataProvider() {
 	}
 
@@ -109,7 +111,6 @@ public class DummyDataProvider {
 			adminGroup = groupService.save(adminGroup);
 
 			// Contents, Tags, Projects
-
 			english = new Language("english", "en_US");
 			english = languageService.save(english);
 			german = new Language("german", "de_DE");
@@ -143,7 +144,7 @@ public class DummyDataProvider {
 			subTag.addTag(subTag2);
 			subTag = tagService.save(subTag);
 
-			Project dummyProject = new Project(PROJECT_NAME);
+			dummyProject = new Project(PROJECT_NAME);
 			dummyProject.setRootTag(rootTag);
 			// TODO add schema
 			dummyProject = projectService.save(dummyProject);
@@ -179,6 +180,7 @@ public class DummyDataProvider {
 		}
 		content = contentService.reload(content);
 		adminGroup = groupService.reload(adminGroup);
+		dummyProject = projectService.reload(dummyProject);
 
 	}
 
@@ -203,5 +205,9 @@ public class DummyDataProvider {
 
 	public Group getAdminGroup() {
 		return adminGroup;
+	}
+
+	public Project getProject() {
+		return dummyProject;
 	}
 }
