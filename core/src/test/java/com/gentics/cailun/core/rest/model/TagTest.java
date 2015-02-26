@@ -7,8 +7,10 @@ import static org.junit.Assert.assertTrue;
 
 import javax.transaction.NotSupportedException;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
@@ -29,6 +31,11 @@ public class TagTest extends AbstractDBTest {
 
 	@Autowired
 	private ContentService contentService;
+
+	@Before
+	public void setup() {
+		setupData();
+	}
 
 	@Test
 	public void testLocalizedFolder() {
@@ -112,6 +119,7 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
+	@Transactional
 	public void testNodeProperties() {
 		final String TEST_PROPERTY_KEY = "myProperty";
 		final String TEST_PROPERTY_VALUE = "myValue";

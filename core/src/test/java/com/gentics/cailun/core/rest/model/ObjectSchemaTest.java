@@ -1,7 +1,9 @@
 package com.gentics.cailun.core.rest.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,6 +15,11 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Autowired
 	ObjectSchemaService objectSchemaService;
+
+	@Before
+	public void setup() {
+		setupData();
+	}
 
 	@Test
 	public void testFindByName() {

@@ -3,6 +3,7 @@ package com.gentics.cailun.core.rest.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,6 +15,11 @@ public class RoleTest extends AbstractDBTest {
 
 	@Autowired
 	RoleRepository roleRepository;
+
+	@Before
+	public void setup() {
+		setupData();
+	}
 
 	@Test
 	public void testCreation() {

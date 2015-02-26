@@ -2,6 +2,7 @@ package com.gentics.cailun.core.rest.model;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,6 +14,11 @@ public class UserTest extends AbstractDBTest {
 
 	@Autowired
 	UserRepository userRepository;
+
+	@Before
+	public void setup() {
+		setupData();
+	}
 
 	@Test
 	public void testUserCreation() {

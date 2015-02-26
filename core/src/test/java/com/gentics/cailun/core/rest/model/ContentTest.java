@@ -1,5 +1,6 @@
 package com.gentics.cailun.core.rest.model;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,6 +16,11 @@ public class ContentTest extends AbstractDBTest {
 
 	@Autowired
 	TagRepository folderRepository;
+	
+	@Before
+	public void setup() {
+		setupData();
+	}
 
 	/**
 	 * Test linking two contents

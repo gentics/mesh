@@ -3,8 +3,10 @@ package com.gentics.cailun.core.rest.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
@@ -23,6 +25,11 @@ public class ProjectTest extends AbstractDBTest {
 	@Autowired
 	private ContentService contentService;
 
+	@Before
+	public void setup() {
+		setupData();
+	}
+
 	@Test
 	public void testCreation() {
 
@@ -34,6 +41,7 @@ public class ProjectTest extends AbstractDBTest {
 	}
 
 	@Test
+	@Transactional
 	public void testProjectFileLocating() {
 
 		Language english = languageService.findByName("english");
