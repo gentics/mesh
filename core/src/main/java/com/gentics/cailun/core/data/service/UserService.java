@@ -10,6 +10,6 @@ public interface UserService extends GenericNodeService<User> {
 
 	User findByUsername(String username);
 
-	RestUser getResponseObject(User creator);
+	RestUser getResponseObject(User user);
 
 }

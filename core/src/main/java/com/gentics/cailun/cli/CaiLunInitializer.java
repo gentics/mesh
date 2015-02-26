@@ -1,12 +1,16 @@
 package com.gentics.cailun.cli;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.spi.cluster.VertxSPI;
 import io.vertx.spi.cluster.impl.hazelcast.HazelcastClusterManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
@@ -26,6 +30,13 @@ import com.gentics.cailun.core.repository.LanguageRepository;
 import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.UserRepository;
+import com.gentics.cailun.core.verticle.ContentVerticle;
+import com.gentics.cailun.core.verticle.GroupVerticle;
+import com.gentics.cailun.core.verticle.ObjectSchemaVerticle;
+import com.gentics.cailun.core.verticle.ProjectVerticle;
+import com.gentics.cailun.core.verticle.RoleVerticle;
+import com.gentics.cailun.core.verticle.TagVerticle;
+import com.gentics.cailun.core.verticle.UserVerticle;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
@@ -34,6 +45,8 @@ import com.gentics.cailun.etc.config.CaiLunConfiguration;
 public class CaiLunInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(CaiLunInitializer.class);
+
+	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
 	private CaiLunConfiguration configuration;
 
@@ -57,15 +70,53 @@ public class CaiLunInitializer {
 
 	@Autowired
 	ObjectSchemaService objectSchemaService;
-	
+
 	@Autowired
 	CaiLunSpringConfiguration springConfiguration;
 
+	public CaiLunInitializer() {
+		addMandatoryVerticle(TagVerticle.class);
+		addMandatoryVerticle(ContentVerticle.class);
+		addMandatoryVerticle(UserVerticle.class);
+
+		addMandatoryVerticle(GroupVerticle.class);
+		addMandatoryVerticle(RoleVerticle.class);
+		addMandatoryVerticle(ProjectVerticle.class);
+		addMandatoryVerticle(ObjectSchemaVerticle.class);
+		// mandatoryVerticles.add(SearchVerticle.class);
+		// mandatoryVerticles.add(AuthenticationVerticle.class);
+		// mandatoryVerticles.add(AdminVerticle.class);
+
+	}
+
+	private void addMandatoryVerticle(Class<? extends AbstractVerticle> clazz) {
+		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
+	}
+
 	/**
 	 * Load verticles that are configured within the cailun configuration.
+	 * 
+	 * @throws InterruptedException
 	 */
-	private void loadConfiguredVerticles() {
+	private void loadConfiguredVerticles() throws InterruptedException {
+		JsonObject defaultConfig = new JsonObject();
+		defaultConfig.put("port", configuration.getHttpPort());
+
+		for (Class<? extends AbstractVerticle> clazz : getMandatoryVerticleClasses().values()) {
+			try {
+				log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+				// TODO handle custom config? i assume we will not allow this
+				deployAndWait(springConfiguration.vertx(), defaultConfig, clazz);
+			} catch (InterruptedException e) {
+				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
+			}
+		}
+
 		for (String verticleName : configuration.getVerticles().keySet()) {
+			if (getMandatoryVerticleClasses().containsKey(verticleName)) {
+				log.error("Can't configure mandatory verticles. Skipping configured verticle {" + verticleName + "}");
+				continue;
+			}
 			CaiLunVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
 			JsonObject mergedVerticleConfig = new JsonObject();
 			if (verticleConf.getVerticleConfig() != null) {
@@ -79,6 +130,10 @@ public class CaiLunInitializer {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}
 		}
+	}
+
+	private Map<String, Class<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
+		return mandatoryVerticles;
 	}
 
 	/**
@@ -146,7 +201,7 @@ public class CaiLunInitializer {
 			log.info("Stored root node");
 		}
 		// Reload the node to get one with a valid uuid
-		//TODO check whether this really works. I assume i would have to commit first.
+		// TODO check whether this really works. I assume i would have to commit first.
 		rootNode = rootRepository.findRoot();
 
 		Language german = languageRepository.findByName("german");

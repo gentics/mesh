@@ -28,7 +28,7 @@ public class DemoRunner {
 		cailun.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", 8080);
-			deployAndWait(vertx, config,CustomerVerticle.class);
+			deployAndWait(vertx, config, CustomerVerticle.class);
 			// deployAndWait(vertx, AuthenticationVerticle.class);
 			// deployAndWait(vertx, NavigationVerticle.class);
 			// deployAndWait(vertx, TagCloudVerticle.class);
