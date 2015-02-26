@@ -8,13 +8,14 @@ import com.gentics.cailun.core.data.model.generic.GenericNode;
 @NoRepositoryBean
 public interface UUIDCRUDActions<T extends GenericNode> {
 
-	@Query("MATCH (content:GenericNode) WHERE content.uuid = {0} return content")
+	@Query("MATCH (n:GenericNode) WHERE n.uuid = {0} return n")
 	public T findByUUID(String uuid);
 
-	@Query("MATCH (n:Content {uuid: {0}} DELETE n")
-	public void delete(String uuid);
+	@Query("MATCH (n:GenericNode {uuid: {0}}) DELETE n")
+	public void deleteByUuid(String uuid);
 
-	// T findCustomerNodeBySomeStrangeCriteria(Object strangeCriteria);
+	@Query("MATCH (project:Project)<-[:ASSIGNED_TO_PROJECT]-(n:GenericNode {name: {1}}) WHERE project.name = {0} DELETE n")
+	public void deleteByName(String projectName, String schemaName);
 
 	@Query("MATCH (project:Project)<-[:ASSIGNED_TO_PROJECT]-(n:GenericNode)-[:HAS_I18N_PROPERTIES]->(p:I18NProperties) WHERE p.`properties-name` = {1} AND project.name = {0} RETURN n")
 	public T findByI18Name(String project, String name);

@@ -3,7 +3,6 @@ package com.gentics.cailun.core.data.service.generic;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;

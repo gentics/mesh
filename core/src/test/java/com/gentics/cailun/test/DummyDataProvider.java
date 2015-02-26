@@ -85,6 +85,8 @@ public class DummyDataProvider {
 
 	private Role adminRole;
 
+	private ObjectSchema contentSchema;
+
 	private DummyDataProvider() {
 	}
 
@@ -169,7 +171,7 @@ public class DummyDataProvider {
 			subTag = tagService.save(subTag);
 
 			// Save the default object schema
-			ObjectSchema contentSchema = new ObjectSchema("content");
+			contentSchema = new ObjectSchema("content");
 			contentSchema.setProject(dummyProject);
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setCreator(testUser);
@@ -184,6 +186,7 @@ public class DummyDataProvider {
 		adminGroup = groupService.reload(adminGroup);
 		dummyProject = projectService.reload(dummyProject);
 		adminRole = roleService.reload(adminRole);
+		contentSchema = objectSchemaService.reload(contentSchema);
 
 	}
 
@@ -216,5 +219,9 @@ public class DummyDataProvider {
 
 	public Role getAdminRole() {
 		return adminRole;
+	}
+
+	public ObjectSchema getContentSchema() {
+		return contentSchema;
 	}
 }

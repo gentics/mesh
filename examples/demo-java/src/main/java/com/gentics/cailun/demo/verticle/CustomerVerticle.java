@@ -22,7 +22,10 @@ import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.PropertyType;
+import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
@@ -30,6 +33,7 @@ import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.generic.GenericContent;
+import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.CaiLunRootService;
 import com.gentics.cailun.core.data.service.ContentService;
@@ -76,6 +80,9 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private RoleService roleService;
+	
+	@Autowired
+	private ObjectSchemaService objectSchemaService;
 
 	@Autowired
 	private GroupService groupService;
@@ -209,6 +216,17 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		aloha.setRootTag(rootTag);
 		projectService.save(aloha);
+		
+		// Save the default object schema
+		ObjectSchema contentSchema = new ObjectSchema("content");
+		contentSchema.setProject(aloha);
+		contentSchema.setDescription("Default schema for contents");
+		contentSchema.setCreator(users.get(0));
+		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
+		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+		objectSchemaService.save(contentSchema);
+
 
 		// Contents
 		Content rootContent = new Content();

@@ -37,8 +37,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 	@Override
 	public ObjectSchema findByUUID(String project, String uuid) {
-		schemaRepository.findByUUID(project, uuid);
-		return null;
+		return schemaRepository.findByUUID(project, uuid);
 	}
 
 	@Override
@@ -59,7 +58,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 		// Sort the property types schema. Otherwise rest response is erratic
 		Set<PropertyTypeSchema> treeSet = new TreeSet<PropertyTypeSchema>(new PropertTypeSchemaComparator());
-		//TODO we need to add checks that prevents multiple schemas with the same key
+		// TODO we need to add checks that prevents multiple schemas with the same key
 		treeSet.addAll(schema.getPropertyTypeSchemas());
 
 		for (PropertyTypeSchema propertyTypeSchema : treeSet) {
@@ -71,6 +70,16 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
 		}
 		return schemaForRest;
+	}
+
+	@Override
+	public void deleteByName(String projectName, String schemaName) {
+		schemaRepository.deleteByName(projectName, schemaName);
+	}
+
+	@Override
+	public void deleteByUUID(String uuid) {
+		schemaRepository.deleteByUuid(uuid);
 	}
 }
 
