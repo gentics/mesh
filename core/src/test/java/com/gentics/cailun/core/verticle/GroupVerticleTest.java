@@ -13,7 +13,7 @@ import com.gentics.cailun.core.rest.response.RestGroup;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
 
-public class GroupsVerticleTest extends AbstractRestVerticleTest {
+public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupVerticle groupsVerticle;
