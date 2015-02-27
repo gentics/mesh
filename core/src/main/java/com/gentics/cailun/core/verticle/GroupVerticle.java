@@ -57,8 +57,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addReadHandler() {
 		route("/:uuidOrName").method(GET).handler(rc -> {
 			String uuidOrName = rc.request().params().get("uuidOrName");
-			if(uuidOrName==null) {
-				//TODO handle this case
+			if (uuidOrName == null) {
+				// TODO handle this case
 			}
 			Group group = null;
 			if (UUIDUtil.isUUID(uuidOrName)) {
