@@ -36,6 +36,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 			return null;
 		}
 		RestUser restUser = new RestUser();
+		restUser.setUuid(user.getUuid());
 		restUser.setUsername(user.getUsername());
 		restUser.setEmailAddress(user.getEmailAddress());
 		restUser.setFirstname(user.getFirstname());

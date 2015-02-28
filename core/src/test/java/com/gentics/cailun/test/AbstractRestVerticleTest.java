@@ -160,7 +160,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
 		String sanitizedJson = unsanitizedResponseJson.replaceAll("uuid\":\"[^\"]*\"", "uuid\":\"uuid-value\"");
-		assertEquals(msg, expectedJson, sanitizedJson);
+		org.junit.Assert.assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
 }

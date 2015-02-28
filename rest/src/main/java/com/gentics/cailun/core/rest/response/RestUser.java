@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.rest.response;
 
-public class RestUser {
+public class RestUser extends AbstractRestModel {
 
 	private String lastname;
 

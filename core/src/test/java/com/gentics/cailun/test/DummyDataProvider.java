@@ -87,6 +87,8 @@ public class DummyDataProvider {
 
 	private ObjectSchema contentSchema;
 
+	private User testUser;
+
 	private DummyDataProvider() {
 	}
 
@@ -98,7 +100,7 @@ public class DummyDataProvider {
 
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 			// User, Groups, Roles
-			User testUser = new User(USER_JOE_USERNAME);
+			testUser = new User(USER_JOE_USERNAME);
 			userService.setPassword(testUser, USER_JOE_PASSWORD);
 			testUser.setFirstname("Joe");
 			testUser.setLastname("Doe");
@@ -197,6 +199,7 @@ public class DummyDataProvider {
 		dummyProject = projectService.reload(dummyProject);
 		adminRole = roleService.reload(adminRole);
 		contentSchema = objectSchemaService.reload(contentSchema);
+		testUser = userService.reload(testUser);
 
 	}
 
@@ -233,5 +236,9 @@ public class DummyDataProvider {
 
 	public ObjectSchema getContentSchema() {
 		return contentSchema;
+	}
+
+	public User getTestUser() {
+		return testUser;
 	}
 }
