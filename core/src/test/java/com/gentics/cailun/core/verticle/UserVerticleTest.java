@@ -36,7 +36,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = getDataProvider().getTestUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
-		System.out.println(response);
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -45,8 +44,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadAllUsers() {
-		fail("Not yet implemented");
+	public void testReadAllUsers() throws Exception {
+		String json = "";
+		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/users/", 200, "OK");
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
