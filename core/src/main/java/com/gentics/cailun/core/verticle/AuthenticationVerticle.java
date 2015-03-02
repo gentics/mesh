@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
-import com.gentics.cailun.core.rest.response.GenericResponse;
 
 @Component
 @Scope("singleton")
@@ -40,9 +39,9 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	private void addLoginHandler() {
 		route("/login").consumes(ContentType.APPLICATION_JSON.getMimeType()).method(GET).handler(rc -> {
-			GenericResponse<String> response = new GenericResponse<>();
-			response.setObject("OK");
-			rc.response().end(toJson(response));
+//			GenericResponse<String> response = new GenericResponse<>();
+//			response.setObject("OK");
+//			rc.response().end(toJson(response));
 		});
 
 	}

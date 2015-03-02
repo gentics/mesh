@@ -1,5 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
+import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -11,6 +12,7 @@ import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.response.GenericSuccessResponse;
 import com.gentics.cailun.core.rest.response.RestUser;
 import com.gentics.cailun.util.UUIDUtil;
 
@@ -65,7 +67,29 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDeleteHandler() {
+		route("/:uuidOrName").method(DELETE).handler(rc -> {
+			String uuidOrName = rc.request().params().get("uuidOrName");
+			User user = null;
+			if (UUIDUtil.isUUID(uuidOrName)) {
+				user = userService.findByUUID(uuidOrName);
+			} else {
+				user = userService.findByUsername(uuidOrName);
+			}
 
+			if (user != null) {
+				// TODO handle permissions
+				userService.delete(user);
+				rc.response().setStatusCode(200);
+				// TODO better response
+				rc.response().end(toJson(new GenericSuccessResponse("OK")));
+			} else {
+				// TODO i18n error message?
+				String message = "Group not found {" + uuidOrName + "}";
+				rc.response().setStatusCode(404);
+				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+			}
+
+		});
 	}
 
 	private void addUpdateHandler() {
