@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.service.generic.GenericFileService;
 import com.gentics.cailun.test.AbstractDBTest;
-import com.gentics.cailun.test.DummyDataProvider;
+import com.gentics.cailun.test.TestDataProvider;
 
 public class GenericFileTest extends AbstractDBTest {
 
@@ -27,18 +27,18 @@ public class GenericFileTest extends AbstractDBTest {
 	public void testProjectFileLocatingByPath() {
 
 		@SuppressWarnings("rawtypes")
-		GenericFile file = fileService.findByPath(DummyDataProvider.PROJECT_NAME, "/subtag/english.html");
+		GenericFile file = fileService.findByPath(TestDataProvider.PROJECT_NAME, "/subtag/english.html");
 		assertNotNull("A file within the given path should be found.", file);
 
 		// Check whether we can load the english content of the found file
 		Content content = (Content) file;
-		Language english = getData().getEnglish();
-		assertEquals("The content of the found file did not match the expected one.", DummyDataProvider.ENGLISH_CONTENT, content.getContent(english));
+		Language english = data().getEnglish();
+		assertEquals("The content of the found file did not match the expected one.", TestDataProvider.ENGLISH_CONTENT, content.getContent(english));
 	}
 
 	@Test
 	public void testDeleteFileByObject() {
-		Content file = getData().getContent();
+		Content file = data().getContentLevel1A1();
 		fileService.delete(file);
 		assertNull(fileService.findOne(file.getId()));
 		assertNull(fileService.findByUUID(file.getUuid()));
@@ -46,7 +46,7 @@ public class GenericFileTest extends AbstractDBTest {
 	
 	@Test
 	public void testDeleteFileByUUID() {
-		Content file = getData().getContent();
+		Content file = data().getContentLevel1A1();
 		fileService.deleteByUUID(file.getUuid());
 		assertNull(fileService.findOne(file.getId()));
 		assertNull(fileService.findByUUID(file.getUuid()));

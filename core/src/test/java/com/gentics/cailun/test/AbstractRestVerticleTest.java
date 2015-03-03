@@ -52,7 +52,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		latch = new CountDownLatch(1);
 		throwable.set(null);
 
-		routerStorage.addProjectRouter(DummyDataProvider.PROJECT_NAME);
+		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
 
 		AbstractRestVerticle verticle = getVerticle();
 		// Inject spring config

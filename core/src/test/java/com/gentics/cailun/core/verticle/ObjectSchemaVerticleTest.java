@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
-import com.gentics.cailun.test.DummyDataProvider;
+import com.gentics.cailun.test.TestDataProvider;
 
 public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
@@ -24,22 +24,22 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadSchemaByName() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"content\",\"description\":\"Default schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null}]}";
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/content", 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/types/content", 200, "OK");
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadAllSchemasForProject() throws Exception {
 		String json = "{\"custom-content\":{\"uuid\":\"uuid-value\",\"name\":\"custom-content\",\"description\":\"Custom schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"string\",\"key\":\"secret\",\"desciption\":null}]},\"content\":{\"uuid\":\"uuid-value\",\"name\":\"content\",\"description\":\"Default schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null}]}}";
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/", 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/types/", 200, "OK");
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"content\",\"description\":\"Default schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null}]}";
-		ObjectSchema schema = getData().getContentSchema();
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/" + schema.getUuid(), 200,
+		ObjectSchema schema = data().getContentSchema();
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/types/" + schema.getUuid(), 200,
 				"OK");
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}

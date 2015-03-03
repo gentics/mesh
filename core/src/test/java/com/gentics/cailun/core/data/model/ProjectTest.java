@@ -32,7 +32,7 @@ public class ProjectTest extends AbstractDBTest {
 
 	@Test
 	public void testDeletion() {
-		Project project = getData().getProject();
+		Project project = data().getProject();
 		projectService.delete(project);
 		assertNull(projectService.findOne(project.getId()));
 		assertNull(projectService.findByUUID(project.getUuid()));

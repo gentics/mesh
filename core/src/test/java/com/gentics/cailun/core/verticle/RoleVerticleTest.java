@@ -26,18 +26,18 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadRoleByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"superadmin\"}";
-		Role adminRole = getData().getUserInfoAll().getRole();
+		Role adminRole = data().getUserInfoAll().getRole();
 		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/roles/" + adminRole.getUuid(), 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/roles/" + adminRole.getUuid(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
 	}
 
 	@Test
 	public void testReadRoleByName() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"superadmin\"}";
-		Role adminRole = getData().getUserInfoAll().getRole();
+		Role adminRole = data().getUserInfoAll().getRole();
 		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
 	}
 

@@ -19,6 +19,7 @@ import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -36,7 +37,7 @@ import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
-public class DummyDataProvider {
+public class TestDataProvider {
 
 	public static final String PROJECT_NAME = "dummy";
 	public static final String ENGLISH_CONTENT = "blessed mealtime!";
@@ -79,8 +80,6 @@ public class DummyDataProvider {
 
 	// References to dummy data
 
-	private Content content;
-
 	private Tag rootTag;
 
 	private Language english;
@@ -93,10 +92,28 @@ public class DummyDataProvider {
 
 	private HashMap<UserInfoType, UserInfo> userInfos = new HashMap<>();
 
-	private DummyDataProvider() {
+	private User defaultUser;
+
+	private Content contentLevel1A1;
+	private Content contentLevel1A2;
+	private Content contentLevel1A3;
+
+	private Content contentLevel2C1;
+	private Content contentLevel2C2;
+	private Content contentLevel2C3;
+
+	private Tag level1a;
+	private Tag level1b;
+	private Tag level1c;
+
+	private Tag level2a;
+	private Tag level2b;
+	private Tag level2c;
+
+	private TestDataProvider() {
 	}
 
-	public UserInfo addUserInfo(UserInfoType type, String firstname, String lastname) {
+	public Role addUserInfo(UserInfoType type, String firstname, String lastname) {
 
 		String password = new BigInteger(130, random).toString(32);
 		String username = type.name() + "_perm_user";
@@ -120,7 +137,7 @@ public class DummyDataProvider {
 
 		UserInfo userInfo = new UserInfo(user, group, role, password);
 		userInfos.put(type, userInfo);
-		return userInfo;
+		return role;
 
 	}
 
@@ -131,6 +148,10 @@ public class DummyDataProvider {
 	public void setup() {
 
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+
+			CaiLunRoot root = new CaiLunRoot();
+			dummyProject = new Project(PROJECT_NAME);
+
 			// User, Groups, Roles
 			addUserInfo(UserInfoType.none, "Spider", "man");
 			addUserInfo(UserInfoType.read, "Rocket", "Raccoon");
@@ -138,16 +159,16 @@ public class DummyDataProvider {
 			addUserInfo(UserInfoType.read_update_create, "Star", "Lord");
 			addUserInfo(UserInfoType.read_create, "Super", "Man");
 			addUserInfo(UserInfoType.read_create_delete, "Iron", "Man");
-			addUserInfo(UserInfoType.all, "Tony", "Stark");
+			Role allRole = addUserInfo(UserInfoType.all, "Tony", "Stark");
 
+			// Setup group hierarchy
 			Group adminGroup = userInfos.get(UserInfoType.all).getGroup();
-			User defaultUser = userInfos.get(UserInfoType.all).getUser();
+			defaultUser = userInfos.get(UserInfoType.all).getUser();
 			userInfos.values().stream().forEach(e -> {
 				if (adminGroup.getId() != e.getGroup().getId()) {
 					adminGroup.addGroup(e.getGroup());
 				}
 			});
-
 			groupService.save(adminGroup);
 
 			// Contents, Tags, Projects
@@ -156,57 +177,36 @@ public class DummyDataProvider {
 			german = new Language("german", "de_DE");
 			german = languageService.save(german);
 
-			CaiLunRoot rootNode = new CaiLunRoot();
-			rootNode.setRootGroup(adminGroup);
-			rootNode.addLanguage(english);
-			rootNode.addLanguage(german);
+			root.setRootGroup(adminGroup);
+			root.addLanguage(english);
+			root.addLanguage(german);
 			userInfos.values().stream().forEach(e -> {
-				rootNode.addUser(e.getUser());
+				root.addUser(e.getUser());
 			});
-			rootService.save(rootNode);
+			rootService.save(root);
 
 			// Root Tag
 			rootTag = new Tag();
 			tagService.setName(rootTag, english, "/");
 			rootTag = tagService.save(rootTag);
-
-			// Sub Tag
-			Tag subTag = new Tag();
-			tagService.setName(subTag, english, "subtag");
-			tagService.setName(subTag, german, "unterTag");
-			subTag = tagService.save(subTag);
-			rootTag.addTag(subTag);
-			tagService.save(rootTag);
-
-			// Sub Tag 2
-			Tag subTag2 = new Tag();
-			tagService.setName(subTag2, english, "subtag2");
-			tagService.setName(subTag2, german, "unterTag2");
-			subTag2 = tagService.save(subTag2);
-			subTag.addTag(subTag2);
-			subTag = tagService.save(subTag);
-
-			dummyProject = new Project(PROJECT_NAME);
 			dummyProject.setRootTag(rootTag);
-			// TODO add schema
 			dummyProject = projectService.save(dummyProject);
 			dummyProject = projectService.reload(dummyProject);
 
-			content = new Content();
-			contentService.setName(content, english, "english content name");
-			contentService.setFilename(content, english, "english.html");
-			contentService.setContent(content, english, ENGLISH_CONTENT);
+			// Subtags
+			level1a = addTag(rootTag, "level_1_a", "ebene_1_a");
+			level1b = addTag(rootTag, "level_1_b", "ebene_1_b");
+			level1c = addTag(rootTag, "level_1_c", "ebene_1_c");
+			contentLevel1A1 = addContent(level1a, "test_1", "Mahlzeit 1!", "Blessed Mealtime 1!");
+			contentLevel1A2 = addContent(level1a, "test_2", "Mahlzeit 2!", "Blessed Mealtime 2!");
+			contentLevel1A3 = addContent(level1a, "test_3", "Mahlzeit 3!", "Blessed Mealtime 3!");
 
-			contentService.setName(content, german, "german content name");
-			contentService.setFilename(content, german, "german.html");
-			contentService.setContent(content, german, "mahlzeit!");
-			// TODO maybe set project should be done inside the save?
-			content.setProject(dummyProject);
-			content.setCreator(defaultUser);
-			content = contentService.save(content);
-
-			subTag.addFile(content);
-			subTag = tagService.save(subTag);
+			level2a = addTag(level1a, "level_2_a", "ebene_2_a");
+			level2b = addTag(level1a, "level_2_b", "ebene_2_b");
+			level2c = addTag(level1a, "level_2_c", "ebene_2_c");
+			contentLevel2C1 = addContent(level2c, "test_1", "Mahlzeit 1!", "Blessed Mealtime 1!");
+			contentLevel2C2 = addContent(level2c, "test_2", "Mahlzeit 2!", "Blessed Mealtime 2!");
+			contentLevel2C3 = addContent(level2c, "test_3", "Mahlzeit 3!", "Blessed Mealtime 3!");
 
 			// Save the default object schema
 			contentSchema = new ObjectSchema("content");
@@ -228,10 +228,28 @@ public class DummyDataProvider {
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema("secret", PropertyType.STRING));
 			assertNotNull(objectSchemaService.save(customSchema));
 
+			// Setup permissions
+
+			contentLevel1A1.addPermission(new GraphPermission(allRole, contentLevel1A1));
 			tx.success();
 		}
 		// Reload various contents to refresh them and load the uuid field
-		content = contentService.reload(content);
+		contentLevel1A1 = contentService.reload(contentLevel1A1);
+		contentLevel1A2 = contentService.reload(contentLevel1A2);
+		contentLevel1A3 = contentService.reload(contentLevel1A3);
+
+		contentLevel2C1 = contentService.reload(contentLevel2C1);
+		contentLevel2C2 = contentService.reload(contentLevel2C2);
+		contentLevel2C3 = contentService.reload(contentLevel2C3);
+
+		level1a = tagService.reload(level1a);
+		level1b = tagService.reload(level1b);
+		level1c = tagService.reload(level1c);
+
+		level2a = tagService.reload(level2a);
+		level2b = tagService.reload(level2b);
+		level2c = tagService.reload(level2c);
+
 		dummyProject = projectService.reload(dummyProject);
 		contentSchema = objectSchemaService.reload(contentSchema);
 
@@ -243,15 +261,87 @@ public class DummyDataProvider {
 
 	}
 
+	private Tag addTag(Tag rootTag, String germanName, String englishName) {
+		Tag tag = new Tag();
+		tagService.setName(tag, english, "subtag");
+		tagService.setName(tag, german, "unterTag");
+		tag = tagService.save(tag);
+		rootTag.addTag(tag);
+		tagService.save(rootTag);
+		return tag;
+	}
+
+	private Content addContent(Tag tag, String name, String germanContent, String englishContent) {
+		Content content = new Content();
+		contentService.setName(content, english, name + " english");
+		contentService.setFilename(content, english, name + ".en.html");
+		contentService.setContent(content, english, ENGLISH_CONTENT);
+
+		contentService.setName(content, german, name + " german");
+		contentService.setFilename(content, german, name + ".de.html");
+		contentService.setContent(content, german, germanContent);
+		// TODO maybe set project should be done inside the save?
+		content.setProject(dummyProject);
+		content.setCreator(defaultUser);
+		content = contentService.save(content);
+
+		// Add the content to the given tag
+		tag.addFile(content);
+		tag = tagService.save(tag);
+
+		return content;
+	}
+
 	public Tag getRootTag() {
 		return rootTag;
 	}
 
-	public Content getContent() {
-		if (content == null) {
-			throw new NotInitializedException("Dummy data not yet setup. Invoke setup first.");
-		}
-		return content;
+	public Content getContentLevel1A1() {
+		return contentLevel1A1;
+	}
+
+	public Content getContentLevel1A2() {
+		return contentLevel1A2;
+	}
+
+	public Content getContentLevel1A3() {
+		return contentLevel1A3;
+	}
+
+	public Content getContentLevel2C1() {
+		return contentLevel2C1;
+	}
+
+	public Content getContentLevel2C2() {
+		return contentLevel2C2;
+	}
+
+	public Content getContentLevel2C3() {
+		return contentLevel2C3;
+	}
+
+	public Tag getLevel1a() {
+		return level1a;
+	}
+
+	public Tag getLevel1b() {
+		return level1b;
+	}
+
+	public Tag getLevel1c() {
+		return level1c;
+	}
+
+	public Tag getLevel2a() {
+		return level2a;
+	}
+
+	public Tag getLevel2b() {
+		return level2b;
+	}
+
+	public Tag getLevel2c() {
+		return level2c;
 	}
 
 	public Language getEnglish() {

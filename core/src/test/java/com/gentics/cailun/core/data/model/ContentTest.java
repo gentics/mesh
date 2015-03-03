@@ -28,13 +28,13 @@ public class ContentTest extends AbstractDBTest {
 	@Test
 	public void testPageLinks() {
 		Content content = new Content();
-		contentService.setContent(content, getData().getEnglish(), "english content");
-		contentService.setFilename(content, getData().getEnglish(), "english.html");
+		contentService.setContent(content, data().getEnglish(), "english content");
+		contentService.setFilename(content, data().getEnglish(), "english.html");
 		contentService.save(content);
 
 		Content content2 = new Content();
-		contentService.setContent(content2, getData().getEnglish(), "english2 content");
-		contentService.setFilename(content2, getData().getEnglish(), "english2.html");
+		contentService.setContent(content2, data().getEnglish(), "english2 content");
+		contentService.setFilename(content2, data().getEnglish(), "english2.html");
 		contentService.save(content2);
 		contentService.createLink(content, content2);
 

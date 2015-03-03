@@ -28,10 +28,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testReadProjectByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
 
-		Project project = getData().getProject();
+		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestProject.class);
 	}
 
@@ -39,10 +39,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testReadProjectByName() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
 
-		Project project = getData().getProject();
+		Project project = data().getProject();
 		assertNotNull("The name of the project must not be null.", project.getName());
 
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/projects/" + project.getName(), 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/projects/" + project.getName(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestProject.class);
 	}
 
@@ -50,10 +50,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testReadProjectInvalidName() throws Exception {
 		String json = "{\"message\":\"Project not found {bogusName}\"}";
 
-		Project project = getData().getProject();
+		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/projects/" + "bogusName", 404, "Not Found");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/projects/" + "bogusName", 404, "Not Found");
 		assertEquals(json, response);
 	}
 

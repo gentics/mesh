@@ -26,18 +26,18 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadGroupByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
-		Group group = getData().getUserInfoAll().getGroup();
+		Group group = data().getUserInfoAll().getGroup();
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestGroup.class);
 	}
 
 	@Test
 	public void testReadGroupByName() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
-		Group group = getData().getUserInfoAll().getGroup();
+		Group group = data().getUserInfoAll().getGroup();
 		assertNotNull("The name of the group must not be null.", group.getName());
-		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/groups/" + group.getName(), 200, "OK");
+		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/groups/" + group.getName(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestGroup.class);
 	}
 

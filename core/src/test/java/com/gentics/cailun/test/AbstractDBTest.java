@@ -19,7 +19,7 @@ public abstract class AbstractDBTest {
 	protected LanguageService languageService;
 
 	@Autowired
-	private DummyDataProvider dataProvider;
+	private TestDataProvider dataProvider;
 
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
@@ -29,7 +29,7 @@ public abstract class AbstractDBTest {
 		dataProvider.setup();
 	}
 
-	public DummyDataProvider getData() {
+	public TestDataProvider data() {
 		return dataProvider;
 	}
 

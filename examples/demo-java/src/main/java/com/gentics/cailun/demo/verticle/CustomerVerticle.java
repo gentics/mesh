@@ -3,7 +3,7 @@ package com.gentics.cailun.demo.verticle;
 import static com.gentics.cailun.core.data.model.auth.PermissionType.CREATE;
 import static com.gentics.cailun.core.data.model.auth.PermissionType.DELETE;
 import static com.gentics.cailun.core.data.model.auth.PermissionType.READ;
-import static com.gentics.cailun.core.data.model.auth.PermissionType.WRITE;
+import static com.gentics.cailun.core.data.model.auth.PermissionType.UPDATE;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -305,7 +305,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 				GraphPermission permission = new GraphPermission(adminRole, currentNode);
 				permission.grant(CREATE);
 				permission.grant(READ);
-				permission.grant(WRITE);
+				permission.grant(UPDATE);
 				permission.grant(DELETE);
 				currentNode.addPermission(permission);
 				genericNodeService.save(currentNode);
