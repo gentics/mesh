@@ -15,9 +15,15 @@ import io.vertx.ext.apex.core.SessionStore;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
+import com.gentics.cailun.core.http.LocaleContextDataHandler;
 
 /**
  * Central storage for all apex request routers.
@@ -25,9 +31,11 @@ import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
  * @author johannes2
  *
  */
+@Component
+@Scope(value = "singleton")
 public class RouterStorage {
 
-	private static Logger log = LoggerFactory.getLogger(RouterStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
 
 	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
@@ -35,6 +43,18 @@ public class RouterStorage {
 
 	public static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
 	public static final String PROJECT_CONTEXT_KEY = "cailun-project";
+
+	@Autowired
+	private LocaleContextDataHandler dataHandler;
+
+	@Autowired
+	private CaiLunSpringConfiguration springConfiguration;
+
+	@PostConstruct
+	public void init() {
+		this.vertx = springConfiguration.vertx();
+		initAPIRouter(springConfiguration.authService());
+	}
 
 	/**
 	 * Core routers are routers that are responsible for dealing with routes that are no project routes. E.g: /api/v1/admin, /api/v1
@@ -50,11 +70,6 @@ public class RouterStorage {
 	 * Project sub routers are routers that are mounted by project routers. E.g: /api/v1/alohaeditor/contents, /api/v1/yourprojectname/tags
 	 */
 	private Map<String, Router> projectSubRouters = new HashMap<>();
-
-	public RouterStorage(Vertx vertx, CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
-		this.vertx = vertx;
-		initAPIRouter(caiLunAuthServiceImpl);
-	}
 
 	/**
 	 * The root {@link Router} is a core router that is used as a parent for all other routers. This method will create the root router if non is existing.
@@ -89,6 +104,7 @@ public class RouterStorage {
 		router.route().handler(new SessionHandlerImpl("cailun.session", 30 * 60 * 1000, false, store));
 		AuthHandler authHandler = BasicAuthHandler.basicAuthHandler(caiLunAuthServiceImpl, BasicAuthHandler.DEFAULT_REALM);
 		router.route().handler(authHandler);
+		router.route().handler(dataHandler);
 	}
 
 	/**

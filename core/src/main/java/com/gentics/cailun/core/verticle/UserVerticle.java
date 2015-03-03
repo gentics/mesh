@@ -61,15 +61,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restUser));
 			} else {
-				// TODO i18n error message?
-				String message = "Group not found {" + uuidOrName + "}";
+				String message = i18n.get(rc.get("locale"), "user_not_found", uuidOrName);
 				rc.response().setStatusCode(404);
 				rc.response().end(toJson(new GenericNotFoundResponse(message)));
 			}
 		});
 	}
-
-	
 
 	private void addDeleteHandler() {
 		route("/:uuidOrName").method(DELETE).handler(rc -> {

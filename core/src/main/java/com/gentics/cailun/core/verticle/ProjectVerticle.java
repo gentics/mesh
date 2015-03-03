@@ -57,7 +57,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			}
 			if (project != null) {
 				String name = project.getName();
-				springConfig.routerStorage().removeProjectRouter(name);
+				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
 				//TODO json
 				rc.response().end("Deleted project {" + name + "}");
@@ -88,7 +88,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					projectService.save(project);
 				}
 				try {
-					springConfig.routerStorage().addProjectRouter(uuidOrName);
+					routerStorage.addProjectRouter(uuidOrName);
 					log.info("Registered project {" + uuidOrName + "}");
 					rc.response().end("Registered project {" + uuidOrName + "}");
 				} catch (Exception e) {

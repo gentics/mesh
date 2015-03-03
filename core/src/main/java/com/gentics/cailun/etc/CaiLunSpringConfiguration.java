@@ -8,8 +8,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.IOException;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
@@ -125,11 +123,6 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
-	}
-
-	@Bean
-	public RouterStorage routerStorage() {
-		return new RouterStorage(vertx(), authService());
 	}
 
 }

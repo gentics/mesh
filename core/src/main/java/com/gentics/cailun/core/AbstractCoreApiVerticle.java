@@ -11,7 +11,7 @@ public abstract class AbstractCoreApiVerticle extends AbstractRestVerticle {
 
 	@Override
 	public Router setupLocalRouter() {
-		return springConfig.routerStorage().getAPISubRouter(basePath);
+		return routerStorage.getAPISubRouter(basePath);
 	}
 
 }

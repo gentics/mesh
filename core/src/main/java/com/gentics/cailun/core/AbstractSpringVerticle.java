@@ -1,11 +1,12 @@
 package com.gentics.cailun.core;
 
+import io.vertx.core.AbstractVerticle;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.data.service.I18NService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-
-import io.vertx.core.AbstractVerticle;
+import com.gentics.cailun.etc.RouterStorage;
 
 public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
@@ -13,6 +14,9 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
+	
+	@Autowired
+	protected RouterStorage routerStorage;
 	
 	@Autowired
 	protected I18NService i18n;

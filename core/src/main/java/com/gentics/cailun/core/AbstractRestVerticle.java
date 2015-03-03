@@ -41,7 +41,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		}
 		// TODO use global config for port?
 		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
-		RouterStorage routerStorage = springConfig.routerStorage();
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
 		registerEndPoints();

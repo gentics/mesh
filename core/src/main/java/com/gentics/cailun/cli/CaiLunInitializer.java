@@ -40,6 +40,7 @@ import com.gentics.cailun.core.verticle.UserVerticle;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
+import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 
 public class CaiLunInitializer {
@@ -51,28 +52,31 @@ public class CaiLunInitializer {
 	private CaiLunConfiguration configuration;
 
 	@Autowired
-	CaiLunRootRepository rootRepository;
+	private CaiLunRootRepository rootRepository;
 
 	@Autowired
-	UserRepository userRepository;
+	private UserRepository userRepository;
 
 	@Autowired
-	GroupRepository groupRepository;
+	private GroupRepository groupRepository;
 
 	@Autowired
-	RoleRepository roleRepository;
+	private RoleRepository roleRepository;
 
 	@Autowired
-	ProjectRepository projectRepository;
+	private ProjectRepository projectRepository;
 
 	@Autowired
-	LanguageRepository languageRepository;
+	private LanguageRepository languageRepository;
 
 	@Autowired
-	ObjectSchemaService objectSchemaService;
+	private ObjectSchemaService objectSchemaService;
 
 	@Autowired
-	CaiLunSpringConfiguration springConfiguration;
+	private CaiLunSpringConfiguration springConfiguration;
+
+	@Autowired
+	private RouterStorage routerStorage;
 
 	public CaiLunInitializer() {
 		addMandatoryVerticle(TagVerticle.class);
@@ -168,7 +172,7 @@ public class CaiLunInitializer {
 	private void initProjects() throws InvalidNameException {
 		try (Transaction tx = springConfiguration.getGraphDatabaseService().beginTx()) {
 			for (Project project : projectRepository.findAll()) {
-				springConfiguration.routerStorage().addProjectRouter(project.getName());
+				routerStorage.addProjectRouter(project.getName());
 				log.info("Initalized project {" + project.getName() + "}");
 			}
 			tx.success();

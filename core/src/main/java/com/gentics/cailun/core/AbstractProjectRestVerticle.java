@@ -20,7 +20,7 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
 	@Override
 	public Router setupLocalRouter() {
-		Router localRouter = springConfig.routerStorage().getProjectSubRouter(basePath);
+		Router localRouter = routerStorage.getProjectSubRouter(basePath);
 		return localRouter;
 	}
 
@@ -31,7 +31,7 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 	 * @return extracted project name
 	 */
 	protected String getProjectName(RoutingContext rh) {
-		return String.valueOf(rh.contextData().get(RouterStorage.PROJECT_CONTEXT_KEY));
+		return rh.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}
 
 }

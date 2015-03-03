@@ -21,7 +21,6 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.model.generic.GenericTag;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
-import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -37,9 +36,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
 	Neo4jGenericContentUtils genericContentUtils;
-
-//	@Autowired
-//	GlobalGenericContentRepository genericContentRepository;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 

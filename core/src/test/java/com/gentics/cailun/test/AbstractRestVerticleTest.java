@@ -1,7 +1,5 @@
 package com.gentics.cailun.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -14,22 +12,19 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.apache.commons.codec.binary.Base64;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
-import com.gentics.cailun.core.rest.response.AbstractRestModel;
+import com.gentics.cailun.etc.RouterStorage;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
@@ -44,6 +39,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	private AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
 
 	private CountDownLatch latch;
+	
+	@Autowired
+	private RouterStorage routerStorage;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -54,7 +52,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		latch = new CountDownLatch(1);
 		throwable.set(null);
 
-		springConfig.routerStorage().addProjectRouter(DummyDataProvider.PROJECT_NAME);
+		routerStorage.addProjectRouter(DummyDataProvider.PROJECT_NAME);
 
 		AbstractRestVerticle verticle = getVerticle();
 		// Inject spring config
