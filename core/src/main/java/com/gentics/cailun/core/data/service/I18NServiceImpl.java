@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.cli.CaiLun;
-
 @Component
 public class I18NServiceImpl implements I18NService {
 
@@ -36,7 +34,7 @@ public class I18NServiceImpl implements I18NService {
 		ResourceBundle labels = ResourceBundle.getBundle("i18n.translations", locale);
 		MessageFormat formatter = new MessageFormat("");
 		formatter.setLocale(locale);
-		formatter.applyPattern(labels.getString("group_not_found"));
+		formatter.applyPattern(labels.getString(key));
 		return formatter.format(parameters);
 	}
 

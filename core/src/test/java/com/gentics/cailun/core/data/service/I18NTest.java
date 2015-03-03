@@ -1,8 +1,9 @@
 package com.gentics.cailun.core.data.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Locale;
+import java.util.MissingResourceException;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,18 @@ public class I18NTest extends AbstractDBTest {
 	public void testFallback() {
 		Locale locale = new Locale("jp");
 		assertEquals("Error", i18n.get(locale, "error"));
+	}
+
+	@Test(expected = MissingResourceException.class)
+	public void testWrongI18NKey() {
+		Locale locale = new Locale("jp");
+		i18n.get(locale, "fadsfgasdgasdg");
+	}
+
+	@Test(expected = MissingResourceException.class)
+	public void testWrongI18NKey2() {
+		Locale locale = new Locale("jp");
+		i18n.get(locale, "fadsfgasdgasdg", "test");
 	}
 
 	@Test
