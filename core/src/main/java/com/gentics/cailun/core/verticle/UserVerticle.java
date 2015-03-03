@@ -3,6 +3,9 @@ package com.gentics.cailun.core.verticle;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -83,7 +86,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				// TODO better response
 				rc.response().end(toJson(new GenericSuccessResponse("OK")));
 			} else {
-				// TODO i18n error message?
 				String message = "Group not found {" + uuidOrName + "}";
 				rc.response().setStatusCode(404);
 				rc.response().end(toJson(new GenericNotFoundResponse(message)));

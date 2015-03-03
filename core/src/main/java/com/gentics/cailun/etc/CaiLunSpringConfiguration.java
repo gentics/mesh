@@ -8,6 +8,8 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
@@ -97,9 +99,9 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 
 	@Bean
 	public Vertx vertx() {
-//		VertxOptions options = new VertxOptions();
+		// VertxOptions options = new VertxOptions();
 		// TODO remove debugging option
-//		options.setBlockedThreadCheckPeriod(Long.MAX_VALUE);
+		// options.setBlockedThreadCheckPeriod(Long.MAX_VALUE);
 		return Vertx.vertx();
 	}
 
