@@ -61,7 +61,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restUser));
 			} else {
-				String message = i18n.get(rc.get("locale"), "user_not_found", uuidOrName);
+				String message = i18n.get(rc, "user_not_found", uuidOrName);
 				rc.response().setStatusCode(404);
 				rc.response().end(toJson(new GenericNotFoundResponse(message)));
 			}

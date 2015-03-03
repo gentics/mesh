@@ -21,12 +21,18 @@ public class I18NServiceImpl implements I18NService {
 
 	@Override
 	public String get(Locale locale, String key) {
+		if (locale == null) {
+			locale = DEFAULT_LOCALE;
+		}
 		ResourceBundle labels = ResourceBundle.getBundle("i18n.translations", locale);
 		return labels.getString(key);
 	}
 
 	@Override
 	public String get(Locale locale, String key, String... parameters) {
+		if (locale == null) {
+			locale = DEFAULT_LOCALE;
+		}
 		ResourceBundle labels = ResourceBundle.getBundle("i18n.translations", locale);
 		MessageFormat formatter = new MessageFormat("");
 		formatter.setLocale(locale);
@@ -39,7 +45,7 @@ public class I18NServiceImpl implements I18NService {
 		return getLocale(header);
 	}
 
-	public Locale getLocale(String header) {
+	protected Locale getLocale(String header) {
 		Locale bestMatchingLocale = DEFAULT_LOCALE;
 		Double highesQ = 0.;
 		if (header == null) {
@@ -94,5 +100,15 @@ public class I18NServiceImpl implements I18NService {
 			}
 		}
 		return bestMatchingLocale;
+	}
+
+	@Override
+	public String get(RoutingContext rc, String key, String... parameters) {
+		return get(rc.get("locale"), key, parameters);
+	}
+
+	@Override
+	public String get(RoutingContext rc, String key) {
+		return get(rc.get("locale"), key);
 	}
 }

@@ -1,4 +1,4 @@
-package com.gentics.cailun.etc;
+package com.gentics.cailun.core.data.service;
 
 import static org.junit.Assert.assertEquals;
 
