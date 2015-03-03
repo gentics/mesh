@@ -2,9 +2,9 @@ package com.gentics.cailun.core.verticle;
 
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import io.vertx.ext.apex.core.RoutingContext;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,29 +69,32 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		});
 	}
 
+	
+
 	private void addDeleteHandler() {
 		route("/:uuidOrName").method(DELETE).handler(rc -> {
 			String uuidOrName = rc.request().params().get("uuidOrName");
-			User user = null;
-			if (UUIDUtil.isUUID(uuidOrName)) {
-				user = userService.findByUUID(uuidOrName);
-			} else {
-				user = userService.findByUsername(uuidOrName);
-			}
+			// TODO determine the locale from the rc
+				Locale locale = null;
+				User user = null;
+				if (UUIDUtil.isUUID(uuidOrName)) {
+					user = userService.findByUUID(uuidOrName);
+				} else {
+					user = userService.findByUsername(uuidOrName);
+				}
 
-			if (user != null) {
-				// TODO handle permissions
-				userService.delete(user);
-				rc.response().setStatusCode(200);
-				// TODO better response
-				rc.response().end(toJson(new GenericSuccessResponse("OK")));
-			} else {
-				String message = "Group not found {" + uuidOrName + "}";
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
-			}
+				if (user != null) {
+					// TODO handle permissions
+					userService.delete(user);
+					rc.response().setStatusCode(200);
+					// TODO better response
+					rc.response().end(toJson(new GenericSuccessResponse("OK")));
+				} else {
+					rc.response().setStatusCode(404);
+					rc.response().end(toJson(new GenericNotFoundResponse(i18n.get(locale, "group_not_found", uuidOrName))));
+				}
 
-		});
+			});
 	}
 
 	private void addUpdateHandler() {
