@@ -43,9 +43,9 @@ import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 
-public class CaiLunInitializer {
+public class BootstrapInitializer {
 
-	private static Logger log = LoggerFactory.getLogger(CaiLunInitializer.class);
+	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
@@ -78,7 +78,7 @@ public class CaiLunInitializer {
 	@Autowired
 	private RouterStorage routerStorage;
 
-	public CaiLunInitializer() {
+	public BootstrapInitializer() {
 		addMandatoryVerticle(TagVerticle.class);
 		addMandatoryVerticle(ContentVerticle.class);
 		addMandatoryVerticle(UserVerticle.class);

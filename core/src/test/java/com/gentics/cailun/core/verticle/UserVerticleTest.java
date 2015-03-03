@@ -27,18 +27,18 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadTagByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}";
-		User user = getDataProvider().getTestUser();
+		User user = getData().getUserInfoAll().getUser();
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadTagByUsername() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}";
-		User user = getDataProvider().getTestUser();
+		User user = getData().getUserInfoAll().getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -49,7 +49,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllUsers() throws Exception {
 		String json = "";
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/users/", 200, "OK");
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/users/", 200, "OK");
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -61,18 +61,17 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteUserByUUID() throws Exception {
 		String json = "{\"msg\":\"OK\"}";
-		User user = getDataProvider().getTestUser();
-		String response = testAuthenticatedRequest(HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
+		User user = getData().getUserInfoAll().getUser();
+		String response = request(getData().getUserInfoAll(), HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
 	}
 
 	@Test
 	public void testDeleteWithNoPermission() throws Exception {
-		fail("Not yet implemented");
 		String json = "";
-		User user = getDataProvider().getTestUser();
-		String response = testAuthenticatedRequest(HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
+		User user = getData().getUserInfoAll().getUser();
+		String response = request(getData().getUserInfoAll(), HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
 	}

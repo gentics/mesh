@@ -29,7 +29,7 @@ public abstract class AbstractDBTest {
 		dataProvider.setup();
 	}
 
-	public DummyDataProvider getDataProvider() {
+	public DummyDataProvider getData() {
 		return dataProvider;
 	}
 

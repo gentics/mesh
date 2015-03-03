@@ -26,21 +26,21 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadGroupByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
-		Group group = getDataProvider().getAdminGroup();
+		Group group = getData().getUserInfoAll().getGroup();
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestGroup.class);
 	}
 
 	@Test
 	public void testReadGroupByName() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
-		Group group = getDataProvider().getAdminGroup();
+		Group group = getData().getUserInfoAll().getGroup();
 		assertNotNull("The name of the group must not be null.", group.getName());
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/groups/" + group.getName(), 200, "OK");
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/groups/" + group.getName(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestGroup.class);
 	}
-	
+
 	@Test
 	public void testCreateGroup() {
 		fail("Not yet implemented");
@@ -60,6 +60,5 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateGroup() {
 		fail("Not yet implemented");
 	}
-
 
 }

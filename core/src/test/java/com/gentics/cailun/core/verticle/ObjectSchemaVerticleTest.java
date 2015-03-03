@@ -24,22 +24,22 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadSchemaByName() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"content\",\"description\":\"Default schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null}]}";
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/content", 200, "OK");
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/content", 200, "OK");
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadAllSchemasForProject() throws Exception {
 		String json = "{\"custom-content\":{\"uuid\":\"uuid-value\",\"name\":\"custom-content\",\"description\":\"Custom schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"string\",\"key\":\"secret\",\"desciption\":null}]},\"content\":{\"uuid\":\"uuid-value\",\"name\":\"content\",\"description\":\"Default schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null}]}}";
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/", 200, "OK");
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/", 200, "OK");
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"content\",\"description\":\"Default schema for contents\",\"propertyTypeSchemas\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"desciption\":null},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"desciption\":null}]}";
-		ObjectSchema schema = getDataProvider().getContentSchema();
-		String response = testAuthenticatedRequest(HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/" + schema.getUuid(), 200,
+		ObjectSchema schema = getData().getContentSchema();
+		String response = request(getData().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + DummyDataProvider.PROJECT_NAME + "/types/" + schema.getUuid(), 200,
 				"OK");
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}

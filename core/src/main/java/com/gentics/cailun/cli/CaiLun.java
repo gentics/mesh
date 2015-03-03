@@ -66,7 +66,7 @@ public class CaiLun {
 		printProductInformation();
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(CaiLunSpringConfiguration.class)) {
 			SpringVerticleFactory.setParentContext(ctx);
-			CaiLunInitializer initalizer = ctx.getBean(CaiLunInitializer.class);
+			BootstrapInitializer initalizer = ctx.getBean(BootstrapInitializer.class);
 			ctx.start();
 			initalizer.init(conf, verticleLoader);
 			ctx.registerShutdownHook();

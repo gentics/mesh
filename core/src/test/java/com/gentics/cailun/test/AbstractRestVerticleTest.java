@@ -39,7 +39,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	private AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
 
 	private CountDownLatch latch;
-	
+
 	@Autowired
 	private RouterStorage routerStorage;
 
@@ -78,14 +78,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return port;
 	}
 
-	protected String testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
-		return testAuthenticatedRequest(method, path, statusCode, statusMessage, null);
+	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
+		return request(info, method, path, statusCode, statusMessage, null);
 	}
 
-	protected String testAuthenticatedRequest(HttpMethod method, String path, int statusCode, String statusMessage, String requestBody)
+	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, String requestBody)
 			throws Exception {
 		Consumer<HttpClientRequest> requestAction = request -> {
-			String authStringEnc = DummyDataProvider.USER_JOE_USERNAME + ":" + DummyDataProvider.USER_JOE_PASSWORD;
+			String authStringEnc = info.getUser().getUsername() + ":" + info.getPassword();
 			byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
 			request.headers().add("Authorization", "Basic " + new String(authEncBytes));
 
@@ -97,16 +97,16 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 				request.write(buffer);
 			}
 		};
-		return testRequestBuffer(method, path, requestAction, null, statusCode, statusMessage);
+		return request(method, path, requestAction, null, statusCode, statusMessage);
 
 	}
 
-	protected String testRequestBuffer(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction,
-			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage) throws Exception {
-		return testRequestBuffer(client, method, port, path, requestAction, responseAction, statusCode, statusMessage);
+	protected String request(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction, Consumer<HttpClientResponse> responseAction,
+			int statusCode, String statusMessage) throws Exception {
+		return request(client, method, port, path, requestAction, responseAction, statusCode, statusMessage);
 	}
 
-	protected String testRequestBuffer(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,
+	protected String request(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,
 			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage) throws Exception {
 
 		AtomicReference<String> responseBody = new AtomicReference<String>(null);

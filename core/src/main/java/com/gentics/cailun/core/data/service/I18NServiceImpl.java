@@ -38,6 +38,7 @@ public class I18NServiceImpl implements I18NService {
 		return formatter.format(parameters);
 	}
 
+	@Override
 	public Locale getLocale(RoutingContext rc) {
 		String header = rc.request().headers().get("Accept-Language");
 		return getLocale(header);

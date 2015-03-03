@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.cailun.auth.Neo4jAuthorizingRealm;
-import com.gentics.cailun.cli.CaiLunInitializer;
+import com.gentics.cailun.cli.BootstrapInitializer;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
 
@@ -85,8 +85,8 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	}
 
 	@Bean
-	public CaiLunInitializer caiLunInitalizer() {
-		return new CaiLunInitializer();
+	public BootstrapInitializer caiLunInitalizer() {
+		return new BootstrapInitializer();
 	}
 
 	@PostConstruct

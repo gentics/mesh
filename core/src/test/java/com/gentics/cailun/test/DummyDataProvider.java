@@ -2,6 +2,10 @@ package com.gentics.cailun.test;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.HashMap;
+
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,10 +38,14 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 @Component
 public class DummyDataProvider {
 
-	public static final String USER_JOE_USERNAME = "joe1";
-	public static final String USER_JOE_PASSWORD = "test1234";
 	public static final String PROJECT_NAME = "dummy";
 	public static final String ENGLISH_CONTENT = "blessed mealtime!";
+
+	public enum UserInfoType {
+		read_create, all, none, read, read_create_delete, read_update_create, read_update
+	}
+
+	private static SecureRandom random = new SecureRandom();
 
 	@Autowired
 	private UserService userService;
@@ -79,17 +87,41 @@ public class DummyDataProvider {
 
 	private Language german;
 
-	private Group adminGroup;
-
 	private Project dummyProject;
-
-	private Role adminRole;
 
 	private ObjectSchema contentSchema;
 
-	private User testUser;
+	private HashMap<UserInfoType, UserInfo> userInfos = new HashMap<>();
 
 	private DummyDataProvider() {
+	}
+
+	public UserInfo addUserInfo(UserInfoType type, String firstname, String lastname) {
+
+		String password = new BigInteger(130, random).toString(32);
+		String username = type.name() + "_perm_user";
+		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
+
+		User user = new User(username);
+		userService.setPassword(user, password);
+		user.setFirstname(firstname);
+		user.setLastname(lastname);
+		user.setEmailAddress(email);
+		userService.save(user);
+		assertNotNull(userService.findByUsername(username));
+
+		Role role = new Role(type.name() + "_role");
+		roleService.save(role);
+
+		Group group = new Group(type.name() + "_group");
+		group.addUser(user);
+		group.addRole(role);
+		group = groupService.save(group);
+
+		UserInfo userInfo = new UserInfo(user, group, role, password);
+		userInfos.put(type, userInfo);
+		return userInfo;
+
 	}
 
 	/**
@@ -100,21 +132,23 @@ public class DummyDataProvider {
 
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 			// User, Groups, Roles
-			testUser = new User(USER_JOE_USERNAME);
-			userService.setPassword(testUser, USER_JOE_PASSWORD);
-			testUser.setFirstname("Joe");
-			testUser.setLastname("Doe");
-			testUser.setEmailAddress("j.doe@gentics.com");
-			userService.save(testUser);
-			assertNotNull(userService.findByUsername(USER_JOE_USERNAME));
+			addUserInfo(UserInfoType.none, "Spider", "man");
+			addUserInfo(UserInfoType.read, "Rocket", "Raccoon");
+			addUserInfo(UserInfoType.read_update, "Black", "Widow");
+			addUserInfo(UserInfoType.read_update_create, "Star", "Lord");
+			addUserInfo(UserInfoType.read_create, "Super", "Man");
+			addUserInfo(UserInfoType.read_create_delete, "Iron", "Man");
+			addUserInfo(UserInfoType.all, "Tony", "Stark");
 
-			adminRole = new Role("superadmin");
-			roleService.save(adminRole);
+			Group adminGroup = userInfos.get(UserInfoType.all).getGroup();
+			User defaultUser = userInfos.get(UserInfoType.all).getUser();
+			userInfos.values().stream().forEach(e -> {
+				if (adminGroup.getId() != e.getGroup().getId()) {
+					adminGroup.addGroup(e.getGroup());
+				}
+			});
 
-			adminGroup = new Group("admin");
-			adminGroup.addUser(testUser);
-			adminGroup.addRole(adminRole);
-			adminGroup = groupService.save(adminGroup);
+			groupService.save(adminGroup);
 
 			// Contents, Tags, Projects
 			english = new Language("english", "en_US");
@@ -126,7 +160,9 @@ public class DummyDataProvider {
 			rootNode.setRootGroup(adminGroup);
 			rootNode.addLanguage(english);
 			rootNode.addLanguage(german);
-			rootNode.addUser(testUser);
+			userInfos.values().stream().forEach(e -> {
+				rootNode.addUser(e.getUser());
+			});
 			rootService.save(rootNode);
 
 			// Root Tag
@@ -166,7 +202,7 @@ public class DummyDataProvider {
 			contentService.setContent(content, german, "mahlzeit!");
 			// TODO maybe set project should be done inside the save?
 			content.setProject(dummyProject);
-			content.setCreator(testUser);
+			content.setCreator(defaultUser);
 			content = contentService.save(content);
 
 			subTag.addFile(content);
@@ -176,7 +212,7 @@ public class DummyDataProvider {
 			contentSchema = new ObjectSchema("content");
 			contentSchema.setProject(dummyProject);
 			contentSchema.setDescription("Default schema for contents");
-			contentSchema.setCreator(testUser);
+			contentSchema.setCreator(defaultUser);
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
@@ -185,7 +221,7 @@ public class DummyDataProvider {
 			ObjectSchema customSchema = new ObjectSchema("custom-content");
 			customSchema.setProject(dummyProject);
 			customSchema.setDescription("Custom schema for contents");
-			customSchema.setCreator(testUser);
+			customSchema.setCreator(defaultUser);
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
@@ -194,12 +230,16 @@ public class DummyDataProvider {
 
 			tx.success();
 		}
+		// Reload various contents to refresh them and load the uuid field
 		content = contentService.reload(content);
-		adminGroup = groupService.reload(adminGroup);
 		dummyProject = projectService.reload(dummyProject);
-		adminRole = roleService.reload(adminRole);
 		contentSchema = objectSchemaService.reload(contentSchema);
-		testUser = userService.reload(testUser);
+
+		userInfos.values().stream().forEach(i -> {
+			i.setGroup(groupService.reload(i.getGroup()));
+			i.setUser(userService.reload(i.getUser()));
+			i.setRole(roleService.reload(i.getRole()));
+		});
 
 	}
 
@@ -222,23 +262,40 @@ public class DummyDataProvider {
 		return german;
 	}
 
-	public Group getAdminGroup() {
-		return adminGroup;
-	}
-
 	public Project getProject() {
 		return dummyProject;
-	}
-
-	public Role getAdminRole() {
-		return adminRole;
 	}
 
 	public ObjectSchema getContentSchema() {
 		return contentSchema;
 	}
 
-	public User getTestUser() {
-		return testUser;
+	public UserInfo getUserInfoNone() {
+		return userInfos.get(UserInfoType.none);
 	}
+
+	public UserInfo getUserInfoAll() {
+		return userInfos.get(UserInfoType.all);
+	}
+
+	public UserInfo getUserInfoRead() {
+		return userInfos.get(UserInfoType.read);
+	}
+
+	public UserInfo getUserInfoReadUpdate() {
+		return userInfos.get(UserInfoType.read_update);
+	}
+
+	public UserInfo getUserInfoReadUpdateCreate() {
+		return userInfos.get(UserInfoType.read_update_create);
+	}
+
+	public UserInfo getUserInfoReadCreateDelete() {
+		return userInfos.get(UserInfoType.read_create_delete);
+	}
+
+	public UserInfo getUserInfoReadCreate() {
+		return userInfos.get(UserInfoType.read_create);
+	}
+
 }

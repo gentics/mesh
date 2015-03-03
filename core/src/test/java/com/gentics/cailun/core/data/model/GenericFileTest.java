@@ -32,13 +32,13 @@ public class GenericFileTest extends AbstractDBTest {
 
 		// Check whether we can load the english content of the found file
 		Content content = (Content) file;
-		Language english = getDataProvider().getEnglish();
+		Language english = getData().getEnglish();
 		assertEquals("The content of the found file did not match the expected one.", DummyDataProvider.ENGLISH_CONTENT, content.getContent(english));
 	}
 
 	@Test
 	public void testDeleteFileByObject() {
-		Content file = getDataProvider().getContent();
+		Content file = getData().getContent();
 		fileService.delete(file);
 		assertNull(fileService.findOne(file.getId()));
 		assertNull(fileService.findByUUID(file.getUuid()));
@@ -46,7 +46,7 @@ public class GenericFileTest extends AbstractDBTest {
 	
 	@Test
 	public void testDeleteFileByUUID() {
-		Content file = getDataProvider().getContent();
+		Content file = getData().getContent();
 		fileService.deleteByUUID(file.getUuid());
 		assertNull(fileService.findOne(file.getId()));
 		assertNull(fileService.findByUUID(file.getUuid()));
