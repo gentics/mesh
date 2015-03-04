@@ -26,4 +26,6 @@ public interface RoleService extends GenericNodeService<Role> {
 	 */
 	GraphPermission getGraphPermission(Role role, GenericNode node);
 
+	GraphPermission revokePermission(Role role, GenericNode node, PermissionType... permissionTypes);
+
 }

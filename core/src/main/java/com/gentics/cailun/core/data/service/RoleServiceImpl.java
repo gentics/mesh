@@ -54,12 +54,29 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 			role = save(role);
 			tx.success();
 		}
-		role = reload(role);
 	}
 
 	@Override
 	public GraphPermission getGraphPermission(Role role, GenericNode node) {
 		return roleRepository.findPermission(role.getId(), node.getId());
+	}
+
+	@Override
+	public GraphPermission revokePermission(Role role, GenericNode node, PermissionType... permissionTypes) {
+		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+			GraphPermission permission = getGraphPermission(role, node);
+			// Create a new permission relation when no existing one could be found
+			if (permission == null) {
+				return null;
+			}
+			for (int i = 0; i < permissionTypes.length; i++) {
+				permission.revoke(permissionTypes[i]);
+			}
+			role.addPermission(permission);
+			role = save(role);
+			tx.success();
+			return permission;
+		}
 	}
 
 }

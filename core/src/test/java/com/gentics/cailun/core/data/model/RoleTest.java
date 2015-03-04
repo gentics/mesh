@@ -58,6 +58,17 @@ public class RoleTest extends AbstractDBTest {
 		assertTrue(permission.isPermitted(DELETE));
 		assertFalse(permission.isPermitted(UPDATE));
 		roleService.addPermission(role, role, CREATE);
+	}
 
+	@Test
+	public void testRevokePermission() {
+		Role role = info.getRole();
+		Content content = data().getContentLevel1A1();
+		roleService.addPermission(role, content, CREATE, UPDATE, DELETE);
+		GraphPermission permission = roleService.revokePermission(role, content, CREATE);
+		assertFalse(permission.isPermitted(CREATE));
+		assertTrue(permission.isPermitted(DELETE));
+		assertTrue(permission.isPermitted(UPDATE));
+		assertFalse(permission.isPermitted(READ));
 	}
 }
