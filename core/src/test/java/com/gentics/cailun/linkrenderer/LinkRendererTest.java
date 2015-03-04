@@ -21,9 +21,9 @@ import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.test.AbstractDBTest;
-import com.gentics.cailun.test.Neo4jSpringTestConfiguration;
+import com.gentics.cailun.test.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
+@ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
 public class LinkRendererTest extends AbstractDBTest {

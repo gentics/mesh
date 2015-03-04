@@ -54,13 +54,13 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuidOrName").method(PUT).handler(rh -> {
+		route("/:uuidOrName").method(PUT).handler(rc -> {
 
 		});
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuidOrName").method(DELETE).handler(rh -> {
+		route("/:uuidOrName").method(DELETE).handler(rc -> {
 
 		});
 
@@ -68,19 +68,19 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 
 	private void addReadHandlers() {
 		// produces(APPLICATION_JSON)
-		route("/").method(GET).handler(rh -> {
-			String projectName = getProjectName(rh);
+		route("/").method(GET).handler(rc -> {
+			String projectName = getProjectName(rc);
 			Iterable<ObjectSchema> projectSchemas = schemaService.findAll(projectName);
 			Map<String, RestObjectSchema> resultMap = new HashMap<>();
 			if (projectSchemas == null) {
-				rh.response().end(toJson(resultMap));
+				rc.response().end(toJson(resultMap));
 				return;
 			}
 			for (ObjectSchema schema : projectSchemas) {
 				RestObjectSchema restSchema = schemaService.getReponseObject(schema);
 				resultMap.put(schema.getName(), restSchema);
 			}
-			rh.response().end(toJson(resultMap));
+			rc.response().end(toJson(resultMap));
 			return;
 		});
 

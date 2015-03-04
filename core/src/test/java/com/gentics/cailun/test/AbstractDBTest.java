@@ -1,6 +1,7 @@
 package com.gentics.cailun.test;
 
 import org.junit.runner.RunWith;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
@@ -12,9 +13,12 @@ import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
-@ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
+@ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class AbstractDBTest {
+
+	@Autowired
+	private GraphDatabaseService graphDatabaseService;
 
 	@Autowired
 	protected LanguageService languageService;
@@ -38,8 +42,8 @@ public abstract class AbstractDBTest {
 	}
 
 	protected void purgeDatabase() {
-		try (Transaction tx = springConfig.graphDatabase().beginTx()) {
-			for (Node node : springConfig.getGraphDatabaseService().getAllNodes()) {
+		try (Transaction tx = graphDatabaseService.beginTx()) {
+			for (Node node : graphDatabaseService.getAllNodes()) {
 				for (Relationship rel : node.getRelationships()) {
 					rel.delete();
 				}

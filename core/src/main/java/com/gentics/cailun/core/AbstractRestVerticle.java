@@ -5,6 +5,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Router;
 import io.vertx.ext.apex.core.RoutingContext;
+import io.vertx.ext.apex.core.Session;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -16,6 +17,10 @@ import org.apache.http.entity.ContentType;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.model.generic.GenericNode;
+import com.gentics.cailun.core.rest.response.GenericPermissionDeniedResponse;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
@@ -112,6 +117,23 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 */
 	protected CaiLunAuthServiceImpl getAuthService() {
 		return springConfig.authService();
+	}
+
+	protected boolean checkPermission(RoutingContext rc, GenericNode node, PermissionType type) {
+		if (node != null) {
+			Session session = rc.session();
+			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(node, type));
+			if (perm) {
+				return true;
+			} else {
+				rc.response().setStatusCode(403);
+				// TODO i18n
+				rc.response().end(toJson(new GenericPermissionDeniedResponse("Missing permission on object {" + node.getUuid() + "}")));
+				return false;
+			}
+
+		}
+		return false;
 	}
 
 	public Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {

@@ -2,8 +2,6 @@ package com.gentics.cailun.core.data.service.generic;
 
 import java.util.List;
 
-import org.springframework.data.neo4j.conversion.Result;
-
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 
 public interface GenericNodeService<T extends GenericNode> {
@@ -18,7 +16,7 @@ public interface GenericNodeService<T extends GenericNode> {
 
 	public T findOne(Long id);
 
-	public Result<T> findAll();
+	public List<T> findAll();
 
 	public Iterable<T> findAll(String projectName);
 

@@ -9,7 +9,6 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +25,6 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 	@Autowired
 	ObjectSchemaRepository schemaRepository;
-
-	@Override
-	public Result<ObjectSchema> findAll() {
-		return schemaRepository.findAll();
-	}
 
 	@Override
 	public List<ObjectSchema> findAll(String projectName) {

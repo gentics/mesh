@@ -1,6 +1,7 @@
 package com.gentics.cailun.auth;
 
-import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -26,19 +27,25 @@ import com.gentics.cailun.core.data.model.auth.AuthRelationships;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 
-	@Autowired
-	CaiLunSpringConfiguration securityConfig;
+	private static final Logger log = LoggerFactory.getLogger(Neo4jAuthorizingRealm.class);
 
 	@Autowired
-	Neo4jTemplate template;
+	private CaiLunSpringConfiguration securityConfig;
 
 	@Autowired
-	UserRepository userRepository;
+	private Neo4jTemplate template;
+
+	@Autowired
+	private GraphDatabaseService graphDatabaseService;
+
+	@Autowired
+	private UserService userService;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -54,19 +61,20 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
-		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabaseService();
-		try (Transaction tx = graphDb.beginTx()) {
-			Node userNode = graphDb.getNodeById(userNodeId);
+
+		try (Transaction tx = graphDatabaseService.beginTx()) {
+			Node userNode = graphDatabaseService.getNodeById(userNodeId);
 			// Traverse the graph from user to the page. Collect all permission relations and check them individually
-			for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
+			for (Relationship rel : graphDatabaseService.traversalDescription().depthFirst()
+					.relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
 					.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
 					.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
 					.traverse(userNode).relationships()) {
 
 				if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
 					// Check whether this relation in fact targets our object we want to check
-//					log.debug("REL: " + rel.getEndNode().getId() + " " + rel.getEndNode().getLabels() + " " + rel.getStartNode().getId()
-//							+ " " + rel.getStartNode().getLabels());
+					// log.debug("REL: " + rel.getEndNode().getId() + " " + rel.getEndNode().getLabels() + " " + rel.getStartNode().getId()
+					// + " " + rel.getStartNode().getLabels());
 					boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
 					if (matchesTargetNode) {
 						// Convert the api relationship to a SDN relationship
@@ -97,10 +105,13 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken upat = (UsernamePasswordToken) token;
-		User user = userRepository.findByUsername(upat.getUsername());
+		User user = userService.findByUsername(upat.getUsername());
 		if (user != null) {
 			return new SimpleAuthenticationInfo(user, new BCryptPasswordHash(user.getPasswordHash(), securityConfig), getName());
 		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not load user with username {" + upat.getUsername() + "}.");
+			}
 			// TODO Don't let the user know that we know that he did not exist
 			throw new IncorrectCredentialsException("Invalid credentials!");
 		}

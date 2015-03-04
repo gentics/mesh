@@ -3,6 +3,7 @@ package com.gentics.cailun.test;
 import io.vertx.core.Vertx;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
+import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.test.TestGraphDatabaseFactory;
 import org.springframework.context.annotation.Bean;
@@ -12,15 +13,16 @@ import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.gentics.cailun.auth.Neo4jAuthorizingRealm;
 import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
 
 @Configuration
 @EnableNeo4jRepositories("com.gentics.cailun")
 @EnableTransactionManagement
 @ComponentScan(basePackages = { "com.gentics.cailun" })
-public class Neo4jSpringTestConfiguration extends Neo4jConfiguration {
+public class SpringTestConfiguration extends Neo4jConfiguration {
 
-	public Neo4jSpringTestConfiguration() {
+	public SpringTestConfiguration() {
 		setBasePackage("com.gentics.cailun");
 	}
 
@@ -30,6 +32,16 @@ public class Neo4jSpringTestConfiguration extends Neo4jConfiguration {
 		service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
 		Neo4jGraphVerticle.setDatabaseService(service);
 		return service;
+	}
+	
+	@Bean
+	public Neo4jAuthorizingRealm customSecurityRealm() {
+		Neo4jAuthorizingRealm realm = new Neo4jAuthorizingRealm();
+		realm.setCacheManager(new MemoryConstrainedCacheManager());
+		// Disable caching for testing
+		realm.setAuthenticationCachingEnabled(false);
+		realm.setCachingEnabled(false);
+		return realm;
 	}
 
 	@Bean

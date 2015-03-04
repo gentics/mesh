@@ -60,7 +60,7 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 			response.setType(content.getType());
 			response.addProperty("name", content.getName(language));
 			response.addProperty("filename", content.getFilename(language));
-			RestUser restUser = userService.getResponseObject(content.getCreator());
+			RestUser restUser = userService.transformToRest(content.getCreator());
 			response.setAuthor(restUser);
 			response.addProperty("content", content.getContent(language));
 			response.addProperty("teaser", content.getTeaser(language));

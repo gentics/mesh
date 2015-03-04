@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import java.util.List;
+
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
 import com.gentics.cailun.core.rest.response.RestUser;
@@ -10,6 +12,8 @@ public interface UserService extends GenericNodeService<User> {
 
 	User findByUsername(String username);
 
-	RestUser getResponseObject(User user);
+	List<User> findAll();
+
+	RestUser transformToRest(User user);
 
 }

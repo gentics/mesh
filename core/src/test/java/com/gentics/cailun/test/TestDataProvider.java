@@ -1,6 +1,8 @@
 package com.gentics.cailun.test;
 
 import static org.junit.Assert.assertNotNull;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -9,6 +11,7 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.cailun.cli.CaiLun;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
@@ -35,6 +38,8 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
 public class TestDataProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(CaiLun.class);
 
 	public static final String PROJECT_NAME = "dummy";
 
@@ -103,13 +108,14 @@ public class TestDataProvider {
 	private TestDataProvider() {
 	}
 
-	public UserInfo getUserInfo(String username, String firstname, String lastname) {
+	public UserInfo createUserInfo(String username, String firstname, String lastname) {
 
 		String password = new BigInteger(130, random).toString(32);
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 
 		User user = new User(username);
 		userService.setPassword(user, password);
+		log.info("Creating user with username: " + username + " and password: " + password);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEmailAddress(email);
@@ -141,7 +147,7 @@ public class TestDataProvider {
 			dummyProject = new Project(PROJECT_NAME);
 
 			// User, Groups, Roles
-			userInfo = getUserInfo("dummy_user", "Tony", "Stark");
+			userInfo = createUserInfo("dummy_user", "Tony", "Stark");
 
 			// Contents, Tags, Projects
 			english = new Language("english", "en_US");
