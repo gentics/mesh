@@ -12,7 +12,6 @@ import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.rest.response.RestGroup;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
-import com.gentics.cailun.test.UserInfo;
 
 public class GroupVerticleTest extends AbstractRestVerticleTest {
 
@@ -26,7 +25,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadGroupByUUID() throws Exception {
-		UserInfo info = data().getUserInfo();
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
 		Group group = info.getGroup();
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
@@ -36,11 +34,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadGroupByName() throws Exception {
-		UserInfo info = data().getUserInfo();
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
 		Group group = info.getGroup();
 		assertNotNull("The name of the group must not be null.", group.getName());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getName(), 200, "OK");
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\"}";
 		TestUtil.assertEqualsSanitizedJson(json, response, RestGroup.class);
 	}
 

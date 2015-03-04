@@ -24,16 +24,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private UserService userService;
 
-	private UserInfo info;
-
 	@Override
 	public AbstractRestVerticle getVerticle() {
 		return userVerticle;
-	}
-
-	@Before
-	public void setup() {
-		info = data().getUserInfo();
 	}
 
 	@Test

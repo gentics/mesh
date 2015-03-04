@@ -40,12 +40,15 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private CountDownLatch latch;
 
+	protected UserInfo info;
+
 	@Autowired
 	private RouterStorage routerStorage;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
 		setupData();
+		info = data().getUserInfo();
 		port = TestUtil.getRandomPort();
 		vertx = springConfig.vertx();
 		client = vertx.createHttpClient(new HttpClientOptions());
