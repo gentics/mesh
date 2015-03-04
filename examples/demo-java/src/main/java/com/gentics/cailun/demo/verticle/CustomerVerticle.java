@@ -28,7 +28,6 @@ import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -80,7 +79,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private RoleService roleService;
-	
+
 	@Autowired
 	private ObjectSchemaService objectSchemaService;
 
@@ -144,8 +143,8 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		Project aloha = new Project("aloha");
 		aloha = projectService.save(aloha);
 
-//		ObjectSchema contentSchema = new ObjectSchema("content");
-//		contentSchema.setDescription("Default schema for contents");
+		// ObjectSchema contentSchema = new ObjectSchema("content");
+		// contentSchema.setDescription("Default schema for contents");
 
 		Language german = languageService.findByName("german");
 		Language english = languageService.findByName("english");
@@ -216,7 +215,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		aloha.setRootTag(rootTag);
 		projectService.save(aloha);
-		
+
 		// Save the default object schema
 		ObjectSchema contentSchema = new ObjectSchema("content");
 		contentSchema.setProject(aloha);
@@ -226,7 +225,6 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
 		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 		objectSchemaService.save(contentSchema);
-
 
 		// Contents
 		Content rootContent = new Content();
@@ -300,14 +298,12 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 			// Add admin permissions to all nodes
 			int i = 0;
 			for (GenericNode currentNode : genericNodeService.findAll()) {
-				// if (i % 2 == 0) {
 				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-				GraphPermission permission = new GraphPermission(adminRole, currentNode);
-				permission.grant(CREATE);
-				permission.grant(READ);
-				permission.grant(UPDATE);
-				permission.grant(DELETE);
-				currentNode.addPermission(permission);
+				if (adminRole.getId() == currentNode.getId()) {
+					log.info("Skipping role");
+					continue;
+				}
+				roleService.addPermission(adminRole, currentNode, CREATE, READ, UPDATE, DELETE);
 				genericNodeService.save(currentNode);
 				i++;
 			}

@@ -23,10 +23,9 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 
 	DynamicProperties permissions = new DynamicPropertiesContainer();
 
-	@SuppressWarnings("unused")
-	private GraphPermission() {
+	protected GraphPermission() {
 	}
-	
+
 	@PersistenceConstructor
 	public GraphPermission(Role role, GenericNode targetNode) {
 		this.role = role;

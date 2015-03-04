@@ -8,13 +8,17 @@ function enableAloha() {
 
 function disableAloha() {
   var ele = $('.main_content');
-  console.dir(ele[0]);
-//  aloha.mahalo(ele[0]);
+debugger;
+  //  console.dir(ele[0]);
+  aloha.mahalo(ele[0]);
+  
+  /*
   ele.before(ele.clone());
   ele.remove();
   $('.main_content').css('border-style','');
   $('.main_content').css('border-width','');
   $('.aloha-caret').hide();
+  */
 }
 
 function saveContent() {

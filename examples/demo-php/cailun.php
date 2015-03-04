@@ -73,7 +73,7 @@ class CaiLunPHPDemo {
                             "%cailun.page.teaser%",
                             "%cailun.page.author%",
                         ), array(
-                            $id === null         ? "" : $id,
+                            $id === null         ? "-1" : $id,
                             $navigation === null ? "" : $navigation,
                             $name === null       ? "" : $name,
                             $content  === null   ? "" : $content,

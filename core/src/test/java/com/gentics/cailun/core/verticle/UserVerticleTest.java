@@ -5,8 +5,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
@@ -23,40 +25,51 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private UserService userService;
 
+	private UserInfo info;
+
 	@Override
 	public AbstractRestVerticle getVerticle() {
 		return userVerticle;
 	}
 
+	@Before
+	public void setup() {
+		info = data().getUserInfo();
+	}
+
 	@Test
 	public void testReadTagByUUID() throws Exception {
-		UserInfo info = data().getUserInfo();
-		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}";
+
 		User user = info.getUser();
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
+		roleService.addPermission(info.getRole(), user, PermissionType.READ);
+
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadTagByUsername() throws Exception {
-		UserInfo info = data().getUserInfo();
 
 		User user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
+		roleService.addPermission(info.getRole(), user, PermissionType.READ);
+
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
+	@Test
 	public void testReadByUsernameWithNoPermission() throws Exception {
-		UserInfo info = data().getUserInfo();
+
 		User user = info.getUser();
+		assertNotNull("The username of the user must not be null.", user.getUsername());
 		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 		roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
-		assertNotNull("The username of the user must not be null.", user.getUsername());
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
@@ -64,16 +77,22 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllUsers() throws Exception {
-		UserInfo info = data().getUserInfo();
-		String json = "";
+
+		User user = info.getUser();
+		User userTwo = new User("testuser_2");
+		userTwo = userService.save(userTwo);
+		assertNotNull(userService.findByUsername(user.getUsername()));
+		roleService.addPermission(info.getRole(), user, PermissionType.READ);
+		roleService.addPermission(info.getRole(), userTwo, PermissionType.READ);
+
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
+		String json = "";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testDeleteUserByUsername() throws Exception {
 
-		UserInfo info = data().getUserInfo();
 		User user = info.getUser();
 		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 
@@ -86,7 +105,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteUserByUUID() throws Exception {
 
-		UserInfo info = data().getUserInfo();
 		User user = info.getUser();
 		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 
@@ -98,7 +116,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		UserInfo info = data().getUserInfo();
 		User user = info.getUser();
 		String json = "{\"message\":\"Missing permission on user {" + user.getUuid() + "}\"}";
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");

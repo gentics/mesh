@@ -45,6 +45,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
+		route("/").method(GET).handler(rc -> {
+			rc.response().end("all");
+		});
 		route("/:uuidOrName").method(GET).handler(rc -> {
 			String uuidOrName = rc.request().params().get("uuidOrName");
 			if (uuidOrName == null) {

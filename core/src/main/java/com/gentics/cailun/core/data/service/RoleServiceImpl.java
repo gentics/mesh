@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
-import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.rest.response.RestRole;
@@ -39,17 +39,27 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public void addPermission(Role role, User user, PermissionType... permissionTypes) {
-		//TODO why is the @Transactional not working?
+	public void addPermission(Role role, GenericNode node, PermissionType... permissionTypes) {
+		// TODO why is the @Transactional not working?
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			GraphPermission permission = new GraphPermission(role, user);
+			GraphPermission permission = getGraphPermission(role, node);
+			// Create a new permission relation when no existing one could be found
+			if (permission == null) {
+				permission = new GraphPermission(role, node);
+			}
 			for (int i = 0; i < permissionTypes.length; i++) {
 				permission.grant(permissionTypes[i]);
 			}
 			role.addPermission(permission);
-			save(role);
+			role = save(role);
 			tx.success();
 		}
+		role = reload(role);
+	}
+
+	@Override
+	public GraphPermission getGraphPermission(Role role, GenericNode node) {
+		return roleRepository.findPermission(role.getId(), node.getId());
 	}
 
 }
