@@ -17,7 +17,7 @@ public class Group extends GenericNode {
 
 	private static final long serialVersionUID = -6423363555276535419L;
 
-	@Indexed
+	@Indexed(unique = true)
 	private String name;
 
 	@Fetch
@@ -70,5 +70,9 @@ public class Group extends GenericNode {
 
 	public void addRole(Role role) {
 		roles.add(role);
+	}
+
+	public void removeUser(User user) {
+		getMembers().remove(user);
 	}
 }

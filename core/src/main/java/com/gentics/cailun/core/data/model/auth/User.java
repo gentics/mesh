@@ -5,11 +5,11 @@ import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 
 @NodeEntity
 public class User extends GenericNode {
@@ -20,6 +20,7 @@ public class User extends GenericNode {
 
 	private String firstname;
 
+	@Indexed(unique = true)
 	private String username;
 
 	private String emailAddress;
@@ -96,7 +97,7 @@ public class User extends GenericNode {
 	public String toString() {
 		return getPrincipalId();
 	}
-	
+
 	public Set<Group> getGroups() {
 		return groups;
 	}

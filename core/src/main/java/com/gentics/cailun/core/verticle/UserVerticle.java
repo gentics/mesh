@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -151,67 +152,137 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuidOrName").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			String uuidOrName = rc.request().params().get("uuidOrName");
-			if (StringUtils.isEmpty(uuidOrName)) {
-				// TODO i18n entry
-				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
-				rc.response().end(toJson(new GenericErrorResponse(message)));
-				return;
-			}
+		route("/:uuidOrName")
+				.method(PUT)
+				.consumes(APPLICATION_JSON)
+				.handler(rc -> {
+					String uuidOrName = rc.request().params().get("uuidOrName");
+					if (StringUtils.isEmpty(uuidOrName)) {
+						// TODO i18n entry
+						String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
+						rc.response().setStatusCode(400);
+						rc.response().end(toJson(new GenericErrorResponse(message)));
+						return;
+					}
 
-			RestUser requestModel = fromJson(rc, RestUser.class);
-			if (requestModel == null) {
-				// TODO exception would be nice, add i18n
-				String message = "Could not parse request json.";
-				rc.response().end(toJson(new GenericErrorResponse(message)));
-				return;
-			}
+					RestUser requestModel = fromJson(rc, RestUser.class);
+					if (requestModel == null) {
+						// TODO exception would be nice, add i18n
+						String message = "Could not parse request json.";
+						rc.response().setStatusCode(400);
+						rc.response().end(toJson(new GenericErrorResponse(message)));
+						return;
+					}
+					if (requestModel.getGroups().isEmpty()) {
+						// TODO i18n
+						String message = "No groups were specified. You need to specify at least one group for the user.";
+						rc.response().setStatusCode(400);
+						rc.response().end(toJson(new GenericErrorResponse(message)));
+						return;
+					}
 
-			// Try to load the user
-			User user = null;
-			if (UUIDUtil.isUUID(uuidOrName)) {
-				user = userService.findByUUID(uuidOrName);
-			} else {
-				user = userService.findByUsername(uuidOrName);
-			}
+					Set<Group> groupsForUser = new HashSet<>();
+					for (String groupName : requestModel.getGroups()) {
+						Group parentGroup = groupService.findByName(groupName);
+						if (parentGroup == null) {
+							// TODO i18n
+							rc.response().setStatusCode(400);
+							rc.response().end(toJson(new GenericErrorResponse("Could not find parent group {" + groupName + "}")));
+							return;
+						}
+						groupsForUser.add(parentGroup);
+					}
 
-			// Update the user or show 404
-			if (user != null) {
-				if (!checkPermission(rc, user, PermissionType.UPDATE)) {
-					return;
-				}
+					// Try to load the user
+					User user = null;
+					if (UUIDUtil.isUUID(uuidOrName)) {
+						user = userService.findByUUID(uuidOrName);
+					} else {
+						user = userService.findByUsername(uuidOrName);
+					}
 
-				if (user.getUsername() != requestModel.getUsername()) {
-					user.setUsername(requestModel.getUsername());
-				}
+					// Update the user or show 404
+					if (user != null) {
+						if (!checkPermission(rc, user, PermissionType.UPDATE)) {
+							return;
+						}
 
-				if (user.getFirstname() != requestModel.getFirstname()) {
-					user.setFirstname(requestModel.getFirstname());
-				}
+						if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
+							if (userService.findByUsername(requestModel.getUsername()) != null) {
+								rc.response().setStatusCode(409);
+								// TODO i18n
+								rc.response().end(
+										toJson(new GenericErrorResponse("A user with the username {" + requestModel.getUsername()
+												+ "} already exists. Please choose a different username.")));
+								return;
+							}
+							user.setUsername(requestModel.getUsername());
+						}
 
-				if (user.getLastname() != requestModel.getLastname()) {
-					user.setLastname(requestModel.getLastname());
-				}
+						// Check groups from which the user should be removed
+						Set<Group> groupsToBeRemoved = new HashSet<>();
+						for (Group group : user.getGroups()) {
+							// Check whether the user should be removed from the group
+							if (!groupsForUser.contains(group)) {
+								if (!checkPermission(rc, group, PermissionType.UPDATE)) {
+									return;
+								} else {
+									groupsToBeRemoved.add(group);
+								}
+							} else {
+								groupsForUser.remove(group);
+							}
+						}
+						for (Group group : groupsToBeRemoved) {
+							user.getGroups().remove(group);
+						}
 
-				if (user.getEmailAddress() != requestModel.getEmailAddress()) {
-					user.setEmailAddress(requestModel.getEmailAddress());
-				}
+						// Add users to the remaining set of groups
+						for (Group group : groupsForUser) {
+							if (!checkPermission(rc, group, PermissionType.UPDATE)) {
+								return;
+							}
+							user.getGroups().add(group);
+						}
 
-				// TODO handle passwords
-				user = userService.save(user);
-				rc.response().setStatusCode(200);
-				// TODO better response
-				rc.response().end(toJson(new GenericSuccessResponse("OK")));
-				return;
-			} else {
-				String message = i18n.get(rc, "user_not_found", uuidOrName);
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
-				return;
-			}
+						if (!StringUtils.isEmpty(requestModel.getFirstname()) && user.getFirstname() != requestModel.getFirstname()) {
+							user.setFirstname(requestModel.getFirstname());
+						}
 
-		});
+						if (!StringUtils.isEmpty(requestModel.getLastname()) && user.getLastname() != requestModel.getLastname()) {
+							user.setLastname(requestModel.getLastname());
+						}
+
+						if (!StringUtils.isEmpty(requestModel.getEmailAddress()) && user.getEmailAddress() != requestModel.getEmailAddress()) {
+							user.setEmailAddress(requestModel.getEmailAddress());
+						}
+
+						if (!StringUtils.isEmpty(requestModel.getPassword())) {
+							user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
+						}
+
+						try {
+							user = userService.save(user);
+						} catch (ConstraintViolationException e) {
+							// TODO log
+							// TODO correct msg?
+							// TODO i18n
+							rc.response().setStatusCode(409);
+							rc.response().end(toJson(new GenericErrorResponse("User can't be saved. Unknown error.")));
+							return;
+						}
+						rc.response().setStatusCode(200);
+						// TODO better response
+						rc.response().end(toJson(new GenericSuccessResponse("OK")));
+						return;
+					} else {
+						String message = i18n.get(rc, "user_not_found", uuidOrName);
+						rc.response().setStatusCode(404);
+						rc.response().end(toJson(new GenericNotFoundResponse(message)));
+						return;
+					}
+
+				});
 	}
 
 	private void addCreateHandler() {
@@ -224,6 +295,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				rc.response().end(toJson(new GenericErrorResponse(message)));
 				return;
 			}
+			if (StringUtils.isEmpty(requestModel.getUsername()) || StringUtils.isEmpty(requestModel.getPassword())) {
+				rc.response().setStatusCode(400);
+				// TODO i18n
+				rc.response().end(toJson(new GenericErrorResponse("Either username or password was not specified.")));
+				return;
+			}
+
 			// TODO extract groups from json?
 			Set<Group> groupsForUser = new HashSet<>();
 			for (String groupName : requestModel.getGroups()) {
@@ -241,7 +319,19 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				groupsForUser.add(parentGroup);
 			}
 
-			// TODO validate rest model
+			if (groupsForUser.isEmpty()) {
+				// TODO i18n
+				String message = "No groups were specified. You need to specify at least one group for the user.";
+				rc.response().end(toJson(new GenericErrorResponse(message)));
+				return;
+			}
+
+			if (userService.findByUsername(requestModel.getUsername()) != null) {
+				// TODO i18n
+				rc.response().setStatusCode(400);
+				rc.response().end(toJson(new GenericErrorResponse("Conflicting username")));
+				return;
+			}
 
 			User user = new User(requestModel.getUsername());
 			user.setFirstname(requestModel.getFirstname());
