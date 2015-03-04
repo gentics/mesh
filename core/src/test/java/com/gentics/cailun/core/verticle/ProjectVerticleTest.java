@@ -13,7 +13,6 @@ import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.rest.response.RestProject;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
-import com.gentics.cailun.test.UserInfo;
 
 public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
@@ -28,7 +27,6 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadProjectByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
-		UserInfo info = data().getUserInfo();
 		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
@@ -39,7 +37,6 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadProjectByName() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
-		UserInfo info = data().getUserInfo();
 		Project project = data().getProject();
 		assertNotNull("The name of the project must not be null.", project.getName());
 
@@ -50,7 +47,6 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadProjectInvalidName() throws Exception {
 		String json = "{\"message\":\"Project not found {bogusName}\"}";
-		UserInfo info = data().getUserInfo();
 		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
