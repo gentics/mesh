@@ -54,7 +54,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
-		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabase();
+		GraphDatabaseService graphDb = Neo4jGraphVerticle.getDatabaseService();
 		try (Transaction tx = graphDb.beginTx()) {
 			Node userNode = graphDb.getNodeById(userNodeId);
 			// Traverse the graph from user to the page. Collect all permission relations and check them individually

@@ -1,6 +1,7 @@
 package com.gentics.cailun.test;
 
 import io.vertx.core.Vertx;
+import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -27,6 +28,7 @@ public class Neo4jSpringTestConfiguration extends Neo4jConfiguration {
 	public GraphDatabaseService graphDatabaseService() {
 		GraphDatabaseService service = new TestGraphDatabaseFactory().newImpermanentDatabase();
 		service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
+		Neo4jGraphVerticle.setDatabaseService(service);
 		return service;
 	}
 

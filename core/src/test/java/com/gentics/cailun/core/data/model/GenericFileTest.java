@@ -33,7 +33,7 @@ public class GenericFileTest extends AbstractDBTest {
 		// Check whether we can load the english content of the found file
 		Content content = (Content) file;
 		Language english = data().getEnglish();
-		assertEquals("The content of the found file did not match the expected one.", TestDataProvider.ENGLISH_CONTENT, content.getContent(english));
+		assertEquals("The content of the found file did not match the expected one.", "1245", content.getContent(english));
 	}
 
 	@Test

@@ -12,6 +12,7 @@ import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.rest.response.RestRole;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
+import com.gentics.cailun.test.UserInfo;
 
 public class RoleVerticleTest extends AbstractRestVerticleTest {
 
@@ -26,18 +27,20 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadRoleByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"superadmin\"}";
-		Role adminRole = data().getUserInfoAll().getRole();
+		UserInfo info = data().getUserInfo();
+		Role adminRole = info.getRole();
 		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
-		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/roles/" + adminRole.getUuid(), 200, "OK");
+		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + adminRole.getUuid(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
 	}
 
 	@Test
 	public void testReadRoleByName() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"superadmin\"}";
-		Role adminRole = data().getUserInfoAll().getRole();
+		Role adminRole = info.getRole();
 		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
-		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
+		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
 		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
 	}
 

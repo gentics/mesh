@@ -4,12 +4,10 @@ import static org.junit.Assert.assertNotNull;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.HashMap;
 
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.exceptions.NotInitializedException;
 
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Content;
@@ -19,7 +17,6 @@ import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.model.Tag;
-import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -40,11 +37,6 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 public class TestDataProvider {
 
 	public static final String PROJECT_NAME = "dummy";
-	public static final String ENGLISH_CONTENT = "blessed mealtime!";
-
-	public enum UserInfoType {
-		read_create, all, none, read, read_create_delete, read_update_create, read_update
-	}
 
 	private static SecureRandom random = new SecureRandom();
 
@@ -90,9 +82,7 @@ public class TestDataProvider {
 
 	private ObjectSchema contentSchema;
 
-	private HashMap<UserInfoType, UserInfo> userInfos = new HashMap<>();
-
-	private User defaultUser;
+	private UserInfo userInfo;
 
 	private Content contentLevel1A1;
 	private Content contentLevel1A2;
@@ -113,10 +103,9 @@ public class TestDataProvider {
 	private TestDataProvider() {
 	}
 
-	public Role addUserInfo(UserInfoType type, String firstname, String lastname) {
+	public UserInfo getUserInfo(String username, String firstname, String lastname) {
 
 		String password = new BigInteger(130, random).toString(32);
-		String username = type.name() + "_perm_user";
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 
 		User user = new User(username);
@@ -127,17 +116,16 @@ public class TestDataProvider {
 		userService.save(user);
 		assertNotNull(userService.findByUsername(username));
 
-		Role role = new Role(type.name() + "_role");
+		Role role = new Role(username + "_role");
 		roleService.save(role);
 
-		Group group = new Group(type.name() + "_group");
+		Group group = new Group(username + "_group");
 		group.addUser(user);
 		group.addRole(role);
 		group = groupService.save(group);
 
 		UserInfo userInfo = new UserInfo(user, group, role, password);
-		userInfos.put(type, userInfo);
-		return role;
+		return userInfo;
 
 	}
 
@@ -153,23 +141,7 @@ public class TestDataProvider {
 			dummyProject = new Project(PROJECT_NAME);
 
 			// User, Groups, Roles
-			addUserInfo(UserInfoType.none, "Spider", "man");
-			addUserInfo(UserInfoType.read, "Rocket", "Raccoon");
-			addUserInfo(UserInfoType.read_update, "Black", "Widow");
-			addUserInfo(UserInfoType.read_update_create, "Star", "Lord");
-			addUserInfo(UserInfoType.read_create, "Super", "Man");
-			addUserInfo(UserInfoType.read_create_delete, "Iron", "Man");
-			Role allRole = addUserInfo(UserInfoType.all, "Tony", "Stark");
-
-			// Setup group hierarchy
-			Group adminGroup = userInfos.get(UserInfoType.all).getGroup();
-			defaultUser = userInfos.get(UserInfoType.all).getUser();
-			userInfos.values().stream().forEach(e -> {
-				if (adminGroup.getId() != e.getGroup().getId()) {
-					adminGroup.addGroup(e.getGroup());
-				}
-			});
-			groupService.save(adminGroup);
+			userInfo = getUserInfo("dummy_user", "Tony", "Stark");
 
 			// Contents, Tags, Projects
 			english = new Language("english", "en_US");
@@ -177,12 +149,11 @@ public class TestDataProvider {
 			german = new Language("german", "de_DE");
 			german = languageService.save(german);
 
-			root.setRootGroup(adminGroup);
+			root.setRootGroup(userInfo.getGroup());
 			root.addLanguage(english);
 			root.addLanguage(german);
-			userInfos.values().stream().forEach(e -> {
-				root.addUser(e.getUser());
-			});
+			root.addUser(userInfo.getUser());
+
 			rootService.save(root);
 
 			// Root Tag
@@ -212,7 +183,7 @@ public class TestDataProvider {
 			contentSchema = new ObjectSchema("content");
 			contentSchema.setProject(dummyProject);
 			contentSchema.setDescription("Default schema for contents");
-			contentSchema.setCreator(defaultUser);
+			contentSchema.setCreator(userInfo.getUser());
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
@@ -221,16 +192,13 @@ public class TestDataProvider {
 			ObjectSchema customSchema = new ObjectSchema("custom-content");
 			customSchema.setProject(dummyProject);
 			customSchema.setDescription("Custom schema for contents");
-			customSchema.setCreator(defaultUser);
+			customSchema.setCreator(userInfo.getUser());
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema("secret", PropertyType.STRING));
 			assertNotNull(objectSchemaService.save(customSchema));
 
-			// Setup permissions
-
-			contentLevel1A1.addPermission(new GraphPermission(allRole, contentLevel1A1));
 			tx.success();
 		}
 		// Reload various contents to refresh them and load the uuid field
@@ -253,11 +221,9 @@ public class TestDataProvider {
 		dummyProject = projectService.reload(dummyProject);
 		contentSchema = objectSchemaService.reload(contentSchema);
 
-		userInfos.values().stream().forEach(i -> {
-			i.setGroup(groupService.reload(i.getGroup()));
-			i.setUser(userService.reload(i.getUser()));
-			i.setRole(roleService.reload(i.getRole()));
-		});
+		userInfo.setGroup(groupService.reload(userInfo.getGroup()));
+		userInfo.setUser(userService.reload(userInfo.getUser()));
+		userInfo.setRole(roleService.reload(userInfo.getRole()));
 
 	}
 
@@ -275,14 +241,14 @@ public class TestDataProvider {
 		Content content = new Content();
 		contentService.setName(content, english, name + " english");
 		contentService.setFilename(content, english, name + ".en.html");
-		contentService.setContent(content, english, ENGLISH_CONTENT);
+		contentService.setContent(content, english, englishContent);
 
 		contentService.setName(content, german, name + " german");
 		contentService.setFilename(content, german, name + ".de.html");
 		contentService.setContent(content, german, germanContent);
 		// TODO maybe set project should be done inside the save?
 		content.setProject(dummyProject);
-		content.setCreator(defaultUser);
+		content.setCreator(userInfo.getUser());
 		content = contentService.save(content);
 
 		// Add the content to the given tag
@@ -360,32 +326,8 @@ public class TestDataProvider {
 		return contentSchema;
 	}
 
-	public UserInfo getUserInfoNone() {
-		return userInfos.get(UserInfoType.none);
-	}
-
-	public UserInfo getUserInfoAll() {
-		return userInfos.get(UserInfoType.all);
-	}
-
-	public UserInfo getUserInfoRead() {
-		return userInfos.get(UserInfoType.read);
-	}
-
-	public UserInfo getUserInfoReadUpdate() {
-		return userInfos.get(UserInfoType.read_update);
-	}
-
-	public UserInfo getUserInfoReadUpdateCreate() {
-		return userInfos.get(UserInfoType.read_update_create);
-	}
-
-	public UserInfo getUserInfoReadCreateDelete() {
-		return userInfos.get(UserInfoType.read_create_delete);
-	}
-
-	public UserInfo getUserInfoReadCreate() {
-		return userInfos.get(UserInfoType.read_create);
+	public UserInfo getUserInfo() {
+		return userInfo;
 	}
 
 }

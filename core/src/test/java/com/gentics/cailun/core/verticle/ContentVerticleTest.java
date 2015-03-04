@@ -17,6 +17,7 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.rest.response.RestGenericContent;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestDataProvider;
+import com.gentics.cailun.test.UserInfo;
 
 public class ContentVerticleTest extends AbstractRestVerticleTest {
 
@@ -30,9 +31,10 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateContentByPath() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":null,\"properties\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime again!\"},\"type\":\"content\",\"language\":\"en_US\"}";
 		String requestJson = "{\"type\": \"content\",\"properties\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime again!\"},\"language\":\"en_US\"}";
-		String response = request(data().getUserInfoAll(), HttpMethod.POST, "/api/v1/" + TestDataProvider.PROJECT_NAME
+		String response = request(info, HttpMethod.POST, "/api/v1/" + TestDataProvider.PROJECT_NAME
 				+ "/contents/subtag/newpage.html", 200, "OK", requestJson);
 		assertEqualsSanitizedJson(responseJson, response);
 	}
@@ -49,8 +51,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByValidPath() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"},\"properties\":{\"filename\":\"english.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime!\"},\"type\":\"content\",\"language\":\"en_US\"}";
-		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
+		String response = request(info, HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
 				+ "/contents/subtag/english.html", 200, "OK");
 		assertEqualsSanitizedJson(json, response);
 
@@ -58,8 +61,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByInvalidPath() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String json = "{\"message\":\"Content not found for path {subtag/subtag2/no-valid-page.html}\"}";
-		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
+		String response = request(info, HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
 				+ "/contents/subtag/subtag2/no-valid-page.html", 404, "Not Found");
 		assertEquals(json, response);
 
@@ -67,8 +71,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByInvalidPath2() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String json = "{\"message\":\"Content not found for path {subtag/subtag-no-valid-tag/no-valid-page.html}\"}";
-		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
+		String response = request(info, HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
 				+ "/contents/subtag/subtag-no-valid-tag/no-valid-page.html", 404, "Not Found");
 		assertEquals(json, response);
 
@@ -76,9 +81,10 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByUUID() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@gentics.com\"},\"properties\":{\"filename\":\"english.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime!\"},\"type\":\"content\",\"language\":\"en_US\"}";
 		Content content = data().getContentLevel1A1();
-		String response = request(data().getUserInfoAll(), HttpMethod.GET,
+		String response = request(info, HttpMethod.GET,
 				"/api/v1/" + TestDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
 		assertEqualsSanitizedJson(json, response);
 
@@ -86,8 +92,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByBogusUUID() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String json = "{\"message\":\"Content not found for path {bogusUUID}\"}";
-		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/contents/bogusUUID",
+		String response = request(info, HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/contents/bogusUUID",
 				404, "Not Found");
 		assertEquals(json, response);
 
@@ -95,8 +102,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByInvalidUUID() throws Exception {
+		UserInfo info = data().getUserInfo();
 		String json = "{\"message\":\"Content not found for uuid {dde8ba06bb7211e4897631a9ce2772f5}\"}";
-		String response = request(data().getUserInfoAll(), HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
+		String response = request(info, HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME
 				+ "/contents/dde8ba06bb7211e4897631a9ce2772f5", 404, "Not Found");
 		assertEquals(json, response);
 	}

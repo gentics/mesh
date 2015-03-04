@@ -9,6 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gentics.cailun.core.data.service.LanguageService;
+import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @ContextConfiguration(classes = { Neo4jSpringTestConfiguration.class })
@@ -20,6 +21,9 @@ public abstract class AbstractDBTest {
 
 	@Autowired
 	private TestDataProvider dataProvider;
+
+	@Autowired
+	protected RoleService roleService;
 
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
