@@ -5,7 +5,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
-import org.junit.Before;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,8 +14,8 @@ import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.UserService;
+import com.gentics.cailun.core.rest.response.RestUser;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
-import com.gentics.cailun.test.UserInfo;
 
 public class UserVerticleTest extends AbstractRestVerticleTest {
 
@@ -32,8 +33,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadTagByUUID() throws Exception {
 		User user = info.getUser();
-
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
+
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
@@ -46,6 +47,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 		assertNotNull(userService.findByUsername(user.getUsername()));
+
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
@@ -56,8 +58,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadByUsernameWithNoPermission() throws Exception {
 		User user = info.getUser();
-
 		assertNotNull("The username of the user must not be null.", user.getUsername());
+
 		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 		roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
@@ -122,8 +124,23 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateUser() {
-		fail("Not yet implemented");
+	public void testUpdateUser() throws Exception {
+		User user = info.getUser();
+
+		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
+
+		String requestJson = "{\"uuid\":\""
+				+ user.getUuid()
+				+ "\",\"lastname\":\"Epic Stark\",\"firstname\":\"Tony Awesome\",\"username\":\"dummy_user_changed\",\"emailAddress\":\"t.stark@stark-industries.com\"}";
+		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", requestJson);
+		String json = "{\"msg\":\"OK\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		User reloadedUser = userService.findByUUID(user.getUuid());
+		Assert.assertEquals("Epic Stark", reloadedUser.getLastname());
+		Assert.assertEquals("Tony Awesome", reloadedUser.getFirstname());
+		Assert.assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+		Assert.assertEquals("dummy_user_changed", reloadedUser.getUsername());
 	}
 
 	@Test
@@ -137,8 +154,31 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateUserWithNoPermission() {
-		fail("Not yet implemented");
+	public void testUpdateUserWithNoPermission() throws Exception {
+
+	}
+
+	@Test
+	public void testCreateUser() throws Exception {
+
+		// Add update permission to group in order to create the user in that group
+		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
+
+		RestUser newUser = new RestUser();
+		newUser.setEmailAddress("n.user@spam.gentics.com");
+		newUser.setFirstname("Joe");
+		newUser.setLastname("Doe");
+		newUser.setUsername("new_user");
+		newUser.setPassword("test123456");
+		newUser.addGroup(info.getGroup().getName());
+		
+		String requestJson = new ObjectMapper().writeValueAsString(newUser);
+		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"password\":null,\"groups\":[\"dummy_user_group\"]}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		// TODO marshall json to restmodel and inspect it
+
 	}
 
 }

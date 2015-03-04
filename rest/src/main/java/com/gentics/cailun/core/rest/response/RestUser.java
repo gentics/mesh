@@ -1,5 +1,8 @@
 package com.gentics.cailun.core.rest.response;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RestUser extends AbstractRestModel {
 
 	private String lastname;
@@ -9,6 +12,10 @@ public class RestUser extends AbstractRestModel {
 	private String username;
 
 	private String emailAddress;
+
+	private String password;
+
+	private List<String> groups = new ArrayList<>();
 
 	public RestUser() {
 	}
@@ -43,5 +50,25 @@ public class RestUser extends AbstractRestModel {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public List<String> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(List<String> groups) {
+		this.groups = groups;
+	}
+
+	public void addGroup(String name) {
+		this.groups.add(name);
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	public String getPassword() {
+		return password;
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.UserRepository;
@@ -60,6 +61,10 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		restUser.setEmailAddress(user.getEmailAddress());
 		restUser.setFirstname(user.getFirstname());
 		restUser.setLastname(user.getLastname());
+
+		for (Group group : user.getGroups()) {
+			restUser.addGroup(group.getName());
+		}
 		return restUser;
 	}
 }

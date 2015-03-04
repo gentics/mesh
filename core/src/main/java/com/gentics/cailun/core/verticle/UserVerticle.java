@@ -2,11 +2,15 @@ package com.gentics.cailun.core.verticle;
 
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.Session;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -16,8 +20,10 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.response.GenericErrorResponse;
 import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
@@ -32,6 +38,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private GroupService groupService;
 
 	public UserVerticle() {
 		super("users");
@@ -58,6 +67,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				rc.next();
 				return;
 			}
+
 			/*
 			 * Load user by uuid or username
 			 */
@@ -141,10 +151,116 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
+		route("/:uuidOrName").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
+			String uuidOrName = rc.request().params().get("uuidOrName");
+			if (StringUtils.isEmpty(uuidOrName)) {
+				// TODO i18n entry
+				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
+				rc.response().end(toJson(new GenericErrorResponse(message)));
+				return;
+			}
 
+			RestUser requestModel = fromJson(rc, RestUser.class);
+			if (requestModel == null) {
+				// TODO exception would be nice, add i18n
+				String message = "Could not parse request json.";
+				rc.response().end(toJson(new GenericErrorResponse(message)));
+				return;
+			}
+
+			// Try to load the user
+			User user = null;
+			if (UUIDUtil.isUUID(uuidOrName)) {
+				user = userService.findByUUID(uuidOrName);
+			} else {
+				user = userService.findByUsername(uuidOrName);
+			}
+
+			// Update the user or show 404
+			if (user != null) {
+				if (!checkPermission(rc, user, PermissionType.UPDATE)) {
+					return;
+				}
+
+				if (user.getUsername() != requestModel.getUsername()) {
+					user.setUsername(requestModel.getUsername());
+				}
+
+				if (user.getFirstname() != requestModel.getFirstname()) {
+					user.setFirstname(requestModel.getFirstname());
+				}
+
+				if (user.getLastname() != requestModel.getLastname()) {
+					user.setLastname(requestModel.getLastname());
+				}
+
+				if (user.getEmailAddress() != requestModel.getEmailAddress()) {
+					user.setEmailAddress(requestModel.getEmailAddress());
+				}
+
+				// TODO handle passwords
+				user = userService.save(user);
+				rc.response().setStatusCode(200);
+				// TODO better response
+				rc.response().end(toJson(new GenericSuccessResponse("OK")));
+				return;
+			} else {
+				String message = i18n.get(rc, "user_not_found", uuidOrName);
+				rc.response().setStatusCode(404);
+				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				return;
+			}
+
+		});
 	}
 
 	private void addCreateHandler() {
+		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 
+			RestUser requestModel = fromJson(rc, RestUser.class);
+			if (requestModel == null) {
+				// TODO exception would be nice, add i18n
+				String message = "Could not parse request json.";
+				rc.response().end(toJson(new GenericErrorResponse(message)));
+				return;
+			}
+			// TODO extract groups from json?
+			Set<Group> groupsForUser = new HashSet<>();
+			for (String groupName : requestModel.getGroups()) {
+				Group parentGroup = groupService.findByName(groupName);
+				if (parentGroup == null) {
+					// TODO i18n
+					rc.response().end(toJson(new GenericErrorResponse("Could not find parent group {" + groupName + "}")));
+					return;
+				}
+
+				// TODO such implicit permissions must be documented
+				if (!checkPermission(rc, parentGroup, PermissionType.UPDATE)) {
+					return;
+				}
+				groupsForUser.add(parentGroup);
+			}
+
+			// TODO validate rest model
+
+			User user = new User(requestModel.getUsername());
+			user.setFirstname(requestModel.getFirstname());
+			user.setLastname(requestModel.getLastname());
+			user.setEmailAddress(requestModel.getEmailAddress());
+			user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
+			user = userService.save(user);
+			// Update uuid - TODO remove once save is transactional
+
+			for (Group group : groupsForUser) {
+				group.addUser(user);
+				groupService.save(group);
+			}
+			user = userService.reload(user);
+			// TODO add creator info, add update info to group,
+			RestUser restUser = userService.transformToRest(user);
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(restUser));
+
+		});
 	}
 }

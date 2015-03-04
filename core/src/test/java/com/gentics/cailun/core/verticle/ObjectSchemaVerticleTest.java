@@ -10,7 +10,6 @@ import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestDataProvider;
-import com.gentics.cailun.test.UserInfo;
 
 public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 

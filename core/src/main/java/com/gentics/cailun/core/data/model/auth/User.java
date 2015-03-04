@@ -1,8 +1,15 @@
 package com.gentics.cailun.core.data.model.auth;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.cailun.core.data.model.generic.GenericNode;
+import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 
 @NodeEntity
 public class User extends GenericNode {
@@ -18,6 +25,10 @@ public class User extends GenericNode {
 	private String emailAddress;
 
 	private String passwordHash;
+
+	@Fetch
+	@RelatedTo(type = AuthRelationships.MEMBER_OF, direction = Direction.OUTGOING, elementClass = Group.class)
+	private Set<Group> groups = new HashSet<>();
 
 	@SuppressWarnings("unused")
 	private User() {
@@ -84,6 +95,10 @@ public class User extends GenericNode {
 	 */
 	public String toString() {
 		return getPrincipalId();
+	}
+	
+	public Set<Group> getGroups() {
+		return groups;
 	}
 
 }
