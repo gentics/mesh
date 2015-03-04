@@ -25,17 +25,6 @@ public interface I18NService {
 	public String get(Locale locale, String key);
 
 	/**
-	 * Return the i18n string key. The locale will be determined by examining the routing context locale data parameter.
-	 * 
-	 * @param rc
-	 *            Context from which to extract the locale field
-	 * @param key
-	 *            Key of the i18n property
-	 * @return locale specific i18n string
-	 */
-	public String get(RoutingContext rc, String key);
-
-	/**
 	 * Return the i18n string for the given locale and key. The parameters will be used to replace variables inside the i18n string.
 	 * 
 	 * @param locale

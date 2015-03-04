@@ -106,8 +106,4 @@ public class I18NServiceImpl implements I18NService {
 		return get(rc.get("locale"), key, parameters);
 	}
 
-	@Override
-	public String get(RoutingContext rc, String key) {
-		return get(rc.get("locale"), key);
-	}
 }
