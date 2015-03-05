@@ -1,0 +1,10 @@
+{  
+   "$schema": "http://json-schema.org/draft-03/schema",
+   "javaType": "com.gentics.cailun.core.rest.response.RestGroup",
+   "type": "object",
+   "description": "A single group",
+   "properties": {
+     "uuid":  { "type": "string", "required": true },
+     "name":  { "type": "string", "required": true }
+   }
+}

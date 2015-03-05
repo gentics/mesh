@@ -4,6 +4,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Session;
 
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 
-		route("/:uuidOrName").method(GET).handler(rc -> {
+		Route getRoute = route("/:uuidOrName").method(GET).handler(rc -> {
 			String uuidOrName = rc.request().params().get("uuidOrName");
 
 			if (StringUtils.isEmpty(uuidOrName)) {

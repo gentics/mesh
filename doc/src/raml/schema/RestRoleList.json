@@ -1,0 +1,12 @@
+{  "$schema": "http://json-schema.org/draft-03/schema",
+   "javaType": "com.gentics.cailun.core.rest.response.RestRoleList",
+   "type": "object",
+   "description": "A object containing an array of roles",
+   "properties": {
+     "size": { "type": "integer", "required": true },
+     "roles": {
+       "type": "array",
+       "items": { "$ref": "role" }
+     }
+   }
+}

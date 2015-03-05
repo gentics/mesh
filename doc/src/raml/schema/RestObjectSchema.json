@@ -1,0 +1,8 @@
+{  "$schema": "http://json-schema.org/draft-03/schema",
+   "javaType": "com.gentics.cailun.core.rest.response.RestObjectSchema",
+   "type": "object",
+   "description": "A single object type",
+   "properties": {
+      "name":  { "type": "string", "required": true }
+    }
+}

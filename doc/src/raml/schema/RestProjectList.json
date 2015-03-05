@@ -1,0 +1,12 @@
+{  "$schema": "http://json-schema.org/draft-03/schema",
+   "javaType": "com.gentics.cailun.core.rest.response.RestProjectList",
+   "type": "object",
+   "description": "A object containing an array of projects",
+   "properties": {
+     "size": { "type": "integer", "required": true },
+     "projects": {
+       "type": "array",
+       "items": { "$ref": "RestProject" }
+     }
+   }
+}

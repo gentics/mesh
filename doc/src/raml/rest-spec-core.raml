@@ -1,0 +1,439 @@
+#%RAML 0.8
+title: preview-spec-core
+version: v0.1
+baseUri: http://localhost:8080/
+securedBy: [oauth_2_0]
+
+securitySchemes:
+  - basic:
+      type: Basic Authentication
+  - oauth_2_0:
+      description: |
+        OAuth2 is a protocol that lets external apps request authorization to private
+        details. This is preferred over Basic Authentication because tokens can be limited to specific
+        types of data, and can be revoked by users at any time.
+      type: OAuth 2.0
+      describedBy:
+        headers:
+          Authorization:
+            description: |
+              Used to send a valid OAuth 2 access token. Do not use together with
+              the "access_token" query string parameter.
+            type: string
+        queryParameters:
+          access_token:
+            description: |
+              Used to send a valid OAuth 2 access token. Do not use together with
+              the "Authorization" header
+            type: string
+        responses:
+          404:
+            description: Unauthorized
+      settings:
+        authorizationUri: https://localhost:8080/login/oauth/authorize
+        accessTokenUri: https://localhost:8080/login/oauth/access_token
+        authorizationGrants: [ code ]
+
+traits:
+  - localized:
+      headers:
+        Accept-Language:
+          description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
+  - paged:
+      queryParameters:
+        pages:
+          description: The number of pages to return
+          type: number
+
+schemas:
+  - RestGroup: !include  schema/RestGroup.json
+  - RestGroupList: !include schema/RestGroupList.json
+  - RestRole: !include schema/RestRole.json
+  - RestRoleList: !include schema/RestRoleList.json
+  - RestUser: !include schema/RestUser.json
+  - RestUserList: !include schema/RestUserList.json
+  - RestTag: !include schema/RestTag.json
+  - RestGenericContent: !include schema/RestGenericContent.json
+  - RestObjectSchema: !include schema/RestObjectSchema.json
+  - RestObjectSchemaList: !include schema/RestObjectSchemaList.json
+  - RestProject: !include schema/RestProject.json
+  - RestProjectList: !include schema/RestProjectList.json
+
+
+/users:
+  is: [ localized ]
+  displayName: Users
+  get:
+    is: [ paged ]
+    description: Retrieves a list of **users**
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestUserList
+            example: !include examples/RestUserList.json
+
+
+  post:
+    description: Create new user
+    body:
+      application/json:
+        schema: RestUser
+        example: !include examples/RestUser.json
+          
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestUser
+            example: !include examples/RestUser.json
+
+
+  /{username}:
+    is: [ localized ]
+    get:
+      description: Retrieves a **single user** with the given username
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestUser
+              example: !include examples/RestUser.json
+
+    put:
+      description: Updates the **user** with the given username
+    delete:
+      description: Deletes the **user** with the given username
+
+  /urn:uuid:{uuid}:
+    is: [ localized ]
+    get:
+      description: Retrieves a **single role** with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestUser
+              example: !include examples/RestUser.json
+      
+    put:
+      description: Updates the **user** with the given uuid
+    delete:
+      description: Deletes the **user** with the given uuid
+    
+
+/roles:
+  is: [ localized ]
+  displayName: Roles
+  get:
+    is: [ paged ]
+    description: Retrieves a list of roles
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestRoleList
+            example: !include examples/RestUserList.json
+  post:
+    description: Create a new role
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestRole
+            example: !include examples/RestRole.json
+
+  /{name}:
+    is: [ localized ]
+    get:
+      description: Retrieves a **single role** with the given name
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestRole
+              example: !include examples/RestRole.json
+    put:
+      description: Updates a **single role** with the given name
+    delete:
+      description: Deletes a **single role** with the given name
+  
+  /urn:uuid:{uuid}:
+    is: [ localized ]
+    get:
+      description: Retrieves a **single role** with the given uuid
+    put:
+      description: Updates a **single role** with the given uuid
+    delete:
+      description: Deletes a **single role** with the given uuid
+
+
+/groups:
+  is: [ localized ]
+  displayName: Groups
+  get: 
+    is: [ paged ]
+    description: Retrieves a **list of groups**
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestGroupList
+            example: !include examples/RestGroupList.json
+  post:
+    description: Create a new group
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestGroup
+            example: !include examples/RestGroup.json
+
+  /{name}:
+    is: [ localized ]
+    get:
+      description: Retrieves a **single group** with the given name
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestGroup
+              example: !include examples/RestGroup.json
+    put:
+      description: Updates a **single group** with the given name
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestGroup
+              example: !include examples/RestGroup.json
+    delete:
+      description: Deletes a **single group** with the given name
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestGroup
+              example: !include examples/RestGroup.json
+  
+  /urn:uuid:{uuid}:
+    is: [ localized ]
+    get:
+      description: Retrieves a **single group** with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestGroup
+              example: !include examples/RestGroup.json
+    put:
+      description: Updates a **single group** with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestGroup
+              example: !include examples/RestGroup.json
+    delete:
+      description: Deletes a **single group** with the given uuid
+
+
+/projects:
+  is: [ localized ]
+  displayName: Projects
+  get:
+    is: [ paged ]
+    description: Retrieves a list of projects
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestProjectList
+            example: !include examples/RestProjectList.json
+      400:
+        description: Bad Request
+      500:
+        description: Internal Server Error
+  post:
+    description: Create a new project
+
+  /{name}:
+    is: [ localized ]
+    get:
+      description: Retrieves the **project** with the given name
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestProject
+              example: !include examples/RestProject.json
+    put:
+    delete:
+
+  /urn:uuid:{uuid}:
+   get:
+    description: Retrieves the **project** with the given uuid
+   put:
+   delete:
+
+/{project_name}/contents:
+  displayName: Contents
+  /{path}:
+    is: [ localized ]
+    get:
+      description: Retrieves the **content** with the given path
+      queryParameters:
+        lang:
+          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma
+      responses:
+        200:
+          body:
+            application/json:
+              schema: RestGenericContent
+              example: !include examples/RestGenericContent.json
+    delete:
+      description: Deletes the **content** with the given path
+    post:
+      description: Creates the **content** with the given path
+    put:
+      description: Updates the **content** with the given path
+
+/{project_name}/tags/:
+  displayName: Tags
+
+  /{path}:
+    is: [ localized ]
+    get:
+      description: Load the tag with the given path
+      responses:
+        200:
+          body:
+            application/json:
+              schema: tag
+    delete:
+      description: Delete the **tag** with the given path
+    post:
+      description: Create the **tag** with the given path
+    put:
+      description: Update the **tag** with the given path
+
+  /urn:uuid:{uuid}:
+    is: [ localized ]
+    get:
+      description: Load the **tag** with the given uuid
+    put:
+      description: Update the **tag** with the given uuid
+    delete:
+      description: Delete the **tag** with the given uuid
+
+
+/{project_name}/search:
+  is: [ localized ]
+  displayName: Search
+
+/{project_name}/types:
+  is: [ localized ]
+  displayName: Types
+  get:
+    is: [ paged ]
+    description: Retrieves a **list of object types**
+    responses:
+      200:
+        body:
+          application/json:
+            schema: RestObjectSchemaList
+            example: !include examples/RestObjectSchemaList.json
+      400:
+        description: Bad Request
+      500:
+        description: Internal Server Error
+  post:
+    description: Create the type
+
+  /{name}:
+    is: [ localized ]
+    get:
+      description: Retrieves the **type** with the given name
+    delete:
+      description: Deletes the **type** with the given name
+    put:
+      description: Updates the **type** with the given name
+
+  /urn:uuid:{uuid}:
+    is: [ localized ]
+    get:
+      description: Retrieves the **type** with the given uuid
+    put: 
+      description: Updates the **type** with the given uuid
+    delete:
+      description: Deletes the **type** with the given uuid
+    
+
+/{project_name}/binaries:
+  displayName: Binaries
+
+  /{path}:
+    is: [ localized ]
+    get:
+      headers:
+        Accept:
+         description: Can be set to *application/json* or *application/octet-stream* 
+                      to load either the json representation of the file or its binary contents.
+      description: Load the **binary file** with the given path
+    post: 
+      description: Create the **binary file** with the given path
+    put:
+      description: Update the **binary file** with the given path
+    delete:
+      description: Delete the **binary file** with the given path
+
+  /urn:uuid:{uuid}:
+    is: [ localized ]
+    get:
+      description: Load the **binary file** with the given uuid
+    put:
+      description: Update the **binary file** with the given uuid
+    delete:
+      description: Delete the **binary file** with the given uuid
+
+
+/{project_name}/navigation:
+  is: [ localized ]
+  displayName: Navigation
+
+
+/admin:
+  displayName: Admin
+
+  /neo4vertx/restart:
+    is: [ localized ]
+    description: Restart the neo4vertx verticle
+    get:
+
+  /services/{mavenCoordinates}:
+    is: [ localized ]
+    uriParameters:
+      mavenCoordinates:
+        description: | 
+                Maven coordinates for the service. (E.g.: com.gentics.cailun:tagcloud:1.0.1)
+        type: string
+    post:
+      description: Deploy a vertx maven service
+    delete:
+      description: Undeploy a previouly deployed vertx maven server
+
+  /verticles/{class}:
+    is: [ localized ]
+    uriParameters:
+      class:
+        description: Name of the verticle class
+        type: string
+    post:
+      description: Deploy a verticle with the given class
+    delete:
+      description: Undeploy a verticle with the given class
+
+  /backup:
+    is: [ localized ]
+    get:
+      description: Invoke the live backup process
