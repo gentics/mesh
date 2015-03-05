@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import java.util.List;
+
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -13,7 +15,7 @@ public interface RoleService extends GenericNodeService<Role> {
 
 	Role findByName(String name);
 
-	RestRole getReponseObject(Role role);
+	List<Role> findAll();
 
 	void addPermission(Role role, GenericNode node, PermissionType... permissionTypes);
 
@@ -27,5 +29,7 @@ public interface RoleService extends GenericNodeService<Role> {
 	GraphPermission getGraphPermission(Role role, GenericNode node);
 
 	GraphPermission revokePermission(Role role, GenericNode node, PermissionType... permissionTypes);
+
+	RestRole transformToRest(Role role);
 
 }

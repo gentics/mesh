@@ -1,5 +1,8 @@
 package com.gentics.cailun.core.data.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -8,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.RoleRepository;
@@ -31,11 +35,18 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public RestRole getReponseObject(Role role) {
-		RestRole restRole = new RestRole();
-		restRole.setUuid(role.getUuid());
-		restRole.setName(role.getName());
-		return restRole;
+	public List<Role> findAll() {
+
+		// TODO i assume this could create memory problems for big data
+		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+			List<Role> list = new ArrayList<>();
+			for (Role role : roleRepository.findAll()) {
+				list.add(role);
+			}
+			tx.success();
+			return list;
+		}
+
 	}
 
 	@Override
@@ -77,6 +88,18 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 			tx.success();
 			return permission;
 		}
+	}
+
+	@Override
+	public RestRole transformToRest(Role role) {
+		if (role == null) {
+			return null;
+		}
+		RestRole restRole = new RestRole();
+		restRole.setUuid(role.getUuid());
+		restRole.setName(role.getName());
+
+		return restRole;
 	}
 
 }

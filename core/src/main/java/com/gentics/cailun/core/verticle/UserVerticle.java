@@ -119,6 +119,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuidOrName)) {
 				// TODO i18n entry
 				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
+				rc.response().setStatusCode(400);
 				rc.response().end(toJson(new GenericErrorResponse(message)));
 				return;
 			}
@@ -292,6 +293,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			if (requestModel == null) {
 				// TODO exception would be nice, add i18n
 				String message = "Could not parse request json.";
+				rc.response().setStatusCode(400);
 				rc.response().end(toJson(new GenericErrorResponse(message)));
 				return;
 			}

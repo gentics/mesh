@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
@@ -15,6 +16,7 @@ public class Role extends GenericNode {
 
 	private static final long serialVersionUID = -6696156556292877992L;
 
+	@Indexed(unique = true)
 	private String name;
 
 	@Fetch
@@ -35,6 +37,10 @@ public class Role extends GenericNode {
 
 	public String getName() {
 		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

@@ -401,6 +401,15 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	}
 
+	@Test
+	public void testCreateUserWithBogusJson() throws Exception {
+
+		String requestJson = "bogus text";
+		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
+		String json = "{\"message\":\"Could not parse request json.\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	}
+
 	// Delete tests
 
 	@Test
