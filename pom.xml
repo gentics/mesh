@@ -11,6 +11,8 @@
 	<name>Cailun</name>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
 		<gh-pages.url>http://gentics.github.io/cailun/</gh-pages.url>
 		<gh-url>https://github.com/gentics/cailun/tree/master</gh-url>
 
