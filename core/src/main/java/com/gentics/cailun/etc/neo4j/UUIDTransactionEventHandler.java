@@ -14,14 +14,14 @@ import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.index.RelationshipIndex;
 
 import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.TimeBasedGenerator;
+import com.fasterxml.uuid.impl.RandomBasedGenerator;
 
 public class UUIDTransactionEventHandler implements TransactionEventHandler {
 
 	public static final String UUID_PROPERTY_NAME = "uuid";
 	public static final String UUID_INDEX_NAME = "uuid";
 
-	private final TimeBasedGenerator uuidGenerator = Generators.timeBasedGenerator();
+	private static final RandomBasedGenerator uuidGenerator = Generators.randomBasedGenerator();
 	private final GraphDatabaseService graphDatabaseService;
 	private Index<Node> nodeUuidIndex;
 	private RelationshipIndex relationshipUuidIndex;

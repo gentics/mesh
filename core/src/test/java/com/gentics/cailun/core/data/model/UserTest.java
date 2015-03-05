@@ -4,9 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.raml.emitter.RamlEmitter;
-import org.raml.model.Raml;
-import org.raml.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.data.model.auth.User;
@@ -21,22 +18,6 @@ public class UserTest extends AbstractDBTest {
 	@Before
 	public void setup() {
 		setupData();
-	}
-	
-	@Test 
-	public void testRaml() {
-		Raml raml = new Raml();
-		Resource r = new Resource();
-		r.setDescription("jow");
-		raml.getResources().put("test", r);
-		
-		raml.setTitle("test1234");
-
-		// modify the raml object
-
-		RamlEmitter emitter = new RamlEmitter();
-		String dumpFromRaml = emitter.dump(raml);
-		System.out.println(dumpFromRaml);
 	}
 
 	@Test

@@ -43,6 +43,7 @@
 		<module>examples</module>
 		<module>verticles</module>
 		<module>importers</module>
+		<module>raml-doc</module>
 		<module>doc</module>
 	</modules>
 

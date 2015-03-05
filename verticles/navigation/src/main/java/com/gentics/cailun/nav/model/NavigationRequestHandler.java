@@ -7,7 +7,6 @@ import io.vertx.ext.apex.core.Session;
 
 import java.util.concurrent.ForkJoinPool;
 
-import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

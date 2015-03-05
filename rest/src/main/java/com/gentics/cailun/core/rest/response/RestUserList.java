@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RestUserList {
-	private List<RestUser> list = new ArrayList<>();
+
+	private List<RestUser> users = new ArrayList<>();
 
 	public RestUserList() {
 	}
 
-	public List<RestUser> getList() {
-		return list;
+	public void addUser(RestUser user) {
+		this.users.add(user);
 	}
 
-	public void setList(List<RestUser> list) {
-		this.list = list;
+	public List<RestUser> getUsers() {
+		return users;
 	}
 }
