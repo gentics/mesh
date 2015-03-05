@@ -1,10 +1,17 @@
 package com.gentics.cailun.verticle.file;
 
+import org.jacpfx.vertx.spring.SpringVerticle;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
 
+@Component
+@Scope("singleton")
+@SpringVerticle
 public class FileVerticle extends AbstractProjectRestVerticle {
 
-	protected FileVerticle(String basePath) {
+	public FileVerticle() {
 		super("file");
 	}
 
