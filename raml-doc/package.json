@@ -1,0 +1,15 @@
+{
+  "name": "cailun-raml-doc",
+  "version": "1.0.0",
+  "description": "RAML Documentation Generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "raml2html": "^1.4.0"
+  }
+}

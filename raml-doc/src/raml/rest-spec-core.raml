@@ -46,18 +46,18 @@ traits:
           type: number
 
 schemas:
-  - RestGroup: !include  schema/RestGroup.json
-  - RestGroupList: !include schema/RestGroupList.json
-  - RestRole: !include schema/RestRole.json
-  - RestRoleList: !include schema/RestRoleList.json
-  - RestUser: !include schema/RestUser.json
-  - RestUserList: !include schema/RestUserList.json
-  - RestTag: !include schema/RestTag.json
-  - RestGenericContent: !include schema/RestGenericContent.json
-  - RestObjectSchema: !include schema/RestObjectSchema.json
-  - RestObjectSchemaList: !include schema/RestObjectSchemaList.json
-  - RestProject: !include schema/RestProject.json
-  - RestProjectList: !include schema/RestProjectList.json
+  - RestGroup: !include  json/RestGroup.schema.json
+  - RestGroupList: !include json/RestGroupList.schema.json
+  - RestRole: !include json/RestRole.schema.json
+  - RestRoleList: !include json/RestRoleList.schema.json
+  - RestUser: !include json/RestUser.schema.json
+  - RestUserList: !include json/RestUserList.schema.json
+  - RestTag: !include json/RestTag.schema.json
+  - RestGenericContent: !include json/RestGenericContent.schema.json
+  - RestObjectSchema: !include json/RestObjectSchema.schema.json
+  - RestObjectSchemaList: !include json/RestObjectSchemaList.schema.json
+  - RestProject: !include json/RestProject.schema.json
+  - RestProjectList: !include json/RestProjectList.schema.json
 
 
 /users:
@@ -71,7 +71,7 @@ schemas:
         body:
           application/json:
             schema: RestUserList
-            example: !include examples/RestUserList.json
+            example: !include json/RestUserList.example.json
 
 
   post:
@@ -79,14 +79,14 @@ schemas:
     body:
       application/json:
         schema: RestUser
-        example: !include examples/RestUser.json
+        example: !include json/RestUser.example.json
           
     responses:
       200:
         body:
           application/json:
             schema: RestUser
-            example: !include examples/RestUser.json
+            example: !include json/RestUser.example.json
 
 
   /{username}:
@@ -98,7 +98,7 @@ schemas:
           body:
             application/json:
               schema: RestUser
-              example: !include examples/RestUser.json
+              example: !include json/RestUser.example.json
 
     put:
       description: Updates the **user** with the given username
@@ -114,7 +114,7 @@ schemas:
           body:
             application/json:
               schema: RestUser
-              example: !include examples/RestUser.json
+              example: !include json/RestUser.example.json
       
     put:
       description: Updates the **user** with the given uuid
@@ -133,7 +133,7 @@ schemas:
         body:
           application/json:
             schema: RestRoleList
-            example: !include examples/RestUserList.json
+            example: !include json/RestUserList.example.json
   post:
     description: Create a new role
     responses:
@@ -141,7 +141,7 @@ schemas:
         body:
           application/json:
             schema: RestRole
-            example: !include examples/RestRole.json
+            example: !include json/RestRole.example.json
 
   /{name}:
     is: [ localized ]
@@ -152,7 +152,7 @@ schemas:
           body:
             application/json:
               schema: RestRole
-              example: !include examples/RestRole.json
+              example: !include json/RestRole.example.json
     put:
       description: Updates a **single role** with the given name
     delete:
@@ -179,7 +179,7 @@ schemas:
         body:
           application/json:
             schema: RestGroupList
-            example: !include examples/RestGroupList.json
+            example: !include json/RestGroupList.example.json
   post:
     description: Create a new group
     responses:
@@ -187,7 +187,7 @@ schemas:
         body:
           application/json:
             schema: RestGroup
-            example: !include examples/RestGroup.json
+            example: !include json/RestGroup.example.json
 
   /{name}:
     is: [ localized ]
@@ -198,7 +198,7 @@ schemas:
           body:
             application/json:
               schema: RestGroup
-              example: !include examples/RestGroup.json
+              example: !include json/RestGroup.example.json
     put:
       description: Updates a **single group** with the given name
       responses:
@@ -206,7 +206,7 @@ schemas:
           body:
             application/json:
               schema: RestGroup
-              example: !include examples/RestGroup.json
+              example: !include json/RestGroup.example.json
     delete:
       description: Deletes a **single group** with the given name
       responses:
@@ -214,7 +214,7 @@ schemas:
           body:
             application/json:
               schema: RestGroup
-              example: !include examples/RestGroup.json
+              example: !include json/RestGroup.example.json
   
   /urn:uuid:{uuid}:
     is: [ localized ]
@@ -225,7 +225,7 @@ schemas:
           body:
             application/json:
               schema: RestGroup
-              example: !include examples/RestGroup.json
+              example: !include json/RestGroup.example.json
     put:
       description: Updates a **single group** with the given uuid
       responses:
@@ -233,7 +233,7 @@ schemas:
           body:
             application/json:
               schema: RestGroup
-              example: !include examples/RestGroup.json
+              example: !include json/RestGroup.example.json
     delete:
       description: Deletes a **single group** with the given uuid
 
@@ -249,7 +249,7 @@ schemas:
         body:
           application/json:
             schema: RestProjectList
-            example: !include examples/RestProjectList.json
+            example: !include json/RestProjectList.example.json
       400:
         description: Bad Request
       500:
@@ -266,7 +266,7 @@ schemas:
           body:
             application/json:
               schema: RestProject
-              example: !include examples/RestProject.json
+              example: !include json/RestProject.example.json
     put:
     delete:
 
@@ -290,13 +290,22 @@ schemas:
           body:
             application/json:
               schema: RestGenericContent
-              example: !include examples/RestGenericContent.json
+              example: !include json/RestGenericContent.example.json
     delete:
       description: Deletes the **content** with the given path
+      responses:
+        200:
+        423:
     post:
       description: Creates the **content** with the given path
+      responses:
+        200:
+        423:
     put:
       description: Updates the **content** with the given path
+      responses:
+        200:
+        423:
 
 /{project_name}/tags/:
   displayName: Tags
@@ -342,7 +351,7 @@ schemas:
         body:
           application/json:
             schema: RestObjectSchemaList
-            example: !include examples/RestObjectSchemaList.json
+            example: !include json/RestObjectSchemaList.example.json
       400:
         description: Bad Request
       500:

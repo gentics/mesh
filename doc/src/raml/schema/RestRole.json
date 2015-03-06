@@ -1,9 +1,0 @@
-{  "$schema": "http://json-schema.org/draft-03/schema",
-   "javaType": "com.gentics.cailun.core.rest.response.RestRole",
-   "type": "object",
-   "description": "A single role",
-   "properties": {
-     "uuid":  { "type": "string", "required": true },
-     "name":  { "type": "string", "required": true }
-   }
-}

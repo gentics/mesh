@@ -30,7 +30,7 @@ public class Generator {
 
 	private static final RandomBasedGenerator uuidGenerator = Generators.randomBasedGenerator();
 	private ObjectMapper mapper = new ObjectMapper();
-	private File baseDir;
+	private File outputDir;
 
 	public static String getUUID() {
 
@@ -41,7 +41,7 @@ public class Generator {
 	}
 
 	private void writeJsonSchema(Class<?> clazz) throws IOException {
-		File file = new File(baseDir, clazz.getSimpleName() + ".schema.json");
+		File file = new File(outputDir, clazz.getSimpleName() + ".schema.json");
 		ObjectMapper m = new ObjectMapper();
 		SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
 		m.acceptJsonFormatVisitor(m.constructType(clazz), visitor);
@@ -55,8 +55,9 @@ public class Generator {
 	}
 
 	private void start() throws IOException {
-		baseDir = new File("target", "output");
-		baseDir.mkdirs();
+		File baseDir = new File("target", "raml2html");
+		outputDir = new File(baseDir, "json");
+		outputDir.mkdirs();
 		// Raml raml = new Raml();
 
 		createJson();
@@ -93,10 +94,17 @@ public class Generator {
 		write(userList);
 
 		RestGroup group = new RestGroup();
+		group.setUuid(getUUID());
+		group.setName("Admin Group");
 		write(group);
+
+		RestGroup group2 = new RestGroup();
+		group2.setUuid(getUUID());
+		group2.setName("Editor Group");
 
 		RestGroupList groupList = new RestGroupList();
 		groupList.addGroup(group);
+		groupList.addGroup(group2);
 		write(groupList);
 
 		RestRole role = new RestRole();
@@ -104,8 +112,13 @@ public class Generator {
 		role.setUuid(getUUID());
 		write(role);
 
+		RestRole role2 = new RestRole();
+		role2.setName("Reader role");
+		role2.setUuid(getUUID());
+
 		RestRoleList roleList = new RestRoleList();
 		roleList.addRole(role);
+		roleList.addRole(role2);
 		write(roleList);
 
 		RestProject project = new RestProject();
@@ -113,8 +126,13 @@ public class Generator {
 		project.setUuid(getUUID());
 		write(project);
 
+		RestProject project2 = new RestProject();
+		project2.setName("Dummy Project (Mobile)");
+		project2.setUuid(getUUID());
+
 		RestProjectList projectList = new RestProjectList();
 		projectList.addProject(project);
+		projectList.addProject(project2);
 		write(projectList);
 
 		RestGenericContent content = new RestGenericContent();
@@ -150,7 +168,7 @@ public class Generator {
 	}
 
 	private void write(Object object) throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
-		File file = new File(baseDir, object.getClass().getSimpleName() + ".example.json");
+		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 		writeJsonSchema(object.getClass());
 
