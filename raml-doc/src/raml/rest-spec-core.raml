@@ -39,18 +39,41 @@ traits:
       headers:
         Accept-Language:
           description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
+
   - paged:
       queryParameters:
-        pages:
-          description: The number of pages to return
+        page:
+          description: The page to be displayed
           type: number
+        per_page: 
+          description: The amount of items per page
+          type: number
+
+  - pagedHeader:
+      responses:
+        200:
+          headers:
+             Link:
+               description: |
+                        A link header will be provided accoring to [RFC5988](http://tools.ietf.org/html/rfc5988#page-6). 
+               example: |
+                        Link: <https://localhost:8080/users?page=3&per_page=100>; rel="next", <https://localhost/users?page=50&per_page=100>; rel="last"
+
+  - searchable:
+      queryParameters:
+        q:
+          description: Optional query parameter
+          type: string
+          required: false
 
 schemas:
   - RestGroup: !include  json/RestGroup.schema.json
   - RestGroupList: !include json/RestGroupList.schema.json
   - RestRole: !include json/RestRole.schema.json
   - RestRoleList: !include json/RestRoleList.schema.json
-  - RestUser: !include json/RestUser.schema.json
+  - RestUserResponse: !include json/RestUserResponse.schema.json
+  - RestUserCreateRequest: !include json/RestUserCreateRequest.schema.json
+  - RestUserUpdateRequest: !include json/RestUserUpdateRequest.schema.json
   - RestUserList: !include json/RestUserList.schema.json
   - RestTag: !include json/RestTag.schema.json
   - RestGenericContent: !include json/RestGenericContent.schema.json
@@ -64,8 +87,9 @@ schemas:
   is: [ localized ]
   displayName: Users
   get:
-    is: [ paged ]
+    is: [ paged, searchable ]
     description: Retrieves a list of **users**
+
     responses:
       200:
         body:
@@ -78,15 +102,15 @@ schemas:
     description: Create new user
     body:
       application/json:
-        schema: RestUser
-        example: !include json/RestUser.example.json
+        schema: RestUserCreateRequest
+        example: !include json/RestUserCreateRequest.example.json
           
     responses:
       200:
         body:
           application/json:
-            schema: RestUser
-            example: !include json/RestUser.example.json
+            schema: RestUserResponse
+            example: !include json/RestUserResponse.example.json
 
 
   /{username}:
@@ -97,11 +121,14 @@ schemas:
         200:
           body:
             application/json:
-              schema: RestUser
-              example: !include json/RestUser.example.json
-
+              schema: RestUserResponse
+              example: !include json/RestUserResponse.example.json
     put:
       description: Updates the **user** with the given username
+      body:
+        application/json:
+            schema: RestUserUpdateRequest
+            example: !include json/RestUserUpdateRequest.example.json
     delete:
       description: Deletes the **user** with the given username
 
@@ -113,11 +140,15 @@ schemas:
         200:
           body:
             application/json:
-              schema: RestUser
-              example: !include json/RestUser.example.json
+              schema: RestUserResponse
+              example: !include json/RestUserResponse.example.json
       
     put:
       description: Updates the **user** with the given uuid
+      body:
+          application/json:
+              schema: RestUserUpdateRequest
+              example: !include json/RestUserUpdateRequest.example.json
     delete:
       description: Deletes the **user** with the given uuid
     
@@ -126,7 +157,7 @@ schemas:
   is: [ localized ]
   displayName: Roles
   get:
-    is: [ paged ]
+    is: [ paged, searchable ]
     description: Retrieves a list of roles
     responses:
       200:
@@ -172,7 +203,7 @@ schemas:
   is: [ localized ]
   displayName: Groups
   get: 
-    is: [ paged ]
+    is: [ paged, searchable ]
     description: Retrieves a **list of groups**
     responses:
       200:
@@ -242,7 +273,7 @@ schemas:
   is: [ localized ]
   displayName: Projects
   get:
-    is: [ paged ]
+    is: [ paged, searchable ]
     description: Retrieves a list of projects
     responses:
       200:
@@ -280,6 +311,11 @@ schemas:
   displayName: Contents
   /{path}:
     is: [ localized ]
+    uriParameters:
+      path:
+        description: | 
+             Path to the content
+        type: string
     get:
       description: Retrieves the **content** with the given path
       queryParameters:
@@ -339,6 +375,7 @@ schemas:
 /{project_name}/search:
   is: [ localized ]
   displayName: Search
+  get:
 
 /{project_name}/types:
   is: [ localized ]
@@ -409,6 +446,7 @@ schemas:
 /{project_name}/navigation:
   is: [ localized ]
   displayName: Navigation
+  get:
 
 
 /admin:

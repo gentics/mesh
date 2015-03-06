@@ -27,6 +27,12 @@
 			<type>jar</type>
 			<classifier>javadoc</classifier>
 		</dependency>
+		<dependency>
+			<artifactId>cailun-raml-doc</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<version>${project.version}</version>
+			<type>zip</type>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -36,7 +42,7 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>unpack</id>
+						<id>unpack-javadoc</id>
 						<phase>process-resources</phase>
 						<goals>
 							<goal>unpack</goal>
@@ -51,6 +57,25 @@
 									<classifier>javadoc</classifier>
 									<overWrite>false</overWrite>
 									<outputDirectory>${project.build.directory}/site/javadoc</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-raml</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>cailun-raml-doc</artifactId>
+									<version>${project.version}</version>
+									<type>zip</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.directory}/site/raml</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

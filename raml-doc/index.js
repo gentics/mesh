@@ -1,7 +1,17 @@
 var raml2html = require('raml2html');
+var mkdirp = require('mkdirp');
 var fs = require('fs');
 var outputDir = "target/raml2html/";
 var config = raml2html.getDefaultConfig(false);
+
+mkdirp(outputDir, function(err) { 
+	if(err) {
+		console.log(err);
+		process.exit(1); 
+	} else {
+		console.log("Create output directory " + outputDir);
+	}});
+
 
 var source = "src/raml/rest-spec-core.raml";
 var onSuccess = function(html) {

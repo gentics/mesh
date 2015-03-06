@@ -7,7 +7,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 public class RestGenericContent extends AbstractRestModel {
 
-	private RestUser author;
+	private RestUserResponse author;
 	private Map<String, String> properties = new HashMap<>();
 	private String type;
 
@@ -17,11 +17,11 @@ public class RestGenericContent extends AbstractRestModel {
 	public RestGenericContent() {
 	}
 
-	public RestUser getAuthor() {
+	public RestUserResponse getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(RestUser author) {
+	public void setAuthor(RestUserResponse author) {
 		this.author = author;
 	}
 

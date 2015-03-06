@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "mkdirp": "^0.5.0",
     "raml2html": "^1.4.0"
   }
 }

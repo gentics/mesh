@@ -3,18 +3,18 @@ package com.gentics.cailun.core.rest.response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RestUserList {
+public class RestUserList extends AbstractRestListResponse {
 
-	private List<RestUser> users = new ArrayList<>();
+	private List<RestUserResponse> users = new ArrayList<>();
 
 	public RestUserList() {
 	}
 
-	public void addUser(RestUser user) {
+	public void addUser(RestUserResponse user) {
 		this.users.add(user);
 	}
 
-	public List<RestUser> getUsers() {
+	public List<RestUserResponse> getUsers() {
 		return users;
 	}
 }

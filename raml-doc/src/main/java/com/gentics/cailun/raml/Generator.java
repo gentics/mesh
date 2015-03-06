@@ -12,6 +12,8 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import com.gentics.cailun.core.rest.request.RestUserCreateRequest;
+import com.gentics.cailun.core.rest.request.RestUserUpdateRequest;
 import com.gentics.cailun.core.rest.response.RestBinaryFile;
 import com.gentics.cailun.core.rest.response.RestGenericContent;
 import com.gentics.cailun.core.rest.response.RestGroup;
@@ -23,8 +25,9 @@ import com.gentics.cailun.core.rest.response.RestProjectList;
 import com.gentics.cailun.core.rest.response.RestRole;
 import com.gentics.cailun.core.rest.response.RestRoleList;
 import com.gentics.cailun.core.rest.response.RestTag;
-import com.gentics.cailun.core.rest.response.RestUser;
 import com.gentics.cailun.core.rest.response.RestUserList;
+import com.gentics.cailun.core.rest.response.RestUserResponse;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 public class Generator {
 
@@ -79,18 +82,48 @@ public class Generator {
 
 	private void createJson() throws IOException {
 
-		RestUser user = new RestUser();
+		RestUserResponse user = new RestUserResponse();
 		user.setUuid(getUUID());
 		user.setUsername("jdoe42");
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
 		user.setEmailAddress("j.doe@nowhere.com");
-		user.addGroup("admins");
 		user.addGroup("editors");
 		write(user);
 
+		RestUserResponse user2 = new RestUserResponse();
+		user2.setUuid(getUUID());
+		user2.setUsername("jroe");
+		user2.setFirstname("Jane");
+		user2.setLastname("Roe");
+		user2.setEmailAddress("j.roe@nowhere.com");
+		user2.addGroup("super-editors");
+		user2.addGroup("editors");
+
+		RestUserUpdateRequest userUpdate = new RestUserUpdateRequest();
+		userUpdate.setUsername("jdoe42");
+		userUpdate.setPassword("iesiech0eewinioghaRa");
+		userUpdate.setFirstname("Joe");
+		userUpdate.setLastname("Doe");
+		userUpdate.setEmailAddress("j.doe@nowhere.com");
+		userUpdate.addGroup("admins");
+		userUpdate.addGroup("editors");
+		write(userUpdate);
+
+		RestUserCreateRequest userCreate = new RestUserCreateRequest();
+		userCreate.setUsername("jdoe42");
+		userCreate.setPassword("iesiech0eewinioghaRa");
+		userCreate.setFirstname("Joe");
+		userCreate.setLastname("Doe");
+		userCreate.setEmailAddress("j.doe@nowhere.com");
+		userCreate.addGroup("admins");
+		userCreate.addGroup("editors");
+		write(userCreate);
+
 		RestUserList userList = new RestUserList();
 		userList.addUser(user);
+		userList.addUser(user2);
+		RestModelPagingHelper.setPaging(userList, "/users", 1, 10, 2, 20);
 		write(userList);
 
 		RestGroup group = new RestGroup();
@@ -105,6 +138,7 @@ public class Generator {
 		RestGroupList groupList = new RestGroupList();
 		groupList.addGroup(group);
 		groupList.addGroup(group2);
+		RestModelPagingHelper.setPaging(groupList, "/groups", 1, 10, 2, 20);
 		write(groupList);
 
 		RestRole role = new RestRole();
@@ -119,6 +153,7 @@ public class Generator {
 		RestRoleList roleList = new RestRoleList();
 		roleList.addRole(role);
 		roleList.addRole(role2);
+		RestModelPagingHelper.setPaging(roleList, "/roles", 1, 10, 2, 20);
 		write(roleList);
 
 		RestProject project = new RestProject();
@@ -133,6 +168,7 @@ public class Generator {
 		RestProjectList projectList = new RestProjectList();
 		projectList.addProject(project);
 		projectList.addProject(project2);
+		RestModelPagingHelper.setPaging(projectList, "/projects", 1, 10, 2, 20);
 		write(projectList);
 
 		RestGenericContent content = new RestGenericContent();
@@ -161,8 +197,16 @@ public class Generator {
 		// TODO properties
 		write(schema);
 
+		RestObjectSchema schema2 = new RestObjectSchema();
+		schema2.setUuid(getUUID());
+		schema2.setDescription("Description of the schema2");
+		schema2.setName("extended-content-2");
+		// TODO properties
+
 		RestObjectSchemaList schemaList = new RestObjectSchemaList();
 		schemaList.addSchema(schema);
+		schemaList.addSchema(schema2);
+		RestModelPagingHelper.setPaging(projectList, "/projects", 1, 10, 2, 20);
 		write(schemaList);
 
 	}

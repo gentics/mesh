@@ -15,7 +15,7 @@ import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.service.generic.GenericContentServiceImpl;
 import com.gentics.cailun.core.rest.response.RestGenericContent;
-import com.gentics.cailun.core.rest.response.RestUser;
+import com.gentics.cailun.core.rest.response.RestUserResponse;
 
 @Component
 @Transactional
@@ -60,7 +60,7 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 			response.setType(content.getType());
 			response.addProperty("name", content.getName(language));
 			response.addProperty("filename", content.getFilename(language));
-			RestUser restUser = userService.transformToRest(content.getCreator());
+			RestUserResponse restUser = userService.transformToRest(content.getCreator());
 			response.setAuthor(restUser);
 			response.addProperty("content", content.getContent(language));
 			response.addProperty("teaser", content.getTeaser(language));

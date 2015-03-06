@@ -3,7 +3,7 @@ package com.gentics.cailun.core.rest.response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RestRoleList {
+public class RestRoleList extends AbstractRestListResponse{
 
 	private List<RestRole> roles = new ArrayList<>();
 

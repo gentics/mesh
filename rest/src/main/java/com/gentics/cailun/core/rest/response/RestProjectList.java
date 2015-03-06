@@ -3,7 +3,7 @@ package com.gentics.cailun.core.rest.response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RestProjectList {
+public class RestProjectList extends AbstractRestListResponse {
 
 	private List<RestProject> projects = new ArrayList<>();
 

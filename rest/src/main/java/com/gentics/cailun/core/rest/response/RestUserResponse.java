@@ -3,24 +3,19 @@ package com.gentics.cailun.core.rest.response;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class RestUser extends AbstractRestModel {
+public class RestUserResponse extends AbstractRestModel {
 
 	private String lastname;
 
 	private String firstname;
 
-	@JsonProperty(required = true)
 	private String username;
 
 	private String emailAddress;
 
-	private String password;
-
 	private List<String> groups = new ArrayList<>();
 
-	public RestUser() {
+	public RestUserResponse() {
 	}
 
 	public String getLastname() {
@@ -47,7 +42,6 @@ public class RestUser extends AbstractRestModel {
 		this.emailAddress = emailAddress;
 	}
 
-	@JsonProperty(required = true)
 	public String getUsername() {
 		return username;
 	}
@@ -68,11 +62,5 @@ public class RestUser extends AbstractRestModel {
 		this.groups.add(name);
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
 
-	public String getPassword() {
-		return password;
-	}
 }
