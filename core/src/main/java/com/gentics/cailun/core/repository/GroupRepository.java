@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.neo4j.annotation.Query;
 
@@ -22,5 +23,8 @@ public interface GroupRepository extends GenericNodeRepository<Group> {
 	public List<Group> listAllGroups(User user);
 
 	public Group findByName(String string);
+
+//	@Query("start g=node({0}) MATCH (g)-[PARENT_OF]->(childGroup) return childGroup")
+//	public Set<Group> findChildren(Group group);
 
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.Group;
+import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.rest.response.RestGroup;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
@@ -18,6 +19,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private GroupVerticle groupsVerticle;
 
+	@Autowired
+	private GroupService groupService;
+
 	@Override
 	public AbstractRestVerticle getVerticle() {
 		return groupsVerticle;
@@ -25,10 +29,17 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadGroupByUUID() throws Exception {
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"admin\"}";
 		Group group = info.getGroup();
+
+		// Add a child group to group of the user
+		Group subGroup = new Group("sub group");
+		group.addGroup(subGroup);
+		subGroup = groupService.save(subGroup);
+		group = groupService.save(group);
+
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"childGroups\":[\"sub group\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
 		TestUtil.assertEqualsSanitizedJson(json, response, RestGroup.class);
 	}
 

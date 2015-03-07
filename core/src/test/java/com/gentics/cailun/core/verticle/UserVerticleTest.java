@@ -49,7 +49,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"password\":null,\"groups\":[\"dummy_user_group\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -62,7 +62,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"password\":null,\"groups\":[\"dummy_user_group\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -99,7 +99,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Don't grant permissions to user3
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
-		String json = "{\"dummy_user\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"password\":null,\"groups\":[\"dummy_user_group\"]},\"testuser_2\":{\"uuid\":\"uuid-value\",\"lastname\":null,\"firstname\":null,\"username\":\"testuser_2\",\"emailAddress\":null,\"password\":null,\"groups\":[\"dummy_user_group\"]}}";
+		String json = "{\"dummy_user\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"testuser_2\":{\"uuid\":\"uuid-value\",\"lastname\":null,\"firstname\":null,\"username\":\"testuser_2\",\"emailAddress\":null,\"groups\":[\"dummy_user_group\"]}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -247,8 +247,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Reload the group and verify that the user was added to the group
 		newGroup = groupService.reload(newGroup);
-		Assert.assertEquals("The group should now list one user.", 1, newGroup.getMembers().size());
-		User userInGroup = newGroup.getMembers().iterator().next();
+		Assert.assertEquals("The group should now list one user.", 1, newGroup.getUsers().size());
+		User userInGroup = newGroup.getUsers().iterator().next();
 		assertTrue("The user is not part of the group", user.getId() == userInGroup.getId());
 
 	}
@@ -262,7 +262,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newGroup = groupService.save(newGroup);
 		info.getGroup().addGroup(newGroup);
 		groupService.save(info.getGroup());
-		Assert.assertEquals("The group should have one member", 1, newGroup.getMembers().size());
+		Assert.assertEquals("The group should have one member", 1, newGroup.getUsers().size());
 
 		roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
@@ -280,7 +280,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		newGroup = groupService.reload(newGroup);
-		Assert.assertEquals("The group should no longer have members", 0, newGroup.getMembers().size());
+		Assert.assertEquals("The group should no longer have members", 0, newGroup.getUsers().size());
 
 	}
 
@@ -398,7 +398,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"password\":null,\"groups\":[\"dummy_user_group\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}

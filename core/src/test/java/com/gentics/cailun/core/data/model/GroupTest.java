@@ -29,8 +29,8 @@ public class GroupTest extends AbstractDBTest {
 		groupRepository.save(group);
 
 		Group reloadedGroup = groupRepository.findOne(group.getId());
-		assertEquals("The group should contain one member.", 1, reloadedGroup.getMembers().size());
-		User userOfGroup = reloadedGroup.getMembers().iterator().next();
+		assertEquals("The group should contain one member.", 1, reloadedGroup.getUsers().size());
+		User userOfGroup = reloadedGroup.getUsers().iterator().next();
 		assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 	}
 }

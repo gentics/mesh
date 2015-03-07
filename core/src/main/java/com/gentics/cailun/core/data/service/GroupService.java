@@ -10,6 +10,6 @@ public interface GroupService extends GenericNodeService<Group> {
 
 	public Group findByUUID(String uuid);
 
-	public RestGroup getReponseObject(Group group);
+	public RestGroup transformToRest(Group group);
 
 }

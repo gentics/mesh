@@ -242,7 +242,7 @@ public class BootstrapInitializer {
 		Group adminGroup = groupRepository.findByName("admin");
 		if (adminGroup == null) {
 			adminGroup = new Group("admin");
-			adminGroup.getMembers().add(adminUser);
+			adminGroup.getUsers().add(adminUser);
 			groupRepository.save(adminGroup);
 			log.info("Stored admin group");
 		}

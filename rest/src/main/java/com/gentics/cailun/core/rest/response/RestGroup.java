@@ -7,11 +7,11 @@ public class RestGroup extends AbstractRestModel {
 
 	private String name;
 
-	private List<RestGroup> childGroups = new ArrayList<>();
+	private List<String> childGroups = new ArrayList<>();
 
-	private List<RestRole> roles = new ArrayList<>();
+	private List<String> roles = new ArrayList<>();
 
-	private List<RestUserResponse> users = new ArrayList<>();
+	private List<String> users = new ArrayList<>();
 
 	public RestGroup() {
 	}
@@ -24,27 +24,27 @@ public class RestGroup extends AbstractRestModel {
 		this.name = name;
 	}
 
-	public List<RestGroup> getChildGroups() {
+	public List<String> getChildGroups() {
 		return childGroups;
 	}
 
-	public void setChildGroups(List<RestGroup> childGroups) {
+	public void setChildGroups(List<String> childGroups) {
 		this.childGroups = childGroups;
 	}
 
-	public List<RestRole> getRoles() {
+	public List<String> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(List<RestRole> roles) {
+	public void setRoles(List<String> roles) {
 		this.roles = roles;
 	}
 
-	public List<RestUserResponse> getUsers() {
+	public List<String> getUsers() {
 		return users;
 	}
 
-	public void setUsers(List<RestUserResponse> users) {
+	public void setUsers(List<String> users) {
 		this.users = users;
 	}
 

@@ -164,13 +164,13 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		roleService.save(guestRole);
 
 		// Groups
-		rootGroup.getMembers().add(users.get(0));
+		rootGroup.getUsers().add(users.get(0));
 		rootGroup.getRoles().add(adminRole);
 
 		groupService.save(rootGroup);
 		Group guests = new Group("guests");
 		guests.getParents().add(rootGroup);
-		guests.getMembers().add(users.get(1));
+		guests.getUsers().add(users.get(1));
 		guests.getRoles().add(guestRole);
 		groupService.save(guests);
 

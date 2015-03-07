@@ -109,7 +109,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			}
 
 			if (group != null) {
-				RestGroup restGroup = groupService.getReponseObject(group);
+				RestGroup restGroup = groupService.transformToRest(group);
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restGroup));
 			} else {

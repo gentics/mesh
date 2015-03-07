@@ -22,7 +22,7 @@ public class Group extends GenericNode {
 
 	@Fetch
 	@RelatedTo(type = AuthRelationships.MEMBER_OF, direction = Direction.INCOMING, elementClass = User.class)
-	private Set<User> members = new HashSet<>();
+	private Set<User> users = new HashSet<>();
 
 	@Fetch
 	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.INCOMING, elementClass = Role.class)
@@ -32,9 +32,10 @@ public class Group extends GenericNode {
 	@RelatedTo(type = BasicRelationships.PARENT_OF, direction = Direction.OUTGOING, elementClass = Group.class)
 	private Set<Group> parents = new HashSet<>();
 
+	// TODO we are loading the children and the parents. This means we are loading the whole hierarchy when loading one group. Not so good..
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_SUB_GROUP, direction = Direction.INCOMING, elementClass = Group.class)
-	private Set<Group> groups = new HashSet<>();
+	private Set<Group> children = new HashSet<>();
 
 	@SuppressWarnings("unused")
 	private Group() {
@@ -49,15 +50,19 @@ public class Group extends GenericNode {
 	}
 
 	public void addUser(User user) {
-		getMembers().add(user);
+		getUsers().add(user);
 	}
 
-	public Set<User> getMembers() {
-		return members;
+	public Set<User> getUsers() {
+		return users;
 	}
 
 	public void addGroup(Group group) {
-		this.groups.add(group);
+		this.children.add(group);
+	}
+
+	public Set<Group> getGroups() {
+		return children;
 	}
 
 	public Set<Role> getRoles() {
@@ -73,6 +78,7 @@ public class Group extends GenericNode {
 	}
 
 	public void removeUser(User user) {
-		getMembers().remove(user);
+		getUsers().remove(user);
 	}
+
 }
