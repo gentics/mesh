@@ -20,7 +20,7 @@ import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.rest.response.GenericPermissionDeniedResponse;
+import com.gentics.cailun.core.rest.common.response.GenericPermissionDeniedResponse;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 

@@ -5,19 +5,17 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
-
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.service.GroupService;
-import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.response.GenericSuccessResponse;
-import com.gentics.cailun.core.rest.response.RestGroup;
+import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.common.response.GenericSuccessResponse;
+import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
 @Component
@@ -109,7 +107,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			}
 
 			if (group != null) {
-				RestGroup restGroup = groupService.transformToRest(group);
+				GroupResponse restGroup = groupService.transformToRest(group);
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restGroup));
 			} else {

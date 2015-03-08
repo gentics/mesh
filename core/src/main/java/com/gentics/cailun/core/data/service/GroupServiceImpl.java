@@ -11,7 +11,7 @@ import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.GroupRepository;
-import com.gentics.cailun.core.rest.response.RestGroup;
+import com.gentics.cailun.core.rest.group.response.GroupResponse;
 
 @Component
 @Transactional
@@ -31,8 +31,8 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 	}
 
 	@Override
-	public RestGroup transformToRest(Group group) {
-		RestGroup restGroup = new RestGroup();
+	public GroupResponse transformToRest(Group group) {
+		GroupResponse restGroup = new GroupResponse();
 		restGroup.setUuid(group.getUuid());
 		restGroup.setName(group.getName());
 

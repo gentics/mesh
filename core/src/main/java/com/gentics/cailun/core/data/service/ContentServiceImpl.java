@@ -14,8 +14,8 @@ import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.service.generic.GenericContentServiceImpl;
-import com.gentics.cailun.core.rest.response.RestGenericContent;
-import com.gentics.cailun.core.rest.response.RestUserResponse;
+import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.core.rest.user.response.UserResponse;
 
 @Component
 @Transactional
@@ -42,7 +42,7 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	}
 
 	@Override
-	public RestGenericContent getReponseObject(Content content, List<String> languages) {
+	public ContentResponse getReponseObject(Content content, List<String> languages) {
 		if (languages.size() == 0) {
 			// TODO return page with all languages?
 			return null;
@@ -54,13 +54,13 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 			if (language == null) {
 				// TODO fail early
 			}
-			RestGenericContent response = new RestGenericContent();
+			ContentResponse response = new ContentResponse();
 			response.setLanguageTag(language.getLanguageTag());
 			response.setUuid(content.getUuid());
 			response.setType(content.getType());
 			response.addProperty("name", content.getName(language));
 			response.addProperty("filename", content.getFilename(language));
-			RestUserResponse restUser = userService.transformToRest(content.getCreator());
+			UserResponse restUser = userService.transformToRest(content.getCreator());
 			response.setAuthor(restUser);
 			response.addProperty("content", content.getContent(language));
 			response.addProperty("teaser", content.getTeaser(language));
@@ -73,7 +73,7 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	}
 
 	@Override
-	public Content save(String projectName, String path, RestGenericContent requestModel) {
+	public Content save(String projectName, String path, ContentResponse requestModel) {
 
 		// TODO check permissions
 		if (requestModel.getUUID() == null) {

@@ -20,9 +20,9 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.UserService;
-import com.gentics.cailun.core.rest.request.RestUserCreateRequest;
-import com.gentics.cailun.core.rest.request.RestUserUpdateRequest;
-import com.gentics.cailun.core.rest.response.RestUserResponse;
+import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
+import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
+import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 
 public class UserVerticleTest extends AbstractRestVerticleTest {
@@ -111,7 +111,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
-		RestUserResponse restUser = new RestUserResponse();
+		UserResponse restUser = new UserResponse();
 		restUser.setEmailAddress("t.stark@stark-industries.com");
 		restUser.setFirstname("Tony Awesome");
 		restUser.setLastname("Epic Stark");
@@ -135,7 +135,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String oldHash = user.getPasswordHash();
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
-		RestUserUpdateRequest restUser = new RestUserUpdateRequest();
+		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
 		restUser.addGroup(info.getGroup().getName());
 
@@ -157,7 +157,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String oldHash = user.getPasswordHash();
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
-		RestUserUpdateRequest restUser = new RestUserUpdateRequest();
+		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
 		restUser.addGroup(info.getGroup().getName());
 
@@ -176,7 +176,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String oldHash = user.getPasswordHash();
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
-		RestUserResponse updatedUser = new RestUserResponse();
+		UserResponse updatedUser = new UserResponse();
 		updatedUser.setEmailAddress("n.user@spam.gentics.com");
 		updatedUser.setFirstname("Joe");
 		updatedUser.setLastname("Doe");
@@ -205,7 +205,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		conflictingUser = userService.save(conflictingUser);
 		info.getGroup().addUser(conflictingUser);
 
-		RestUserResponse newUser = new RestUserResponse();
+		UserResponse newUser = new UserResponse();
 		newUser.setUsername("existing_username");
 		newUser.addGroup(info.getGroup().getName());
 
@@ -231,7 +231,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
 
 		// 3. Setup rest model
-		RestUserResponse restUser = new RestUserResponse();
+		UserResponse restUser = new UserResponse();
 		restUser.setEmailAddress("t.stark@stark-industries.com");
 		restUser.setFirstname("Tony Awesome");
 		restUser.setLastname("Epic Stark");
@@ -267,7 +267,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
-		RestUserResponse restUser = new RestUserResponse();
+		UserResponse restUser = new UserResponse();
 		restUser.setEmailAddress("t.stark@stark-industries.com");
 		restUser.setFirstname("Tony Awesome");
 		restUser.setLastname("Epic Stark");
@@ -297,7 +297,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		RestUserResponse newUser = new RestUserResponse();
+		UserResponse newUser = new UserResponse();
 		newUser.setUsername("existing_username");
 		newUser.addGroup(info.getGroup().getName());
 
@@ -313,7 +313,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		RestUserResponse newUser = new RestUserResponse();
+		UserResponse newUser = new UserResponse();
 		newUser.setEmailAddress("n.user@spam.gentics.com");
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
@@ -331,7 +331,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		RestUserCreateRequest newUser = new RestUserCreateRequest();
+		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setEmailAddress("n.user@spam.gentics.com");
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
@@ -348,7 +348,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		RestUserCreateRequest newUser = new RestUserCreateRequest();
+		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setEmailAddress("n.user@spam.gentics.com");
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
@@ -367,7 +367,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		RestUserCreateRequest newUser = new RestUserCreateRequest();
+		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setEmailAddress("n.user@spam.gentics.com");
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
@@ -388,7 +388,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		RestUserCreateRequest newUser = new RestUserCreateRequest();
+		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setEmailAddress("n.user@spam.gentics.com");
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");

@@ -1,8 +1,8 @@
 package com.gentics.cailun.util;
 
-import com.gentics.cailun.core.rest.response.AbstractRestListResponse;
-import com.gentics.cailun.core.rest.response.PagingLinks;
-import com.gentics.cailun.core.rest.response.PagingMetaInfo;
+import com.gentics.cailun.core.rest.common.response.AbstractRestListResponse;
+import com.gentics.cailun.core.rest.common.response.PagingLinks;
+import com.gentics.cailun.core.rest.common.response.PagingMetaInfo;
 
 public final class RestModelPagingHelper {
 

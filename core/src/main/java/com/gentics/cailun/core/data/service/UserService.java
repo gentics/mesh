@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
-import com.gentics.cailun.core.rest.response.RestUserResponse;
+import com.gentics.cailun.core.rest.user.response.UserResponse;
 
 public interface UserService extends GenericNodeService<User> {
 
@@ -14,6 +14,6 @@ public interface UserService extends GenericNodeService<User> {
 
 	List<User> findAll();
 
-	RestUserResponse transformToRest(User user);
+	UserResponse transformToRest(User user);
 
 }

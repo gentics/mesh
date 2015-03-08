@@ -7,7 +7,7 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
-import com.gentics.cailun.core.rest.response.RestRole;
+import com.gentics.cailun.core.rest.role.response.RoleResponse;
 
 public interface RoleService extends GenericNodeService<Role> {
 
@@ -30,6 +30,6 @@ public interface RoleService extends GenericNodeService<Role> {
 
 	GraphPermission revokePermission(Role role, GenericNode node, PermissionType... permissionTypes);
 
-	RestRole transformToRest(Role role);
+	RoleResponse transformToRest(Role role);
 
 }

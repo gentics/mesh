@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
-import com.gentics.cailun.core.rest.response.RestObjectSchema;
+import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 
 @Component
 @Scope("singleton")
@@ -71,13 +71,13 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 		route("/").method(GET).handler(rc -> {
 			String projectName = getProjectName(rc);
 			Iterable<ObjectSchema> projectSchemas = schemaService.findAll(projectName);
-			Map<String, RestObjectSchema> resultMap = new HashMap<>();
+			Map<String, ObjectSchemaResponse> resultMap = new HashMap<>();
 			if (projectSchemas == null) {
 				rc.response().end(toJson(resultMap));
 				return;
 			}
 			for (ObjectSchema schema : projectSchemas) {
-				RestObjectSchema restSchema = schemaService.getReponseObject(schema);
+				ObjectSchemaResponse restSchema = schemaService.getReponseObject(schema);
 				resultMap.put(schema.getName(), restSchema);
 			}
 			rc.response().end(toJson(resultMap));
@@ -94,7 +94,7 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 				return;
 			} else {
 				ObjectSchema projectSchema = schemaService.findByName(projectName, uuidOrName);
-				RestObjectSchema schemaForRest = schemaService.getReponseObject(projectSchema);
+				ObjectSchemaResponse schemaForRest = schemaService.getReponseObject(projectSchema);
 				rh.response().end(toJson(schemaForRest));
 				return;
 			}

@@ -9,7 +9,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.gentics.cailun.core.rest.response.AbstractRestModel;
+import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 
 public final class TestUtil {
 

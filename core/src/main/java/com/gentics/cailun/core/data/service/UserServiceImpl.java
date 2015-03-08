@@ -12,7 +12,7 @@ import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.UserRepository;
-import com.gentics.cailun.core.rest.response.RestUserResponse;
+import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
@@ -51,11 +51,11 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public RestUserResponse transformToRest(User user) {
+	public UserResponse transformToRest(User user) {
 		if (user == null) {
 			return null;
 		}
-		RestUserResponse restUser = new RestUserResponse();
+		UserResponse restUser = new UserResponse();
 		restUser.setUuid(user.getUuid());
 		restUser.setUsername(user.getUsername());
 		restUser.setEmailAddress(user.getEmailAddress());

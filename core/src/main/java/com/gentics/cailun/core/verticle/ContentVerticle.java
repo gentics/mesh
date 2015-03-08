@@ -33,10 +33,10 @@ import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.rest.request.ContentSaveRequest;
-import com.gentics.cailun.core.rest.response.GenericErrorResponse;
-import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.response.RestGenericContent;
+import com.gentics.cailun.core.rest.common.response.GenericErrorResponse;
+import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
+import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
 /**
@@ -143,7 +143,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void handleResponse(RoutingContext rc, Content content, List<String> languages) {
-		RestGenericContent responseObject = contentService.getReponseObject(content, languages);
+		ContentResponse responseObject = contentService.getReponseObject(content, languages);
 		// resolveLinks(content);
 		String json = toJson(responseObject);
 		rc.response().setStatusCode(200);
@@ -181,7 +181,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		getRouter().routeWithRegex("\\/(.*)").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 			String projectName = getProjectName(rc);
 			String path = rc.request().params().get("param0");
-			RestGenericContent requestModel = fromJson(rc, RestGenericContent.class);
+			ContentResponse requestModel = fromJson(rc, ContentResponse.class);
 			if (requestModel == null) {
 				String message = "Could not parse request";
 				rc.response().setStatusCode(404);
@@ -231,7 +231,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 		route("/:uuid").consumes(APPLICATION_JSON).method(PUT).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			ContentSaveRequest request = fromJson(rc, ContentSaveRequest.class);
+			ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
 			// Content content = contentRepository.findCustomerNodeBySomeStrangeCriteria(null);
 			// if (content != null) {
 			// content.setContent(request.getContent());

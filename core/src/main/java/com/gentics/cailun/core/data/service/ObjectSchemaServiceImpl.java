@@ -16,8 +16,8 @@ import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.ObjectSchemaRepository;
-import com.gentics.cailun.core.rest.response.RestObjectSchema;
-import com.gentics.cailun.core.rest.response.RestPropertyTypeSchema;
+import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
+import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 
 @Component
 @Transactional
@@ -52,8 +52,8 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public RestObjectSchema getReponseObject(ObjectSchema schema) {
-		RestObjectSchema schemaForRest = new RestObjectSchema();
+	public ObjectSchemaResponse getReponseObject(ObjectSchema schema) {
+		ObjectSchemaResponse schemaForRest = new ObjectSchemaResponse();
 		schemaForRest.setDescription(schema.getDescription());
 		schemaForRest.setName(schema.getName());
 		schemaForRest.setUuid(schema.getUuid());
@@ -65,7 +65,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		treeSet.addAll(schema.getPropertyTypeSchemas());
 
 		for (PropertyTypeSchema propertyTypeSchema : treeSet) {
-			RestPropertyTypeSchema propertyTypeSchemaForRest = new RestPropertyTypeSchema();
+			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
 			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
 			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
 			propertyTypeSchemaForRest.setDesciption(propertyTypeSchema.getDescription());

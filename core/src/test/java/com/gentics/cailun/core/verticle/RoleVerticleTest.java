@@ -18,7 +18,7 @@ import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.service.GroupService;
-import com.gentics.cailun.core.rest.response.RestRole;
+import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
 import com.gentics.cailun.test.UserInfo;
@@ -40,7 +40,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateRole() throws Exception {
-		RestRole newRole = new RestRole();
+		RoleResponse newRole = new RoleResponse();
 		newRole.setName("new_role");
 
 		// Add needed permission to group
@@ -54,7 +54,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateRoleWithNoPermission() throws Exception {
-		RestRole newRole = new RestRole();
+		RoleResponse newRole = new RoleResponse();
 		newRole.setName("new_role");
 
 		// Add needed permission to group
@@ -78,7 +78,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateRoleWithNoName() throws Exception {
-		RestRole newRole = new RestRole();
+		RoleResponse newRole = new RoleResponse();
 
 		// Add needed permission to group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
@@ -99,7 +99,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + adminRole.getUuid(), 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_role\"}";
-		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
+		TestUtil.assertEqualsSanitizedJson(json, response, RoleResponse.class);
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_role\"}";
-		TestUtil.assertEqualsSanitizedJson(json, response, RestRole.class);
+		TestUtil.assertEqualsSanitizedJson(json, response, RoleResponse.class);
 	}
 
 	@Test
@@ -146,7 +146,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		roleService.addPermission(info.getRole(), extraRole, PermissionType.UPDATE);
 
-		RestRole restRole = new RestRole();
+		RoleResponse restRole = new RoleResponse();
 		restRole.setName("renamed role");
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK",
@@ -163,7 +163,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		Role role = info.getRole();
 
-		RestRole restRole = new RestRole();
+		RoleResponse restRole = new RoleResponse();
 		restRole.setName("renamed role");
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/roles/" + role.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restRole));

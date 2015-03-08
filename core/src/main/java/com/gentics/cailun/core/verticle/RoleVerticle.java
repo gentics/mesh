@@ -22,10 +22,10 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.service.RoleService;
-import com.gentics.cailun.core.rest.response.GenericErrorResponse;
-import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.response.GenericSuccessResponse;
-import com.gentics.cailun.core.rest.response.RestRole;
+import com.gentics.cailun.core.rest.common.response.GenericErrorResponse;
+import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.common.response.GenericSuccessResponse;
+import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
 @Component
@@ -103,7 +103,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						rc.response().end(toJson(new GenericErrorResponse(message)));
 						return;
 					}
-					RestRole requestModel = fromJson(rc, RestRole.class);
+					RoleResponse requestModel = fromJson(rc, RoleResponse.class);
 					if (requestModel == null) {
 						// TODO exception would be nice, add i18n
 						String message = "Could not parse request json.";
@@ -174,7 +174,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			}
 
 			if (role != null) {
-				RestRole restRole = roleService.transformToRest(role);
+				RoleResponse restRole = roleService.transformToRest(role);
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restRole));
 			} else {
@@ -190,7 +190,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).handler(rc -> {
 			Session session = rc.session();
-			Map<String, RestRole> resultMap = new HashMap<>();
+			Map<String, RoleResponse> resultMap = new HashMap<>();
 			List<Role> roles = roleService.findAll();
 			for (Role role : roles) {
 				boolean hasPerm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(role, PermissionType.READ));
@@ -206,7 +206,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addCreateHandler() {
 		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
-			RestRole requestModel = fromJson(rc, RestRole.class);
+			RoleResponse requestModel = fromJson(rc, RoleResponse.class);
 			if (requestModel == null) {
 				// TODO exception would be nice, add i18n
 				String message = "Could not parse request json.";
@@ -233,7 +233,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			role = roleService.save(role);
 			role = roleService.reload(role);
 
-			RestRole restRole = roleService.transformToRest(role);
+			RoleResponse restRole = roleService.transformToRest(role);
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(restRole));
 

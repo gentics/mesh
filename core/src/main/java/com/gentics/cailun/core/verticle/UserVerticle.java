@@ -27,12 +27,12 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.UserService;
-import com.gentics.cailun.core.rest.request.RestUserCreateRequest;
-import com.gentics.cailun.core.rest.request.RestUserUpdateRequest;
-import com.gentics.cailun.core.rest.response.GenericErrorResponse;
-import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.response.GenericSuccessResponse;
-import com.gentics.cailun.core.rest.response.RestUserResponse;
+import com.gentics.cailun.core.rest.common.response.GenericErrorResponse;
+import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.common.response.GenericSuccessResponse;
+import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
+import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
+import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
 @Component
@@ -87,7 +87,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				RestUserResponse restUser = userService.transformToRest(user);
+				UserResponse restUser = userService.transformToRest(user);
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restUser));
 			} else {
@@ -102,7 +102,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).handler(rc -> {
 			Session session = rc.session();
-			Map<String, RestUserResponse> resultMap = new HashMap<>();
+			Map<String, UserResponse> resultMap = new HashMap<>();
 			List<User> users = userService.findAll();
 			for (User user : users) {
 				boolean hasPerm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(user, PermissionType.READ));
@@ -169,7 +169,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						return;
 					}
 
-					RestUserUpdateRequest requestModel = fromJson(rc, RestUserUpdateRequest.class);
+					UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 					if (requestModel == null) {
 						// TODO exception would be nice, add i18n
 						String message = "Could not parse request json.";
@@ -292,7 +292,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 
-			RestUserCreateRequest requestModel = fromJson(rc, RestUserCreateRequest.class);
+			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 			if (requestModel == null) {
 				// TODO exception would be nice, add i18n
 				String message = "Could not parse request json.";
@@ -352,7 +352,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			}
 			user = userService.reload(user);
 			// TODO add creator info, add update info to group,
-			RestUserResponse restUser = userService.transformToRest(user);
+			UserResponse restUser = userService.transformToRest(user);
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(restUser));
 

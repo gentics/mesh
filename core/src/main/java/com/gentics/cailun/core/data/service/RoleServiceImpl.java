@@ -15,7 +15,7 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.RoleRepository;
-import com.gentics.cailun.core.rest.response.RestRole;
+import com.gentics.cailun.core.rest.role.response.RoleResponse;
 
 @Component
 @Transactional
@@ -91,11 +91,11 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public RestRole transformToRest(Role role) {
+	public RoleResponse transformToRest(Role role) {
 		if (role == null) {
 			return null;
 		}
-		RestRole restRole = new RestRole();
+		RoleResponse restRole = new RoleResponse();
 		restRole.setUuid(role.getUuid());
 		restRole.setName(role.getName());
 

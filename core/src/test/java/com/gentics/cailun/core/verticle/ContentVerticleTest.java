@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
-import com.gentics.cailun.core.rest.response.RestGenericContent;
+import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestDataProvider;
 import com.gentics.cailun.test.UserInfo;
@@ -41,7 +41,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	private void assertEqualsSanitizedJson(String expectedJson, String unsanitizedResponseJson) throws JsonGenerationException, JsonMappingException,
 			IOException {
-		RestGenericContent responseObject = new ObjectMapper().readValue(unsanitizedResponseJson, RestGenericContent.class);
+		ContentResponse responseObject = new ObjectMapper().readValue(unsanitizedResponseJson, ContentResponse.class);
 		assertNotNull(responseObject);
 		// Update the uuid and compare json afterwards
 		responseObject.setUuid("uuid-value");

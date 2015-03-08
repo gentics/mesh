@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.rest.response.RestProject;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
 
@@ -31,7 +31,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 200, "OK");
-		TestUtil.assertEqualsSanitizedJson(json, response, RestProject.class);
+		TestUtil.assertEqualsSanitizedJson(json, response, ProjectResponse.class);
 	}
 
 	@Test
@@ -41,7 +41,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The name of the project must not be null.", project.getName());
 
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getName(), 200, "OK");
-		TestUtil.assertEqualsSanitizedJson(json, response, RestProject.class);
+		TestUtil.assertEqualsSanitizedJson(json, response, ProjectResponse.class);
 	}
 
 	@Test

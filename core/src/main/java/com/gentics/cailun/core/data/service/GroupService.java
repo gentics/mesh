@@ -2,7 +2,7 @@ package com.gentics.cailun.core.data.service;
 
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
-import com.gentics.cailun.core.rest.response.RestGroup;
+import com.gentics.cailun.core.rest.group.response.GroupResponse;
 
 public interface GroupService extends GenericNodeService<Group> {
 
@@ -10,6 +10,6 @@ public interface GroupService extends GenericNodeService<Group> {
 
 	public Group findByUUID(String uuid);
 
-	public RestGroup transformToRest(Group group);
+	public GroupResponse transformToRest(Group group);
 
 }

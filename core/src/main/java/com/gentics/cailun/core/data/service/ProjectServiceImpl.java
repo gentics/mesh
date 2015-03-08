@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.ProjectRepository;
-import com.gentics.cailun.core.rest.response.RestProject;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 
 @Component
 @Transactional
@@ -27,8 +27,8 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	}
 
 	@Override
-	public RestProject getResponseObject(Project project) {
-		RestProject restProject = new RestProject();
+	public ProjectResponse getResponseObject(Project project) {
+		ProjectResponse restProject = new ProjectResponse();
 		restProject.setUuid(project.getUuid());
 		restProject.setName(project.getName());
 		return restProject;

@@ -12,21 +12,33 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import com.gentics.cailun.core.rest.request.RestUserCreateRequest;
-import com.gentics.cailun.core.rest.request.RestUserUpdateRequest;
-import com.gentics.cailun.core.rest.response.RestBinaryFile;
-import com.gentics.cailun.core.rest.response.RestGenericContent;
-import com.gentics.cailun.core.rest.response.RestGroup;
-import com.gentics.cailun.core.rest.response.RestGroupList;
-import com.gentics.cailun.core.rest.response.RestObjectSchema;
-import com.gentics.cailun.core.rest.response.RestObjectSchemaList;
-import com.gentics.cailun.core.rest.response.RestProject;
-import com.gentics.cailun.core.rest.response.RestProjectList;
-import com.gentics.cailun.core.rest.response.RestRole;
-import com.gentics.cailun.core.rest.response.RestRoleList;
-import com.gentics.cailun.core.rest.response.RestTag;
-import com.gentics.cailun.core.rest.response.RestUserList;
-import com.gentics.cailun.core.rest.response.RestUserResponse;
+import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
+import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
+import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.core.rest.file.response.RestBinaryFile;
+import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
+import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
+import com.gentics.cailun.core.rest.group.response.GroupListResponse;
+import com.gentics.cailun.core.rest.group.response.GroupResponse;
+import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
+import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
+import com.gentics.cailun.core.rest.project.response.ProjectListResponse;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
+import com.gentics.cailun.core.rest.role.request.RoleCreateRequest;
+import com.gentics.cailun.core.rest.role.request.RoleUpdateRequest;
+import com.gentics.cailun.core.rest.role.response.RoleListResponse;
+import com.gentics.cailun.core.rest.role.response.RoleResponse;
+import com.gentics.cailun.core.rest.schema.request.ObjectSchemaCreateRequest;
+import com.gentics.cailun.core.rest.schema.request.ObjectSchemaUpdateRequest;
+import com.gentics.cailun.core.rest.schema.response.ObjectSchemaListResponse;
+import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
+import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
+import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
+import com.gentics.cailun.core.rest.tag.response.TagResponse;
+import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
+import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
+import com.gentics.cailun.core.rest.user.response.UserListResponse;
+import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 public class Generator {
@@ -50,7 +62,6 @@ public class Generator {
 		m.acceptJsonFormatVisitor(m.constructType(clazz), visitor);
 		JsonSchema jsonSchema = visitor.finalSchema();
 		m.writerWithDefaultPrettyPrinter().writeValue(file, jsonSchema);
-
 	}
 
 	public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {
@@ -82,16 +93,178 @@ public class Generator {
 
 	private void createJson() throws IOException {
 
-		RestUserResponse user = new RestUserResponse();
-		user.setUuid(getUUID());
-		user.setUsername("jdoe42");
-		user.setFirstname("Joe");
-		user.setLastname("Doe");
-		user.setEmailAddress("j.doe@nowhere.com");
-		user.addGroup("editors");
+		userJson();
+		groupJson();
+		roleJson();
+		contentJson();
+		tagJson();
+		fileJson();
+		schemaJson();
+		projectJson();
+	}
+
+	private void projectJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+		ProjectResponse project = new ProjectResponse();
+		project.setName("Dummy Project");
+		project.setUuid(getUUID());
+		write(project);
+
+		ProjectResponse project2 = new ProjectResponse();
+		project2.setName("Dummy Project (Mobile)");
+		project2.setUuid(getUUID());
+
+		ProjectListResponse projectList = new ProjectListResponse();
+		projectList.addProject(project);
+		projectList.addProject(project2);
+		RestModelPagingHelper.setPaging(projectList, "/projects", 1, 10, 2, 20);
+		write(projectList);
+
+		ProjectUpdateRequest projectUpdate = new ProjectUpdateRequest();
+		projectUpdate.setUuid(getUUID());
+		projectUpdate.setName("Renamed project");
+		write(projectUpdate);
+
+		ProjectCreateRequest projectCreate = new ProjectCreateRequest();
+		projectCreate.setName("New project");
+		write(projectCreate);
+
+	}
+
+	private void roleJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+		RoleResponse role = new RoleResponse();
+		role.setName("Admin role");
+		role.setUuid(getUUID());
+		write(role);
+
+		RoleResponse role2 = new RoleResponse();
+		role2.setName("Reader role");
+		role2.setUuid(getUUID());
+
+		RoleListResponse roleList = new RoleListResponse();
+		roleList.addRole(role);
+		roleList.addRole(role2);
+		RestModelPagingHelper.setPaging(roleList, "/roles", 1, 10, 2, 20);
+		write(roleList);
+
+		RoleUpdateRequest roleUpdate = new RoleUpdateRequest();
+		roleUpdate.setUuid(getUUID());
+		roleUpdate.setName("New name");
+		write(roleUpdate);
+
+		RoleCreateRequest roleCreate = new RoleCreateRequest();
+		roleCreate.setName("super editors");
+		write(roleCreate);
+	}
+
+	private void tagJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+
+		TagResponse tag = new TagResponse();
+		tag.setUuid(getUUID());
+		write(tag);
+
+		TagUpdateRequest tagUpdate = new TagUpdateRequest();
+		tagUpdate.setUuid(getUUID());
+		write(tagUpdate);
+
+		TagCreateRequest tagCreate = new TagCreateRequest();
+		write(tagCreate);
+	}
+
+	private void schemaJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+		ObjectSchemaResponse schema = new ObjectSchemaResponse();
+		schema.setUuid(getUUID());
+		schema.setDescription("Description of the schema");
+		schema.setName("extended-content");
+		// TODO properties
+		write(schema);
+
+		ObjectSchemaResponse schema2 = new ObjectSchemaResponse();
+		schema2.setUuid(getUUID());
+		schema2.setDescription("Description of the schema2");
+		schema2.setName("extended-content-2");
+		// TODO properties
+
+		ObjectSchemaListResponse schemaList = new ObjectSchemaListResponse();
+		schemaList.addSchema(schema);
+		schemaList.addSchema(schema2);
+		RestModelPagingHelper.setPaging(schemaList, "/projects", 1, 10, 2, 20);
+		write(schemaList);
+
+		ObjectSchemaUpdateRequest schemaUpdate = new ObjectSchemaUpdateRequest();
+		schemaUpdate.setUuid(getUUID());
+		// TODO should i allow changing the name?
+		schemaUpdate.setName("extended-content");
+		schemaUpdate.setDescription("New description");
+		write(schemaUpdate);
+
+		ObjectSchemaCreateRequest schemaCreate = new ObjectSchemaCreateRequest();
+		schemaCreate.setName("extended-content");
+		schemaCreate.setDescription("Just a dummy ");
+		write(schemaCreate);
+	}
+
+	private void fileJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+		RestBinaryFile file = new RestBinaryFile();
+		file.setUuid(getUUID());
+		file.setFilename("some_binary_file.dat");
+		write(file);
+	}
+
+	private void contentJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+		ContentResponse content = new ContentResponse();
+		content.setUuid(getUUID());
+		content.setAuthor(getUser());
+		content.setLanguageTag("de-DE");
+		content.addProperty("name", "Name for language tag de-DE");
+		content.addProperty("filename", "dummy-content.de.html");
+		content.addProperty("teaser", "Dummy teaser for de-DE");
+		content.addProperty("content", "Content for language tag de-DE");
+		write(content);
+
+		ContentUpdateRequest contentUpdate = new ContentUpdateRequest();
+		contentUpdate.setUuid(getUUID());
+		// TODO handle other parameters
+		write(contentUpdate);
+
+		ContentCreateRequest contentCreate = new ContentCreateRequest();
+		write(contentCreate);
+
+	}
+
+	private void groupJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+
+		GroupResponse group = new GroupResponse();
+		group.setUuid(getUUID());
+		group.setName("Admin Group");
+		write(group);
+
+		GroupResponse group2 = new GroupResponse();
+		group2.setUuid(getUUID());
+		group2.setName("Editor Group");
+
+		GroupListResponse groupList = new GroupListResponse();
+		groupList.addGroup(group);
+		groupList.addGroup(group2);
+		RestModelPagingHelper.setPaging(groupList, "/groups", 1, 10, 2, 20);
+		write(groupList);
+
+		GroupUpdateRequest groupUpdate = new GroupUpdateRequest();
+		groupUpdate.setUuid(getUUID());
+		write(groupUpdate);
+
+		GroupCreateRequest groupCreate = new GroupCreateRequest();
+		groupCreate.setName("new group");
+		groupCreate.getRoles().add("admin");
+		groupCreate.getRoles().add("editors");
+		// TODO handle other fields
+		write(groupCreate);
+	}
+
+	private void userJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+		UserResponse user = getUser();
 		write(user);
 
-		RestUserResponse user2 = new RestUserResponse();
+		UserResponse user2 = new UserResponse();
 		user2.setUuid(getUUID());
 		user2.setUsername("jroe");
 		user2.setFirstname("Jane");
@@ -100,7 +273,14 @@ public class Generator {
 		user2.addGroup("super-editors");
 		user2.addGroup("editors");
 
-		RestUserUpdateRequest userUpdate = new RestUserUpdateRequest();
+		UserListResponse userList = new UserListResponse();
+		userList.addUser(user);
+		userList.addUser(user2);
+		RestModelPagingHelper.setPaging(userList, "/users", 1, 10, 2, 20);
+		write(userList);
+
+		UserUpdateRequest userUpdate = new UserUpdateRequest();
+		userUpdate.setUuid(getUUID());
 		userUpdate.setUsername("jdoe42");
 		userUpdate.setPassword("iesiech0eewinioghaRa");
 		userUpdate.setFirstname("Joe");
@@ -110,7 +290,7 @@ public class Generator {
 		userUpdate.addGroup("editors");
 		write(userUpdate);
 
-		RestUserCreateRequest userCreate = new RestUserCreateRequest();
+		UserCreateRequest userCreate = new UserCreateRequest();
 		userCreate.setUsername("jdoe42");
 		userCreate.setPassword("iesiech0eewinioghaRa");
 		userCreate.setFirstname("Joe");
@@ -120,101 +300,22 @@ public class Generator {
 		userCreate.addGroup("editors");
 		write(userCreate);
 
-		RestUserList userList = new RestUserList();
-		userList.addUser(user);
-		userList.addUser(user2);
-		RestModelPagingHelper.setPaging(userList, "/users", 1, 10, 2, 20);
-		write(userList);
+	}
 
-		RestGroup group = new RestGroup();
-		group.setUuid(getUUID());
-		group.setName("Admin Group");
-		write(group);
-
-		RestGroup group2 = new RestGroup();
-		group2.setUuid(getUUID());
-		group2.setName("Editor Group");
-
-		RestGroupList groupList = new RestGroupList();
-		groupList.addGroup(group);
-		groupList.addGroup(group2);
-		RestModelPagingHelper.setPaging(groupList, "/groups", 1, 10, 2, 20);
-		write(groupList);
-
-		RestRole role = new RestRole();
-		role.setName("Admin role");
-		role.setUuid(getUUID());
-		write(role);
-
-		RestRole role2 = new RestRole();
-		role2.setName("Reader role");
-		role2.setUuid(getUUID());
-
-		RestRoleList roleList = new RestRoleList();
-		roleList.addRole(role);
-		roleList.addRole(role2);
-		RestModelPagingHelper.setPaging(roleList, "/roles", 1, 10, 2, 20);
-		write(roleList);
-
-		RestProject project = new RestProject();
-		project.setName("Dummy Project");
-		project.setUuid(getUUID());
-		write(project);
-
-		RestProject project2 = new RestProject();
-		project2.setName("Dummy Project (Mobile)");
-		project2.setUuid(getUUID());
-
-		RestProjectList projectList = new RestProjectList();
-		projectList.addProject(project);
-		projectList.addProject(project2);
-		RestModelPagingHelper.setPaging(projectList, "/projects", 1, 10, 2, 20);
-		write(projectList);
-
-		RestGenericContent content = new RestGenericContent();
-		content.setUuid(getUUID());
-		content.setAuthor(user);
-		content.setLanguageTag("de-DE");
-		content.addProperty("name", "Name for language tag de-DE");
-		content.addProperty("filename", "dummy-content.de.html");
-		content.addProperty("teaser", "Dummy teaser for de-DE");
-		content.addProperty("content", "Content for language tag de-DE");
-		write(content);
-
-		RestTag tag = new RestTag();
-		tag.setUuid(getUUID());
-		write(tag);
-
-		RestBinaryFile file = new RestBinaryFile();
-		file.setUuid(getUUID());
-		file.setFilename("some_binary_file.dat");
-		write(file);
-
-		RestObjectSchema schema = new RestObjectSchema();
-		schema.setUuid(getUUID());
-		schema.setDescription("Description of the schema");
-		schema.setName("extended-content");
-		// TODO properties
-		write(schema);
-
-		RestObjectSchema schema2 = new RestObjectSchema();
-		schema2.setUuid(getUUID());
-		schema2.setDescription("Description of the schema2");
-		schema2.setName("extended-content-2");
-		// TODO properties
-
-		RestObjectSchemaList schemaList = new RestObjectSchemaList();
-		schemaList.addSchema(schema);
-		schemaList.addSchema(schema2);
-		RestModelPagingHelper.setPaging(projectList, "/projects", 1, 10, 2, 20);
-		write(schemaList);
-
+	private UserResponse getUser() {
+		UserResponse user = new UserResponse();
+		user.setUuid(getUUID());
+		user.setUsername("jdoe42");
+		user.setFirstname("Joe");
+		user.setLastname("Doe");
+		user.setEmailAddress("j.doe@nowhere.com");
+		user.addGroup("editors");
+		return user;
 	}
 
 	private void write(Object object) throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
 		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 		writeJsonSchema(object.getClass());
-
 	}
 }

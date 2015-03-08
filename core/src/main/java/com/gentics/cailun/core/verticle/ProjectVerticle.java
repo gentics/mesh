@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.service.ProjectService;
-import com.gentics.cailun.core.rest.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.response.RestProject;
+import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
 @Component
@@ -112,7 +112,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					project = projectService.findByName(uuidOrName);
 				}
 				if (project != null) {
-					RestProject restProject = projectService.getResponseObject(project);
+					ProjectResponse restProject = projectService.getResponseObject(project);
 					rc.response().setStatusCode(200);
 					rc.response().end(toJson(restProject));
 				} else {
