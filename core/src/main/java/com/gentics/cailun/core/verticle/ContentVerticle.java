@@ -33,8 +33,7 @@ import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
-import com.gentics.cailun.core.rest.common.response.GenericErrorResponse;
-import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.util.UUIDUtil;
@@ -120,7 +119,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 						// TODO i18n error message?
 						String message = "Content not found for uuid {" + uuid + "}";
 						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericNotFoundResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 					}
 					// Otherwise load the content by parsing and following the path
 				} else {
@@ -131,7 +130,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 						// TODO i18n error message?
 						String message = "Content not found for path {" + path + "}";
 						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericNotFoundResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 					}
 				}
 			} catch (Exception e) {
@@ -185,14 +184,14 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			if (requestModel == null) {
 				String message = "Could not parse request";
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericErrorResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			} else {
 				Tag rootTagForContent = tagService.findByProjectPath(projectName, path);
 				if (rootTagForContent == null) {
 					String message = "Could not find tag in path structure";
 					rc.response().setStatusCode(400);
-					rc.response().end(toJson(new GenericErrorResponse(message)));
+					rc.response().end(toJson(new GenericMessageResponse(message)));
 				}
 				Content content = null;
 				try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {

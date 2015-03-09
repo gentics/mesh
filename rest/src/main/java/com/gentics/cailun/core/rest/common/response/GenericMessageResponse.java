@@ -1,13 +1,13 @@
 package com.gentics.cailun.core.rest.common.response;
 
-public class GenericErrorResponse {
+public class GenericMessageResponse {
 
 	private String message;
 
-	public GenericErrorResponse() {
+	public GenericMessageResponse() {
 	}
 
-	public GenericErrorResponse(String message) {
+	public GenericMessageResponse(String message) {
 		this.message = message;
 	}
 

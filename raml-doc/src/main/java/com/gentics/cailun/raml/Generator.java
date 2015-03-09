@@ -11,6 +11,7 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
@@ -100,6 +101,14 @@ public class Generator {
 		fileJson();
 		schemaJson();
 		projectJson();
+
+		genericResponseJson();
+	}
+
+	private void genericResponseJson() throws JsonGenerationException, JsonMappingException, IOException {
+		GenericMessageResponse message = new GenericMessageResponse();
+		message.setMessage("I18n message");
+		write(message);
 	}
 
 	private void projectJson() throws JsonGenerationException, JsonMappingException, IOException {

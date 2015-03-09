@@ -13,8 +13,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.service.GroupService;
-import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.common.response.GenericSuccessResponse;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
@@ -58,12 +57,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			if (group != null) {
 				groupService.delete(group);
 				rc.response().setStatusCode(200);
-				rc.response().end(toJson(new GenericSuccessResponse("Deleted")));
+				rc.response().end(toJson(new GenericMessageResponse("Deleted")));
 			} else {
 				// TODO i18n error message?
 				String message = "Group not found {" + uuidOrName + "}";
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 			}
 		});
 	}
@@ -82,12 +81,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			if (group != null) {
 				//groupService.save(node);
 				rc.response().setStatusCode(200);
-				rc.response().end(toJson(new GenericSuccessResponse("OK")));
+				rc.response().end(toJson(new GenericMessageResponse("OK")));
 			} else {
 				// TODO i18n error message?
 				String message = "Group not found {" + uuidOrName + "}";
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 			}
 		});
 
@@ -114,7 +113,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				// TODO i18n error message?
 				String message = "Group not found {" + uuidOrName + "}";
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 			}
 
 		});

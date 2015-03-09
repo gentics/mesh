@@ -20,8 +20,7 @@ import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.rest.common.response.GenericPermissionDeniedResponse;
-import com.gentics.cailun.etc.RouterStorage;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
 public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
@@ -128,7 +127,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			} else {
 				rc.response().setStatusCode(403);
 				// TODO i18n
-				rc.response().end(toJson(new GenericPermissionDeniedResponse("Missing permission on object {" + node.getUuid() + "}")));
+				rc.response().end(toJson(new GenericMessageResponse("Missing permission on object {" + node.getUuid() + "}")));
 				return false;
 			}
 

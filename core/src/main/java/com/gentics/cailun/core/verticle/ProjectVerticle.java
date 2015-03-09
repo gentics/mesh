@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.service.ProjectService;
-import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
@@ -65,7 +65,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				// TODO i18n error message?
 				String message = "Project not found {" + uuidOrName + "}";
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 			}
 		});
 	}
@@ -119,7 +119,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					// TODO i18n error message?
 					String message = "Project not found {" + uuidOrName + "}";
 					rc.response().setStatusCode(404);
-					rc.response().end(toJson(new GenericNotFoundResponse(message)));
+					rc.response().end(toJson(new GenericMessageResponse(message)));
 				}
 
 			});

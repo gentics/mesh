@@ -27,9 +27,7 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.UserService;
-import com.gentics.cailun.core.rest.common.response.GenericErrorResponse;
-import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.common.response.GenericSuccessResponse;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
@@ -93,7 +91,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			} else {
 				String message = i18n.get(rc, "user_not_found", uuidOrName);
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 			}
 		});
 
@@ -123,7 +121,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				// TODO i18n entry
 				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
 				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericErrorResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 
@@ -143,12 +141,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				userService.delete(user);
 				rc.response().setStatusCode(200);
 				// TODO better response
-				rc.response().end(toJson(new GenericSuccessResponse("OK")));
+				rc.response().end(toJson(new GenericMessageResponse("OK")));
 				return;
 			} else {
 				String message = i18n.get(rc, "user_not_found", uuidOrName);
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 
@@ -165,7 +163,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						// TODO i18n entry
 						String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
 						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericErrorResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
 					}
 
@@ -174,14 +172,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						// TODO exception would be nice, add i18n
 						String message = "Could not parse request json.";
 						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericErrorResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
 					}
 					if (requestModel.getGroups().isEmpty()) {
 						// TODO i18n
 						String message = "No groups were specified. You need to specify at least one group for the user.";
 						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericErrorResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
 					}
 
@@ -191,7 +189,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						if (parentGroup == null) {
 							// TODO i18n
 							rc.response().setStatusCode(400);
-							rc.response().end(toJson(new GenericErrorResponse("Could not find parent group {" + groupName + "}")));
+							rc.response().end(toJson(new GenericMessageResponse("Could not find parent group {" + groupName + "}")));
 							return;
 						}
 						groupsForUser.add(parentGroup);
@@ -216,7 +214,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 								rc.response().setStatusCode(409);
 								// TODO i18n
 								rc.response().end(
-										toJson(new GenericErrorResponse("A user with the username {" + requestModel.getUsername()
+										toJson(new GenericMessageResponse("A user with the username {" + requestModel.getUsername()
 												+ "} already exists. Please choose a different username.")));
 								return;
 							}
@@ -272,17 +270,17 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 							// TODO correct msg?
 							// TODO i18n
 							rc.response().setStatusCode(409);
-							rc.response().end(toJson(new GenericErrorResponse("User can't be saved. Unknown error.")));
+							rc.response().end(toJson(new GenericMessageResponse("User can't be saved. Unknown error.")));
 							return;
 						}
 						rc.response().setStatusCode(200);
 						// TODO better response
-						rc.response().end(toJson(new GenericSuccessResponse("OK")));
+						rc.response().end(toJson(new GenericMessageResponse("OK")));
 						return;
 					} else {
 						String message = i18n.get(rc, "user_not_found", uuidOrName);
 						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericNotFoundResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
 					}
 
@@ -297,13 +295,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				// TODO exception would be nice, add i18n
 				String message = "Could not parse request json.";
 				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericErrorResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 			if (StringUtils.isEmpty(requestModel.getUsername()) || StringUtils.isEmpty(requestModel.getPassword())) {
 				rc.response().setStatusCode(400);
 				// TODO i18n
-				rc.response().end(toJson(new GenericErrorResponse("Either username or password was not specified.")));
+				rc.response().end(toJson(new GenericMessageResponse("Either username or password was not specified.")));
 				return;
 			}
 
@@ -313,7 +311,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				Group parentGroup = groupService.findByName(groupName);
 				if (parentGroup == null) {
 					// TODO i18n
-					rc.response().end(toJson(new GenericErrorResponse("Could not find parent group {" + groupName + "}")));
+					rc.response().end(toJson(new GenericMessageResponse("Could not find parent group {" + groupName + "}")));
 					return;
 				}
 
@@ -327,14 +325,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			if (groupsForUser.isEmpty()) {
 				// TODO i18n
 				String message = "No groups were specified. You need to specify at least one group for the user.";
-				rc.response().end(toJson(new GenericErrorResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 
 			if (userService.findByUsername(requestModel.getUsername()) != null) {
 				// TODO i18n
 				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericErrorResponse("Conflicting username")));
+				rc.response().end(toJson(new GenericMessageResponse("Conflicting username")));
 				return;
 			}
 

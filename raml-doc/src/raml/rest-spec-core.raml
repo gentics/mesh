@@ -99,6 +99,8 @@ schemas:
   - ProjectListResponse: !include json/ProjectListResponse.schema.json
   - ProjectUpdateRequest: !include json/ProjectUpdateRequest.schema.json
   - ProjectCreateRequest: !include json/ProjectCreateRequest.schema.json
+  
+  - GenericMessageResponse: !include json/GenericMessageResponse.schema.json
 
 
 /users:
@@ -154,6 +156,12 @@ schemas:
               example: !include json/UserResponse.example.json
     delete:
       description: Deletes the **user** with the given username
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
   /urn:uuid:{uuid}:
     is: [ localized ]
@@ -180,6 +188,12 @@ schemas:
               example: !include json/UserResponse.example.json
     delete:
       description: Deletes the **user** with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
     
 
 /roles:
@@ -258,7 +272,12 @@ schemas:
               example: !include json/RoleResponse.example.json
     delete:
       description: Deletes a **single role** with the given uuid
-
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
 /groups:
   is: [ localized ]
@@ -313,8 +332,8 @@ schemas:
         200:
           body:
             application/json:
-              schema: GroupResponse
-              example: !include json/GroupResponse.example.json
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
   
   /urn:uuid:{uuid}:
     is: [ localized ]
@@ -340,7 +359,12 @@ schemas:
               example: !include json/GroupResponse.example.json
     delete:
       description: Deletes a **single group** with the given uuid
-
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
 /projects:
   is: [ localized ]
@@ -371,7 +395,6 @@ schemas:
             schema: ProjectResponse
             example: !include json/ProjectResponse.example.json
 
-
   /{name}:
     is: [ localized ]
     get:
@@ -394,11 +417,18 @@ schemas:
               schema: ProjectResponse
               example: !include json/ProjectResponse.example.json
     delete:
+      description: Deletes the project with the given name
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
   /urn:uuid:{uuid}:
-   get:
-    description: Retrieves the **project** with the given uuid
-   put:
+    get:
+      description: Retrieves the **project** with the given uuid
+    put:
       body:
         application/json:
           schema: ProjectUpdateRequest
@@ -409,7 +439,14 @@ schemas:
             application/json:
               schema: ProjectResponse
               example: !include json/ProjectResponse.example.json
-   delete:
+    delete:
+      description: Deletes the project with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
 /{project_name}/contents:
   displayName: Contents
@@ -465,6 +502,10 @@ schemas:
       description: Deletes the **content** with the given path
       responses:
         200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
         423:
 
   /urn:uuid:{uuid}:
@@ -495,6 +536,13 @@ schemas:
               schema: ContentResponse
               example: !include json/ContentResponse.example.json
     delete:
+      description: Deletes the content with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
 
 /{project_name}/tags/:
@@ -536,6 +584,12 @@ schemas:
               example: !include json/TagResponse.example.json
     delete:
       description: Delete the **tag** with the given path
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
   /urn:uuid:{uuid}:
     is: [ localized ]
@@ -561,6 +615,12 @@ schemas:
               example: !include json/TagResponse.example.json
     delete:
       description: Delete the **tag** with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
 
 /{project_name}/search:
@@ -621,6 +681,12 @@ schemas:
               example: !include json/ObjectSchemaResponse.example.json
     delete:
       description: Deletes the **type** with the given name
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
   /urn:uuid:{uuid}:
     is: [ localized ]
@@ -646,6 +712,12 @@ schemas:
               example: !include json/ObjectSchemaResponse.example.json
     delete:
       description: Deletes the **type** with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
 /{project_name}/binaries:
   displayName: Binaries
@@ -664,6 +736,12 @@ schemas:
       description: Update the **binary file** with the given path
     delete:
       description: Delete the **binary file** with the given path
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
   /urn:uuid:{uuid}:
     is: [ localized ]
@@ -673,6 +751,12 @@ schemas:
       description: Update the **binary file** with the given uuid
     delete:
       description: Delete the **binary file** with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
 
 /{project_name}/navigation:
@@ -698,8 +782,20 @@ schemas:
         type: string
     post:
       description: Deploy a vertx maven service
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
     delete:
       description: Undeploy a previouly deployed vertx maven server
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
   /verticles/{class}:
     is: [ localized ]
@@ -709,10 +805,28 @@ schemas:
         type: string
     post:
       description: Deploy a verticle with the given class
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
     delete:
       description: Undeploy a verticle with the given class
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json
 
   /backup:
     is: [ localized ]
     get:
       description: Invoke the live backup process
+      responses:
+        200:
+          body:
+            application/json:
+              schema: GenericMessageResponse
+              example: !include json/GenericMessageResponse.example.json

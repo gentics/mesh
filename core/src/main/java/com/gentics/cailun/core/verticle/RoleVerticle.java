@@ -22,9 +22,7 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.service.RoleService;
-import com.gentics.cailun.core.rest.common.response.GenericErrorResponse;
-import com.gentics.cailun.core.rest.common.response.GenericNotFoundResponse;
-import com.gentics.cailun.core.rest.common.response.GenericSuccessResponse;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
@@ -59,7 +57,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				// TODO i18n entry
 				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
 				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericErrorResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 
@@ -79,12 +77,12 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				roleService.delete(role);
 				rc.response().setStatusCode(200);
 				// TODO better response
-				rc.response().end(toJson(new GenericSuccessResponse("OK")));
+				rc.response().end(toJson(new GenericMessageResponse("OK")));
 				return;
 			} else {
 				String message = i18n.get(rc, "role_not_found", uuidOrName);
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 		});
@@ -100,7 +98,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						// TODO i18n entry
 						String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
 						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericErrorResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
 					}
 					RoleResponse requestModel = fromJson(rc, RoleResponse.class);
@@ -108,7 +106,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						// TODO exception would be nice, add i18n
 						String message = "Could not parse request json.";
 						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericErrorResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
 					}
 
@@ -131,7 +129,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 								rc.response().setStatusCode(409);
 								// TODO i18n
 								rc.response().end(
-										toJson(new GenericErrorResponse("A role with the name {" + requestModel.getName()
+										toJson(new GenericMessageResponse("A role with the name {" + requestModel.getName()
 												+ "} already exists. Please choose a different name.")));
 								return;
 							}
@@ -144,16 +142,16 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 							// TODO correct msg?
 							// TODO i18n
 							rc.response().setStatusCode(409);
-							rc.response().end(toJson(new GenericErrorResponse("Role can't be saved. Unknown error.")));
+							rc.response().end(toJson(new GenericMessageResponse("Role can't be saved. Unknown error.")));
 							return;
 						}
 						rc.response().setStatusCode(200);
 						// TODO better response
-						rc.response().end(toJson(new GenericSuccessResponse("OK")));
+						rc.response().end(toJson(new GenericMessageResponse("OK")));
 					} else {
 						String message = i18n.get(rc, "role_not_found", uuidOrName);
 						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericNotFoundResponse(message)));
+						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
 					}
 
@@ -181,7 +179,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				// TODO i18n error message?
 				String message = "Group not found {" + uuidOrName + "}";
 				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericNotFoundResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 			}
 		});
 
@@ -211,21 +209,21 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				// TODO exception would be nice, add i18n
 				String message = "Could not parse request json.";
 				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericErrorResponse(message)));
+				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.response().setStatusCode(400);
 				// TODO i18n
-				rc.response().end(toJson(new GenericErrorResponse("The name for the role was not specified.")));
+				rc.response().end(toJson(new GenericMessageResponse("The name for the role was not specified.")));
 				return;
 			}
 
 			if (roleService.findByName(requestModel.getName()) != null) {
 				// TODO i18n
 				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericErrorResponse("Conflicting name")));
+				rc.response().end(toJson(new GenericMessageResponse("Conflicting name")));
 				return;
 			}
 
