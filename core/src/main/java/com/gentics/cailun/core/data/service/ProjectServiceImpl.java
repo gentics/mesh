@@ -43,9 +43,17 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	@Override
 	public Project transformFromRest(ProjectCreateRequest requestModel) {
 		Project project = new Project(requestModel.getName());
-		//TODO handle creator and roottag
-		//project.setCreator(creator);
+		// TODO handle creator and roottag
+		// project.setCreator(creator);
 		return project;
+	}
+
+	@Override
+	public ProjectResponse transformToRest(Project project) {
+		ProjectResponse projectResponse = new ProjectResponse();
+		projectResponse.setUuid(project.getUuid());
+		projectResponse.setName(project.getName());
+		return projectResponse;
 	}
 
 }

@@ -45,6 +45,10 @@ public class Project extends GenericNode {
 		return name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public GenericTag getRootTag() {
 		return rootTag;
 	}

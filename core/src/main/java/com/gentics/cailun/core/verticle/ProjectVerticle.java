@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,11 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
+import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
@@ -47,35 +50,77 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		addDeleteHandler();
 	}
 
-	private void addDeleteHandler() {
-		route("/:uuidOrName").method(DELETE).handler(rc -> {
-			String uuidOrName = rc.request().params().get("uuidOrName");
-			Project project = null;
-
-			if (UUIDUtil.isUUID(uuidOrName)) {
-				project = projectService.findByName(uuidOrName);
-			} else {
-				project = projectService.findByName(uuidOrName);
-			}
-			if (project != null) {
-				String name = project.getName();
-				routerStorage.removeProjectRouter(name);
-				projectService.delete(project);
-				// TODO json
-				rc.response().end("Deleted project {" + name + "}");
-			} else {
-				// TODO i18n error message?
-				String message = "Project not found {" + uuidOrName + "}";
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-			}
-		});
-	}
-
 	private void addUpdateHandler() {
-		route("/:uuidOrName").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
+		route("/:uuidOrName")
+				.method(PUT)
+				.consumes(APPLICATION_JSON)
+				.handler(rc -> {
+					String uuidOrName = rc.request().params().get("uuidOrName");
+					if (StringUtils.isEmpty(uuidOrName)) {
+						// TODO i18n entry
+						String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
+						rc.response().setStatusCode(400);
+						rc.response().end(toJson(new GenericMessageResponse(message)));
+						return;
+					}
 
-		});
+					ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
+					if (requestModel == null) {
+						// TODO exception would be nice, add i18n
+						String message = "Could not parse request json.";
+						rc.response().setStatusCode(400);
+						rc.response().end(toJson(new GenericMessageResponse(message)));
+						return;
+					}
+
+					// Try to load the project
+					Project project = null;
+					if (UUIDUtil.isUUID(uuidOrName)) {
+						project = projectService.findByUUID(uuidOrName);
+					} else {
+						project = projectService.findByName(uuidOrName);
+					}
+
+					// Update the project or show 404
+					if (project != null) {
+						if (!checkPermission(rc, project, PermissionType.UPDATE)) {
+							return;
+						}
+
+						if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
+							if (projectService.findByName(requestModel.getName()) != null) {
+								rc.response().setStatusCode(409);
+								// TODO i18n
+								rc.response().end(
+										toJson(new GenericMessageResponse("A project with the name {" + requestModel.getName()
+												+ "} already exists. Please choose a different name.")));
+								return;
+							}
+							project.setName(requestModel.getName());
+						}
+
+						try {
+							project = projectService.save(project);
+						} catch (ConstraintViolationException e) {
+							// TODO log
+							// TODO correct msg?
+							// TODO i18n
+							rc.response().setStatusCode(409);
+							rc.response().end(toJson(new GenericMessageResponse("Project can't be saved. Unknown error.")));
+							return;
+						}
+						rc.response().setStatusCode(200);
+						// TODO better response
+						rc.response().end(toJson(new GenericMessageResponse("OK")));
+						return;
+					} else {
+						String message = i18n.get(rc, "project_not_found", uuidOrName);
+						rc.response().setStatusCode(404);
+						rc.response().end(toJson(new GenericMessageResponse(message)));
+						return;
+					}
+
+				});
 	}
 
 	private void addCreateHandler() {
@@ -116,7 +161,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 						routerStorage.addProjectRouter(project.getName());
 						String msg = "Registered project {" + project.getName() + "}";
 						log.info(msg);
-						rc.response().end(toJson(project));
+						rc.response().end(toJson(projectService.transformToRest(project)));
 					} catch (Exception e) {
 						rc.fail(409);
 						rc.fail(e);
@@ -151,5 +196,36 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			});
 
+	}
+
+	private void addDeleteHandler() {
+		route("/:uuidOrName").method(DELETE).handler(rc -> {
+			String uuidOrName = rc.request().params().get("uuidOrName");
+			Project project = null;
+
+			if (UUIDUtil.isUUID(uuidOrName)) {
+				project = projectService.findByUUID(uuidOrName);
+			} else {
+				project = projectService.findByName(uuidOrName);
+			}
+			if (project != null) {
+				if (!checkPermission(rc, project, PermissionType.DELETE)) {
+					return;
+				}
+				String name = project.getName();
+				routerStorage.removeProjectRouter(name);
+				projectService.delete(project);
+				String msg = "Deleted project {" + name + "}";
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(new GenericMessageResponse(msg)));
+				return;
+			} else {
+				// TODO i18n error message?
+				String message = "Project not found {" + uuidOrName + "}";
+				rc.response().setStatusCode(404);
+				rc.response().end(toJson(new GenericMessageResponse(message)));
+				return;
+			}
+		});
 	}
 }

@@ -17,5 +17,7 @@ public interface ProjectService extends GenericNodeService<Project> {
 
 	Project transformFromRest(ProjectCreateRequest requestModel);
 
+	ProjectResponse transformToRest(Project project);
+
 
 }
