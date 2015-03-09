@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.codehaus.jackson.JsonGenerationException;
-
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
@@ -103,7 +102,7 @@ public class Generator {
 		projectJson();
 	}
 
-	private void projectJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void projectJson() throws JsonGenerationException, JsonMappingException, IOException {
 		ProjectResponse project = new ProjectResponse();
 		project.setName("Dummy Project");
 		project.setUuid(getUUID());
@@ -130,7 +129,7 @@ public class Generator {
 
 	}
 
-	private void roleJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void roleJson() throws JsonGenerationException, JsonMappingException, IOException {
 		RoleResponse role = new RoleResponse();
 		role.setName("Admin role");
 		role.setUuid(getUUID());
@@ -156,7 +155,7 @@ public class Generator {
 		write(roleCreate);
 	}
 
-	private void tagJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {
 
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
@@ -170,7 +169,7 @@ public class Generator {
 		write(tagCreate);
 	}
 
-	private void schemaJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
 		ObjectSchemaResponse schema = new ObjectSchemaResponse();
 		schema.setUuid(getUUID());
 		schema.setDescription("Description of the schema");
@@ -203,14 +202,14 @@ public class Generator {
 		write(schemaCreate);
 	}
 
-	private void fileJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void fileJson() throws JsonGenerationException, JsonMappingException, IOException {
 		RestBinaryFile file = new RestBinaryFile();
 		file.setUuid(getUUID());
 		file.setFilename("some_binary_file.dat");
 		write(file);
 	}
 
-	private void contentJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
 		ContentResponse content = new ContentResponse();
 		content.setUuid(getUUID());
 		content.setAuthor(getUser());
@@ -227,11 +226,14 @@ public class Generator {
 		write(contentUpdate);
 
 		ContentCreateRequest contentCreate = new ContentCreateRequest();
+		contentCreate.setAuthor(getUser());
+		contentCreate.setType("content");
+		contentCreate.setLanguageTag("en-US");
 		write(contentCreate);
 
 	}
 
-	private void groupJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
 
 		GroupResponse group = new GroupResponse();
 		group.setUuid(getUUID());
@@ -260,7 +262,7 @@ public class Generator {
 		write(groupCreate);
 	}
 
-	private void userJson() throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void userJson() throws JsonGenerationException, JsonMappingException, IOException {
 		UserResponse user = getUser();
 		write(user);
 
@@ -313,7 +315,7 @@ public class Generator {
 		return user;
 	}
 
-	private void write(Object object) throws com.fasterxml.jackson.core.JsonGenerationException, JsonMappingException, IOException {
+	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {
 		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 		writeJsonSchema(object.getClass());

@@ -88,7 +88,7 @@ schemas:
 
   - ContentResponse: !include json/ContentResponse.schema.json
   - ContentUpdateRequest: !include json/ContentUpdateRequest.schema.json
-  - ContentCreateRequest:!include json/ContentCreateRequest.schema.json
+  - ContentCreateRequest: !include json/ContentCreateRequest.schema.json
 
   - ObjectSchemaResponse: !include json/ObjectSchemaResponse.schema.json
   - ObjectSchemaListResponse: !include json/ObjectSchemaListResponse.schema.json
@@ -424,32 +424,76 @@ schemas:
       description: Retrieves the **content** with the given path
       queryParameters:
         lang:
-          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma
+          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
+          example: /{project_name}/contents/?lang=de-DE,en-US
+        for_update:
+          description: The content will be locked when the *for_update* parameter is set to true.
+          example: /{project_name}/contents/?for_update=true
       responses:
         200:
           body:
             application/json:
               schema: ContentResponse
               example: !include json/ContentResponse.example.json
+    post:
+      description: Creates the **content** with the given path
+      body:
+        application/json:
+          schema: ContentCreateRequest
+          example: !include json/ContentCreateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              schema: ContentResponse
+              example: !include json/ContentResponse.example.json
+        423:
+    put:
+      description: Updates the **content** with the given path
+      body:
+        application/json:
+          schema: ContentUpdateRequest
+          example: !include json/ContentUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              schema: ContentResponse
+              example: !include json/ContentResponse.example.json
+        423:
     delete:
       description: Deletes the **content** with the given path
       responses:
         200:
         423:
-    post:
-      description: Creates the **content** with the given path
-      responses:
-        200:
-        423:
-    put:
-      description: Updates the **content** with the given path
-      responses:
-        200:
-        423:
+
   /urn:uuid:{uuid}:
     is: [ localized ]
     get:
+      queryParameters:
+        lang:
+          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
+          example: /{project_name}/contents/?lang=de-DE,en-US
+        for_update:
+          description: The content will be locked when the *for_update* parameter is set to true.
+          example: /{project_name}/contents/?for_update=true
+      responses:
+        200:
+          body:
+            application/json:
+              schema: ContentResponse
+              example: !include json/ContentResponse.example.json
     put:
+      body:
+        application/json:
+          schema: ContentUpdateRequest
+          example: !include json/ContentUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              schema: ContentResponse
+              example: !include json/ContentResponse.example.json
     delete:
 
 
@@ -466,19 +510,55 @@ schemas:
             application/json:
               schema: TagResponse
               example: !include json/TagResponse.example.json
-    delete:
-      description: Delete the **tag** with the given path
     post:
       description: Create the **tag** with the given path
+      body:
+        application/json:
+          schema: TagCreateRequest
+          example: !include json/TagCreateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              schema: TagResponse
+              example: !include json/TagResponse.example.json
     put:
       description: Update the **tag** with the given path
+      body:
+        application/json:
+          schema: TagUpdateRequest
+          example: !include json/TagUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              schema: TagResponse
+              example: !include json/TagResponse.example.json
+    delete:
+      description: Delete the **tag** with the given path
 
   /urn:uuid:{uuid}:
     is: [ localized ]
     get:
       description: Load the **tag** with the given uuid
+      responses:
+        200:
+          body:
+            application/json:
+              schema: TagResponse
+              example: !include json/TagResponse.example.json
     put:
       description: Update the **tag** with the given uuid
+      body:
+        application/json:
+          schema: TagUpdateRequest
+          example: !include json/TagUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              schema: TagResponse
+              example: !include json/TagResponse.example.json
     delete:
       description: Delete the **tag** with the given uuid
 
@@ -541,12 +621,6 @@ schemas:
               example: !include json/ObjectSchemaResponse.example.json
     delete:
       description: Deletes the **type** with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ObjectSchemaResponse
-              example: !include json/ObjectSchemaResponse.example.json
 
   /urn:uuid:{uuid}:
     is: [ localized ]
@@ -571,13 +645,7 @@ schemas:
               schema: ObjectSchemaResponse
               example: !include json/ObjectSchemaResponse.example.json
     delete:
-      description: Deletes the **type** with the given uuid
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ObjectSchemaResponse
-              example: !include json/ObjectSchemaResponse.example.json
+      description: Deletes the **type** with the given uuid.
 
 /{project_name}/binaries:
   displayName: Binaries
