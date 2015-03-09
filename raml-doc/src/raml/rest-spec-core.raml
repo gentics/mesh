@@ -226,9 +226,20 @@ schemas:
     /groups/{uuid}:
       put:
         description: Add the role to the group
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
       delete:
         description: Remove the role from the group
-
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
 /groups:
   is: [ localized ]
   displayName: Groups
@@ -253,7 +264,7 @@ schemas:
           application/json:
             schema: GroupResponse
             example: !include json/GroupResponse.example.json
-  
+
   /{uuid}:
     is: [ localized ]
     get:
@@ -287,13 +298,37 @@ schemas:
     /users/{uuid}:
       put:
         description: Add the user with the given uuid to the group
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
       delete:
         description: Remove the user with the given uuid from the group
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
     /groups/{uuid}:
       put:
         description: Add the group with the given uuid to the group
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
       delete:
         description: Remove the group with the given uuid from the group
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
 
 
 /projects:
@@ -439,7 +474,7 @@ schemas:
               schema: TagResponse
               example: !include json/TagResponse.example.json
     put:
-      description: Update the **tag** with the given path
+      description: Update the **tag** with the given path.
       body:
         application/json:
           schema: TagUpdateRequest
@@ -451,7 +486,7 @@ schemas:
               schema: TagResponse
               example: !include json/TagResponse.example.json
     delete:
-      description: Delete the **tag** with the given path
+      description: Delete the **tag** with the given path.
       responses:
         200:
           body:
@@ -471,7 +506,7 @@ schemas:
   displayName: Schemas
   get:
     is: [ paged ]
-    description: Retrieves a **list of object schemas**
+    description: Retrieves a **list of object schemas**.
     responses:
       200:
         body:
@@ -496,7 +531,7 @@ schemas:
   /{uuid}:
     is: [ localized ]
     get:
-      description: Retrieves the **schema** with the given uuid
+      description: Retrieves the **schema** with the given uuid.
       responses:
         200:
           body:
@@ -524,9 +559,21 @@ schemas:
               example: !include json/GenericMessageResponse.example.json
     /projects/{uuid}:
       put:
-        description: Add the schema to the project 
+        description: Add the schema to the project.
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
       delete:
-        description: Remove the schema from the project
+        description: Remove the schema from the project.
+        responses:
+          200:
+            body:
+              application/json:
+                schema: GenericMessageResponse
+                example: !include json/GenericMessageResponse.example.json
 
 /{project_name}/binaries:
   displayName: Binaries
