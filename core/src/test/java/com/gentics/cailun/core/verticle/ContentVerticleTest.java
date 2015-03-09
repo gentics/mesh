@@ -1,20 +1,13 @@
 package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import io.vertx.core.http.HttpMethod;
 
-import java.io.IOException;
-
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
-import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestDataProvider;
 import com.gentics.cailun.test.UserInfo;
@@ -29,6 +22,8 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		return verticle;
 	}
 
+	// Create tests
+
 	@Test
 	public void testCreateContentByPath() throws Exception {
 		UserInfo info = data().getUserInfo();
@@ -39,16 +34,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
 	}
 
-	//
-	// private void assertEqualsSanitizedJson(String expectedJson, String unsanitizedResponseJson) throws JsonGenerationException, JsonMappingException,
-	// IOException {
-	// ContentResponse responseObject = new ObjectMapper().readValue(unsanitizedResponseJson, ContentResponse.class);
-	// assertNotNull(responseObject);
-	// // Update the uuid and compare json afterwards
-	// responseObject.setUuid("uuid-value");
-	// String sanitizedJson = new ObjectMapper().writeValueAsString(responseObject);
-	// assertEquals("The response json did not match the expected one.", expectedJson, sanitizedJson);
-	// }
+	// Read tests
 
 	@Test
 	public void testReadContentByValidPath() throws Exception {
@@ -76,7 +62,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 				+ "/contents/subtag/subtag-no-valid-tag/no-valid-page.html", 404, "Not Found");
 		String json = "{\"message\":\"Content not found for path {subtag/subtag-no-valid-tag/no-valid-page.html}\"}";
 		assertEquals(json, response);
-
 	}
 
 	@Test
@@ -86,7 +71,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"filename\":\"test_1.en.html\",\"name\":\"test_1 english\",\"content\":\"Blessed Mealtime 1!\"},\"type\":\"content\",\"language\":\"en_US\"}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
-
 	}
 
 	@Test
@@ -95,7 +79,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/contents/bogusUUID", 404, "Not Found");
 		String json = "{\"message\":\"Content not found for path {bogusUUID}\"}";
 		assertEquals(json, response);
-
 	}
 
 	@Test

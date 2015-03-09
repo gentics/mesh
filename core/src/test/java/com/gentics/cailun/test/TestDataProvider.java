@@ -77,6 +77,8 @@ public class TestDataProvider {
 
 	// References to dummy data
 
+	private CaiLunRoot root;
+
 	private Tag rootTag;
 
 	private Language english;
@@ -143,7 +145,7 @@ public class TestDataProvider {
 
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 
-			CaiLunRoot root = new CaiLunRoot();
+			root = new CaiLunRoot();
 			dummyProject = new Project(PROJECT_NAME);
 
 			// User, Groups, Roles
@@ -208,6 +210,7 @@ public class TestDataProvider {
 			tx.success();
 		}
 		// Reload various contents to refresh them and load the uuid field
+		root = rootService.reload(root);
 		contentLevel1A1 = contentService.reload(contentLevel1A1);
 		contentLevel1A2 = contentService.reload(contentLevel1A2);
 		contentLevel1A3 = contentService.reload(contentLevel1A3);
@@ -262,6 +265,10 @@ public class TestDataProvider {
 		tag = tagService.save(tag);
 
 		return content;
+	}
+
+	public CaiLunRoot getCaiLunRoot() {
+		return root;
 	}
 
 	public Tag getRootTag() {

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.ProjectRepository;
+import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 
 @Component
@@ -37,6 +38,14 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	@Override
 	public void deleteByName(String name) {
 		projectRepository.deleteByName(name);
+	}
+
+	@Override
+	public Project transformFromRest(ProjectCreateRequest requestModel) {
+		Project project = new Project(requestModel.getName());
+		//TODO handle creator and roottag
+		//project.setCreator(creator);
+		return project;
 	}
 
 }

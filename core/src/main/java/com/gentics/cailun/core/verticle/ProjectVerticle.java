@@ -5,6 +5,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.util.UUIDUtil;
 
@@ -59,7 +61,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
-				//TODO json
+				// TODO json
 				rc.response().end("Deleted project {" + name + "}");
 			} else {
 				// TODO i18n error message?
@@ -77,23 +79,48 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCreateHandler() {
-		route("/:uuidOrName").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
+		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 			// TODO also create a default object schema for the project. Move this into service class
 			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
-				String uuidOrName = rc.request().params().get("uuidOrName");
+				ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
 
-				Project project = projectService.findByName(uuidOrName);
-				if (project == null) {
-					project = new Project(uuidOrName);
-					projectService.save(project);
+				if (requestModel == null) {
+					// TODO exception would be nice, add i18n
+					String message = "Could not parse request json.";
+					rc.response().setStatusCode(400);
+					rc.response().end(toJson(new GenericMessageResponse(message)));
+					return;
 				}
-				try {
-					routerStorage.addProjectRouter(uuidOrName);
-					log.info("Registered project {" + uuidOrName + "}");
-					rc.response().end("Registered project {" + uuidOrName + "}");
-				} catch (Exception e) {
-					rc.fail(409);
-					rc.fail(e);
+
+				if (StringUtils.isEmpty(requestModel.getName())) {
+					rc.response().setStatusCode(400);
+					// TODO i18n
+					rc.response().end(toJson(new GenericMessageResponse("Mandatory field name was not specified.")));
+					return;
+				}
+
+				if (projectService.findByName(requestModel.getName()) != null) {
+					// TODO i18n
+					rc.response().setStatusCode(400);
+					rc.response().end(toJson(new GenericMessageResponse("Conflicting username")));
+					return;
+				}
+
+				Project project = projectService.transformFromRest(requestModel);
+				if (project == null) {
+					// TODO handle error?
+				} else {
+					project = projectService.save(project);
+					project = projectService.reload(project);
+					try {
+						routerStorage.addProjectRouter(project.getName());
+						String msg = "Registered project {" + project.getName() + "}";
+						log.info(msg);
+						rc.response().end(toJson(project));
+					} catch (Exception e) {
+						rc.fail(409);
+						rc.fail(e);
+					}
 				}
 			});
 	}

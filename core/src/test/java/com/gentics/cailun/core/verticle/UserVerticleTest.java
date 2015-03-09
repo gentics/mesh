@@ -40,6 +40,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public AbstractRestVerticle getVerticle() {
 		return userVerticle;
 	}
+	
+	// Read Tests
 
 	@Test
 	public void testReadTagByUUID() throws Exception {

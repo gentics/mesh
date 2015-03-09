@@ -8,7 +8,6 @@ import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
-import com.gentics.cailun.core.data.model.generic.GenericNode;
 
 @RelationshipEntity
 public class GraphPermission extends AbstractPersistable implements org.apache.shiro.authz.Permission {
@@ -19,7 +18,7 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 	private Role role;
 
 	@EndNode
-	private GenericNode targetNode;
+	private AbstractPersistable targetNode;
 
 	DynamicProperties permissions = new DynamicPropertiesContainer();
 
@@ -27,7 +26,7 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 	}
 
 	@PersistenceConstructor
-	public GraphPermission(Role role, GenericNode targetNode) {
+	public GraphPermission(Role role, AbstractPersistable targetNode) {
 		this.role = role;
 		this.targetNode = targetNode;
 	}

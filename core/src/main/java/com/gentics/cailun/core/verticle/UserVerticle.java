@@ -336,11 +336,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
-			User user = new User(requestModel.getUsername());
-			user.setFirstname(requestModel.getFirstname());
-			user.setLastname(requestModel.getLastname());
-			user.setEmailAddress(requestModel.getEmailAddress());
-			user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
+			User user = userService.transformFromRest(requestModel);
 			user = userService.save(user);
 			// Update uuid - TODO remove once save is transactional
 

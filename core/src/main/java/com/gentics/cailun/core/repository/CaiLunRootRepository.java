@@ -12,4 +12,6 @@ public interface CaiLunRootRepository extends Repository<CaiLunRoot, Long> {
 
 	void save(CaiLunRoot rootNode);
 
+	CaiLunRoot findOne(Long id);
+
 }

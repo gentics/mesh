@@ -1,8 +1,8 @@
 package com.gentics.cailun.core.data.service;
 
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
+import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 
 public interface ProjectService extends GenericNodeService<Project> {
@@ -14,6 +14,8 @@ public interface ProjectService extends GenericNodeService<Project> {
 	ProjectResponse getResponseObject(Project project);
 
 	void deleteByName(String name);
+
+	Project transformFromRest(ProjectCreateRequest requestModel);
 
 
 }

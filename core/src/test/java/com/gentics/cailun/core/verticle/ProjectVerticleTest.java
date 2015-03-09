@@ -5,11 +5,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.service.ProjectService;
+import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestUtil;
@@ -19,10 +23,35 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private ProjectVerticle projectVerticle;
 
+	@Autowired
+	private ProjectService projectService;
+
 	@Override
 	public AbstractRestVerticle getVerticle() {
 		return projectVerticle;
 	}
+
+	// Create Tests
+
+	@Test
+	public void testCreateProject() throws Exception {
+
+		final String name = "test12345";
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(name);
+
+		roleService.addPermission(info.getRole(), data().getCaiLunRoot(), PermissionType.CREATE);
+		String requestJson = new ObjectMapper().writeValueAsString(request);
+
+		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
+		String json = "{\"id\":54,\"uuid\":\"uuid-value\",\"project\":null,\"creator\":null,\"locked\":false,\"name\":\"test12345\",\"rootTag\":null,\"new\":false}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		assertNotNull(projectService.findByName(name));
+
+	}
+
+	// Read Tests
 
 	@Test
 	public void testReadProjectByUUID() throws Exception {
@@ -54,10 +83,13 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(json, response);
 	}
 
+	// Update Tests
 	@Test
-	public void testCreateProject() {
+	public void testUpdateProject() {
 		fail("Not yet implemented");
 	}
+
+	// Delete Tests
 
 	@Test
 	public void testDeleteProjectByUUID() {
@@ -66,11 +98,6 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteProjectByName() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testUpdateProject() {
 		fail("Not yet implemented");
 	}
 

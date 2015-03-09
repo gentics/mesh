@@ -23,4 +23,10 @@ public class CaiLunRootServiceImpl implements CaiLunRootService {
 	public void save(CaiLunRoot rootNode) {
 		rootRepository.save(rootNode);
 	}
+
+	@Override
+	public CaiLunRoot reload(CaiLunRoot rootNode) {
+		return rootRepository.findOne(rootNode.getId());
+
+	}
 }
