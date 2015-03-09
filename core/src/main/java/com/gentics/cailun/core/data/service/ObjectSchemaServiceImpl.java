@@ -68,7 +68,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
 			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
 			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
-			propertyTypeSchemaForRest.setDesciption(propertyTypeSchema.getDescription());
+			propertyTypeSchemaForRest.setDescription(propertyTypeSchema.getDescription());
 			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType().getName());
 			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
 		}

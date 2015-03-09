@@ -23,7 +23,7 @@ public class PropertyTypeSchemaResponse extends AbstractRestModel {
 		return desciption;
 	}
 
-	public void setDesciption(String desciption) {
+	public void setDescription(String desciption) {
 		this.desciption = desciption;
 	}
 

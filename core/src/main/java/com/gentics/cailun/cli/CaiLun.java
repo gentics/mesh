@@ -134,8 +134,8 @@ public class CaiLun {
 	}
 
 	private static String getVersion() {
-		// TODO extract from pom.xml metadata?
-		return "0.0.1";
+		Package pack = CaiLun.class.getPackage();
+		return pack.getImplementationTitle() + " " + pack.getImplementationVersion() + " by " + pack.getImplementationVendor();
 	}
 
 	/**

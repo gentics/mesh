@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.link;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.repository.generic.GenericContentRepository;

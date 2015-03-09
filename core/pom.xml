@@ -26,6 +26,14 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- Logging 
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		-->
+
 		<!-- Common Tools -->
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -146,18 +154,19 @@
 			<artifactId>neo4j-cypher-dsl</artifactId>
 			<version>${neo4j.cypher.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<version>${neo4j.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
+		<!-- <dependency> <groupId>org.neo4j.app</groupId> <artifactId>neo4j-server</artifactId> 
+			<version>${neo4j.version}</version> <scope>provided</scope> </dependency> -->
 
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -192,6 +201,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-apex</artifactId>
+			<version>${vertx.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 
@@ -202,6 +222,21 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
+					<execution>
+						<id>jar</id>
+						<configuration>
+							<excludePomFiles>true</excludePomFiles>
+							<archive>
+								<manifest>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+									<mainClass>com.gentics.cailun.cli.CaiLun</mainClass>
+								</manifest>
+								<manifestEntries>
+									<url>${project.url}</url>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</execution>
 					<execution>
 						<goals>
 							<goal>test-jar</goal>

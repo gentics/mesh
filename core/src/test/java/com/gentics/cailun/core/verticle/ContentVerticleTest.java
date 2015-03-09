@@ -6,8 +6,10 @@ import io.vertx.core.http.HttpMethod;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.test.TestDataProvider;
 import com.gentics.cailun.test.UserInfo;
@@ -27,9 +29,15 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateContentByPath() throws Exception {
 		UserInfo info = data().getUserInfo();
-		String requestJson = "{\"type\": \"content\",\"properties\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime again!\"},\"language\":\"en_US\"}";
+		ContentCreateRequest request = new ContentCreateRequest();
+		request.setType("content");
+		request.getProperties().put("filename", "new-page.html");
+		request.getProperties().put("name", "english content name");
+		request.getProperties().put("content", "Blessed mealtime again!");
+		request.setLanguageTag("en-US");
+
 		String response = request(info, HttpMethod.POST, "/api/v1/" + TestDataProvider.PROJECT_NAME + "/contents/subtag/newpage.html", 200, "OK",
-				requestJson);
+				new ObjectMapper().writeValueAsString(request));
 		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":null,\"properties\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime again!\"},\"type\":\"content\",\"language\":\"en_US\"}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
 	}

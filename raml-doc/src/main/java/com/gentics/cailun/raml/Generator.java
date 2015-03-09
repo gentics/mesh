@@ -11,6 +11,7 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
@@ -32,6 +33,7 @@ import com.gentics.cailun.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaUpdateRequest;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaListResponse;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
+import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
@@ -183,13 +185,18 @@ public class Generator {
 		schema.setUuid(getUUID());
 		schema.setDescription("Description of the schema");
 		schema.setName("extended-content");
-		// TODO properties
+		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
+		prop.setDescription("Html Content");
+		prop.setKey("content");
+		prop.setType(PropertyType.HTML.name());
+		schema.getPropertyTypeSchemas().add(prop);
 		write(schema);
 
 		ObjectSchemaResponse schema2 = new ObjectSchemaResponse();
 		schema2.setUuid(getUUID());
 		schema2.setDescription("Description of the schema2");
 		schema2.setName("extended-content-2");
+
 		// TODO properties
 
 		ObjectSchemaListResponse schemaList = new ObjectSchemaListResponse();

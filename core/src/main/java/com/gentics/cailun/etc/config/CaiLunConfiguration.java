@@ -20,7 +20,7 @@ public class CaiLunConfiguration {
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final String DEFAULT_NEO4VERTX_BASE_ADDRESS = "graph";
-	public static final String DEFAULT_NEO4VERTX_MODE = "gui";
+	public static final String DEFAULT_NEO4VERTX_MODE = "default";
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 
 	@JsonProperty("neo4j_config")

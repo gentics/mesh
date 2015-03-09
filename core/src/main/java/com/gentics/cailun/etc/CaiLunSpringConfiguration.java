@@ -55,7 +55,12 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 		vertx().deployVerticle(neo4VertxVerticle(), new DeploymentOptions().setConfig(configuration.getNeo4jConfiguration().getJsonConfig()),
 				handler -> {
 					log.info("Deployed neo4vertx => " + handler.result());
-					// TODO handle exceptions
+					if (!handler.failed()) {
+						log.error("Could not deploy neo4vertx. Aborting..");
+					}
+					// TODO safe exit
+
+				// TODO handle exceptions
 				latch.countDown();
 			});
 		latch.await();

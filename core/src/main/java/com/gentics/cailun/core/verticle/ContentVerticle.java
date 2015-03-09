@@ -34,6 +34,7 @@ import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.util.UUIDUtil;
@@ -180,7 +181,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		getRouter().routeWithRegex("\\/(.*)").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 			String projectName = getProjectName(rc);
 			String path = rc.request().params().get("param0");
-			ContentResponse requestModel = fromJson(rc, ContentResponse.class);
+			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
 			if (requestModel == null) {
 				String message = "Could not parse request";
 				rc.response().setStatusCode(404);
@@ -194,16 +195,17 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					rc.response().end(toJson(new GenericMessageResponse(message)));
 				}
 				Content content = null;
-				try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+//				try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 					content = contentService.save(projectName, path, requestModel);
 					if (content != null) {
 						rootTagForContent.addFile(content);
 						tagService.save(rootTagForContent);
-						tx.success();
+//						tx.success();
 					} else {
-						tx.failure();
+						rc.response().end("error");
+//						tx.failure();
 					}
-				}
+//				}
 				if (content != null) {
 					// Reload in order to update uuid field
 					content = contentService.reload(content);

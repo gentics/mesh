@@ -3,8 +3,7 @@ package com.gentics.cailun.core.rest.content.response;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 

@@ -2,18 +2,17 @@ package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
 
-import io.vertx.core.http.HttpMethod;
-
 import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;

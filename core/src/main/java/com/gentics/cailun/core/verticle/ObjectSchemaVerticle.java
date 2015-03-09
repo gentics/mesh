@@ -29,7 +29,7 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 	private ObjectSchemaService schemaService;
 
 	protected ObjectSchemaVerticle() {
-		super("types");
+		super("schemas");
 	}
 
 	@Override

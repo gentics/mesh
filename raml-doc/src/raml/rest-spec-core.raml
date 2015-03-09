@@ -132,38 +132,7 @@ schemas:
             example: !include json/UserResponse.example.json
 
 
-  /{username}:
-    is: [ localized ]
-    get:
-      description: Retrieves a **single user** with the given username
-      responses:
-        200:
-          body:
-            application/json:
-              schema: UserResponse
-              example: !include json/UserResponse.example.json
-    put:
-      description: Updates the **user** with the given username
-      body:
-        application/json:
-            schema: UserUpdateRequest
-            example: !include json/UserUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: UserResponse
-              example: !include json/UserResponse.example.json
-    delete:
-      description: Deletes the **user** with the given username
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
-
-  /urn:uuid:{uuid}:
+  /{uuid}:
     is: [ localized ]
     get:
       description: Retrieves a **single role** with the given uuid
@@ -173,7 +142,6 @@ schemas:
             application/json:
               schema: UserResponse
               example: !include json/UserResponse.example.json
-      
     put:
       description: Updates the **user** with the given uuid
       body:
@@ -194,7 +162,11 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
-    
+    /groups/{uuid}:
+      put:
+        description: Add the user with the given uuid to the group
+      delete:
+        description: Remove the user with the given uuid from the group
 
 /roles:
   is: [ localized ]
@@ -221,34 +193,7 @@ schemas:
             schema: RoleResponse
             example: !include json/RoleResponse.example.json
 
-
-
-  /{name}:
-    is: [ localized ]
-    get:
-      description: Retrieves a **single role** with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: RoleResponse
-              example: !include json/RoleResponse.example.json
-    put:
-      description: Updates a **single role** with the given name
-      body:
-        application/json:
-          schema: RoleUpdateRequest
-          example: !include json/RoleUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: RoleResponse
-              example: !include json/RoleResponse.example.json
-    delete:
-      description: Deletes a **single role** with the given name
-
-  /urn:uuid:{uuid}:
+  /{uuid}:
     is: [ localized ]
     get:
       description: Retrieves a **single role** with the given uuid
@@ -278,6 +223,11 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
+    /groups/{uuid}:
+      put:
+        description: Add the role to the group
+      delete:
+        description: Remove the role from the group
 
 /groups:
   is: [ localized ]
@@ -303,39 +253,8 @@ schemas:
           application/json:
             schema: GroupResponse
             example: !include json/GroupResponse.example.json
-
-  /{name}:
-    is: [ localized ]
-    get:
-      description: Retrieves a **single group** with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GroupResponse
-              example: !include json/GroupResponse.example.json
-    put:
-      description: Updates a **single group** with the given name
-      body:
-        application/json:
-          schema: GroupUpdateRequest
-          example: !include json/GroupUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GroupResponse
-              example: !include json/GroupResponse.example.json
-    delete:
-      description: Deletes a **single group** with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
   
-  /urn:uuid:{uuid}:
+  /{uuid}:
     is: [ localized ]
     get:
       description: Retrieves a **single group** with the given uuid
@@ -365,6 +284,17 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
+    /users/{uuid}:
+      put:
+        description: Add the user with the given uuid to the group
+      delete:
+        description: Remove the user with the given uuid from the group
+    /groups/{uuid}:
+      put:
+        description: Add the group with the given uuid to the group
+      delete:
+        description: Remove the group with the given uuid from the group
+
 
 /projects:
   is: [ localized ]
@@ -395,37 +325,7 @@ schemas:
             schema: ProjectResponse
             example: !include json/ProjectResponse.example.json
 
-  /{name}:
-    is: [ localized ]
-    get:
-      description: Retrieves the **project** with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ProjectResponse
-              example: !include json/ProjectResponse.example.json
-    put:
-      body:
-        application/json:
-          schema: ProjectUpdateRequest
-          example: !include json/ProjectUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ProjectResponse
-              example: !include json/ProjectResponse.example.json
-    delete:
-      description: Deletes the project with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
-
-  /urn:uuid:{uuid}:
+  /{uuid}:
     get:
       description: Retrieves the **project** with the given uuid
     put:
@@ -450,12 +350,12 @@ schemas:
 
 /{project_name}/contents:
   displayName: Contents
-  /{path}:
+  /{path_or_uuid}:
     is: [ localized ]
     uriParameters:
-      path:
+      path_or_uuid:
         description: | 
-             Path to the content
+             Can be either path to the content or the uuid of a single content.
         type: string
     get:
       description: Retrieves the **content** with the given path
@@ -508,50 +408,18 @@ schemas:
               example: !include json/GenericMessageResponse.example.json
         423:
 
-  /urn:uuid:{uuid}:
-    is: [ localized ]
-    get:
-      queryParameters:
-        lang:
-          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
-          example: /{project_name}/contents/?lang=de-DE,en-US
-        for_update:
-          description: The content will be locked when the *for_update* parameter is set to true.
-          example: /{project_name}/contents/?for_update=true
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ContentResponse
-              example: !include json/ContentResponse.example.json
-    put:
-      body:
-        application/json:
-          schema: ContentUpdateRequest
-          example: !include json/ContentUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ContentResponse
-              example: !include json/ContentResponse.example.json
-    delete:
-      description: Deletes the content with the given uuid
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
-
-
 /{project_name}/tags/:
   displayName: Tags
 
-  /{path}:
+  /{path_or_uuid}:
     is: [ localized ]
+    uriParameters:
+      path_or_uuid:
+        description: | 
+             Can be either path to the content or the uuid of a single tag.
+        type: string
     get:
-      description: Load the tag with the given path
+      description: Load the **tag** with the given path
       responses:
         200:
           body:
@@ -559,7 +427,7 @@ schemas:
               schema: TagResponse
               example: !include json/TagResponse.example.json
     post:
-      description: Create the **tag** with the given path
+      description: Create the **tag** in the given path. This does not work when a uuid has been specified instead of a valid path.
       body:
         application/json:
           schema: TagCreateRequest
@@ -591,61 +459,30 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
 
-  /urn:uuid:{uuid}:
-    is: [ localized ]
-    get:
-      description: Load the **tag** with the given uuid
-      responses:
-        200:
-          body:
-            application/json:
-              schema: TagResponse
-              example: !include json/TagResponse.example.json
-    put:
-      description: Update the **tag** with the given uuid
-      body:
-        application/json:
-          schema: TagUpdateRequest
-          example: !include json/TagUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: TagResponse
-              example: !include json/TagResponse.example.json
-    delete:
-      description: Delete the **tag** with the given uuid
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
-
+ 
 
 /{project_name}/search:
   is: [ localized ]
   displayName: Search
   get:
 
-/{project_name}/types:
+/schemas:
   is: [ localized ]
-  displayName: Types
+  displayName: Schemas
   get:
     is: [ paged ]
-    description: Retrieves a **list of object types**
+    description: Retrieves a **list of object schemas**
     responses:
       200:
         body:
           application/json:
-            schema: ObjectSchemaListResponse
             example: !include json/ObjectSchemaListResponse.example.json
       400:
         description: Bad Request
       500:
         description: Internal Server Error
   post:
-    description: Create the type
+    description: Create the schema
     body:
       application/json:
         schema: ObjectSchemaCreateRequest
@@ -654,44 +491,12 @@ schemas:
       200:
         body:
           application/json:
-            schema: ObjectSchemaResponse
             example: !include json/ObjectSchemaResponse.example.json
 
-  /{name}:
+  /{uuid}:
     is: [ localized ]
     get:
-      description: Retrieves the **type** with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ObjectSchemaResponse
-              example: !include json/ObjectSchemaResponse.example.json
-    put:
-      description: Updates the **type** with the given name
-      body:
-        application/json:
-          schema: ObjectSchemaUpdateRequest
-          example: !include json/ObjectSchemaUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ObjectSchemaResponse
-              example: !include json/ObjectSchemaResponse.example.json
-    delete:
-      description: Deletes the **type** with the given name
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
-
-  /urn:uuid:{uuid}:
-    is: [ localized ]
-    get:
-      description: Retrieves the **type** with the given uuid
+      description: Retrieves the **schema** with the given uuid
       responses:
         200:
           body:
@@ -699,7 +504,7 @@ schemas:
               schema: ObjectSchemaResponse
               example: !include json/ObjectSchemaResponse.example.json
     put: 
-      description: Updates the **type** with the given uuid
+      description: Updates the **schema** with the given uuid
       body:
         application/json:
           schema: ObjectSchemaUpdateRequest
@@ -708,21 +513,25 @@ schemas:
         200:
           body:
             application/json:
-              schema: ObjectSchemaResponse
               example: !include json/ObjectSchemaResponse.example.json
     delete:
-      description: Deletes the **type** with the given uuid.
+      description: Deletes the **schema** with the given uuid.
       responses:
         200:
           body:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
+    /projects/{uuid}:
+      put:
+        description: Add the schema to the project 
+      delete:
+        description: Remove the schema from the project
 
 /{project_name}/binaries:
   displayName: Binaries
 
-  /{path}:
+  /{path_or_uuid}:
     is: [ localized ]
     get:
       headers:
@@ -736,21 +545,6 @@ schemas:
       description: Update the **binary file** with the given path
     delete:
       description: Delete the **binary file** with the given path
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
-
-  /urn:uuid:{uuid}:
-    is: [ localized ]
-    get:
-      description: Load the **binary file** with the given uuid
-    put:
-      description: Update the **binary file** with the given uuid
-    delete:
-      description: Delete the **binary file** with the given uuid
       responses:
         200:
           body:
