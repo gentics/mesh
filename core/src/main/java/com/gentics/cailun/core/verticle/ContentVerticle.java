@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,8 +83,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuidOrName").method(DELETE).handler(rh -> {
-			String uuidOrName = rh.request().params().get("uuidOrName");
+		route("/:uuid").method(DELETE).handler(rh -> {
+			String uuid = rh.request().params().get("uuid");
 			// contentRepository.delete(uuid);
 			});
 

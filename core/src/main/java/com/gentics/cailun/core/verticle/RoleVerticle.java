@@ -19,12 +19,13 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
+import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
-import com.gentics.cailun.util.UUIDUtil;
 
 @Component
 @Scope("singleton")
@@ -33,6 +34,9 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
 	private RoleService roleService;
+
+	@Autowired
+	private GroupService groupService;
 
 	public RoleVerticle() {
 		super("roles");
@@ -48,12 +52,30 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addRoleGroupHandlers();
+	}
+
+	private void addRoleGroupHandlers() {
+		route("/:roleUuid/groups/:groupUuid").method(PUT).handler(rc -> {
+			String roleUuid = rc.request().params().get("roleUuid");
+			String groupUuid = rc.request().params().get("groupUuid");
+			Role role = roleService.findByUUID(roleUuid);
+			Group group = groupService.findByUUID(groupUuid);
+		});
+		route("/:roleUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
+			String roleUuid = rc.request().params().get("roleUuid");
+			String groupUuid = rc.request().params().get("groupUuid");
+			Role role = roleService.findByUUID(roleUuid);
+			Group group = groupService.findByUUID(groupUuid);
+		});
+
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuidOrName").method(DELETE).handler(rc -> {
-			String uuidOrName = rc.request().params().get("uuidOrName");
-			if (StringUtils.isEmpty(uuidOrName)) {
+		route("/:uuid").method(DELETE).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			if (StringUtils.isEmpty(uuid)) {
 				// TODO i18n entry
 				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
 				rc.response().setStatusCode(400);
@@ -62,12 +84,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			}
 
 			// Try to load the role
-			Role role = null;
-			if (UUIDUtil.isUUID(uuidOrName)) {
-				role = roleService.findByUUID(uuidOrName);
-			} else {
-				role = roleService.findByName(uuidOrName);
-			}
+			Role role = roleService.findByUUID(uuid);
 
 			// Delete the role or show 404
 			if (role != null) {
@@ -80,7 +97,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				rc.response().end(toJson(new GenericMessageResponse("OK")));
 				return;
 			} else {
-				String message = i18n.get(rc, "role_not_found", uuidOrName);
+				String message = i18n.get(rc, "role_not_found", uuid);
 				rc.response().setStatusCode(404);
 				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
@@ -89,14 +106,14 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuidOrName")
+		route("/:uuid")
 				.method(PUT)
 				.consumes(APPLICATION_JSON)
 				.handler(rc -> {
-					String uuidOrName = rc.request().params().get("uuidOrName");
-					if (StringUtils.isEmpty(uuidOrName)) {
+					String uuid = rc.request().params().get("uuid");
+					if (StringUtils.isEmpty(uuid)) {
 						// TODO i18n entry
-						String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
+						String message = i18n.get(rc, "request_parameter_missing", "uuid");
 						rc.response().setStatusCode(400);
 						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
@@ -111,12 +128,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					}
 
 					// Try to load the role
-					Role role = null;
-					if (UUIDUtil.isUUID(uuidOrName)) {
-						role = roleService.findByUUID(uuidOrName);
-					} else {
-						role = roleService.findByName(uuidOrName);
-					}
+					Role role = roleService.findByUUID(uuid);
 
 					// Update the role or show 404
 					if (role != null) {
@@ -149,7 +161,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						// TODO better response
 						rc.response().end(toJson(new GenericMessageResponse("OK")));
 					} else {
-						String message = i18n.get(rc, "role_not_found", uuidOrName);
+						String message = i18n.get(rc, "role_not_found", uuid);
 						rc.response().setStatusCode(404);
 						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
@@ -159,17 +171,12 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-		route("/:uuidOrName").method(GET).handler(rc -> {
-			String uuidOrName = rc.request().params().get("uuidOrName");
-			if (uuidOrName == null) {
+		route("/:uuid").method(GET).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			if (uuid == null) {
 				// TODO handle this case
 			}
-			Role role = null;
-			if (UUIDUtil.isUUID(uuidOrName)) {
-				role = roleService.findByUUID(uuidOrName);
-			} else {
-				role = roleService.findByName(uuidOrName);
-			}
+			Role role = roleService.findByUUID(uuid);
 
 			if (role != null) {
 				RoleResponse restRole = roleService.transformToRest(role);
@@ -177,7 +184,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				rc.response().end(toJson(restRole));
 			} else {
 				// TODO i18n error message?
-				String message = "Group not found {" + uuidOrName + "}";
+				String message = "Group not found {" + uuid + "}";
 				rc.response().setStatusCode(404);
 				rc.response().end(toJson(new GenericMessageResponse(message)));
 			}

@@ -4,7 +4,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.Session;
 
 import java.util.HashMap;
@@ -31,7 +30,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
-import com.gentics.cailun.util.UUIDUtil;
 
 @Component
 @Scope("singleton")
@@ -58,42 +56,56 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addUserGroupHandlers();
+	}
+
+	private void addUserGroupHandlers() {
+		route("/:userUuid/groups/:groupUuid").method(PUT).handler(rc -> {
+			String userUuid = rc.request().params().get("userUuid");
+			String groupUuid = rc.request().params().get("groupUuid");
+			User user = userService.findByUUID(userUuid);
+			Group group = groupService.findByUUID(groupUuid);
+
+			rc.response().end("Not yet implemented");
+		});
+
+		route("/:userUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
+			String userUuid = rc.request().params().get("userUuid");
+			String groupUuid = rc.request().params().get("groupUuid");
+			User user = userService.findByUUID(userUuid);
+			Group group = groupService.findByUUID(groupUuid);
+
+			rc.response().end("Not yet implemented");
+		});
 	}
 
 	private void addReadHandler() {
 
-		Route getRoute = route("/:uuidOrName").method(GET).handler(rc -> {
-			String uuidOrName = rc.request().params().get("uuidOrName");
+		route("/:uuid").method(GET).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
 
-			if (StringUtils.isEmpty(uuidOrName)) {
-				rc.next();
-				return;
-			}
-
-			/*
-			 * Load user by uuid or username
-			 */
-			User user = null;
-			if (UUIDUtil.isUUID(uuidOrName)) {
-				user = userService.findByUUID(uuidOrName);
-			} else {
-				user = userService.findByUsername(uuidOrName);
-			}
-
-			if (user != null) {
-				if (!checkPermission(rc, user, PermissionType.READ)) {
+			// TODO do we really need this?
+				if (StringUtils.isEmpty(uuid)) {
+					rc.next();
 					return;
 				}
 
-				UserResponse restUser = userService.transformToRest(user);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(restUser));
-			} else {
-				String message = i18n.get(rc, "user_not_found", uuidOrName);
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-			}
-		});
+				User user = userService.findByUUID(uuid);
+				if (user != null) {
+					if (!checkPermission(rc, user, PermissionType.READ)) {
+						return;
+					}
+
+					UserResponse restUser = userService.transformToRest(user);
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(restUser));
+				} else {
+					String message = i18n.get(rc, "user_not_found", uuid);
+					rc.response().setStatusCode(404);
+					rc.response().end(toJson(new GenericMessageResponse(message)));
+				}
+			});
 
 		/*
 		 * List all users when no parameter was specified
@@ -115,23 +127,18 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuidOrName").method(DELETE).handler(rc -> {
-			String uuidOrName = rc.request().params().get("uuidOrName");
-			if (StringUtils.isEmpty(uuidOrName)) {
+		route("/:uuid").method(DELETE).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			if (StringUtils.isEmpty(uuid)) {
 				// TODO i18n entry
-				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
+				String message = i18n.get(rc, "request_parameter_missing", "uuid");
 				rc.response().setStatusCode(400);
 				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			}
 
 			// Try to load the user
-			User user = null;
-			if (UUIDUtil.isUUID(uuidOrName)) {
-				user = userService.findByUUID(uuidOrName);
-			} else {
-				user = userService.findByUsername(uuidOrName);
-			}
+			User user = userService.findByUUID(uuid);
 
 			// Delete the user or show 404
 			if (user != null) {
@@ -144,7 +151,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				rc.response().end(toJson(new GenericMessageResponse("OK")));
 				return;
 			} else {
-				String message = i18n.get(rc, "user_not_found", uuidOrName);
+				String message = i18n.get(rc, "user_not_found", uuid);
 				rc.response().setStatusCode(404);
 				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
@@ -154,14 +161,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuidOrName")
+		route("/:uuid")
 				.method(PUT)
 				.consumes(APPLICATION_JSON)
 				.handler(rc -> {
-					String uuidOrName = rc.request().params().get("uuidOrName");
-					if (StringUtils.isEmpty(uuidOrName)) {
+					String uuid = rc.request().params().get("uuid");
+					if (StringUtils.isEmpty(uuid)) {
 						// TODO i18n entry
-						String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
+						String message = i18n.get(rc, "request_parameter_missing", "uuid");
 						rc.response().setStatusCode(400);
 						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;
@@ -196,12 +203,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					}
 
 					// Try to load the user
-					User user = null;
-					if (UUIDUtil.isUUID(uuidOrName)) {
-						user = userService.findByUUID(uuidOrName);
-					} else {
-						user = userService.findByUsername(uuidOrName);
-					}
+					User user = userService.findByUUID(uuid);
 
 					// Update the user or show 404
 					if (user != null) {
@@ -278,7 +280,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						rc.response().end(toJson(new GenericMessageResponse("OK")));
 						return;
 					} else {
-						String message = i18n.get(rc, "user_not_found", uuidOrName);
+						String message = i18n.get(rc, "user_not_found", uuid);
 						rc.response().setStatusCode(404);
 						rc.response().end(toJson(new GenericMessageResponse(message)));
 						return;

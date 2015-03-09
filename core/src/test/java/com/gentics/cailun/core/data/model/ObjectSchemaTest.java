@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.test.AbstractDBTest;

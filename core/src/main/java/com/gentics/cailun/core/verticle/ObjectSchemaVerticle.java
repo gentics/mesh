@@ -12,12 +12,13 @@ import java.util.Map;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.ObjectSchema;
+import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
+import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 
 @Component
@@ -27,6 +28,9 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private ObjectSchemaService schemaService;
+	
+	@Autowired
+	private ProjectService projectService;
 
 	protected ObjectSchemaVerticle() {
 		super("schemas");
@@ -44,23 +48,48 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 
+		addSchemaProjectHandlers();
+
+	}
+
+	private void addSchemaProjectHandlers() {
+		route("/:schemaUUid/projects/:projectUuid").method(PUT).handler(rc -> {
+			String schemaUUid = rc.request().params().get("schemaUUid");
+			String projectUuid = rc.request().params().get("projectUuid");
+			
+			ObjectSchema schema = schemaService.findByUUID(schemaUUid);
+			Project project = projectService.findByUUID(projectUuid);
+		});
+
+		route("/:schemaUUid/projects/:projectUuid").method(DELETE).handler(rc -> {
+			String schemaUUid = rc.request().params().get("schemaUUid");
+			String projectUuid = rc.request().params().get("projectUuid");
+			
+			ObjectSchema schema = schemaService.findByUUID(schemaUUid);
+			Project project = projectService.findByUUID(projectUuid);
+			
+		});
 	}
 
 	private void addCreateHandler() {
-		route("/:uuidOrName").method(POST).handler(rh -> {
+		route("/").method(POST).handler(rc -> {
 
 		});
 
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuidOrName").method(PUT).handler(rc -> {
+		route("/:uuid").method(PUT).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			ObjectSchema schema = schemaService.findByUUID(uuid);
 
 		});
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuidOrName").method(DELETE).handler(rc -> {
+		route("/:uuid").method(DELETE).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			ObjectSchema schema = schemaService.findByUUID(uuid);
 
 		});
 
@@ -84,7 +113,7 @@ public class ObjectSchemaVerticle extends AbstractProjectRestVerticle {
 			return;
 		});
 
-		route("/:uuidOrName").method(GET).handler(rh -> {
+		route("/:uuid").method(GET).handler(rh -> {
 
 			String projectName = getProjectName(rh);
 			String uuidOrName = rh.request().params().get("uuidOrName");

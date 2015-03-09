@@ -3,8 +3,6 @@ package com.gentics.cailun.core.rest.schema.response;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PropertyKey;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 

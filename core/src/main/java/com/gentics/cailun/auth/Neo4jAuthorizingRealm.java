@@ -28,7 +28,6 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.UserService;
-import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
