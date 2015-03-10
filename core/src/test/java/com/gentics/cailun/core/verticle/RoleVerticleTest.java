@@ -2,6 +2,7 @@ package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -102,16 +103,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadRoleByName() throws Exception {
-		UserInfo info = data().getUserInfo();
-		Role adminRole = info.getRole();
-		assertNotNull("The UUID of the role must not be null.", adminRole.getUuid());
-		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + adminRole.getName(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_role\"}";
-		TestUtil.assertEqualsSanitizedJson(json, response, RoleResponse.class);
-	}
-
-	@Test
 	public void testReadRoles() throws Exception {
 		// Role with no permission
 		Role extraRole1 = new Role("extra role");
@@ -188,14 +179,52 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertNull("The user should have been deleted", roleService.findByUUID(info.getRole().getUuid()));
 	}
 
-	@Test
-	public void testDeleteRoleByName() throws Exception {
-		roleService.addPermission(info.getRole(), info.getRole(), PermissionType.DELETE);
+	// Role Group Testcases - PUT / Add
 
-		String response = request(info, HttpMethod.DELETE, "/api/v1/roles/" + info.getRole().getName(), 200, "OK");
-		String json = "{\"msg\":\"OK\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		assertNull("The user should have been deleted", roleService.findByUUID(info.getRole().getUuid()));
+	@Test
+	public void testAddRoleToGroupWithPerm() {
+		fail("Not yet implemented");
 	}
 
+	@Test
+	public void testAddRoleToGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddRoleToGroupWithBogusUUID() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddRoleToGroupWithoutRoleReadPerm() {
+		fail("Not yet implemented");
+	}
+
+	// Role Group Testcases - DELETE / Remove
+
+	@Test
+	public void testRemoveRoleFromGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveRoleFromGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveRoleFromGroupWithBogusGroupID() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveRoleFromLastGroup() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveRoleFromGroupWithoutRoleReadPerm() {
+		fail("Not yet implemented");
+	}
 }

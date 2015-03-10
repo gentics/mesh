@@ -44,15 +44,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadGroupByName() throws Exception {
-		Group group = info.getGroup();
-		assertNotNull("The name of the group must not be null.", group.getName());
-		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getName(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\"}";
-		TestUtil.assertEqualsSanitizedJson(json, response, GroupResponse.class);
-	}
-
-	@Test
 	public void testCreateGroup() {
 		fail("Not yet implemented");
 	}
@@ -69,6 +60,82 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateGroup() {
+		fail("Not yet implemented");
+	}
+
+	// Group Role Testcases - PUT / Add
+
+	@Test
+	public void testAddRoleToGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddRoleToGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddRoleToGroupWithBogusRoleUUID() {
+		fail("Not yet implemented");
+	}
+
+	// Group Role Testcases - DELETE / Remove
+
+	@Test
+	public void testRemoveRoleFromGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveRoleFromGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	// Group User Testcases - PUT / Add
+
+	@Test
+	public void testAddUserToGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddUserToGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	// Group User Testcases - DELETE / Remove
+	@Test
+	public void testRemoveUserFromGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveUserFromGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	// Group SubGroup Testcases - PUT / Add
+
+	@Test
+	public void testAddGroupToGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddGroupToGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	// Group SubGroup Testcases - DELETE / Remove
+
+	@Test
+	public void testRemoveGroupToGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveGroupToGroupWithoutPerm() {
 		fail("Not yet implemented");
 	}
 

@@ -44,17 +44,12 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadSchemaByInvalidName() {
+	public void testReadSchemaByInvalidUUID() {
 		fail("Not yet implemented");
 	}
 
 	@Test
 	public void testDeleteSchemaByUUID() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testDeleteSchemaByName() {
 		fail("Not yet implemented");
 	}
 
@@ -82,4 +77,26 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		fail("Not yet implemented");
 	}
 
+	// Schema Project Testcases - PUT / Add
+
+	@Test
+	public void testAddSchemaToProjectWithPerm() {
+
+	}
+
+	@Test
+	public void testAddSchemaToProjectWithoutPerm() {
+
+	}
+
+	// Schema Project Testcases - DELETE / Remove
+	@Test
+	public void testRemoveSchemaToProjectWithPerm() {
+
+	}
+
+	@Test
+	public void testRemoveSchemaToProjectWithoutPerm() {
+
+	}
 }

@@ -3,6 +3,7 @@ package com.gentics.cailun.core.verticle;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -423,6 +424,49 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String json = "{\"message\":\"Missing permission on object {" + user.getUuid() + "}\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNotNull("The user should not have been deleted", userService.findByUUID(user.getUuid()));
+	}
+
+	// User / Group Methods
+
+	@Test
+	public void testAddUserToGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddUserToGroupWithNoPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddUserToGroupWithBogusGroupId() {
+		fail("Not yet implemented");
+	}
+
+	// Delete tests
+	@Test
+	public void testRemoveUserFromGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveUserFromGroupWithoutPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveSameUserFromGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveUserFromLastGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveUserFromGroupWithBogusID() {
+		fail("Not yet implemented");
 	}
 
 }
