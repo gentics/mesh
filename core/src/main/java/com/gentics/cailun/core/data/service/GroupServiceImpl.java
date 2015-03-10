@@ -47,7 +47,7 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 //		Set<Group> children = groupRepository.findChildren(group);
 		Set<Group> children = group.getGroups();
 		for (Group childGroup : children) {
-			restGroup.getChildGroups().add(childGroup.getName());
+			restGroup.getGroups().add(childGroup.getName());
 		}
 
 		return restGroup;

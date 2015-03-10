@@ -168,6 +168,7 @@ schemas:
       delete:
         description: Remove the user with the given uuid from the group
 
+
 /roles:
   is: [ localized ]
   displayName: Roles
@@ -240,6 +241,10 @@ schemas:
               application/json:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
+    /chmod/{uuid}:
+      put:
+      delete:
+
 /groups:
   is: [ localized ]
   displayName: Groups
@@ -330,6 +335,15 @@ schemas:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
 
+/copy/{uuid}/to/{uuid}:
+  displayName: Copy
+  put:
+    description: Copy the object to the second object. Include all nested objects during this process. (TODO enhance documentation)
+
+
+/move/{uuid}/to/{uuid}:
+  displayName: Move
+  put:
 
 /projects:
   is: [ localized ]
@@ -398,9 +412,9 @@ schemas:
         lang:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
           example: /{project_name}/contents/?lang=de-DE,en-US
-        for_update:
-          description: The content will be locked when the *for_update* parameter is set to true.
-          example: /{project_name}/contents/?for_update=true
+        update:
+          description: The content will be locked when the *update* parameter is set to true.
+          example: /{project_name}/contents/?update=true
       responses:
         200:
           body:
@@ -455,6 +469,9 @@ schemas:
         type: string
     get:
       description: Load the **tag** with the given path
+      queryParameters:
+        depth: 
+          description: Determines the depth of traversal for fetching nested tags.
       responses:
         200:
           body:

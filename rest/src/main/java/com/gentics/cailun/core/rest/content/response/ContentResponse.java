@@ -16,6 +16,8 @@ public class ContentResponse extends AbstractRestModel {
 	@JsonProperty("language")
 	private String languageTag;
 
+	private long order = 0;
+
 	public ContentResponse() {
 	}
 
@@ -51,6 +53,14 @@ public class ContentResponse extends AbstractRestModel {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public long getOrder() {
+		return order;
+	}
+
+	public void setOrder(long order) {
+		this.order = order;
 	}
 
 }
