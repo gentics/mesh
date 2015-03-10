@@ -40,7 +40,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public AbstractRestVerticle getVerticle() {
 		return userVerticle;
 	}
-	
+
 	// Read Tests
 
 	@Test
@@ -56,20 +56,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagByUsername() throws Exception {
-		User user = info.getUser();
-		assertNotNull("The username of the user must not be null.", user.getUsername());
-		assertNotNull(userService.findByUsername(user.getUsername()));
-
-		roleService.addPermission(info.getRole(), user, PermissionType.READ);
-
-		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-	}
-
-	@Test
-	public void testReadByUsernameWithNoPermission() throws Exception {
+	public void testReadByUUIDWithNoPermission() throws Exception {
 		User user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
@@ -77,7 +64,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
-		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUsername(), 403, "Forbidden");
+		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
 		String json = "{\"message\":\"Missing permission on object {" + user.getUuid() + "}\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
@@ -121,7 +108,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		restUser.addGroup(info.getGroup().getName());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"msg\":\"OK\"}";
+		String json = "{\"message\":\"OK\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
@@ -142,7 +129,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		restUser.addGroup(info.getGroup().getName());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"msg\":\"OK\"}";
+		String json = "{\"message\":\"OK\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
@@ -244,7 +231,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		restUser.addGroup(newGroup.getName());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"msg\":\"OK\"}";
+		String json = "{\"message\":\"OK\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// Reload the group and verify that the user was added to the group
@@ -278,7 +265,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		restUser.addGroup(info.getGroup().getName());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"msg\":\"OK\"}";
+		String json = "{\"message\":\"OK\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		newGroup = groupService.reload(newGroup);
@@ -417,25 +404,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	// Delete tests
 
 	@Test
-	public void testDeleteUserByUsername() throws Exception {
-		User user = info.getUser();
-
-		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUsername(), 200, "OK");
-		String json = "{\"msg\":\"OK\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
-	}
-
-	@Test
 	public void testDeleteUserByUUID() throws Exception {
 		User user = info.getUser();
 
 		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		String json = "{\"msg\":\"OK\"}";
+		String json = "{\"message\":\"OK\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
 	}
