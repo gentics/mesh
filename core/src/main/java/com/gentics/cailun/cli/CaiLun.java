@@ -3,6 +3,7 @@ package com.gentics.cailun.cli;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.impl.SLF4JLogDelegateFactory;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
@@ -18,11 +19,17 @@ import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
 public class CaiLun {
 
-	private static final Logger log = LoggerFactory.getLogger(CaiLun.class);
+	private static final Logger log;
 
 	private CaiLunCustomLoader<Vertx> verticleLoader;
 
 	private static CaiLun instance;
+
+	static {
+		// Use slf4j instead of jul
+		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		log = LoggerFactory.getLogger(CaiLun.class);
+	}
 
 	public static CaiLun getInstance() {
 		if (instance == null) {
@@ -126,7 +133,8 @@ public class CaiLun {
 
 	private String getVertxVersion() {
 		// TODO extract from pom.xml metadata?
-		return "3.0.0-milestone2";
+		Package pack = Vertx.class.getPackage();
+		return pack.getImplementationVersion();
 	}
 
 	private static String infoLine(String text) {
@@ -135,7 +143,7 @@ public class CaiLun {
 
 	private static String getVersion() {
 		Package pack = CaiLun.class.getPackage();
-		return pack.getImplementationTitle() + " " + pack.getImplementationVersion() + " by " + pack.getImplementationVendor();
+		return pack.getImplementationVersion();
 	}
 
 	/**

@@ -26,13 +26,12 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Logging 
+		<!-- Logging -->
 		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<scope>runtime</scope>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.2</version>
 		</dependency>
-		-->
 
 		<!-- Common Tools -->
 		<dependency>
@@ -45,6 +44,12 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.2.5</version>
+		</dependency>
+
 
 		<!-- Workaround to fix fat-jar jersey issue with neo4j browser -->
 		<dependency>

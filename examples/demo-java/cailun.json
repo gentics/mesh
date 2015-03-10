@@ -1,17 +1,10 @@
 {
   "verticles" : {
-    "com.gentics.cailun.core.verticle.ContentVerticle" : {},
-    "com.gentics.cailun.verticle.admin.AdminVerticle": {
-        "config": {
-            "map": {
-                "gitPullChecker": false,
-                "gitPullCheckerInterval": 200
-            }
-        }
+    "com.gentics.cailun.core.verticle.ContentVerticle" : {}
     }
   },
   "neo4j_config" : {
-    "mode" : "gui",
+    "mode" : "default",
     "path" : "/tmp/graphdb",
     "webserver_bind_address" : "0.0.0.0",
     "rest_url" : null,
