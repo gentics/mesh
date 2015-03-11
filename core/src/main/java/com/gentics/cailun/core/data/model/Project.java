@@ -35,8 +35,8 @@ public class Project extends GenericNode {
 	}
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = GenericTag.class)
-	private GenericTag rootTag;
+	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = RootTag.class)
+	private RootTag rootTag;
 
 	@RelatedTo(type = BasicRelationships.HAS_OBJECT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
 	private Set<ObjectSchema> objectSchema = new HashSet<>();
@@ -49,11 +49,11 @@ public class Project extends GenericNode {
 		this.name = name;
 	}
 
-	public GenericTag getRootTag() {
+	public RootTag getRootTag() {
 		return rootTag;
 	}
 
-	public void setRootTag(GenericTag rootTag) {
+	public void setRootTag(RootTag rootTag) {
 		this.rootTag = rootTag;
 	}
 

@@ -50,40 +50,6 @@
 	// };
 	// }
 
-	//		
-//		String parts[] = path.split("/");
-////		GenericTag rootTag = project.getRootTag();
-//		GenericTag rootTag= null;
-//		// try (Transaction tx = graphDb.beginTx()) {
-//		Node currentNode = template.getPersistentState(rootTag);
-//		// Node currentNode = graphDb.getNodeById(rootTag.getId());
-//		for (int i = 0; i < parts.length - 1; i++) {
-//			String part = parts[i];
-//			Node nextNode = getChildNodeTagFromNodeTag(currentNode, part);
-//			if (nextNode != null) {
-//				currentNode = nextNode;
-//			} else {
-//				currentNode = null;
-//				break;
-//			}
-//		}
-//		if (currentNode != null) {
-//			// Finally search for the page and assume the last part of the request as filename
-//			Node pageNode = getChildNodePageFromNodeTag(currentNode, parts[parts.length - 1]);
-//			if (pageNode != null) {
-//				// return pageNode.getId();
-//				return null;
-//			} else {
-//				return null;
-//			}
-//			// }
-//		}
-//
-//		System.out.println("looking for " + path + " in project " + projectName);
-//		return null;
-//	}
-
-
 	// /**
 	// * Add a handler for removing a tag with a specific name from a page.
 	// */

@@ -26,6 +26,7 @@ import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
+import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
@@ -175,7 +176,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		groupService.save(guests);
 
 		// Tags
-		Tag rootTag = new Tag();
+		RootTag rootTag = new RootTag();
 		tagService.setName(rootTag, english, "/");
 
 		Tag homeFolder = new Tag();

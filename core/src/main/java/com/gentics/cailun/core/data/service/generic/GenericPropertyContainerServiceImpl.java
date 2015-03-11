@@ -8,6 +8,7 @@ import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 
 public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> {
+
 	/**
 	 * Adds or updates the i18n value for the given language and key with the given value.
 	 * 

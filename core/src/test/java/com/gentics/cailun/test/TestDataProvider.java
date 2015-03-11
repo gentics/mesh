@@ -19,6 +19,7 @@ import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
+import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -79,7 +80,7 @@ public class TestDataProvider {
 
 	private CaiLunRoot root;
 
-	private Tag rootTag;
+	private RootTag rootTag;
 
 	private Language english;
 
@@ -166,9 +167,8 @@ public class TestDataProvider {
 			rootService.save(root);
 
 			// Root Tag
-			rootTag = new Tag();
-			tagService.setName(rootTag, english, "/");
-			rootTag = tagService.save(rootTag);
+			rootTag = new RootTag();
+			rootTag = (RootTag) tagService.save(rootTag);
 			dummyProject.setRootTag(rootTag);
 			dummyProject = projectService.save(dummyProject);
 			dummyProject = projectService.reload(dummyProject);
@@ -237,10 +237,10 @@ public class TestDataProvider {
 
 	}
 
-	private Tag addTag(Tag rootTag, String germanName, String englishName) {
+	private Tag addTag(Tag rootTag, String englishName, String germanName) {
 		Tag tag = new Tag();
-		tagService.setName(tag, english, "subtag");
-		tagService.setName(tag, german, "unterTag");
+		tagService.setName(tag, english, englishName);
+		tagService.setName(tag, german, germanName);
 		tag.setProject(dummyProject);
 		tag.setCreator(userInfo.getUser());
 		tag = tagService.save(tag);

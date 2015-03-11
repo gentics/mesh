@@ -8,7 +8,6 @@ import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.RoutingContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -116,18 +115,27 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	private void pathGetHandler(RoutingContext rc) {
 		String projectName = getProjectName(rc);
-		rc.response().end("Not implemented");
+		String path = rc.request().params().get("param0");
+		List<String> languages = getSelectedLanguages(rc);
+
+		Tag tag = tagService.findByProjectPath(projectName, path);
+		if (tag != null) {
+			if (!checkPermission(rc, tag, PermissionType.READ)) {
+				return;
+			}
+			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
+			return;
+		} else {
+			rc.response().setStatusCode(404);
+			rc.response().end(toJson(new GenericMessageResponse("Tag could not be found.")));
+			return;
+		}
 	}
 
 	private void uuidGetHandler(RoutingContext rc) {
 		String uuid = rc.request().params().get("param0");
 		String projectName = getProjectName(rc);
-
-		// TODO remove debug code
-		// TODO handle language by get parameter
 		List<String> languages = getSelectedLanguages(rc);
-		// languages = new ArrayList<>();
-		// languages.add("en");
 
 		Tag tag = tagService.findByUUID(projectName, uuid);
 		if (tag != null) {
