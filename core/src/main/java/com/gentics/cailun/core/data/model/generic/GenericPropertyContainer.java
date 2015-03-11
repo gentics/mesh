@@ -78,11 +78,14 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public I18NProperties getI18NProperties(Language language) {
+		if (language == null) {
+			return null;
+		}
 		for (Translated translation : i18nTranslations) {
 			if (translation.getLanguageTag() == null) {
 				continue;
 			}
-			if (translation.getLanguageTag().equalsIgnoreCase(language.getLanguageTag())) {
+			if (translation.getLanguageTag().equals(language.getLanguageTag())) {
 				return translation.getI18nValue();
 			}
 		}

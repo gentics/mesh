@@ -14,8 +14,9 @@ public class Language extends GenericNode {
 	protected String name;
 
 	/**
-	 * RFC5646 specific language tag
+	 * http://en.wikipedia.org/wiki/IETF_language_tag#Syntax_of_language_tags[IETF language tag]
 	 */
+	@Indexed(unique = true)
 	private String languageTag;
 
 	@SuppressWarnings("unused")

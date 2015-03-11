@@ -10,31 +10,33 @@ import com.gentics.cailun.core.rest.user.response.UserResponse;
 
 public class TagResponse extends AbstractRestModel {
 
-	private String name;
+	private String type;
 
-	@JsonProperty("language")
-	private String languageTag;
+	private long order = 0;
 
 	private UserResponse creator;
-	private Map<String, String> properties = new HashMap<>();
+	private Map<String, Map<String, String>> properties = new HashMap<>();
 
 	public TagResponse() {
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Map<String, String> getProperties() {
+	public Map<String, Map<String, String>> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(Map<String, String> properties) {
+	public void setProperties(Map<String, Map<String, String>> properties) {
 		this.properties = properties;
+	}
+
+	public void addProperty(String languageKey, String key, String value) {
+		Map<String, String> map = properties.get(languageKey);
+		if (map == null) {
+			map = new HashMap<>();
+			properties.put(languageKey, map);
+		}
+		if (value != null) {
+			map.put(key, value);
+		}
 	}
 
 	public UserResponse getCreator() {
@@ -43,6 +45,22 @@ public class TagResponse extends AbstractRestModel {
 
 	public void setCreator(UserResponse creator) {
 		this.creator = creator;
+	}
+
+	public long getOrder() {
+		return order;
+	}
+
+	public void setOrder(long order) {
+		this.order = order;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

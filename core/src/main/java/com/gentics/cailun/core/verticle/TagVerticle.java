@@ -1,15 +1,26 @@
 package com.gentics.cailun.core.verticle;
 
+import static com.gentics.cailun.util.UUIDUtil.isUUID;
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.ext.apex.core.Route;
+import io.vertx.ext.apex.core.RoutingContext;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
-import com.gentics.cailun.core.data.model.generic.GenericContent;
-import com.gentics.cailun.core.repository.generic.GenericContentRepository;
+import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.service.TagService;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -22,15 +33,12 @@ import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 @SpringVerticle
 public class TagVerticle extends AbstractProjectRestVerticle {
 
-	@Autowired
-	@Qualifier("genericContentRepository")
-	private GenericContentRepository<GenericContent> pageRepository;
-
-//	@Autowired
-//	private GlobalGenericTagRepository<GenericTag, GenericFile> tagRepository;
+	// @Autowired
+	// @Qualifier("genericContentRepository")
+	// private GenericContentRepository<GenericContent> contentRepository;
 
 	@Autowired
-	GraphDatabaseService graphDb;
+	private TagService tagService;
 
 	public TagVerticle() {
 		super("tags");
@@ -38,57 +46,109 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		// addAddTagStructureHandler();
+		addCRUDHandlers();
 	}
 
-	// private void addAddTagStructureHandler() {
-	// route("/add/:tagPath").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-	//
-	// PageCreateRequest request = null;
-	// // fromJson(rc, PageCreateRequest.class);
-	// String tagPath = rc.request().params().get("tagPath");
-	// // final @PathParam("tagPath") String tagPath
-	// ExecutionEngine engine = new ExecutionEngine(graphDb);
-	//
-	// String query = transformPathToCypher(tagPath);
-	// System.out.println(query);
-	// // WITH tag,page MERGE (tag)-[r:TAGGED]->(page) RETURN r
-	// try (Transaction tx = graphDb.beginTx()) {
-	// ExecutionResult result = engine.execute(query);
-	// }
-	// });
-	// }
+	private void addCRUDHandlers() {
+		addPathHandler();
+	}
 
-	// private String transformPathToCypher(String tagPath) {
-	// String parts[] = tagPath.split("/");
-	// StringBuilder builder = new StringBuilder();
-	// List<String> tagNames = new ArrayList<>();
-	// int n = 1;
-	// for (String part : parts) {
-	// String tagName = "tag" + n;
-	// tagNames.add(tagName);
-	// builder.append("MERGE (tag" + n + ":Tag { name:'" + part + "'}) ");
-	// n++;
-	// }
-	//
-	// int rels = 0;
-	// for (int i = 0; i < tagNames.size(); i++) {
-	// if (i == tagNames.size() - 1) {
-	// builder.append("(" + tagNames.get(i) + ")");
-	// continue;
-	// } else {
-	// builder.append("(" + tagNames.get(i) + ")-[r" + i + ":TAGGED]->");
-	// rels++;
-	// }
-	// }
-	// builder.append(" RETURN ");
-	// for (int i = 0; i < rels; i++) {
-	// builder.append("r" + i);
-	// if (i < rels - 1) {
-	// builder.append(",");
-	// }
-	// }
-	// return builder.toString();
-	// }
+	private void addPathHandler() {
+		Route route = getRouter().routeWithRegex("\\/(.*)");
+
+		// TODO add .produces(APPLICATION_JSON)
+		route.method(PUT).handler(rc -> {
+			String path = rc.request().params().get("param0");
+			if (isUUID(path)) {
+				uuidPutHandler(rc);
+			} else {
+				pathPutHandler(rc);
+			}
+		});
+
+		// TODO add produces(APPLICATION_JSON).
+		route.method(DELETE).handler(rc -> {
+			String path = rc.request().params().get("param0");
+			if (isUUID(path)) {
+				uuidDeleteHandler(rc);
+			} else {
+				pathDeleteHandler(rc);
+			}
+		});
+
+		// TODO add produces(APPLICATION_JSON).
+		route.method(POST).handler(rc -> {
+			String path = rc.request().params().get("param0");
+			if (isUUID(path)) {
+				String msg = "";
+				// TODO unify this error
+				rc.response().setStatusCode(500);
+				rc.response().end(toJson(new GenericMessageResponse(msg)));
+				return;
+			} else {
+				pathPostHandler(rc);
+			}
+		});
+
+		// TODO add .produces(APPLICATION_JSON)
+		route.method(GET).handler(rc -> {
+			String path = rc.request().params().get("param0");
+			if (isUUID(path)) {
+				uuidGetHandler(rc);
+			} else {
+				pathGetHandler(rc);
+			}
+		});
+
+	}
+
+	private void pathPostHandler(RoutingContext rc) {
+		rc.response().end("Not implemented");
+	}
+
+	private void pathPutHandler(RoutingContext rc) {
+		rc.response().end("Not implemented");
+	}
+
+	private void pathDeleteHandler(RoutingContext rc) {
+		rc.response().end("Not implemented");
+	}
+
+	private void pathGetHandler(RoutingContext rc) {
+		String projectName = getProjectName(rc);
+		rc.response().end("Not implemented");
+	}
+
+	private void uuidGetHandler(RoutingContext rc) {
+		String uuid = rc.request().params().get("param0");
+		String projectName = getProjectName(rc);
+
+		// TODO remove debug code
+		// TODO handle language by get parameter
+		List<String> languages = getSelectedLanguages(rc);
+		// languages = new ArrayList<>();
+		// languages.add("en");
+
+		Tag tag = tagService.findByUUID(projectName, uuid);
+		if (tag != null) {
+			if (!checkPermission(rc, tag, PermissionType.READ)) {
+				return;
+			}
+			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
+		} else {
+			rc.response().setStatusCode(404);
+			rc.response().end(toJson(new GenericMessageResponse("Tag could not be found.")));
+			return;
+		}
+	}
+
+	private void uuidDeleteHandler(RoutingContext rc) {
+		rc.response().end("Not implemented");
+
+	}
+
+	private void uuidPutHandler(RoutingContext rc) {
+		rc.response().end("Not implemented");
+	}
 
 }

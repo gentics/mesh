@@ -147,14 +147,15 @@ public class TestDataProvider {
 
 			root = new CaiLunRoot();
 			dummyProject = new Project(PROJECT_NAME);
+			dummyProject = projectService.save(dummyProject);
 
 			// User, Groups, Roles
 			userInfo = createUserInfo("dummy_user", "Tony", "Stark");
 
 			// Contents, Tags, Projects
-			english = new Language("english", "en_US");
+			english = new Language("english", "en");
 			english = languageService.save(english);
-			german = new Language("german", "de_DE");
+			german = new Language("german", "de");
 			german = languageService.save(german);
 
 			root.setRootGroup(userInfo.getGroup());
@@ -240,6 +241,8 @@ public class TestDataProvider {
 		Tag tag = new Tag();
 		tagService.setName(tag, english, "subtag");
 		tagService.setName(tag, german, "unterTag");
+		tag.setProject(dummyProject);
+		tag.setCreator(userInfo.getUser());
 		tag = tagService.save(tag);
 		rootTag.addTag(tag);
 		tagService.save(rootTag);

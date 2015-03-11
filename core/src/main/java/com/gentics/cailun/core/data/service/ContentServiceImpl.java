@@ -1,7 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,8 +10,6 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.data.model.PropertyType;
-import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.service.generic.GenericContentServiceImpl;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
@@ -42,28 +39,28 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	}
 
 	@Override
-	public ContentResponse getReponseObject(Content content, List<String> languages) {
+	public ContentResponse transformToRest(Content content, List<String> languages) {
 		if (languages.size() == 0) {
 			// TODO return page with all languages?
 			return null;
 		}
 		// Return page with flatted properties since only one language has been specified
 		else if (languages.size() == 1) {
-			String languageKey = languages.iterator().next();
-			Language language = languageService.findByName(languageKey);
+			String languageTag = languages.iterator().next();
+			Language language = languageService.findByLanguageTag(languageTag);
 			if (language == null) {
 				// TODO fail early
 			}
+
 			ContentResponse response = new ContentResponse();
-			response.setLanguageTag(language.getLanguageTag());
 			response.setUuid(content.getUuid());
 			response.setType(content.getType());
-			response.addProperty("name", content.getName(language));
-			response.addProperty("filename", content.getFilename(language));
+			response.addProperty(languageTag, "name", content.getName(language));
+			response.addProperty(languageTag, "filename", content.getFilename(language));
 			UserResponse restUser = userService.transformToRest(content.getCreator());
 			response.setAuthor(restUser);
-			response.addProperty("content", content.getContent(language));
-			response.addProperty("teaser", content.getTeaser(language));
+			response.addProperty(languageTag, "content", content.getContent(language));
+			response.addProperty(languageTag, "teaser", content.getTeaser(language));
 			return response;
 		} else {
 			// TODO return all languages
@@ -78,7 +75,9 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 		// TODO check permissions
 		if (requestModel.getUUID() == null) {
 			Project project = projectService.findByName(projectName);
-			Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+			//Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+			Language language = null;
+			// TODO save given languages individually, TODO how can we delete a single language? 
 			if (language == null || requestModel.getType() == null) {
 				// TODO handle this case
 				throw new NullPointerException("No language or type specified");
@@ -96,18 +95,18 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 			Content content = new Content();
 			content.setProject(project);
 			content.setType(requestModel.getType());
-			for (Entry<String, String> entry : requestModel.getProperties().entrySet()) {
-				PropertyTypeSchema propertyTypeSchema = objectSchema.getPropertyTypeSchema(entry.getKey());
-				// TODO we should abort when we encounter a property with an unknown key.
-				// Determine whether the property is an i18n one or not
-				if (propertyTypeSchema == null) {
-					content.setProperty(entry.getKey(), entry.getValue());
-				} else if (propertyTypeSchema.getType().equals(PropertyType.I18N_STRING)) {
-					setProperty(content, language, entry.getKey(), entry.getValue());
-				} else {
-					// TODO handle this case
-				}
-			}
+//			for (Entry<String, String> entry : requestModel.getProperties().entrySet()) {
+//				PropertyTypeSchema propertyTypeSchema = objectSchema.getPropertyTypeSchema(entry.getKey());
+//				// TODO we should abort when we encounter a property with an unknown key.
+//				// Determine whether the property is an i18n one or not
+//				if (propertyTypeSchema == null) {
+//					content.setProperty(entry.getKey(), entry.getValue());
+//				} else if (propertyTypeSchema.getType().equals(PropertyType.I18N_STRING)) {
+//					setProperty(content, language, entry.getKey(), entry.getValue());
+//				} else {
+//					// TODO handle this case
+//				}
+//			}
 			return save(content);
 
 		} else {

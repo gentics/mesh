@@ -1,5 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
+import static com.gentics.cailun.util.UUIDUtil.isUUID;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -36,7 +37,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
-import com.gentics.cailun.util.UUIDUtil;
 
 /**
  * The page verticle adds rest endpoints for manipulating pages and related objects.
@@ -47,8 +47,6 @@ import com.gentics.cailun.util.UUIDUtil;
 public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
-
-	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
 
 	@Autowired
 	private ContentService contentService;
@@ -110,7 +108,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				languages.add("english");
 
 				// Determine whether the request path could be an uuid
-				if (UUIDUtil.isUUID(path)) {
+				if (isUUID(path)) {
 					String uuid = path;
 					Content content = contentService.findByUUID(projectName, uuid);
 					if (content != null) {
@@ -142,34 +140,11 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void handleResponse(RoutingContext rc, Content content, List<String> languages) {
-		ContentResponse responseObject = contentService.getReponseObject(content, languages);
+		ContentResponse responseObject = contentService.transformToRest(content, languages);
 		// resolveLinks(content);
 		String json = toJson(responseObject);
 		rc.response().setStatusCode(200);
 		rc.response().end(json);
-	}
-
-	/**
-	 * Extracts the lang parameter values from the query
-	 * 
-	 * @param rc
-	 * @return
-	 */
-	private List<String> getSelectedLanguages(RoutingContext rc) {
-		String query = rc.request().query();
-		Map<String, String> queryPairs;
-		try {
-			queryPairs = splitQuery(query);
-		} catch (UnsupportedEncodingException e) {
-			log.error("Could not decode query string.", e);
-			return Collections.emptyList();
-		}
-		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
-		if (value == null) {
-			return Collections.emptyList();
-		}
-		return new ArrayList<>(Arrays.asList(value.split(",")));
-
 	}
 
 	/**
@@ -209,7 +184,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					// Reload in order to update uuid field
 					content = contentService.reload(content);
 					// TODO simplify language handling - looks a bit chaotic
-					Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+					//Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+					Language language= null;
 					// TODO check for npe - or see above
 					handleResponse(rc, content, Arrays.asList(language.getName()));
 					// rc.response().end("jow" + " " + path + " " + projectName);

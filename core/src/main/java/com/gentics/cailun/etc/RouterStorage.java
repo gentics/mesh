@@ -14,6 +14,7 @@ import io.vertx.ext.apex.core.SessionStore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
@@ -181,7 +182,7 @@ public class RouterStorage {
 			});
 
 			getAPIRouter().mountSubRouter("/" + name, projectRouter);
-			mountSubRoutersForProjectRouter(projectRouter);
+			mountSubRoutersForProjectRouter(projectRouter, name);
 		}
 		return projectRouter;
 	}
@@ -190,10 +191,12 @@ public class RouterStorage {
 	 * Mount all registered project subrouters on the project router.
 	 * 
 	 * @param projectRouter
+	 * @param projectRouterName
+	 *            Name of the project router
 	 */
-	private void mountSubRoutersForProjectRouter(Router projectRouter) {
+	private void mountSubRoutersForProjectRouter(Router projectRouter, String projectRouterName) {
 		for (String mountPoint : projectSubRouters.keySet()) {
-			log.info("Mounting subrouter {" + mountPoint + "} onto given project router.");
+			log.info("Mounting subrouter {" + mountPoint + "} onto given project router. {" + projectRouterName + "}");
 			Router projectSubRouter = projectSubRouters.get(mountPoint);
 			projectRouter.mountSubRouter("/" + mountPoint, projectSubRouter);
 		}
@@ -206,9 +209,9 @@ public class RouterStorage {
 	 * @param mountPoint
 	 */
 	public void mountRouterInProjects(Router localRouter, String mountPoint) {
-		for (Router projectRouter : projectRouters.values()) {
-			log.info("Mounting router onto project router with mountpoint {" + mountPoint + "}");
-			projectRouter.mountSubRouter("/" + mountPoint, localRouter);
+		for (Entry<String, Router> projectRouterEntry : projectRouters.entrySet()) {
+			log.info("Mounting router onto project router {" + projectRouterEntry.getKey() + "} with mountpoint {" + mountPoint + "}");
+			projectRouterEntry.getValue().mountSubRouter("/" + mountPoint, localRouter);
 		}
 	}
 

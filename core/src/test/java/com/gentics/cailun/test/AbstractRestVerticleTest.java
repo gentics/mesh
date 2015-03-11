@@ -91,7 +91,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			String authStringEnc = info.getUser().getUsername() + ":" + info.getPassword();
 			byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
 			request.headers().add("Authorization", "Basic " + new String(authEncBytes));
-
+			request.headers().add("Accept", "application/json");
 			if (requestBody != null) {
 				Buffer buffer = Buffer.buffer();
 				buffer.appendString(requestBody);

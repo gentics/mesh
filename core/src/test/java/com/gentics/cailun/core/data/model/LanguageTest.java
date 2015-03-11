@@ -24,10 +24,14 @@ public class LanguageTest extends AbstractDBTest {
 	@Test
 	public void testCreation() {
 		final String languageName = "klingon";
-		Language lang = new Language(languageName, "i-klingon");
+		final String languageTag = "tlh";
+		Language lang = new Language(languageName, languageTag);
 		languageRepository.save(lang);
 		lang = languageRepository.findOne(lang.getId());
 		assertNotNull(lang);
 		assertEquals(languageName, lang.getName());
+
+		assertNotNull(languageRepository.findByLanguageTag(languageTag));
 	}
+
 }

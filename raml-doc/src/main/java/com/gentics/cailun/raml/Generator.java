@@ -226,14 +226,14 @@ public class Generator {
 	}
 
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
+		String lang = "english";
 		ContentResponse content = new ContentResponse();
 		content.setUuid(getUUID());
 		content.setAuthor(getUser());
-		content.setLanguageTag("de-DE");
-		content.addProperty("name", "Name for language tag de-DE");
-		content.addProperty("filename", "dummy-content.de.html");
-		content.addProperty("teaser", "Dummy teaser for de-DE");
-		content.addProperty("content", "Content for language tag de-DE");
+		content.addProperty(lang, "name", "Name for language tag de-DE");
+		content.addProperty(lang, "filename", "dummy-content.de.html");
+		content.addProperty(lang, "teaser", "Dummy teaser for de-DE");
+		content.addProperty(lang, "content", "Content for language tag de-DE");
 		write(content);
 
 		ContentUpdateRequest contentUpdate = new ContentUpdateRequest();
@@ -244,7 +244,6 @@ public class Generator {
 		ContentCreateRequest contentCreate = new ContentCreateRequest();
 		contentCreate.setAuthor(getUser());
 		contentCreate.setType("content");
-		contentCreate.setLanguageTag("en-US");
 		write(contentCreate);
 
 	}

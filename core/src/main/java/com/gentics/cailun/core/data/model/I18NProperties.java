@@ -58,6 +58,10 @@ public class I18NProperties extends AbstractPersistable {
 		return (String) properties.getProperty(key);
 	}
 
+	public DynamicProperties getProperties() {
+		return properties;
+	}
+
 	/**
 	 * Removes the property with the given key.
 	 * 
