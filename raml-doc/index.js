@@ -13,7 +13,6 @@ mkdirp(outputDir, function(err) {
 	}});
 
 
-var source = "src/raml/rest-spec-core.raml";
 var onSuccess = function(html) {
 	console.log("OK");
 	fs.writeFile(outputDir + "index.html", html, function(err) {
@@ -31,6 +30,23 @@ var onError = function(e) {
 	process.exit(10); 
 }
 
+
+
+var source   = "src/raml/rest-spec-core.raml";
+var template = "src/raml/template.handlebars";
+var resourceTemplate = "src/raml/resource.handlebars";
 var buildSource = "target/raml2html/spec.raml";
-fs.createReadStream(source).pipe(fs.createWriteStream(buildSource));
-raml2html.render(buildSource, config, onSuccess, onError);
+
+//TODO cleanup this code
+var resourceTemplateSource = ""; 
+fs.readFile(resourceTemplate, 'utf8', function(err, data) {
+  resourceTemplateSource = data;
+});
+
+fs.readFile(template, 'utf8', function(err, data) {
+  config['template'] = data;
+  config['partials']['resource'] = resourceTemplateSource;
+  fs.createReadStream(source).pipe(fs.createWriteStream(buildSource));
+  raml2html.render(buildSource, config, onSuccess, onError);
+});
+
