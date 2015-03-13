@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
+import static com.gentics.cailun.util.JsonUtils.fromJson;
+import static com.gentics.cailun.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -26,6 +28,8 @@ import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
+import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
 @Scope("singleton")
@@ -88,9 +92,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 			// Delete the role or show 404
 			if (role != null) {
-				if (!checkPermission(rc, role, PermissionType.DELETE)) {
-					return;
-				}
+				failOnMissingPermission(rc, role, PermissionType.DELETE);
 				roleService.delete(role);
 				rc.response().setStatusCode(200);
 				// TODO better response
@@ -98,9 +100,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				return;
 			} else {
 				String message = i18n.get(rc, "role_not_found", uuid);
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
+				throw new EntityNotFoundException(message);
 			}
 		});
 	}
@@ -132,9 +132,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 					// Update the role or show 404
 					if (role != null) {
-						if (!checkPermission(rc, role, PermissionType.UPDATE)) {
-							return;
-						}
+						failOnMissingPermission(rc, role, PermissionType.UPDATE);
 
 						if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
 							if (roleService.findByName(requestModel.getName()) != null) {
@@ -153,18 +151,14 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 							// TODO log
 							// TODO correct msg?
 							// TODO i18n
-							rc.response().setStatusCode(409);
-							rc.response().end(toJson(new GenericMessageResponse("Role can't be saved. Unknown error.")));
-							return;
+							throw new HttpStatusCodeErrorException(409, "Role can't be saved. Unknown error.",e);
 						}
 						rc.response().setStatusCode(200);
 						// TODO better response
 						rc.response().end(toJson(new GenericMessageResponse("OK")));
 					} else {
 						String message = i18n.get(rc, "role_not_found", uuid);
-						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
+						throw new EntityNotFoundException(message);
 					}
 
 				});

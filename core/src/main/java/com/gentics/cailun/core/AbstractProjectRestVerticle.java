@@ -1,9 +1,11 @@
 package com.gentics.cailun.core;
 
+import io.vertx.ext.apex.core.Router;
+import io.vertx.ext.apex.core.RoutingContext;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -12,9 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.cailun.core.verticle.ContentVerticle;
 import com.gentics.cailun.etc.RouterStorage;
-
-import io.vertx.ext.apex.core.Router;
-import io.vertx.ext.apex.core.RoutingContext;
 
 /**
  * A cailun project rest verticle is a verticle that provides rest endpoints for all registered projects. The router for this verticle will automatically be

@@ -6,7 +6,7 @@ import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 
 /**
- * Neo4j Cailun page resolver. This class will resolve cailun link placeholders.
+ * This class will resolve cailun link placeholders.
  * 
  * @author johannes2
  *

@@ -1,5 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
+import static com.gentics.cailun.util.JsonUtils.toJson;
 import static com.gentics.cailun.util.UUIDUtil.isUUID;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -21,6 +22,8 @@ import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.path.Path;
 
 /**
@@ -33,10 +36,6 @@ import com.gentics.cailun.path.Path;
 @Scope("singleton")
 @SpringVerticle
 public class TagVerticle extends AbstractProjectRestVerticle {
-
-	// @Autowired
-	// @Qualifier("genericContentRepository")
-	// private GenericContentRepository<GenericContent> contentRepository;
 
 	@Autowired
 	private TagService tagService;
@@ -107,15 +106,15 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void pathPostHandler(RoutingContext rc) {
-		rc.response().end("Not implemented");
+		throw new HttpStatusCodeErrorException(501, "Not implemented");
 	}
 
 	private void pathPutHandler(RoutingContext rc) {
-		rc.response().end("Not implemented");
+		throw new HttpStatusCodeErrorException(501, "Not implemented");
 	}
 
 	private void pathDeleteHandler(RoutingContext rc) {
-		rc.response().end("Not implemented");
+		throw new HttpStatusCodeErrorException(501, "Not implemented");
 	}
 
 	private void pathGetHandler(RoutingContext rc) {
@@ -124,18 +123,21 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		List<String> languages = getSelectedLanguages(rc);
 
 		Path tagPath = tagService.findByProjectPath(projectName, path);
-		Tag tag = tagService.projectTo(tagPath.getLast().getNode(), Tag.class);
-		languages.add(tagPath.getLast().getLanguageTag());
-		if (tag != null) {
-			if (!checkPermission(rc, tag, PermissionType.READ)) {
-				return;
+		if (tagPath.getLast() != null) {
+
+			Tag tag = tagService.projectTo(tagPath.getLast().getNode(), Tag.class);
+			if (tag == null) {
+				// TODO i18n
+				throw new EntityNotFoundException("Could not find tag for path {" + path + "}");
 			}
+			languages.add(tagPath.getLast().getLanguageTag());
+
+			failOnMissingPermission(rc, tag, PermissionType.READ);
 			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 			return;
 		} else {
-			rc.response().setStatusCode(404);
-			rc.response().end(toJson(new GenericMessageResponse("Tag could not be found.")));
-			return;
+			// TODO i18n
+			throw new EntityNotFoundException("Could not find tag for path {" + path + "}");
 		}
 	}
 
@@ -146,24 +148,21 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 		Tag tag = tagService.findByUUID(projectName, uuid);
 		if (tag != null) {
-			if (!checkPermission(rc, tag, PermissionType.READ)) {
-				return;
-			}
+			failOnMissingPermission(rc, tag, PermissionType.READ);
 			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 		} else {
-			rc.response().setStatusCode(404);
-			rc.response().end(toJson(new GenericMessageResponse("Tag could not be found.")));
-			return;
+			// TODO i18n
+			String message = "Tag could not be found.";
+			throw new EntityNotFoundException(message);
 		}
 	}
 
 	private void uuidDeleteHandler(RoutingContext rc) {
-		rc.response().end("Not implemented");
-
+		throw new HttpStatusCodeErrorException(501, "Not implemented");
 	}
 
 	private void uuidPutHandler(RoutingContext rc) {
-		rc.response().end("Not implemented");
+		throw new HttpStatusCodeErrorException(501, "Not implemented");
 	}
 
 }

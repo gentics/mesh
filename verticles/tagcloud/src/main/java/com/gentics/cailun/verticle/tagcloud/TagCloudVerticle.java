@@ -1,5 +1,6 @@
 package com.gentics.cailun.verticle.tagcloud;
 
+import static com.gentics.cailun.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import java.util.List;

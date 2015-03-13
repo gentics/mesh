@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
+import static com.gentics.cailun.util.JsonUtils.fromJson;
+import static com.gentics.cailun.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -30,6 +32,8 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
+import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
 @Scope("singleton")
@@ -67,7 +71,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			User user = userService.findByUUID(userUuid);
 			Group group = groupService.findByUUID(groupUuid);
 
-			rc.response().end("Not yet implemented");
+			throw new HttpStatusCodeErrorException(501, "Not implemented");
 		});
 
 		route("/:userUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
@@ -76,7 +80,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			User user = userService.findByUUID(userUuid);
 			Group group = groupService.findByUUID(groupUuid);
 
-			rc.response().end("Not yet implemented");
+			throw new HttpStatusCodeErrorException(501, "Not implemented");
 		});
 	}
 
@@ -92,18 +96,15 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 
 				User user = userService.findByUUID(uuid);
-				if (user != null) {
-					if (!checkPermission(rc, user, PermissionType.READ)) {
-						return;
-					}
-
+				if (user == null) {
+					String message = i18n.get(rc, "user_not_found", uuid);
+					throw new EntityNotFoundException(message);
+				} else {
+					failOnMissingPermission(rc, user, PermissionType.READ);
 					UserResponse restUser = userService.transformToRest(user);
 					rc.response().setStatusCode(200);
 					rc.response().end(toJson(restUser));
-				} else {
-					String message = i18n.get(rc, "user_not_found", uuid);
-					rc.response().setStatusCode(404);
-					rc.response().end(toJson(new GenericMessageResponse(message)));
+					return;
 				}
 			});
 
@@ -132,9 +133,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				// TODO i18n entry
 				String message = i18n.get(rc, "request_parameter_missing", "uuid");
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
+				throw new HttpStatusCodeErrorException(400, message);
 			}
 
 			// Try to load the user
@@ -142,9 +141,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			// Delete the user or show 404
 			if (user != null) {
-				if (!checkPermission(rc, user, PermissionType.DELETE)) {
-					return;
-				}
+				failOnMissingPermission(rc, user, PermissionType.DELETE);
 				userService.delete(user);
 				rc.response().setStatusCode(200);
 				// TODO better response
@@ -152,9 +149,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				return;
 			} else {
 				String message = i18n.get(rc, "user_not_found", uuid);
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
+				throw new EntityNotFoundException(message);
 			}
 
 		});
@@ -167,20 +162,15 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				.handler(rc -> {
 					String uuid = rc.request().params().get("uuid");
 					if (StringUtils.isEmpty(uuid)) {
-						// TODO i18n entry
 						String message = i18n.get(rc, "request_parameter_missing", "uuid");
-						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
+						throw new HttpStatusCodeErrorException(400, message);
 					}
 
 					UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 					if (requestModel == null) {
-						// TODO exception would be nice, add i18n
+						// TODO add i18n
 						String message = "Could not parse request json.";
-						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
+						throw new HttpStatusCodeErrorException(400, message);
 					}
 					if (requestModel.getGroups().isEmpty()) {
 						// TODO i18n
@@ -195,9 +185,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						Group parentGroup = groupService.findByName(groupName);
 						if (parentGroup == null) {
 							// TODO i18n
-							rc.response().setStatusCode(400);
-							rc.response().end(toJson(new GenericMessageResponse("Could not find parent group {" + groupName + "}")));
-							return;
+							String message = "Could not find parent group {" + groupName + "}";
+							throw new HttpStatusCodeErrorException(400, message);
 						}
 						groupsForUser.add(parentGroup);
 					}
@@ -207,18 +196,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 					// Update the user or show 404
 					if (user != null) {
-						if (!checkPermission(rc, user, PermissionType.UPDATE)) {
-							return;
-						}
+						failOnMissingPermission(rc, user, PermissionType.UPDATE);
 
 						if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
 							if (userService.findByUsername(requestModel.getUsername()) != null) {
-								rc.response().setStatusCode(409);
 								// TODO i18n
-								rc.response().end(
-										toJson(new GenericMessageResponse("A user with the username {" + requestModel.getUsername()
-												+ "} already exists. Please choose a different username.")));
-								return;
+								String message = "A user with the username {" + requestModel.getUsername()
+										+ "} already exists. Please choose a different username.";
+								throw new HttpStatusCodeErrorException(409, message);
 							}
 							user.setUsername(requestModel.getUsername());
 						}
@@ -228,7 +213,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						for (Group group : user.getGroups()) {
 							// Check whether the user should be removed from the group
 							if (!groupsForUser.contains(group)) {
-								if (!checkPermission(rc, group, PermissionType.UPDATE)) {
+								if (!hasPermission(rc, group, PermissionType.UPDATE)) {
 									return;
 								} else {
 									groupsToBeRemoved.add(group);
@@ -243,9 +228,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 						// Add users to the remaining set of groups
 						for (Group group : groupsForUser) {
-							if (!checkPermission(rc, group, PermissionType.UPDATE)) {
-								return;
-							}
+							failOnMissingPermission(rc, group, PermissionType.UPDATE);
 							user.getGroups().add(group);
 						}
 
@@ -271,9 +254,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 							// TODO log
 							// TODO correct msg?
 							// TODO i18n
-							rc.response().setStatusCode(409);
-							rc.response().end(toJson(new GenericMessageResponse("User can't be saved. Unknown error.")));
-							return;
+							throw new HttpStatusCodeErrorException(409, "User can't be saved. Unknown error.");
 						}
 						rc.response().setStatusCode(200);
 						// TODO better response
@@ -281,9 +262,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						return;
 					} else {
 						String message = i18n.get(rc, "user_not_found", uuid);
-						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
+						throw new EntityNotFoundException(message);
 					}
 
 				});
@@ -301,10 +280,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 			if (StringUtils.isEmpty(requestModel.getUsername()) || StringUtils.isEmpty(requestModel.getPassword())) {
-				rc.response().setStatusCode(400);
 				// TODO i18n
-				rc.response().end(toJson(new GenericMessageResponse("Either username or password was not specified.")));
-				return;
+				String message = "Either username or password was not specified.";
+				throw new HttpStatusCodeErrorException(400, message);
 			}
 
 			// TODO extract groups from json?
@@ -318,9 +296,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 
 				// TODO such implicit permissions must be documented
-				if (!checkPermission(rc, parentGroup, PermissionType.UPDATE)) {
-					return;
-				}
+				failOnMissingPermission(rc, parentGroup, PermissionType.UPDATE);
 				groupsForUser.add(parentGroup);
 			}
 
@@ -333,9 +309,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			if (userService.findByUsername(requestModel.getUsername()) != null) {
 				// TODO i18n
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse("Conflicting username")));
-				return;
+				throw new HttpStatusCodeErrorException(409, "Conflicting username");
 			}
 
 			User user = userService.transformFromRest(requestModel);

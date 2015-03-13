@@ -1,11 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +10,9 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
-import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.data.service.generic.GenericContentServiceImpl;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
-import com.google.common.collect.Lists;
 
 @Component
 @Transactional

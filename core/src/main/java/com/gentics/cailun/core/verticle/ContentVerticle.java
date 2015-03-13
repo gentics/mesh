@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
+import static com.gentics.cailun.util.JsonUtils.fromJson;
+import static com.gentics.cailun.util.JsonUtils.toJson;
 import static com.gentics.cailun.util.UUIDUtil.isUUID;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;

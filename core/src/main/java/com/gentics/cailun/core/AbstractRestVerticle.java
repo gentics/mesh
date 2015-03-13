@@ -7,7 +7,6 @@ import io.vertx.ext.apex.core.Router;
 import io.vertx.ext.apex.core.RoutingContext;
 import io.vertx.ext.apex.core.Session;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.LinkedHashMap;
@@ -15,12 +14,11 @@ import java.util.Map;
 
 import org.apache.http.entity.ContentType;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.error.InvalidPermissionException;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
 public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
@@ -29,7 +27,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	protected Router localRouter = null;
 	protected String basePath;
-	protected ObjectMapper mapper;
 	protected HttpServer server;
 
 	protected AbstractRestVerticle(String basePath) {
@@ -38,7 +35,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	@Override
 	public void start() throws Exception {
-		this.mapper = new ObjectMapper();
 		this.localRouter = setupLocalRouter();
 		if (localRouter == null) {
 			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
@@ -86,29 +82,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		return localRouter.route();
 	}
 
-	protected <T> String toJson(T obj) {
-		try {
-			return mapper.writeValueAsString(obj);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "ERROR";
-	}
-
-	@SuppressWarnings("unchecked")
-	protected <T> T fromJson(RoutingContext rc, Class<?> classOfT) {
-		try {
-			String body = rc.getBodyAsString();
-			return (T) mapper.readValue(body, classOfT);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-		// TODO compare with jackson
-		// return (T) GSON.fromJson(rc.getBodyAsString(), classOfT);
-
-	}
-
 	/**
 	 * Returns the cailun auth service which can be used to authenticate resources.
 	 * 
@@ -118,19 +91,28 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		return springConfig.authService();
 	}
 
-	protected boolean checkPermission(RoutingContext rc, GenericNode node, PermissionType type) {
+	/**
+	 * Check the permission and throw an invalid permission exception when no matching permission could be found.
+	 * 
+	 * @param rc
+	 * @param node
+	 * @param type
+	 * @return
+	 */
+	protected void failOnMissingPermission(RoutingContext rc, GenericNode node, PermissionType type) throws InvalidPermissionException {
+		if (!hasPermission(rc, node, type)) {
+			//TODO i18n
+			throw new InvalidPermissionException("Missing permission on object {" + node.getUuid() + "}");
+		}
+	}
+
+	protected boolean hasPermission(RoutingContext rc, GenericNode node, PermissionType type) {
 		if (node != null) {
 			Session session = rc.session();
 			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(node, type));
 			if (perm) {
 				return true;
-			} else {
-				rc.response().setStatusCode(403);
-				// TODO i18n
-				rc.response().end(toJson(new GenericMessageResponse("Missing permission on object {" + node.getUuid() + "}")));
-				return false;
 			}
-
 		}
 		return false;
 	}

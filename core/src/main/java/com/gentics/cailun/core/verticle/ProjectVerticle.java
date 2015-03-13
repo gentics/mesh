@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
+import static com.gentics.cailun.util.JsonUtils.fromJson;
+import static com.gentics.cailun.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -22,6 +24,8 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
+import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
 @Scope("singleton")
@@ -57,19 +61,15 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					String uuid = rc.request().params().get("uuid");
 					if (StringUtils.isEmpty(uuid)) {
 						// TODO i18n entry
-						String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
-						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
+						String message = i18n.get(rc, "request_parameter_missing", "uuid");
+						throw new HttpStatusCodeErrorException(400, message);
 					}
 
 					ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 					if (requestModel == null) {
 						// TODO exception would be nice, add i18n
 						String message = "Could not parse request json.";
-						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
+						throw new HttpStatusCodeErrorException(400, message);
 					}
 
 					// Try to load the project
@@ -77,9 +77,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 					// Update the project or show 404
 					if (project != null) {
-						if (!checkPermission(rc, project, PermissionType.UPDATE)) {
-							return;
-						}
+						failOnMissingPermission(rc, project, PermissionType.UPDATE);
 
 						if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
 							if (projectService.findByName(requestModel.getName()) != null) {
@@ -109,9 +107,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 						return;
 					} else {
 						String message = i18n.get(rc, "project_not_found", uuid);
-						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
+						throw new EntityNotFoundException(message);
 					}
 
 				});
@@ -134,15 +130,12 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				if (StringUtils.isEmpty(requestModel.getName())) {
 					rc.response().setStatusCode(400);
 					// TODO i18n
-					rc.response().end(toJson(new GenericMessageResponse("Mandatory field name was not specified.")));
-					return;
+					throw new HttpStatusCodeErrorException(400, "Mandatory field name was not specified.");
 				}
 
 				if (projectService.findByName(requestModel.getName()) != null) {
 					// TODO i18n
-					rc.response().setStatusCode(400);
-					rc.response().end(toJson(new GenericMessageResponse("Conflicting username")));
-					return;
+					throw new HttpStatusCodeErrorException(400, "Conflicting username");
 				}
 
 				Project project = projectService.transformFromRest(requestModel);
@@ -178,8 +171,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				} else {
 					// TODO i18n error message?
 					String message = "Project not found {" + uuid + "}";
-					rc.response().setStatusCode(404);
-					rc.response().end(toJson(new GenericMessageResponse(message)));
+					throw new EntityNotFoundException(message);
 				}
 
 			});
@@ -191,9 +183,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			String uuidOrName = rc.request().params().get("uuid");
 			Project project = projectService.findByUUID(uuidOrName);
 			if (project != null) {
-				if (!checkPermission(rc, project, PermissionType.DELETE)) {
-					return;
-				}
+				failOnMissingPermission(rc, project, PermissionType.DELETE);
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
@@ -204,9 +194,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			} else {
 				// TODO i18n error message?
 				String message = "Project not found {" + uuidOrName + "}";
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
+				throw new EntityNotFoundException(message);
 			}
 		});
 	}

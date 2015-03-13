@@ -25,6 +25,11 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.http.LocaleContextDataHandler;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.error.InvalidPermissionException;
+import com.gentics.cailun.util.JsonUtils;
 
 /**
  * Central storage for all apex request routers.
@@ -81,19 +86,40 @@ public class RouterStorage {
 		Router rootRouter = coreRouters.get(ROOT_ROUTER_KEY);
 		if (rootRouter == null) {
 			rootRouter = Router.router(vertx);
-			// TODO use template engine to render a fancy error page and log the error.
-			// TODO somehow this failurehandler prevents authentication?
-			// rootRouter.route().failureHandler(fctx -> {
-			// if (fctx.failure() != null) {
-			// String exception = Throwables.getStackTraceAsString(fctx.failure());
-			// fctx.response().end("Error: " + exception);
-			// } else {
-			// fctx.response().end("Error: unknown error");
-			// }
-			// });
+
+			// TODO Still valid: somehow this failurehandler prevents authentication?
+			rootRouter.route().failureHandler(failureRoutingContext -> {
+				Throwable failure = failureRoutingContext.failure();
+				if (failure != null) {
+					int code = getResponseStatusCode(failure);
+					failureRoutingContext.response().setStatusCode(code);
+					failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse(failure.getMessage())));
+				} else {
+					log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
+					failureRoutingContext.response().setStatusCode(500);
+					failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse("Internal error occured")));
+				}
+
+			});
+
 			coreRouters.put(ROOT_ROUTER_KEY, rootRouter);
 		}
 		return rootRouter;
+	}
+
+	private int getResponseStatusCode(Throwable failure) {
+		if (failure instanceof EntityNotFoundException) {
+			return 404;
+		}
+		if (failure instanceof InvalidPermissionException) {
+			return 403;
+		}
+		if (failure instanceof HttpStatusCodeErrorException) {
+			HttpStatusCodeErrorException error = (HttpStatusCodeErrorException) failure;
+			return error.getCode();
+		}
+		return 500;
+
 	}
 
 	// // TODO I think this functionality should be moved to a different place
