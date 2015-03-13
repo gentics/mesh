@@ -2,8 +2,8 @@ var raml2html = require('raml2html');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
 
-var sourceDir = "src/raml/";
-var outputDir = "target/raml2html/";
+var sourceDir = __dirname + "/src/raml/";
+var outputDir = __dirname + "/target/raml2html/";
 var source = sourceDir + "rest-spec-core.raml";
 var templateFile = sourceDir + "template.handlebars";
 var resourceTemplate = sourceDir + "resource.handlebars";
@@ -35,9 +35,6 @@ var onError = function(e) {
 	console.log("Error: " + e.message);
 	process.exit(10);
 }
-
-
-
 
 var config = raml2html.getDefaultConfig(false);
 
