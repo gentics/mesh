@@ -291,8 +291,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				Group parentGroup = groupService.findByName(groupName);
 				if (parentGroup == null) {
 					// TODO i18n
-					rc.response().end(toJson(new GenericMessageResponse("Could not find parent group {" + groupName + "}")));
-					return;
+					String message = "Could not find parent group {" + groupName + "}";
+					throw new HttpStatusCodeErrorException(400, message);
 				}
 
 				// TODO such implicit permissions must be documented
@@ -303,13 +303,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			if (groupsForUser.isEmpty()) {
 				// TODO i18n
 				String message = "No groups were specified. You need to specify at least one group for the user.";
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
+				throw new HttpStatusCodeErrorException(400, message);
 			}
 
 			if (userService.findByUsername(requestModel.getUsername()) != null) {
-				// TODO i18n
-				throw new HttpStatusCodeErrorException(409, "Conflicting username");
+				String message = i18n.get(rc, "user_conflicting_username");
+				throw new HttpStatusCodeErrorException(409, message);
 			}
 
 			User user = userService.transformFromRest(requestModel);

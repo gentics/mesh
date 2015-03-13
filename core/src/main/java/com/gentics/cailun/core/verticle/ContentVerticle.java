@@ -36,6 +36,8 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.path.Path;
 
 /**
@@ -114,10 +116,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					if (content != null) {
 						handleResponse(rc, content, languages);
 					} else {
-						// TODO i18n error message?
-						String message = "Content not found for uuid {" + uuid + "}";
-						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
+						throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_uuid", uuid));
 					}
 					// Otherwise load the content by parsing and following the path
 				} else {
@@ -125,10 +124,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					if (content != null) {
 						handleResponse(rc, content, languages);
 					} else {
-						// TODO i18n error message?
-						String message = "Content not found for path {" + path + "}";
-						rc.response().setStatusCode(404);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
+						throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_path", path));
 					}
 				}
 			} catch (Exception e) {
@@ -158,41 +154,39 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
 			if (requestModel == null) {
 				String message = "Could not parse request";
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
+				throw new HttpStatusCodeErrorException(400, message);
 			} else {
 				Path tagPath = tagService.findByProjectPath(projectName, path);
-				//TODO load last tag from path
+				// TODO load last tag from path
 				Tag rootTagForContent = null;
 				if (rootTagForContent == null) {
 					String message = "Could not find tag in path structure";
-					rc.response().setStatusCode(400);
-					rc.response().end(toJson(new GenericMessageResponse(message)));
+					throw new HttpStatusCodeErrorException(400, message);
 				}
 				Content content = null;
-//				try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-					content = contentService.save(projectName, path, requestModel);
-					if (content != null) {
-						rootTagForContent.addFile(content);
-						tagService.save(rootTagForContent);
-//						tx.success();
-					} else {
-						rc.response().end("error");
-//						tx.failure();
-					}
-//				}
+				// try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+				content = contentService.save(projectName, path, requestModel);
+				if (content != null) {
+					rootTagForContent.addFile(content);
+					tagService.save(rootTagForContent);
+					// tx.success();
+				} else {
+					rc.response().end("error");
+					// tx.failure();
+				}
+				// }
 				if (content != null) {
 					// Reload in order to update uuid field
 					content = contentService.reload(content);
 					// TODO simplify language handling - looks a bit chaotic
-					//Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
-					Language language= null;
+					// Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+					Language language = null;
 					// TODO check for npe - or see above
 					handleResponse(rc, content, Arrays.asList(language.getName()));
 					// rc.response().end("jow" + " " + path + " " + projectName);
 				} else {
-					rc.response().end("Could not save");
+					// TODO handle error, i18n
+					throw new HttpStatusCodeErrorException(500, "Could not save content");
 				}
 
 			}

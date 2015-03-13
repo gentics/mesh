@@ -106,62 +106,49 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuid")
-				.method(PUT)
-				.consumes(APPLICATION_JSON)
-				.handler(rc -> {
-					String uuid = rc.request().params().get("uuid");
-					if (StringUtils.isEmpty(uuid)) {
-						// TODO i18n entry
-						String message = i18n.get(rc, "request_parameter_missing", "uuid");
-						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
-					}
-					RoleResponse requestModel = fromJson(rc, RoleResponse.class);
-					if (requestModel == null) {
-						// TODO exception would be nice, add i18n
-						String message = "Could not parse request json.";
-						rc.response().setStatusCode(400);
-						rc.response().end(toJson(new GenericMessageResponse(message)));
-						return;
-					}
+		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			if (StringUtils.isEmpty(uuid)) {
+				String message = i18n.get(rc, "error_request_parameter_missing", "uuid");
+				throw new HttpStatusCodeErrorException(400, message);
+			}
+			RoleResponse requestModel = fromJson(rc, RoleResponse.class);
+			if (requestModel == null) {
+				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_parse_request_json_error"));
+			}
 
-					// Try to load the role
-					Role role = roleService.findByUUID(uuid);
+			// Try to load the role
+				Role role = roleService.findByUUID(uuid);
 
-					// Update the role or show 404
-					if (role != null) {
-						failOnMissingPermission(rc, role, PermissionType.UPDATE);
+				// Update the role or show 404
+				if (role != null) {
+					failOnMissingPermission(rc, role, PermissionType.UPDATE);
 
-						if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
-							if (roleService.findByName(requestModel.getName()) != null) {
-								rc.response().setStatusCode(409);
-								// TODO i18n
-								rc.response().end(
-										toJson(new GenericMessageResponse("A role with the name {" + requestModel.getName()
-												+ "} already exists. Please choose a different name.")));
-								return;
-							}
-							role.setName(requestModel.getName());
-						}
-						try {
-							role = roleService.save(role);
-						} catch (ConstraintViolationException e) {
-							// TODO log
-							// TODO correct msg?
+					if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
+						if (roleService.findByName(requestModel.getName()) != null) {
+							rc.response().setStatusCode(409);
 							// TODO i18n
-							throw new HttpStatusCodeErrorException(409, "Role can't be saved. Unknown error.",e);
+							String message = "A role with the name {" + requestModel.getName() + "} already exists. Please choose a different name.";
+							throw new HttpStatusCodeErrorException(409, message);
 						}
-						rc.response().setStatusCode(200);
-						// TODO better response
-						rc.response().end(toJson(new GenericMessageResponse("OK")));
-					} else {
-						String message = i18n.get(rc, "role_not_found", uuid);
-						throw new EntityNotFoundException(message);
+						role.setName(requestModel.getName());
 					}
+					try {
+						role = roleService.save(role);
+					} catch (ConstraintViolationException e) {
+						// TODO correct msg?
+						// TODO i18n
+						throw new HttpStatusCodeErrorException(409, "Role can't be saved. Unknown error.", e);
+					}
+					rc.response().setStatusCode(200);
+					// TODO better response
+					rc.response().end(toJson(new GenericMessageResponse("OK")));
+					return;
+				} else {
+					throw new EntityNotFoundException(i18n.get(rc, "role_not_found", uuid));
+				}
 
-				});
+			});
 	}
 
 	private void addReadHandler() {
@@ -177,10 +164,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restRole));
 			} else {
-				// TODO i18n error message?
-				String message = "Group not found {" + uuid + "}";
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
+				throw new EntityNotFoundException(i18n.get(rc, "group_not_found", uuid));
 			}
 		});
 
@@ -209,23 +193,20 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			if (requestModel == null) {
 				// TODO exception would be nice, add i18n
 				String message = "Could not parse request json.";
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
+				throw new HttpStatusCodeErrorException(400, message);
 			}
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.response().setStatusCode(400);
 				// TODO i18n
-				rc.response().end(toJson(new GenericMessageResponse("The name for the role was not specified.")));
-				return;
+				String message = "The name for the role was not specified.";
+				throw new HttpStatusCodeErrorException(400, message);
 			}
 
 			if (roleService.findByName(requestModel.getName()) != null) {
 				// TODO i18n
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse("Conflicting name")));
-				return;
+				String message = "Conflicting name";
+				throw new HttpStatusCodeErrorException(409, message);
 			}
 
 			Role role = new Role(requestModel.getName());

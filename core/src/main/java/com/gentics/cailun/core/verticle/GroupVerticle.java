@@ -20,6 +20,7 @@ import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
+import com.gentics.cailun.error.EntityNotFoundException;
 
 @Component
 @Scope("singleton")
@@ -114,10 +115,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(new GenericMessageResponse("Deleted")));
 			} else {
-				// TODO i18n error message?
-				String message = "Group not found {" + uuid + "}";
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
+				String message = i18n.get(rc, "group_not_found_for_uuid", uuid);
+				throw new EntityNotFoundException(message);
 			}
 		});
 	}
@@ -133,10 +132,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					rc.response().setStatusCode(200);
 					rc.response().end(toJson(new GenericMessageResponse("OK")));
 				} else {
-					// TODO i18n error message?
-					String message = "Group not found {" + uuid + "}";
-					rc.response().setStatusCode(404);
-					rc.response().end(toJson(new GenericMessageResponse(message)));
+					String message = i18n.get(rc, "group_not_found_for_uuid", uuid);
+					throw new EntityNotFoundException(message);
 				}
 			});
 
@@ -155,10 +152,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(restGroup));
 			} else {
-				// TODO i18n error message?
-				String message = "Group not found {" + uuid + "}";
-				rc.response().setStatusCode(404);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
+				String message = i18n.get(rc, "group_not_found_for_uuid", uuid);
+				throw new EntityNotFoundException(message);
 			}
 
 		});

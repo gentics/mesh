@@ -127,8 +127,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			Tag tag = tagService.projectTo(tagPath.getLast().getNode(), Tag.class);
 			if (tag == null) {
-				// TODO i18n
-				throw new EntityNotFoundException("Could not find tag for path {" + path + "}");
+				String message = i18n.get(rc, "tag_not_found_for_path", path);
+				throw new EntityNotFoundException(message);
 			}
 			languages.add(tagPath.getLast().getLanguageTag());
 
@@ -136,8 +136,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 			return;
 		} else {
-			// TODO i18n
-			throw new EntityNotFoundException("Could not find tag for path {" + path + "}");
+			String message = i18n.get(rc, "tag_not_found_for_path", path);
+			throw new EntityNotFoundException(message);
 		}
 	}
 
@@ -151,8 +151,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			failOnMissingPermission(rc, tag, PermissionType.READ);
 			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 		} else {
-			// TODO i18n
-			String message = "Tag could not be found.";
+			String message = i18n.get(rc, "tag_not_found");
 			throw new EntityNotFoundException(message);
 		}
 	}
