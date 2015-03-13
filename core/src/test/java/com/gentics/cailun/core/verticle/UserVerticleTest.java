@@ -346,7 +346,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newUser.setPassword("test123456");
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
-		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
+		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
 		String json = "{\"message\":\"No groups were specified. You need to specify at least one group for the user.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
