@@ -445,8 +445,19 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	// Delete tests
 	@Test
-	public void testRemoveUserFromGroupWithPerm() {
-		fail("Not yet implemented");
+	public void testRemoveUserFromGroupWithPerm() throws Exception {
+		User user = info.getUser();
+		Group group = info.getGroup();
+
+		// TODO check with cp whether perms are ok that way.
+		roleService.addPermission(info.getRole(), user, PermissionType.READ);
+		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+
+		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid() + "/groups/" + info.getGroup().getUuid(), 200, "OK");
+		String json = "OK";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		group = groupService.reload(group);
+		// TODO check whether user is still a member of the group
 	}
 
 	@Test

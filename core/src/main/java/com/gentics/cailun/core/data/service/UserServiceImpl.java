@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
+import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
@@ -25,6 +26,9 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private GroupRepository groupRepository;
 
 	@Override
 	public void setPassword(User user, String password) {
@@ -77,5 +81,10 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		user.setEmailAddress(requestModel.getEmailAddress());
 		user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
 		return user;
+	}
+
+	@Override
+	public boolean removeUserFromGroup(User user, Group group) {
+		return group.removeUser(user);
 	}
 }

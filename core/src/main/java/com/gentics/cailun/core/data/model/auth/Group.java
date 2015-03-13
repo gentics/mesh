@@ -77,8 +77,13 @@ public class Group extends GenericNode {
 		roles.add(role);
 	}
 
-	public void removeUser(User user) {
-		getUsers().remove(user);
+	public boolean removeUser(User user) {
+		return getUsers().remove(user);
+	}
+
+	public boolean hasUser(User user) {
+		//TODO maybe a dedicated cypher statement would be faster?
+		return users.contains(user);
 	}
 
 }

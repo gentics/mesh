@@ -2,6 +2,7 @@ package com.gentics.cailun.core.data.service;
 
 import java.util.List;
 
+import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
@@ -18,5 +19,7 @@ public interface UserService extends GenericNodeService<User> {
 	UserResponse transformToRest(User user);
 
 	User transformFromRest(UserCreateRequest requestModel);
+
+	boolean removeUserFromGroup(User user, Group group);
 
 }

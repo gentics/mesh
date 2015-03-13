@@ -56,12 +56,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCRUDHandlers() {
+		addUserGroupHandlers();
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addUserGroupHandlers();
 	}
 
 	private void addUserGroupHandlers() {
@@ -69,19 +70,48 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			String userUuid = rc.request().params().get("userUuid");
 			String groupUuid = rc.request().params().get("groupUuid");
 			User user = userService.findByUUID(userUuid);
+			if (user == null) {
+				throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
+			}
 			Group group = groupService.findByUUID(groupUuid);
+			if (group == null) {
+				throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
+			}
 
 			throw new HttpStatusCodeErrorException(501, "Not implemented");
 		});
 
-		route("/:userUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
-			String userUuid = rc.request().params().get("userUuid");
-			String groupUuid = rc.request().params().get("groupUuid");
-			User user = userService.findByUUID(userUuid);
-			Group group = groupService.findByUUID(groupUuid);
+		route("/:userUuid/groups/:groupUuid").method(DELETE)
+				.handler(
+						rc -> {
+							String userUuid = rc.request().params().get("userUuid");
+							String groupUuid = rc.request().params().get("groupUuid");
+							User user = userService.findByUUID(userUuid);
+							if (user == null) {
+								throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
+							}
+							failOnMissingPermission(rc, user, PermissionType.READ);
 
-			throw new HttpStatusCodeErrorException(501, "Not implemented");
-		});
+							Group group = groupService.findByUUID(groupUuid);
+							if (group == null) {
+								throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
+							}
+							failOnMissingPermission(rc, group, PermissionType.UPDATE);
+
+							if (!group.hasUser(user)) {
+								throw new HttpStatusCodeErrorException(400, "User is not a member of the group.");
+							}
+							
+							//TODO check whether this would be the last group of the user
+							if (userService.removeUserFromGroup(user, group)) {
+								rc.response().setStatusCode(200);
+								rc.response().end(
+										toJson(new GenericMessageResponse("Removed user {" + user.getUsername() + "} from group {" + group.getName()
+												+ "}")));
+							} else {
+								throw new HttpStatusCodeErrorException(501, "Error while removing user from group.");
+							}
+						});
 	}
 
 	private void addReadHandler() {
