@@ -77,8 +77,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
 		roleService.addPermission(info.getRole(), data().getLevel2a(), PermissionType.READ);
 
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a/ebene_2_a?lang=de", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"type\":null,\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"name\":\"ebene_1_a\"}}}";
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a/ebene_2_a", 200, "OK");
+		String json = "{\"uuid\":\"uuid-value\",\"type\":null,\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"name\":\"ebene_2_a\"}}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 

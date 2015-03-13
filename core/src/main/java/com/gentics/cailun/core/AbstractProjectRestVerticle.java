@@ -62,11 +62,11 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 			queryPairs = splitQuery(query);
 		} catch (UnsupportedEncodingException e) {
 			log.error("Could not decode query string.", e);
-			return Collections.emptyList();
+			return new ArrayList<>();
 		}
 		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
 		if (value == null) {
-			return Collections.emptyList();
+			return new ArrayList<>();
 		}
 		return new ArrayList<>(Arrays.asList(value.split(",")));
 

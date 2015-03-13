@@ -3,9 +3,12 @@ package com.gentics.cailun.core.data.service.generic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,12 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
+
+	@Autowired
+	protected GraphDatabaseService database;
+
+	@Autowired
+	protected Neo4jTemplate neo4jTemplate;
 
 	@Override
 	public T save(T node) {
@@ -94,4 +103,13 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 		nodeRepository.deleteByUuid(uuid);
 	}
 
+	@Override
+	public T projectTo(Node node, Class<T> clazz) {
+		try (Transaction t = database.beginTx()) {
+			T entity = neo4jTemplate.projectTo(node, clazz);
+			t.success();
+			return entity;
+		}
+		// return null;
+	}
 }

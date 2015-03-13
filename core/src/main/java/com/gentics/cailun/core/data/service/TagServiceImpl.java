@@ -5,17 +5,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Project;
@@ -26,6 +23,8 @@ import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.data.service.generic.GenericTagServiceImpl;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
+import com.gentics.cailun.path.Path;
+import com.gentics.cailun.path.PathSegment;
 import com.google.common.collect.Lists;
 
 @Component
@@ -46,22 +45,21 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 	@Autowired
 	private UserService userService;
 
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
-
 	@Override
-	public Tag findByProjectPath(String projectName, String path) {
+	public Path findByProjectPath(String projectName, String path) {
 		String parts[] = path.split("/");
-
 		Project project = projectService.findByName(projectName);
 
-		// try (Transaction tx = graphDb.beginTx()) {
+		Path tagPath = new Path();
+
+		// Traverse the graph and buildup the result path while doing so
 		Node currentNode = neo4jTemplate.getPersistentState(project.getRootTag());
-		// Node currentNode = graphDb.getNodeById(rootTag.getId());
-		for (int i = 0; i < parts.length - 1; i++) {
+		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i];
-			System.out.println("Looking for part " + part);
-			Node nextNode = getChildNodeTagFromNodeTag(currentNode, part);
+			if (log.isDebugEnabled()) {
+				log.debug("Looking for path segment {" + part + "}");
+			}
+			Node nextNode = addPathSegment(tagPath, currentNode, part);
 			if (nextNode != null) {
 				currentNode = nextNode;
 			} else {
@@ -69,20 +67,23 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 				break;
 			}
 		}
-		return neo4jTemplate.projectTo(currentNode, Tag.class);
+
+		return tagPath;
 
 	}
 
 	/**
 	 * Find the next sub tag that has a name with the given value.
 	 * 
+	 * @param path
+	 *            Path to which new segments should be added
 	 * @param node
 	 *            start node
-	 * @param tagName
+	 * @param i18nTagName
 	 *            Name of the tag which should be looked up
 	 * @return Found node or null if no node could be found
 	 */
-	private Node getChildNodeTagFromNodeTag(Node node, String tagName) {
+	private Node addPathSegment(Path path, Node node, String i18nTagName) {
 		if (node == null) {
 			return null;
 		}
@@ -91,8 +92,10 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 		Lists.newArrayList(node.getRelationships(BasicRelationships.TYPES.HAS_SUB_TAG, Direction.OUTGOING)).stream().forEach(rel -> {
 			Node nextHop = rel.getEndNode();
 			if (nextHop.hasLabel(Tag.getLabel())) {
-				if (hasI18nProperty(nextHop, GenericPropertyContainer.NAME_KEYWORD, tagName)) {
+				String languageTag = getI18nPropertyLanguageTag(nextHop, GenericPropertyContainer.NAME_KEYWORD, i18nTagName);
+				if (languageTag != null) {
 					foundNode.set(nextHop);
+					path.addSegment(new PathSegment(nextHop, languageTag));
 					return;
 				}
 			}
@@ -102,28 +105,29 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 	}
 
 	/**
-	 * Check whether the given node has a i18n property with the given value for the specified key
+	 * Check whether the given node has a i18n property with the given value for the specified key.
 	 * 
 	 * @param node
 	 * @param key
 	 * @param value
-	 * @return true if the i18n property with the given value was found. Otherwise false.
+	 * @return The found language tag, otherwise null
 	 */
-	private boolean hasI18nProperty(Node node, String key, String value) {
+	private String getI18nPropertyLanguageTag(Node node, String key, String value) {
 		if (StringUtils.isEmpty(key)) {
-			return false;
+			return null;
 		}
 		key = "properties-" + key;
 		for (Relationship rel : node.getRelationships(BasicRelationships.TYPES.HAS_I18N_PROPERTIES, Direction.OUTGOING)) {
+			String languageTag = (String) rel.getProperty("languageTag");
 			Node i18nPropertiesNode = rel.getEndNode();
 			if (i18nPropertiesNode.hasProperty(key)) {
 				String i18nValue = (String) i18nPropertiesNode.getProperty(key);
 				if (i18nValue.equals(value)) {
-					return true;
+					return languageTag;
 				}
 			}
 		}
-		return false;
+		return null;
 	}
 
 	@Override

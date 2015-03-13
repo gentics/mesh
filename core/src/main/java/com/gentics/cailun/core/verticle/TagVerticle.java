@@ -13,6 +13,7 @@ import java.util.List;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
@@ -20,6 +21,7 @@ import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.path.Path;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -38,6 +40,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private TagService tagService;
+
+	@Autowired
+	private Neo4jTemplate template;
 
 	public TagVerticle() {
 		super("tags");
@@ -118,7 +123,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		String path = rc.request().params().get("param0");
 		List<String> languages = getSelectedLanguages(rc);
 
-		Tag tag = tagService.findByProjectPath(projectName, path);
+		Path tagPath = tagService.findByProjectPath(projectName, path);
+		Tag tag = tagService.projectTo(tagPath.getLast().getNode(), Tag.class);
+		languages.add(tagPath.getLast().getLanguageTag());
 		if (tag != null) {
 			if (!checkPermission(rc, tag, PermissionType.READ)) {
 				return;

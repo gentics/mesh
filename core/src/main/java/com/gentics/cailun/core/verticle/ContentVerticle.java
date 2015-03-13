@@ -7,12 +7,9 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.RoutingContext;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -37,6 +34,7 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.path.Path;
 
 /**
  * The page verticle adds rest endpoints for manipulating pages and related objects.
@@ -162,7 +160,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				rc.response().end(toJson(new GenericMessageResponse(message)));
 				return;
 			} else {
-				Tag rootTagForContent = tagService.findByProjectPath(projectName, path);
+				Path tagPath = tagService.findByProjectPath(projectName, path);
+				//TODO load last tag from path
+				Tag rootTagForContent = null;
 				if (rootTagForContent == null) {
 					String message = "Could not find tag in path structure";
 					rc.response().setStatusCode(400);
