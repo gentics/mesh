@@ -48,6 +48,11 @@ traits:
       headers:
         Accept-Language:
           description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
+  - perm_listable:
+      queryParameters:
+        perms:
+          description: Include user permissions on the object.
+          type: boolean
   - nested:
       queryParameters:
         depth:
@@ -125,11 +130,11 @@ schemas:
 # User Verticle
 #------------------------------------------------------------------------------
 /users:
-  is: [ localized ]
   displayName: Users
+  is: [ localized ]
   description: The users rest endpoint is used for CRUD operations on user objects.
   get:
-    is: [ paged, searchable ]
+    is: [ perm_listable, paged, searchable ]
     description: Retrieves a list of **users**
 
     responses:
@@ -155,9 +160,9 @@ schemas:
 
 
   /{uuid}:
-    is: [ localized ]
     get:
-      description: Retrieves a **single role** with the given uuid
+      is: [ perm_listable ]
+      description: Retrieves a **single user** with the given uuid
       responses:
         200:
           body:
@@ -198,7 +203,7 @@ schemas:
   is: [ localized ]
   displayName: Roles
   get:
-    is: [ paged, searchable ]
+    is: [ paged, searchable, perm_listable ]
     description: Retrieves a list of roles
     responses:
       200:
@@ -220,8 +225,8 @@ schemas:
             example: !include json/RoleResponse.example.json
 
   /{uuid}:
-    is: [ localized ]
     get:
+      is: [ perm_listable ]
       description: Retrieves a **single role** with the given uuid
       responses:
         200:
@@ -282,7 +287,7 @@ schemas:
   is: [ localized, sortable, nested ]
   displayName: Groups
   get: 
-    is: [ paged, searchable ]
+    is: [ paged, searchable, perm_listable ]
     description: Retrieves a **list of groups**
     responses:
       200:
@@ -376,7 +381,7 @@ schemas:
   is: [ localized ]
   displayName: Projects
   get:
-    is: [ paged, searchable, sortable ]
+    is: [ paged, searchable, sortable, perm_listable ]
     description: Retrieves a list of projects
     responses:
       200:
@@ -402,9 +407,16 @@ schemas:
             example: !include json/ProjectResponse.example.json
 
   /{uuid}:
+    is: [ localized ]
     get:
-      description: Retrieves the **project** with the given uuid
+      is: [ perm_listable ]
+      description: Retrieves the **project** with the given uuid.
+      body:
+        application/json:
+          schema: ProjectResponse
+          example: !include json/ProjectResponse.example.json
     put:
+      description: Update the **project** with the given uuid.
       body:
         application/json:
           schema: ProjectUpdateRequest
@@ -416,7 +428,7 @@ schemas:
               schema: ProjectResponse
               example: !include json/ProjectResponse.example.json
     delete:
-      description: Deletes the project with the given uuid
+      description: Deletes the **project** with the given uuid
       responses:
         200:
           body:
@@ -431,7 +443,7 @@ schemas:
   is: [ localized ]
   displayName: Schemas
   get:
-    is: [ paged ]
+    is: [ paged , perm_listable ]
     description: Retrieves a **list of object schemas**.
     responses:
       200:
@@ -457,6 +469,7 @@ schemas:
   /{uuid}:
     is: [ localized ]
     get:
+      is: [ perm_listable ]
       description: Retrieves the **schema** with the given uuid.
       responses:
         200:
@@ -508,7 +521,7 @@ schemas:
 /{project_name}/contents:
   displayName: Contents
   /{path_or_uuid}:
-    is: [ localized, sortable, nested ]
+    is: [ localized, sortable, nested, perm_listable ]
     uriParameters:
       path_or_uuid:
         description: | 
@@ -576,6 +589,7 @@ schemas:
       type: string
 
   /{path_or_uuid}:
+    is: [ perm_listable ]
     uriParameters:
       path_or_uuid:
         description: | 
@@ -634,7 +648,7 @@ schemas:
   displayName: Binaries
 
   /{path_or_uuid}:
-    is: [ localized ]
+    is: [ localized, perm_listable ]
     get:
       headers:
         Accept:
@@ -660,8 +674,14 @@ schemas:
 #------------------------------------------------------------------------------
 /{project_name}/search:
   is: [ localized ]
-  displayName: Search
+  displayName: Project Search
   get:
+
+/search:
+  is: [ localized ]
+  displayName: Global Search
+  get:
+
 
 
 #------------------------------------------------------------------------------
