@@ -5,7 +5,7 @@ import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 public class RoleResponse extends AbstractRestModel {
 
 	private String name;
-	private String[] perms;
+	private String[] perms = {};
 
 	// TODO add groups to response
 

@@ -41,12 +41,12 @@ import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
+import com.gentics.cailun.util.JsonUtils;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 public class Generator {
 
 	private static final RandomBasedGenerator uuidGenerator = Generators.randomBasedGenerator();
-	private ObjectMapper mapper = new ObjectMapper();
 	private File outputDir;
 
 	public static String getUUID() {
@@ -344,6 +344,7 @@ public class Generator {
 
 	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {
 		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
+		ObjectMapper mapper = JsonUtils.getMapper();
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 		writeJsonSchema(object.getClass());
 	}

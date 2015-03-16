@@ -12,10 +12,13 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.core.Route;
 import io.vertx.ext.apex.core.RoutingContext;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -210,20 +213,55 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		}
 		failOnMissingPermission(rc, tag, PermissionType.UPDATE);
 
-		TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
-		// Iterate through all properties and update the changed ones
-		for (String languageTag : languageTags) {
-			Language language = languageService.findByLanguageTag(languageTag);
-			if (language != null) {
-				Map<String, String> properties = requestModel.getProperties(languageTag);
-				if (properties != null) {
-					// TODO handle update
-					I18NProperties i18nProperties = tag.getI18NProperties(language);
-				}
-			} else {
-				log.error("Could not find language for languageTag {" + languageTag + "}");
-			}
+		try (Transaction tx = graphDb.beginTx()) {
+			// TODO update other fields as well?
+			// TODO Update user information
+			TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
+			// Iterate through all properties and update the changed ones
+			for (String languageTag : languageTags) {
+				Language language = languageService.findByLanguageTag(languageTag);
+				if (language != null) {
+					Map<String, String> properties = requestModel.getProperties(languageTag);
+					if (properties != null) {
+						// TODO use schema and only handle those i18n properties that were specified within the schema.
+						I18NProperties i18nProperties = tag.getI18NProperties(language);
+						for (Map.Entry<String, String> set : properties.entrySet()) {
+							String key = set.getKey();
+							String value = set.getValue();
+							String i18nValue = i18nProperties.getProperty(key);
+							// Tag does not have the value so lets create it
+							if (i18nValue == null) {
+								i18nProperties.addProperty(key, value);
+							} else {
+								// Lets compare and update if the value has changed
+								if (!value.equals(i18nValue)) {
+									i18nProperties.addProperty(key, value);
+								}
+							}
+						}
 
+						// Check whether there are any key missing in the request.
+						// This would mean we should remove those i18n properties. First lets collect those
+						// keys
+						Set<String> keysToBeRemoved = new HashSet<>();
+						for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
+							if (!properties.containsKey(i18nKey)) {
+								keysToBeRemoved.add(i18nKey);
+							}
+						}
+
+						// Now remove the keys
+						for (String key : keysToBeRemoved) {
+							i18nProperties.removeProperty(key);
+						}
+
+					}
+				} else {
+					log.error("Could not find language for languageTag {" + languageTag + "}");
+				}
+
+			}
+			tx.success();
 		}
 
 		rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));

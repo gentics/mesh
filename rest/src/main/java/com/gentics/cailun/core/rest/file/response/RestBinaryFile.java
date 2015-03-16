@@ -6,7 +6,7 @@ public class RestBinaryFile extends AbstractRestModel {
 
 	private String filename;
 
-	private String[] perms;
+	private String[] perms = {};
 
 	public RestBinaryFile() {
 	}

@@ -4,11 +4,23 @@ import io.vertx.ext.apex.core.RoutingContext;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class JsonUtils {
 
-	protected static ObjectMapper mapper = new ObjectMapper();
+	protected static ObjectMapper mapper;
+
+	static {
+		mapper = new ObjectMapper();
+		mapper.setSerializationInclusion(Include.NON_EMPTY);
+	}
+
+	public static ObjectMapper getMapper() {
+		return mapper;
+	}
 
 	public static <T> String toJson(T obj) {
 		try {
@@ -17,6 +29,10 @@ public final class JsonUtils {
 			e.printStackTrace();
 		}
 		return "ERROR";
+	}
+
+	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
+		return mapper.readValue(content, valueType);
 	}
 
 	@SuppressWarnings("unchecked")

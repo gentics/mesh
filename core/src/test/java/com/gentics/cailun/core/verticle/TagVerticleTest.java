@@ -21,6 +21,7 @@ import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
+import com.gentics.cailun.util.JsonUtils;
 
 public class TagVerticleTest extends AbstractRestVerticleTest {
 
@@ -169,8 +170,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 200, "OK", requestJson);
-		System.out.println(response);
-		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
+		TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
 		Assert.assertEquals(request.getProperty("en", "name"), tagUpdateRequest.getProperty("en", "name"));
 
 	}
@@ -197,8 +197,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 200, "OK", requestJson);
-		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
-		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en","name"));
+		TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
+		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
 	}
 
 	@Test
@@ -215,7 +215,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
+		TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
 		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
 
 		// 2. Manipulate the request object
@@ -226,13 +226,13 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// 3. Send the request to the server
 		// TODO test with no ?lang query parameter
 		String requestJson = new ObjectMapper().writeValueAsString(request);
-		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid()+ "?lang=en", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"type\":null,\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"level_1_a\"}}}";
+		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
+		String json = "{\"uuid\":\"uuid-value\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"new Name\"}}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
+		tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
 		Assert.assertEquals(request.getProperty("en", "name"), tagUpdateRequest.getProperty("en", "name"));
 	}
 
@@ -257,7 +257,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
-		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
+		TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
 		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
 	}
 

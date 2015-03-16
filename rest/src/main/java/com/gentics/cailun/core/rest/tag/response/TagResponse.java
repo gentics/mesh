@@ -14,7 +14,7 @@ public class TagResponse extends AbstractRestModel {
 	private UserResponse creator;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 
-	private String[] perms;
+	private String[] perms = {};
 
 	public TagResponse() {
 	}

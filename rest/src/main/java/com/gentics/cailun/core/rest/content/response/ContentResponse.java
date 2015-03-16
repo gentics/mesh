@@ -11,7 +11,7 @@ public class ContentResponse extends AbstractRestModel {
 	private UserResponse author;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 	private String schema;
-	private String[] perms;
+	private String[] perms = {};
 
 	private long order = 0;
 

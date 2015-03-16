@@ -5,7 +5,7 @@ import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 public class ProjectResponse extends AbstractRestModel {
 
 	private String name;
-	private String[] perms;
+	private String[] perms = {};
 
 	public ProjectResponse() {
 	}

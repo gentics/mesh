@@ -17,7 +17,7 @@ public class UserResponse extends AbstractRestModel {
 
 	private List<String> groups = new ArrayList<>();
 
-	private String[] perms;
+	private String[] perms = {};
 
 	public UserResponse() {
 	}

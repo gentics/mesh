@@ -21,7 +21,7 @@ public class ObjectSchemaResponse extends AbstractRestModel {
 	@JsonProperty("properties")
 	private List<PropertyTypeSchemaResponse> propertyTypeSchemas = new ArrayList<>();
 
-	private String[] perms;
+	private String[] perms = {};
 
 	public ObjectSchemaResponse() {
 	}

@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.etc.RouterStorage;
 
@@ -42,8 +41,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	private CountDownLatch latch;
 
 	protected UserInfo info;
-
-	protected ObjectMapper mapper = new ObjectMapper();
 
 	@Autowired
 	private RouterStorage routerStorage;
