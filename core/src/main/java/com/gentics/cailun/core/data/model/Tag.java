@@ -11,11 +11,13 @@ import com.gentics.cailun.core.data.model.generic.GenericTag;
 public class Tag extends GenericTag<Tag, GenericFile> {
 
 	private static final long serialVersionUID = 7645315435657775862L;
-	
+
 	private static Label label = DynamicLabel.label(Tag.class.getSimpleName());
 
-	public Tag() {
+	private String schema = null;
 
+	public Tag() {
+		this.schema = "tag";
 	}
 
 	public static Label getLabel() {
@@ -26,5 +28,13 @@ public class Tag extends GenericTag<Tag, GenericFile> {
 		 * @CallerSensitive public static Package getPackage(String name) { ClassLoader l = ClassLoader.getClassLoader(Reflection.getCallerClass());
 		 */
 		return label;
+	}
+
+	public String getSchema() {
+		return schema;
+	}
+
+	public void setSchema(String schema) {
+		this.schema = schema;
 	}
 }

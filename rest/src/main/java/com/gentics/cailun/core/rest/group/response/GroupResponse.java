@@ -9,12 +9,14 @@ public class GroupResponse extends AbstractRestModel {
 
 	private String name;
 
-	//TODO child groups must also have the information whether there are any childgroups for those groups. Otherwise in an ajax tree no arrow can be displayed
+	// TODO child groups must also have the information whether there are any childgroups for those groups. Otherwise in an ajax tree no arrow can be displayed
 	private List<String> groups = new ArrayList<>();
 
 	private List<String> roles = new ArrayList<>();
 
 	private List<String> users = new ArrayList<>();
+
+	private String[] perms = {};
 
 	public GroupResponse() {
 	}
@@ -49,6 +51,14 @@ public class GroupResponse extends AbstractRestModel {
 
 	public void setUsers(List<String> users) {
 		this.users = users;
+	}
+
+	public String[] getPerms() {
+		return perms;
+	}
+
+	public void setPerms(String... perms) {
+		this.perms = perms;
 	}
 
 }

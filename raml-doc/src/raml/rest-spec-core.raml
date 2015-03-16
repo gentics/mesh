@@ -53,6 +53,7 @@ traits:
         perms:
           description: Include user permissions on the object.
           type: boolean
+          required: false
   - nested:
       queryParameters:
         depth:
@@ -132,11 +133,10 @@ schemas:
 /users:
   displayName: Users
   is: [ localized ]
-  description: The users rest endpoint is used for CRUD operations on user objects.
+  description: The users rest endpoint is used for CRUD operations on user objects. 
   get:
     is: [ perm_listable, paged, searchable ]
-    description: Retrieves a list of **users**
-
+    description: Retrieves a list of users. **Partially implemented** - **Tested**
     responses:
       200:
         body:
@@ -146,7 +146,7 @@ schemas:
 
 
   post:
-    description: Create new user
+    description: Create new user. **Partially implemented** - **Tested**
     body:
       application/json:
         schema: UserCreateRequest
@@ -162,7 +162,7 @@ schemas:
   /{uuid}:
     get:
       is: [ perm_listable ]
-      description: Retrieves a **single user** with the given uuid
+      description: Retrieves a single user with the given uuid. **Partially implemented** - **Tested**
       responses:
         200:
           body:
@@ -170,7 +170,7 @@ schemas:
               schema: UserResponse
               example: !include json/UserResponse.example.json
     put:
-      description: Updates the **user** with the given uuid
+      description: Updates the user with the given uuid. **Partially implemented** - **Tested**
       body:
           application/json:
               schema: UserUpdateRequest
@@ -182,7 +182,7 @@ schemas:
               schema: UserResponse
               example: !include json/UserResponse.example.json
     delete:
-      description: Deletes the **user** with the given uuid
+      description: Deletes the user with the given uuid. **Partially implemented** - **Tested**
       responses:
         200:
           body:
@@ -191,9 +191,10 @@ schemas:
               example: !include json/GenericMessageResponse.example.json
     /groups/{uuid}:
       put:
-        description: Add the user with the given uuid to the group
+        description: Add the user with the given uuid to the group. **Partially implemented** - **Not tested**
       delete:
-        description: Remove the user with the given uuid from the group
+        description: Remove the user with the given uuid from the group. **Partially implemented** - **Not tested**
+
 
 
 #------------------------------------------------------------------------------
@@ -204,7 +205,7 @@ schemas:
   displayName: Roles
   get:
     is: [ paged, searchable, perm_listable ]
-    description: Retrieves a list of roles
+    description: Retrieves a list of roles.  **Partially implemented** - **Tested 1**
     responses:
       200:
         body:
@@ -212,7 +213,7 @@ schemas:
             schema: RoleListResponse
             example: !include json/RoleListResponse.example.json
   post:
-    description: Create a new role
+    description: Create a new role.  **Partially implemented** - **Tested 4**
     body:
       application/json:
         schema: RoleCreateRequest
@@ -227,7 +228,7 @@ schemas:
   /{uuid}:
     get:
       is: [ perm_listable ]
-      description: Retrieves a **single role** with the given uuid
+      description: Retrieves a single role with the given uuid.  **Partially implemented** - **Tested 1**
       responses:
         200:
           body:
@@ -235,7 +236,7 @@ schemas:
               schema: RoleResponse
               example: !include json/RoleResponse.example.json
     put:
-      description: Updates a **single role** with the given uuid
+      description: Updates a single role with the given uuid.  **Partially implemented** - **Tested 2**
       body:
         application/json:
           schema: RoleUpdateRequest
@@ -247,7 +248,7 @@ schemas:
               schema: RoleResponse
               example: !include json/RoleResponse.example.json
     delete:
-      description: Deletes a **single role** with the given uuid
+      description: Deletes a single role with the given uuid.  **Partially implemented** - **Tested 2**
       responses:
         200:
           body:
@@ -256,7 +257,7 @@ schemas:
               example: !include json/GenericMessageResponse.example.json
     /groups/{uuid}:
       put:
-        description: Add the role to the group
+        description: Add the role to the group. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -264,7 +265,7 @@ schemas:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
-        description: Remove the role from the group
+        description: Remove the role from the group. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -274,10 +275,10 @@ schemas:
     /chmod/{uuid}:
       put:
         description: |
-          Add role permissions to the given entity. TODO: Add info about recursion and handle bitmark like permission flags
+          Add role permissions to the given entity. TODO: Add info about recursion and handle bitmark like permission flags. **Not implemented** - **Not tested**
       delete:
         description: |
-          Remove role permissions from the given entity. TODO: Add info about recursion and handle bitmark like permission flags
+          Remove role permissions from the given entity. TODO: Add info about recursion and handle bitmark like permission flags. **Not implemented** - **Not tested**
 
 
 #------------------------------------------------------------------------------
@@ -288,7 +289,7 @@ schemas:
   displayName: Groups
   get: 
     is: [ paged, searchable, perm_listable ]
-    description: Retrieves a **list of groups**
+    description: Retrieves a list of groups. **Not implemented** - **Not tested**
     responses:
       200:
         body:
@@ -296,7 +297,7 @@ schemas:
             schema: GroupListResponse
             example: !include json/GroupListResponse.example.json
   post:
-    description: Create a new group
+    description: Create a new group. **Not implemented** - **Not tested**
     body:
         application/json:
             schema: GroupCreateRequest
@@ -311,7 +312,7 @@ schemas:
   /{uuid}:
     is: [ localized, sortable, nested ]
     get:
-      description: Retrieves a **single group** with the given uuid
+      description: Retrieves a single group with the given uuid.  **Partially implemented** - **Tested 1**
       responses:
         200:
           body:
@@ -319,7 +320,7 @@ schemas:
               schema: GroupResponse
               example: !include json/GroupResponse.example.json
     put:
-      description: Updates a **single group** with the given uuid
+      description: Updates a single group with the given uuid. **Not implemented** - **Not tested**
       body:
         application/json:
           schema: GroupUpdateRequest
@@ -331,7 +332,7 @@ schemas:
               schema: GroupResponse
               example: !include json/GroupResponse.example.json
     delete:
-      description: Deletes a **single group** with the given uuid
+      description: Deletes a single group with the given uuid. **Not implemented** - **Not tested**
       responses:
         200:
           body:
@@ -340,7 +341,7 @@ schemas:
               example: !include json/GenericMessageResponse.example.json
     /users/{uuid}:
       put:
-        description: Add the user with the given uuid to the group
+        description: Add the user with the given uuid to the group. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -348,7 +349,7 @@ schemas:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
-        description: Remove the user with the given uuid from the group
+        description: Remove the user with the given uuid from the group. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -357,7 +358,7 @@ schemas:
                 example: !include json/GenericMessageResponse.example.json
     /groups/{uuid}:
       put:
-        description: Add the group with the given uuid to the group
+        description: Add the group with the given uuid to the group. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -365,7 +366,7 @@ schemas:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
-        description: Remove the group with the given uuid from the group
+        description: Remove the group with the given uuid from the group. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -382,7 +383,7 @@ schemas:
   displayName: Projects
   get:
     is: [ paged, searchable, sortable, perm_listable ]
-    description: Retrieves a list of projects
+    description: Retrieves a list of projects. **Not implemented** - **Not tested**
     responses:
       200:
         body:
@@ -394,7 +395,7 @@ schemas:
       500:
         description: Internal Server Error
   post:
-    description: Create a new project
+    description: Create a new project. **Partially implemented** - **Tested 1**
     body:
       application/json:
         schema: ProjectCreateRequest
@@ -410,13 +411,13 @@ schemas:
     is: [ localized ]
     get:
       is: [ perm_listable ]
-      description: Retrieves the **project** with the given uuid.
+      description: Retrieves the project with the given uuid. **Partially implemented** - **Tested 1**
       body:
         application/json:
           schema: ProjectResponse
           example: !include json/ProjectResponse.example.json
     put:
-      description: Update the **project** with the given uuid.
+      description: Update the project with the given uuid. **Partially implemented** - **Tested 1**
       body:
         application/json:
           schema: ProjectUpdateRequest
@@ -428,7 +429,7 @@ schemas:
               schema: ProjectResponse
               example: !include json/ProjectResponse.example.json
     delete:
-      description: Deletes the **project** with the given uuid
+      description: Deletes the project with the given uuid. **Partially implemented** - **Tested 2**
       responses:
         200:
           body:
@@ -444,7 +445,7 @@ schemas:
   displayName: Schemas
   get:
     is: [ paged , perm_listable ]
-    description: Retrieves a **list of object schemas**.
+    description: Retrieves a list of object schemas.  **Partially implemented** - **Tested 1**
     responses:
       200:
         body:
@@ -455,7 +456,7 @@ schemas:
       500:
         description: Internal Server Error
   post:
-    description: Create the schema
+    description: Create the schema. **Not implemented** - **Not tested**
     body:
       application/json:
         schema: ObjectSchemaCreateRequest
@@ -470,7 +471,7 @@ schemas:
     is: [ localized ]
     get:
       is: [ perm_listable ]
-      description: Retrieves the **schema** with the given uuid.
+      description: Retrieves the schema with the given uuid.  **Partially implemented** - **Tested 1**
       responses:
         200:
           body:
@@ -478,7 +479,7 @@ schemas:
               schema: ObjectSchemaResponse
               example: !include json/ObjectSchemaResponse.example.json
     put: 
-      description: Updates the **schema** with the given uuid
+      description: Updates the schema with the given uuid. **Not implemented** - **Not tested**
       body:
         application/json:
           schema: ObjectSchemaUpdateRequest
@@ -489,7 +490,7 @@ schemas:
             application/json:
               example: !include json/ObjectSchemaResponse.example.json
     delete:
-      description: Deletes the **schema** with the given uuid.
+      description: Deletes the schema with the given uuid. **Not implemented** - **Not tested**
       responses:
         200:
           body:
@@ -498,7 +499,7 @@ schemas:
               example: !include json/GenericMessageResponse.example.json
     /projects/{uuid}:
       put:
-        description: Add the schema to the project.
+        description: Add the schema to the project. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -506,7 +507,7 @@ schemas:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
-        description: Remove the schema from the project.
+        description: Remove the schema from the project. **Not implemented** - **Not tested**
         responses:
           200:
             body:
@@ -528,7 +529,7 @@ schemas:
              Can be either path to the content or the uuid of a single content.
         type: string
     get:
-      description: Retrieves the **content** with the given path
+      description: Retrieves the content with the given path. **Partially implemented** - **Tested 7**
       queryParameters:
         lang:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
@@ -543,7 +544,7 @@ schemas:
               schema: ContentResponse
               example: !include json/ContentResponse.example.json
     post:
-      description: Creates the **content** with the given path
+      description: Creates the content with the given path. **Not implemented** - **Not tested**
       body:
         application/json:
           schema: ContentCreateRequest
@@ -556,7 +557,7 @@ schemas:
               example: !include json/ContentResponse.example.json
         423:
     put:
-      description: Updates the **content** with the given path
+      description: Updates the content with the given path. **Not implemented** - **Not tested**
       body:
         application/json:
           schema: ContentUpdateRequest
@@ -569,7 +570,7 @@ schemas:
               example: !include json/ContentResponse.example.json
         423:
     delete:
-      description: Deletes the **content** with the given path
+      description: Deletes the content with the given path. **Not implemented** - **Not tested**
       responses:
         200:
           body:
@@ -585,7 +586,7 @@ schemas:
   displayName: Tags
   uriParameters:
     project_name:
-      description: Name of the project
+      description: Name of the project.
       type: string
 
   /{path_or_uuid}:
@@ -597,7 +598,7 @@ schemas:
         type: string
     get:
       is: [ localized, sortable, nested ]
-      description: Load the **tag** with the given path
+      description: Load the tag with the given path. **Partially implemented** - **Tested 7**
       queryParameters:
         depth: 
           description: Determines the depth of traversal for fetching nested tags.
@@ -608,7 +609,7 @@ schemas:
               schema: TagResponse
               example: !include json/TagResponse.example.json
     post:
-      description: Create the **tag** in the given path. This does not work when a uuid has been specified instead of a valid path.
+      description: Create the tag in the given path. This does not work when a uuid has been specified instead of a valid path.  **Partially implemented** - **Tested 2**
       body:
         application/json:
           schema: TagCreateRequest
@@ -620,7 +621,7 @@ schemas:
               schema: TagResponse
               example: !include json/TagResponse.example.json
     put:
-      description: Update the **tag** with the given path.
+      description: Update the tag with the given path. **Partially implemented** - **Tested 4**
       body:
         application/json:
           schema: TagUpdateRequest
@@ -632,7 +633,7 @@ schemas:
               schema: TagResponse
               example: !include json/TagResponse.example.json
     delete:
-      description: Delete the **tag** with the given path.
+      description: Delete the tag with the given path. **Partially implemented** - **Tested 4**
       responses:
         200:
           body:
@@ -654,13 +655,13 @@ schemas:
         Accept:
          description: Can be set to *application/json* or *application/octet-stream* 
                       to load either the json representation of the file or its binary contents.
-      description: Load the **binary file** with the given path
+      description: Load the binary file with the given path. **Not implemented** - **Not tested**
     post: 
-      description: Create the **binary file** with the given path
+      description: Create the binary file with the given path. **Not implemented** - **Not tested**
     put:
-      description: Update the **binary file** with the given path
+      description: Update the binary file with the given path. **Not implemented** - **Not tested**
     delete:
-      description: Delete the **binary file** with the given path
+      description: Delete the binary file with the given path. **Not implemented** - **Not tested**
       responses:
         200:
           body:
@@ -676,11 +677,13 @@ schemas:
   is: [ localized ]
   displayName: Project Search
   get:
+    description: Query for various objects.  **Not implemented** - **Not tested**
 
 /search:
   is: [ localized ]
   displayName: Global Search
   get:
+    description: Query for various objects.  **Not implemented** - **Not tested**
 
 
 
@@ -691,6 +694,7 @@ schemas:
   is: [ localized ]
   displayName: Navigation
   get:
+    description: Return the navigation. **Not implemented** - **Not tested**
 
 #------------------------------------------------------------------------------
 # Copy Verticle
@@ -698,7 +702,8 @@ schemas:
 /copy/{uuid}/to/{uuid}:
   displayName: Copy
   put:
-    description: Copy the object to the second object. Include all nested objects during this process. (TODO enhance documentation)
+    description: Copy the object to the second object. Include all nested objects during this process. (TODO enhance documentation). **Not implemented** - **Not tested**
+    
 
 #------------------------------------------------------------------------------
 # Move Verticle
@@ -706,6 +711,7 @@ schemas:
 /move/{uuid}/to/{uuid}:
   displayName: Move
   put:
+    description: Move entities. **Not implemented** - **Not tested**
 
 #------------------------------------------------------------------------------
 # Admin Verticle
@@ -715,7 +721,7 @@ schemas:
 
   /neo4vertx/restart:
     is: [ localized ]
-    description: Restart the neo4vertx verticle
+    description: Restart the neo4vertx verticle. **Implemented** - **Not tested**
     get:
 
   /services/{mavenCoordinates}:
@@ -726,7 +732,7 @@ schemas:
                 Maven coordinates for the service. (E.g.: com.gentics.cailun:tagcloud:1.0.1)
         type: string
     post:
-      description: Deploy a vertx maven service
+      description: Deploy a vertx maven service. **Partially implemented** - **Not tested**
       responses:
         200:
           body:
@@ -734,7 +740,7 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     delete:
-      description: Undeploy a previouly deployed vertx maven server
+      description: Undeploy a previouly deployed vertx maven server. **Partially implemented** - **Not tested**
       responses:
         200:
           body:
@@ -746,7 +752,7 @@ schemas:
     is: [ localized ]
     uriParameters:
       class:
-        description: Name of the verticle class
+        description: Name of the verticle class. **Partially implemented** - **Not tested**
         type: string
     post:
       description: Deploy a verticle with the given class
@@ -757,7 +763,7 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     delete:
-      description: Undeploy a verticle with the given class
+      description: Undeploy a verticle with the given class. **Partially implemented** - **Not tested**
       responses:
         200:
           body:
@@ -768,7 +774,7 @@ schemas:
   /backup:
     is: [ localized ]
     get:
-      description: Invoke the live backup process
+      description: Invoke the live backup process. **Partially implemented** - **Not tested**
       responses:
         200:
           body:

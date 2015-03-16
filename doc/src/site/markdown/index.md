@@ -22,6 +22,7 @@ Project Structure Verticles:
  * ProjectVerticle
  * ObjectSchemaVerticle
 
+Other:
 
  * AdminVerticle
 

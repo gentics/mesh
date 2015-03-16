@@ -29,7 +29,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateContentByPath() throws Exception {
 		UserInfo info = data().getUserInfo();
 		ContentCreateRequest request = new ContentCreateRequest();
-		request.setType("content");
+		request.setSchema("content");
 		request.addProperty("english", "filename", "new-page.html");
 		request.addProperty("english", "name", "english content name");
 		request.addProperty("english", "content", "Blessed mealtime again!");

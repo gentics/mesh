@@ -105,7 +105,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				String path = rc.request().params().get("param0");
 				// TODO remove debug code
 				// TODO handle language by get parameter
-				List<String> languages = getSelectedLanguages(rc);
+				List<String> languages = getSelectedLanguageTags(rc);
 				languages = new ArrayList<>();
 				languages.add("english");
 

@@ -103,6 +103,11 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testReadRoleByUUIDWithMissingPermission() {
+		fail("Not yet implemented");
+	}
+
+	@Test
 	public void testReadRoles() throws Exception {
 		// Role with no permission
 		Role extraRole1 = new Role("extra role");
@@ -177,6 +182,11 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		String json = "{\"msg\":\"OK\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNull("The user should have been deleted", roleService.findByUUID(info.getRole().getUuid()));
+	}
+
+	@Test
+	public void testDeleteRoleByUUIDWithMissingPermission() throws Exception {
+		fail("Not yet implemented");
 	}
 
 	// Role Group Testcases - PUT / Add

@@ -7,7 +7,6 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -172,7 +171,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 200, "OK", requestJson);
 		System.out.println(response);
 		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
-		Assert.assertEquals(request.getProperties().get("en").get("name"), tagUpdateRequest.getProperties().get("en").get("name"));
+		Assert.assertEquals(request.getProperty("en", "name"), tagUpdateRequest.getProperty("en", "name"));
 
 	}
 
@@ -189,7 +188,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		request.addProperty("en", "name", "new Name");
 
 		TagResponse updateTagResponse = new TagResponse();
-		updateTagResponse.addProperty("english", "name", "new Name");
+		updateTagResponse.addProperty("en", "name", "new Name");
 
 		String requestJson = new ObjectMapper().writeValueAsString(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 403, "Forbidden", requestJson);
@@ -198,19 +197,68 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 200, "OK", requestJson);
-		System.out.println(response);
 		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
-		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperties().get("en").get("name"));
+		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en","name"));
 	}
 
 	@Test
-	public void testUpdateTagByUUID() {
-		fail("Not yet implemented");
+	public void testUpdateTagByUUID() throws Exception {
+		Tag tag = data().getLevel1a();
+
+		roleService.addPermission(info.getRole(), tag, PermissionType.UPDATE);
+		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+
+		// Create an tag update request
+		TagUpdateRequest request = new TagUpdateRequest();
+		request.setUuid(tag.getUuid());
+		request.addProperty("en", "name", "new Name");
+
+		// 1. Read the current tag in english
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
+		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
+		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
+
+		// 2. Manipulate the request object
+		final String newName = "new Name";
+		tagUpdateRequest.addProperty("en", "name", newName);
+		Assert.assertEquals(newName, tagUpdateRequest.getProperty("en", "name"));
+
+		// 3. Send the request to the server
+		// TODO test with no ?lang query parameter
+		String requestJson = new ObjectMapper().writeValueAsString(request);
+		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid()+ "?lang=en", 200, "OK", requestJson);
+		String json = "{\"uuid\":\"uuid-value\",\"type\":null,\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"level_1_a\"}}}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		// 4. read the tag again and verify that it was changed
+		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
+		tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
+		Assert.assertEquals(request.getProperty("en", "name"), tagUpdateRequest.getProperty("en", "name"));
 	}
 
 	@Test
-	public void testUpdateTagByUUIDWithoutPerm() {
-		fail("Not yet implemented");
+	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
+		Tag tag = data().getLevel1a();
+
+		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+
+		// Create an tag update request
+		TagUpdateRequest request = new TagUpdateRequest();
+		request.setUuid(tag.getUuid());
+		request.addProperty("en", "name", "new Name");
+
+		TagResponse updateTagResponse = new TagResponse();
+		updateTagResponse.addProperty("english", "name", "new Name");
+
+		String requestJson = new ObjectMapper().writeValueAsString(request);
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden", requestJson);
+		String json = "{\"message\":\"Missing permission on object {" + tag.getUuid() + "}\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		// read the tag again and verify that it was not changed
+		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
+		TagUpdateRequest tagUpdateRequest = mapper.readValue(response, TagUpdateRequest.class);
+		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
 	}
 
 	// Delete Tests

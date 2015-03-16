@@ -54,7 +54,7 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 
 			ContentResponse response = new ContentResponse();
 			response.setUuid(content.getUuid());
-			response.setType(content.getType());
+			response.setSchema(content.getSchema());
 			response.addProperty(languageTag, "name", content.getName(language));
 			response.addProperty(languageTag, "filename", content.getFilename(language));
 			UserResponse restUser = userService.transformToRest(content.getCreator());
@@ -110,23 +110,23 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 			// Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
 			Language language = null;
 			// TODO save given languages individually, TODO how can we delete a single language?
-			if (language == null || requestModel.getType() == null) {
+			if (language == null || requestModel.getSchema() == null) {
 				// TODO handle this case
 				throw new NullPointerException("No language or type specified");
 			}
 
 			// We need to validate the saved data using the object schema
-			ObjectSchema objectSchema = objectSchemaService.findByName(projectName, requestModel.getType());
+			ObjectSchema objectSchema = objectSchemaService.findByName(projectName, requestModel.getSchema());
 			if (objectSchema == null) {
 				// TODO handle this case
-				throw new NullPointerException("Could not find object schema for type {" + requestModel.getType() + "} and project {" + projectName
+				throw new NullPointerException("Could not find object schema for type {" + requestModel.getSchema() + "} and project {" + projectName
 						+ "}");
 			}
 
 			// TODO handle types , verify that type exists
 			Content content = new Content();
 			content.setProject(project);
-			content.setType(requestModel.getType());
+			content.setSchema(requestModel.getSchema());
 			// for (Entry<String, String> entry : requestModel.getProperties().entrySet()) {
 			// PropertyTypeSchema propertyTypeSchema = objectSchema.getPropertyTypeSchema(entry.getKey());
 			// // TODO we should abort when we encounter a property with an unknown key.

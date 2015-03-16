@@ -3,7 +3,6 @@ package com.gentics.cailun.core.rest.content.response;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 
@@ -11,7 +10,8 @@ public class ContentResponse extends AbstractRestModel {
 
 	private UserResponse author;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
-	private String type;
+	private String schema;
+	private String[] perms;
 
 	private long order = 0;
 
@@ -41,12 +41,12 @@ public class ContentResponse extends AbstractRestModel {
 		}
 	}
 
-	public String getType() {
-		return type;
+	public String getSchema() {
+		return schema;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setSchema(String schema) {
+		this.schema = schema;
 	}
 
 	public long getOrder() {
@@ -55,6 +55,14 @@ public class ContentResponse extends AbstractRestModel {
 
 	public void setOrder(long order) {
 		this.order = order;
+	}
+
+	public String[] getPerms() {
+		return perms;
+	}
+
+	public void setPerms(String... perms) {
+		this.perms = perms;
 	}
 
 }

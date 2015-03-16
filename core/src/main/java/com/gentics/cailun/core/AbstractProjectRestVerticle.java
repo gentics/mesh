@@ -54,7 +54,7 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 	 * @param rc
 	 * @return List of languages. List can be empty.
 	 */
-	protected List<String> getSelectedLanguages(RoutingContext rc) {
+	protected List<String> getSelectedLanguageTags(RoutingContext rc) {
 		String query = rc.request().query();
 		Map<String, String> queryPairs;
 		try {

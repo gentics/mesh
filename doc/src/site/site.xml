@@ -4,8 +4,8 @@
 	xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd"
 	name="cailun">
 
-	<version position="none" />
-	<publishDate position="none" />
+	<version position="none"/>
+	<publishDate position="none"/>
 
 	<bannerLeft>
 		<src>cailun_small.png</src>
@@ -43,8 +43,8 @@
 					<breadcrumbs>false</breadcrumbs>
 					<toc>false</toc>
 					<sections>
-						<body />
-						<sidebar />
+						<body/>
+						<sidebar/>
 						<thumbs>2</thumbs>
 						<columns>3</columns>
 					</sections>
@@ -55,13 +55,15 @@
 
 	<body>
 		<head>
-			<link rel="shortcut icon" href="favicon.gif" type="image/x-icon" />
+			<link rel="shortcut icon" href="favicon.gif" type="image/x-icon"/>
 		</head>
 
 		<menu name="Intro">
 			<item name="Home" href="index.html"></item>
 		</menu>
 		<menu name="Documentation">
+			<item name="Functional specification" href="specification.html"></item>
+			<item name="Implementation / QA" href="impl-status-qa.html"></item>
 			<item name="JavaDoc" href="javadoc/index.html"></item>
 			<item name="RESTful API" href="raml/index.html"></item>
 		</menu>

@@ -1,8 +1,8 @@
 package com.gentics.cailun.core.verticle;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -60,6 +60,11 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
+	public void testReadProjectList() {
+		fail("Not yet implemented");
+	}
+
+	@Test
 	public void testReadProjectByUUID() throws Exception {
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
 		Project project = data().getProject();
@@ -70,24 +75,29 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadProjectByName() throws Exception {
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
-		Project project = data().getProject();
-		assertNotNull("The name of the project must not be null.", project.getName());
-
-		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getName(), 200, "OK");
-		TestUtil.assertEqualsSanitizedJson(json, response, ProjectResponse.class);
+	public void testReadProjectByUUIDWithNoPerm() {
+		fail("Not yet implemented");
 	}
 
-	@Test
-	public void testReadProjectInvalidName() throws Exception {
-		String json = "{\"message\":\"Project not found {bogusName}\"}";
-		Project project = data().getProject();
-		assertNotNull("The UUID of the project must not be null.", project.getUuid());
-
-		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + "bogusName", 404, "Not Found");
-		assertEquals(json, response);
-	}
+	// @Test
+	// public void testReadProjectByName() throws Exception {
+	// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
+	// Project project = data().getProject();
+	// assertNotNull("The name of the project must not be null.", project.getName());
+	//
+	// String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getName(), 200, "OK");
+	// TestUtil.assertEqualsSanitizedJson(json, response, ProjectResponse.class);
+	// }
+	//
+	// @Test
+	// public void testReadProjectInvalidName() throws Exception {
+	// String json = "{\"message\":\"Project not found {bogusName}\"}";
+	// Project project = data().getProject();
+	// assertNotNull("The UUID of the project must not be null.", project.getUuid());
+	//
+	// String response = request(info, HttpMethod.GET, "/api/v1/projects/" + "bogusName", 404, "Not Found");
+	// assertEquals(json, response);
+	// }
 
 	// Update Tests
 
@@ -108,6 +118,11 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project reloadedProject = projectService.findByUUID(project.getUuid());
 
 		Assert.assertEquals("New Name", reloadedProject.getName());
+	}
+
+	@Test
+	public void testUpdateProjectWithNoPerm() {
+		fail("Not yet implemented");
 	}
 
 	// Delete Tests
@@ -135,28 +150,28 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The project should not have been deleted", projectService.findByUUID(project.getUuid()));
 	}
 
-	@Test
-	public void testDeleteProjectByName() throws Exception {
-		Project project = data().getProject();
-		assertNotNull(project.getUuid());
-
-		roleService.addPermission(info.getRole(), project, PermissionType.DELETE);
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getName(), 200, "OK");
-		String json = "{\"message\":\"Deleted project {dummy}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		assertNull("The project should have been deleted", projectService.findByUUID(project.getUuid()));
-	}
-
-	@Test
-	public void testDeleteProjectByNameWithNoPermission() throws Exception {
-		Project project = data().getProject();
-		assertNotNull(project.getUuid());
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getName(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		assertNotNull("The project should not have been deleted", projectService.findByUUID(project.getUuid()));
-	}
+	// @Test
+	// public void testDeleteProjectByName() throws Exception {
+	// Project project = data().getProject();
+	// assertNotNull(project.getUuid());
+	//
+	// roleService.addPermission(info.getRole(), project, PermissionType.DELETE);
+	//
+	// String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getName(), 200, "OK");
+	// String json = "{\"message\":\"Deleted project {dummy}\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// assertNull("The project should have been deleted", projectService.findByUUID(project.getUuid()));
+	// }
+	//
+	// @Test
+	// public void testDeleteProjectByNameWithNoPermission() throws Exception {
+	// Project project = data().getProject();
+	// assertNotNull(project.getUuid());
+	//
+	// String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getName(), 403, "Forbidden");
+	// String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// assertNotNull("The project should not have been deleted", projectService.findByUUID(project.getUuid()));
+	// }
 
 }

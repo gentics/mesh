@@ -117,10 +117,12 @@ public class Generator {
 		ProjectResponse project = new ProjectResponse();
 		project.setName("Dummy Project");
 		project.setUuid(getUUID());
+		project.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(project);
 
 		ProjectResponse project2 = new ProjectResponse();
 		project2.setName("Dummy Project (Mobile)");
+		project2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		project2.setUuid(getUUID());
 
 		ProjectListResponse projectList = new ProjectListResponse();
@@ -144,10 +146,12 @@ public class Generator {
 		RoleResponse role = new RoleResponse();
 		role.setName("Admin role");
 		role.setUuid(getUUID());
+		role.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(role);
 
 		RoleResponse role2 = new RoleResponse();
 		role2.setName("Reader role");
+		role2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		role2.setUuid(getUUID());
 
 		RoleListResponse roleList = new RoleListResponse();
@@ -170,6 +174,7 @@ public class Generator {
 
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
+		tag.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(tag);
 
 		TagUpdateRequest tagUpdate = new TagUpdateRequest();
@@ -185,6 +190,7 @@ public class Generator {
 		schema.setUuid(getUUID());
 		schema.setDescription("Description of the schema");
 		schema.setName("extended-content");
+		schema.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
 		prop.setDescription("Html Content");
 		prop.setKey("content");
@@ -222,6 +228,7 @@ public class Generator {
 		RestBinaryFile file = new RestBinaryFile();
 		file.setUuid(getUUID());
 		file.setFilename("some_binary_file.dat");
+		file.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(file);
 	}
 
@@ -234,6 +241,7 @@ public class Generator {
 		content.addProperty(lang, "filename", "dummy-content.de.html");
 		content.addProperty(lang, "teaser", "Dummy teaser for de-DE");
 		content.addProperty(lang, "content", "Content for language tag de-DE");
+		content.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(content);
 
 		ContentUpdateRequest contentUpdate = new ContentUpdateRequest();
@@ -243,7 +251,7 @@ public class Generator {
 
 		ContentCreateRequest contentCreate = new ContentCreateRequest();
 		contentCreate.setAuthor(getUser());
-		contentCreate.setType("content");
+		contentCreate.setSchema("content");
 		write(contentCreate);
 
 	}
@@ -253,11 +261,14 @@ public class Generator {
 		GroupResponse group = new GroupResponse();
 		group.setUuid(getUUID());
 		group.setName("Admin Group");
+		group.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+
 		write(group);
 
 		GroupResponse group2 = new GroupResponse();
 		group2.setUuid(getUUID());
 		group2.setName("Editor Group");
+		group2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 
 		GroupListResponse groupList = new GroupListResponse();
 		groupList.addGroup(group);
@@ -327,6 +338,7 @@ public class Generator {
 		user.setLastname("Doe");
 		user.setEmailAddress("j.doe@nowhere.com");
 		user.addGroup("editors");
+		user.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		return user;
 	}
 

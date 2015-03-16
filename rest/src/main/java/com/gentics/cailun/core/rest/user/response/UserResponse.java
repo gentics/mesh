@@ -17,6 +17,8 @@ public class UserResponse extends AbstractRestModel {
 
 	private List<String> groups = new ArrayList<>();
 
+	private String[] perms;
+
 	public UserResponse() {
 	}
 
@@ -64,5 +66,12 @@ public class UserResponse extends AbstractRestModel {
 		this.groups.add(name);
 	}
 
+	public String[] getPerms() {
+		return perms;
+	}
+
+	public void setPerms(String... perms) {
+		this.perms = perms;
+	}
 
 }

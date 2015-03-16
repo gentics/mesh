@@ -13,10 +13,10 @@ public class Content extends GenericContent {
 	public static final String TEASER_KEY = "teaser";
 	public static final String TITLE_KEY = "title";
 
-	private String type = null;
+	private String schema = null;
 
 	public Content() {
-		this.type = "content";
+		this.schema = "content";
 	}
 
 	public String getTeaser(Language language) {
@@ -27,13 +27,13 @@ public class Content extends GenericContent {
 		return getProperty(language, TITLE_KEY);
 	}
 
-	public String getType() {
+	public String getSchema() {
 		// TODO use labels instead
-		return type;
+		return schema;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setSchema(String schema) {
+		this.schema = schema;
 	}
 
 }
