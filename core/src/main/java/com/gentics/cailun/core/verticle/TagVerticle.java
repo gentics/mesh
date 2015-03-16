@@ -25,6 +25,7 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.path.Path;
+import com.gentics.cailun.path.PathSegment;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -56,11 +57,14 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addPathHandler();
 	}
 
+	private Route pathRoute() {
+		return getRouter().routeWithRegex("\\/(.*)");
+	}
+
 	private void addPathHandler() {
-		Route route = getRouter().routeWithRegex("\\/(.*)");
 
 		// TODO add .produces(APPLICATION_JSON)
-		route.method(PUT).handler(rc -> {
+		pathRoute().method(PUT).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			if (isUUID(path)) {
 				uuidPutHandler(rc);
@@ -70,7 +74,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		});
 
 		// TODO add produces(APPLICATION_JSON).
-		route.method(DELETE).handler(rc -> {
+		pathRoute().method(DELETE).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			if (isUUID(path)) {
 				uuidDeleteHandler(rc);
@@ -80,7 +84,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		});
 
 		// TODO add produces(APPLICATION_JSON).
-		route.method(POST).handler(rc -> {
+		pathRoute().method(POST).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			if (isUUID(path)) {
 				String msg = "";
@@ -94,7 +98,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		});
 
 		// TODO add .produces(APPLICATION_JSON)
-		route.method(GET).handler(rc -> {
+		pathRoute().method(GET).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			if (isUUID(path)) {
 				uuidGetHandler(rc);
@@ -110,7 +114,29 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void pathPutHandler(RoutingContext rc) {
-		throw new HttpStatusCodeErrorException(501, "Not implemented");
+		String projectName = getProjectName(rc);
+		String path = rc.request().params().get("param0");
+		List<String> languages = getSelectedLanguages(rc);
+
+		Path tagPath = tagService.findByProjectPath(projectName, path);
+		PathSegment lastSegment = tagPath.getLast();
+		if (lastSegment != null) {
+			Tag tag = tagService.projectTo(lastSegment.getNode(), Tag.class);
+			if (tag == null) {
+				String message = i18n.get(rc, "tag_not_found_for_path", path);
+				throw new EntityNotFoundException(message);
+			}
+			failOnMissingPermission(rc, tag, PermissionType.UPDATE);
+			languages.add(lastSegment.getLanguageTag());
+
+			//TODO handle update
+			
+			
+			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
+			return;
+		} else {
+			throw new EntityNotFoundException(i18n.get(rc, "tag_not_found_for_path", path));
+		}
 	}
 
 	private void pathDeleteHandler(RoutingContext rc) {
@@ -123,21 +149,21 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		List<String> languages = getSelectedLanguages(rc);
 
 		Path tagPath = tagService.findByProjectPath(projectName, path);
-		if (tagPath.getLast() != null) {
+		PathSegment lastSegment = tagPath.getLast();
+		if (lastSegment != null) {
 
-			Tag tag = tagService.projectTo(tagPath.getLast().getNode(), Tag.class);
+			Tag tag = tagService.projectTo(lastSegment.getNode(), Tag.class);
 			if (tag == null) {
 				String message = i18n.get(rc, "tag_not_found_for_path", path);
 				throw new EntityNotFoundException(message);
 			}
-			languages.add(tagPath.getLast().getLanguageTag());
-
 			failOnMissingPermission(rc, tag, PermissionType.READ);
+			languages.add(lastSegment.getLanguageTag());
+
 			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 			return;
 		} else {
-			String message = i18n.get(rc, "tag_not_found_for_path", path);
-			throw new EntityNotFoundException(message);
+			throw new EntityNotFoundException(i18n.get(rc, "tag_not_found_for_path", path));
 		}
 	}
 

@@ -11,7 +11,6 @@ import com.gentics.cailun.core.rest.user.response.UserResponse;
 public class TagResponse extends AbstractRestModel {
 
 	private String type;
-
 	private long order = 0;
 
 	private UserResponse creator;

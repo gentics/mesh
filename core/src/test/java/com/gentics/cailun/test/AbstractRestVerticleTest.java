@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.etc.RouterStorage;
 
@@ -41,6 +42,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	private CountDownLatch latch;
 
 	protected UserInfo info;
+
+	protected ObjectMapper mapper = new ObjectMapper();
 
 	@Autowired
 	private RouterStorage routerStorage;
@@ -87,6 +90,10 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, String requestBody)
 			throws Exception {
+		// Reset the latch etc.
+		latch = new CountDownLatch(1);
+		throwable.set(null);
+
 		Consumer<HttpClientRequest> requestAction = request -> {
 			String authStringEnc = info.getUser().getUsername() + ":" + info.getPassword();
 			byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
