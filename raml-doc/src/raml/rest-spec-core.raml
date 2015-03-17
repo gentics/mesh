@@ -114,6 +114,8 @@ schemas:
   - ContentUpdateRequest: !include json/ContentUpdateRequest.schema.json
   - ContentCreateRequest: !include json/ContentCreateRequest.schema.json
 
+  - BinaryFileResponse: !include json/BinaryFileResponse.schema.json
+
   - ObjectSchemaResponse: !include json/ObjectSchemaResponse.schema.json
   - ObjectSchemaListResponse: !include json/ObjectSchemaListResponse.schema.json
   - ObjectSchemaUpdateRequest: !include json/ObjectSchemaUpdateRequest.schema.json
@@ -498,7 +500,7 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     /projects/{uuid}:
-      put:
+      post:
         description: Add the schema to the project. **Not implemented** - **Not tested**
         responses:
           200:
@@ -521,15 +523,29 @@ schemas:
 #------------------------------------------------------------------------------
 /{project_name}/contents:
   displayName: Contents
-  /{path_or_uuid}:
+  /:
+    get: 
+      description: Load all contents.
+    post:
+      description: Create content.
+      body:
+        application/json:
+          schema: ContentCreateRequest
+          example: !include json/ContentCreateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              schema: ContentResponse
+              example: !include json/ContentResponse.example.json
+  /{uuid}:
     is: [ localized, sortable, nested, perm_listable ]
     uriParameters:
-      path_or_uuid:
-        description: | 
-             Can be either path to the content or the uuid of a single content.
+      uuid:
+        description: Uuid of a single content.
         type: string
     get:
-      description: Retrieves the content with the given path. **Partially implemented** - **Tested 7**
+      description: Retrieves the content with the given uuid. **Not implemented** - **Not tested**
       queryParameters:
         lang:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
@@ -543,21 +559,8 @@ schemas:
             application/json:
               schema: ContentResponse
               example: !include json/ContentResponse.example.json
-    post:
-      description: Creates the content with the given path. **Not implemented** - **Not tested**
-      body:
-        application/json:
-          schema: ContentCreateRequest
-          example: !include json/ContentCreateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              schema: ContentResponse
-              example: !include json/ContentResponse.example.json
-        423:
     put:
-      description: Updates the content with the given path. **Not implemented** - **Not tested**
+      description: Updates the content with the given uuid. **Not implemented** - **Not tested**
       body:
         application/json:
           schema: ContentUpdateRequest
@@ -570,7 +573,7 @@ schemas:
               example: !include json/ContentResponse.example.json
         423:
     delete:
-      description: Deletes the content with the given path. **Not implemented** - **Not tested**
+      description: Deletes the content with the given uuid. **Not implemented** - **Not tested**
       responses:
         200:
           body:
@@ -578,6 +581,7 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
         423:
+
 
 #------------------------------------------------------------------------------
 # Tag Verticle
@@ -589,31 +593,35 @@ schemas:
       description: Name of the project.
       type: string
 
-  /{path_or_uuid}:
-    is: [ perm_listable ]
-    uriParameters:
-      path_or_uuid:
-        description: | 
-             Can be either path to the content or the uuid of a single tag.
-        type: string
+  /:
     get:
-      is: [ localized, sortable, nested ]
-      description: Load the tag with the given path. **Partially implemented** - **Tested 7**
-      queryParameters:
-        depth: 
-          description: Determines the depth of traversal for fetching nested tags.
+      description: Load all tags of the project.
+    post:
+      description: Create a new tag. **Partially implemented**
+      body:
+        application/json:
+          schema: TagCreateRequest
+          example: !include json/TagCreateRequest.example.json
       responses:
         200:
           body:
             application/json:
               schema: TagResponse
               example: !include json/TagResponse.example.json
-    post:
-      description: Create the tag in the given path. This does not work when a uuid has been specified instead of a valid path.  **Partially implemented** - **Tested 2**
-      body:
-        application/json:
-          schema: TagCreateRequest
-          example: !include json/TagCreateRequest.example.json
+
+  /{uuid}:
+    is: [ perm_listable ]
+    uriParameters:
+      uuid:
+        description: | 
+             The uuid of a single tag.
+        type: string
+    get:
+      is: [ localized, sortable, nested ]
+      description: Load the tag with the given uuid. **Partially implemented** - **Tested 7**
+      queryParameters:
+        depth: 
+          description: Determines the depth of traversal for fetching nested tags.
       responses:
         200:
           body:
@@ -640,6 +648,33 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
+    /tags/{uuid}:
+      uriParameters:
+        uuid:
+          description: Uuid of a tag.
+          type: string
+      post:
+        description: Assign the a sub tag to the tag. **Partially implemented**
+      delete:
+        description: Remove the sub tag from the tag. **Partially implemented**
+    /files/{uuid}:
+      uriParameters:
+        uuid:
+          description: Uuid of a file.
+          type: string
+      post:
+        description: Assign the tag to the file. **Partially implemented**
+      delete:
+        description: Remove the tag from the file. **Partially implemented**
+    /contents/{uuid}:
+      uriParameters:
+        uuid:
+          description: Uuid of a content.
+          type: string
+      post:
+        description: Assign the tag to the content. **Not implemented**
+      delete:
+        description: Remove the tag from the content. **Not implemented**
 
 
 #------------------------------------------------------------------------------
@@ -647,28 +682,78 @@ schemas:
 #------------------------------------------------------------------------------
 /{project_name}/binaries:
   displayName: Binaries
-
-  /{path_or_uuid}:
-    is: [ localized, perm_listable ]
+  is: [ localized, perm_listable ]
+  /:
+    get:
+      description: Load all binaries
+    post: 
+      description: Create a new binary file.
+      responses:
+        200:
+          body:
+            application/json:
+              schema: BinaryFileResponse
+              example: !include json/BinaryFileResponse.example.json
+  
+  /{uuid}:
+    uriParameters:
+      uuid:
+        description: Uuid of a binary file.
+        type: string
     get:
       headers:
         Accept:
          description: Can be set to *application/json* or *application/octet-stream* 
                       to load either the json representation of the file or its binary contents.
-      description: Load the binary file with the given path. **Not implemented** - **Not tested**
-    post: 
-      description: Create the binary file with the given path. **Not implemented** - **Not tested**
+      description: Load the binary file with the given uuid. **Not implemented** - **Not tested**
     put:
-      description: Update the binary file with the given path. **Not implemented** - **Not tested**
+      description: Update the binary file with the given uuid. **Not implemented** - **Not tested**
     delete:
-      description: Delete the binary file with the given path. **Not implemented** - **Not tested**
+      description: Delete the binary file with the given uuid. **Not implemented** - **Not tested**
       responses:
         200:
           body:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
+    /tags/{uuid}:
+      uriParameters:
+        uuid:
+          description: Uuid of a tag.
+          type: string
+      post:
+        description: Create a new sub tag for the file.
+      delete:
+        description: Remove the sub tag from the file.
 
+#------------------------------------------------------------------------------
+# WebRoot Verticle
+#------------------------------------------------------------------------------
+
+/{project_name}/webroot:
+  is: [ localized ]
+  displayName: WebRoot
+  /{path}:
+    is: [ localized, sortable, nested, perm_listable ]
+    uriParameters:
+      path:
+        description: Path to the content,tag or image file.
+        type: string
+    get:
+      description: Retrieves the content with the given path. **Not implemented** - **Not tested**
+      queryParameters:
+        lang:
+          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
+          example: /{project_name}/contents/?lang=de-DE,en-US
+        update:
+          description: The content will be locked when the *update* parameter is set to true.
+          example: /{project_name}/contents/?update=true
+      responses:
+        200:
+          body:
+            application/json:
+              schema: ContentResponse
+              example: !include json/ContentResponse.example.json
 
 #------------------------------------------------------------------------------
 # Search Verticle

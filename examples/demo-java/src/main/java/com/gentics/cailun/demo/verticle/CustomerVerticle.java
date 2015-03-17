@@ -219,7 +219,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		// Save the default object schema
 		ObjectSchema contentSchema = new ObjectSchema("content");
-		contentSchema.setProject(aloha);
+		contentSchema.addProject(aloha);
 		contentSchema.setDescription("Default schema for contents");
 		contentSchema.setCreator(users.get(0));
 		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
@@ -237,7 +237,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		contentService.setFilename(rootContent, english, "english.html");
 		contentService.setContent(rootContent, english, "Blessed mealtime!");
 
-		rootContent.setProject(aloha);
+		rootContent.addProject(aloha);
 		rootContent.setCreator(users.get(0));
 		// rootContent.tag(rootTag);
 		contentService.save(rootContent);

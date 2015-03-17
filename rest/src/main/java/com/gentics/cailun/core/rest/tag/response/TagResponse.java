@@ -8,7 +8,7 @@ import com.gentics.cailun.core.rest.user.response.UserResponse;
 
 public class TagResponse extends AbstractRestModel {
 
-	private String schema;
+	private String schemaName;
 	private long order = 0;
 
 	private UserResponse creator;
@@ -91,12 +91,12 @@ public class TagResponse extends AbstractRestModel {
 		this.order = order;
 	}
 
-	public String getSchema() {
-		return schema;
+	public String getSchemaName() {
+		return schemaName;
 	}
 
-	public void setSchema(String schema) {
-		this.schema = schema;
+	public void setSchemaName(String schemaName) {
+		this.schemaName = schemaName;
 	}
 
 	public String[] getPerms() {

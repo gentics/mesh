@@ -1,14 +1,14 @@
-package com.gentics.cailun.core.rest.file.response;
+package com.gentics.cailun.verticle.file;
 
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 
-public class RestBinaryFile extends AbstractRestModel {
+public class BinaryFileResponse extends AbstractRestModel {
 
 	private String filename;
 
 	private String[] perms = {};
 
-	public RestBinaryFile() {
+	public BinaryFileResponse() {
 	}
 
 	public String getFilename() {

@@ -1,6 +1,5 @@
 package com.gentics.cailun.error;
 
-import org.neo4j.graphdb.ConstraintViolationException;
 
 public class HttpStatusCodeErrorException extends RuntimeException {
 
@@ -16,7 +15,7 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		this.code = code;
 	}
 
-	public HttpStatusCodeErrorException(int code, String message, ConstraintViolationException e) {
+	public HttpStatusCodeErrorException(int code, String message, Exception e) {
 		super(message, e);
 		this.code = code;
 	}

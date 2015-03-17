@@ -338,7 +338,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				throw new HttpStatusCodeErrorException(409, message);
 			}
 
-			User user = userService.transformFromRest(requestModel);
+			User user = new User(requestModel.getUsername());
+			user.setFirstname(requestModel.getFirstname());
+			user.setLastname(requestModel.getLastname());
+			user.setEmailAddress(requestModel.getEmailAddress());
+			user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
 			user = userService.save(user);
 			// Update uuid - TODO remove once save is transactional
 

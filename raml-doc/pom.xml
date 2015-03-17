@@ -50,6 +50,11 @@
 			<artifactId>cailun-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.cailun</groupId>
+			<artifactId>cailun-binary</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -69,7 +74,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath />
+								<classpath/>
 								<argument>com.gentics.cailun.raml.Generator</argument>
 							</arguments>
 						</configuration>

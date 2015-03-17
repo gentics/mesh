@@ -6,7 +6,7 @@ import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 
 public interface ObjectSchemaService extends GenericNodeService<ObjectSchema> {
 
-	ObjectSchemaResponse getReponseObject(ObjectSchema projectSchema);
+	ObjectSchemaResponse transformToRest(ObjectSchema schema);
 
 	void deleteByName(String projectName, String schemaName);
 

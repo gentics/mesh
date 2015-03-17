@@ -52,7 +52,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public ObjectSchemaResponse getReponseObject(ObjectSchema schema) {
+	public ObjectSchemaResponse transformToRest(ObjectSchema schema) {
 		ObjectSchemaResponse schemaForRest = new ObjectSchemaResponse();
 		schemaForRest.setDescription(schema.getDescription());
 		schemaForRest.setName(schema.getName());

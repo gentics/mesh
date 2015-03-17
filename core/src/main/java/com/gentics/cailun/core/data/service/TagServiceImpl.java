@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,8 +21,10 @@ import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
+import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.generic.GenericTagServiceImpl;
 import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.path.Path;
 import com.gentics.cailun.path.PathSegment;
@@ -165,4 +168,5 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 		return response;
 
 	}
+
 }

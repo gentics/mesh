@@ -11,7 +11,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.verticle.ContentVerticle;
 import com.gentics.cailun.etc.RouterStorage;
 
@@ -27,6 +29,9 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
 
 	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
+
+	@Autowired
+	protected ProjectService projectService;
 
 	protected AbstractProjectRestVerticle(String basePath) {
 		super(basePath);

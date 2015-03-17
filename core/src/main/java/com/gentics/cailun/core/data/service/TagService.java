@@ -2,8 +2,6 @@ package com.gentics.cailun.core.data.service;
 
 import java.util.List;
 
-import org.neo4j.graphdb.Node;
-
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.service.generic.GenericTagService;

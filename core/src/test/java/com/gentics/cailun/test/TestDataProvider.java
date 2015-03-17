@@ -190,7 +190,7 @@ public class TestDataProvider {
 
 			// Save the default object schema
 			contentSchema = new ObjectSchema("content");
-			contentSchema.setProject(dummyProject);
+			contentSchema.addProject(dummyProject);
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setCreator(userInfo.getUser());
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
@@ -199,7 +199,7 @@ public class TestDataProvider {
 			assertNotNull(objectSchemaService.save(contentSchema));
 
 			ObjectSchema customSchema = new ObjectSchema("custom-content");
-			customSchema.setProject(dummyProject);
+			customSchema.addProject(dummyProject);
 			customSchema.setDescription("Custom schema for contents");
 			customSchema.setCreator(userInfo.getUser());
 			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
@@ -241,7 +241,7 @@ public class TestDataProvider {
 		Tag tag = new Tag();
 		tagService.setName(tag, english, englishName);
 		tagService.setName(tag, german, germanName);
-		tag.setProject(dummyProject);
+		tag.addProject(dummyProject);
 		tag.setCreator(userInfo.getUser());
 		tag = tagService.save(tag);
 		rootTag.addTag(tag);
@@ -259,7 +259,7 @@ public class TestDataProvider {
 		contentService.setFilename(content, german, name + ".de.html");
 		contentService.setContent(content, german, germanContent);
 		// TODO maybe set project should be done inside the save?
-		content.setProject(dummyProject);
+		content.addProject(dummyProject);
 		content.setCreator(userInfo.getUser());
 		content = contentService.save(content);
 

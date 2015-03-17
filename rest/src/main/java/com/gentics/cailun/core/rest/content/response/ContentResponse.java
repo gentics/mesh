@@ -10,7 +10,7 @@ public class ContentResponse extends AbstractRestModel {
 
 	private UserResponse author;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
-	private String schema;
+	private String schemaName;
 	private String[] perms = {};
 
 	private long order = 0;
@@ -41,12 +41,12 @@ public class ContentResponse extends AbstractRestModel {
 		}
 	}
 
-	public String getSchema() {
-		return schema;
+	public String getSchemaName() {
+		return schemaName;
 	}
 
-	public void setSchema(String schema) {
-		this.schema = schema;
+	public void setSchemaName(String schemaName) {
+		this.schemaName = schemaName;
 	}
 
 	public long getOrder() {

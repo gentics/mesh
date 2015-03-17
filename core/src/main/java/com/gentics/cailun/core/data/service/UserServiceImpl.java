@@ -13,7 +13,6 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.UserRepository;
-import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
@@ -71,16 +70,6 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 			restUser.addGroup(group.getName());
 		}
 		return restUser;
-	}
-
-	@Override
-	public User transformFromRest(UserCreateRequest requestModel) {
-		User user = new User(requestModel.getUsername());
-		user.setFirstname(requestModel.getFirstname());
-		user.setLastname(requestModel.getLastname());
-		user.setEmailAddress(requestModel.getEmailAddress());
-		user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
-		return user;
 	}
 
 	@Override

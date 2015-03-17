@@ -14,6 +14,7 @@ public class Tag extends GenericTag<Tag, GenericFile> {
 
 	private static Label label = DynamicLabel.label(Tag.class.getSimpleName());
 
+	//TODO this should be a relationship to the schema node
 	private String schema = null;
 
 	public Tag() {

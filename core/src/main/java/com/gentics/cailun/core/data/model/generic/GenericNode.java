@@ -1,5 +1,8 @@
 package com.gentics.cailun.core.data.model.generic;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -23,7 +26,7 @@ public class GenericNode extends AbstractPersistable {
 	private static final long serialVersionUID = -7525642021064006664L;
 
 	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
-	protected Project project;
+	protected Set<Project> projects = new HashSet<>();
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
@@ -41,12 +44,16 @@ public class GenericNode extends AbstractPersistable {
 		this.creator = creator;
 	}
 
-	public Project getProject() {
-		return project;
+	public Set<Project> getProjects() {
+		return projects;
 	}
 
-	public void setProject(Project project) {
-		this.project = project;
+	public boolean addProject(Project project) {
+		return this.projects.add(project);
+	}
+
+	public boolean removeProject(Project project) {
+		return this.projects.remove(project);
 	}
 
 	public boolean isLocked() {

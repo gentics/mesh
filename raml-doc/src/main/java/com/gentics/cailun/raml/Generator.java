@@ -16,7 +16,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
-import com.gentics.cailun.core.rest.file.response.RestBinaryFile;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.cailun.core.rest.group.response.GroupListResponse;
@@ -43,6 +42,7 @@ import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.util.JsonUtils;
 import com.gentics.cailun.util.RestModelPagingHelper;
+import com.gentics.cailun.verticle.file.BinaryFileResponse;
 
 public class Generator {
 
@@ -182,6 +182,8 @@ public class Generator {
 		write(tagUpdate);
 
 		TagCreateRequest tagCreate = new TagCreateRequest();
+		tagCreate.setSchemaName("content");
+		tagCreate.setTagUuid(getUUID());
 		write(tagCreate);
 	}
 
@@ -225,7 +227,7 @@ public class Generator {
 	}
 
 	private void fileJson() throws JsonGenerationException, JsonMappingException, IOException {
-		RestBinaryFile file = new RestBinaryFile();
+		BinaryFileResponse file = new BinaryFileResponse();
 		file.setUuid(getUUID());
 		file.setFilename("some_binary_file.dat");
 		file.setPerms("READ", "UPDATE", "DELETE", "CREATE");
@@ -251,7 +253,7 @@ public class Generator {
 
 		ContentCreateRequest contentCreate = new ContentCreateRequest();
 		contentCreate.setAuthor(getUser());
-		contentCreate.setSchema("content");
+		contentCreate.setSchemaName("content");
 		write(contentCreate);
 
 	}

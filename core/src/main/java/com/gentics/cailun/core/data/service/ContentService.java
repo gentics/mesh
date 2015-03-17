@@ -23,6 +23,6 @@ public interface ContentService extends GenericContentService<Content> {
 	 */
 	public ContentResponse transformToRest(Content content, List<String> languageTags);
 
-	public Content save(String projectName, String path, ContentResponse requestModel);
+//	public Content save(String projectName, String path, ContentResponse requestModel);
 
 }

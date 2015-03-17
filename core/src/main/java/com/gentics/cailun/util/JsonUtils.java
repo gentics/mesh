@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 public final class JsonUtils {
 
@@ -22,13 +23,15 @@ public final class JsonUtils {
 		return mapper;
 	}
 
-	public static <T> String toJson(T obj) {
+	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
 			return mapper.writeValueAsString(obj);
 		} catch (IOException e) {
-			e.printStackTrace();
+			// TODO i18n
+			String message = "Could not generate json from object";
+			// TODO 500?
+			throw new HttpStatusCodeErrorException(500, message, e);
 		}
-		return "ERROR";
 	}
 
 	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
@@ -36,16 +39,16 @@ public final class JsonUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T fromJson(RoutingContext rc, Class<?> classOfT) {
+	public static <T> T fromJson(RoutingContext rc, Class<?> classOfT) throws HttpStatusCodeErrorException {
 		try {
 			String body = rc.getBodyAsString();
 			return (T) mapper.readValue(body, classOfT);
 		} catch (Exception e) {
-			e.printStackTrace();
+			// TODO i18n
+			String message = "Could not parse request json";
+			// TODO 500?
+			throw new HttpStatusCodeErrorException(500, message, e);
 		}
-		return null;
-		// TODO compare with jackson
-		// return (T) GSON.fromJson(rc.getBodyAsString(), classOfT);
 
 	}
 }

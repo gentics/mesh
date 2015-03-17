@@ -54,7 +54,7 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 
 			ContentResponse response = new ContentResponse();
 			response.setUuid(content.getUuid());
-			response.setSchema(content.getSchema());
+			response.setSchemaName(content.getSchema());
 			response.addProperty(languageTag, "name", content.getName(language));
 			response.addProperty(languageTag, "filename", content.getFilename(language));
 			UserResponse restUser = userService.transformToRest(content.getCreator());
@@ -101,49 +101,49 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	// System.out.println("looking for " + path + " in project " + projectName);
 	// return null;
 
-	@Override
-	public Content save(String projectName, String path, ContentResponse requestModel) {
-
-		// TODO check permissions
-		if (requestModel.getUUID() == null) {
-			Project project = projectService.findByName(projectName);
-			// Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
-			Language language = null;
-			// TODO save given languages individually, TODO how can we delete a single language?
-			if (language == null || requestModel.getSchema() == null) {
-				// TODO handle this case
-				throw new NullPointerException("No language or type specified");
-			}
-
-			// We need to validate the saved data using the object schema
-			ObjectSchema objectSchema = objectSchemaService.findByName(projectName, requestModel.getSchema());
-			if (objectSchema == null) {
-				// TODO handle this case
-				throw new NullPointerException("Could not find object schema for type {" + requestModel.getSchema() + "} and project {" + projectName
-						+ "}");
-			}
-
-			// TODO handle types , verify that type exists
-			Content content = new Content();
-			content.setProject(project);
-			content.setSchema(requestModel.getSchema());
-			// for (Entry<String, String> entry : requestModel.getProperties().entrySet()) {
-			// PropertyTypeSchema propertyTypeSchema = objectSchema.getPropertyTypeSchema(entry.getKey());
-			// // TODO we should abort when we encounter a property with an unknown key.
-			// // Determine whether the property is an i18n one or not
-			// if (propertyTypeSchema == null) {
-			// content.setProperty(entry.getKey(), entry.getValue());
-			// } else if (propertyTypeSchema.getType().equals(PropertyType.I18N_STRING)) {
-			// setProperty(content, language, entry.getKey(), entry.getValue());
-			// } else {
-			// // TODO handle this case
-			// }
-			// }
-			return save(content);
-
-		} else {
-
-		}
-		return null;
-	}
+//	@Override
+//	public Content save(String projectName, String path, ContentResponse requestModel) {
+//
+//		// TODO check permissions
+//		if (requestModel.getUUID() == null) {
+//			Project project = projectService.findByName(projectName);
+//			// Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+//			Language language = null;
+//			// TODO save given languages individually, TODO how can we delete a single language?
+//			if (language == null || requestModel.getSchemaName() == null) {
+//				// TODO handle this case
+//				throw new NullPointerException("No language or type specified");
+//			}
+//
+//			// We need to validate the saved data using the object schema
+//			ObjectSchema objectSchema = objectSchemaService.findByName(projectName, requestModel.getSchemaName());
+//			if (objectSchema == null) {
+//				// TODO handle this case
+//				throw new NullPointerException("Could not find object schema for type {" + requestModel.getSchemaName() + "} and project {" + projectName
+//						+ "}");
+//			}
+//
+//			// TODO handle types , verify that type exists
+//			Content content = new Content();
+//			content.setProject(project);
+//			content.setSchema(requestModel.getSchemaName());
+//			// for (Entry<String, String> entry : requestModel.getProperties().entrySet()) {
+//			// PropertyTypeSchema propertyTypeSchema = objectSchema.getPropertyTypeSchema(entry.getKey());
+//			// // TODO we should abort when we encounter a property with an unknown key.
+//			// // Determine whether the property is an i18n one or not
+//			// if (propertyTypeSchema == null) {
+//			// content.setProperty(entry.getKey(), entry.getValue());
+//			// } else if (propertyTypeSchema.getType().equals(PropertyType.I18N_STRING)) {
+//			// setProperty(content, language, entry.getKey(), entry.getValue());
+//			// } else {
+//			// // TODO handle this case
+//			// }
+//			// }
+//			return save(content);
+//
+//		} else {
+//
+//		}
+//		return null;
+//	}
 }
