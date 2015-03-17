@@ -49,16 +49,20 @@ public class Group extends GenericNode {
 		return name;
 	}
 
-	public void addUser(User user) {
-		getUsers().add(user);
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public boolean addUser(User user) {
+		return users.add(user);
 	}
 
 	public Set<User> getUsers() {
 		return users;
 	}
 
-	public void addGroup(Group group) {
-		this.children.add(group);
+	public boolean addGroup(Group group) {
+		return this.children.add(group);
 	}
 
 	public Set<Group> getGroups() {
@@ -73,17 +77,26 @@ public class Group extends GenericNode {
 		return parents;
 	}
 
-	public void addRole(Role role) {
-		roles.add(role);
+	public boolean addRole(Role role) {
+		return roles.add(role);
+	}
+
+	public boolean removeRole(Role role) {
+		return roles.remove(role);
 	}
 
 	public boolean removeUser(User user) {
-		return getUsers().remove(user);
+		return users.remove(user);
 	}
 
 	public boolean hasUser(User user) {
-		//TODO maybe a dedicated cypher statement would be faster?
+		// TODO maybe a dedicated cypher statement would be faster?
 		return users.contains(user);
+	}
+
+	public boolean removeGroup(Group group) {
+		return this.children.remove(group);
+
 	}
 
 }

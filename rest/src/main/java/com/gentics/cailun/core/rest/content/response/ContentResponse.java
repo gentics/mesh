@@ -30,6 +30,31 @@ public class ContentResponse extends AbstractRestModel {
 		return properties;
 	}
 
+	/**
+	 * Return the properties for the language with the given language key.
+	 * 
+	 * @param languageKey
+	 * @return
+	 */
+	public Map<String, String> getProperties(String languageKey) {
+		return properties.get(languageKey);
+	}
+
+	/**
+	 * Return the language specific property for the given language and the given key.
+	 * 
+	 * @param languageKey
+	 * @param key
+	 * @return
+	 */
+	public String getProperty(String languageKey, String key) {
+		Map<String, String> languageProperties = properties.get(languageKey);
+		if (languageProperties == null) {
+			return null;
+		}
+		return languageProperties.get(key);
+	}
+
 	public void addProperty(String languageKey, String key, String value) {
 		Map<String, String> map = properties.get(languageKey);
 		if (map == null) {

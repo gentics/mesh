@@ -8,10 +8,14 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.Route;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +24,13 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericContent;
+import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
@@ -79,6 +86,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			Tag rootTagForContent = tagService.findByUUID(projectName, requestModel.getTagUuid());
 			if (rootTagForContent == null) {
@@ -87,6 +95,45 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				throw new HttpStatusCodeErrorException(400, message);
 			}
 			failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
+
+			Content content = new Content();
+			content.setSchemaName(requestModel.getSchemaName());
+
+			// TODO handle creator
+			// TODO maybe projects should not be a set?
+			Project project = projectService.findByName(projectName);
+			content.addProject(project);
+
+			// Add the i18n properties to the newly created tag
+			for (String languageTag : requestModel.getProperties().keySet()) {
+				Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
+				Language language = languageService.findByLanguageTag(languageTag);
+				I18NProperties tagProps = new I18NProperties(language);
+				for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
+					tagProps.addProperty(entry.getKey(), entry.getValue());
+				}
+				// Create the relationship to the i18n properties
+				Translated translated = new Translated(content, tagProps, language);
+				content.getI18nTranslations().add(translated);
+			}
+
+			content = contentService.save(content);
+			// Reload in order to update uuid field
+			content = contentService.reload(content);
+
+			// Assign the content to the tag and save the tag
+			rootTagForContent.addFile(content);
+			rootTagForContent = tagService.save(rootTagForContent);
+
+			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
+
+			// // TODO simplify language handling - looks a bit chaotic
+			// // Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+			// handleResponse(rc, content, Arrays.asList(language.getName()));
+			// } else {
+			// // TODO handle error, i18n
+			// throw new HttpStatusCodeErrorException(500, "Could not save content");
+			// }
 
 		});
 	}
@@ -127,10 +174,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			failOnMissingPermission(rc, content, PermissionType.DELETE);
 
 			contentService.delete(content);
-			// TODO i18n
-			String message = "Deleted content with uuid {" + uuid + "}";
 			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(message)));
+			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "content_deleted", uuid))));
 		});
 	}
 
@@ -144,8 +189,63 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			if (content == null) {
 				throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_uuid", uuid));
 			}
-			ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
+			failOnMissingPermission(rc, content, PermissionType.UPDATE);
 			List<String> languageTags = getSelectedLanguageTags(rc);
+
+			try (Transaction tx = graphDb.beginTx()) {
+				// TODO update other fields as well?
+				// TODO Update user information
+				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
+				// Iterate through all properties and update the changed ones
+				for (String languageTag : languageTags) {
+					Language language = languageService.findByLanguageTag(languageTag);
+					if (language != null) {
+						Map<String, String> properties = request.getProperties(languageTag);
+						if (properties != null) {
+							// TODO use schema and only handle those i18n properties that were specified within the schema.
+							I18NProperties i18nProperties = content.getI18NProperties(language);
+							for (Map.Entry<String, String> set : properties.entrySet()) {
+								String key = set.getKey();
+								String value = set.getValue();
+								String i18nValue = i18nProperties.getProperty(key);
+								// Tag does not have the value so lets create it
+								if (i18nValue == null) {
+									i18nProperties.addProperty(key, value);
+								} else {
+									// Lets compare and update if the value has changed
+									if (!value.equals(i18nValue)) {
+										i18nProperties.addProperty(key, value);
+									}
+								}
+							}
+
+							// Check whether there are any key missing in the request.
+							// This would mean we should remove those i18n properties. First lets collect those
+							// keys
+							Set<String> keysToBeRemoved = new HashSet<>();
+							for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
+								if (!properties.containsKey(i18nKey)) {
+									keysToBeRemoved.add(i18nKey);
+								}
+							}
+
+							// Now remove the keys
+							for (String key : keysToBeRemoved) {
+								i18nProperties.removeProperty(key);
+							}
+
+						}
+					} else {
+						log.error("Could not find language for languageTag {" + languageTag + "}");
+					}
+
+				}
+				tx.success();
+			}
+
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
+
 		});
 	}
 

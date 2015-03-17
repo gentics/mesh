@@ -28,7 +28,6 @@ import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
-import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
@@ -61,111 +60,82 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addRoleGroupHandlers() {
+		// TODO document needed permissions
 		route("/:roleUuid/groups/:groupUuid").method(PUT).handler(rc -> {
-			String roleUuid = rc.request().params().get("roleUuid");
-			String groupUuid = rc.request().params().get("groupUuid");
-			Role role = roleService.findByUUID(roleUuid);
-			Group group = groupService.findByUUID(groupUuid);
+			Role role = getObject(rc, "roleUuid", PermissionType.READ);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+
+			if (group.addRole(role)) {
+				group = groupService.save(group);
+				// TODO reload role?
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(roleService.transformToRest(role)));
+			} else {
+				// TODO 200?
+			}
 		});
 		route("/:roleUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
-			String roleUuid = rc.request().params().get("roleUuid");
-			String groupUuid = rc.request().params().get("groupUuid");
-			Role role = roleService.findByUUID(roleUuid);
-			Group group = groupService.findByUUID(groupUuid);
+			Role role = getObject(rc, "roleUuid", PermissionType.READ);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+
+			if (group.removeRole(role)) {
+				group = groupService.save(group);
+				// TODO reload role?
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(roleService.transformToRest(role)));
+			} else {
+				// TODO 200?
+			}
 		});
 
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
+			Role role = getObject(rc, "uuid", PermissionType.DELETE);
+			roleService.delete(role);
+			rc.response().setStatusCode(200);
 			String uuid = rc.request().params().get("uuid");
-			if (StringUtils.isEmpty(uuid)) {
-				// TODO i18n entry
-				String message = i18n.get(rc, "request_parameter_missing", "name/uuid");
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
-			}
-
-			// Try to load the role
-			Role role = roleService.findByUUID(uuid);
-
-			// Delete the role or show 404
-			if (role != null) {
-				failOnMissingPermission(rc, role, PermissionType.DELETE);
-				roleService.delete(role);
-				rc.response().setStatusCode(200);
-				// TODO better response
-				rc.response().end(toJson(new GenericMessageResponse("OK")));
-				return;
-			} else {
-				String message = i18n.get(rc, "role_not_found", uuid);
-				throw new EntityNotFoundException(message);
-			}
+			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "role_deleted", uuid))));
+			return;
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			if (StringUtils.isEmpty(uuid)) {
-				String message = i18n.get(rc, "error_request_parameter_missing", "uuid");
-				throw new HttpStatusCodeErrorException(400, message);
-			}
+			Role role = getObject(rc, "uuid", PermissionType.UPDATE);
 			RoleResponse requestModel = fromJson(rc, RoleResponse.class);
-			if (requestModel == null) {
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_parse_request_json_error"));
+
+			if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
+				if (roleService.findByName(requestModel.getName()) != null) {
+					rc.response().setStatusCode(409);
+					// TODO i18n
+				String message = "A role with the name {" + requestModel.getName() + "} already exists. Please choose a different name.";
+				throw new HttpStatusCodeErrorException(409, message);
 			}
+			role.setName(requestModel.getName());
+		}
+		try {
+			role = roleService.save(role);
+		} catch (ConstraintViolationException e) {
+			// TODO correct msg?
+			// TODO i18n
+			throw new HttpStatusCodeErrorException(409, "Role can't be saved. Unknown error.", e);
+		}
+		rc.response().setStatusCode(200);
+		// TODO better response
+		rc.response().end(toJson(new GenericMessageResponse("OK")));
+		return;
 
-			// Try to load the role
-				Role role = roleService.findByUUID(uuid);
-
-				// Update the role or show 404
-				if (role != null) {
-					failOnMissingPermission(rc, role, PermissionType.UPDATE);
-
-					if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
-						if (roleService.findByName(requestModel.getName()) != null) {
-							rc.response().setStatusCode(409);
-							// TODO i18n
-							String message = "A role with the name {" + requestModel.getName() + "} already exists. Please choose a different name.";
-							throw new HttpStatusCodeErrorException(409, message);
-						}
-						role.setName(requestModel.getName());
-					}
-					try {
-						role = roleService.save(role);
-					} catch (ConstraintViolationException e) {
-						// TODO correct msg?
-						// TODO i18n
-						throw new HttpStatusCodeErrorException(409, "Role can't be saved. Unknown error.", e);
-					}
-					rc.response().setStatusCode(200);
-					// TODO better response
-					rc.response().end(toJson(new GenericMessageResponse("OK")));
-					return;
-				} else {
-					throw new EntityNotFoundException(i18n.get(rc, "role_not_found", uuid));
-				}
-
-			});
+	}	);
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			if (uuid == null) {
-				// TODO handle this case
-			}
-			Role role = roleService.findByUUID(uuid);
-
-			if (role != null) {
-				RoleResponse restRole = roleService.transformToRest(role);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(restRole));
-			} else {
-				throw new EntityNotFoundException(i18n.get(rc, "group_not_found", uuid));
-			}
+			Role role = getObject(rc, "uuid", PermissionType.READ);
+			RoleResponse restRole = roleService.transformToRest(role);
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(restRole));
 		});
 
 		/*

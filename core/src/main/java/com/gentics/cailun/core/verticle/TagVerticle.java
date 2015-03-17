@@ -141,6 +141,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				}
 				tx.success();
 			}
+			
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
 		});
 
 	}
@@ -157,7 +160,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			failOnMissingPermission(rc, rootTag, PermissionType.CREATE);
 
 			Tag newTag = new Tag();
-			newTag.setSchema(request.getSchemaName());
+			newTag.setSchemaName(request.getSchemaName());
 			//TODO maybe projects should not be a set?
 			Project project = projectService.findByName(projectName);
 			newTag.addProject(project);

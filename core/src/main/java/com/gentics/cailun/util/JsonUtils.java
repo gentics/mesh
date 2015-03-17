@@ -4,13 +4,22 @@ import io.vertx.ext.apex.core.RoutingContext;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.cailun.core.data.service.I18NService;
+import com.gentics.cailun.core.data.service.I18NServiceImpl;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
+@Component
 public final class JsonUtils {
+
+	@Autowired
+	private I18NService i18nService;
 
 	protected static ObjectMapper mapper;
 
@@ -44,10 +53,7 @@ public final class JsonUtils {
 			String body = rc.getBodyAsString();
 			return (T) mapper.readValue(body, classOfT);
 		} catch (Exception e) {
-			// TODO i18n
-			String message = "Could not parse request json";
-			// TODO 500?
-			throw new HttpStatusCodeErrorException(500, message, e);
+			throw new HttpStatusCodeErrorException(400, new I18NServiceImpl().get(rc, "error_parse_request_json_error"), e);
 		}
 
 	}

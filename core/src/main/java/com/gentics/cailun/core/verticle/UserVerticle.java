@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -57,142 +56,105 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCRUDHandlers() {
-		addUserGroupHandlers();
-
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
-
 	}
 
-	private void addUserGroupHandlers() {
-		Route putRoute = route("/:userUuid/groups/:groupUuid").method(PUT);
-		putRoute.handler(rc -> {
-			String userUuid = rc.request().params().get("userUuid");
-			String groupUuid = rc.request().params().get("groupUuid");
-			User user = userService.findByUUID(userUuid);
-			if (user == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
-			}
-			Group group = groupService.findByUUID(groupUuid);
-			if (group == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
-			}
-
-			throw new HttpStatusCodeErrorException(501, "Not implemented");
-		});
-
-		Route deleteRoute = route("/:userUuid/groups/:groupUuid").method(DELETE);
-		deleteRoute.handler(rc -> {
-			String userUuid = rc.request().params().get("userUuid");
-			String groupUuid = rc.request().params().get("groupUuid");
-			User user = userService.findByUUID(userUuid);
-			if (user == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
-			}
-			failOnMissingPermission(rc, user, PermissionType.READ);
-
-			Group group = groupService.findByUUID(groupUuid);
-			if (group == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
-			}
-			failOnMissingPermission(rc, group, PermissionType.UPDATE);
-
-			if (!group.hasUser(user)) {
-				throw new HttpStatusCodeErrorException(400, "User is not a member of the group.");
-			}
-
-			// TODO check whether this would be the last group of the user
-				if (userService.removeUserFromGroup(user, group)) {
-					rc.response().setStatusCode(200);
-					rc.response().end(
-							toJson(new GenericMessageResponse("Removed user {" + user.getUsername() + "} from group {" + group.getName() + "}")));
-				} else {
-					throw new HttpStatusCodeErrorException(501, "Error while removing user from group.");
-				}
-			});
-	}
+	// private void addUserGroupHandlers() {
+	// Route putRoute = route("/:userUuid/groups/:groupUuid").method(PUT);
+	// putRoute.handler(rc -> {
+	// String userUuid = rc.request().params().get("userUuid");
+	// String groupUuid = rc.request().params().get("groupUuid");
+	// User user = userService.findByUUID(userUuid);
+	// if (user == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
+	// }
+	// Group group = groupService.findByUUID(groupUuid);
+	// if (group == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
+	// }
+	//
+	// throw new HttpStatusCodeErrorException(501, "Not implemented");
+	// });
+	//
+	// Route deleteRoute = route("/:userUuid/groups/:groupUuid").method(DELETE);
+	// deleteRoute.handler(rc -> {
+	// String userUuid = rc.request().params().get("userUuid");
+	// String groupUuid = rc.request().params().get("groupUuid");
+	// User user = userService.findByUUID(userUuid);
+	// if (user == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
+	// }
+	// failOnMissingPermission(rc, user, PermissionType.READ);
+	//
+	// Group group = groupService.findByUUID(groupUuid);
+	// if (group == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
+	// }
+	// failOnMissingPermission(rc, group, PermissionType.UPDATE);
+	//
+	// if (!group.hasUser(user)) {
+	// throw new HttpStatusCodeErrorException(400, "User is not a member of the group.");
+	// }
+	//
+	// // TODO check whether this would be the last group of the user
+	// if (userService.removeUserFromGroup(user, group)) {
+	// rc.response().setStatusCode(200);
+	// rc.response().end(
+	// toJson(new GenericMessageResponse("Removed user {" + user.getUsername() + "} from group {" + group.getName() + "}")));
+	// } else {
+	// throw new HttpStatusCodeErrorException(501, "Error while removing user from group.");
+	// }
+	// });
+	// }
 
 	private void addReadHandler() {
 
 		route("/:uuid").method(GET).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-
-			// TODO do we really need this?
-				if (StringUtils.isEmpty(uuid)) {
-					rc.next();
-					return;
-				}
-
-				User user = userService.findByUUID(uuid);
-				if (user == null) {
-					String message = i18n.get(rc, "user_not_found", uuid);
-					throw new EntityNotFoundException(message);
-				} else {
-					failOnMissingPermission(rc, user, PermissionType.READ);
-					UserResponse restUser = userService.transformToRest(user);
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(restUser));
-					return;
-				}
-			});
+			User user = getObject(rc, "uuid", PermissionType.READ);
+			UserResponse restUser = userService.transformToRest(user);
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(restUser));
+			return;
+		});
 
 		/*
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).handler(rc -> {
-			Session session = rc.session();
 			Map<String, UserResponse> resultMap = new HashMap<>();
-			List<User> users = userService.findAll();
-			for (User user : users) {
-				boolean hasPerm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(user, PermissionType.READ));
-				if (hasPerm) {
-					resultMap.put(user.getUsername(), userService.transformToRest(user));
+			// TODO paging
+				List<User> users = userService.findAll();
+				for (User user : users) {
+					boolean hasPerm = hasPermission(rc, user, PermissionType.READ);
+					if (hasPerm) {
+						resultMap.put(user.getUsername(), userService.transformToRest(user));
+					}
 				}
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(resultMap));
-			return;
-		});
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(resultMap));
+				return;
+			});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
+			User user = getObject(rc, "uuid", PermissionType.DELETE);
+			userService.delete(user);
+			rc.response().setStatusCode(200);
 			String uuid = rc.request().params().get("uuid");
-			if (StringUtils.isEmpty(uuid)) {
-				// TODO i18n entry
-				String message = i18n.get(rc, "request_parameter_missing", "uuid");
-				throw new HttpStatusCodeErrorException(400, message);
-			}
-
-			// Try to load the user
-			User user = userService.findByUUID(uuid);
-
-			// Delete the user or show 404
-			if (user != null) {
-				failOnMissingPermission(rc, user, PermissionType.DELETE);
-				userService.delete(user);
-				rc.response().setStatusCode(200);
-				// TODO better response
-				rc.response().end(toJson(new GenericMessageResponse("OK")));
-				return;
-			} else {
-				String message = i18n.get(rc, "user_not_found", uuid);
-				throw new EntityNotFoundException(message);
-			}
-
+			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 		});
 	}
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
+			User user = getObject(rc, "uuid", PermissionType.UPDATE);
+
 			String uuid = rc.request().params().get("uuid");
-			if (StringUtils.isEmpty(uuid)) {
-				String message = i18n.get(rc, "request_parameter_missing", "uuid");
-				throw new HttpStatusCodeErrorException(400, message);
-			}
 
 			UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 			if (requestModel == null) {
@@ -200,27 +162,25 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				String message = "Could not parse request json.";
 				throw new HttpStatusCodeErrorException(400, message);
 			}
-			if (requestModel.getGroups().isEmpty()) {
-				// TODO i18n
-				String message = "No groups were specified. You need to specify at least one group for the user.";
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
-			}
+			// We don't handle groups within update requests
+			// if (requestModel.getGroups().isEmpty()) {
+			// // TODO i18n
+			// String message = "No groups were specified. You need to specify at least one group for the user.";
+			// rc.response().setStatusCode(400);
+			// rc.response().end(toJson(new GenericMessageResponse(message)));
+			// return;
+			// }
 
-			Set<Group> groupsForUser = new HashSet<>();
-			for (String groupName : requestModel.getGroups()) {
-				Group parentGroup = groupService.findByName(groupName);
-				if (parentGroup == null) {
-					// TODO i18n
-					String message = "Could not find parent group {" + groupName + "}";
-					throw new HttpStatusCodeErrorException(400, message);
-				}
-				groupsForUser.add(parentGroup);
-			}
-
-			// Try to load the user
-			User user = userService.findByUUID(uuid);
+			// Set<Group> groupsForUser = new HashSet<>();
+			// for (String groupName : requestModel.getGroups()) {
+			// Group parentGroup = groupService.findByName(groupName);
+			// if (parentGroup == null) {
+			// // TODO i18n
+			// String message = "Could not find parent group {" + groupName + "}";
+			// throw new HttpStatusCodeErrorException(400, message);
+			// }
+			// groupsForUser.add(parentGroup);
+			// }
 
 			// Update the user or show 404
 			if (user != null) {
@@ -236,29 +196,29 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					user.setUsername(requestModel.getUsername());
 				}
 
-				// Check groups from which the user should be removed
-				Set<Group> groupsToBeRemoved = new HashSet<>();
-				for (Group group : user.getGroups()) {
-					// Check whether the user should be removed from the group
-					if (!groupsForUser.contains(group)) {
-						if (!hasPermission(rc, group, PermissionType.UPDATE)) {
-							return;
-						} else {
-							groupsToBeRemoved.add(group);
-						}
-					} else {
-						groupsForUser.remove(group);
-					}
-				}
-				for (Group group : groupsToBeRemoved) {
-					user.getGroups().remove(group);
-				}
-
-				// Add users to the remaining set of groups
-				for (Group group : groupsForUser) {
-					failOnMissingPermission(rc, group, PermissionType.UPDATE);
-					user.getGroups().add(group);
-				}
+				// // Check groups from which the user should be removed
+				// Set<Group> groupsToBeRemoved = new HashSet<>();
+				// for (Group group : user.getGroups()) {
+				// // Check whether the user should be removed from the group
+				// if (!groupsForUser.contains(group)) {
+				// if (!hasPermission(rc, group, PermissionType.UPDATE)) {
+				// return;
+				// } else {
+				// groupsToBeRemoved.add(group);
+				// }
+				// } else {
+				// groupsForUser.remove(group);
+				// }
+				// }
+				// for (Group group : groupsToBeRemoved) {
+				// user.getGroups().remove(group);
+				// }
+				//
+				// // Add users to the remaining set of groups
+				// for (Group group : groupsForUser) {
+				// failOnMissingPermission(rc, group, PermissionType.UPDATE);
+				// user.getGroups().add(group);
+				// }
 
 				if (!StringUtils.isEmpty(requestModel.getFirstname()) && user.getFirstname() != requestModel.getFirstname()) {
 					user.setFirstname(requestModel.getFirstname());
@@ -311,28 +271,35 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				String message = "Either username or password was not specified.";
 				throw new HttpStatusCodeErrorException(400, message);
 			}
-
-			// TODO extract groups from json?
-			Set<Group> groupsForUser = new HashSet<>();
-			for (String groupName : requestModel.getGroups()) {
-				Group parentGroup = groupService.findByName(groupName);
-				if (parentGroup == null) {
-					// TODO i18n
-					String message = "Could not find parent group {" + groupName + "}";
-					throw new HttpStatusCodeErrorException(400, message);
-				}
-
-				// TODO such implicit permissions must be documented
-				failOnMissingPermission(rc, parentGroup, PermissionType.UPDATE);
-				groupsForUser.add(parentGroup);
-			}
-
-			if (groupsForUser.isEmpty()) {
+			String groupUuid = requestModel.getGroupUuid();
+			if (StringUtils.isEmpty(groupUuid)) {
 				// TODO i18n
-				String message = "No groups were specified. You need to specify at least one group for the user.";
-				throw new HttpStatusCodeErrorException(400, message);
+				throw new HttpStatusCodeErrorException(400, i18n.get(rc,
+						"No parent group for the user was specified. Please set a parent group uuid."));
 			}
+			Group group = getObjectByUUID(rc, groupUuid, PermissionType.UPDATE);
 
+			// // TODO extract groups from json?
+			// Set<Group> groupsForUser = new HashSet<>();
+			// for (String groupName : requestModel.getGroups()) {
+			// Group parentGroup = groupService.findByName(groupName);
+			// if (parentGroup == null) {
+			// // TODO i18n
+			// String message = "Could not find parent group {" + groupName + "}";
+			// throw new HttpStatusCodeErrorException(400, message);
+			// }
+			//
+			// // TODO such implicit permissions must be documented
+			// failOnMissingPermission(rc, parentGroup, PermissionType.UPDATE);
+			// groupsForUser.add(parentGroup);
+			// }
+			//
+			// if (groupsForUser.isEmpty()) {
+			// // TODO i18n
+			// String message = "No groups were specified. You need to specify at least one group for the user.";
+			// throw new HttpStatusCodeErrorException(400, message);
+			// }
+			// Check for conflicting usernames
 			if (userService.findByUsername(requestModel.getUsername()) != null) {
 				String message = i18n.get(rc, "user_conflicting_username");
 				throw new HttpStatusCodeErrorException(409, message);
@@ -344,17 +311,21 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			user.setEmailAddress(requestModel.getEmailAddress());
 			user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
 			user = userService.save(user);
-			// Update uuid - TODO remove once save is transactional
 
-			for (Group group : groupsForUser) {
-				group.addUser(user);
-				groupService.save(group);
-			}
+			// Add the user to the parent group and reload user
+			group.addUser(user);
+			group = groupService.save(group);
+			// Update uuid - TODO remove once save is transactional
+			user = userService.reload(user);
+
+			// for (Group group : groupsForUser) {
+			// group.addUser(user);
+			// groupService.save(group);
+			// }
 			user = userService.reload(user);
 			// TODO add creator info, add update info to group,
-			UserResponse restUser = userService.transformToRest(user);
 			rc.response().setStatusCode(200);
-			rc.response().end(toJson(restUser));
+			rc.response().end(toJson(userService.transformToRest(user)));
 
 		});
 	}

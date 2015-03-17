@@ -32,7 +32,7 @@ public class Content extends GenericContent {
 		return schema;
 	}
 
-	public void setSchema(String schema) {
+	public void setSchemaName(String schema) {
 		this.schema = schema;
 	}
 

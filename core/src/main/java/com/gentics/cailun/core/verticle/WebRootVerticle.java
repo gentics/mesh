@@ -52,70 +52,13 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		return getRouter().routeWithRegex("\\/(.*)");
 	}
 
-	// // try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-	// content = contentService.save(projectName, path, requestModel);
-	// if (content != null) {
-	// rootTagForContent.addFile(content);
-	// tagService.save(rootTagForContent);
-	// // tx.success();
-	// } else {
-	// rc.response().end("error");
-	// // tx.failure();
-	// }
-	// // }
-	// if (content != null) {
-	// // Reload in order to update uuid field
-	// content = contentService.reload(content);
-	// // TODO simplify language handling - looks a bit chaotic
-	// // Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
-	// Language language = null;
-	// // TODO check for npe - or see above
-	// handleResponse(rc, content, Arrays.asList(language.getName()));
-	// // rc.response().end("jow" + " " + path + " " + projectName);
-	// } else {
-	// // TODO handle error, i18n
-	// throw new HttpStatusCodeErrorException(500, "Could not save content");
-	// }
-
-	// route().method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-	// // TODO handle request
-	// // rc.response().end(toJson(new GenericResponse<>()));
-	// });
-
-	// }
-	// private void pathPutHandler(RoutingContext rc) {
-	// String projectName = getProjectName(rc);
-	// String path = rc.request().params().get("param0");
-	// List<String> languages = getSelectedLanguageTags(rc);
-	//
-	// Path tagPath = tagService.findByProjectPath(projectName, path);
-	// PathSegment lastSegment = tagPath.getLast();
-	// if (lastSegment != null) {
-	// Tag tag = tagService.projectTo(lastSegment.getNode(), Tag.class);
-	// if (tag == null) {
-	// String message = i18n.get(rc, "tag_not_found_for_path", path);
-	// throw new EntityNotFoundException(message);
-	// }
-	// languages.add(lastSegment.getLanguageTag());
-	// // TODO handle update
-	// rc.response().end(toJson(tagService.transformToRest(tag, languages)));
-	// return;
-	// } else {
-	// throw new EntityNotFoundException(i18n.get(rc, "tag_not_found_for_path", path));
-	// }
-	// }
-
-	// private void uuidPutHandler(RoutingContext rc) {
-
-	// }
-
 	private void addPathHandler() {
 
 		// TODO add .produces(APPLICATION_JSON)
 		pathRoute().method(GET).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			String projectName = getProjectName(rc);
-			List<String> languages = getSelectedLanguageTags(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			// TODO findbyproject path should also handle files and contents and store the type of the segment
 				Path tagPath = tagService.findByProjectPath(projectName, path);
@@ -129,9 +72,8 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						throw new EntityNotFoundException(message);
 					}
 					failOnMissingPermission(rc, tag, PermissionType.READ);
-					languages.add(lastSegment.getLanguageTag());
-
-					rc.response().end(toJson(tagService.transformToRest(tag, languages)));
+					languageTags.add(lastSegment.getLanguageTag());
+					rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
 					return;
 				} else {
 					throw new EntityNotFoundException(i18n.get(rc, "tag_not_found_for_path", path));

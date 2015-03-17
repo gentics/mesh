@@ -127,7 +127,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
-		restUser.addGroup(info.getGroup().getName());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
 		String json = "{\"message\":\"OK\"}";
@@ -149,7 +148,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
-		restUser.addGroup(info.getGroup().getName());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 403, "Forbidden",
 				new ObjectMapper().writeValueAsString(restUser));
@@ -363,7 +361,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user");
 		newUser.setPassword("test123456");
-		newUser.addGroup("bogus");
+		newUser.setGroupUuid("bogus");
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
@@ -384,7 +382,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user");
 		newUser.setPassword("test123456");
-		newUser.addGroup(info.getGroup().getName());
+		newUser.setGroupUuid(info.getGroup().getUuid());
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);

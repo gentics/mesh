@@ -15,10 +15,10 @@ public class Tag extends GenericTag<Tag, GenericFile> {
 	private static Label label = DynamicLabel.label(Tag.class.getSimpleName());
 
 	//TODO this should be a relationship to the schema node
-	private String schema = null;
+	private String schemaName;
 
 	public Tag() {
-		this.schema = "tag";
+		this.schemaName = "tag";
 	}
 
 	public static Label getLabel() {
@@ -31,11 +31,11 @@ public class Tag extends GenericTag<Tag, GenericFile> {
 		return label;
 	}
 
-	public String getSchema() {
-		return schema;
+	public String getSchemaName() {
+		return schemaName;
 	}
 
-	public void setSchema(String schema) {
-		this.schema = schema;
+	public void setSchemaName(String schema) {
+		this.schemaName = schema;
 	}
 }

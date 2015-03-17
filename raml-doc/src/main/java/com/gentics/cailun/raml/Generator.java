@@ -316,8 +316,6 @@ public class Generator {
 		userUpdate.setFirstname("Joe");
 		userUpdate.setLastname("Doe");
 		userUpdate.setEmailAddress("j.doe@nowhere.com");
-		userUpdate.addGroup("admins");
-		userUpdate.addGroup("editors");
 		write(userUpdate);
 
 		UserCreateRequest userCreate = new UserCreateRequest();
@@ -326,8 +324,6 @@ public class Generator {
 		userCreate.setFirstname("Joe");
 		userCreate.setLastname("Doe");
 		userCreate.setEmailAddress("j.doe@nowhere.com");
-		userCreate.addGroup("admins");
-		userCreate.addGroup("editors");
 		write(userCreate);
 
 	}

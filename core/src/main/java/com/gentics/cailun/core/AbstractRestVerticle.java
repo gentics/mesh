@@ -12,12 +12,18 @@ import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
+import com.gentics.cailun.core.data.service.generic.GenericNodeService;
+import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
@@ -28,6 +34,9 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	protected Router localRouter = null;
 	protected String basePath;
 	protected HttpServer server;
+
+	@Autowired
+	private GenericNodeService<GenericNode> genericNodeService;
 
 	protected AbstractRestVerticle(String basePath) {
 		this.basePath = basePath;
@@ -92,6 +101,44 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	}
 
 	/**
+	 * Extract the given uri parameter and load the object. Permissions and load verification will also be done by this method.
+	 * 
+	 * @param rc
+	 * @param param
+	 *            Name of the uri parameter which hold the uuid
+	 * @param perm
+	 *            Permission type which will be checked
+	 * @return
+	 */
+	public <T> T getObject(RoutingContext rc, String param, PermissionType perm) {
+		String uuid = rc.request().params().get(param);
+		if (StringUtils.isEmpty(uuid)) {
+			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", param));
+		}
+		return getObjectByUUID(rc, param, perm);
+
+	}
+
+	/**
+	 * Load the object with the given uuid and check the given permissions.
+	 * 
+	 * @param rc
+	 * @param uuid
+	 * @param perm
+	 * @return
+	 */
+	public <T> T getObjectByUUID(RoutingContext rc, String uuid, PermissionType perm) {
+		GenericNode object = genericNodeService.findByUUID(uuid);
+		if (object == null) {
+			// TODO i18n
+			throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
+		}
+		failOnMissingPermission(rc, object, perm);
+		// TODO type check
+		return (T) object;
+	}
+
+	/**
 	 * Check the permission and throw an invalid permission exception when no matching permission could be found.
 	 * 
 	 * @param rc
@@ -101,7 +148,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 */
 	protected void failOnMissingPermission(RoutingContext rc, GenericNode node, PermissionType type) throws InvalidPermissionException {
 		if (!hasPermission(rc, node, type)) {
-			//TODO i18n
+			// TODO i18n
 			throw new InvalidPermissionException("Missing permission on object {" + node.getUuid() + "}");
 		}
 	}

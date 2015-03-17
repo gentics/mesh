@@ -28,10 +28,6 @@ public class TagResponse extends AbstractRestModel {
 		return properties;
 	}
 
-	public void setProperties(Map<String, Map<String, String>> properties) {
-		this.properties = properties;
-	}
-
 	/**
 	 * Return the properties for the language with the given language key.
 	 * 
