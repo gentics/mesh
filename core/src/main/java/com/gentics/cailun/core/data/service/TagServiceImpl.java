@@ -159,6 +159,7 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 			}
 		}
 		response.setUuid(tag.getUuid());
+		response.setSchemaName(tag.getSchemaName());
 
 		// TODO handle files and subtags:
 		// tag.getTags()

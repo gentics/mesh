@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.neo4j.graphdb.Node;
 
-import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 
 public interface GenericNodeService<T extends GenericNode> {

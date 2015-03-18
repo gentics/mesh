@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
@@ -115,7 +114,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		if (StringUtils.isEmpty(uuid)) {
 			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", param));
 		}
-		return getObjectByUUID(rc, param, perm);
+		return getObjectByUUID(rc, uuid, perm);
 
 	}
 

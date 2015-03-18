@@ -38,7 +38,6 @@ import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
-
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
  * 
@@ -81,6 +80,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addUpdateHandler() {
+		// TODO add consumes and produces
 		Route route = route("/:uuid").method(PUT);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
@@ -141,7 +141,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				}
 				tx.success();
 			}
-			
+
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
 		});
@@ -161,7 +161,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			Tag newTag = new Tag();
 			newTag.setSchemaName(request.getSchemaName());
-			//TODO maybe projects should not be a set?
+			// TODO maybe projects should not be a set?
 			Project project = projectService.findByName(projectName);
 			newTag.addProject(project);
 			// TODO handle creator
@@ -188,28 +188,21 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandler() {
-		Route readAllRoute = route("/").method(GET);
-		readAllRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
-			//TODO paging, filtering
-			Iterable<Tag> allTags = tagService.findAll(projectName);
-		});
 
 		Route route = route("/:uuid").method(GET);
 		route.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			String projectName = getProjectName(rc);
+			Tag tag = getObject(rc, "uuid", PermissionType.READ);
 			List<String> languages = getSelectedLanguageTags(rc);
-
-			Tag tag = tagService.findByUUID(projectName, uuid);
-			if (tag != null) {
-				failOnMissingPermission(rc, tag, PermissionType.READ);
-				rc.response().end(toJson(tagService.transformToRest(tag, languages)));
-			} else {
-				String message = i18n.get(rc, "tag_not_found", uuid);
-				throw new EntityNotFoundException(message);
-			}
+			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 		});
+
+		Route readAllRoute = route("/").method(GET);
+		readAllRoute.handler(rc -> {
+			String projectName = getProjectName(rc);
+			// TODO paging, filtering
+			// Iterable<Tag> allTags = tagService.findAll(projectName);
+				throw new HttpStatusCodeErrorException(500, "Not implemented");
+			});
 	}
 
 	private void addDeleteHandler() {
@@ -231,10 +224,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTagSubTagHandlers() {
-		Route postRoute = route("/:tag_uuid/tags/:subtag_uuid").method(POST);
+		Route postRoute = route("/:tagUuid/tags/:subtagUuid").method(POST);
 		postRoute.handler(rc -> {
-			String tagUuid = rc.request().params().get("tag_uuid");
-			String subTagUuid = rc.request().params().get("subtag_uuid");
+			String tagUuid = rc.request().params().get("tagUuid");
+			String subTagUuid = rc.request().params().get("subtagUuid");
 			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
 				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
 			}
@@ -261,10 +254,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			});
 
-		Route deleteRoute = route("/:tag_uuid/tags/:subtag_uuid").method(DELETE);
+		Route deleteRoute = route("/:tagUuid/tags/:subtagUuid").method(DELETE);
 		deleteRoute.handler(rc -> {
-			String tagUuid = rc.request().params().get("tag_uuid");
-			String subTagUuid = rc.request().params().get("subtag_uuid");
+			String tagUuid = rc.request().params().get("tagUuid");
+			String subTagUuid = rc.request().params().get("subtagUuid");
 			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
 				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
 			}
@@ -294,10 +287,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTagFilesHandlers() {
-		Route postRoute = route("/:tag_uuid/files/:file_uuid").method(POST);
+		Route postRoute = route("/:tagUuid/files/:fileUuid").method(POST);
 		postRoute.handler(rc -> {
-			String tagUuid = rc.request().params().get("tag_uuid");
-			String fileUuid = rc.request().params().get("file_uuid");
+			String tagUuid = rc.request().params().get("tagUuid");
+			String fileUuid = rc.request().params().get("fileUuid");
 			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(fileUuid)) {
 				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
 			}
@@ -313,10 +306,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				// TODO impl
 			});
 
-		Route deleteRoute = route("/:tag_uuid/files/:file_uuid").method(DELETE);
+		Route deleteRoute = route("/:tagUuid/files/:fileUuid").method(DELETE);
 		deleteRoute.handler(rc -> {
-			String tagUuid = rc.request().params().get("tag_uuid");
-			String fileUuid = rc.request().params().get("file_uuid");
+			String tagUuid = rc.request().params().get("tagUuid");
+			String fileUuid = rc.request().params().get("fileUuid");
 			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(fileUuid)) {
 				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
 			}

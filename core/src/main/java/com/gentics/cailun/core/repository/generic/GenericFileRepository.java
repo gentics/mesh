@@ -5,6 +5,6 @@ import com.gentics.cailun.core.repository.action.GenericFileRepositoryActions;
 
 public interface GenericFileRepository<T extends GenericFile> extends GenericPropertyContainerRepository<T>, GenericFileRepositoryActions<T> {
 
-	public T findByProject(String projectName, String path);
+//	public T findByProject(String projectName, String path);
 
 }
