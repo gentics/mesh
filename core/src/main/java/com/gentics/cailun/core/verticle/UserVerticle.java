@@ -7,10 +7,8 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.Route;
-import io.vertx.ext.apex.core.Session;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +20,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
-import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -61,54 +58,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 	}
-
-	// private void addUserGroupHandlers() {
-	// Route putRoute = route("/:userUuid/groups/:groupUuid").method(PUT);
-	// putRoute.handler(rc -> {
-	// String userUuid = rc.request().params().get("userUuid");
-	// String groupUuid = rc.request().params().get("groupUuid");
-	// User user = userService.findByUUID(userUuid);
-	// if (user == null) {
-	// throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
-	// }
-	// Group group = groupService.findByUUID(groupUuid);
-	// if (group == null) {
-	// throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
-	// }
-	//
-	// throw new HttpStatusCodeErrorException(501, "Not implemented");
-	// });
-	//
-	// Route deleteRoute = route("/:userUuid/groups/:groupUuid").method(DELETE);
-	// deleteRoute.handler(rc -> {
-	// String userUuid = rc.request().params().get("userUuid");
-	// String groupUuid = rc.request().params().get("groupUuid");
-	// User user = userService.findByUUID(userUuid);
-	// if (user == null) {
-	// throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
-	// }
-	// failOnMissingPermission(rc, user, PermissionType.READ);
-	//
-	// Group group = groupService.findByUUID(groupUuid);
-	// if (group == null) {
-	// throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
-	// }
-	// failOnMissingPermission(rc, group, PermissionType.UPDATE);
-	//
-	// if (!group.hasUser(user)) {
-	// throw new HttpStatusCodeErrorException(400, "User is not a member of the group.");
-	// }
-	//
-	// // TODO check whether this would be the last group of the user
-	// if (userService.removeUserFromGroup(user, group)) {
-	// rc.response().setStatusCode(200);
-	// rc.response().end(
-	// toJson(new GenericMessageResponse("Removed user {" + user.getUsername() + "} from group {" + group.getName() + "}")));
-	// } else {
-	// throw new HttpStatusCodeErrorException(501, "Error while removing user from group.");
-	// }
-	// });
-	// }
 
 	private void addReadHandler() {
 

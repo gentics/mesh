@@ -8,6 +8,8 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.core.Route;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.ConstraintViolationException;
@@ -24,8 +26,8 @@ import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
+import com.gentics.cailun.core.rest.project.response.ProjectListResponse;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
-import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
@@ -57,13 +59,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			if (StringUtils.isEmpty(uuid)) {
-				// TODO i18n entry
-				String message = i18n.get(rc, "request_parameter_missing", "uuid");
-				throw new HttpStatusCodeErrorException(400, message);
-			}
-
+			Project project = getObject(rc, "uuid", PermissionType.UPDATE);
 			ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 			if (requestModel == null) {
 				// TODO exception would be nice, add i18n
@@ -71,44 +67,32 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				throw new HttpStatusCodeErrorException(400, message);
 			}
 
-			// Try to load the project
-			Project project = projectService.findByUUID(uuid);
-
 			// Update the project or show 404
-			if (project != null) {
-				failOnMissingPermission(rc, project, PermissionType.UPDATE);
 
-				if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
-					if (projectService.findByName(requestModel.getName()) != null) {
-						rc.response().setStatusCode(409);
-						// TODO i18n
-						rc.response().end(
-								toJson(new GenericMessageResponse("A project with the name {" + requestModel.getName()
-										+ "} already exists. Please choose a different name.")));
-						return;
-					}
-					project.setName(requestModel.getName());
-				}
-
-				try {
-					project = projectService.save(project);
-				} catch (ConstraintViolationException e) {
-					// TODO log
-					// TODO correct msg?
-					// TODO i18n
+			if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
+				if (projectService.findByName(requestModel.getName()) != null) {
 					rc.response().setStatusCode(409);
-					rc.response().end(toJson(new GenericMessageResponse("Project can't be saved. Unknown error.")));
+					// TODO i18n
+					rc.response().end(
+							toJson(new GenericMessageResponse("A project with the name {" + requestModel.getName()
+									+ "} already exists. Please choose a different name.")));
 					return;
 				}
-				rc.response().setStatusCode(200);
-				// TODO better response
-				rc.response().end(toJson(new GenericMessageResponse("OK")));
-				return;
-			} else {
-				String message = i18n.get(rc, "project_not_found", uuid);
-				throw new EntityNotFoundException(message);
+				project.setName(requestModel.getName());
 			}
 
+			try {
+				project = projectService.save(project);
+			} catch (ConstraintViolationException e) {
+				// TODO log
+				// TODO correct msg?
+				// TODO i18n
+				rc.response().setStatusCode(409);
+				rc.response().end(toJson(new GenericMessageResponse("Project can't be saved. Unknown error.")));
+				return;
+			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(projectService.transformToRest(project)));
 		});
 	}
 
@@ -158,44 +142,44 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
+
 		route("/:uuid").method(GET).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			// TODO prefix uuids to identify them "urn:uuid:" or similar
-			// TODO check for uuid or name
-			// TODO add check whether project was already registered/added
-				Project project = projectService.findByUUID(uuid);
-				if (project != null) {
-					ProjectResponse restProject = projectService.getResponseObject(project);
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(restProject));
-				} else {
-					// TODO i18n error message?
-					String message = "Project not found {" + uuid + "}";
-					throw new EntityNotFoundException(message);
-				}
+			if (StringUtils.isEmpty(uuid)) {
+				rc.next();
+			} else {
+				Project project = getObject(rc, "uuid", PermissionType.READ);
+				ProjectResponse restProject = projectService.transformToRest(project);
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(restProject));
+			}
+		});
 
-			});
+		route("/").method(GET).handler(rc -> {
+			List<Project> projects = projectService.findAll();
+			ProjectListResponse response = new ProjectListResponse();
+
+			for (Project project : projects) {
+				if (hasPermission(rc, project, PermissionType.READ)) {
+					response.addProject(projectService.transformToRest(project));
+				}
+			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(response));
+		});
 
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			String uuidOrName = rc.request().params().get("uuid");
-			Project project = projectService.findByUUID(uuidOrName);
-			if (project != null) {
-				failOnMissingPermission(rc, project, PermissionType.DELETE);
-				String name = project.getName();
-				routerStorage.removeProjectRouter(name);
-				projectService.delete(project);
+			Project project = getObject(rc, "uuid", PermissionType.DELETE);
+			String name = project.getName();
+			routerStorage.removeProjectRouter(name);
+			projectService.delete(project);
+			// TODO i18n
 				String msg = "Deleted project {" + name + "}";
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(new GenericMessageResponse(msg)));
-				return;
-			} else {
-				// TODO i18n error message?
-				String message = "Project not found {" + uuidOrName + "}";
-				throw new EntityNotFoundException(message);
-			}
-		});
+			});
 	}
 }

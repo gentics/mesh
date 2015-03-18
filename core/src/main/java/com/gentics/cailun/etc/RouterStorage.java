@@ -94,11 +94,13 @@ public class RouterStorage {
 					int code = getResponseStatusCode(failure);
 					failureRoutingContext.response().setStatusCode(code);
 					failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse(failure.getMessage())));
-				} else {
 					log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
+				} else {
+					log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
 					failureRoutingContext.response().setStatusCode(500);
 					failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse("Internal error occured")));
 				}
+
 
 			});
 

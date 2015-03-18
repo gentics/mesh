@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
@@ -20,9 +21,7 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
-import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
-import com.gentics.cailun.test.TestUtil;
 
 public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
@@ -60,44 +59,46 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
-	public void testReadProjectList() {
-		fail("Not yet implemented");
+	public void testReadProjectList() throws Exception {
+
+		Project extraProject = new Project("test1234");
+		extraProject = projectService.save(extraProject);
+		Project extraProject2 = new Project("test1234-2-must-not-be-in-json");
+		extraProject2 = projectService.save(extraProject2);
+
+		Project project = data().getProject();
+		assertNotNull("The UUID of the project must not be null.", project.getUuid());
+
+		roleService.addPermission(info.getRole(), project, PermissionType.READ);
+		roleService.addPermission(info.getRole(), extraProject, PermissionType.READ);
+		// No read permission on last project
+
+		String response = request(info, HttpMethod.GET, "/api/v1/projects/", 200, "OK");
+		String json = "{\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"},{\"uuid\":\"uuid-value\",\"name\":\"test1234\"}],\"_metainfo\":{\"page\":0,\"per_page\":0,\"page_count\":0,\"total_count\":0,\"links\":{}}}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadProjectByUUID() throws Exception {
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
 		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
+		roleService.addPermission(info.getRole(), project, PermissionType.READ);
+
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 200, "OK");
-		TestUtil.assertEqualsSanitizedJson(json, response, ProjectResponse.class);
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
-	public void testReadProjectByUUIDWithNoPerm() {
-		fail("Not yet implemented");
-	}
+	public void testReadProjectByUUIDWithNoPerm() throws Exception {
+		Project project = data().getProject();
+		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-	// @Test
-	// public void testReadProjectByName() throws Exception {
-	// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
-	// Project project = data().getProject();
-	// assertNotNull("The name of the project must not be null.", project.getName());
-	//
-	// String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getName(), 200, "OK");
-	// TestUtil.assertEqualsSanitizedJson(json, response, ProjectResponse.class);
-	// }
-	//
-	// @Test
-	// public void testReadProjectInvalidName() throws Exception {
-	// String json = "{\"message\":\"Project not found {bogusName}\"}";
-	// Project project = data().getProject();
-	// assertNotNull("The UUID of the project must not be null.", project.getUuid());
-	//
-	// String response = request(info, HttpMethod.GET, "/api/v1/projects/" + "bogusName", 404, "Not Found");
-	// assertEquals(json, response);
-	// }
+		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
+		String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	}
 
 	// Update Tests
 
@@ -112,7 +113,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 200, "OK",
 				new ObjectMapper().writeValueAsString(request));
-		String json = "{\"message\":\"OK\"}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		Project reloadedProject = projectService.findByUUID(project.getUuid());
@@ -121,8 +122,22 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateProjectWithNoPerm() {
-		fail("Not yet implemented");
+	public void testUpdateProjectWithNoPerm() throws JsonProcessingException, Exception {
+		Project project = data().getProject();
+
+		roleService.addPermission(info.getRole(), project, PermissionType.READ);
+
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("New Name");
+
+		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden",
+				new ObjectMapper().writeValueAsString(request));
+		String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		Project reloadedProject = projectService.findByUUID(project.getUuid());
+
+		Assert.assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());
 	}
 
 	// Delete Tests

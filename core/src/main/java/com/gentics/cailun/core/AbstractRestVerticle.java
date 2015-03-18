@@ -14,6 +14,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
@@ -21,12 +23,15 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
+import com.gentics.cailun.core.verticle.ContentVerticle;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 
 public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractRestVerticle.class);
 
 	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
 
@@ -47,7 +52,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		if (localRouter == null) {
 			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
 		}
-		// TODO use global config for port?
+		log.info("Starting http server..");
 		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
