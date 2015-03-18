@@ -248,11 +248,22 @@ public class Generator {
 
 		ContentUpdateRequest contentUpdate = new ContentUpdateRequest();
 		contentUpdate.setUuid(getUUID());
-		// TODO handle other parameters
+		contentUpdate.addProperty("en", "filename", "index-renamed.en.html");
 		write(contentUpdate);
 
 		ContentCreateRequest contentCreate = new ContentCreateRequest();
-		contentCreate.setAuthor(getUser());
+		contentCreate.addProperty("en", "filename", "index.en.html");
+		contentCreate.addProperty("en", "content", "English content");
+		contentCreate.addProperty("en", "title", "English title");
+		contentCreate.addProperty("en", "teaser", "English teaser");
+		contentCreate.addProperty("en", "name", "English name");
+
+		contentCreate.addProperty("de", "filename", "index.de.html");
+		contentCreate.addProperty("de", "content", "Deutscher Inhalt");
+		contentCreate.addProperty("de", "title", "Deutscher Titel");
+		contentCreate.addProperty("de", "teaser", "Deutscher Teaser");
+		contentCreate.addProperty("de", "name", "Deutscher Name");
+
 		contentCreate.setSchemaName("content");
 		write(contentCreate);
 
@@ -284,9 +295,7 @@ public class Generator {
 
 		GroupCreateRequest groupCreate = new GroupCreateRequest();
 		groupCreate.setName("new group");
-		groupCreate.getRoles().add("admin");
-		groupCreate.getRoles().add("editors");
-		// TODO handle other fields
+		groupCreate.setGroupUuid(getUUID());
 		write(groupCreate);
 	}
 
