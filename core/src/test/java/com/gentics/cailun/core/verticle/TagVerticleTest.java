@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,6 +36,16 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testReadAllTags() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testReadAllTagsWithPaging() {
+		fail("Not yet implemented");
+	}
+
+	@Test
 	public void testReadTagByUUID() throws Exception {
 
 		Tag tag = data().getLevel1a();
@@ -56,7 +67,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"type\":null,\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"subtag\"}}}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"level_1_a\"}}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -69,11 +80,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"type\":null,\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"name\":\"unterTag\"},\"en\":{\"name\":\"subtag\"}}}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"name\":\"ebene_1_a\"},\"en\":{\"name\":\"level_1_a\"}}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
-	
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 
@@ -81,11 +91,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
-		String json = "ERROR";
+		String json = "{\"message\":\"Missing permission on object {" + tag.getUuid() + "}\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
-	
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
 		Tag tag = data().getLevel1a();
@@ -100,10 +109,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
-		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
+		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
+		Assert.assertEquals(tag.getName(data().getEnglish()), tagResponse.getProperty("en", "name"));
 
-		// 2. Manipulate the request object
+		// 2. Setup the request object
+		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		final String newName = "new Name";
 		tagUpdateRequest.addProperty("en", "name", newName);
 		Assert.assertEquals(newName, tagUpdateRequest.getProperty("en", "name"));
@@ -112,13 +122,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// TODO test with no ?lang query parameter
 		String requestJson = new ObjectMapper().writeValueAsString(request);
 		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"new Name\"}}}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"new Name\"}}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
 		Assert.assertEquals(request.getProperty("en", "name"), tagUpdateRequest.getProperty("en", "name"));
+
+		// TODO verify that only that property was changed
 	}
 
 	@Test
@@ -142,7 +154,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
-		TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
+		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
 		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
 	}
 
@@ -153,7 +165,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.DELETE);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getLevel1a().getUuid(), 200, "OK");
-		String json = "OK";
+		String json = "{\"message\":\"Deleted tag\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNull("The tag should have been deleted", tagService.findByUUID(data().getLevel1a().getUuid()));
 	}
@@ -162,11 +174,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getLevel1a().getUuid(), 403, "Forbidden");
-		String json = "Error";
+		String json = "{\"message\":\"Missing permission on object {" + data().getLevel1a().getUuid() + "}\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNotNull("The tag should not have been deleted", tagService.findByUUID(data().getLevel1a().getUuid()));
 	}
-
-	
 
 }
