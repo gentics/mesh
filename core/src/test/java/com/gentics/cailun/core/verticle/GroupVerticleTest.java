@@ -1,5 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.Group;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
@@ -95,6 +98,16 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	// Group User Testcases - PUT / Add
 
 	@Test
+	public void testAddUserToGroupWithNoPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAddUserToGroupWithBogusGroupId() {
+		fail("Not yet implemented");
+	}
+
+	@Test
 	public void testAddUserToGroupWithPerm() {
 		fail("Not yet implemented");
 	}
@@ -106,12 +119,38 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	// Group User Testcases - DELETE / Remove
 	@Test
-	public void testRemoveUserFromGroupWithPerm() {
+	public void testRemoveUserFromGroupWithoutPerm() {
 		fail("Not yet implemented");
 	}
 
 	@Test
-	public void testRemoveUserFromGroupWithoutPerm() {
+	public void testRemoveUserFromGroupWithPerm() throws Exception {
+		User user = info.getUser();
+		Group group = info.getGroup();
+
+		// TODO check with cp whether perms are ok that way.
+		roleService.addPermission(info.getRole(), user, PermissionType.READ);
+		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+
+		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 200, "OK");
+		String json = "OK";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		group = groupService.reload(group);
+		assertFalse("User should not be member of the group.", group.hasUser(user));
+	}
+
+	@Test
+	public void testRemoveSameUserFromGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveUserFromLastGroupWithPerm() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemoveUserFromGroupWithBogusID() {
 		fail("Not yet implemented");
 	}
 

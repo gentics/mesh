@@ -3,7 +3,6 @@ package com.gentics.cailun.core.verticle;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -75,10 +74,16 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 
 		User user2 = new User("testuser_2");
+		user2.setLastname("A");
+		user2.setFirstname("A");
+		user2.setEmailAddress("test");
 		user2 = userService.save(user2);
 		info.getGroup().addUser(user2);
 
 		User user3 = new User("testuser_3");
+		user3.setLastname("should_not_be_listed");
+		user3.setFirstname("should_not_be_listed");
+		user3.setEmailAddress("should_not_be_listed");
 		user3 = userService.save(user3);
 		info.getGroup().addUser(user3);
 		groupService.save(info.getGroup());
@@ -89,7 +94,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Don't grant permissions to user3
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
-		String json = "{\"dummy_user\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"testuser_2\":{\"uuid\":\"uuid-value\",\"lastname\":null,\"firstname\":null,\"username\":\"testuser_2\",\"emailAddress\":null,\"groups\":[\"dummy_user_group\"]}}";
+		String json = "{\"dummy_user\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"testuser_2\":{\"uuid\":\"uuid-value\",\"lastname\":\"A\",\"firstname\":\"A\",\"username\":\"testuser_2\",\"emailAddress\":\"test\",\"groups\":[\"dummy_user_group\"]}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -101,12 +106,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
-		UserResponse restUser = new UserResponse();
+		UserUpdateRequest restUser = new UserUpdateRequest();
+		restUser.setUuid(user.getUuid());
 		restUser.setEmailAddress("t.stark@stark-industries.com");
 		restUser.setFirstname("Tony Awesome");
 		restUser.setLastname("Epic Stark");
 		restUser.setUsername("dummy_user_changed");
-		restUser.addGroup(info.getGroup().getName());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
 		String json = "{\"message\":\"OK\"}";
@@ -193,9 +198,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		conflictingUser = userService.save(conflictingUser);
 		info.getGroup().addUser(conflictingUser);
 
-		UserResponse newUser = new UserResponse();
+		UserUpdateRequest newUser = new UserUpdateRequest();
 		newUser.setUsername("existing_username");
-		newUser.addGroup(info.getGroup().getName());
+		newUser.setUuid(user.getUuid());
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 409, "Conflict", requestJson);
@@ -204,73 +209,73 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	}
 
-	@Test
-	public void testUpdateUserAndAddGroup() throws Exception {
-		User user = info.getUser();
+	// @Test
+	// public void testUpdateUserAndAddGroup() throws Exception {
+	// User user = info.getUser();
+	//
+	// // 1. Create a new group
+	// Group newGroup = new Group("additional_group");
+	// groupService.save(newGroup);
+	// info.getGroup().addGroup(newGroup);
+	// groupService.save(info.getGroup());
+	//
+	// // 2. Add needed permissions
+	// roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
+	// roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
+	//
+	// // 3. Setup rest model
+	// UserResponse restUser = new UserResponse();
+	// restUser.setEmailAddress("t.stark@stark-industries.com");
+	// restUser.setFirstname("Tony Awesome");
+	// restUser.setLastname("Epic Stark");
+	// restUser.setUsername("dummy_user_changed");
+	//
+	// // 4. Add both groups to the list of groups
+	// restUser.addGroup(info.getGroup().getName());
+	// restUser.addGroup(newGroup.getName());
+	//
+	// String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
+	// String json = "{\"message\":\"OK\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	//
+	// // Reload the group and verify that the user was added to the group
+	// newGroup = groupService.reload(newGroup);
+	// Assert.assertEquals("The group should now list one user.", 1, newGroup.getUsers().size());
+	// User userInGroup = newGroup.getUsers().iterator().next();
+	// assertTrue("The user is not part of the group", user.getId() == userInGroup.getId());
+	//
+	// }
 
-		// 1. Create a new group
-		Group newGroup = new Group("additional_group");
-		groupService.save(newGroup);
-		info.getGroup().addGroup(newGroup);
-		groupService.save(info.getGroup());
-
-		// 2. Add needed permissions
-		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
-
-		// 3. Setup rest model
-		UserResponse restUser = new UserResponse();
-		restUser.setEmailAddress("t.stark@stark-industries.com");
-		restUser.setFirstname("Tony Awesome");
-		restUser.setLastname("Epic Stark");
-		restUser.setUsername("dummy_user_changed");
-
-		// 4. Add both groups to the list of groups
-		restUser.addGroup(info.getGroup().getName());
-		restUser.addGroup(newGroup.getName());
-
-		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"message\":\"OK\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-
-		// Reload the group and verify that the user was added to the group
-		newGroup = groupService.reload(newGroup);
-		Assert.assertEquals("The group should now list one user.", 1, newGroup.getUsers().size());
-		User userInGroup = newGroup.getUsers().iterator().next();
-		assertTrue("The user is not part of the group", user.getId() == userInGroup.getId());
-
-	}
-
-	@Test
-	public void testUpdateUserAndRemoveGroup() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		User user = info.getUser();
-
-		Group newGroup = new Group("additional_group");
-		newGroup.addUser(user);
-		newGroup = groupService.save(newGroup);
-		info.getGroup().addGroup(newGroup);
-		groupService.save(info.getGroup());
-		Assert.assertEquals("The group should have one member", 1, newGroup.getUsers().size());
-
-		roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
-
-		UserResponse restUser = new UserResponse();
-		restUser.setEmailAddress("t.stark@stark-industries.com");
-		restUser.setFirstname("Tony Awesome");
-		restUser.setLastname("Epic Stark");
-		restUser.setUsername("dummy_user_changed");
-		// Only add the first group to the rest request. Thus the second one should be removed when allowed.
-		restUser.addGroup(info.getGroup().getName());
-
-		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"message\":\"OK\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-
-		newGroup = groupService.reload(newGroup);
-		Assert.assertEquals("The group should no longer have members", 0, newGroup.getUsers().size());
-
-	}
+	// @Test
+	// public void testUpdateUserAndRemoveGroup() throws JsonGenerationException, JsonMappingException, IOException, Exception {
+	// User user = info.getUser();
+	//
+	// Group newGroup = new Group("additional_group");
+	// newGroup.addUser(user);
+	// newGroup = groupService.save(newGroup);
+	// info.getGroup().addGroup(newGroup);
+	// groupService.save(info.getGroup());
+	// Assert.assertEquals("The group should have one member", 1, newGroup.getUsers().size());
+	//
+	// roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
+	// roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
+	//
+	// UserResponse restUser = new UserResponse();
+	// restUser.setEmailAddress("t.stark@stark-industries.com");
+	// restUser.setFirstname("Tony Awesome");
+	// restUser.setLastname("Epic Stark");
+	// restUser.setUsername("dummy_user_changed");
+	// // Only add the first group to the rest request. Thus the second one should be removed when allowed.
+	// restUser.addGroup(info.getGroup().getName());
+	//
+	// String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
+	// String json = "{\"message\":\"OK\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	//
+	// newGroup = groupService.reload(newGroup);
+	// Assert.assertEquals("The group should no longer have members", 0, newGroup.getUsers().size());
+	//
+	// }
 
 	// Create tests
 
@@ -285,9 +290,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		UserResponse newUser = new UserResponse();
+		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
-		newUser.addGroup(info.getGroup().getName());
+		newUser.setGroupUuid(info.getGroup().getUuid());
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
@@ -301,12 +306,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
-		UserResponse newUser = new UserResponse();
+		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setEmailAddress("n.user@spam.gentics.com");
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user_test123");
-		newUser.addGroup(info.getGroup().getName());
+		newUser.setGroupUuid(info.getGroup().getUuid());
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
@@ -332,7 +337,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateUserWithNoGroups() throws Exception {
+	public void testCreateUserWithNoParentGroup() throws Exception {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
@@ -351,7 +356,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateUserWithBogusGroups() throws Exception {
+	public void testCreateUserWithBogusParentGroup() throws Exception {
 		// Add update permission to group in order to create the user in that group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
@@ -364,8 +369,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newUser.setGroupUuid("bogus");
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
-		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
-		String json = "{\"message\":\"Could not find parent group {bogus}\"}";
+		String response = request(info, HttpMethod.POST, "/api/v1/users/", 404, "Not Found", requestJson);
+		String json = "{\"message\":\"Object with uuid \\\"bogus\\\" could not be found.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
@@ -409,7 +414,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		String json = "{\"message\":\"OK\"}";
+		String json = "{\"message\":\"User with uuid \\\"" + user.getUuid() + "\\\" was deleted.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
 	}
@@ -422,60 +427,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String json = "{\"message\":\"Missing permission on object {" + user.getUuid() + "}\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNotNull("The user should not have been deleted", userService.findByUUID(user.getUuid()));
-	}
-
-	// User / Group Methods
-
-	@Test
-	public void testAddUserToGroupWithPerm() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testAddUserToGroupWithNoPerm() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testAddUserToGroupWithBogusGroupId() {
-		fail("Not yet implemented");
-	}
-
-	// Delete tests
-	@Test
-	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		User user = info.getUser();
-		Group group = info.getGroup();
-
-		// TODO check with cp whether perms are ok that way.
-		roleService.addPermission(info.getRole(), user, PermissionType.READ);
-		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid() + "/groups/" + info.getGroup().getUuid(), 200, "OK");
-		String json = "OK";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		group = groupService.reload(group);
-		// TODO check whether user is still a member of the group
-	}
-
-	@Test
-	public void testRemoveUserFromGroupWithoutPerm() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testRemoveSameUserFromGroupWithPerm() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testRemoveUserFromLastGroupWithPerm() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testRemoveUserFromGroupWithBogusID() {
-		fail("Not yet implemented");
 	}
 
 }
