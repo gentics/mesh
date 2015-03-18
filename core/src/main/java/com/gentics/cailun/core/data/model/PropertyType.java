@@ -19,4 +19,14 @@ public enum PropertyType {
 		return name;
 	}
 
+	public static PropertyType valueOfName(String name) {
+		for (PropertyType type : PropertyType.values()) {
+			if (type.getName().equals(name)) {
+				return type;
+			}
+		}
+		return null;
+
+	}
+
 }

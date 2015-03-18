@@ -91,10 +91,10 @@ public class RouterStorage {
 			rootRouter.route().failureHandler(failureRoutingContext -> {
 				Throwable failure = failureRoutingContext.failure();
 				if (failure != null) {
+					log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
 					int code = getResponseStatusCode(failure);
 					failureRoutingContext.response().setStatusCode(code);
 					failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse(failure.getMessage())));
-					log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
 				} else {
 					log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
 					failureRoutingContext.response().setStatusCode(500);

@@ -23,6 +23,7 @@ import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
+import com.gentics.cailun.util.JsonUtils;
 
 public class UserVerticleTest extends AbstractRestVerticleTest {
 
@@ -112,7 +113,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		restUser.setLastname("Epic Stark");
 		restUser.setUsername("dummy_user_changed");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
+		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", JsonUtils.toJson(restUser));
 		String json = "{\"message\":\"OK\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 

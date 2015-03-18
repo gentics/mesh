@@ -23,7 +23,6 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
-import com.gentics.cailun.core.verticle.ContentVerticle;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
@@ -132,6 +131,10 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @return
 	 */
 	public <T> T getObjectByUUID(RoutingContext rc, String uuid, PermissionType perm) {
+		if (StringUtils.isEmpty(uuid)) {
+			// TODO i18n, add info about uuid source?
+			throw new HttpStatusCodeErrorException(400, "missing uuid");
+		}
 		GenericNode object = genericNodeService.findByUUID(uuid);
 		if (object == null) {
 			// TODO i18n
