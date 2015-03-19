@@ -99,4 +99,12 @@ public class Group extends GenericNode {
 
 	}
 
+	public boolean hasGroup(Group group) {
+		return this.children.contains(group);
+	}
+
+	public boolean hasRole(Role role) {
+		return this.roles.contains(role);
+	}
+
 }

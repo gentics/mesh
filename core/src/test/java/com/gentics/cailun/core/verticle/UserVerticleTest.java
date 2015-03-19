@@ -160,7 +160,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
-		assertTrue("The hash should not be updated.", oldHash == reloadedUser.getPasswordHash());
+		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
-		assertTrue("The hash should not be updated.", oldHash == reloadedUser.getPasswordHash());
+		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		Assert.assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 		Assert.assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
 	}

@@ -67,7 +67,6 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		// TODO consumes, produces, document needed permissions?
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST);
 		route.handler(rc -> {
-
 			Project project = getObject(rc, "projectUuid", PermissionType.UPDATE);
 			ObjectSchema schema = getObject(rc, "schemaUuid", PermissionType.READ);
 

@@ -4,6 +4,7 @@ var fs = require('fs');
 
 var sourceDir = __dirname + "/src/raml/";
 var outputDir = __dirname + "/target/raml2html/";
+
 var source = sourceDir + "rest-spec-core.raml";
 var templateFile = sourceDir + "template.handlebars";
 var resourceTemplate = sourceDir + "resource.handlebars";
