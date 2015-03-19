@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +41,13 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 		for (User user : group.getUsers()) {
 			restGroup.getUsers().add(user.getUsername());
 		}
+		Collections.sort(restGroup.getUsers());
 
 		for (Role role : group.getRoles()) {
 			restGroup.getRoles().add(role.getName());
 		}
 
-//		Set<Group> children = groupRepository.findChildren(group);
+		// Set<Group> children = groupRepository.findChildren(group);
 		Set<Group> children = group.getGroups();
 		for (Group childGroup : children) {
 			restGroup.getGroups().add(childGroup.getName());
