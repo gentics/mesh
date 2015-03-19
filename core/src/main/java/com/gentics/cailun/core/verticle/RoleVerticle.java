@@ -27,6 +27,8 @@ import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.core.rest.role.request.RoleCreateRequest;
+import com.gentics.cailun.core.rest.role.request.RoleUpdateRequest;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
@@ -56,39 +58,39 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addRoleGroupHandlers();
+		// addRoleGroupHandlers();
 	}
 
-	private void addRoleGroupHandlers() {
-		// TODO document needed permissions
-		route("/:roleUuid/groups/:groupUuid").method(PUT).handler(rc -> {
-			Role role = getObject(rc, "roleUuid", PermissionType.READ);
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-
-			if (group.addRole(role)) {
-				group = groupService.save(group);
-				// TODO reload role?
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(roleService.transformToRest(role)));
-			} else {
-				// TODO 200?
-			}
-		});
-		route("/:roleUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
-			Role role = getObject(rc, "roleUuid", PermissionType.READ);
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-
-			if (group.removeRole(role)) {
-				group = groupService.save(group);
-				// TODO reload role?
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(roleService.transformToRest(role)));
-			} else {
-				// TODO 200?
-			}
-		});
-
-	}
+	// private void addRoleGroupHandlers() {
+	// // TODO document needed permissions
+	// route("/:roleUuid/groups/:groupUuid").method(PUT).handler(rc -> {
+	// Role role = getObject(rc, "roleUuid", PermissionType.READ);
+	// Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+	//
+	// if (group.addRole(role)) {
+	// group = groupService.save(group);
+	// // TODO reload role?
+	// rc.response().setStatusCode(200);
+	// rc.response().end(toJson(roleService.transformToRest(role)));
+	// } else {
+	// // TODO 200?
+	// }
+	// });
+	// route("/:roleUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
+	// Role role = getObject(rc, "roleUuid", PermissionType.READ);
+	// Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+	//
+	// if (group.removeRole(role)) {
+	// group = groupService.save(group);
+	// // TODO reload role?
+	// rc.response().setStatusCode(200);
+	// rc.response().end(toJson(roleService.transformToRest(role)));
+	// } else {
+	// // TODO 200?
+	// }
+	// });
+	//
+	// }
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
@@ -104,7 +106,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
 			Role role = getObject(rc, "uuid", PermissionType.UPDATE);
-			RoleResponse requestModel = fromJson(rc, RoleResponse.class);
+			RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 
 			if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
 				if (roleService.findByName(requestModel.getName()) != null) {
@@ -123,10 +125,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			throw new HttpStatusCodeErrorException(409, "Role can't be saved. Unknown error.", e);
 		}
 		rc.response().setStatusCode(200);
-		// TODO better response
-		rc.response().end(toJson(new GenericMessageResponse("OK")));
-		return;
-
+		rc.response().end(toJson(roleService.transformToRest(role)));
 	}	);
 	}
 
@@ -159,17 +158,19 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addCreateHandler() {
 		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
-			RoleResponse requestModel = fromJson(rc, RoleResponse.class);
-			if (requestModel == null) {
-				// TODO exception would be nice, add i18n
-				String message = "Could not parse request json.";
-				throw new HttpStatusCodeErrorException(400, message);
-			}
+			RoleCreateRequest requestModel = fromJson(rc, RoleCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.response().setStatusCode(400);
 				// TODO i18n
 				String message = "The name for the role was not specified.";
+				throw new HttpStatusCodeErrorException(400, message);
+			}
+
+			if (StringUtils.isEmpty(requestModel.getGroupUuid())) {
+				rc.response().setStatusCode(400);
+				// TODO i18n
+				String message = "The group id for the role was not specified.";
 				throw new HttpStatusCodeErrorException(400, message);
 			}
 
@@ -179,9 +180,13 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				throw new HttpStatusCodeErrorException(409, message);
 			}
 
+			Group group = getObjectByUUID(rc, requestModel.getGroupUuid(), PermissionType.UPDATE);
+
 			Role role = new Role(requestModel.getName());
 			role = roleService.save(role);
 			role = roleService.reload(role);
+			group.addRole(role);
+			groupService.save(group);
 
 			RoleResponse restRole = roleService.transformToRest(role);
 			rc.response().setStatusCode(200);

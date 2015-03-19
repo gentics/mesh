@@ -90,6 +90,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		// Reset the latch etc.
 		latch = new CountDownLatch(1);
 		throwable.set(null);
+		
+		Thread.sleep(100);
 
 		Consumer<HttpClientRequest> requestAction = request -> {
 			String authStringEnc = info.getUser().getUsername() + ":" + info.getPassword();

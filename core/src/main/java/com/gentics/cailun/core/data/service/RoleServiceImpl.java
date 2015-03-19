@@ -9,11 +9,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
+import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.RoleRepository;
+import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 
 @Component
@@ -97,6 +99,14 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		RoleResponse restRole = new RoleResponse();
 		restRole.setUuid(role.getUuid());
 		restRole.setName(role.getName());
+
+		for (Group group : role.getGroups()) {
+			group = neo4jTemplate.fetch(group);
+			GroupResponse restGroup = new GroupResponse();
+			restGroup.setName(group.getName());
+			restGroup.setUuid(group.getUuid());
+			restRole.getGroups().add(restGroup);
+		}
 
 		return restRole;
 	}

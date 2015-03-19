@@ -1,13 +1,17 @@
 package com.gentics.cailun.core.rest.role.response;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
+import com.gentics.cailun.core.rest.group.response.GroupResponse;
 
 public class RoleResponse extends AbstractRestModel {
 
 	private String name;
 	private String[] perms = {};
 
-	// TODO add groups to response
+	private List<GroupResponse> groups = new ArrayList<>();
 
 	public RoleResponse() {
 	}
@@ -26,6 +30,14 @@ public class RoleResponse extends AbstractRestModel {
 
 	public void setPerms(String... perms) {
 		this.perms = perms;
+	}
+
+	public List<GroupResponse> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(List<GroupResponse> groups) {
+		this.groups = groups;
 	}
 
 }
