@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.auth.EnhancedShiroAuthRealmImpl;
+import com.gentics.cailun.auth.ExposingShiroAuthProvider;
 import com.gentics.cailun.auth.Neo4jAuthorizingRealm;
 import com.gentics.cailun.cli.BootstrapInitializer;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
@@ -113,7 +114,9 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	@Bean
 	public CaiLunAuthServiceImpl authService() {
 		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
-		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), realm, new JsonObject());
+		ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
+		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), provider, new JsonObject());
+
 		SecurityUtils.setSecurityManager(realm.getSecurityManager());
 		return authService;
 	}

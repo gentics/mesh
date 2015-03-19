@@ -3,14 +3,14 @@ package com.gentics.cailun.etc;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.addons.AuthHandler;
-import io.vertx.ext.apex.addons.BasicAuthHandler;
-import io.vertx.ext.apex.addons.LocalSessionStore;
-import io.vertx.ext.apex.addons.impl.SessionHandlerImpl;
-import io.vertx.ext.apex.core.BodyHandler;
-import io.vertx.ext.apex.core.CookieHandler;
-import io.vertx.ext.apex.core.Router;
-import io.vertx.ext.apex.core.SessionStore;
+import io.vertx.ext.apex.Router;
+import io.vertx.ext.apex.handler.AuthHandler;
+import io.vertx.ext.apex.handler.BasicAuthHandler;
+import io.vertx.ext.apex.handler.BodyHandler;
+import io.vertx.ext.apex.handler.CookieHandler;
+import io.vertx.ext.apex.handler.impl.SessionHandlerImpl;
+import io.vertx.ext.apex.sstore.LocalSessionStore;
+import io.vertx.ext.apex.sstore.SessionStore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -127,11 +127,11 @@ public class RouterStorage {
 	// // TODO I think this functionality should be moved to a different place
 	private void initAPIRouter(CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
 		Router router = getAPIRouter();
-		router.route().handler(BodyHandler.bodyHandler());
-		router.route().handler(CookieHandler.cookieHandler());
-		SessionStore store = LocalSessionStore.localSessionStore(vertx);
+		router.route().handler(BodyHandler.create());
+		router.route().handler(CookieHandler.create());
+		SessionStore store = LocalSessionStore.create(vertx);
 		router.route().handler(new SessionHandlerImpl("cailun.session", 30 * 60 * 1000, false, store));
-		AuthHandler authHandler = BasicAuthHandler.basicAuthHandler(caiLunAuthServiceImpl, BasicAuthHandler.DEFAULT_REALM);
+		AuthHandler authHandler = BasicAuthHandler.create(caiLunAuthServiceImpl, BasicAuthHandler.DEFAULT_REALM);
 		router.route().handler(authHandler);
 		router.route().handler(dataHandler);
 	}
@@ -205,7 +205,7 @@ public class RouterStorage {
 			log.info("Added project router {" + name + "}");
 
 			projectRouter.route().handler(ctx -> {
-				ctx.contextData().put(PROJECT_CONTEXT_KEY, name);
+				ctx.data().put(PROJECT_CONTEXT_KEY, name);
 				ctx.next();
 			});
 

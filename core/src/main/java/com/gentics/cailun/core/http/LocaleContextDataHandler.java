@@ -1,7 +1,7 @@
 package com.gentics.cailun.core.http;
 
 import io.vertx.core.Handler;
-import io.vertx.ext.apex.core.RoutingContext;
+import io.vertx.ext.apex.RoutingContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

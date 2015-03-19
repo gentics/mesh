@@ -6,8 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.ext.apex.core.Route;
-import io.vertx.ext.apex.core.RoutingContext;
+import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -27,7 +26,6 @@ import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
-import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
@@ -67,7 +65,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addGroupRoleHandlers() {
 		route("/:groupUuid/roles/:roleUuid").method(POST).handler(rc -> {
-			Group group = getGroup(rc, "groupUuid", PermissionType.UPDATE);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 			Role role = getObject(rc, "roleUuid", PermissionType.READ);
 
 			if (group.addRole(role)) {
@@ -80,7 +78,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).handler(rc -> {
-			Group group = getGroup(rc, "groupUuid", PermissionType.UPDATE);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 			Role role = getObject(rc, "roleUuid", PermissionType.READ);
 
 			if (group.removeRole(role)) {
@@ -96,7 +94,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupUserHandlers() {
 		Route route = route("/:groupUuid/users/:userUuid").method(POST);
 		route.handler(rc -> {
-			Group group = getGroup(rc, "groupUuid", PermissionType.UPDATE);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 			User user = getObject(rc, "userUuid", PermissionType.READ);
 
 			try (Transaction tx = graphDb.beginTx()) {
@@ -113,7 +111,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE);
 		route.handler(rc -> {
-			Group group = getGroup(rc, "groupUuid", PermissionType.UPDATE);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 			User user = getObject(rc, "userUuid", PermissionType.READ);
 			try (Transaction tx = graphDb.beginTx()) {
 
@@ -129,47 +127,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 	}
 
-	/**
-	 * Extract the given uri parameter and load the group. Permissions and load verification will also be done by this method.
-	 * 
-	 * @param rc
-	 * @param param
-	 *            Name of the uri parameter which hold the uuid
-	 * @param perm
-	 *            Permission type which will be checked
-	 * @return Loaded group. Can't be null.
-	 */
-	private Group getGroup(RoutingContext rc, String param, PermissionType perm) {
-		// TODO check whether getObject would also work
-		String groupUuid = rc.request().params().get(param);
-		if (StringUtils.isEmpty(groupUuid)) {
-			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", param));
-		}
-		return getGroupByUuid(rc, groupUuid, perm);
-	}
-
-	/**
-	 * Load the group with the given uuid and check selected permissions.
-	 * 
-	 * @param rc
-	 * @param uuid
-	 * @param perm
-	 * @return
-	 */
-	private Group getGroupByUuid(RoutingContext rc, String uuid, PermissionType perm) {
-		Group group = groupService.findByUUID(uuid);
-		if (group == null) {
-			throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", uuid));
-		}
-		failOnMissingPermission(rc, group, perm);
-		return group;
-	}
-
 	private void addGroupChildGroupHandlers() {
 		Route route = route("/:groupUuid/groups/:childGroupUuid").method(POST);
 		route.handler(rc -> {
-			Group group = getGroup(rc, "groupUuid", PermissionType.UPDATE);
-			Group childGroup = getGroup(rc, "childGroupUuid", PermissionType.READ);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+			Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
 
 			try (Transaction tx = graphDb.beginTx()) {
 				if (group.addGroup(childGroup)) {
@@ -185,8 +147,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		route = route("/:groupUuid/groups/:childGroupUuid").method(DELETE);
 		route.handler(rc -> {
-			Group group = getGroup(rc, "groupUuid", PermissionType.UPDATE);
-			Group childGroup = getGroup(rc, "childGroupUuid", PermissionType.READ);
+			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+			Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
 			try (Transaction tx = graphDb.beginTx()) {
 
 				if (group.removeGroup(childGroup)) {
@@ -205,7 +167,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			Group group = getGroup(rc, "uuid", PermissionType.DELETE);
+			Group group = getObject(rc, "uuid", PermissionType.DELETE);
 			groupService.delete(group);
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
@@ -214,7 +176,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).handler(rc -> {
-			Group group = getGroup(rc, "uuid", PermissionType.UPDATE);
+			Group group = getObject(rc, "uuid", PermissionType.UPDATE);
 			GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
@@ -244,7 +206,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			Group group = getGroup(rc, "uuid", PermissionType.READ);
+			Group group = getObject(rc, "uuid", PermissionType.READ);
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
@@ -259,7 +221,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				// TODO i18n
 				throw new HttpStatusCodeErrorException(400, "The group uuid field has not been set. Parent group must be specified.");
 			}
-			Group parentGroup = getGroupByUuid(rc, parentGroupUuid, PermissionType.CREATE);
+			Group parentGroup = getObjectByUUID(rc, parentGroupUuid, PermissionType.CREATE);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				// TODO i18n

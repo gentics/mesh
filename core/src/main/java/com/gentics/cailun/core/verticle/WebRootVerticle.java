@@ -4,7 +4,7 @@ import static com.gentics.cailun.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.core.Route;
+import io.vertx.ext.apex.Route;
 
 import java.util.List;
 

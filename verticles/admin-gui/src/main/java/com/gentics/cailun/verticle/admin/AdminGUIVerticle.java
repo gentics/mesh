@@ -3,8 +3,7 @@ package com.gentics.cailun.verticle.admin;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.apex.addons.StaticServer;
-import io.vertx.ext.apex.core.Router;
+import io.vertx.ext.apex.Router;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +16,10 @@ public class AdminGUIVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		Router router = Router.router(vertx);
 
-		StaticServer webJarServer = StaticServer.staticServer("META-INF/resources/webjars");
-		StaticServer staticContentServer = StaticServer.staticServer();
-		router.route("/angularjs").handler(webJarServer);
-		router.route().handler(staticContentServer);
+//		StaticServer webJarServer = StaticServer.staticServer("META-INF/resources/webjars");
+//		StaticServer staticContentServer = StaticServer.staticServer();
+//		router.route("/angularjs").handler(webJarServer);
+//		router.route().handler(staticContentServer);
 
 		// // All other requests handled by template engine
 		// TemplateEngine engine = HandlebarsTemplateEngine.create();

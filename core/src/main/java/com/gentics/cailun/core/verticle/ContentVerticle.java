@@ -6,7 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.ext.apex.core.Route;
+import io.vertx.ext.apex.Route;
 
 import java.util.HashSet;
 import java.util.List;

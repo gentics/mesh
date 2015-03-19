@@ -1,7 +1,7 @@
 package com.gentics.cailun.core;
 
-import io.vertx.ext.apex.core.Router;
-import io.vertx.ext.apex.core.RoutingContext;
+import io.vertx.ext.apex.Router;
+import io.vertx.ext.apex.RoutingContext;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -46,11 +46,11 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 	/**
 	 * Extracts the project name from the routing context
 	 * 
-	 * @param rh
+	 * @param rc
 	 * @return extracted project name
 	 */
-	protected String getProjectName(RoutingContext rh) {
-		return rh.get(RouterStorage.PROJECT_CONTEXT_KEY);
+	protected String getProjectName(RoutingContext rc) {
+		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}
 
 	/**

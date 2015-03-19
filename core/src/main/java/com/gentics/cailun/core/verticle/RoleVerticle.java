@@ -6,7 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.ext.apex.core.Session;
+import io.vertx.ext.apex.Session;
 
 import java.util.HashMap;
 import java.util.List;
@@ -145,7 +145,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			Map<String, RoleResponse> resultMap = new HashMap<>();
 			List<Role> roles = roleService.findAll();
 			for (Role role : roles) {
-				boolean hasPerm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(role, PermissionType.READ));
+				boolean hasPerm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(role, PermissionType.READ));
 				if (hasPerm) {
 					resultMap.put(role.getName(), roleService.transformToRest(role));
 				}

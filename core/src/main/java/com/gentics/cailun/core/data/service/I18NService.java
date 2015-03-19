@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
-import io.vertx.ext.apex.core.RoutingContext;
+import io.vertx.ext.apex.RoutingContext;
 
 import java.util.Locale;
 

@@ -49,6 +49,16 @@
 			<artifactId>httpcore</artifactId>
 			<version>4.2.5</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
 
 
 		<!-- Workaround to fix fat-jar jersey issue with neo4j browser -->
@@ -78,6 +88,11 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-hazelcast</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-auth-service</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
 
@@ -142,12 +157,8 @@
 			<artifactId>spring-data-neo4j</artifactId>
 		</dependency>
 
-		<!-- For Vert.x Apex -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.3.1</version>
-		</dependency>
+		<!-- For Vert.x Apex <dependency> <groupId>com.google.code.gson</groupId> 
+			<artifactId>gson</artifactId> <version>2.3.1</version> </dependency> -->
 
 		<!-- Neo4J -->
 		<dependency>

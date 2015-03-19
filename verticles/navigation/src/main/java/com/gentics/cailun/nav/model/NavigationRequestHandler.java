@@ -2,8 +2,8 @@ package com.gentics.cailun.nav.model;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.apex.core.RoutingContext;
-import io.vertx.ext.apex.core.Session;
+import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.apex.Session;
 
 import java.util.concurrent.ForkJoinPool;
 
@@ -91,9 +91,9 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		return nav;
 	}
 
-	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
-		getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(object, PermissionType.READ), resultHandler);
-	}
+//	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
+//		getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(object, PermissionType.READ), resultHandler);
+//	}
 
 	/**
 	 * Wrapper for the permission checks. Check whether the given object can be viewed by the user.
@@ -102,6 +102,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return true, when the user can view the object. Otherwise false.
 	 */
 	public boolean canView(GenericNode object) {
-		return getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(object, PermissionType.READ));
+		return getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(object, PermissionType.READ));
 	}
 }

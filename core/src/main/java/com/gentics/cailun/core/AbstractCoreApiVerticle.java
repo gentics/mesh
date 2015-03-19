@@ -1,6 +1,6 @@
 package com.gentics.cailun.core;
 
-import io.vertx.ext.apex.core.Router;
+import io.vertx.ext.apex.Router;
 
 public abstract class AbstractCoreApiVerticle extends AbstractRestVerticle {
 

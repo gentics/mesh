@@ -2,10 +2,10 @@ package com.gentics.cailun.core;
 
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.apex.core.Route;
-import io.vertx.ext.apex.core.Router;
-import io.vertx.ext.apex.core.RoutingContext;
-import io.vertx.ext.apex.core.Session;
+import io.vertx.ext.apex.Route;
+import io.vertx.ext.apex.Router;
+import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.apex.Session;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -164,7 +164,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	protected boolean hasPermission(RoutingContext rc, GenericNode node, PermissionType type) {
 		if (node != null) {
 			Session session = rc.session();
-			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(node, type));
+			boolean perm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(node, type));
 			if (perm) {
 				return true;
 			}

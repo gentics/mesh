@@ -1,11 +1,11 @@
 package com.gentics.cailun.auth;
 
-import io.vertx.ext.auth.impl.realms.ShiroAuthRealmImpl;
-import io.vertx.ext.auth.impl.realms.SimplePrincipalCollection;
+import io.vertx.ext.auth.shiro.impl.ShiroAuthRealmImpl;
+import io.vertx.ext.auth.shiro.impl.SimplePrincipalCollection;
 
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
-import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -24,7 +24,7 @@ public class EnhancedShiroAuthRealmImpl extends ShiroAuthRealmImpl {
 		super(realm);
 	}
 
-	public SecurityManager getSecurityManager() {
+	public DefaultSecurityManager getSecurityManager() {
 		return this.securityManager;
 	}
 

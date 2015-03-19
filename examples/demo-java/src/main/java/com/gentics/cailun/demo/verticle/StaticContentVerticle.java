@@ -3,11 +3,11 @@ package com.gentics.cailun.demo.verticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.apex.addons.HandlebarsTemplateEngine;
-import io.vertx.ext.apex.addons.StaticServer;
-import io.vertx.ext.apex.addons.TemplateEngine;
-import io.vertx.ext.apex.addons.TemplateHandler;
-import io.vertx.ext.apex.core.Router;
+import io.vertx.ext.apex.Router;
+import io.vertx.ext.apex.handler.StaticHandler;
+import io.vertx.ext.apex.handler.TemplateHandler;
+import io.vertx.ext.apex.templ.HandlebarsTemplateEngine;
+import io.vertx.ext.apex.templ.TemplateEngine;
 
 public class StaticContentVerticle extends AbstractVerticle {
 
@@ -15,12 +15,11 @@ public class StaticContentVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 
 		Router router = Router.router(vertx);
+		StaticHandler staticHandler = StaticHandler.create();
 
-		StaticServer staticServer = StaticServer.staticServer();
-
-		router.route("/js").handler(staticServer);
-		router.route("/img").handler(staticServer);
-		router.route("/css").handler(staticServer);
+		router.route("/js").handler(staticHandler);
+		router.route("/img").handler(staticHandler);
+		router.route("/css").handler(staticHandler);
 
 		// All other requests handled by template engine
 		TemplateEngine engine = HandlebarsTemplateEngine.create();
@@ -41,7 +40,7 @@ public class StaticContentVerticle extends AbstractVerticle {
 			context.next();
 		});
 
-		router.route().handler(TemplateHandler.templateHandler(engine, "templates/post", "text/html"));
+		router.route().handler(TemplateHandler.create(engine, "templates/post", "text/html"));
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8081));
 		server.requestHandler(router::accept);
 		server.listen();

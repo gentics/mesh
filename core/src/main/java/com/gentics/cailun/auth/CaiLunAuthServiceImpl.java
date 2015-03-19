@@ -1,13 +1,13 @@
 package com.gentics.cailun.auth;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.impl.AuthServiceImpl;
+import io.vertx.ext.auth.impl.LoginSession;
 
 import org.apache.shiro.authz.Permission;
+
+import com.gentics.cailun.core.data.model.auth.User;
 
 /**
  * Custom auth* service implementation that adds support for object based permission checks
@@ -17,27 +17,39 @@ import org.apache.shiro.authz.Permission;
  */
 public class CaiLunAuthServiceImpl extends AuthServiceImpl {
 
-	public CaiLunAuthServiceImpl(Vertx vertx, EnhancedShiroAuthRealmImpl authRealm, JsonObject config) {
-		super(vertx, authRealm, config);
+	private Vertx vertx;
+	private final ExposingShiroAuthProvider provider;
+
+	public CaiLunAuthServiceImpl(Vertx vertx, ExposingShiroAuthProvider provider, JsonObject config) {
+		super(vertx, config, provider);
+		this.vertx = vertx;
+		this.provider = provider;
 	}
 
-	private CaiLunAuthServiceImpl(Vertx vertx, JsonObject config) {
-		super(vertx, config);
-	}
+	// public void hasPermission(String loginID, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
+	// vertx.executeBlocking((Future<Boolean> fut) -> {
+	// fut.complete(hasPermission(loginID, permission));
+	// }, resultHandler);
+	// }
 
-	public void hasPermission(String principal, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
-		vertx.executeBlocking((Future<Boolean> fut) -> {
-			fut.complete(hasPermission(principal, permission));
-		}, resultHandler);
-	}
+	public boolean hasPermission(String loginID, Permission permission) {
 
-	public boolean hasPermission(String principal, Permission permission) {
-		boolean hasPerm = getAuthRealm().hasPermission(principal, permission);
-		return hasPerm;
+		LoginSession session = loginSessions.get(loginID);
+		if (session != null) {
+			if (session.principal() != null && session.principal() instanceof User) {
+				User user = (User) session.principal();
+				boolean hasPerm = getAuthRealm().hasPermission(user.getPrincipalId(), permission);
+				return hasPerm;
+			}
+			return false;
+			// doHasPermission(session, permission, resultHandler);
+		}
+		return false;
+
 	}
 
 	public EnhancedShiroAuthRealmImpl getAuthRealm() {
-		return (EnhancedShiroAuthRealmImpl) realm;
+		return (EnhancedShiroAuthRealmImpl) provider.getRealm();
 	}
 
 }

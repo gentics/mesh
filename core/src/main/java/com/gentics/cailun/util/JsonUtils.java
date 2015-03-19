@@ -1,6 +1,6 @@
 package com.gentics.cailun.util;
 
-import io.vertx.ext.apex.core.RoutingContext;
+import io.vertx.ext.apex.RoutingContext;
 
 import java.io.IOException;
 

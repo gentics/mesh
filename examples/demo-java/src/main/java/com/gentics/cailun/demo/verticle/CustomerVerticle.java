@@ -7,7 +7,7 @@ import static com.gentics.cailun.core.data.model.auth.PermissionType.UPDATE;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.core.Session;
+import io.vertx.ext.apex.Session;
 
 import java.util.Arrays;
 import java.util.List;
@@ -317,7 +317,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		route("/permtest").method(GET).handler(rh -> {
 			Session session = rh.session();
 			GenericContent content = contentService.findOne(23L);
-			boolean perm = getAuthService().hasPermission(session.getPrincipal(), new CaiLunPermission(content, READ));
+			boolean perm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(content, READ));
 			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
 		});
 

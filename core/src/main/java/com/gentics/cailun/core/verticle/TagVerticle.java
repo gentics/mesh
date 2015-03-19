@@ -8,7 +8,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.core.Route;
+import io.vertx.ext.apex.Route;
 
 import java.util.HashSet;
 import java.util.List;
