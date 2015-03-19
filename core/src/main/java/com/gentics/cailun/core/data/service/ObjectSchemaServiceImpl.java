@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -9,13 +10,16 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
+import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.ObjectSchemaRepository;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 
@@ -26,11 +30,26 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	@Autowired
 	ObjectSchemaRepository schemaRepository;
 
+	@Autowired
+	Neo4jTemplate neo4jTemplate;
+
 	@Override
 	public List<ObjectSchema> findAll(String projectName) {
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 			List<ObjectSchema> list = new ArrayList<>();
 			for (ObjectSchema schema : schemaRepository.findAll(projectName)) {
+				list.add(schema);
+			}
+			tx.success();
+			return list;
+		}
+	}
+
+	@Override
+	public List<ObjectSchema> findAll() {
+		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+			List<ObjectSchema> list = new ArrayList<>();
+			for (ObjectSchema schema : schemaRepository.findAll()) {
 				list.add(schema);
 			}
 			tx.success();
@@ -72,6 +91,21 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType().getName());
 			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
 		}
+
+		for (Project project : schema.getProjects()) {
+			project = neo4jTemplate.fetch(project);
+			ProjectResponse restProject = new ProjectResponse();
+			restProject.setUuid(project.getUuid());
+			restProject.setName(project.getName());
+			schemaForRest.getProjects().add(restProject);
+		}
+		// Sort the list by project name
+		Collections.sort(schemaForRest.getProjects(), new Comparator<ProjectResponse>() {
+			@Override
+			public int compare(ProjectResponse o1, ProjectResponse o2) {
+				return o1.getName().compareTo(o2.getName());
+			};
+		});
 		return schemaForRest;
 	}
 

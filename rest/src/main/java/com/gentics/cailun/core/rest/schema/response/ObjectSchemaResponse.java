@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 
 public class ObjectSchemaResponse extends AbstractRestModel {
 
@@ -20,6 +21,8 @@ public class ObjectSchemaResponse extends AbstractRestModel {
 
 	@JsonProperty("properties")
 	private List<PropertyTypeSchemaResponse> propertyTypeSchemas = new ArrayList<>();
+
+	private List<ProjectResponse> projects = new ArrayList<>();
 
 	private String[] perms = {};
 
@@ -68,6 +71,14 @@ public class ObjectSchemaResponse extends AbstractRestModel {
 
 	public void setPerms(String... perms) {
 		this.perms = perms;
+	}
+
+	public List<ProjectResponse> getProjects() {
+		return projects;
+	}
+
+	public void setProjects(List<ProjectResponse> projects) {
+		this.projects = projects;
 	}
 
 }

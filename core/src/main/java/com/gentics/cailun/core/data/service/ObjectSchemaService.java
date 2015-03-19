@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import java.util.List;
+
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
@@ -11,5 +13,7 @@ public interface ObjectSchemaService extends GenericNodeService<ObjectSchema> {
 	void deleteByName(String projectName, String schemaName);
 
 	void deleteByUUID(String uuid);
+	
+	public List<ObjectSchema> findAll();
 
 }

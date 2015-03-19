@@ -71,16 +71,16 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			Project project = getObject(rc, "projectUuid", PermissionType.UPDATE);
 			ObjectSchema schema = getObject(rc, "schemaUuid", PermissionType.READ);
 
-			if (schema.addProject(project)) {
-				schema = schemaService.save(schema);
-				rc.response().setStatusCode(200);
-				// TODO return updated schema?
-				rc.response().end(
-						toJson(new GenericMessageResponse("Added schema  \"" + schema.getName() + "\" to project with uuid \"" + project.getName()
-								+ "\"")));
-			} else {
-				// TODO 200?
+			try (Transaction tx = graphDb.beginTx()) {
+				if (schema.addProject(project)) {
+					schema = schemaService.save(schema);
+					tx.success();
+				} else {
+					// TODO 200?
+				}
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(schemaService.transformToRest(schema)));
 		});
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE);
@@ -91,16 +91,12 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				if (schema.removeProject(project)) {
 					schema = schemaService.save(schema);
 					tx.success();
-					rc.response().setStatusCode(200);
-					// TODO return updated schema?
-					rc.response().end(
-							toJson(new GenericMessageResponse("Removed schema \"" + schema.getName() + "\" from project \"" + project.getName()
-									+ "\"")));
 				} else {
 					// TODO - 200?
 				}
 			}
-
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(schemaService.transformToRest(schema)));
 		});
 	}
 

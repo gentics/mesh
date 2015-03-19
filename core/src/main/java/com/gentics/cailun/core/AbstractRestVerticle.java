@@ -55,6 +55,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
+		log.info("Started http server.. Port: " + config().getInteger("port"));
 		registerEndPoints();
 
 	}
