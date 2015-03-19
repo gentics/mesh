@@ -120,15 +120,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// 3. Send the request to the server
 		// TODO test with no ?lang query parameter
-		String requestJson = new ObjectMapper().writeValueAsString(request);
+		String requestJson = JsonUtils.toJson(request);
 		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
 		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"new Name\"}}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
-		Assert.assertEquals(request.getProperty("en", "name"), tagUpdateRequest.getProperty("en", "name"));
+		tagResponse = JsonUtils.readValue(response, TagResponse.class);
+		Assert.assertEquals(request.getProperty("en", "name"), tagResponse.getProperty("en", "name"));
 
 		// TODO verify that only that property was changed
 	}
@@ -153,7 +153,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// read the tag again and verify that it was not changed
-		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
+		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
 		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
 	}
