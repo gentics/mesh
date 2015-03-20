@@ -115,7 +115,7 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	public CaiLunAuthServiceImpl authService() {
 		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
 		ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
-		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), provider, new JsonObject());
+		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), new JsonObject(), provider);
 
 		SecurityUtils.setSecurityManager(realm.getSecurityManager());
 		return authService;
