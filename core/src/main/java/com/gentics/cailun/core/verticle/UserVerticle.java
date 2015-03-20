@@ -182,7 +182,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 
 				if (!StringUtils.isEmpty(requestModel.getPassword())) {
-					user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
+					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				}
 
 				try {
@@ -258,7 +258,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			user.setFirstname(requestModel.getFirstname());
 			user.setLastname(requestModel.getLastname());
 			user.setEmailAddress(requestModel.getEmailAddress());
-			user.setPasswordHash(springConfig.passwordEncoder().encode(requestModel.getPassword()));
+			user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 			user = userService.save(user);
 
 			// Add the user to the parent group and reload user

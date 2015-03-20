@@ -31,7 +31,7 @@ public class CaiLun {
 		log = LoggerFactory.getLogger(CaiLun.class);
 	}
 
-	public static CaiLun getInstance() {
+	public static CaiLun cailun() {
 		if (instance == null) {
 			instance = new CaiLun();
 		}
@@ -43,13 +43,17 @@ public class CaiLun {
 
 	public static void main(String[] args) throws Exception {
 		// TODO errors should be handled by a logger
-		CaiLun cailun = CaiLun.getInstance();
+		CaiLun cailun = CaiLun.cailun();
 		cailun.handleArguments(args);
 		cailun.run();
 	}
 
 	public void run() throws Exception {
 		run(ConfigurationLoader.createOrloadConfiguration(), null);
+	}
+
+	public void run(CaiLunConfiguration config) throws Exception {
+		run(config, null);
 	}
 
 	public void run(Runnable startupHandler) throws Exception {

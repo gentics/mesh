@@ -101,7 +101,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @return
 	 */
 	protected CaiLunAuthServiceImpl getAuthService() {
-		return springConfig.authService();
+		return springConfiguration.authService();
 	}
 
 	/**

@@ -45,7 +45,6 @@ import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
-import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 /**
  * Dummy verticle that is used to setup basic demo data
@@ -59,9 +58,6 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 	private static Logger log = LoggerFactory.getLogger(CustomerVerticle.class);
-
-	@Autowired
-	private CaiLunSpringConfiguration cailunConfig;
 
 	@Autowired
 	private UserService userService;
@@ -111,13 +107,13 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		john.setLastname("Doe");
 		john.setEmailAddress("j.doe@gentics.com");
 		// TODO use user service
-		john.setPasswordHash(cailunConfig.passwordEncoder().encode("test123"));
+		john.setPasswordHash(springConfiguration.passwordEncoder().encode("test123"));
 
 		User mary = new User("mary2");
 		mary.setFirstname("Mary");
 		mary.setLastname("Doe");
 		mary.setEmailAddress("m.doe@gentics.com");
-		mary.setPasswordHash(cailunConfig.passwordEncoder().encode("lalala"));
+		mary.setPasswordHash(springConfiguration.passwordEncoder().encode("lalala"));
 		List<User> users = Arrays.asList(john, mary);
 		userService.save(users);
 		return users;
@@ -129,23 +125,40 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		addPermissionTestHandler();
 
-		try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
-			setupDemoData();
+		Role adminRole;
+		try (Transaction tx = graphDb.beginTx()) {
+			adminRole = setupDemoData();
+			tx.success();
+		}
+
+		// Update role to load uuid
+		adminRole = roleService.reload(adminRole);
+
+		// Add Permissions
+		try (Transaction tx = graphDb.beginTx()) {
+			// Add admin permissions to all nodes
+			int i = 0;
+			for (GenericNode currentNode : genericNodeService.findAll()) {
+				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
+				if (adminRole.getId() == currentNode.getId()) {
+					log.info("Skipping role");
+					continue;
+				}
+				roleService.addPermission(adminRole, currentNode, CREATE, READ, UPDATE, DELETE);
+				genericNodeService.save(currentNode);
+				i++;
+			}
+			log.info("Added permissions to {" + i + "} objects.");
 			tx.success();
 		}
 
 	}
 
-	private void setupDemoData() {
-		// contentRepository.findCustomerNodeBySomeStrangeCriteria("dgasdg");
-
+	private Role setupDemoData() {
 		CaiLunRoot rootNode = rootService.findRoot();
 
 		Project aloha = new Project("aloha");
 		aloha = projectService.save(aloha);
-
-		// ObjectSchema contentSchema = new ObjectSchema("content");
-		// contentSchema.setDescription("Default schema for contents");
 
 		Language german = languageService.findByName("german");
 		Language english = languageService.findByName("english");
@@ -160,9 +173,11 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		// Roles
 		Role adminRole = new Role("admin role");
-		roleService.save(adminRole);
+		adminRole = roleService.save(adminRole);
+		adminRole = roleService.reload(adminRole);
 		Role guestRole = new Role("guest role");
-		roleService.save(guestRole);
+		guestRole = roleService.save(guestRole);
+		guestRole = roleService.reload(guestRole);
 
 		// Groups
 		rootGroup.getUsers().add(users.get(0));
@@ -225,7 +240,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
 		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
 		contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
-		objectSchemaService.save(contentSchema);
+		contentSchema = objectSchemaService.save(contentSchema);
 
 		// Contents
 		Content rootContent = new Content();
@@ -240,9 +255,8 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		rootContent.addProject(aloha);
 		rootContent.setCreator(users.get(0));
 		// rootContent.tag(rootTag);
-		contentService.save(rootContent);
-
-		rootContent = contentService.findOne(rootContent.getId());
+		rootContent = contentService.save(rootContent);
+		rootContent = contentService.reload(rootContent);
 
 		for (int i = 0; i < 6; i++) {
 			Content content = new Content();
@@ -251,7 +265,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 			content.setCreator(users.get(0));
 			contentService.setContent(content, german, "some content");
 			content.addTag(blogsFolder);
-			contentService.save(content);
+			content = contentService.save(content);
 		}
 
 		for (int i = 0; i < 3; i++) {
@@ -261,7 +275,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 			content.setCreator(users.get(0));
 			contentService.setContent(content, german, "some content");
 			content.addTag(postsFolder);
-			contentService.save(content);
+			content = contentService.save(content);
 		}
 
 		Content content = new Content();
@@ -271,7 +285,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		contentService.setFilename(content, german, "blog.html");
 		contentService.setContent(content, german, "This is the blogpost content");
 		contentService.setTeaser(content, german, "Jo this Content is the second blogpost");
-		contentService.save(content);
+		content = contentService.save(content);
 
 		content = new Content();
 		contentService.setName(content, german, "Hallo Cailun");
@@ -279,7 +293,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		content.setCreator(users.get(0));
 		contentService.setContent(content, german, "some more content");
 		content.addTag(postsFolder);
-		contentService.save(content);
+		content = contentService.save(content);
 
 		Content indexContent = new Content();
 		contentService.setName(indexContent, german, "Index With Perm");
@@ -292,24 +306,8 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		indexContent.addTag(wwwFolder);
 
 		contentService.createLink(indexContent, content);
-		contentService.save(indexContent);
-
-		// Permissions
-		try (Transaction tx = cailunConfig.getGraphDatabaseService().beginTx()) {
-			// Add admin permissions to all nodes
-			int i = 0;
-			for (GenericNode currentNode : genericNodeService.findAll()) {
-				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-				if (adminRole.getId() == currentNode.getId()) {
-					log.info("Skipping role");
-					continue;
-				}
-				roleService.addPermission(adminRole, currentNode, CREATE, READ, UPDATE, DELETE);
-				genericNodeService.save(currentNode);
-				i++;
-			}
-			tx.success();
-		}
+		indexContent = contentService.save(indexContent);
+		return adminRole;
 
 	}
 

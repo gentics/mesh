@@ -37,6 +37,7 @@ import com.gentics.cailun.core.verticle.ProjectVerticle;
 import com.gentics.cailun.core.verticle.RoleVerticle;
 import com.gentics.cailun.core.verticle.TagVerticle;
 import com.gentics.cailun.core.verticle.UserVerticle;
+import com.gentics.cailun.core.verticle.WebRootVerticle;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
@@ -79,17 +80,19 @@ public class BootstrapInitializer {
 	private RouterStorage routerStorage;
 
 	public BootstrapInitializer() {
-		addMandatoryVerticle(TagVerticle.class);
-		addMandatoryVerticle(ContentVerticle.class);
 		addMandatoryVerticle(UserVerticle.class);
-
 		addMandatoryVerticle(GroupVerticle.class);
 		addMandatoryVerticle(RoleVerticle.class);
+
+		addMandatoryVerticle(TagVerticle.class);
+		addMandatoryVerticle(ContentVerticle.class);
+		addMandatoryVerticle(WebRootVerticle.class);
+
 		addMandatoryVerticle(ProjectVerticle.class);
 		addMandatoryVerticle(ObjectSchemaVerticle.class);
-		// mandatoryVerticles.add(SearchVerticle.class);
-		// mandatoryVerticles.add(AuthenticationVerticle.class);
-		// mandatoryVerticles.add(AdminVerticle.class);
+		// addMandatoryVerticle(SearchVerticle.class);
+		// addMandatoryVerticle(AuthenticationVerticle.class);
+		// addMandatoryVerticle(AdminVerticle.class);
 
 	}
 

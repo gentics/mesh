@@ -9,6 +9,8 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.cailun.cli.CaiLun;
 import com.gentics.cailun.demo.verticle.CustomerVerticle;
+import com.gentics.cailun.etc.ConfigurationLoader;
+import com.gentics.cailun.etc.config.CaiLunConfiguration;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -21,9 +23,10 @@ public class DemoRunner {
 	public static void main(String[] args) throws Exception {
 
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
-		FileUtils.deleteDirectory(new File("/tmp/graphdb"));
+		File graphDBDir = new File(System.getProperty("java.io.tmpdir"), "graphdb");
+		FileUtils.deleteDirectory(graphDBDir);
 
-		CaiLun cailun = CaiLun.getInstance();
+		CaiLun cailun = CaiLun.cailun();
 
 		cailun.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
@@ -44,8 +47,10 @@ public class DemoRunner {
 		// // });
 		// // deployAndWait(vertx, "", "TestJSVerticle.js");
 		// });
-		cailun.run();
+		CaiLunConfiguration config = ConfigurationLoader.createOrloadConfiguration();
+		config.getNeo4jConfiguration().setMode("gui");
+		config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
+		cailun.run(config);
 
 	}
-
 }

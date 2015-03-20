@@ -14,7 +14,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	public abstract void start() throws Exception;
 
 	@Autowired
-	protected CaiLunSpringConfiguration springConfig;
+	protected CaiLunSpringConfiguration springConfiguration;
 
 	@Autowired
 	protected RouterStorage routerStorage;
@@ -26,7 +26,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected GraphDatabaseService graphDb;
 
 	public void setSpringConfig(CaiLunSpringConfiguration config) {
-		this.springConfig = config;
+		this.springConfiguration = config;
 	}
 
 }

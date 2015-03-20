@@ -21,7 +21,7 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 	public static final String UUID_PROPERTY_NAME = "uuid";
 	public static final String UUID_INDEX_NAME = "uuid";
 
-	private static final RandomBasedGenerator uuidGenerator = Generators.randomBasedGenerator();
+	private static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 	private final GraphDatabaseService graphDatabaseService;
 	private Index<Node> nodeUuidIndex;
 	private RelationshipIndex relationshipUuidIndex;
@@ -75,7 +75,7 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 		for (PropertyContainer propertyContainer : propertyContainers) {
 			if (!propertyContainer.hasProperty(UUID_PROPERTY_NAME)) {
 
-				final UUID uuid = uuidGenerator.generate();
+				final UUID uuid = UUID_GENERATOR.generate();
 				final StringBuilder sb = new StringBuilder();
 				sb.append(Long.toHexString(uuid.getMostSignificantBits())).append(Long.toHexString(uuid.getLeastSignificantBits()));
 				String uuidAsString = sb.toString();
@@ -90,7 +90,7 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 		for (PropertyEntry<? extends PropertyContainer> changendPropertyEntry : changeList) {
 			if (UUID_PROPERTY_NAME.equals(changendPropertyEntry.key())
 					&& (!changendPropertyEntry.previouslyCommitedValue().equals(changendPropertyEntry.value()))) {
-				throw new IllegalStateException("you are not allowed to assign " + UUID_PROPERTY_NAME + " properties");
+				throw new IllegalStateException("You are not allowed to assign " + UUID_PROPERTY_NAME + " properties");
 			}
 		}
 	}
@@ -98,7 +98,7 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 	private void checkForUuidDeletion(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList, TransactionData transactionData) {
 		for (PropertyEntry<? extends PropertyContainer> changendPropertyEntry : changeList) {
 			if (UUID_PROPERTY_NAME.equals(changendPropertyEntry.key()) && (!isPropertyContainerDeleted(transactionData, changendPropertyEntry))) {
-				throw new IllegalStateException("you are not allowed to remove " + UUID_PROPERTY_NAME + " properties");
+				throw new IllegalStateException("You are not allowed to remove " + UUID_PROPERTY_NAME + " properties.");
 			}
 		}
 	}

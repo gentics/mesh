@@ -22,7 +22,7 @@ public class CaiLunIntegerationTest extends AbstractIntegrationTest {
 		config.setHttpPort(TestUtil.getRandomPort());
 		config.getNeo4jConfiguration().setMode(Neo4jGraphVerticle.DEFAULT_MODE);
 
-		final CaiLun cailun = CaiLun.getInstance();
+		final CaiLun cailun = CaiLun.cailun();
 		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);
 		final AtomicBoolean caiLunStarted = new AtomicBoolean(false);
 		cailun.setCustomLoader((vertx) -> {

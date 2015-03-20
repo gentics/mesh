@@ -236,7 +236,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/groups/bogus", 404, "Not Found", JsonUtils.toJson(request));
-		String json = "{\"message\":\"Group not found for uuid \\\"bogus\\\".\"}";
+		String json = "{\"message\":\"Object with uuid \\\"bogus\\\" could not be found.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		Group reloadedGroup = groupService.reload(group);
@@ -353,7 +353,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/bogus/users/" + extraUser.getUuid(), 404, "Not Found");
-		String json = "{\"message\":\"Group not found for uuid \\\"bogus\\\".\"}";
+		String json = "{\"message\":\"Object with uuid \\\"bogus\\\" could not be found.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
