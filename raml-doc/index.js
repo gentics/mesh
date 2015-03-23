@@ -50,6 +50,10 @@ console.log("Reading template file {" + templateFile + "}");
 fs.readFile(templateFile, 'utf8', function(err, data) {
 	config['template'] = data;
 	config['partials']['resource'] = resourceTemplateSource;
-	fs.createReadStream(source).pipe(fs.createWriteStream(buildSource));
-	raml2html.render(buildSource, config, onSuccess, onError);
+	var stream = fs.createReadStream(source);
+	stream.pipe(fs.createWriteStream(buildSource));
+	stream.on('close', function(){
+		raml2html.render(buildSource, config, onSuccess, onError);
+	});
+
 });
