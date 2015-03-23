@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
-import java.util.List;
+import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
@@ -13,7 +13,7 @@ public interface ProjectService extends GenericNodeService<Project> {
 
 	Project findByUUID(String uuid);
 
-	List<Project> findAll();
+	Result<Project> findAll();
 
 	void deleteByName(String name);
 

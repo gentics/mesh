@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
-import java.util.List;
+import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
@@ -15,7 +15,7 @@ public interface RoleService extends GenericNodeService<Role> {
 
 	Role findByName(String name);
 
-	List<Role> findAll();
+	Result<Role> findAll();
 
 	void addPermission(Role role, AbstractPersistable node, PermissionType... permissionTypes);
 

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,6 +76,9 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private CaiLunSpringConfiguration springConfiguration;
+	
+	@Autowired
+	private GraphDatabaseService graphDb;
 
 	@Autowired
 	private RouterStorage routerStorage;
@@ -155,7 +159,7 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		try (Transaction tx = springConfiguration.getGraphDatabaseService().beginTx()) {
+		try (Transaction tx = graphDb.beginTx()) {
 			initMandatoryData();
 			tx.success();
 		}
@@ -173,7 +177,7 @@ public class BootstrapInitializer {
 	 * @throws InvalidNameException
 	 */
 	private void initProjects() throws InvalidNameException {
-		try (Transaction tx = springConfiguration.getGraphDatabaseService().beginTx()) {
+		try (Transaction tx = graphDb.beginTx()) {
 			for (Project project : projectRepository.findAll()) {
 				routerStorage.addProjectRouter(project.getName());
 				log.info("Initalized project {" + project.getName() + "}");

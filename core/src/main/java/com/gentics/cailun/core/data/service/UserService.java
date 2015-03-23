@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
-import java.util.List;
+import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -13,7 +13,7 @@ public interface UserService extends GenericNodeService<User> {
 
 	User findByUsername(String username);
 
-	List<User> findAll();
+	Result<User> findAll();
 
 	UserResponse transformToRest(User user);
 

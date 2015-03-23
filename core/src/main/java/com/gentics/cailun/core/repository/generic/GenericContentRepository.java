@@ -29,5 +29,8 @@ public interface GenericContentRepository<T extends GenericContent> extends Gene
 	// @Query("MATCH (content:GenericContent),(tag:Tag { name:'/' }), p = shortestPath((tag)-[:TAGGED]-(content)) WHERE id(content) = {0} WITH content, reduce(a='', n IN FILTER(x in nodes(p) WHERE id(content)<> id(x))| a + \"/\"+ n.name) as path return substring(path,2,length(path)) + \"/\" + content.filename")
 	// public String getPath(Long id);
 
+	@Query("MATCH (n:Content)-[:ASSIGNED_TO_PROJECT]-(p:Project) WHERE p.name = {0} return n")
+	Iterable<T> findAll(String projectName);
+	
 
 }

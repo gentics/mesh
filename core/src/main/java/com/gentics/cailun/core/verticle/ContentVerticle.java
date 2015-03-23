@@ -14,12 +14,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
@@ -40,6 +42,8 @@ import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
+import com.gentics.cailun.core.rest.content.response.ContentListResponse;
+import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
@@ -65,16 +69,15 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
 
+	@Autowired
+	private Neo4jTemplate neo4jTemplate;
+
 	public ContentVerticle() {
 		super("contents");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		addCRUDHandlers();
-	}
-
-	private void addCRUDHandlers() {
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -88,42 +91,58 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			Tag rootTagForContent = tagService.findByUUID(projectName, requestModel.getTagUuid());
-			if (rootTagForContent == null) {
-				// TODO i18n
-				String message = "Root tag could not be found. Maybe it is not part of project {" + projectName + "}";
-				throw new HttpStatusCodeErrorException(400, message);
-			}
-			failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
-
 			Content content = new Content();
-			content.setSchemaName(requestModel.getSchemaName());
-
-			// TODO handle creator
-			// TODO maybe projects should not be a set?
-			Project project = projectService.findByName(projectName);
-			content.addProject(project);
-
-			// Add the i18n properties to the newly created tag
-			for (String languageTag : requestModel.getProperties().keySet()) {
-				Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
-				Language language = languageService.findByLanguageTag(languageTag);
-				I18NProperties tagProps = new I18NProperties(language);
-				for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-					tagProps.addProperty(entry.getKey(), entry.getValue());
+			try (Transaction tx = graphDb.beginTx()) {
+				
+				if(StringUtils.isEmpty(requestModel.getTagUuid())) {
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field"));
 				}
-				// Create the relationship to the i18n properties
-				Translated translated = new Translated(content, tagProps, language);
-				content.getI18nTranslations().add(translated);
-			}
 
-			content = contentService.save(content);
+				Tag rootTagForContent = tagService.findByUUID(projectName, requestModel.getTagUuid());
+				if (rootTagForContent == null) {
+					// TODO i18n
+					String message = "Root tag could not be found. Maybe it is not part of project {" + projectName + "}";
+					throw new HttpStatusCodeErrorException(400, message);
+				}
+				failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
+
+				content.setSchemaName(requestModel.getSchemaName());
+
+				// TODO handle creator
+				// TODO maybe projects should not be a set?
+				Project project = projectService.findByName(projectName);
+				content.addProject(project);
+				content = neo4jTemplate.save(content);
+
+				// Add the i18n properties to the newly created tag
+				for (String languageTag : requestModel.getProperties().keySet()) {
+					Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
+					Language language = languageService.findByLanguageTag(languageTag);
+					if (language == null) {
+						// TODO i18n
+						String message = "Could not find language {" + languageTag + "}";
+						throw new HttpStatusCodeErrorException(400, message);
+					}
+					I18NProperties tagProps = new I18NProperties(language);
+					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
+						tagProps.addProperty(entry.getKey(), entry.getValue());
+					}
+					tagProps = neo4jTemplate.save(tagProps);
+					// Create the relationship to the i18n properties
+					Translated translated = new Translated(content, tagProps, language);
+					translated = neo4jTemplate.save(translated);
+					content.getI18nTranslations().add(translated);
+				}
+
+				content = contentService.save(content);
+
+				// Assign the content to the tag and save the tag
+				rootTagForContent.addFile(content);
+				rootTagForContent = tagService.save(rootTagForContent);
+				tx.success();
+			}
 			// Reload in order to update uuid field
 			content = contentService.reload(content);
-
-			// Assign the content to the tag and save the tag
-			rootTagForContent.addFile(content);
-			rootTagForContent = tagService.save(rootTagForContent);
 
 			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
 
@@ -142,22 +161,38 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route readAllRoute = route("/").method(GET);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 			// TODO paging, filtering
-				Iterable<Content> allContents = contentService.findAll(projectName);
+				ContentListResponse listResponse = new ContentListResponse();
+				try (Transaction tx = graphDb.beginTx()) {
+					Iterable<Content> allContents = contentService.findAll(projectName);
+					for (Content content : allContents) {
+						if (hasPermission(rc, content, PermissionType.READ)) {
+							ContentResponse contentResponse = contentService.transformToRest(content, languageTags);
+							listResponse.getContents().add(contentResponse);
+						}
+					}
+					tx.success();
+				}
+				rc.response().end(toJson(listResponse));
 			});
 
 		Route route = route("/:uuid").method(GET);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
-
-			Content content = contentService.findByUUID(projectName, uuid);
-			if (content == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_uuid", uuid));
+			Content content = null;
+			try (Transaction tx = graphDb.beginTx()) {
+				content = contentService.findByUUID(projectName, uuid);
+				if (content == null) {
+					throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_uuid", uuid));
+				}
+				failOnMissingPermission(rc, content, PermissionType.READ);
+				tx.success();
 			}
-			failOnMissingPermission(rc, content, PermissionType.READ);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
+
 		});
 	}
 

@@ -1,7 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;

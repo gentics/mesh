@@ -8,11 +8,10 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.Route;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.ConstraintViolationException;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,16 +155,20 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/").method(GET).handler(rc -> {
-			List<Project> projects = projectService.findAll();
-			ProjectListResponse response = new ProjectListResponse();
 
-			for (Project project : projects) {
-				if (hasPermission(rc, project, PermissionType.READ)) {
-					response.addProject(projectService.transformToRest(project));
+			ProjectListResponse response = new ProjectListResponse();
+			try (Transaction tx = graphDb.beginTx()) {
+
+				for (Project project : projectService.findAll()) {
+					if (hasPermission(rc, project, PermissionType.READ)) {
+						response.addProject(projectService.transformToRest(project));
+					}
 				}
+				tx.success();
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(response));
+
 		});
 
 	}

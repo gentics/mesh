@@ -9,12 +9,12 @@ import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.Route;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.ConstraintViolationException;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -75,11 +75,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		route("/").method(GET).handler(rc -> {
 			Map<String, UserResponse> resultMap = new HashMap<>();
 			// TODO paging
-				List<User> users = userService.findAll();
-				for (User user : users) {
-					boolean hasPerm = hasPermission(rc, user, PermissionType.READ);
-					if (hasPerm) {
-						resultMap.put(user.getUsername(), userService.transformToRest(user));
+				try(Transaction tx = graphDb.beginTx()) {
+					for (User user : userService.findAll()) {
+						boolean hasPerm = hasPermission(rc, user, PermissionType.READ);
+						if (hasPerm) {
+							resultMap.put(user.getUsername(), userService.transformToRest(user));
+						}
 					}
 				}
 				rc.response().setStatusCode(200);

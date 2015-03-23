@@ -61,7 +61,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 			return false;
 		}
 
-		try (Transaction tx = graphDatabaseService.beginTx()) {
+//		try (Transaction tx = graphDatabaseService.beginTx()) {
 			Node userNode = graphDatabaseService.getNodeById(userNodeId);
 			// Traverse the graph from user to the page. Collect all permission relations and check them individually
 			for (Relationship rel : graphDatabaseService.traversalDescription().depthFirst()
@@ -83,7 +83,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 						}
 					}
 				}
-			}
+//			}
 		}
 		return false;
 	}

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,16 +33,17 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	}
 
 	@Override
-	public List<Project> findAll() {
+	public Result<Project> findAll() {
 		// TODO i assume this could create memory problems for big data
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			List<Project> list = new ArrayList<>();
-			for (Project user : projectRepository.findAll()) {
-				list.add(user);
-			}
-			tx.success();
-			return list;
-		}
+//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+//			List<Project> list = new ArrayList<>();
+//			for (Project user : projectRepository.findAll()) {
+//				list.add(user);
+//			}
+//			tx.success();
+//			return list;
+//		}
+		return projectRepository.findAll();
 	}
 
 	@Override

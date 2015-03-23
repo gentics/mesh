@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,15 +47,16 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public List<ObjectSchema> findAll() {
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			List<ObjectSchema> list = new ArrayList<>();
-			for (ObjectSchema schema : schemaRepository.findAll()) {
-				list.add(schema);
-			}
-			tx.success();
-			return list;
-		}
+	public Result<ObjectSchema> findAll() {
+//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+//			List<ObjectSchema> list = new ArrayList<>();
+//			for (ObjectSchema schema : schemaRepository.findAll()) {
+//				list.add(schema);
+//			}
+//			tx.success();
+//			return list;
+		return schemaRepository.findAll();
+//		}
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
-import java.util.List;
+import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
@@ -14,6 +14,6 @@ public interface ObjectSchemaService extends GenericNodeService<ObjectSchema> {
 
 	void deleteByUUID(String uuid);
 	
-	public List<ObjectSchema> findAll();
+	public Result<ObjectSchema> findAll();
 
 }

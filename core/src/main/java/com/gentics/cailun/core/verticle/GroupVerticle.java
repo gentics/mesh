@@ -48,10 +48,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		addCRUDHandlers();
-	}
-
-	private void addCRUDHandlers() {
 		addGroupChildGroupHandlers();
 		addGroupUserHandlers();
 		addGroupRoleHandlers();
@@ -60,127 +56,137 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
-
 	}
 
 	private void addGroupRoleHandlers() {
 		route("/:groupUuid/roles/:roleUuid").method(POST).handler(rc -> {
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-			Role role = getObject(rc, "roleUuid", PermissionType.READ);
+			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				Role role = getObject(rc, "roleUuid", PermissionType.READ);
 
-			if (group.addRole(role)) {
-				group = groupService.save(group);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
-			} else {
-				// TODO 200?
+				if (group.addRole(role)) {
+					group = groupService.save(group);
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(groupService.transformToRest(group)));
+				} else {
+					// TODO 200?
 			}
-		});
+			tx.success();
+		}
+	}	);
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).handler(rc -> {
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-			Role role = getObject(rc, "roleUuid", PermissionType.READ);
+			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				Role role = getObject(rc, "roleUuid", PermissionType.READ);
 
-			if (group.removeRole(role)) {
-				group = groupService.save(group);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
-			} else {
-				// TODO 200?
+				if (group.removeRole(role)) {
+					group = groupService.save(group);
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(groupService.transformToRest(group)));
+				} else {
+					// TODO 200?
 			}
-		});
+			tx.success();
+		}
+	}	);
 	}
 
 	private void addGroupUserHandlers() {
 		Route route = route("/:groupUuid/users/:userUuid").method(POST);
 		route.handler(rc -> {
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-			User user = getObject(rc, "userUuid", PermissionType.READ);
-
 			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				User user = getObject(rc, "userUuid", PermissionType.READ);
+
 				if (group.addUser(user)) {
 					group = groupService.save(group);
-					tx.success();
 				} else {
 					// TODO 200?
 				}
+				tx.success();
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE);
 		route.handler(rc -> {
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-			User user = getObject(rc, "userUuid", PermissionType.READ);
 			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				User user = getObject(rc, "userUuid", PermissionType.READ);
 
 				if (group.removeUser(user)) {
 					groupService.save(group);
-					tx.success();
 				} else {
 					// TODO 200?
 				}
+				tx.success();
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 	}
 
 	private void addGroupChildGroupHandlers() {
 		Route route = route("/:groupUuid/groups/:childGroupUuid").method(POST);
 		route.handler(rc -> {
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-			Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
-
 			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
+
 				if (group.addGroup(childGroup)) {
 					groupService.save(group);
-					tx.success();
 				} else {
 					// TODO 200?
 				}
+				tx.success();
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 
 		route = route("/:groupUuid/groups/:childGroupUuid").method(DELETE);
 		route.handler(rc -> {
-			Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-			Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
 			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
 
 				if (group.removeGroup(childGroup)) {
 					groupService.save(group);
-					tx.success();
 				} else {
 					// TODO 200?
 				}
+				tx.success();
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			Group group = getObject(rc, "uuid", PermissionType.DELETE);
-			groupService.delete(group);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
+			try (Transaction tx = graphDb.beginTx()) {
+				String uuid = rc.request().params().get("uuid");
+				Group group = getObject(rc, "uuid", PermissionType.DELETE);
+				groupService.delete(group);
+				tx.success();
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
+
+			}
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).handler(rc -> {
-			Group group = getObject(rc, "uuid", PermissionType.UPDATE);
-			GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
+			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "uuid", PermissionType.UPDATE);
+				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
-			if (StringUtils.isEmpty(requestModel.getName())) {
-				// TODO i18n
+				if (StringUtils.isEmpty(requestModel.getName())) {
+					// TODO i18n
 				throw new HttpStatusCodeErrorException(400, "Name can't be empty or null");
 			}
 
@@ -196,29 +202,35 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			}
 
 			// TODO update timestamps
-
 			group = groupService.save(group);
+			tx.success();
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(groupService.transformToRest(group)));
-		});
+		}
+
+	}	);
 
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			Group group = getObject(rc, "uuid", PermissionType.READ);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
+			try (Transaction tx = graphDb.beginTx()) {
+				Group group = getObject(rc, "uuid", PermissionType.READ);
+				tx.success();
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(groupService.transformToRest(group)));
+			}
 		});
 	}
 
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
 
-			GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
-			String parentGroupUuid = requestModel.getGroupUuid();
-			if (StringUtils.isEmpty(parentGroupUuid)) {
-				// TODO i18n
+			try (Transaction tx = graphDb.beginTx()) {
+				GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
+				String parentGroupUuid = requestModel.getGroupUuid();
+				if (StringUtils.isEmpty(parentGroupUuid)) {
+					// TODO i18n
 				throw new HttpStatusCodeErrorException(400, "The group uuid field has not been set. Parent group must be specified.");
 			}
 			Group parentGroup = getObjectByUUID(rc, parentGroupUuid, PermissionType.CREATE);
@@ -236,10 +248,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 			parentGroup = groupService.save(parentGroup);
 
+			tx.success();
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(groupService.transformToRest(group)));
+		}
 
-		});
+	}	);
 
 	}
 }

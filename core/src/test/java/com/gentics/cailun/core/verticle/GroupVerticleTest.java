@@ -40,60 +40,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	// Create Tests
-
-	// Read Tests
-
-	// Update Tests
-
-	// Delete Tests
-
-	@Test
-	public void testDeleteGroupByUUID() throws Exception {
-		Group group = info.getGroup();
-		assertNotNull(group.getUuid());
-
-		roleService.addPermission(info.getRole(), group, PermissionType.DELETE);
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		String json = "{\"message\":\"Group with uuid \\\"" + group.getUuid() + "\\\" was deleted.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		assertNull("The group should have been deleted", groupService.findByUUID(group.getUuid()));
-	}
-
-	@Test
-	public void testDeleteGroupByUUIDWithMissingPermission() throws Exception {
-		Group group = info.getGroup();
-		assertNotNull(group.getUuid());
-
-		roleService.addPermission(info.getRole(), group, PermissionType.READ);
-		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), group, PermissionType.CREATE);
-		// Don't allow delete
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		assertNotNull("The group should not have been deleted", groupService.findByUUID(group.getUuid()));
-	}
-
-	@Test
-	public void testReadGroupByUUID() throws Exception {
-		Group group = info.getGroup();
-
-		// Add a child group to group of the user
-		Group subGroup = new Group("sub group");
-		group.addGroup(subGroup);
-		subGroup = groupService.save(subGroup);
-		group = groupService.save(group);
-
-		roleService.addPermission(info.getRole(), group, PermissionType.READ);
-
-		assertNotNull("The UUID of the group must not be null.", group.getUuid());
-		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"sub group\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
-	}
-
 	@Test
 	public void testCreateGroup() throws Exception {
 
@@ -163,6 +109,58 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		assertNull(groupService.findByName(name));
 	}
+
+	// Read Tests
+
+	
+	@Test
+	public void testReadGroupByUUID() throws Exception {
+		Group group = info.getGroup();
+
+		// Add a child group to group of the user
+		Group subGroup = new Group("sub group");
+		group.addGroup(subGroup);
+		subGroup = groupService.save(subGroup);
+		group = groupService.save(group);
+
+		roleService.addPermission(info.getRole(), group, PermissionType.READ);
+
+		assertNotNull("The UUID of the group must not be null.", group.getUuid());
+		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"sub group\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+		assertEqualsSanitizedJson("The response does not match.", json, response);
+	}
+	
+	
+	@Test
+	public void testReadGroupByUUIDWithNoPermission() throws Exception {
+		Group group = info.getGroup();
+
+		// Add a child group to group of the user
+		Group subGroup = new Group("sub group");
+		group.addGroup(subGroup);
+		subGroup = groupService.save(subGroup);
+		group = groupService.save(group);
+
+		roleService.addPermission(info.getRole(), group, PermissionType.DELETE);
+		roleService.addPermission(info.getRole(), group, PermissionType.CREATE);
+		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+
+		assertNotNull("The UUID of the group must not be null.", group.getUuid());
+		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
+		String json = "error";
+		assertEqualsSanitizedJson("The response does not match.", json, response);
+	}
+	
+	@Test
+	public void testReadGroupWithBogusUUID() throws Exception {
+		final String bogusUuid = "sadgasdasdg"; 
+		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + bogusUuid, 404, "Not Found");
+		String json = "error";
+		assertEqualsSanitizedJson("The response does not match.", json, response);
+	}
+	
+	// Update Tests
 
 	@Test
 	public void testUpdateGroup() throws HttpStatusCodeErrorException, Exception {
@@ -242,6 +240,39 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Group reloadedGroup = groupService.reload(group);
 		Assert.assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
+
+	// Delete Tests
+
+	@Test
+	public void testDeleteGroupByUUID() throws Exception {
+		Group group = info.getGroup();
+		assertNotNull(group.getUuid());
+
+		roleService.addPermission(info.getRole(), group, PermissionType.DELETE);
+
+		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 200, "OK");
+		String json = "{\"message\":\"Group with uuid \\\"" + group.getUuid() + "\\\" was deleted.\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		assertNull("The group should have been deleted", groupService.findByUUID(group.getUuid()));
+	}
+
+	@Test
+	public void testDeleteGroupByUUIDWithMissingPermission() throws Exception {
+		Group group = info.getGroup();
+		assertNotNull(group.getUuid());
+
+		roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+		roleService.addPermission(info.getRole(), group, PermissionType.CREATE);
+		// Don't allow delete
+
+		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
+		String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		assertNotNull("The group should not have been deleted", groupService.findByUUID(group.getUuid()));
+	}
+
+
 
 	// Group Role Testcases - PUT / Add
 

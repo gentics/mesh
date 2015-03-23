@@ -42,7 +42,7 @@ public class Neo4jGenericContentUtils {
 	public String getPath(GenericTag to, GenericNode from) {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
 		List<String> segments = new ArrayList<>();
-		try (Transaction tx = graphDB.beginTx()) {
+//		try (Transaction tx = graphDB.beginTx()) {
 			Node fromNode = template.getPersistentState(from);
 			for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_SUB_TAG)
 					.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
@@ -59,8 +59,8 @@ public class Neo4jGenericContentUtils {
 					break;
 				}
 			}
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		segments = Lists.reverse(segments);
 		StringBuilder pathBuilder = new StringBuilder();

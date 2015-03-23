@@ -8,9 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
-import com.gentics.cailun.core.data.model.ObjectSchema;
-import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.generic.GenericContentServiceImpl;
+import com.gentics.cailun.core.repository.ContentRepository;
+import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 
@@ -19,16 +20,22 @@ import com.gentics.cailun.core.rest.user.response.UserResponse;
 public class ContentServiceImpl extends GenericContentServiceImpl<Content> implements ContentService {
 
 	@Autowired
-	LanguageService languageService;
+	private LanguageService languageService;
 
 	@Autowired
-	ProjectService projectService;
+	private ProjectService projectService;
 
 	@Autowired
-	UserService userService;
+	private UserService userService;
 
 	@Autowired
-	ObjectSchemaService objectSchemaService;
+	private GroupRepository groupRepository;
+
+	@Autowired
+	private ObjectSchemaService objectSchemaService;
+
+	@Autowired
+	private ContentRepository contentRepository;
 
 	public void setTeaser(Content page, Language language, String text) {
 		setProperty(page, language, Content.TEASER_KEY, text);
@@ -39,34 +46,44 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	}
 
 	@Override
+	public Iterable<Content> findAll(String project) {
+		return contentRepository.findAll(project);
+	}
+
+	@Override
 	public ContentResponse transformToRest(Content content, List<String> languages) {
+		ContentResponse response = new ContentResponse();
+		response.setUuid(content.getUuid());
+		response.setSchemaName(content.getSchema());
+		UserResponse restUser = userService.transformToRest(content.getCreator());
+		response.setAuthor(restUser);
 		if (languages.size() == 0) {
-			// TODO return page with all languages?
-			return null;
-		}
-		// Return page with flatted properties since only one language has been specified
-		else if (languages.size() == 1) {
-			String languageTag = languages.iterator().next();
-			Language language = languageService.findByLanguageTag(languageTag);
-			if (language == null) {
-				// TODO fail early
+			for (Translated transalated : content.getI18nTranslations()) {
+				String languageTag = transalated.getLanguageTag();
+				// TODO handle schema
+				response.addProperty(languageTag, "name", transalated.getI18nValue().getProperty("name"));
+				response.addProperty(languageTag, "filename", transalated.getI18nValue().getProperty("filename"));
+				response.addProperty(languageTag, "content", transalated.getI18nValue().getProperty("content"));
+				response.addProperty(languageTag, "teaser", transalated.getI18nValue().getProperty("teaser"));
+			}
+		} else {
+			// Return page with flatted properties since only one language has been specified
+			for (String languageTag : languages) {
+				Language language = languageService.findByLanguageTag(languageTag);
+				if (language == null) {
+					// TODO fail early
+				}
+				// TODO handle schema
+				response.addProperty(languageTag, "name", content.getName(language));
+				response.addProperty(languageTag, "filename", content.getFilename(language));
+				response.addProperty(languageTag, "content", content.getContent(language));
+				response.addProperty(languageTag, "teaser", content.getTeaser(language));
 			}
 
-			ContentResponse response = new ContentResponse();
-			response.setUuid(content.getUuid());
-			response.setSchemaName(content.getSchema());
-			response.addProperty(languageTag, "name", content.getName(language));
-			response.addProperty(languageTag, "filename", content.getFilename(language));
-			UserResponse restUser = userService.transformToRest(content.getCreator());
-			response.setAuthor(restUser);
-			response.addProperty(languageTag, "content", content.getContent(language));
-			response.addProperty(languageTag, "teaser", content.getTeaser(language));
-			return response;
-		} else {
-			// TODO return all languages
-
-			return null;
 		}
+
+		return response;
+
 	}
 
 	// private Node getChildNodePageFromNodeTag(Node node, String pageFilename) {
@@ -101,49 +118,49 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	// System.out.println("looking for " + path + " in project " + projectName);
 	// return null;
 
-//	@Override
-//	public Content save(String projectName, String path, ContentResponse requestModel) {
-//
-//		// TODO check permissions
-//		if (requestModel.getUUID() == null) {
-//			Project project = projectService.findByName(projectName);
-//			// Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
-//			Language language = null;
-//			// TODO save given languages individually, TODO how can we delete a single language?
-//			if (language == null || requestModel.getSchemaName() == null) {
-//				// TODO handle this case
-//				throw new NullPointerException("No language or type specified");
-//			}
-//
-//			// We need to validate the saved data using the object schema
-//			ObjectSchema objectSchema = objectSchemaService.findByName(projectName, requestModel.getSchemaName());
-//			if (objectSchema == null) {
-//				// TODO handle this case
-//				throw new NullPointerException("Could not find object schema for type {" + requestModel.getSchemaName() + "} and project {" + projectName
-//						+ "}");
-//			}
-//
-//			// TODO handle types , verify that type exists
-//			Content content = new Content();
-//			content.setProject(project);
-//			content.setSchema(requestModel.getSchemaName());
-//			// for (Entry<String, String> entry : requestModel.getProperties().entrySet()) {
-//			// PropertyTypeSchema propertyTypeSchema = objectSchema.getPropertyTypeSchema(entry.getKey());
-//			// // TODO we should abort when we encounter a property with an unknown key.
-//			// // Determine whether the property is an i18n one or not
-//			// if (propertyTypeSchema == null) {
-//			// content.setProperty(entry.getKey(), entry.getValue());
-//			// } else if (propertyTypeSchema.getType().equals(PropertyType.I18N_STRING)) {
-//			// setProperty(content, language, entry.getKey(), entry.getValue());
-//			// } else {
-//			// // TODO handle this case
-//			// }
-//			// }
-//			return save(content);
-//
-//		} else {
-//
-//		}
-//		return null;
-//	}
+	// @Override
+	// public Content save(String projectName, String path, ContentResponse requestModel) {
+	//
+	// // TODO check permissions
+	// if (requestModel.getUUID() == null) {
+	// Project project = projectService.findByName(projectName);
+	// // Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
+	// Language language = null;
+	// // TODO save given languages individually, TODO how can we delete a single language?
+	// if (language == null || requestModel.getSchemaName() == null) {
+	// // TODO handle this case
+	// throw new NullPointerException("No language or type specified");
+	// }
+	//
+	// // We need to validate the saved data using the object schema
+	// ObjectSchema objectSchema = objectSchemaService.findByName(projectName, requestModel.getSchemaName());
+	// if (objectSchema == null) {
+	// // TODO handle this case
+	// throw new NullPointerException("Could not find object schema for type {" + requestModel.getSchemaName() + "} and project {" + projectName
+	// + "}");
+	// }
+	//
+	// // TODO handle types , verify that type exists
+	// Content content = new Content();
+	// content.setProject(project);
+	// content.setSchema(requestModel.getSchemaName());
+	// // for (Entry<String, String> entry : requestModel.getProperties().entrySet()) {
+	// // PropertyTypeSchema propertyTypeSchema = objectSchema.getPropertyTypeSchema(entry.getKey());
+	// // // TODO we should abort when we encounter a property with an unknown key.
+	// // // Determine whether the property is an i18n one or not
+	// // if (propertyTypeSchema == null) {
+	// // content.setProperty(entry.getKey(), entry.getValue());
+	// // } else if (propertyTypeSchema.getType().equals(PropertyType.I18N_STRING)) {
+	// // setProperty(content, language, entry.getKey(), entry.getValue());
+	// // } else {
+	// // // TODO handle this case
+	// // }
+	// // }
+	// return save(content);
+	//
+	// } else {
+	//
+	// }
+	// return null;
+	// }
 }

@@ -1,10 +1,8 @@
 package com.gentics.cailun.core.data.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,17 +34,18 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public List<Role> findAll() {
+	public Result<Role> findAll() {
 
 		// TODO i assume this could create memory problems for big data
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			List<Role> list = new ArrayList<>();
-			for (Role role : roleRepository.findAll()) {
-				list.add(role);
-			}
-			tx.success();
-			return list;
-		}
+//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+//			List<Role> list = new ArrayList<>();
+		return roleRepository.findAll();
+//			for (Role role : roleRepository.findAll()) {
+//				list.add(role);
+//			}
+//			tx.success();
+//			return list;
+//		}
 
 	}
 
