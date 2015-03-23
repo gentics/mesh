@@ -192,41 +192,51 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		// Tags
 		RootTag rootTag = new RootTag();
+		rootTag.addProject(aloha);
+
 		tagService.setName(rootTag, english, "/");
 
-		Tag homeFolder = new Tag();
-		tagService.setName(homeFolder, english, "home");
-		tagService.setName(homeFolder, german, "heim");
-		rootTag.addTag(homeFolder);
+		Tag homeTag = new Tag();
+		tagService.setName(homeTag, english, "home");
+		tagService.setName(homeTag, german, "heim");
+		homeTag.addProject(aloha);
+		rootTag.addTag(homeTag);
 
-		Tag jotschiFolder = new Tag();
-		tagService.setName(jotschiFolder, german, "jotschi");
-		tagService.setName(jotschiFolder, english, "jotschi");
-		homeFolder.addTag(jotschiFolder);
+		Tag jotschiTag = new Tag();
+		tagService.setName(jotschiTag, german, "jotschi");
+		tagService.setName(jotschiTag, english, "jotschi");
+		jotschiTag.addProject(aloha);
+		homeTag.addTag(jotschiTag);
 
 		Tag rootFolder = new Tag();
 		tagService.setName(rootFolder, german, "wurzel");
 		tagService.setName(rootFolder, english, "root");
+		rootFolder.addProject(aloha);
 		rootTag.addTag(rootFolder);
 
 		Tag varFolder = new Tag();
 		tagService.setName(varFolder, german, "var");
+		varFolder.addProject(aloha);
 		rootTag.addTag(varFolder);
 
 		Tag wwwFolder = new Tag();
 		tagService.setName(wwwFolder, english, "www");
+		wwwFolder.addProject(aloha);
 		varFolder.addTag(wwwFolder);
 
 		Tag siteFolder = new Tag();
 		tagService.setName(siteFolder, english, "site");
+		siteFolder.addProject(aloha);
 		wwwFolder.addTag(siteFolder);
 
 		Tag postsFolder = new Tag();
 		tagService.setName(postsFolder, german, "posts");
+		postsFolder.addProject(aloha);
 		wwwFolder.addTag(postsFolder);
 
 		Tag blogsFolder = new Tag();
 		tagService.setName(blogsFolder, german, "blogs");
+		blogsFolder.addProject(aloha);
 		wwwFolder.addTag(blogsFolder);
 
 		aloha.setRootTag(rootTag);
@@ -265,6 +275,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 			content.setCreator(users.get(0));
 			contentService.setContent(content, german, "some content");
 			content.addTag(blogsFolder);
+			content.addProject(aloha);
 			content = contentService.save(content);
 		}
 
@@ -275,6 +286,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 			content.setCreator(users.get(0));
 			contentService.setContent(content, german, "some content");
 			content.addTag(postsFolder);
+			content.addProject(aloha);
 			content = contentService.save(content);
 		}
 
@@ -285,6 +297,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		contentService.setFilename(content, german, "blog.html");
 		contentService.setContent(content, german, "This is the blogpost content");
 		contentService.setTeaser(content, german, "Jo this Content is the second blogpost");
+		content.addProject(aloha);
 		content = contentService.save(content);
 
 		content = new Content();
@@ -293,6 +306,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		content.setCreator(users.get(0));
 		contentService.setContent(content, german, "some more content");
 		content.addTag(postsFolder);
+		content.addProject(aloha);
 		content = contentService.save(content);
 
 		Content indexContent = new Content();
@@ -303,6 +317,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		contentService.setContent(indexContent, german, "The index Content<br/><a href=\"${Content(10)}\">Link</a>");
 		contentService.setTitle(indexContent, german, "Index Title");
 		contentService.setTeaser(indexContent, german, "Yo guckste hier");
+		indexContent.addProject(aloha);
 		indexContent.addTag(wwwFolder);
 
 		contentService.createLink(indexContent, content);
