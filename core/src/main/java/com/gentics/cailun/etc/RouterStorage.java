@@ -89,18 +89,23 @@ public class RouterStorage {
 
 			// TODO Still valid: somehow this failurehandler prevents authentication?
 			rootRouter.route().failureHandler(failureRoutingContext -> {
-				Throwable failure = failureRoutingContext.failure();
-				if (failure != null) {
-					log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
-					int code = getResponseStatusCode(failure);
-					failureRoutingContext.response().setStatusCode(code);
-					failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse(failure.getMessage())));
+				if (failureRoutingContext.statusCode() == 401) {
+					// Assume that it has been handled by the BasicAuthHandlerImpl
+					log.debug("Got failure with 401 code.");
+					failureRoutingContext.next();
 				} else {
-					log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
-					failureRoutingContext.response().setStatusCode(500);
-					failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse("Internal error occured")));
+					Throwable failure = failureRoutingContext.failure();
+					if (failure != null) {
+						log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
+						int code = getResponseStatusCode(failure);
+						failureRoutingContext.response().setStatusCode(code);
+						failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse(failure.getMessage())));
+					} else {
+						log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
+						failureRoutingContext.response().setStatusCode(500);
+						failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse("Internal error occured")));
+					}
 				}
-
 
 			});
 

@@ -7,6 +7,7 @@ public class PropertyTypeSchemaResponse extends AbstractRestModel {
 	private String type;
 	private String key;
 	private String desciption;
+	private int order;
 
 	public PropertyTypeSchemaResponse() {
 	}
@@ -33,6 +34,14 @@ public class PropertyTypeSchemaResponse extends AbstractRestModel {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public int getOrder() {
+		return order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
 	}
 
 }

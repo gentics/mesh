@@ -13,12 +13,13 @@ public class PropertyTypeSchema extends AbstractPersistable {
 	String key;
 	// TODO i18n?
 	String description;
+	int order;
 
 	public PropertyTypeSchema(String key, PropertyType type) {
 		this.key = key;
 		this.type = type;
 	}
-	
+
 	public PropertyTypeSchema() {
 	}
 
@@ -44,6 +45,14 @@ public class PropertyTypeSchema extends AbstractPersistable {
 
 	public void setType(PropertyType type) {
 		this.type = type;
+	}
+
+	public int getOrder() {
+		return order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
 	}
 
 }

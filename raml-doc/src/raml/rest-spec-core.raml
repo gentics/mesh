@@ -259,7 +259,7 @@ schemas:
               example: !include json/GenericMessageResponse.example.json
     /groups/{uuid}:
       put:
-        description: Add the role to the group. **Not implemented** - **Not tested**
+        description: Add the role to the group. **Omitted**
         responses:
           200:
             body:
@@ -267,7 +267,7 @@ schemas:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
-        description: Remove the role from the group. **Not implemented** - **Not tested**
+        description: Remove the role from the group. **Omitted**
         responses:
           200:
             body:
@@ -595,7 +595,7 @@ schemas:
 
   /:
     get:
-      description: Load all tags of the project.
+      description: Load all tags of the project. **Partially implemented**
     post:
       description: Create a new tag. **Partially implemented**
       body:
@@ -705,11 +705,11 @@ schemas:
         Accept:
          description: Can be set to *application/json* or *application/octet-stream* 
                       to load either the json representation of the file or its binary contents.
-      description: Load the binary file with the given uuid. **Not implemented** - **Not tested**
+      description: Load the binary file with the given uuid. **Partially implemented** - **Not tested**
     put:
-      description: Update the binary file with the given uuid. **Not implemented** - **Not tested**
+      description: Update the binary file with the given uuid. **Partially implemented** - **Not tested**
     delete:
-      description: Delete the binary file with the given uuid. **Not implemented** - **Not tested**
+      description: Delete the binary file with the given uuid. **Partially implemented** - **Not tested**
       responses:
         200:
           body:
@@ -722,9 +722,9 @@ schemas:
           description: Uuid of a tag.
           type: string
       post:
-        description: Create a new sub tag for the file.
+        description: Create a new sub tag for the file. **Partially implemented**
       delete:
-        description: Remove the sub tag from the file.
+        description: Remove the sub tag from the file. **Partially implemented**
 
 #------------------------------------------------------------------------------
 # WebRoot Verticle
