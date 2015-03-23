@@ -31,11 +31,18 @@ public class I18NServiceImpl implements I18NService {
 		if (locale == null) {
 			locale = DEFAULT_LOCALE;
 		}
-		ResourceBundle labels = ResourceBundle.getBundle("i18n.translations", locale);
-		MessageFormat formatter = new MessageFormat("");
-		formatter.setLocale(locale);
-		formatter.applyPattern(labels.getString(key));
-		return formatter.format(parameters);
+		String i18nMessage = "";
+		try {
+			ResourceBundle labels = ResourceBundle.getBundle("i18n.translations", locale);
+			MessageFormat formatter = new MessageFormat("");
+			formatter.setLocale(locale);
+			formatter.applyPattern(labels.getString(key));
+			i18nMessage = formatter.format(parameters);
+		} catch (Exception e) {
+			log.error("Could not format i18n message for key {" + key + "}", e);
+			i18nMessage = key;
+		}
+		return i18nMessage;
 	}
 
 	@Override
@@ -103,7 +110,7 @@ public class I18NServiceImpl implements I18NService {
 
 	@Override
 	public String get(RoutingContext rc, String key, String... parameters) {
-		return get((Locale)rc.get("locale"), key, parameters);
+		return get((Locale) rc.get("locale"), key, parameters);
 	}
 
 }

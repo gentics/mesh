@@ -223,8 +223,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			String groupUuid = requestModel.getGroupUuid();
 			if (StringUtils.isEmpty(groupUuid)) {
 				// TODO i18n
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc,
-						"No parent group for the user was specified. Please set a parent group uuid."));
+				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field"));
 			}
 			Group group = getObjectByUUID(rc, groupUuid, PermissionType.UPDATE);
 

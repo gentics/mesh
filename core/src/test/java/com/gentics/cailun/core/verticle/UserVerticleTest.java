@@ -282,7 +282,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"No groups were specified. You need to specify at least one group for the user.\"}";
+		String json = "{\"message\":\"No parent group for the user was specified. Please set a parent group uuid.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
