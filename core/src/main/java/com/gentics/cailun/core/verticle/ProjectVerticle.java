@@ -10,7 +10,6 @@ import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectListResponse;
-import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
@@ -58,37 +56,22 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
-			Project project = getObject(rc, "uuid", PermissionType.UPDATE);
-			ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
-			if (requestModel == null) {
-				// TODO exception would be nice, add i18n
-				String message = "Could not parse request json.";
-				throw new HttpStatusCodeErrorException(400, message);
-			}
+			Project project;
+			try (Transaction tx = graphDb.beginTx()) {
 
-			// Update the project or show 404
+				project = getObject(rc, "uuid", PermissionType.UPDATE);
+				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 
-			if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
-				if (projectService.findByName(requestModel.getName()) != null) {
-					rc.response().setStatusCode(409);
-					// TODO i18n
-					rc.response().end(
-							toJson(new GenericMessageResponse("A project with the name {" + requestModel.getName()
-									+ "} already exists. Please choose a different name.")));
-					return;
+				// Check for conflicting project name
+				if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
+					if (projectService.findByName(requestModel.getName()) != null) {
+						throw new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name"));
+					}
+					project.setName(requestModel.getName());
 				}
-				project.setName(requestModel.getName());
-			}
 
-			try {
 				project = projectService.save(project);
-			} catch (ConstraintViolationException e) {
-				// TODO log
-				// TODO correct msg?
-				// TODO i18n
-				rc.response().setStatusCode(409);
-				rc.response().end(toJson(new GenericMessageResponse("Project can't be saved. Unknown error.")));
-				return;
+				tx.success();
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(projectService.transformToRest(project)));
@@ -102,41 +85,34 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
 			ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
 
-			if (requestModel == null) {
-				// TODO exception would be nice, add i18n
-				String message = "Could not parse request json.";
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
-			}
-
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.response().setStatusCode(400);
-				// TODO i18n
-				throw new HttpStatusCodeErrorException(400, "Mandatory field name was not specified.");
+				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "project_missing_name"));
 			}
 
-			if (projectService.findByName(requestModel.getName()) != null) {
-				// TODO i18n
-				throw new HttpStatusCodeErrorException(400, "Conflicting username");
-			}
+			Project project;
+			try (Transaction tx = graphDb.beginTx()) {
 
-			Project project = projectService.transformFromRest(requestModel);
-			if (project == null) {
-				// TODO handle error?
-			} else {
+				if (projectService.findByName(requestModel.getName()) != null) {
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name"));
+				}
+
+				project = projectService.transformFromRest(requestModel);
 				project = projectService.save(project);
-				project = projectService.reload(project);
+
 				try {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					rc.response().end(toJson(projectService.transformToRest(project)));
+					tx.success();
 				} catch (Exception e) {
-					rc.fail(409);
-					rc.fail(e);
+					// TODO should we really fail here?
+					tx.failure();
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage"));
 				}
 			}
+			project = projectService.reload(project);
+			rc.response().end(toJson(projectService.transformToRest(project)));
+
 		});
 	}
 
@@ -147,10 +123,13 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				Project project = getObject(rc, "uuid", PermissionType.READ);
-				ProjectResponse restProject = projectService.transformToRest(project);
+				Project project;
+				try (Transaction tx = graphDb.beginTx()) {
+					project = getObject(rc, "uuid", PermissionType.READ);
+					tx.success();
+				}
 				rc.response().setStatusCode(200);
-				rc.response().end(toJson(restProject));
+				rc.response().end(toJson(projectService.transformToRest(project)));
 			}
 		});
 
@@ -175,14 +154,19 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			Project project = getObject(rc, "uuid", PermissionType.DELETE);
-			String name = project.getName();
-			routerStorage.removeProjectRouter(name);
-			projectService.delete(project);
-			// TODO i18n
-				String msg = "Deleted project {" + name + "}";
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(new GenericMessageResponse(msg)));
-			});
+			String msg;
+			try (Transaction tx = graphDb.beginTx()) {
+
+				Project project = getObject(rc, "uuid", PermissionType.DELETE);
+				String name = project.getName();
+				routerStorage.removeProjectRouter(name);
+				projectService.delete(project);
+				// TODO i18n
+				msg = "Deleted project {" + name + "}";
+				tx.success();
+			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(new GenericMessageResponse(msg)));
+		});
 	}
 }

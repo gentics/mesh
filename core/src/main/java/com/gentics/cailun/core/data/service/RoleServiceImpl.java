@@ -15,6 +15,7 @@ import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
 @Transactional
@@ -35,18 +36,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public Result<Role> findAll() {
-
-		// TODO i assume this could create memory problems for big data
-//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-//			List<Role> list = new ArrayList<>();
 		return roleRepository.findAll();
-//			for (Role role : roleRepository.findAll()) {
-//				list.add(role);
-//			}
-//			tx.success();
-//			return list;
-//		}
-
 	}
 
 	@Override
@@ -93,7 +83,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	@Override
 	public RoleResponse transformToRest(Role role) {
 		if (role == null) {
-			return null;
+			throw new HttpStatusCodeErrorException(500, "Role can't be null");
 		}
 		RoleResponse restRole = new RoleResponse();
 		restRole.setUuid(role.getUuid());

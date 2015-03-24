@@ -9,7 +9,6 @@ import io.vertx.core.http.HttpMethod;
 import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
@@ -67,7 +66,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), data().getProject(), PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtils.toJson(request));
-		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"new description\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new schema name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"html\",\"key\":\"extra-content\",\"desciption\":\"Some extra content\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"new description\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new schema name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"html\",\"key\":\"extra-content\",\"desciption\":\"Some extra content\",\"order\":0}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		ObjectSchemaResponse responseObject = JsonUtils.readValue(response, ObjectSchemaResponse.class);
 		ObjectSchema schema = objectSchemaService.findByUUID(responseObject.getUUID());
@@ -82,7 +81,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllSchemasForProject() throws Exception {
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
-		String json = "{\"custom-content\":{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Custom schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"custom-content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\"},{\"uuid\":\"uuid-value\",\"type\":\"string\",\"key\":\"secret\"}]},\"content\":{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\"}]}}";
+		String json = "{\"custom-content\":{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Custom schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"custom-content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"string\",\"key\":\"secret\",\"order\":0}]},\"content\":{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}}";
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}
 
@@ -93,7 +92,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), schema, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
 		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
 	}
 
@@ -130,7 +129,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		request.setName("new-name");
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + schema.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new-name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new-name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		ObjectSchema reloaded = objectSchemaService.findByUUID(schema.getUuid());
@@ -198,7 +197,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), extraProject, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"},{\"uuid\":\"uuid-value\",\"name\":\"extraProject\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"},{\"uuid\":\"uuid-value\",\"name\":\"extraProject\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		// Reload the schema and check for expected changes
 		schema = objectSchemaService.reload(schema);
@@ -243,7 +242,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), project, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\"},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// Reload the schema and check for expected changes

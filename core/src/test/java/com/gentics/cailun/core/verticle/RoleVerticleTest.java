@@ -50,7 +50,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\"}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\"}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -89,7 +89,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"The group id for the role was not specified.\"}";
+		String json = "{\"message\":\"No parent group was specified for the role. Please set a parent group uuid.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
@@ -104,7 +104,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"The name for the role was not specified.\"}";
+		String json = "{\"message\":\"The name must be set.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 

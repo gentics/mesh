@@ -1,14 +1,11 @@
 package com.gentics.cailun.core.data.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -23,6 +20,7 @@ import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
 @Transactional
@@ -35,28 +33,8 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	Neo4jTemplate neo4jTemplate;
 
 	@Override
-	public List<ObjectSchema> findAll(String projectName) {
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			List<ObjectSchema> list = new ArrayList<>();
-			for (ObjectSchema schema : schemaRepository.findAll(projectName)) {
-				list.add(schema);
-			}
-			tx.success();
-			return list;
-		}
-	}
-
-	@Override
 	public Result<ObjectSchema> findAll() {
-//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-//			List<ObjectSchema> list = new ArrayList<>();
-//			for (ObjectSchema schema : schemaRepository.findAll()) {
-//				list.add(schema);
-//			}
-//			tx.success();
-//			return list;
 		return schemaRepository.findAll();
-//		}
 	}
 
 	@Override
@@ -74,6 +52,9 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 	@Override
 	public ObjectSchemaResponse transformToRest(ObjectSchema schema) {
+		if (schema == null) {
+			throw new HttpStatusCodeErrorException(500, "Schema can't be null");
+		}
 		ObjectSchemaResponse schemaForRest = new ObjectSchemaResponse();
 		schemaForRest.setDescription(schema.getDescription());
 		schemaForRest.setName(schema.getName());

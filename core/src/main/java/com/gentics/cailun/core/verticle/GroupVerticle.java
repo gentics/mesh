@@ -60,43 +60,47 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addGroupRoleHandlers() {
 		route("/:groupUuid/roles/:roleUuid").method(POST).handler(rc -> {
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 				Role role = getObject(rc, "roleUuid", PermissionType.READ);
 
 				if (group.addRole(role)) {
 					group = groupService.save(group);
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(groupService.transformToRest(group)));
 				} else {
 					// TODO 200?
 			}
 			tx.success();
 		}
+		rc.response().setStatusCode(200);
+		rc.response().end(toJson(groupService.transformToRest(group)));
 	}	);
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).handler(rc -> {
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 				Role role = getObject(rc, "roleUuid", PermissionType.READ);
 
 				if (group.removeRole(role)) {
 					group = groupService.save(group);
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(groupService.transformToRest(group)));
+
 				} else {
 					// TODO 200?
 			}
 			tx.success();
 		}
+		rc.response().setStatusCode(200);
+		rc.response().end(toJson(groupService.transformToRest(group)));
 	}	);
 	}
 
 	private void addGroupUserHandlers() {
 		Route route = route("/:groupUuid/users/:userUuid").method(POST);
 		route.handler(rc -> {
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 				User user = getObject(rc, "userUuid", PermissionType.READ);
 
 				if (group.addUser(user)) {
@@ -105,15 +109,16 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					// TODO 200?
 				}
 				tx.success();
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE);
 		route.handler(rc -> {
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 				User user = getObject(rc, "userUuid", PermissionType.READ);
 
 				if (group.removeUser(user)) {
@@ -122,17 +127,18 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					// TODO 200?
 				}
 				tx.success();
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 	}
 
 	private void addGroupChildGroupHandlers() {
 		Route route = route("/:groupUuid/groups/:childGroupUuid").method(POST);
 		route.handler(rc -> {
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 				Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
 
 				if (group.addGroup(childGroup)) {
@@ -141,15 +147,16 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					// TODO 200?
 				}
 				tx.success();
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 
 		route = route("/:groupUuid/groups/:childGroupUuid").method(DELETE);
 		route.handler(rc -> {
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
 				Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
 
 				if (group.removeGroup(childGroup)) {
@@ -158,41 +165,41 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					// TODO 200?
 				}
 				tx.success();
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(groupService.transformToRest(group)));
 
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
 			try (Transaction tx = graphDb.beginTx()) {
-				String uuid = rc.request().params().get("uuid");
 				Group group = getObject(rc, "uuid", PermissionType.DELETE);
 				groupService.delete(group);
 				tx.success();
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
-
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
+
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).handler(rc -> {
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "uuid", PermissionType.UPDATE);
+				group = getObject(rc, "uuid", PermissionType.UPDATE);
 				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
-					// TODO i18n
-				throw new HttpStatusCodeErrorException(400, "Name can't be empty or null");
-			}
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
+				}
 
-			if (!group.getName().equals(requestModel.getName())) {
+				if (!group.getName().equals(requestModel.getName())) {
 
-				// TODO should we keep this?
+					// TODO should we keep this?
 				Group groupWithSameName = groupService.findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
 					throw new HttpStatusCodeErrorException(400, "Group name {" + groupWithSameName.getName()
@@ -204,9 +211,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			// TODO update timestamps
 			group = groupService.save(group);
 			tx.success();
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 		}
+		rc.response().setStatusCode(200);
+		rc.response().end(toJson(groupService.transformToRest(group)));
 
 	}	);
 
@@ -226,34 +233,34 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
 
+			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
 				GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
 				String parentGroupUuid = requestModel.getGroupUuid();
 				if (StringUtils.isEmpty(parentGroupUuid)) {
-					// TODO i18n
-				throw new HttpStatusCodeErrorException(400, "The group uuid field has not been set. Parent group must be specified.");
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "group_missing_parentgroup_field"));
+				}
+				Group parentGroup = getObjectByUUID(rc, parentGroupUuid, PermissionType.CREATE);
+
+				if (StringUtils.isEmpty(requestModel.getName())) {
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
+				}
+
+				group = new Group(requestModel.getName());
+				parentGroup.addGroup(group);
+				group = groupService.save(group);
+
+				parentGroup = groupService.save(parentGroup);
+
+				tx.success();
+
 			}
-			Group parentGroup = getObjectByUUID(rc, parentGroupUuid, PermissionType.CREATE);
+			// TODO handle null case?
+				group = groupService.reload(group);
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(groupService.transformToRest(group)));
 
-			if (StringUtils.isEmpty(requestModel.getName())) {
-				// TODO i18n
-				throw new HttpStatusCodeErrorException(400, "Name can't be empty or null");
-			}
-
-			Group group = new Group(requestModel.getName());
-			parentGroup.addGroup(group);
-
-			group = groupService.save(group);
-			group = groupService.reload(group);
-
-			parentGroup = groupService.save(parentGroup);
-
-			tx.success();
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
-		}
-
-	}	);
+			});
 
 	}
 }

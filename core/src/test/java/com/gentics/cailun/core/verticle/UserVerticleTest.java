@@ -114,7 +114,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		restUser.setUsername("dummy_user_changed");
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", JsonUtils.toJson(restUser));
-		String json = "{\"message\":\"OK\"}";
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Epic Stark\",\"firstname\":\"Tony Awesome\",\"username\":\"dummy_user_changed\",\"emailAddress\":\"t.stark@stark-industries.com\",\"groups\":[\"dummy_user_group\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
@@ -134,7 +134,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		restUser.setPassword("new_password");
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"message\":\"OK\"}";
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
@@ -225,10 +225,11 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
 		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setPassword("test1234");
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
-		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"Either username or password was not specified.\"}";
+		String response = request(info, HttpMethod.POST, "/api/v1/users/", 409, "Conflict", requestJson);
+		String json = "{\"message\":\"Username is conflicting with an existing username.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
@@ -247,7 +248,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"Either username or password was not specified.\"}";
+		String json = "{\"message\":\"No password was specified.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -264,7 +265,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"Either username or password was not specified.\"}";
+		String json = "{\"message\":\"No username was specified.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -282,7 +283,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"No parent group for the user was specified. Please set a parent group uuid.\"}";
+		String json = "{\"message\":\"No parent group was specified for the user. Please set a parent group uuid.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}

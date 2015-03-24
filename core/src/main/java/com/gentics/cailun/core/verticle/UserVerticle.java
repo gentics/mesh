@@ -29,7 +29,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
-import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
@@ -49,10 +48,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		addCRUDHandlers();
-	}
-
-	private void addCRUDHandlers() {
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -62,11 +57,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addReadHandler() {
 
 		route("/:uuid").method(GET).handler(rc -> {
-			User user = getObject(rc, "uuid", PermissionType.READ);
+			User user;
+			try (Transaction tx = graphDb.beginTx()) {
+				user = getObject(rc, "uuid", PermissionType.READ);
+				tx.success();
+			}
 			UserResponse restUser = userService.transformToRest(user);
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(restUser));
-			return;
 		});
 
 		/*
@@ -75,7 +73,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		route("/").method(GET).handler(rc -> {
 			Map<String, UserResponse> resultMap = new HashMap<>();
 			// TODO paging
-				try(Transaction tx = graphDb.beginTx()) {
+				try (Transaction tx = graphDb.beginTx()) {
 					for (User user : userService.findAll()) {
 						boolean hasPerm = hasPermission(rc, user, PermissionType.READ);
 						if (hasPerm) {
@@ -91,49 +89,27 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			User user = getObject(rc, "uuid", PermissionType.DELETE);
-			userService.delete(user);
-			rc.response().setStatusCode(200);
 			String uuid = rc.request().params().get("uuid");
-			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
-		});
+			// TODO invalidate active sessions for this user
+				try (Transaction tx = graphDb.beginTx()) {
+					User user = getObject(rc, "uuid", PermissionType.DELETE);
+					userService.delete(user);
+					tx.success();
+				}
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
+			});
 	}
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
-			User user = getObject(rc, "uuid", PermissionType.UPDATE);
+			User user = null;
+			try (Transaction tx = graphDb.beginTx()) {
+				user = getObject(rc, "uuid", PermissionType.UPDATE);
 
-			String uuid = rc.request().params().get("uuid");
+				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
-			UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
-			if (requestModel == null) {
-				// TODO add i18n
-				String message = "Could not parse request json.";
-				throw new HttpStatusCodeErrorException(400, message);
-			}
-			// We don't handle groups within update requests
-			// if (requestModel.getGroups().isEmpty()) {
-			// // TODO i18n
-			// String message = "No groups were specified. You need to specify at least one group for the user.";
-			// rc.response().setStatusCode(400);
-			// rc.response().end(toJson(new GenericMessageResponse(message)));
-			// return;
-			// }
-
-			// Set<Group> groupsForUser = new HashSet<>();
-			// for (String groupName : requestModel.getGroups()) {
-			// Group parentGroup = groupService.findByName(groupName);
-			// if (parentGroup == null) {
-			// // TODO i18n
-			// String message = "Could not find parent group {" + groupName + "}";
-			// throw new HttpStatusCodeErrorException(400, message);
-			// }
-			// groupsForUser.add(parentGroup);
-			// }
-
-			// Update the user or show 404
-			if (user != null) {
 				failOnMissingPermission(rc, user, PermissionType.UPDATE);
 
 				if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
@@ -145,30 +121,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					}
 					user.setUsername(requestModel.getUsername());
 				}
-
-				// // Check groups from which the user should be removed
-				// Set<Group> groupsToBeRemoved = new HashSet<>();
-				// for (Group group : user.getGroups()) {
-				// // Check whether the user should be removed from the group
-				// if (!groupsForUser.contains(group)) {
-				// if (!hasPermission(rc, group, PermissionType.UPDATE)) {
-				// return;
-				// } else {
-				// groupsToBeRemoved.add(group);
-				// }
-				// } else {
-				// groupsForUser.remove(group);
-				// }
-				// }
-				// for (Group group : groupsToBeRemoved) {
-				// user.getGroups().remove(group);
-				// }
-				//
-				// // Add users to the remaining set of groups
-				// for (Group group : groupsForUser) {
-				// failOnMissingPermission(rc, group, PermissionType.UPDATE);
-				// user.getGroups().add(group);
-				// }
 
 				if (!StringUtils.isEmpty(requestModel.getFirstname()) && user.getFirstname() != requestModel.getFirstname()) {
 					user.setFirstname(requestModel.getFirstname());
@@ -188,18 +140,15 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 				try {
 					user = userService.save(user);
+					tx.success();
 				} catch (ConstraintViolationException e) {
+					tx.failure();
 					// TODO correct msg, i18n
 					throw new HttpStatusCodeErrorException(409, "User can't be saved. Unknown error.", e);
 				}
-				rc.response().setStatusCode(200);
-				// TODO better response
-				rc.response().end(toJson(new GenericMessageResponse("OK")));
-				return;
-			} else {
-				String message = i18n.get(rc, "user_not_found", uuid);
-				throw new EntityNotFoundException(message);
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(userService.transformToRest(user)));
 
 		});
 	}
@@ -207,72 +156,74 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
+			User user = null;
+			try (Transaction tx = graphDb.beginTx()) {
 
-			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
-			if (requestModel == null) {
-				// TODO exception would be nice, add i18n
-				String message = "Could not parse request json.";
-				rc.response().setStatusCode(400);
-				rc.response().end(toJson(new GenericMessageResponse(message)));
-				return;
-			}
-			if (StringUtils.isEmpty(requestModel.getUsername()) || StringUtils.isEmpty(requestModel.getPassword())) {
-				// TODO i18n
-				String message = "Either username or password was not specified.";
-				throw new HttpStatusCodeErrorException(400, message);
-			}
-			String groupUuid = requestModel.getGroupUuid();
-			if (StringUtils.isEmpty(groupUuid)) {
-				// TODO i18n
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field"));
-			}
-			Group group = getObjectByUUID(rc, groupUuid, PermissionType.UPDATE);
+				UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
+				if (requestModel == null) {
+					// TODO exception would be nice, add i18n
+					String message = "Could not parse request json.";
+					rc.response().setStatusCode(400);
+					rc.response().end(toJson(new GenericMessageResponse(message)));
+					return;
+				}
+				if (StringUtils.isEmpty(requestModel.getPassword())) {
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_password"));
+				}
+				if (StringUtils.isEmpty(requestModel.getUsername())) {
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_username"));
+				}
+				String groupUuid = requestModel.getGroupUuid();
+				if (StringUtils.isEmpty(groupUuid)) {
+					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field"));
+				}
+				Group group = getObjectByUUID(rc, groupUuid, PermissionType.UPDATE);
 
-			// // TODO extract groups from json?
-			// Set<Group> groupsForUser = new HashSet<>();
-			// for (String groupName : requestModel.getGroups()) {
-			// Group parentGroup = groupService.findByName(groupName);
-			// if (parentGroup == null) {
-			// // TODO i18n
-			// String message = "Could not find parent group {" + groupName + "}";
-			// throw new HttpStatusCodeErrorException(400, message);
-			// }
-			//
-			// // TODO such implicit permissions must be documented
-			// failOnMissingPermission(rc, parentGroup, PermissionType.UPDATE);
-			// groupsForUser.add(parentGroup);
-			// }
-			//
-			// if (groupsForUser.isEmpty()) {
-			// // TODO i18n
-			// String message = "No groups were specified. You need to specify at least one group for the user.";
-			// throw new HttpStatusCodeErrorException(400, message);
-			// }
-			// Check for conflicting usernames
-			if (userService.findByUsername(requestModel.getUsername()) != null) {
-				String message = i18n.get(rc, "user_conflicting_username");
-				throw new HttpStatusCodeErrorException(409, message);
+				// // TODO extract groups from json?
+				// Set<Group> groupsForUser = new HashSet<>();
+				// for (String groupName : requestModel.getGroups()) {
+				// Group parentGroup = groupService.findByName(groupName);
+				// if (parentGroup == null) {
+				// // TODO i18n
+				// String message = "Could not find parent group {" + groupName + "}";
+				// throw new HttpStatusCodeErrorException(400, message);
+				// }
+				//
+				// // TODO such implicit permissions must be documented
+				// failOnMissingPermission(rc, parentGroup, PermissionType.UPDATE);
+				// groupsForUser.add(parentGroup);
+				// }
+				//
+				// if (groupsForUser.isEmpty()) {
+				// // TODO i18n
+				// String message = "No groups were specified. You need to specify at least one group for the user.";
+				// throw new HttpStatusCodeErrorException(400, message);
+				// }
+				// Check for conflicting usernames
+				if (userService.findByUsername(requestModel.getUsername()) != null) {
+					String message = i18n.get(rc, "user_conflicting_username");
+					throw new HttpStatusCodeErrorException(409, message);
+				}
+
+				user = new User(requestModel.getUsername());
+				user.setFirstname(requestModel.getFirstname());
+				user.setLastname(requestModel.getLastname());
+				user.setEmailAddress(requestModel.getEmailAddress());
+				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+				user = userService.save(user);
+
+				// Add the user to the parent group and reload user
+				group.addUser(user);
+				group = groupService.save(group);
+
+				// for (Group group : groupsForUser) {
+				// group.addUser(user);
+				// groupService.save(group);
+				// }
+				// TODO add creator info, add update info to group,
+				tx.success();
 			}
-
-			User user = new User(requestModel.getUsername());
-			user.setFirstname(requestModel.getFirstname());
-			user.setLastname(requestModel.getLastname());
-			user.setEmailAddress(requestModel.getEmailAddress());
-			user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
-			user = userService.save(user);
-
-			// Add the user to the parent group and reload user
-			group.addUser(user);
-			group = groupService.save(group);
-			// Update uuid - TODO remove once save is transactional
 			user = userService.reload(user);
-
-			// for (Group group : groupsForUser) {
-			// group.addUser(user);
-			// groupService.save(group);
-			// }
-			user = userService.reload(user);
-			// TODO add creator info, add update info to group,
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(userService.transformToRest(user)));
 

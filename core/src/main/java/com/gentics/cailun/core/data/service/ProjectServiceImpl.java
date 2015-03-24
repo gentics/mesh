@@ -1,9 +1,5 @@
 package com.gentics.cailun.core.data.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
@@ -34,15 +30,6 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 
 	@Override
 	public Result<Project> findAll() {
-		// TODO i assume this could create memory problems for big data
-//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-//			List<Project> list = new ArrayList<>();
-//			for (Project user : projectRepository.findAll()) {
-//				list.add(user);
-//			}
-//			tx.success();
-//			return list;
-//		}
 		return projectRepository.findAll();
 	}
 
