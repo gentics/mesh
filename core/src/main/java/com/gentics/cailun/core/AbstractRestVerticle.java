@@ -123,6 +123,21 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	}
 
+	public <T> T getObjectByUUID(RoutingContext rc, String projectName, String uuid, PermissionType perm) {
+		if (StringUtils.isEmpty(uuid)) {
+			// TODO i18n, add info about uuid source?
+			throw new HttpStatusCodeErrorException(400, "missing uuid");
+		}
+		GenericNode object = genericNodeService.findByUUID(projectName, uuid);
+		if (object == null) {
+			throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
+		}
+		failOnMissingPermission(rc, object, perm);
+		// TODO type check
+		return (T) object;
+	}
+
+	
 	/**
 	 * Load the object with the given uuid and check the given permissions.
 	 * 
@@ -138,7 +153,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		}
 		GenericNode object = genericNodeService.findByUUID(uuid);
 		if (object == null) {
-			// TODO i18n
 			throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
 		}
 		failOnMissingPermission(rc, object, perm);

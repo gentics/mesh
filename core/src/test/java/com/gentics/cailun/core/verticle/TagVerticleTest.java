@@ -36,8 +36,13 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadAllTags() {
-		fail("Not yet implemented");
+	public void testReadAllTags() throws Exception {
+		Tag tag = data().getLevel1a();
+		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/", 200, "OK");
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
