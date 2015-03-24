@@ -9,6 +9,8 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.spi.cluster.VertxSPI;
 import io.vertx.spi.cluster.impl.hazelcast.HazelcastClusterManager;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +19,11 @@ import javax.naming.InvalidNameException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Project;
@@ -42,9 +48,12 @@ import com.gentics.cailun.core.verticle.WebRootVerticle;
 import com.gentics.cailun.etc.CaiLunCustomLoader;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.CaiLunVerticleConfiguration;
+import com.gentics.cailun.etc.LanguageEntry;
+import com.gentics.cailun.etc.LanguageSet;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 
+@Component
 public class BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
@@ -76,7 +85,7 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private CaiLunSpringConfiguration springConfiguration;
-	
+
 	@Autowired
 	private GraphDatabaseService graphDb;
 
@@ -201,8 +210,12 @@ public class BootstrapInitializer {
 
 	/**
 	 * Setup various mandatory data. This includes mandatory root nodes and the admin user, group.
+	 * 
+	 * @throws IOException
+	 * @throws JsonMappingException
+	 * @throws JsonParseException
 	 */
-	public void initMandatoryData() {
+	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
 
 		// Verify that the root node is existing
 		CaiLunRoot rootNode = rootRepository.findRoot();
@@ -215,19 +228,7 @@ public class BootstrapInitializer {
 		// TODO check whether this really works. I assume i would have to commit first.
 		rootNode = rootRepository.findRoot();
 
-		Language german = languageRepository.findByName("german");
-		if (german == null) {
-			german = new Language("german", "de_DE");
-			rootNode.addLanguage(languageRepository.save(german));
-			rootRepository.save(rootNode);
-		}
-
-		Language english = languageRepository.findByName("english");
-		if (english == null) {
-			english = new Language("english", "en_US");
-			rootNode.addLanguage(languageRepository.save(english));
-			rootRepository.save(rootNode);
-		}
+		initLanguages(rootNode);
 
 		// Verify that an admin user exists
 		User adminUser = userRepository.findByUsername("admin");
@@ -262,5 +263,28 @@ public class BootstrapInitializer {
 			adminGroup.addRole(adminRole);
 		}
 
+	}
+
+	protected void initLanguages(CaiLunRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
+
+		final String filename = "languages.json";
+		final InputStream ins = getClass().getResourceAsStream("/" + filename);
+		if (ins == null) {
+			throw new NullPointerException("Languages could not be loaded from classpath file {" + filename + "}");
+		}
+		LanguageSet languageSet = new ObjectMapper().readValue(ins, LanguageSet.class);
+		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
+			String languageTag = entry.getKey();
+			String languageName = entry.getValue().getName();
+			String languageNativeName = entry.getValue().getNativeName();
+			Language language = languageRepository.findByName(languageName);
+			if (language == null) {
+				language = new Language(languageName, languageTag);
+				language.setNativeName(languageNativeName);
+				rootNode.addLanguage(languageRepository.save(language));
+				log.info("Saved language {" + languageTag + " / " + languageName + "}");
+				rootRepository.save(rootNode);
+			}
+		}
 	}
 }

@@ -13,6 +13,8 @@ public class Language extends GenericNode {
 	@Indexed
 	protected String name;
 
+	protected String nativeName;
+
 	/**
 	 * http://en.wikipedia.org/wiki/IETF_language_tag#Syntax_of_language_tags[IETF language tag]
 	 */
@@ -43,5 +45,13 @@ public class Language extends GenericNode {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getNativeName() {
+		return nativeName;
+	}
+
+	public void setNativeName(String nativeName) {
+		this.nativeName = nativeName;
 	}
 }
