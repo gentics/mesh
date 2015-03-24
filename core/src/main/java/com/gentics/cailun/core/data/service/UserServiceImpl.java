@@ -11,6 +11,7 @@ import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
@@ -33,18 +34,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	@Override
 	public Result<User> findAll() {
-
-		// TODO i assume this could create memory problems for big data
-//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-//			List<User> list = new ArrayList<>();
 		return userRepository.findAll();
-//			for (User user : userRepository.findAll()) {
-//				list.add(user);
-//			}
-//			tx.success();
-//			return list;
-//		}
-
 	}
 
 	@Override
@@ -55,7 +45,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	@Override
 	public UserResponse transformToRest(User user) {
 		if (user == null) {
-			return null;
+			throw new HttpStatusCodeErrorException(500, "User can't be null");
 		}
 		UserResponse restUser = new UserResponse();
 		restUser.setUuid(user.getUuid());

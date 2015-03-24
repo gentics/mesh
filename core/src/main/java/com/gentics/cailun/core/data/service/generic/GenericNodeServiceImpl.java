@@ -60,18 +60,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Override
 	public Result<T> findAll() {
-
-		// TODO i assume this could create memory problems for big data
-//		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-//			List<T> list = new ArrayList<>();
-//			for (T node : nodeRepository.findAll()) {
 		return nodeRepository.findAll();
-//				list.add(node);
-//			}
-//			tx.success();
-//			return list;
-//		}
-
 	}
 
 	@Override
@@ -111,6 +100,5 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 			t.success();
 			return entity;
 		}
-		// return null;
 	}
 }

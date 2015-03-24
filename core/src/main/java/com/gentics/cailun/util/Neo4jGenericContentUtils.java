@@ -6,7 +6,6 @@ import java.util.List;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -42,25 +41,22 @@ public class Neo4jGenericContentUtils {
 	public String getPath(GenericTag to, GenericNode from) {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
 		List<String> segments = new ArrayList<>();
-//		try (Transaction tx = graphDB.beginTx()) {
-			Node fromNode = template.getPersistentState(from);
-			for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_SUB_TAG)
-					.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
-				System.out.println(node.getId() + " " + node.getLabels());
-				
-				if (node.hasLabel(DynamicLabel.label(GenericContent.class.getSimpleName()))) {
-					segments.add((String) node.getProperty("filename"));
-				}
-				if (node.hasLabel(DynamicLabel.label(GenericTag.class.getSimpleName()))) {
-					segments.add((String) node.getProperty("name"));
-				}
+		Node fromNode = template.getPersistentState(from);
+		for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_SUB_TAG)
+				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
+			System.out.println(node.getId() + " " + node.getLabels());
 
-				if (node.hasLabel(DynamicLabel.label(GenericTag.class.getSimpleName())) && node.getId() == to.getId()) {
-					break;
-				}
+			if (node.hasLabel(DynamicLabel.label(GenericContent.class.getSimpleName()))) {
+				segments.add((String) node.getProperty("filename"));
 			}
-//			tx.success();
-//		}
+			if (node.hasLabel(DynamicLabel.label(GenericTag.class.getSimpleName()))) {
+				segments.add((String) node.getProperty("name"));
+			}
+
+			if (node.hasLabel(DynamicLabel.label(GenericTag.class.getSimpleName())) && node.getId() == to.getId()) {
+				break;
+			}
+		}
 
 		segments = Lists.reverse(segments);
 		StringBuilder pathBuilder = new StringBuilder();

@@ -61,29 +61,27 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 			return false;
 		}
 
-//		try (Transaction tx = graphDatabaseService.beginTx()) {
-			Node userNode = graphDatabaseService.getNodeById(userNodeId);
-			// Traverse the graph from user to the page. Collect all permission relations and check them individually
-			for (Relationship rel : graphDatabaseService.traversalDescription().depthFirst()
-					.relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-					.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-					.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-					.traverse(userNode).relationships()) {
+		Node userNode = graphDatabaseService.getNodeById(userNodeId);
+		// Traverse the graph from user to the page. Collect all permission relations and check them individually
+		for (Relationship rel : graphDatabaseService.traversalDescription().depthFirst()
+				.relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
+				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
+				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+				.traverse(userNode).relationships()) {
 
-				if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
-					// Check whether this relation in fact targets our object we want to check
-					// log.debug("REL: " + rel.getEndNode().getId() + " " + rel.getEndNode().getLabels() + " " + rel.getStartNode().getId()
-					// + " " + rel.getStartNode().getLabels());
-					boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
-					if (matchesTargetNode) {
-						// Convert the api relationship to a SDN relationship
-						GraphPermission perm = template.load(rel, GraphPermission.class);
-						if (genericPermission.implies(perm) == true) {
-							return true;
-						}
+			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
+				// Check whether this relation in fact targets our object we want to check
+				// log.debug("REL: " + rel.getEndNode().getId() + " " + rel.getEndNode().getLabels() + " " + rel.getStartNode().getId()
+				// + " " + rel.getStartNode().getLabels());
+				boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
+				if (matchesTargetNode) {
+					// Convert the api relationship to a SDN relationship
+					GraphPermission perm = template.load(rel, GraphPermission.class);
+					if (genericPermission.implies(perm) == true) {
+						return true;
 					}
 				}
-//			}
+			}
 		}
 		return false;
 	}
