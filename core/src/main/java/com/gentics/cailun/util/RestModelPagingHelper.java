@@ -1,12 +1,12 @@
 package com.gentics.cailun.util;
 
-import com.gentics.cailun.core.rest.common.response.AbstractRestListResponse;
+import com.gentics.cailun.core.rest.common.response.AbstractListResponse;
 import com.gentics.cailun.core.rest.common.response.PagingLinks;
 import com.gentics.cailun.core.rest.common.response.PagingMetaInfo;
 
 public final class RestModelPagingHelper {
 
-	public static void setPaging(AbstractRestListResponse response, String path, long currentPage, long pageCount, long perPage,
+	public static void setPaging(AbstractListResponse response, String path, long currentPage, long pageCount, long perPage,
 			long totalCount) {
 		PagingMetaInfo info = response.getMetainfo();
 		info.setCurrentPage(currentPage);

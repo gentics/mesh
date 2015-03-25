@@ -2,12 +2,12 @@ package com.gentics.cailun.core.rest.common.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class AbstractRestListResponse {
+public class AbstractListResponse {
 
 	@JsonProperty("_metainfo")
 	private PagingMetaInfo metainfo = new PagingMetaInfo();
 
-	public AbstractRestListResponse() {
+	public AbstractListResponse() {
 	}
 
 	public PagingMetaInfo getMetainfo() {

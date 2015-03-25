@@ -3,9 +3,9 @@ package com.gentics.cailun.core.rest.project.response;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.cailun.core.rest.common.response.AbstractRestListResponse;
+import com.gentics.cailun.core.rest.common.response.AbstractListResponse;
 
-public class ProjectListResponse extends AbstractRestListResponse {
+public class ProjectListResponse extends AbstractListResponse {
 
 	private List<ProjectResponse> projects = new ArrayList<>();
 

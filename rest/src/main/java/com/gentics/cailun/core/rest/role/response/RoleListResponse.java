@@ -3,9 +3,9 @@ package com.gentics.cailun.core.rest.role.response;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.cailun.core.rest.common.response.AbstractRestListResponse;
+import com.gentics.cailun.core.rest.common.response.AbstractListResponse;
 
-public class RoleListResponse extends AbstractRestListResponse{
+public class RoleListResponse extends AbstractListResponse{
 
 	private List<RoleResponse> roles = new ArrayList<>();
 

@@ -70,7 +70,7 @@ public class Generator {
 		new Generator().start();
 	}
 
-	private void start() throws IOException {
+	public void start() throws IOException {
 		File baseDir = new File("target", "raml2html");
 		outputDir = new File(baseDir, "json");
 		outputDir.mkdirs();

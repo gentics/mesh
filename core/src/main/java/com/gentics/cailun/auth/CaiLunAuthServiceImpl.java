@@ -12,9 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.shiro.authz.Permission;
 
 import com.gentics.cailun.core.data.model.auth.User;
@@ -25,9 +24,7 @@ import com.gentics.cailun.core.data.model.auth.User;
  * @author johannes2
  *
  */
-public class CaiLunAuthServiceImpl
-
-implements AuthService, Handler<Long> {
+public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 
 	private final Vertx vertx;
 	// private final ExposingShiroAuthProvider provider;
@@ -92,136 +89,9 @@ implements AuthService, Handler<Long> {
 	}
 
 	@Override
-	public AuthService hasRole(String loginID, String role, Handler<AsyncResult<Boolean>> resultHandler) {
-		LoginSession session = loginSessions.get(loginID);
-		if (session != null) {
-			doHasRole(session, role, resultHandler);
-		} else {
-			resultHandler.handle(Future.failedFuture("not logged in"));
-		}
-		return this;
-	}
-
-	@Override
-	public AuthService hasPermission(String loginID, String permission, Handler<AsyncResult<Boolean>> resultHandler) {
-		LoginSession session = loginSessions.get(loginID);
-		if (session != null) {
-			doHasPermission(session, permission, resultHandler);
-		} else {
-			resultHandler.handle(Future.failedFuture("not logged in"));
-		}
-		return this;
-	}
-
-	@Override
-	public AuthService hasRoles(String loginID, Set<String> roles, Handler<AsyncResult<Boolean>> resultHandler) {
-		LoginSession session = loginSessions.get(loginID);
-		if (session != null) {
-			Handler<AsyncResult<Boolean>> wrapped = accumulatingHandler(roles.size(), resultHandler);
-			for (String role : roles) {
-				doHasRole(session, role, wrapped);
-			}
-		} else {
-			resultHandler.handle(Future.failedFuture("not logged in"));
-		}
-		return this;
-	}
-
-	@Override
-	public AuthService hasPermissions(String loginID, Set<String> permissions, Handler<AsyncResult<Boolean>> resultHandler) {
-		LoginSession session = loginSessions.get(loginID);
-		if (session != null) {
-			Handler<AsyncResult<Boolean>> wrapped = accumulatingHandler(permissions.size(), resultHandler);
-			for (String permission : permissions) {
-				doHasPermission(session, permission, wrapped);
-			}
-		} else {
-			resultHandler.handle(Future.failedFuture("not logged in"));
-		}
-		return this;
-	}
-
-	@Override
 	public AuthService setReaperPeriod(long reaperPeriod) {
 		this.reaperPeriod = reaperPeriod;
 		return this;
-	}
-
-	private void doHasRole(LoginSession session, String role, Handler<AsyncResult<Boolean>> resultHandler) {
-		if (session.hasRole(role)) {
-			resultHandler.handle(Future.succeededFuture(true));
-		} else if (session.hasNotRole(role)) {
-			resultHandler.handle(Future.succeededFuture(false));
-		} else {
-			// Don't know - need to check with provider
-			provider.hasRole(session.principal(), role, res -> {
-				if (res.succeeded()) {
-					boolean hasRole = res.result();
-					if (hasRole) {
-						session.addRole(role);
-					} else {
-						session.addNotRole(role);
-					}
-					resultHandler.handle(Future.succeededFuture(hasRole));
-				} else {
-					resultHandler.handle(Future.failedFuture(res.cause()));
-				}
-			});
-		}
-	}
-
-	private void doHasPermission(LoginSession session, String permission, Handler<AsyncResult<Boolean>> resultHandler) {
-		if (session.hasPermission(permission)) {
-			resultHandler.handle(Future.succeededFuture(true));
-		} else if (session.hasNotPermission(permission)) {
-			resultHandler.handle(Future.succeededFuture(false));
-		} else {
-			// Don't know - need to check with provider
-			provider.hasPermission(session.principal(), permission, res -> {
-				if (res.succeeded()) {
-					boolean hasPermission = res.result();
-					if (hasPermission) {
-						session.addPermission(permission);
-					} else {
-						session.addNotPermission(permission);
-					}
-					resultHandler.handle(Future.succeededFuture(hasPermission));
-				} else {
-					resultHandler.handle(Future.failedFuture(res.cause()));
-				}
-			});
-		}
-	}
-
-	private Handler<AsyncResult<Boolean>> accumulatingHandler(int num, Handler<AsyncResult<Boolean>> resultHandler) {
-		AtomicInteger cnt = new AtomicInteger();
-		AtomicBoolean sent = new AtomicBoolean();
-		return res -> {
-			if (res.succeeded()) {
-				boolean hasRole = res.result();
-				int count = cnt.incrementAndGet();
-				if (!hasRole) {
-					if (sent.compareAndSet(false, true)) {
-						resultHandler.handle(Future.succeededFuture(false));
-					}
-				} else {
-					if (count == num) {
-						if (sent.compareAndSet(false, true)) {
-							resultHandler.handle(Future.succeededFuture(true));
-						}
-					}
-				}
-			} else {
-				if (sent.compareAndSet(false, true)) {
-					resultHandler.handle(Future.failedFuture(res.cause()));
-				}
-			}
-		};
-	}
-
-	private ClassLoader getClassLoader() {
-		ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-		return tccl == null ? getClass().getClassLoader() : tccl;
 	}
 
 	@Override
@@ -262,17 +132,6 @@ implements AuthService, Handler<Long> {
 
 	}
 
-	// public CaiLunAuthServiceImpl(Vertx vertx, ExposingShiroAuthProvider provider, JsonObject config) {
-	// super(vertx, config, provider);
-	// this.provider = provider;
-	// }
-
-	// public void hasPermission(String loginID, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
-	// vertx.executeBlocking((Future<Boolean> fut) -> {
-	// fut.complete(hasPermission(loginID, permission));
-	// }, resultHandler);
-	// }
-
 	public boolean hasPermission(String loginID, Permission permission) {
 
 		LoginSession session = loginSessions.get(loginID);
@@ -291,6 +150,26 @@ implements AuthService, Handler<Long> {
 
 	public EnhancedShiroAuthRealmImpl getAuthRealm() {
 		return (EnhancedShiroAuthRealmImpl) provider.getRealm();
+	}
+
+	@Override
+	public AuthService hasRole(String loginID, String role, Handler<AsyncResult<Boolean>> resultHandler) {
+		throw new NotImplementedException("Not yet implemented");
+	}
+
+	@Override
+	public AuthService hasRoles(String loginID, Set<String> roles, Handler<AsyncResult<Boolean>> resultHandler) {
+		throw new NotImplementedException("Not yet implemented");
+	}
+
+	@Override
+	public AuthService hasPermission(String loginID, String permission, Handler<AsyncResult<Boolean>> resultHandler) {
+		throw new NotImplementedException("Not yet implemented");
+	}
+
+	@Override
+	public AuthService hasPermissions(String loginID, Set<String> permissions, Handler<AsyncResult<Boolean>> resultHandler) {
+		throw new NotImplementedException("Not yet implemented");
 	}
 
 }
