@@ -16,13 +16,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.data.service.generic.GenericNodeService;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
@@ -37,9 +36,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	protected Router localRouter = null;
 	protected String basePath;
 	protected HttpServer server;
-
-	@Autowired
-	private GenericNodeService<GenericNode> genericNodeService;
 
 	protected AbstractRestVerticle(String basePath) {
 		this.basePath = basePath;
@@ -168,14 +164,14 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @param type
 	 * @return
 	 */
-	protected void failOnMissingPermission(RoutingContext rc, GenericNode node, PermissionType type) throws InvalidPermissionException {
+	protected void failOnMissingPermission(RoutingContext rc, AbstractPersistable node, PermissionType type) throws InvalidPermissionException {
 		if (!hasPermission(rc, node, type)) {
 			// TODO i18n
 			throw new InvalidPermissionException("Missing permission on object {" + node.getUuid() + "}");
 		}
 	}
 
-	protected boolean hasPermission(RoutingContext rc, GenericNode node, PermissionType type) {
+	protected boolean hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type) {
 		if (node != null) {
 			Session session = rc.session();
 			boolean perm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(node, type));

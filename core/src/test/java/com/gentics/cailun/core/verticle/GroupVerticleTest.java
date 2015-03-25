@@ -19,6 +19,7 @@ import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
+import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
@@ -56,6 +57,29 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		assertNotNull("Group should have been created.", groupService.findByName(name));
+	}
+
+	@Test
+	public void testCreateDeleteGroup() throws Exception {
+
+		final String name = "test12345";
+		GroupCreateRequest request = new GroupCreateRequest();
+		request.setName(name);
+		request.setGroupUuid(info.getGroup().getUuid());
+
+		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
+		String requestJson = JsonUtils.toJson(request);
+
+		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 200, "OK", requestJson);
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		assertNotNull("Group should have been created.", groupService.findByName(name));
+
+		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + restGroup.getUUID(), 200, "OK", requestJson);
+		json = "{\"message\":\"Group with uuid \\\"" + restGroup.getUUID() + "\\\" was deleted.\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test

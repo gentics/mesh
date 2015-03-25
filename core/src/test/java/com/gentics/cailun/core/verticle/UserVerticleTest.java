@@ -329,6 +329,38 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	}
 
+	/**
+	 * Test whether the create rest call will create the correct permissions that allow removal of the object.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testCreateDeleteUser() throws Exception {
+
+		// Add create permission to group in order to create the user in that group
+		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setEmailAddress("n.user@spam.gentics.com");
+		newUser.setFirstname("Joe");
+		newUser.setLastname("Doe");
+		newUser.setUsername("new_user");
+		newUser.setPassword("test123456");
+		newUser.setGroupUuid(info.getGroup().getUuid());
+
+		String requestJson = new ObjectMapper().writeValueAsString(newUser);
+		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
+
+		response = request(info, HttpMethod.DELETE, "/api/v1/users/" + restUser.getUUID(), 200, "OK");
+		json = "{\"message\":\"User with uuid \\\"" + restUser.getUUID() + "\\\" was deleted.\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+	}
+
 	@Test
 	public void testCreateUserWithBogusJson() throws Exception {
 

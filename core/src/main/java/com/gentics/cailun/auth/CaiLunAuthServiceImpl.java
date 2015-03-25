@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.apex.RoutingContext;
 import io.vertx.ext.auth.AuthService;
 
 import java.util.Iterator;
@@ -129,7 +130,19 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 		if (timerID != -1) {
 			vertx.cancelTimer(timerID);
 		}
+	}
 
+	public User getUser(RoutingContext rc) {
+		return getUser(rc.session().getLoginID());
+	}
+
+	public User getUser(String loginID) {
+		LoginSession session = loginSessions.get(loginID);
+		if (session.principal() != null && session.principal() instanceof User) {
+			return (User) session.principal();
+		} else {
+			return null;
+		}
 	}
 
 	public boolean hasPermission(String loginID, Permission permission) {
@@ -142,7 +155,6 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 				return hasPerm;
 			}
 			return false;
-			// doHasPermission(session, permission, resultHandler);
 		}
 		return false;
 

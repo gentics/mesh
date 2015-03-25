@@ -26,6 +26,7 @@ import com.gentics.cailun.core.data.model.auth.AuthRelationships;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
@@ -40,10 +41,13 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	private Neo4jTemplate template;
 
 	@Autowired
-	private GraphDatabaseService graphDatabaseService;
+	private GraphDatabaseService graphDb;
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private RoleService roleService;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -60,10 +64,9 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 			return false;
 		}
 
-		Node userNode = graphDatabaseService.getNodeById(userNodeId);
+		Node userNode = graphDb.getNodeById(userNodeId);
 		// Traverse the graph from user to the page. Collect all permission relations and check them individually
-		for (Relationship rel : graphDatabaseService.traversalDescription().depthFirst()
-				.relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
+		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
 				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
 				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
 				.traverse(userNode).relationships()) {

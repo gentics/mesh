@@ -1,8 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
-import static com.gentics.cailun.util.JsonUtils.toJson;
 import static com.gentics.cailun.util.JsonUtils.fromJson;
-
+import static com.gentics.cailun.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -15,7 +14,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -24,9 +22,9 @@ import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
-import com.gentics.cailun.core.data.service.ObjectSchemaService;
-import com.gentics.cailun.core.data.service.ProjectService;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaUpdateRequest;
@@ -38,12 +36,6 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 @Scope("singleton")
 @SpringVerticle
 public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
-
-	@Autowired
-	private ObjectSchemaService schemaService;
-
-	@Autowired
-	private ProjectService projectService;
 
 	protected ObjectSchemaVerticle() {
 		super("schemas");
@@ -115,7 +107,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			}
 			ObjectSchema schema;
 			try (Transaction tx = graphDb.beginTx()) {
-				Project project = getObjectByUUID(rc, requestModel.getProjectUuid(), PermissionType.UPDATE);
+				Project project = getObjectByUUID(rc, requestModel.getProjectUuid(), PermissionType.CREATE);
 				schema = new ObjectSchema(requestModel.getName());
 				// TODO set creator
 				schema.setDescription(requestModel.getDescription());
@@ -131,6 +123,9 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				}
 				schema.addProject(project);
 				schema = schemaService.save(schema);
+
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(project, PermissionType.CREATE), schema);
+
 				tx.success();
 			}
 			schema = schemaService.reload(schema);

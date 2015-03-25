@@ -14,11 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
 
@@ -52,6 +54,29 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		assertNotNull("The project should have been created.", projectService.findByName(name));
+
+	}
+
+	@Test
+	public void testCreateDeleteProject() throws Exception {
+
+		final String name = "test12345";
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(name);
+
+		roleService.addPermission(info.getRole(), data().getCaiLunRoot(), PermissionType.CREATE);
+		String requestJson = JsonUtils.toJson(request);
+
+		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		assertNotNull("The project should have been created.", projectService.findByName(name));
+
+		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + restProject.getUUID(), 200, "OK");
+		json = "{\"message\":\"Deleted project {test12345}\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
 

@@ -15,16 +15,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.service.GroupService;
-import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
@@ -35,12 +33,6 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 @Scope("singleton")
 @SpringVerticle
 public class UserVerticle extends AbstractCoreApiVerticle {
-
-	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private GroupService groupService;
 
 	public UserVerticle() {
 		super("users");
@@ -177,28 +169,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				if (StringUtils.isEmpty(groupUuid)) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field"));
 				}
-				Group group = getObjectByUUID(rc, groupUuid, PermissionType.UPDATE);
+				// Load the parent group for the user
+				Group parentGroup = getObjectByUUID(rc, groupUuid, PermissionType.CREATE);
 
-				// // TODO extract groups from json?
-				// Set<Group> groupsForUser = new HashSet<>();
-				// for (String groupName : requestModel.getGroups()) {
-				// Group parentGroup = groupService.findByName(groupName);
-				// if (parentGroup == null) {
-				// // TODO i18n
-				// String message = "Could not find parent group {" + groupName + "}";
-				// throw new HttpStatusCodeErrorException(400, message);
-				// }
-				//
-				// // TODO such implicit permissions must be documented
-				// failOnMissingPermission(rc, parentGroup, PermissionType.UPDATE);
-				// groupsForUser.add(parentGroup);
-				// }
-				//
-				// if (groupsForUser.isEmpty()) {
-				// // TODO i18n
-				// String message = "No groups were specified. You need to specify at least one group for the user.";
-				// throw new HttpStatusCodeErrorException(400, message);
-				// }
 				// Check for conflicting usernames
 				if (userService.findByUsername(requestModel.getUsername()) != null) {
 					String message = i18n.get(rc, "user_conflicting_username");
@@ -213,14 +186,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				user = userService.save(user);
 
 				// Add the user to the parent group and reload user
-				group.addUser(user);
-				group = groupService.save(group);
+				parentGroup.addUser(user);
+				parentGroup = groupService.save(parentGroup);
 
-				// for (Group group : groupsForUser) {
-				// group.addUser(user);
-				// groupService.save(group);
-				// }
-				// TODO add creator info, add update info to group,
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), user);
+
 				tx.success();
 			}
 			user = userService.reload(user);

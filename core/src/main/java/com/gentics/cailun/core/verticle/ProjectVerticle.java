@@ -13,14 +13,14 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
+import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
-import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
@@ -33,9 +33,6 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectVerticle.class);
-
-	@Autowired
-	private ProjectService projectService;
 
 	protected ProjectVerticle() {
 		super("projects");
@@ -92,6 +89,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			Project project;
 			try (Transaction tx = graphDb.beginTx()) {
 
+				CaiLunRoot cailunRoot = cailunRootService.findRoot();
+				failOnMissingPermission(rc, cailunRoot, PermissionType.CREATE);
+
 				if (projectService.findByName(requestModel.getName()) != null) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name"));
 				}
@@ -104,6 +104,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
 					tx.success();
+					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(cailunRoot, PermissionType.CREATE), project);
+
 				} catch (Exception e) {
 					// TODO should we really fail here?
 					tx.failure();

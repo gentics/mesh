@@ -2,14 +2,14 @@ package com.gentics.cailun.core.data.model.auth;
 
 import org.apache.shiro.authz.Permission;
 
-import com.gentics.cailun.core.data.model.generic.GenericNode;
+import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 
 public class CaiLunPermission implements Permission {
 
 	private PermissionType type;
-	private GenericNode targetNode;
+	private AbstractPersistable targetNode;
 
-	public CaiLunPermission(GenericNode targetNode, PermissionType type) {
+	public CaiLunPermission(AbstractPersistable targetNode, PermissionType type) {
 		this.type = type;
 		this.targetNode = targetNode;
 	}
@@ -24,7 +24,7 @@ public class CaiLunPermission implements Permission {
 		return perm.isPermitted(type);
 	}
 
-	public GenericNode getTargetNode() {
+	public AbstractPersistable getTargetNode() {
 		return targetNode;
 	}
 }

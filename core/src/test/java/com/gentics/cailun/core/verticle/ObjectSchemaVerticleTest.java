@@ -4,6 +4,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import javax.xml.validation.Schema;
+
 import io.vertx.core.http.HttpMethod;
 
 import org.junit.Assert;
@@ -63,7 +66,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		propertySchema.setDescription("Some extra content");
 		request.getPropertyTypeSchemas().add(propertySchema);
 
-		roleService.addPermission(info.getRole(), data().getProject(), PermissionType.UPDATE);
+		roleService.addPermission(info.getRole(), data().getProject(), PermissionType.CREATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtils.toJson(request));
 		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"new description\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new schema name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"html\",\"key\":\"extra-content\",\"desciption\":\"Some extra content\",\"order\":0}]}";
@@ -73,6 +76,37 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		Assert.assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 		Assert.assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
+
+	}
+
+	@Test
+	public void testCreateDeleteSimpleSchema() throws HttpStatusCodeErrorException, Exception {
+
+		ObjectSchemaCreateRequest request = new ObjectSchemaCreateRequest();
+		request.setDescription("new description");
+		request.setName("new schema name");
+		request.setProjectUuid(data().getProject().getUuid());
+		PropertyTypeSchemaResponse propertySchema = new PropertyTypeSchemaResponse();
+		propertySchema.setKey("extra-content");
+		propertySchema.setType("html");
+		propertySchema.setDescription("Some extra content");
+		request.getPropertyTypeSchemas().add(propertySchema);
+
+		roleService.addPermission(info.getRole(), data().getProject(), PermissionType.CREATE);
+
+		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtils.toJson(request));
+		String json = "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"new description\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new schema name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"html\",\"key\":\"extra-content\",\"desciption\":\"Some extra content\",\"order\":0}]}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		ObjectSchemaResponse responseObject = JsonUtils.readValue(response, ObjectSchemaResponse.class);
+		ObjectSchema schema = objectSchemaService.findByUUID(responseObject.getUUID());
+		Assert.assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
+		Assert.assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
+		Assert.assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
+
+		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
+		response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + restSchema.getUUID(), 200, "OK");
+		json = "{\"message\":\"Schema with uuid \\\"" + restSchema.getUUID() + "\\\" was deleted.\"}";
+		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
 

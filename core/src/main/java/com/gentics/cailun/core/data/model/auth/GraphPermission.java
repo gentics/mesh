@@ -57,4 +57,12 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 		return false;
 	}
 
+	public Role getRole() {
+		return role;
+	}
+
+	public AbstractPersistable getTargetNode() {
+		return targetNode;
+	}
+
 }

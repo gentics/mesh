@@ -11,18 +11,15 @@ import io.vertx.ext.apex.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.service.GroupService;
-import com.gentics.cailun.core.data.service.RoleService;
-import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
@@ -32,15 +29,6 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 @Scope("singleton")
 @SpringVerticle
 public class GroupVerticle extends AbstractCoreApiVerticle {
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private RoleService roleService;
-
-	@Autowired
-	private UserService userService;
 
 	public GroupVerticle() {
 		super("groups");
@@ -221,12 +209,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
+			Group group;
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "uuid", PermissionType.READ);
+				group = getObject(rc, "uuid", PermissionType.READ);
 				tx.success();
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 	}
 
@@ -247,20 +236,22 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				}
 
 				group = new Group(requestModel.getName());
-				parentGroup.addGroup(group);
 				group = groupService.save(group);
 
+				// Update the parent group
+				parentGroup.addGroup(group);
 				parentGroup = groupService.save(parentGroup);
+
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), group);
 
 				tx.success();
 
 			}
-			// TODO handle null case?
-				group = groupService.reload(group);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(groupService.transformToRest(group)));
+			group = groupService.reload(group);
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(groupService.transformToRest(group)));
 
-			});
+		});
 
 	}
 }
