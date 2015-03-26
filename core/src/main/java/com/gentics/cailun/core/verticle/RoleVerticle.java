@@ -111,18 +111,16 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
 					if (roleService.findByName(requestModel.getName()) != null) {
 						rc.response().setStatusCode(409);
-						// TODO i18n
-				String message = "A role with the name {" + requestModel.getName() + "} already exists. Please choose a different name.";
-				throw new HttpStatusCodeErrorException(409, message);
+						throw new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name"));
+					}
+					role.setName(requestModel.getName());
+				}
+				role = roleService.save(role);
+				tx.success();
 			}
-			role.setName(requestModel.getName());
-		}
-		role = roleService.save(role);
-		tx.success();
-	}
-	rc.response().setStatusCode(200);
-	rc.response().end(toJson(roleService.transformToRest(role)));
-}		);
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(roleService.transformToRest(role)));
+		});
 	}
 
 	private void addReadHandler() {

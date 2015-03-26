@@ -28,7 +28,7 @@ public class GenericTag<T extends GenericTag<T, F>, F extends GenericFile> exten
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING)
-	private Set<T> tags = new HashSet<>();
+	private Set<T> childTags = new HashSet<>();
 
 	protected GenericTag() {
 
@@ -53,23 +53,23 @@ public class GenericTag<T extends GenericTag<T, F>, F extends GenericFile> exten
 	}
 
 	public void addTag(T tag) {
-		tags.add(tag);
+		childTags.add(tag);
 	}
 
 	public boolean removeTag(GenericTag<T, F> tag) {
-		return tags.remove(tag);
+		return childTags.remove(tag);
 	}
 
 	public Set<T> getTags() {
-		return tags;
+		return childTags;
 	}
 
 	public void setTags(Set<T> childTags) {
-		this.tags = childTags;
+		this.childTags = childTags;
 	}
 
 	public boolean hasTag(GenericTag<T, F> tag) {
-		for (GenericTag<T, F> childTag : tags) {
+		for (GenericTag<T, F> childTag : childTags) {
 			if (tag.equals(childTag)) {
 				return true;
 			}

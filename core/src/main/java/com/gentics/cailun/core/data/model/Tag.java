@@ -7,6 +7,12 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.model.generic.GenericTag;
 
+/**
+ * A tag is the main structural element. It allows the creation of tag hierarchies. Tags have important limitations. A tag can and must only have one parent.
+ * 
+ * @author johannes2
+ *
+ */
 @NodeEntity
 public class Tag extends GenericTag<Tag, GenericFile> {
 
@@ -14,7 +20,7 @@ public class Tag extends GenericTag<Tag, GenericFile> {
 
 	private static Label label = DynamicLabel.label(Tag.class.getSimpleName());
 
-	//TODO this should be a relationship to the schema node
+	// TODO this should be a relationship to the schema node
 	private String schemaName;
 
 	public Tag() {

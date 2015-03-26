@@ -66,17 +66,13 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		addCRUDHandlers();
-
-		addTagFilesHandlers();
-		addTagSubTagHandlers();
-	}
-
-	private void addCRUDHandlers() {
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addTagFilesHandlers();
+//		addTagSubTagHandlers();
 	}
 
 	private void addUpdateHandler() {

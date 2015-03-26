@@ -12,7 +12,6 @@ documentation:
   - title: Getting Started
     content: TODO
 
-
 securitySchemes:
   - basic:
       type: Basic Authentication
@@ -648,15 +647,6 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
-    /tags/{uuid}:
-      uriParameters:
-        uuid:
-          description: Uuid of a tag.
-          type: string
-      post:
-        description: Assign the a sub tag to the tag. **Partially implemented**
-      delete:
-        description: Remove the sub tag from the tag. **Partially implemented**
     /files/{uuid}:
       uriParameters:
         uuid:

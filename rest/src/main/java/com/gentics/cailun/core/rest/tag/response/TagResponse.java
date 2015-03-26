@@ -1,6 +1,8 @@
 package com.gentics.cailun.core.rest.tag.response;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
@@ -13,6 +15,8 @@ public class TagResponse extends AbstractRestModel {
 
 	private UserResponse creator;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
+
+	private List<TagResponse> childTags = new ArrayList<>();
 
 	private String[] perms = {};
 
@@ -101,6 +105,14 @@ public class TagResponse extends AbstractRestModel {
 
 	public void setPerms(String... perms) {
 		this.perms = perms;
+	}
+
+	public List<TagResponse> getChildTags() {
+		return childTags;
+	}
+
+	public void setChildTags(List<TagResponse> childTags) {
+		this.childTags = childTags;
 	}
 
 }
