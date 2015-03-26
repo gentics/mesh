@@ -175,12 +175,15 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					throw new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name"));
 				}
 
-				Group parentGroup = getObjectByUUID(rc, requestModel.getGroupUuid(), PermissionType.UPDATE);
+				Group parentGroup = getObjectByUUID(rc, requestModel.getGroupUuid(), PermissionType.CREATE);
 
 				role = new Role(requestModel.getName());
 				role = roleService.save(role);
 				parentGroup.addRole(role);
 				groupService.save(parentGroup);
+
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), role);
+
 				tx.success();
 			}
 			role = roleService.reload(role);
