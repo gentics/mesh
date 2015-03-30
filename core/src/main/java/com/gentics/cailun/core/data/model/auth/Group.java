@@ -61,9 +61,9 @@ public class Group extends GenericNode {
 		return users;
 	}
 
-	public boolean addGroup(Group group) {
-		return this.children.add(group);
-	}
+//	public boolean addGroup(Group group) {
+//		return this.children.add(group);
+//	}
 
 	public Set<Group> getGroups() {
 		return children;

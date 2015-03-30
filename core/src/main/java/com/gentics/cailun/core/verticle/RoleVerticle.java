@@ -36,12 +36,6 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 @SpringVerticle
 public class RoleVerticle extends AbstractCoreApiVerticle {
 
-	@Autowired
-	private RoleService roleService;
-
-	@Autowired
-	private GroupService groupService;
-
 	public RoleVerticle() {
 		super("roles");
 	}

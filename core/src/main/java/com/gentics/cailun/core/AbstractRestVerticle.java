@@ -1,5 +1,6 @@
 package com.gentics.cailun.core;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.apex.Route;
@@ -13,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +28,15 @@ import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
+import com.gentics.cailun.path.PagingInfo;
 
 public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractRestVerticle.class);
 
 	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
+
+	public static final long DEFAULT_PER_PAGE = 25;
 
 	protected Router localRouter = null;
 	protected String basePath;
@@ -133,7 +138,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		return (T) object;
 	}
 
-	
 	/**
 	 * Load the object with the given uuid and check the given permissions.
 	 * 
@@ -193,6 +197,13 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
 		}
 		return queryPairs;
+	}
+
+	protected PagingInfo getPagingInfo(RoutingContext rc) {
+		MultiMap params = rc.request().params();
+		long page = NumberUtils.toLong(params.get("page"), 0);
+		long perPage = Long.valueOf(NumberUtils.toLong(params.get("per_page"), DEFAULT_PER_PAGE));
+		return new PagingInfo(page, perPage);
 	}
 
 }

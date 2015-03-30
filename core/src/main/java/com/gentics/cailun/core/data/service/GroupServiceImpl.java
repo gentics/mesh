@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,5 +54,10 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 //		}
 
 		return restGroup;
+	}
+
+	@Override
+	public void findAllVisibleGroups(User requestUser) {
+		groupRepository.findAll(requestUser, null);
 	}
 }

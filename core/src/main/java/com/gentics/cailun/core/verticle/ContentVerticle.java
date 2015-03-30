@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
@@ -33,9 +32,6 @@ import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.data.model.relationship.Translated;
-import com.gentics.cailun.core.data.service.ContentService;
-import com.gentics.cailun.core.data.service.LanguageService;
-import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
@@ -58,19 +54,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
 
 	@Autowired
-	private ContentService contentService;
-
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private LanguageService languageService;
-
-	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
-
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
 
 	public ContentVerticle() {
 		super("contents");
@@ -93,8 +77,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 			Content content = new Content();
 			try (Transaction tx = graphDb.beginTx()) {
-				
-				if(StringUtils.isEmpty(requestModel.getTagUuid())) {
+
+				if (StringUtils.isEmpty(requestModel.getTagUuid())) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field"));
 				}
 

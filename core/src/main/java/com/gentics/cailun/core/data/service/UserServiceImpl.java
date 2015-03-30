@@ -13,6 +13,7 @@ import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.path.PagingInfo;
 
 @Component
 @Transactional
@@ -33,7 +34,9 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public Result<User> findAll() {
+	public Result<User> findAllVisible(User user, PagingInfo paging) {
+		//TODO Add paging here
+//		userRepository.findAllVisible(user);
 		return userRepository.findAll();
 	}
 

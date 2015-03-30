@@ -6,13 +6,21 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+
+
+import java.util.HashMap;
+import java.util.Map;
+
+
 import io.vertx.ext.apex.Route;
+
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
@@ -23,6 +31,8 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
+import com.gentics.cailun.core.rest.group.response.GroupListResponse;
+import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
@@ -36,7 +46,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		addGroupChildGroupHandlers();
+		// addGroupChildGroupHandlers();
 		addGroupUserHandlers();
 		addGroupRoleHandlers();
 
@@ -121,44 +131,44 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 	}
 
-	private void addGroupChildGroupHandlers() {
-		Route route = route("/:groupUuid/groups/:childGroupUuid").method(POST);
-		route.handler(rc -> {
-			Group group = null;
-			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-				Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
-
-				if (group.addGroup(childGroup)) {
-					groupService.save(group);
-				} else {
-					// TODO 200?
-				}
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
-		});
-
-		route = route("/:groupUuid/groups/:childGroupUuid").method(DELETE);
-		route.handler(rc -> {
-			Group group = null;
-			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-				Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
-
-				if (group.removeGroup(childGroup)) {
-					groupService.save(group);
-				} else {
-					// TODO 200?
-				}
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
-
-		});
-	}
+	// private void addGroupChildGroupHandlers() {
+	// Route route = route("/:groupUuid/groups/:childGroupUuid").method(POST);
+	// route.handler(rc -> {
+	// Group group = null;
+	// try (Transaction tx = graphDb.beginTx()) {
+	// group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+	// Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
+	//
+	// if (group.addGroup(childGroup)) {
+	// groupService.save(group);
+	// } else {
+	// // TODO 200?
+	// }
+	// tx.success();
+	// }
+	// rc.response().setStatusCode(200);
+	// rc.response().end(toJson(groupService.transformToRest(group)));
+	// });
+	//
+	// route = route("/:groupUuid/groups/:childGroupUuid").method(DELETE);
+	// route.handler(rc -> {
+	// Group group = null;
+	// try (Transaction tx = graphDb.beginTx()) {
+	// group = getObject(rc, "groupUuid", PermissionType.UPDATE);
+	// Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
+	//
+	// if (group.removeGroup(childGroup)) {
+	// groupService.save(group);
+	// } else {
+	// // TODO 200?
+	// }
+	// tx.success();
+	// }
+	// rc.response().setStatusCode(200);
+	// rc.response().end(toJson(groupService.transformToRest(group)));
+	//
+	// });
+	// }
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
@@ -217,6 +227,28 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
+		
+
+		/*
+		 * List all groups when no parameter was specified
+		 */
+		route("/").method(GET).handler(rc -> {
+			GroupListResponse listResponse = new GroupListResponse();
+			// TODO paging
+				try (Transaction tx = graphDb.beginTx()) {
+					User requestUser = springConfiguration.authService().getUser(rc);
+					groupService.findAllVisibleGroups(requestUser);
+					for (Group group : groupService.findAll()) {
+						boolean hasPerm = hasPermission(rc, group, PermissionType.READ);
+						if (hasPerm) {
+							listResponse.getGroups().add(groupService.transformToRest(group));
+						}
+					}
+				}
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(listResponse));
+				return;
+			});
 	}
 
 	private void addCreateHandler() {
@@ -229,7 +261,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				if (StringUtils.isEmpty(parentGroupUuid)) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "group_missing_parentgroup_field"));
 				}
-				Group parentGroup = getObjectByUUID(rc, parentGroupUuid, PermissionType.CREATE);
+				// TODO a groups node must be added and the permission to this root must be checked
+				if (true) {
+					throw new RuntimeException("not yet implemented");
+				}
+				// Group parentGroup = getObjectByUUID(rc, parentGroupUuid, PermissionType.CREATE);
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
@@ -239,10 +275,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				group = groupService.save(group);
 
 				// Update the parent group
-				parentGroup.addGroup(group);
-				parentGroup = groupService.save(parentGroup);
+				// parentGroup.addGroup(group);
+				// parentGroup = groupService.save(parentGroup);
 
-				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), group);
+				// roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), group);
 
 				tx.success();
 

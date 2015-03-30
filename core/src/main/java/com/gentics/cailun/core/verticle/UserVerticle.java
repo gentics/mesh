@@ -8,9 +8,6 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.Route;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.ConstraintViolationException;
@@ -26,8 +23,11 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
+import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -63,20 +63,23 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).handler(rc -> {
-			Map<String, UserResponse> resultMap = new HashMap<>();
-			// TODO paging
-				try (Transaction tx = graphDb.beginTx()) {
-					for (User user : userService.findAll()) {
-						boolean hasPerm = hasPermission(rc, user, PermissionType.READ);
-						if (hasPerm) {
-							resultMap.put(user.getUsername(), userService.transformToRest(user));
-						}
-					}
+			UserListResponse listResponse = new UserListResponse();
+			try (Transaction tx = graphDb.beginTx()) {
+				PagingInfo pagingInfo = getPagingInfo(rc);
+				User requestUser = springConfiguration.authService().getUser(rc);
+				//TODO utilize paging helper and set correct paging info for loaded data
+//				RestModelPagingHelper.setPaging(listResponse, path, currentPage, pageCount, perPage, totalCount);
+				for (User user : userService.findAllVisible(requestUser, pagingInfo)) {
+//					boolean hasPerm = hasPermission(rc, user, PermissionType.READ);
+//					if (hasPerm) {
+						listResponse.getUsers().add(userService.transformToRest(user));
+//					}
 				}
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(resultMap));
-				return;
-			});
+			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(listResponse));
+			return;
+		});
 	}
 
 	private void addDeleteHandler() {

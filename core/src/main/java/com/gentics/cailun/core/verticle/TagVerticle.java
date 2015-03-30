@@ -35,7 +35,6 @@ import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
-import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 /**
@@ -72,7 +71,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addDeleteHandler();
 
 		addTagFilesHandlers();
-//		addTagSubTagHandlers();
+		// addTagSubTagHandlers();
 	}
 
 	private void addUpdateHandler() {
@@ -85,11 +84,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			Tag tag;
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			try (Transaction tx = graphDb.beginTx()) {
-				tag = tagService.findByUUID(projectName, uuid);
-				if (tag == null) {
-					throw new EntityNotFoundException(i18n.get(rc, "tag_not_found", uuid));
-				}
-				failOnMissingPermission(rc, tag, PermissionType.UPDATE);
+				// TODO fetch project specific tag
+				tag = getObjectByUUID(rc, uuid, PermissionType.UPDATE);
 				// TODO update other fields as well?
 				// TODO Update user information
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
@@ -132,10 +128,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 							}
 
 						}
-					} else {
-						log.error("Could not find language for languageTag {" + languageTag + "}");
 					}
-
 				}
 				tx.success();
 			}
@@ -156,9 +149,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			try (Transaction tx = graphDb.beginTx()) {
 
 				TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
-
-				Tag rootTag = tagService.findByUUID(projectName, request.getTagUuid());
-				failOnMissingPermission(rc, rootTag, PermissionType.CREATE);
+				// TODO load project specific root tag
+				Tag rootTag = getObjectByUUID(rc, request.getTagUuid(), PermissionType.CREATE);
 
 				newTag = new Tag();
 				newTag.setSchemaName(request.getSchemaName());
@@ -200,6 +192,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				tag = getObject(rc, "uuid", PermissionType.READ);
 				tx.success();
 			}
+			rc.response().setStatusCode(200);
 			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 		});
 
@@ -221,12 +214,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = getProjectName(rc);
 			String uuid = rc.request().params().get("uuid");
 			try (Transaction tx = graphDb.beginTx()) {
-				Tag tag = tagService.findByUUID(projectName, uuid);
-				if (tag == null) {
-					throw new EntityNotFoundException(i18n.get(rc, "tag_not_found", uuid));
-				}
-
-				failOnMissingPermission(rc, tag, PermissionType.DELETE);
+				// TODO load projec specific tag
+				Tag tag = getObject(rc, "uuid", PermissionType.DELETE);
 				tagService.delete(tag);
 				tx.success();
 			}
@@ -240,49 +229,49 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		postRoute.handler(rc -> {
 			String tagUuid = rc.request().params().get("tagUuid");
 			String subTagUuid = rc.request().params().get("subtagUuid");
-			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
-				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
-			}
-			String projectName = getProjectName(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
-			Tag tag;
-			try (Transaction tx = graphDb.beginTx()) {
+			// TODO be more specific
+				if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
+					throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
+				}
+				String projectName = getProjectName(rc);
+				List<String> languageTags = getSelectedLanguageTags(rc);
+				Tag tag;
+				try (Transaction tx = graphDb.beginTx()) {
 
-				// Load objects and check permissions etc.
-				tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
-				Tag subTag = getObjectByUUID(rc, projectName, subTagUuid, PermissionType.READ);
+					// Load objects and check permissions etc.
+					tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
+					Tag subTag = getObjectByUUID(rc, projectName, subTagUuid, PermissionType.READ);
 
-				tag.addTag(subTag);
-				tag = tagService.save(tag);
+					tag.addTag(subTag);
+					tag = tagService.save(tag);
 
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
-		});
+				}
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
+			});
 
 		Route deleteRoute = route("/:tagUuid/tags/:subtagUuid").method(DELETE);
 		deleteRoute.handler(rc -> {
 			String tagUuid = rc.request().params().get("tagUuid");
 			String subTagUuid = rc.request().params().get("subtagUuid");
-			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
-				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
-			}
-			String projectName = getProjectName(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
+			// TODO be more specific?
+				if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
+					throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
+				}
+				String projectName = getProjectName(rc);
+				List<String> languageTags = getSelectedLanguageTags(rc);
 
-			Tag tag;
-			try (Transaction tx = graphDb.beginTx()) {
-				tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
-
-				Tag subTag = getObjectByUUID(rc, projectName, subTagUuid, PermissionType.READ);
-				tag.removeTag(subTag);
-				tag = tagService.save(tag);
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
-
-		});
+				Tag tag;
+				try (Transaction tx = graphDb.beginTx()) {
+					tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
+					Tag subTag = getObjectByUUID(rc, projectName, subTagUuid, PermissionType.READ);
+					tag.removeTag(subTag);
+					tag = tagService.save(tag);
+					tx.success();
+				}
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
+			});
 
 	}
 
@@ -320,18 +309,18 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			}
 			String projectName = getProjectName(rc);
 
-			// Load objects and check permissions etc.
-				Tag tag;
-				try (Transaction tx = graphDb.beginTx()) {
-					tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
-					tx.success();
-					throw new HttpStatusCodeErrorException(501, "Not yet implemented");
-				}
+			Tag tag;
+			try (Transaction tx = graphDb.beginTx()) {
+				// Load objects and check permissions etc.
+				tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
+				tx.success();
+				throw new HttpStatusCodeErrorException(501, "Not yet implemented");
+			}
 
-				// File file = file
+			// File file = file
 
-				// TODO impl
-			});
+			// TODO impl
+		});
 
 	}
 
