@@ -170,8 +170,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 */
 	protected void failOnMissingPermission(RoutingContext rc, AbstractPersistable node, PermissionType type) throws InvalidPermissionException {
 		if (!hasPermission(rc, node, type)) {
-			// TODO i18n
-			throw new InvalidPermissionException("Missing permission on object {" + node.getUuid() + "}");
+			throw new InvalidPermissionException(i18n.get(rc,  "error_missing_perm", node.getUuid()));
 		}
 	}
 

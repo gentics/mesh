@@ -4,6 +4,7 @@ import static com.gentics.cailun.test.TestDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,6 +136,12 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=de", 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"filename\":\"test_1.de.html\",\"name\":\"test_1 german\",\"content\":\"Mahlzeit 1!\"}},\"schemaName\":\"content\",\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
+	}
+	
+	@Test
+	public void testReadContentWithBogusLanguageCode() {
+		//de, ruski, atom -> 400er
+		fail("Not yet implemented");
 	}
 
 	@Test

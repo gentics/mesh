@@ -66,14 +66,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			try (Transaction tx = graphDb.beginTx()) {
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				User requestUser = springConfiguration.authService().getUser(rc);
-				//TODO utilize paging helper and set correct paging info for loaded data
-//				RestModelPagingHelper.setPaging(listResponse, path, currentPage, pageCount, perPage, totalCount);
+
 				for (User user : userService.findAllVisible(requestUser, pagingInfo)) {
-//					boolean hasPerm = hasPermission(rc, user, PermissionType.READ);
-//					if (hasPerm) {
-						listResponse.getUsers().add(userService.transformToRest(user));
-//					}
+					listResponse.getUsers().add(userService.transformToRest(user));
 				}
+				// TODO utilize paging helper and set correct paging info for loaded data
+				// RestModelPagingHelper.setPaging(listResponse, path, currentPage, pageCount, perPage, totalCount);
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(listResponse));
@@ -101,17 +99,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			User user = null;
 			try (Transaction tx = graphDb.beginTx()) {
 				user = getObject(rc, "uuid", PermissionType.UPDATE);
-
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
-
-				failOnMissingPermission(rc, user, PermissionType.UPDATE);
 
 				if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
 					if (userService.findByUsername(requestModel.getUsername()) != null) {
-						// TODO i18n
-						String message = "A user with the username {" + requestModel.getUsername()
-								+ "} already exists. Please choose a different username.";
-						throw new HttpStatusCodeErrorException(409, message);
+						throw new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username"));
 					}
 					user.setUsername(requestModel.getUsername());
 				}
@@ -132,14 +124,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				}
 
-				try {
-					user = userService.save(user);
-					tx.success();
-				} catch (ConstraintViolationException e) {
-					tx.failure();
-					// TODO correct msg, i18n
-					throw new HttpStatusCodeErrorException(409, "User can't be saved. Unknown error.", e);
-				}
+				user = userService.save(user);
+				tx.success();
+
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(userService.transformToRest(user)));

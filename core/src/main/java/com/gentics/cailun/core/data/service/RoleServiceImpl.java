@@ -78,6 +78,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 			permission.grant(permissionTypes[i]);
 		}
 		role.addPermission(permission);
+		role = save(role);
 	}
 
 	@Override

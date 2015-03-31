@@ -15,7 +15,7 @@ public interface UserPagingActions {
 	 * @param pageable
 	 * @return
 	 */
-	@Query("MATCH (requestUser:User)--(group:Group)--(role:Role)-[:HAS_PERMISSION]-(user:User) where id(requestUser) = {0} return user")
+	@Query("MATCH (requestUser:User)--(group:Group)--(role:Role)-[:HAS_PERMISSION {permission-read: true}]-(user:User) where id(requestUser) = {0} return user")
 	public Page<User> findAll(User requestUser, Pageable pageable);
 
 }

@@ -4,9 +4,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import javax.xml.validation.Schema;
-
 import io.vertx.core.http.HttpMethod;
 
 import org.junit.Assert;

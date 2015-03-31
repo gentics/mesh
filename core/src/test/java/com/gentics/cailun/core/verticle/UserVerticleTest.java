@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -18,6 +19,7 @@ import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.GroupService;
+import com.gentics.cailun.core.data.service.I18NService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
@@ -35,6 +37,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupService groupService;
+
+	@Autowired
+	private GraphDatabaseService graphDb;
+
+	@Autowired
+	private I18NService i18n;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -65,7 +73,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + user.getUuid() + "}\"}";
+		String json = "{\"message\":\"Missing permissions on object \\\"" + user.getUuid() + "\\\"\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -107,7 +115,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateUser() throws Exception {
 		User user = info.getUser();
-
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
 		UserUpdateRequest restUser = new UserUpdateRequest();
@@ -160,7 +167,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 403, "Forbidden",
 				new ObjectMapper().writeValueAsString(restUser));
-		String json = "{\"message\":\"Missing permission on object {" + user.getUuid() + "}\"}";
+		String json = "{\"message\":\"Missing permissions on object \\\"" + user.getUuid() + "\\\"\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
@@ -182,7 +189,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 403, "Forbidden",
 				new ObjectMapper().writeValueAsString(updatedUser));
-		String json = "{\"message\":\"Missing permission on object {" + user.getUuid() + "}\"}";
+		String json = "{\"message\":\"Missing permissions on object \\\"" + user.getUuid() + "\\\"\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
@@ -208,7 +215,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 409, "Conflict", requestJson);
-		String json = "{\"message\":\"A user with the username {existing_username} already exists. Please choose a different username.\"}";
+		String json = "{\"message\":\"Username is conflicting with an existing username.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
@@ -393,7 +400,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + user.getUuid() + "}\"}";
+		String json = "{\"message\":\"Missing permissions on object \\\"" + user.getUuid() + "\\\"\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		assertNotNull("The user should not have been deleted", userService.findByUUID(user.getUuid()));
 	}
