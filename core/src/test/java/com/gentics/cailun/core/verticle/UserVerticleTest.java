@@ -72,13 +72,20 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllUsers() throws Exception {
 		User user = info.getUser();
+		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
-		User user2 = new User("testuser_2");
-		user2.setLastname("A");
-		user2.setFirstname("A");
-		user2.setEmailAddress("test");
-		user2 = userService.save(user2);
-		info.getGroup().addUser(user2);
+		int nUsers = 142;
+		for (int i = 0; i < nUsers; i++) {
+			User extraUser = new User("extra_user_" + i);
+			extraUser.setLastname("A" + i);
+			extraUser.setFirstname("A" + i);
+			extraUser.setEmailAddress("test" + i);
+			extraUser = userService.save(extraUser);
+			extraUser.getGroups().add(info.getGroup());
+			// info.getGroup().addUser(extraUser);
+			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
+		}
+		// groupService.save(info.getGroup());
 
 		User user3 = new User("testuser_3");
 		user3.setLastname("should_not_be_listed");
@@ -88,13 +95,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		info.getGroup().addUser(user3);
 		groupService.save(info.getGroup());
 
-		assertNotNull(userService.findByUsername(user.getUsername()));
-		roleService.addPermission(info.getRole(), user, PermissionType.READ);
-		roleService.addPermission(info.getRole(), user2, PermissionType.READ);
 		// Don't grant permissions to user3
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
-		String json = "{\"dummy_user\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"testuser_2\":{\"uuid\":\"uuid-value\",\"lastname\":\"A\",\"firstname\":\"A\",\"username\":\"testuser_2\",\"emailAddress\":\"test\",\"groups\":[\"dummy_user_group\"]}}";
+		String json = "ok";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 

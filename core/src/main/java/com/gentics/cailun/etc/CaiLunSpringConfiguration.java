@@ -92,11 +92,6 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 		configuration = conf;
 	}
 
-	@Bean
-	public BootstrapInitializer caiLunInitalizer() {
-		return new BootstrapInitializer();
-	}
-
 	@PostConstruct
 	private void setup() {
 		log.debug("Setting up {" + getClass().getCanonicalName() + "}");

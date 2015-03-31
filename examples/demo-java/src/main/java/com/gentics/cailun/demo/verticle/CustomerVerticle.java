@@ -1,19 +1,19 @@
 package com.gentics.cailun.demo.verticle;
 
-import static com.gentics.cailun.core.data.model.auth.PermissionType.CREATE;
-import static com.gentics.cailun.core.data.model.auth.PermissionType.DELETE;
 import static com.gentics.cailun.core.data.model.auth.PermissionType.READ;
-import static com.gentics.cailun.core.data.model.auth.PermissionType.UPDATE;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Session;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.tooling.GlobalGraphOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -28,7 +28,9 @@ import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.AuthRelationships;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -101,21 +103,41 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	 * 
 	 * @return
 	 */
-	private List<User> addUsers() {
+	private List<User> addUsers(Group superUsersGroup, Group guestsGroup) {
+		List<User> users = new ArrayList<>();
+
 		User john = new User("joe1");
 		john.setFirstname("John");
 		john.setLastname("Doe");
 		john.setEmailAddress("j.doe@gentics.com");
-		// TODO use user service
-		john.setPasswordHash(springConfiguration.passwordEncoder().encode("test123"));
+		userService.setPassword(john, "test123");
+
+		superUsersGroup.addUser(john);
+		users.add(john);
 
 		User mary = new User("mary2");
 		mary.setFirstname("Mary");
 		mary.setLastname("Doe");
 		mary.setEmailAddress("m.doe@gentics.com");
-		mary.setPasswordHash(springConfiguration.passwordEncoder().encode("lalala"));
-		List<User> users = Arrays.asList(john, mary);
+		userService.setPassword(mary, "lalala");
+		guestsGroup.addUser(mary);
+		users.add(mary);
 		userService.save(users);
+
+		for (int n = 0; n < 142; n++) {
+			log.info("Adding extrauser " + n);
+			User extraUser = new User("extraUser_" + n);
+			extraUser.setFirstname("Firstname_" + n);
+			extraUser.setLastname("Lastname_" + n);
+			extraUser.setEmailAddress("extraUser_" + n + "@spam.gentics.com");
+			userService.save(extraUser);
+			guestsGroup.addUser(extraUser);
+			users.add(extraUser);
+		}
+
+		groupService.save(superUsersGroup);
+		groupService.save(guestsGroup);
+
 		return users;
 
 	}
@@ -134,23 +156,54 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		// Update role to load uuid
 		adminRole = roleService.reload(adminRole);
 
+		// // Add Permissions
+		// try (Transaction tx = graphDb.beginTx()) {
+		// // Add admin permissions to all nodes
+		// int i = 0;
+		// for (GenericNode currentNode : genericNodeService.findAll()) {
+		// currentNode = genericNodeService.reload(currentNode);
+		// log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
+		// if (adminRole.getId() == currentNode.getId()) {
+		// log.info("Skipping role");
+		// continue;
+		// }
+		// roleService.addPermission(adminRole, currentNode, CREATE, READ, UPDATE, DELETE);
+		// adminRole = roleService.save(adminRole);
+		// log.info("Added permissions to {" + i + "} objects.");
+		// i++;
+		// }
+		// tx.success();
+		// }
+
+		// TODO determine why this is not working when using sdn
 		// Add Permissions
 		try (Transaction tx = graphDb.beginTx()) {
-			// Add admin permissions to all nodes
+			Node adminNode = neo4jTemplate.getPersistentState(adminRole);
 			int i = 0;
-			for (GenericNode currentNode : genericNodeService.findAll()) {
-				log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-				if (adminRole.getId() == currentNode.getId()) {
-					log.info("Skipping role");
+			for (Node node : GlobalGraphOperations.at(graphDb).getAllNodes()) {
+
+				if (adminRole.getId() == node.getId()) {
+					log.info("Skipping own role");
 					continue;
 				}
-				roleService.addPermission(adminRole, currentNode, CREATE, READ, UPDATE, DELETE);
-				genericNodeService.save(currentNode);
+
+				Relationship rel = node.createRelationshipTo(adminNode, AuthRelationships.TYPES.HAS_PERMISSION);
+				rel.setProperty("__type__", GraphPermission.class.getSimpleName());
+				rel.setProperty("permissions-read", "true");
+				rel.setProperty("permissions-delete", "true");
+				rel.setProperty("permissions-create", "true");
+				rel.setProperty("permissions-update", "true");
+				// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
+				// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
+				// genericNodeService.save(node);
+				log.info("Adding BasicPermission to node {" + node.getId() + "}");
 				i++;
 			}
-			log.info("Added permissions to {" + i + "} objects.");
 			tx.success();
 		}
+
+		// adminRole = roleService.save(adminRole);
+		// adminRole = roleService.reload(adminRole);
 
 	}
 
@@ -163,32 +216,28 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		Language german = languageService.findByName("german");
 		Language english = languageService.findByName("english");
 
+		// Groups
+		Group superUsersGroup = new Group("superusers");
+		Group guestsGroup = new Group("guests");
+		superUsersGroup = groupService.save(superUsersGroup);
+		guestsGroup = groupService.save(guestsGroup);
+
 		// Users
-		List<User> users = addUsers();
+		List<User> users = addUsers(superUsersGroup, guestsGroup);
 		rootNode.getUsers().addAll(users);
 
-		// Groups
-		Group rootGroup = new Group("superusers");
-		rootNode.getRootGroup().addGroup(rootGroup);
-
-		// Roles
+		// Role - admin
 		Role adminRole = new Role("admin role");
 		adminRole = roleService.save(adminRole);
-		adminRole = roleService.reload(adminRole);
+		groupService.save(superUsersGroup);
+		superUsersGroup.getRoles().add(adminRole);
+		superUsersGroup = groupService.save(superUsersGroup);
+
+		// Role - guests
 		Role guestRole = new Role("guest role");
 		guestRole = roleService.save(guestRole);
-		guestRole = roleService.reload(guestRole);
-
-		// Groups
-		rootGroup.getUsers().add(users.get(0));
-		rootGroup.getRoles().add(adminRole);
-
-		groupService.save(rootGroup);
-		Group guests = new Group("guests");
-		guests.getParents().add(rootGroup);
-		guests.getUsers().add(users.get(1));
-		guests.getRoles().add(guestRole);
-		groupService.save(guests);
+		guestsGroup.getRoles().add(guestRole);
+		guestsGroup = groupService.save(guestsGroup);
 
 		// Tags
 		RootTag rootTag = new RootTag();

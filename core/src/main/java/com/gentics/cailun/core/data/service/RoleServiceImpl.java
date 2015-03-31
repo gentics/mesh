@@ -69,20 +69,15 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public void addPermission(Role role, AbstractPersistable node, PermissionType... permissionTypes) {
-		// TODO why is the @Transactional not working?
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			GraphPermission permission = getGraphPermission(role, node);
-			// Create a new permission relation when no existing one could be found
-			if (permission == null) {
-				permission = new GraphPermission(role, node);
-			}
-			for (int i = 0; i < permissionTypes.length; i++) {
-				permission.grant(permissionTypes[i]);
-			}
-			role.addPermission(permission);
-			role = save(role);
-			tx.success();
+		GraphPermission permission = getGraphPermission(role, node);
+		// Create a new permission relation when no existing one could be found
+		if (permission == null) {
+			permission = new GraphPermission(role, node);
 		}
+		for (int i = 0; i < permissionTypes.length; i++) {
+			permission.grant(permissionTypes[i]);
+		}
+		role.addPermission(permission);
 	}
 
 	@Override
@@ -92,20 +87,16 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public GraphPermission revokePermission(Role role, AbstractPersistable node, PermissionType... permissionTypes) {
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			GraphPermission permission = getGraphPermission(role, node);
-			// Create a new permission relation when no existing one could be found
-			if (permission == null) {
-				return null;
-			}
-			for (int i = 0; i < permissionTypes.length; i++) {
-				permission.revoke(permissionTypes[i]);
-			}
-			role.addPermission(permission);
-			role = save(role);
-			tx.success();
-			return permission;
+		GraphPermission permission = getGraphPermission(role, node);
+		// Create a new permission relation when no existing one could be found
+		if (permission == null) {
+			return null;
 		}
+		for (int i = 0; i < permissionTypes.length; i++) {
+			permission.revoke(permissionTypes[i]);
+		}
+		role.addPermission(permission);
+		return permission;
 	}
 
 	@Override

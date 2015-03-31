@@ -552,43 +552,43 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	// Group SubGroup Testcases - PUT / Add
 
-	@Test
-	public void testAddGroupToGroupWithPerm() throws Exception {
-		Group group = info.getGroup();
+//	@Test
+//	public void testAddGroupToGroupWithPerm() throws Exception {
+//		Group group = info.getGroup();
+//
+//		Group extraGroup = new Group("extraGroup");
+//		extraGroup = groupService.save(extraGroup);
+//		extraGroup = groupService.reload(extraGroup);
+//
+//		// TODO check with cp whether perms are ok that way.
+//		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
+//		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+//
+//		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 200, "OK");
+//		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"extraGroup\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+//		group = groupService.reload(group);
+//		assertTrue("Group should be child of the group.", group.hasGroup(extraGroup));
+//	}
 
-		Group extraGroup = new Group("extraGroup");
-		extraGroup = groupService.save(extraGroup);
-		extraGroup = groupService.reload(extraGroup);
-
-		// TODO check with cp whether perms are ok that way.
-		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
-		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"extraGroup\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		group = groupService.reload(group);
-		assertTrue("Group should be child of the group.", group.hasGroup(extraGroup));
-	}
-
-	@Test
-	public void testAddGroupToGroupWithoutGroupPerm() throws Exception {
-		Group group = info.getGroup();
-
-		Group extraGroup = new Group("extraGroup");
-		extraGroup = groupService.save(extraGroup);
-		extraGroup = groupService.reload(extraGroup);
-
-		// TODO check with cp whether perms are ok that way.
-		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
-		roleService.addPermission(info.getRole(), group, PermissionType.READ);
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		group = groupService.reload(group);
-		assertFalse("Group should not be a child of the group.", group.hasGroup(extraGroup));
-	}
+//	@Test
+//	public void testAddGroupToGroupWithoutGroupPerm() throws Exception {
+//		Group group = info.getGroup();
+//
+//		Group extraGroup = new Group("extraGroup");
+//		extraGroup = groupService.save(extraGroup);
+//		extraGroup = groupService.reload(extraGroup);
+//
+//		// TODO check with cp whether perms are ok that way.
+//		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
+//		roleService.addPermission(info.getRole(), group, PermissionType.READ);
+//
+//		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 403, "Forbidden");
+//		String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
+//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+//		group = groupService.reload(group);
+//		assertFalse("Group should not be a child of the group.", group.hasGroup(extraGroup));
+//	}
 
 	// Group SubGroup Testcases - DELETE / Remove
 

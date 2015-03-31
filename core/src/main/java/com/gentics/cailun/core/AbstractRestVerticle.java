@@ -36,7 +36,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
 
-	public static final long DEFAULT_PER_PAGE = 25;
+	public static final int DEFAULT_PER_PAGE = 25;
 
 	protected Router localRouter = null;
 	protected String basePath;
@@ -201,8 +201,8 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	protected PagingInfo getPagingInfo(RoutingContext rc) {
 		MultiMap params = rc.request().params();
-		long page = NumberUtils.toLong(params.get("page"), 0);
-		long perPage = Long.valueOf(NumberUtils.toLong(params.get("per_page"), DEFAULT_PER_PAGE));
+		int page = NumberUtils.toInt(params.get("page"), 0);
+		int perPage = NumberUtils.toInt(params.get("per_page"), DEFAULT_PER_PAGE);
 		return new PagingInfo(page, perPage);
 	}
 

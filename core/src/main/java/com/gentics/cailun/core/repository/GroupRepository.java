@@ -2,6 +2,7 @@ package com.gentics.cailun.core.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
 
@@ -24,7 +25,8 @@ public interface GroupRepository extends GenericNodeRepository<Group> {
 
 	public Group findByName(String string);
 
-	public void findAll(User requestUser, Pageable pageable);
+//	@Query("start u=node({0}) MATCH (u)")
+	public Page<Group> findAll(User requestUser, Pageable pageable);
 
 //	@Query("start g=node({0}) MATCH (g)-[PARENT_OF]->(childGroup) return childGroup")
 //	public Set<Group> findChildren(Group group);

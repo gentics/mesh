@@ -2,19 +2,19 @@ package com.gentics.cailun.path;
 
 public class PagingInfo {
 
-	private long page;
-	private long perPage;
+	private int page;
+	private int perPage;
 
-	public PagingInfo(long page, long perPage) {
+	public PagingInfo(int page, int perPage) {
 		this.page = page;
 		this.perPage = perPage;
 	}
 
-	public long getPage() {
+	public int getPage() {
 		return page;
 	}
 
-	public long getPerPage() {
+	public int getPerPage() {
 		return perPage;
 	}
 

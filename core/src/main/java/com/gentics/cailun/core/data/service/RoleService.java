@@ -8,7 +8,6 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
-import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;

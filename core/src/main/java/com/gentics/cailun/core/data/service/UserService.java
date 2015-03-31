@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
-import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.data.domain.Page;
 
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -14,7 +14,14 @@ public interface UserService extends GenericNodeService<User> {
 
 	User findByUsername(String username);
 
-	Result<User> findAllVisible(User user, PagingInfo pagingInfo);
+	/**
+	 * Find all users that are readable by the given user. Utilize the paging info when returning paged user data.
+	 * 
+	 * @param user
+	 * @param pagingInfo
+	 * @return
+	 */
+	Page<User> findAllVisible(User user, PagingInfo pagingInfo);
 
 	UserResponse transformToRest(User user);
 

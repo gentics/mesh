@@ -1,7 +1,9 @@
 package com.gentics.cailun.core.data.service;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,10 +36,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public Result<User> findAllVisible(User user, PagingInfo paging) {
-		//TODO Add paging here
-//		userRepository.findAllVisible(user);
-		return userRepository.findAll();
+	public Page<User> findAllVisible(User user, PagingInfo paging) {
+		return userRepository.findAll(user, new PageRequest(paging.getPage(), paging.getPerPage()));
 	}
 
 	@Override

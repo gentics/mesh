@@ -8,6 +8,7 @@ import io.vertx.ext.apex.handler.AuthHandler;
 import io.vertx.ext.apex.handler.BasicAuthHandler;
 import io.vertx.ext.apex.handler.BodyHandler;
 import io.vertx.ext.apex.handler.CookieHandler;
+import io.vertx.ext.apex.handler.CorsHandler;
 import io.vertx.ext.apex.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.apex.sstore.LocalSessionStore;
 import io.vertx.ext.apex.sstore.SessionStore;
@@ -108,6 +109,8 @@ public class RouterStorage {
 				}
 
 			});
+
+			rootRouter.route().handler(CorsHandler.create("*"));
 
 			coreRouters.put(ROOT_ROUTER_KEY, rootRouter);
 		}
