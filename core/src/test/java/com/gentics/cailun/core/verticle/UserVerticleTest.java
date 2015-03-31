@@ -230,7 +230,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		info.getGroup().addUser(conflictingUser);
 
 		// Add update permission to group in order to create the user in that group
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
+		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");

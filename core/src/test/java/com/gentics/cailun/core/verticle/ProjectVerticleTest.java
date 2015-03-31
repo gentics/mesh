@@ -75,8 +75,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
 		response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + restProject.getUUID(), 200, "OK");
-		json = "{\"message\":\"Deleted project {test12345}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("project_deleted", response, restProject.getName());
 
 	}
 
@@ -155,11 +154,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		request.setName("New Name");
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden", JsonUtils.toJson(request));
-		String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, project.getUuid());
 
 		Project reloadedProject = projectService.reload(project);
-
 		Assert.assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());
 	}
 
@@ -173,9 +170,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), project, PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 200, "OK");
-		String json = "{\"message\":\"Deleted project {dummy}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("project_deleted", response, project.getName());
 		assertNull("The project should have been deleted", projectService.findByUUID(project.getUuid()));
+
+		// TODO check for removed routers?
 	}
 
 	@Test
@@ -183,8 +181,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, project.getUuid());
 		assertNotNull("The project should not have been deleted", projectService.findByUUID(project.getUuid()));
 	}
 

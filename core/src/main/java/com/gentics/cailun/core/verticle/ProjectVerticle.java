@@ -157,18 +157,17 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String msg;
+			String uuid = rc.request().params().get("uuid");
 			try (Transaction tx = graphDb.beginTx()) {
 
 				Project project = getObject(rc, "uuid", PermissionType.DELETE);
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
-				// TODO i18n
-				msg = "Deleted project {" + name + "}";
 				tx.success();
 			}
 			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(msg)));
+			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", uuid))));
 		});
 	}
 }

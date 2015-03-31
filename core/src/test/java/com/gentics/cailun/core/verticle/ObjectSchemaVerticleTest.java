@@ -102,8 +102,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
 		response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + restSchema.getUUID(), 200, "OK");
-		json = "{\"message\":\"Schema with uuid \\\"" + restSchema.getUUID() + "\\\" was deleted.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("schema_deleted", response, restSchema.getUUID());
 
 	}
 
@@ -136,8 +135,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), schema, PermissionType.CREATE);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + schema.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, schema.getUuid());
 	}
 
 	@Test
@@ -251,8 +249,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 403,
 				"Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + extraProject.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, extraProject.getUuid());
 
 		// Reload the schema and check for expected changes
 		schema = objectSchemaService.reload(schema);
@@ -293,9 +290,8 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), project, PermissionType.READ);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-
+		expectMessageResponse("error_missing_perm", response, project.getUuid());
+		
 		// Reload the schema and check for expected changes
 		schema = objectSchemaService.reload(schema);
 		assertTrue("The schema should still be listed for the project.", schema.getProjects().contains(project));

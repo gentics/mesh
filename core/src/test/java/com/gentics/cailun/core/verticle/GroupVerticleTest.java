@@ -78,8 +78,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + restGroup.getUUID(), 200, "OK", requestJson);
-		json = "{\"message\":\"Group with uuid \\\"" + restGroup.getUUID() + "\\\" was deleted.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		expectMessageResponse("group_deleted", response, restGroup.getUUID());
 	}
 
 	@Test
@@ -92,8 +92,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"The name must be set.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_name_must_be_set", response);
 
 	}
 
@@ -108,8 +107,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"No parent group was specified for the group. Please set a parent group uuid.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("group_missing_parentgroup_field", response);
 		assertNull("Group should not have been created.", groupService.findByName(name));
 
 	}
@@ -128,8 +126,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
-		String json = "{\"message\":\"Missing permission on object {" + info.getGroup().getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, info.getGroup().getUuid());
 
 		assertNull(groupService.findByName(name));
 	}
@@ -185,16 +182,14 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permissions on object \\\"" + group.getUuid() + "\\\"\"}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		expectMessageResponse("error_missing_perm", response, group.getUuid());
 	}
 
 	@Test
 	public void testReadGroupWithBogusUUID() throws Exception {
 		final String bogusUuid = "sadgasdasdg";
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + bogusUuid, 404, "Not Found");
-		String json = "{\"message\":\"Object with uuid \\\"sadgasdasdg\\\" could not be found.\"}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		expectMessageResponse("object_not_found_for_uuid", response, bogusUuid);
 	}
 
 	// Update Tests
@@ -552,86 +547,87 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	// Group SubGroup Testcases - PUT / Add
 
-//	@Test
-//	public void testAddGroupToGroupWithPerm() throws Exception {
-//		Group group = info.getGroup();
-//
-//		Group extraGroup = new Group("extraGroup");
-//		extraGroup = groupService.save(extraGroup);
-//		extraGroup = groupService.reload(extraGroup);
-//
-//		// TODO check with cp whether perms are ok that way.
-//		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
-//		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
-//
-//		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 200, "OK");
-//		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"extraGroup\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
-//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-//		group = groupService.reload(group);
-//		assertTrue("Group should be child of the group.", group.hasGroup(extraGroup));
-//	}
+	// @Test
+	// public void testAddGroupToGroupWithPerm() throws Exception {
+	// Group group = info.getGroup();
+	//
+	// Group extraGroup = new Group("extraGroup");
+	// extraGroup = groupService.save(extraGroup);
+	// extraGroup = groupService.reload(extraGroup);
+	//
+	// // TODO check with cp whether perms are ok that way.
+	// roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
+	// roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+	//
+	// String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 200, "OK");
+	// String json =
+	// "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"extraGroup\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// group = groupService.reload(group);
+	// assertTrue("Group should be child of the group.", group.hasGroup(extraGroup));
+	// }
 
-//	@Test
-//	public void testAddGroupToGroupWithoutGroupPerm() throws Exception {
-//		Group group = info.getGroup();
-//
-//		Group extraGroup = new Group("extraGroup");
-//		extraGroup = groupService.save(extraGroup);
-//		extraGroup = groupService.reload(extraGroup);
-//
-//		// TODO check with cp whether perms are ok that way.
-//		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
-//		roleService.addPermission(info.getRole(), group, PermissionType.READ);
-//
-//		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 403, "Forbidden");
-//		String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
-//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-//		group = groupService.reload(group);
-//		assertFalse("Group should not be a child of the group.", group.hasGroup(extraGroup));
-//	}
+	// @Test
+	// public void testAddGroupToGroupWithoutGroupPerm() throws Exception {
+	// Group group = info.getGroup();
+	//
+	// Group extraGroup = new Group("extraGroup");
+	// extraGroup = groupService.save(extraGroup);
+	// extraGroup = groupService.reload(extraGroup);
+	//
+	// // TODO check with cp whether perms are ok that way.
+	// roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
+	// roleService.addPermission(info.getRole(), group, PermissionType.READ);
+	//
+	// String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 403, "Forbidden");
+	// String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// group = groupService.reload(group);
+	// assertFalse("Group should not be a child of the group.", group.hasGroup(extraGroup));
+	// }
 
 	// Group SubGroup Testcases - DELETE / Remove
 
-//	@Test
-//	public void testRemoveGroupFromGroupWithPerm() throws Exception {
-//		Group group = info.getGroup();
-//
-//		Group extraGroup = new Group("extraGroup");
-//		extraGroup = groupService.save(extraGroup);
-//		extraGroup = groupService.reload(extraGroup);
-//		group.addGroup(extraGroup);
-//		group = groupService.save(group);
-//
-//		// TODO check with cp whether perms are ok that way.
-//		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
-//		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
-//
-//		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 200, "OK");
-//		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
-//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-//		group = groupService.reload(group);
-//		assertFalse("Group should no longer be a child of the group.", group.hasGroup(extraGroup));
-//	}
-//
-//	@Test
-//	public void testRemoveGroupFromGroupWithoutPerm() throws Exception {
-//		Group group = info.getGroup();
-//
-//		Group extraGroup = new Group("extraGroup");
-//		extraGroup = groupService.save(extraGroup);
-//		extraGroup = groupService.reload(extraGroup);
-//		group.addGroup(extraGroup);
-//		group = groupService.save(group);
-//
-//		// TODO check with cp whether perms are ok that way.
-//		roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
-//		roleService.addPermission(info.getRole(), group, PermissionType.READ);
-//
-//		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 403, "Forbidden");
-//		String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
-//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-//		group = groupService.reload(group);
-//		assertTrue("Group should still be a child of the group.", group.hasGroup(extraGroup));
-//	}
+	// @Test
+	// public void testRemoveGroupFromGroupWithPerm() throws Exception {
+	// Group group = info.getGroup();
+	//
+	// Group extraGroup = new Group("extraGroup");
+	// extraGroup = groupService.save(extraGroup);
+	// extraGroup = groupService.reload(extraGroup);
+	// group.addGroup(extraGroup);
+	// group = groupService.save(group);
+	//
+	// // TODO check with cp whether perms are ok that way.
+	// roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
+	// roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+	//
+	// String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 200, "OK");
+	// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// group = groupService.reload(group);
+	// assertFalse("Group should no longer be a child of the group.", group.hasGroup(extraGroup));
+	// }
+	//
+	// @Test
+	// public void testRemoveGroupFromGroupWithoutPerm() throws Exception {
+	// Group group = info.getGroup();
+	//
+	// Group extraGroup = new Group("extraGroup");
+	// extraGroup = groupService.save(extraGroup);
+	// extraGroup = groupService.reload(extraGroup);
+	// group.addGroup(extraGroup);
+	// group = groupService.save(group);
+	//
+	// // TODO check with cp whether perms are ok that way.
+	// roleService.addPermission(info.getRole(), extraGroup, PermissionType.READ);
+	// roleService.addPermission(info.getRole(), group, PermissionType.READ);
+	//
+	// String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/groups/" + extraGroup.getUuid(), 403, "Forbidden");
+	// String json = "{\"message\":\"Missing permission on object {" + group.getUuid() + "}\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// group = groupService.reload(group);
+	// assertTrue("Group should still be a child of the group.", group.hasGroup(extraGroup));
+	// }
 
 }
