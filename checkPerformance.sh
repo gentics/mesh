@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ENDPOINT=$1
+curl -v http://joe1:test123@localhost:8080/$ENDPOINT
+
 CONC=$2
 SID=$(curl -v --silent  http://joe1:test123@localhost:8080/$ENDPOINT 2>&1 | grep "Set-Cookie" | sed -e 's/.*cailun\.session=\(.*\);.*/\1/')
 
