@@ -181,8 +181,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), extraRole, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + extraRole.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + extraRole.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		expectMessageResponse("error_missing_perm", response, extraRole.getUuid());
 	}
 
 	@Test
@@ -194,8 +193,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), info.getRole(), PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + role.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + role.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		expectMessageResponse("error_missing_perm", response, role.getUuid());
+
 	}
 
 	@Test
@@ -279,8 +278,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteRoleByUUIDWithMissingPermission() throws Exception {
 		roleService.addPermission(info.getRole(), info.getRole(), PermissionType.READ);
 		String response = request(info, HttpMethod.DELETE, "/api/v1/roles/" + info.getRole().getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + info.getRole().getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm",response, info.getRole().getUuid());
 		assertNotNull("The role should not have been deleted", roleService.findByUUID(info.getRole().getUuid()));
 	}
 

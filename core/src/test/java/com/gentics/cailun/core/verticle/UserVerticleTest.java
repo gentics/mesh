@@ -73,8 +73,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permissions on object \\\"" + user.getUuid() + "\\\"\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, user.getUuid());
 	}
 
 	@Test
@@ -189,6 +188,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 403, "Forbidden",
 				new ObjectMapper().writeValueAsString(updatedUser));
+
 		String json = "{\"message\":\"Missing permissions on object \\\"" + user.getUuid() + "\\\"\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
@@ -215,8 +215,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 409, "Conflict", requestJson);
-		String json = "{\"message\":\"Username is conflicting with an existing username.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("user_conflicting_username", response);
 
 	}
 
@@ -240,8 +239,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 409, "Conflict", requestJson);
-		String json = "{\"message\":\"Username is conflicting with an existing username.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("user_conflicting_username", response);
 
 	}
 
@@ -259,8 +257,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"No password was specified.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("user_missing_password", response);
 	}
 
 	@Test
@@ -276,8 +273,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"No username was specified.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("user_missing_username", response);
 	}
 
 	@Test
@@ -294,8 +290,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"No parent group was specified for the user. Please set a parent group uuid.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("user_missing_parentgroup_field", response);
 
 	}
 
@@ -314,8 +309,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 404, "Not Found", requestJson);
-		String json = "{\"message\":\"Object with uuid \\\"bogus\\\" could not be found.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
 	}
 
@@ -367,8 +361,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/users/" + restUser.getUUID(), 200, "OK");
-		json = "{\"message\":\"User with uuid \\\"" + restUser.getUUID() + "\\\" was deleted.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("user_deleted", response, restUser.getUUID());
 
 	}
 
@@ -377,8 +370,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = "bogus text";
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 400, "Bad Request", requestJson);
-		String json = "{\"message\":\"Could not parse request json.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+
+		expectMessageResponse("error_parse_request_json_error", response);
 	}
 
 	// Delete tests
@@ -390,18 +383,15 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		String json = "{\"message\":\"User with uuid \\\"" + user.getUuid() + "\\\" was deleted.\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("user_deleted", response, user.getUuid());
 		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
 	}
 
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		User user = info.getUser();
-
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permissions on object \\\"" + user.getUuid() + "\\\"\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, user.getUuid());
 		assertNotNull("The user should not have been deleted", userService.findByUUID(user.getUuid()));
 	}
 

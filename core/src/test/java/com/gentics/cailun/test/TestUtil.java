@@ -1,15 +1,7 @@
 package com.gentics.cailun.test;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.net.ServerSocket;
-
-import org.codehaus.jackson.JsonGenerationException;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 
 public final class TestUtil {
 

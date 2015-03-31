@@ -12,6 +12,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,9 +25,15 @@ import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.core.data.service.I18NService;
+import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.etc.RouterStorage;
+import com.gentics.cailun.util.JsonUtils;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
+
+	@Autowired
+	private I18NService i18n;
 
 	protected Vertx vertx;
 
@@ -49,7 +56,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	public void setupVerticleTest() throws Exception {
 		setupData();
 		info = data().getUserInfo();
-		port = TestUtil.getRandomPort();
+		port = com.gentics.cailun.test.TestUtil.getRandomPort();
 		vertx = springConfig.vertx();
 		client = vertx.createHttpClient(new HttpClientOptions());
 		latch = new CountDownLatch(1);
@@ -90,7 +97,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		// Reset the latch etc.
 		latch = new CountDownLatch(1);
 		throwable.set(null);
-		
+
 		Thread.sleep(100);
 
 		Consumer<HttpClientRequest> requestAction = request -> {
@@ -168,6 +175,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
 		String sanitizedJson = unsanitizedResponseJson.replaceAll("uuid\":\"[^\"]*\"", "uuid\":\"uuid-value\"");
 		org.junit.Assert.assertEquals(msg, expectedJson, sanitizedJson);
+	}
+
+	protected void expectMessageResponse(String i18nKey, String response, String... i18nParams) {
+		Locale en = Locale.ENGLISH;
+		String message = i18n.get(en, i18nKey, i18nParams);
+		GenericMessageResponse responseObject = new GenericMessageResponse(message);
+		String json = JsonUtils.toJson(responseObject);
+		assertEqualsSanitizedJson("The response does not match.", json, response);
 	}
 
 }
