@@ -189,10 +189,10 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 				Relationship rel = node.createRelationshipTo(adminNode, AuthRelationships.TYPES.HAS_PERMISSION);
 				rel.setProperty("__type__", GraphPermission.class.getSimpleName());
-				rel.setProperty("permissions-read", "true");
-				rel.setProperty("permissions-delete", "true");
-				rel.setProperty("permissions-create", "true");
-				rel.setProperty("permissions-update", "true");
+				rel.setProperty("permissions-read", true);
+				rel.setProperty("permissions-delete", true);
+				rel.setProperty("permissions-create", true);
+				rel.setProperty("permissions-update", true);
 				// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
 				// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
 				// genericNodeService.save(node);
