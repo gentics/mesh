@@ -25,7 +25,7 @@ public final class JsonUtils {
 
 	static {
 		mapper = new ObjectMapper();
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
+		mapper.setSerializationInclusion(Include.NON_NULL);
 	}
 
 	public static ObjectMapper getMapper() {

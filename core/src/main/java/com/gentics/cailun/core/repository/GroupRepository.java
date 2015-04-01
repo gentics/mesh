@@ -25,7 +25,7 @@ public interface GroupRepository extends GenericNodeRepository<Group> {
 
 	public Group findByName(String string);
 
-//	@Query("start u=node({0}) MATCH (u)")
+	@Query("MATCH (requestUser:User)--(group:Group)--(role:Role)-[perm:HAS_PERMISSION]-(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup")
 	public Page<Group> findAll(User requestUser, Pageable pageable);
 
 //	@Query("start g=node({0}) MATCH (g)-[PARENT_OF]->(childGroup) return childGroup")

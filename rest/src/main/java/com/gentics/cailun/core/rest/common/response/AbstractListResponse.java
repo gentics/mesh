@@ -1,8 +1,13 @@
 package com.gentics.cailun.core.rest.common.response;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class AbstractListResponse {
+public class AbstractListResponse<T extends AbstractRestModel> {
+
+	private List<T> data = new ArrayList<>();
 
 	@JsonProperty("_metainfo")
 	private PagingMetaInfo metainfo = new PagingMetaInfo();
@@ -16,6 +21,10 @@ public class AbstractListResponse {
 
 	public void setMetainfo(PagingMetaInfo metainfo) {
 		this.metainfo = metainfo;
+	}
+
+	public List<T> getData() {
+		return data;
 	}
 
 }

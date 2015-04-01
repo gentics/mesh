@@ -154,7 +154,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					for (Content content : allContents) {
 						if (hasPermission(rc, content, PermissionType.READ)) {
 							ContentResponse contentResponse = contentService.transformToRest(content, languageTags);
-							listResponse.getContents().add(contentResponse);
+							listResponse.getData().add(contentResponse);
 						}
 					}
 					tx.success();

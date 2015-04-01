@@ -126,8 +126,8 @@ public class Generator {
 		project2.setUuid(getUUID());
 
 		ProjectListResponse projectList = new ProjectListResponse();
-		projectList.addProject(project);
-		projectList.addProject(project2);
+		projectList.getData().add(project);
+		projectList.getData().add(project2);
 		RestModelPagingHelper.setPaging(projectList, "/projects", 1, 10, 2, 20);
 		write(projectList);
 
@@ -155,8 +155,8 @@ public class Generator {
 		role2.setUuid(getUUID());
 
 		RoleListResponse roleList = new RoleListResponse();
-		roleList.addRole(role);
-		roleList.addRole(role2);
+		roleList.getData().add(role);
+		roleList.getData().add(role2);
 		RestModelPagingHelper.setPaging(roleList, "/roles", 1, 10, 2, 20);
 		write(roleList);
 
@@ -208,8 +208,8 @@ public class Generator {
 		// TODO properties
 
 		ObjectSchemaListResponse schemaList = new ObjectSchemaListResponse();
-		schemaList.addSchema(schema);
-		schemaList.addSchema(schema2);
+		schemaList.getData().add(schema);
+		schemaList.getData().add(schema2);
 		RestModelPagingHelper.setPaging(schemaList, "/projects", 1, 10, 2, 20);
 		write(schemaList);
 
@@ -284,8 +284,8 @@ public class Generator {
 		group2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 
 		GroupListResponse groupList = new GroupListResponse();
-		groupList.addGroup(group);
-		groupList.addGroup(group2);
+		groupList.getData().add(group);
+		groupList.getData().add(group2);
 		RestModelPagingHelper.setPaging(groupList, "/groups", 1, 10, 2, 20);
 		write(groupList);
 
@@ -313,8 +313,8 @@ public class Generator {
 		user2.addGroup("editors");
 
 		UserListResponse userList = new UserListResponse();
-		userList.addUser(user);
-		userList.addUser(user2);
+		userList.getData().add(user);
+		userList.getData().add(user2);
 		RestModelPagingHelper.setPaging(userList, "/users", 1, 10, 2, 20);
 		write(userList);
 

@@ -1,10 +1,10 @@
 package com.gentics.cailun.core.data.service;
 
 import java.util.Collections;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +14,7 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
+import com.gentics.cailun.path.PagingInfo;
 
 @Component
 @Transactional
@@ -57,7 +58,8 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 	}
 
 	@Override
-	public void findAllVisibleGroups(User requestUser) {
-		groupRepository.findAll(requestUser, null);
+	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+		PageRequest pageRequest = new PageRequest(0, 25);
+		return groupRepository.findAll(requestUser, pageRequest);
 	}
 }

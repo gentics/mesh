@@ -136,7 +136,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadGroups() throws Exception {
 		// Create and save some groups
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 142; i++) {
 			Group group = new Group("group_" + i);
 			group = groupService.save(group);
 			roleService.addPermission(info.getRole(), group, PermissionType.READ);

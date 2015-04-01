@@ -6,14 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-
-
-import java.util.HashMap;
-import java.util.Map;
-
-
 import io.vertx.ext.apex.Route;
-
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -21,9 +14,7 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
-import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -32,7 +23,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.cailun.core.rest.group.response.GroupListResponse;
-import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
 @Component
@@ -227,7 +217,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
-		
 
 		/*
 		 * List all groups when no parameter was specified
@@ -237,11 +226,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			// TODO paging
 				try (Transaction tx = graphDb.beginTx()) {
 					User requestUser = springConfiguration.authService().getUser(rc);
-					groupService.findAllVisibleGroups(requestUser);
-					for (Group group : groupService.findAll()) {
+
+					for (Group group : groupService.findAllVisible(requestUser, null)) {
 						boolean hasPerm = hasPermission(rc, group, PermissionType.READ);
 						if (hasPerm) {
-							listResponse.getGroups().add(groupService.transformToRest(group));
+							listResponse.getData().add(groupService.transformToRest(group));
 						}
 					}
 				}

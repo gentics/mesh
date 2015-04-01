@@ -142,7 +142,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 				for (Project project : projectService.findAll()) {
 					if (hasPermission(rc, project, PermissionType.READ)) {
-						response.addProject(projectService.transformToRest(project));
+						response.getData().add(projectService.transformToRest(project));
 					}
 				}
 				tx.success();
@@ -156,7 +156,6 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			String msg;
 			String uuid = rc.request().params().get("uuid");
 			try (Transaction tx = graphDb.beginTx()) {
 

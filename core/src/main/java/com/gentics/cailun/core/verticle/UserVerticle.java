@@ -10,7 +10,6 @@ import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -68,7 +67,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				User requestUser = springConfiguration.authService().getUser(rc);
 
 				for (User user : userService.findAllVisible(requestUser, pagingInfo)) {
-					listResponse.getUsers().add(userService.transformToRest(user));
+					listResponse.getData().add(userService.transformToRest(user));
 				}
 				// TODO utilize paging helper and set correct paging info for loaded data
 				// RestModelPagingHelper.setPaging(listResponse, path, currentPage, pageCount, perPage, totalCount);
