@@ -3,7 +3,9 @@ package com.gentics.cailun.core.verticle;
 import static com.gentics.cailun.test.TestDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import java.util.ArrayList;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
-import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;

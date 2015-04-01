@@ -6,7 +6,13 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import io.vertx.core.http.HttpMethod;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,6 +24,7 @@ import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
+import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
@@ -37,12 +44,68 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllTags() throws Exception {
-		Tag tag = data().getLevel1a();
-		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]}}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		final int nTags = 142;
+		for (int i = 0; i < nTags; i++) {
+			Tag extraTag = new Tag();
+			extraTag.setCreator(info.getUser());
+			extraTag = tagService.save(extraTag);
+			roleService.addPermission(info.getRole(), extraTag, PermissionType.READ);
+		}
+
+		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+		Tag noPermTag = new Tag();
+		noPermTag.setCreator(info.getUser());
+		noPermTag = tagService.save(noPermTag);
+		noPermTag = tagService.reload(noPermTag);
+		assertNotNull(noPermTag.getUuid());
+
+		// Test default paging parameters
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/", 200, "OK");
+		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
+		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(25, restResponse.getData().size());
+
+		int perPage = 11;
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		restResponse = JsonUtils.readValue(response, TagListResponse.class);
+		Assert.assertEquals(perPage, restResponse.getData().size());
+
+		// Extra Tags + permitted tag
+		int totalTags = nTags + 1;
+		int totalPages = (int) Math.ceil(totalTags / perPage);
+		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(totalTags, restResponse.getMetainfo().getTotalCount());
+
+		List<TagResponse> allTags = new ArrayList<>();
+		for (int page = 0; page < totalPages; page++) {
+			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + page, 200, "OK");
+			restResponse = JsonUtils.readValue(response, TagListResponse.class);
+			allTags.addAll(restResponse.getData());
+		}
+		Assert.assertEquals("Somehow not all users were loaded when loading all pages.", totalTags, allTags.size());
+
+		// Verify that the no_perm_tag is not part of the response
+		final String noPermTagUUID = noPermTag.getUuid();
+		List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUUID().equals(noPermTagUUID))
+				.collect(Collectors.toList());
+		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 
 	@Test
