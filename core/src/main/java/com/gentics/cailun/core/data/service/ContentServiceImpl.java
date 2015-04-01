@@ -3,17 +3,21 @@ package com.gentics.cailun.core.data.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.generic.GenericContentServiceImpl;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
+import com.gentics.cailun.path.PagingInfo;
 
 @Component
 @Transactional
@@ -83,6 +87,11 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 
 		return response;
 
+	}
+
+	@Override
+	public Page<Content> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+		return contentRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
 
 	// private Node getChildNodePageFromNodeTag(Node node, String pageFilename) {

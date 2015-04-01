@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonMappingException;

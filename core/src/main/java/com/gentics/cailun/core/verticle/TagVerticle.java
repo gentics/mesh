@@ -20,6 +20,7 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
@@ -29,13 +30,17 @@ import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
+import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -196,15 +201,27 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
 		});
 
-		// Route readAllRoute = route("/").method(GET);
-		// readAllRoute.handler(rc -> {
-		// String projectName = getProjectName(rc);
-		// try (Transaction tx = graphDb.beginTx()) {
-		// // TODO paging, filtering
-		// // Iterable<Tag> allTags = tagService.findAll(projectName);
-		// throw new HttpStatusCodeErrorException(500, "Not implemented");
-		// });
-		// }
+		Route readAllRoute = route("/").method(GET);
+		readAllRoute.handler(rc -> {
+			String projectName = getProjectName(rc);
+			TagListResponse listResponse = new TagListResponse();
+			List<String> languages = getSelectedLanguageTags(rc);
+			try (Transaction tx = graphDb.beginTx()) {
+				PagingInfo pagingInfo = getPagingInfo(rc);
+				User requestUser = springConfiguration.authService().getUser(rc);
+				// TODO filter by project!
+				// TODO filtering
+				Page<Tag> tagPage = tagService.findAllVisible(requestUser, pagingInfo);
+				for (Tag tag : tagPage) {
+					listResponse.getData().add(tagService.transformToRest(tag, languages));
+				}
+				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),
+						tagPage.getTotalElements());
+				tx.success();
+			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(listResponse));
+		});
 
 	}
 

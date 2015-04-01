@@ -2,10 +2,14 @@ package com.gentics.cailun.core.data.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericContentService;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.path.PagingInfo;
 
 public interface ContentService extends GenericContentService<Content> {
 
@@ -22,6 +26,8 @@ public interface ContentService extends GenericContentService<Content> {
 	 * @return Rest response pojo
 	 */
 	public ContentResponse transformToRest(Content content, List<String> languageTags);
+
+	public Page<Content> findAllVisible(User requestUser, PagingInfo pagingInfo);
 
 //	public Content save(String projectName, String path, ContentResponse requestModel);
 

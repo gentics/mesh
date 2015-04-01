@@ -11,6 +11,8 @@ import org.neo4j.graphdb.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
@@ -26,6 +29,7 @@ import com.gentics.cailun.core.data.service.generic.GenericTagServiceImpl;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
+import com.gentics.cailun.path.PagingInfo;
 import com.gentics.cailun.path.Path;
 import com.gentics.cailun.path.PathSegment;
 import com.google.common.collect.Lists;
@@ -168,6 +172,11 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 		// TODO handle properties for the type of tag
 		return response;
 
+	}
+
+	@Override
+	public Page<Tag> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+		return tagRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
 
 }

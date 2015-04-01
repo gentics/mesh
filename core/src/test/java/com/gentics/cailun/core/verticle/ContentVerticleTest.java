@@ -3,15 +3,25 @@ package com.gentics.cailun.core.verticle;
 import static com.gentics.cailun.test.TestDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import io.vertx.core.http.HttpMethod;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
+import com.gentics.cailun.core.rest.content.response.ContentListResponse;
+import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
@@ -19,7 +29,10 @@ import com.gentics.cailun.util.JsonUtils;
 public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	ContentVerticle verticle;
+	private ContentVerticle verticle;
+
+	@Autowired
+	private ContentService contentService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -99,13 +112,70 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContents() throws Exception {
+
 		roleService.addPermission(info.getRole(), data().getContentLevel1A1(), PermissionType.READ);
-		roleService.addPermission(info.getRole(), data().getContentLevel2C1(), PermissionType.READ);
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
-		String json = "{\"contents\":[{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"filename\":\"test_1.de.html\",\"name\":\"test_1 german\",\"content\":\"Mahlzeit 1!\"},\"en\":{\"filename\":\"test_1.en.html\",\"name\":\"test_1 english\",\"content\":\"Blessed Mealtime 1!\"}},\"schemaName\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"filename\":\"test_1.de.html\",\"name\":\"test_1 german\",\"content\":\"Mahlzeit 1!\"},\"en\":{\"filename\":\"test_1.en.html\",\"name\":\"test_1 english\",\"content\":\"Blessed Mealtime 1!\"}},\"schemaName\":\"content\",\"order\":0}],\"_metainfo\":{\"page\":0,\"per_page\":0,\"page_count\":0,\"total_count\":0,\"links\":{}}}";
+		final int nContents = 142;
+		for (int i = 0; i < nContents; i++) {
+			Content extraContent = new Content();
+			extraContent.setCreator(info.getUser());
+			extraContent = contentService.save(extraContent);
+			roleService.addPermission(info.getRole(), extraContent, PermissionType.READ);
+		}
 
-		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
+		// Don't grant permissions to the no perm content. We want to make sure that this one will not be listed.
+		Content noPermContent = new Content();
+		noPermContent.setCreator(info.getUser());
+		noPermContent = contentService.save(noPermContent);
+		noPermContent = contentService.reload(noPermContent);
+		assertNotNull(noPermContent.getUuid());
+
+		// Test default paging parameters
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
+		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
+		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(25, restResponse.getData().size());
+
+		int perPage = 11;
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		restResponse = JsonUtils.readValue(response, ContentListResponse.class);
+		Assert.assertEquals(perPage, restResponse.getData().size());
+
+		// Extra Contents + permitted content
+		int totalContents = nContents + 1;
+		int totalPages = (int) Math.ceil(totalContents / perPage);
+		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(totalContents, restResponse.getMetainfo().getTotalCount());
+
+		List<ContentResponse> allContents = new ArrayList<>();
+		for (int page = 0; page < totalPages; page++) {
+			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + page, 200, "OK");
+			restResponse = JsonUtils.readValue(response, ContentListResponse.class);
+			allContents.addAll(restResponse.getData());
+		}
+		Assert.assertEquals("Somehow not all users were loaded when loading all pages.", totalContents, allContents.size());
+
+		// Verify that the no_perm_content is not part of the response
+		final String noPermContentUUID = noPermContent.getUuid();
+		List<ContentResponse> filteredUserList = allContents.parallelStream().filter(restContent -> restContent.getUUID().equals(noPermContentUUID))
+				.collect(Collectors.toList());
+		assertTrue("The no perm content should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
+
 	}
 
 	@Test

@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
@@ -40,9 +41,10 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
-import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 /**
  * The content verticle adds rest endpoints for manipulating contents.
@@ -143,24 +145,6 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandler() {
-		Route readAllRoute = route("/").method(GET);
-		readAllRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
-			// TODO paging, filtering
-				ContentListResponse listResponse = new ContentListResponse();
-				try (Transaction tx = graphDb.beginTx()) {
-					Iterable<Content> allContents = contentService.findAll(projectName);
-					for (Content content : allContents) {
-						if (hasPermission(rc, content, PermissionType.READ)) {
-							ContentResponse contentResponse = contentService.transformToRest(content, languageTags);
-							listResponse.getData().add(contentResponse);
-						}
-					}
-					tx.success();
-				}
-				rc.response().end(toJson(listResponse));
-			});
 
 		Route route = route("/:uuid").method(GET);
 		route.handler(rc -> {
@@ -179,6 +163,29 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
 
 		});
+
+		Route readAllRoute = route("/").method(GET);
+		readAllRoute.handler(rc -> {
+			String projectName = getProjectName(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
+
+			// TODO paging, filtering
+				ContentListResponse listResponse = new ContentListResponse();
+				try (Transaction tx = graphDb.beginTx()) {
+					PagingInfo pagingInfo = getPagingInfo(rc);
+					User requestUser = springConfiguration.authService().getUser(rc);
+				
+					Page<Content> contentPage = contentService.findAllVisible(requestUser, pagingInfo);
+					for (Content content : contentPage) {
+						listResponse.getData().add(contentService.transformToRest(content, languageTags));
+					}
+					RestModelPagingHelper.setPaging(listResponse, contentPage.getNumber(), contentPage.getTotalPages(), pagingInfo.getPerPage(),
+							contentPage.getTotalElements());
+					tx.success();
+				}
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(listResponse));
+			});
 	}
 
 	private void addDeleteHandler() {
