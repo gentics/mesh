@@ -23,6 +23,7 @@ import com.gentics.cailun.core.data.service.I18NService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
+import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
@@ -105,8 +106,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Don't grant permissions to user3
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
-		String json = "ok";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		UserListResponse restResponse = JsonUtils.readValue(response, UserListResponse.class);
+		Assert.assertEquals("The response did not contain the correct amount of items", 25, restResponse.getData().size());
+		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(-1, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(142, restResponse.getMetainfo().getTotalCount());
+
 	}
 
 	// Update tests

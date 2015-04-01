@@ -70,11 +70,11 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
 				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
 				.traverse(userNode).relationships()) {
+//			log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+//					+ rel.getStartNode().getId() + rel.getStartNode().getLabels());
 
 			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
 				// Check whether this relation in fact targets our object we want to check
-				// log.debug("REL: " + rel.getEndNode().getId() + " " + rel.getEndNode().getLabels() + " " + rel.getStartNode().getId()
-				// + " " + rel.getStartNode().getLabels());
 				boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
 				if (matchesTargetNode) {
 					// Convert the api relationship to a SDN relationship

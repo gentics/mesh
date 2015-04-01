@@ -40,10 +40,6 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		addCRUDHandlers();
-	}
-
-	private void addCRUDHandlers() {
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();

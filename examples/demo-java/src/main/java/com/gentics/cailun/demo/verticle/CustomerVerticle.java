@@ -186,8 +186,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 					log.info("Skipping own role");
 					continue;
 				}
-
-				Relationship rel = node.createRelationshipTo(adminNode, AuthRelationships.TYPES.HAS_PERMISSION);
+				Relationship rel = adminNode.createRelationshipTo(node, AuthRelationships.TYPES.HAS_PERMISSION);
 				rel.setProperty("__type__", GraphPermission.class.getSimpleName());
 				rel.setProperty("permissions-read", true);
 				rel.setProperty("permissions-delete", true);
@@ -212,6 +211,11 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		Project aloha = new Project("aloha");
 		aloha = projectService.save(aloha);
+
+		for (int i = 0; i < 142; i++) {
+			Project project = new Project("project_" + i);
+			projectService.save(project);
+		}
 
 		Language german = languageService.findByName("german");
 		Language english = languageService.findByName("english");

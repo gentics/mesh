@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
@@ -65,12 +66,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			try (Transaction tx = graphDb.beginTx()) {
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				User requestUser = springConfiguration.authService().getUser(rc);
-
-				for (User user : userService.findAllVisible(requestUser, pagingInfo)) {
+				Page<User> userPage = userService.findAllVisible(requestUser, pagingInfo);
+				for (User user : userPage) {
 					listResponse.getData().add(userService.transformToRest(user));
 				}
+				
 				// TODO utilize paging helper and set correct paging info for loaded data
-				// RestModelPagingHelper.setPaging(listResponse, path, currentPage, pageCount, perPage, totalCount);
+//				RestModelPagingHelper.setPaging(listResponse, null, currentPage, userPage.getTotalPages(), perPage, totalCount);
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(listResponse));
