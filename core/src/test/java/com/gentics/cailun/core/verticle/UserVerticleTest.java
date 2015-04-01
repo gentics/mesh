@@ -100,8 +100,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			}
 			tx.success();
 		}
-		// groupService.save(info.getGroup());
-
 		User user3 = new User("testuser_3");
 		user3.setLastname("should_not_be_listed");
 		user3.setFirstname("should_not_be_listed");
@@ -112,9 +110,16 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Don't grant permissions to user3
 
-		int perPage = 11;
-		String response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		// Test default paging parameters
+		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
 		UserListResponse restResponse = JsonUtils.readValue(response, UserListResponse.class);
+		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(25, restResponse.getData().size());
+
+		int perPage = 11;
+		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		restResponse = JsonUtils.readValue(response, UserListResponse.class);
 		Assert.assertEquals(perPage, restResponse.getData().size());
 
 		// Extrausers + user for login

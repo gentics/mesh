@@ -142,6 +142,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			roleService.addPermission(info.getRole(), group, PermissionType.READ);
 		}
 
+		Group extraGroupWithNoPerm = new Group("no_perm_group");
+		extraGroupWithNoPerm = groupService.save(extraGroupWithNoPerm);
+
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/", 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"sub group\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
 		assertEqualsSanitizedJson("The response does not match.", json, response);
