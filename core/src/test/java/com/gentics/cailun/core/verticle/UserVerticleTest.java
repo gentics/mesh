@@ -132,17 +132,24 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			restResponse = JsonUtils.readValue(response, UserListResponse.class);
 			allUsers.addAll(restResponse.getData());
 		}
-		Assert.assertEquals("Somehow not all users were loaded when loading all pages.",totalUsers, allUsers.size());
+		Assert.assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
 
 		// Verify that user3 is not part of the response
 		final String extra3Username = user3.getUsername();
 		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
-		// TODO test -1 per page
-		// TODO test 0 per page
-		// TODO test page -1
-		// TODO test page 4242 with per_page=25
+
+		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+
+		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}
 
