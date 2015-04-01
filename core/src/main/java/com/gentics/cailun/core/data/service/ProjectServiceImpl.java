@@ -1,15 +1,19 @@
 package com.gentics.cailun.core.data.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
+import com.gentics.cailun.path.PagingInfo;
 
 @Component
 @Transactional
@@ -52,6 +56,12 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 		projectResponse.setUuid(project.getUuid());
 		projectResponse.setName(project.getName());
 		return projectResponse;
+	}
+
+	@Override
+	public Page<Project> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+		return projectRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
+
 	}
 
 }

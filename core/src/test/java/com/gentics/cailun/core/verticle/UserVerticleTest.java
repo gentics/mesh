@@ -83,18 +83,15 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
 		final int nUsers = 142;
-		try (Transaction tx = graphDb.beginTx()) {
-			for (int i = 0; i < nUsers; i++) {
-				User extraUser = new User("extra_user_" + i);
-				extraUser.setLastname("A" + i);
-				extraUser.setFirstname("A" + i);
-				extraUser.setEmailAddress("test" + i);
-				extraUser = userService.save(extraUser);
-				extraUser.getGroups().add(info.getGroup());
-				// info.getGroup().addUser(extraUser);
-				roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			}
-			tx.success();
+		for (int i = 0; i < nUsers; i++) {
+			User extraUser = new User("extra_user_" + i);
+			extraUser.setLastname("A" + i);
+			extraUser.setFirstname("A" + i);
+			extraUser.setEmailAddress("test" + i);
+			extraUser = userService.save(extraUser);
+			extraUser.getGroups().add(info.getGroup());
+			// info.getGroup().addUser(extraUser);
+			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
 		}
 		User user3 = new User("testuser_3");
 		user3.setLastname("should_not_be_listed");

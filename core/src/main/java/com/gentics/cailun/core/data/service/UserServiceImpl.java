@@ -36,8 +36,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public Page<User> findAllVisible(User user, PagingInfo paging) {
-		return userRepository.findAll(user, new PageRequest(paging.getPage(), paging.getPerPage()));
+	public Page<User> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+		return userRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
@@ -146,13 +145,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		// Create and save some groups
 		final int nGroups = 142;
-		try (Transaction tx = graphDb.beginTx()) {
-			for (int i = 0; i < nGroups; i++) {
-				Group group = new Group("group_" + i);
-				group = groupService.save(group);
-				roleService.addPermission(info.getRole(), group, PermissionType.READ);
-			}
-			tx.success();
+		for (int i = 0; i < nGroups; i++) {
+			Group group = new Group("group_" + i);
+			group = groupService.save(group);
+			roleService.addPermission(info.getRole(), group, PermissionType.READ);
 		}
 
 		Group extraGroupWithNoPerm = new Group("no_perm_group");

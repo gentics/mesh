@@ -17,11 +17,11 @@ public interface UserService extends GenericNodeService<User> {
 	/**
 	 * Find all users that are readable by the given user. Utilize the paging info when returning paged user data.
 	 * 
-	 * @param user
+	 * @param requestUser
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<User> findAllVisible(User user, PagingInfo pagingInfo);
+	Page<User> findAllVisible(User requestUser, PagingInfo pagingInfo);
 
 	UserResponse transformToRest(User user);
 
