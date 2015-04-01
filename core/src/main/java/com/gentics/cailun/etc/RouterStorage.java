@@ -1,6 +1,7 @@
 package com.gentics.cailun.etc;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Router;
@@ -110,8 +111,6 @@ public class RouterStorage {
 
 			});
 
-			rootRouter.route().handler(CorsHandler.create("*"));
-
 			coreRouters.put(ROOT_ROUTER_KEY, rootRouter);
 		}
 		return rootRouter;
@@ -135,6 +134,16 @@ public class RouterStorage {
 	// // TODO I think this functionality should be moved to a different place
 	private void initAPIRouter(CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
 		Router router = getAPIRouter();
+
+		CorsHandler corsHandler = CorsHandler.create("*");
+		// corsHandler.allowCredentials(true);
+		corsHandler.allowedMethod(HttpMethod.GET);
+		corsHandler.allowedMethod(HttpMethod.POST);
+		corsHandler.allowedMethod(HttpMethod.PUT);
+		corsHandler.allowedMethod(HttpMethod.DELETE);
+		corsHandler.allowedHeader("Authorization");
+		router.route().handler(corsHandler);
+
 		router.route().handler(BodyHandler.create());
 		router.route().handler(CookieHandler.create());
 		SessionStore store = LocalSessionStore.create(vertx);
