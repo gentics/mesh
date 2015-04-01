@@ -8,14 +8,11 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.Session;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
@@ -23,13 +20,15 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
-import com.gentics.cailun.core.data.service.GroupService;
-import com.gentics.cailun.core.data.service.RoleService;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.role.request.RoleCreateRequest;
 import com.gentics.cailun.core.rest.role.request.RoleUpdateRequest;
+import com.gentics.cailun.core.rest.role.response.RoleListResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -132,21 +131,26 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		/*
 		 * List all roles when no parameter was specified
 		 */
-		route("/").method(GET).handler(rc -> {
-			Session session = rc.session();
-			Map<String, RoleResponse> resultMap = new HashMap<>();
-			try (Transaction tx = graphDb.beginTx()) {
-				for (Role role : roleService.findAll()) {
-					boolean hasPerm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(role, PermissionType.READ));
-					if (hasPerm) {
-						resultMap.put(role.getName(), roleService.transformToRest(role));
+		route("/").method(GET).handler(
+				rc -> {
+					Session session = rc.session();
+					RoleListResponse listResponse = new RoleListResponse();
+
+
+					try (Transaction tx = graphDb.beginTx()) {
+						PagingInfo pagingInfo = getPagingInfo(rc);
+						User requestUser = springConfiguration.authService().getUser(rc);
+						Page<Role> rolePage = roleService.findAllVisible(requestUser, pagingInfo);
+						for (Role role : rolePage) {
+							listResponse.getData().add(roleService.transformToRest(role));
+						}
+						RestModelPagingHelper.setPaging(listResponse, rolePage.getNumber(), rolePage.getTotalPages(), pagingInfo.getPerPage(),
+								rolePage.getTotalElements());
+						tx.success();
 					}
-				}
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(resultMap));
-		});
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(listResponse));
+				});
 	}
 
 	private void addCreateHandler() {
