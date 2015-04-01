@@ -3,7 +3,6 @@ package com.gentics.cailun.core.verticle;
 import static com.gentics.cailun.test.TestDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -41,8 +40,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		request.setTagUuid(data().getLevel1a().getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 400, "Bad Request", JsonUtils.toJson(request));
-		String responseJson = "{\"message\":\"Could not find language {english}\"}";
-		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
+		expectMessageResponse("error_language_not_found", response, "english");
 	}
 
 	@Test
@@ -58,7 +56,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		request.setTagUuid(data().getLevel1a().getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 200, "OK", JsonUtils.toJson(request));
-		String responseJson = "{\"uuid\":\"uuid-value\",\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"order\":0}";
+		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
 	}
 
@@ -74,8 +72,8 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		request.addProperty("en", "content", "Blessed mealtime again!");
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 400, "Bad Request", JsonUtils.toJson(request));
-		String responseJson = "{\"message\":\"No parent tag for the content was specified. Please set a parent tag uuid.\"}";
-		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
+		expectMessageResponse("content_missing_parenttag_field", response);
+
 	}
 
 	@Test
@@ -94,8 +92,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		request.setTagUuid(data().getLevel1a().getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 403, "Forbidden", JsonUtils.toJson(request));
-		String responseJson = "{\"message\":\"Missing permission on object {" + data().getLevel1a().getUuid() + "}\"}";
-		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
+		expectMessageResponse("error_missing_perm", response, data().getLevel1a().getUuid());
 	}
 
 	// Read tests
@@ -137,10 +134,10 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"filename\":\"test_1.de.html\",\"name\":\"test_1 german\",\"content\":\"Mahlzeit 1!\"}},\"schemaName\":\"content\",\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
-	
+
 	@Test
 	public void testReadContentWithBogusLanguageCode() {
-		//de, ruski, atom -> 400er
+		// de, ruski, atom -> 400er
 		fail("Not yet implemented");
 	}
 
@@ -152,23 +149,20 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), content, PermissionType.CREATE);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + content.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
+		expectMessageResponse("error_missing_perm", response, content.getUuid());
 	}
 
 	@Test
 	public void testReadContentByBogusUUID() throws Exception {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/bogusUUID", 404, "Not Found");
-		String json = "{\"message\":\"Content of uuid \\\"bogusUUID\\\" could not be found.\"}";
-		assertEquals(json, response);
+		expectMessageResponse("content_not_found_for_uuid", response, "bogusUUID");
 	}
 
 	@Test
 	public void testReadContentByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + uuid, 404, "Not Found");
-		String json = "{\"message\":\"Content of uuid \\\"" + uuid + "\\\" could not be found.\"}";
-		assertEquals(json, response);
+		expectMessageResponse("content_not_found_for_uuid", response, uuid);
 	}
 
 }

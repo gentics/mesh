@@ -67,7 +67,6 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 				response.addProperty(languageTag, "teaser", transalated.getI18nValue().getProperty("teaser"));
 			}
 		} else {
-			// Return page with flatted properties since only one language has been specified
 			for (String languageTag : languages) {
 				Language language = languageService.findByLanguageTag(languageTag);
 				if (language == null) {

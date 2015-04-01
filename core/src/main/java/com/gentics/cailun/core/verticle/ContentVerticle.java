@@ -30,6 +30,7 @@ import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
@@ -92,7 +93,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 				content.setSchemaName(requestModel.getSchemaName());
 
-				// TODO handle creator
+				User user = springConfiguration.authService().getUser(rc);
+				content.setCreator(user);
+
 				// TODO maybe projects should not be a set?
 				Project project = projectService.findByName(projectName);
 				content.addProject(project);
@@ -103,9 +106,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
 					Language language = languageService.findByLanguageTag(languageTag);
 					if (language == null) {
-						// TODO i18n
-						String message = "Could not find language {" + languageTag + "}";
-						throw new HttpStatusCodeErrorException(400, message);
+						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
 					}
 					I18NProperties tagProps = new I18NProperties(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
