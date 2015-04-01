@@ -170,7 +170,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 */
 	protected void failOnMissingPermission(RoutingContext rc, AbstractPersistable node, PermissionType type) throws InvalidPermissionException {
 		if (!hasPermission(rc, node, type)) {
-			throw new InvalidPermissionException(i18n.get(rc,  "error_missing_perm", node.getUuid()));
+			throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()));
 		}
 	}
 
@@ -198,6 +198,13 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		return queryPairs;
 	}
 
+	/**
+	 * Extract the paging information from the request parameters. The paging information contains information about the number of the page that is currently
+	 * requested and the amount of items that should be included in a single page.
+	 * 
+	 * @param rc
+	 * @return Paging information
+	 */
 	protected PagingInfo getPagingInfo(RoutingContext rc) {
 		MultiMap params = rc.request().params();
 		int page = NumberUtils.toInt(params.get("page"), 0);

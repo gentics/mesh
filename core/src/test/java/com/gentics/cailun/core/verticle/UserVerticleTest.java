@@ -6,11 +6,15 @@ import static org.junit.Assert.assertTrue;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -82,16 +86,19 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
-		int nUsers = 142;
-		for (int i = 0; i < nUsers; i++) {
-			User extraUser = new User("extra_user_" + i);
-			extraUser.setLastname("A" + i);
-			extraUser.setFirstname("A" + i);
-			extraUser.setEmailAddress("test" + i);
-			extraUser = userService.save(extraUser);
-			extraUser.getGroups().add(info.getGroup());
-			// info.getGroup().addUser(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
+		final int nUsers = 142;
+		try (Transaction tx = graphDb.beginTx()) {
+			for (int i = 0; i < nUsers; i++) {
+				User extraUser = new User("extra_user_" + i);
+				extraUser.setLastname("A" + i);
+				extraUser.setFirstname("A" + i);
+				extraUser.setEmailAddress("test" + i);
+				extraUser = userService.save(extraUser);
+				extraUser.getGroups().add(info.getGroup());
+				// info.getGroup().addUser(extraUser);
+				roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
+			}
+			tx.success();
 		}
 		// groupService.save(info.getGroup());
 
@@ -105,13 +112,37 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Don't grant permissions to user3
 
-		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
+		int perPage = 11;
+		String response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		UserListResponse restResponse = JsonUtils.readValue(response, UserListResponse.class);
-		Assert.assertEquals("The response did not contain the correct amount of items", 25, restResponse.getData().size());
-		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(-1, restResponse.getMetainfo().getPageCount());
-		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(142, restResponse.getMetainfo().getTotalCount());
+		Assert.assertEquals(perPage, restResponse.getData().size());
+
+		// Extrausers + user for login
+		int totalUsers = nUsers + 1;
+		int totalPages = (int) Math.ceil(totalUsers / perPage);
+		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(totalUsers, restResponse.getMetainfo().getTotalCount());
+
+		List<UserResponse> allUsers = new ArrayList<>();
+		for (int page = 0; page < totalPages; page++) {
+			response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + page, 200, "OK");
+			restResponse = JsonUtils.readValue(response, UserListResponse.class);
+			allUsers.addAll(restResponse.getData());
+		}
+		Assert.assertEquals("Somehow not all users were loaded when loading all pages.",totalUsers, allUsers.size());
+
+		// Verify that user3 is not part of the response
+		final String extra3Username = user3.getUsername();
+		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
+				.collect(Collectors.toList());
+		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+		// TODO test -1 per page
+		// TODO test 0 per page
+		// TODO test page -1
+		// TODO test page 4242 with per_page=25
 
 	}
 

@@ -27,6 +27,7 @@ import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -70,9 +71,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				for (User user : userPage) {
 					listResponse.getData().add(userService.transformToRest(user));
 				}
-				
-				// TODO utilize paging helper and set correct paging info for loaded data
-//				RestModelPagingHelper.setPaging(listResponse, null, currentPage, userPage.getTotalPages(), perPage, totalCount);
+				RestModelPagingHelper.setPaging(listResponse, userPage.getNumber(), userPage.getTotalPages(), pagingInfo.getPerPage(), userPage.getTotalElements());
+				tx.success();
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(listResponse));

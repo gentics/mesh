@@ -16,9 +16,6 @@ public class PagingMetaInfo {
 	@JsonProperty("total_count")
 	private long totalCount;
 
-//	@JsonProperty("links")
-//	private PagingLinks links = new PagingLinks();
-
 	public PagingMetaInfo() {
 	}
 
@@ -54,11 +51,4 @@ public class PagingMetaInfo {
 		this.totalCount = totalCount;
 	}
 
-//	public PagingLinks getLinks() {
-//		return links;
-//	}
-//
-//	public void setLinks(PagingLinks links) {
-//		this.links = links;
-//	}
 }

@@ -128,7 +128,7 @@ public class Generator {
 		ProjectListResponse projectList = new ProjectListResponse();
 		projectList.getData().add(project);
 		projectList.getData().add(project2);
-		RestModelPagingHelper.setPaging(projectList, "/projects", 1, 10, 2, 20);
+		RestModelPagingHelper.setPaging(projectList, 1, 10, 2, 20);
 		write(projectList);
 
 		ProjectUpdateRequest projectUpdate = new ProjectUpdateRequest();
@@ -157,7 +157,7 @@ public class Generator {
 		RoleListResponse roleList = new RoleListResponse();
 		roleList.getData().add(role);
 		roleList.getData().add(role2);
-		RestModelPagingHelper.setPaging(roleList, "/roles", 1, 10, 2, 20);
+		RestModelPagingHelper.setPaging(roleList, 1, 10, 2, 20);
 		write(roleList);
 
 		RoleUpdateRequest roleUpdate = new RoleUpdateRequest();
@@ -210,7 +210,7 @@ public class Generator {
 		ObjectSchemaListResponse schemaList = new ObjectSchemaListResponse();
 		schemaList.getData().add(schema);
 		schemaList.getData().add(schema2);
-		RestModelPagingHelper.setPaging(schemaList, "/projects", 1, 10, 2, 20);
+		RestModelPagingHelper.setPaging(schemaList, 1, 10, 2, 20);
 		write(schemaList);
 
 		ObjectSchemaUpdateRequest schemaUpdate = new ObjectSchemaUpdateRequest();
@@ -286,7 +286,7 @@ public class Generator {
 		GroupListResponse groupList = new GroupListResponse();
 		groupList.getData().add(group);
 		groupList.getData().add(group2);
-		RestModelPagingHelper.setPaging(groupList, "/groups", 1, 10, 2, 20);
+		RestModelPagingHelper.setPaging(groupList, 1, 10, 2, 20);
 		write(groupList);
 
 		GroupUpdateRequest groupUpdate = new GroupUpdateRequest();
@@ -315,7 +315,7 @@ public class Generator {
 		UserListResponse userList = new UserListResponse();
 		userList.getData().add(user);
 		userList.getData().add(user2);
-		RestModelPagingHelper.setPaging(userList, "/users", 1, 10, 2, 20);
+		RestModelPagingHelper.setPaging(userList, 1, 10, 2, 20);
 		write(userList);
 
 		UserUpdateRequest userUpdate = new UserUpdateRequest();

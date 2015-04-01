@@ -15,7 +15,7 @@ public interface UserPagingActions {
 	 * @param pageable
 	 * @return
 	 */
-	@Query("MATCH (requestUser:User)--(group:Group)--(role:Role)-[perm:HAS_PERMISSION]-(user:User) where id(requestUser) = {0} and perm.`permissions-read` = true return user")
+	@Query(value="MATCH (requestUser:User)--(group:Group)--(role:Role)-[perm:HAS_PERMISSION]-(user:User) where id(requestUser) = {0} and perm.`permissions-read` = true return user ORDER BY user.username",countQuery="MATCH (requestUser:User)--(group:Group)--(role:Role)-[perm:HAS_PERMISSION]-(user:User) where id(requestUser) = {0} and perm.`permissions-read` = true return count(user)")
 	public Page<User> findAll(User requestUser, Pageable pageable);
 
 }
