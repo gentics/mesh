@@ -25,10 +25,7 @@ public interface GroupRepository extends GenericNodeRepository<Group> {
 
 	public Group findByName(String string);
 
-	@Query("MATCH (requestUser:User)--(group:Group)--(role:Role)-[perm:HAS_PERMISSION]-(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup")
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup ORDER BY visibleGroup.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
 	public Page<Group> findAll(User requestUser, Pageable pageable);
-
-//	@Query("start g=node({0}) MATCH (g)-[PARENT_OF]->(childGroup) return childGroup")
-//	public Set<Group> findChildren(Group group);
 
 }

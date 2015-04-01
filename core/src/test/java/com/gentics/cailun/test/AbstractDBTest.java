@@ -32,6 +32,9 @@ public abstract class AbstractDBTest {
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
 
+	@Autowired
+	protected GraphDatabaseService graphDb;
+
 	public void setupData() {
 		purgeDatabase();
 		dataProvider.setup();

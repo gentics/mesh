@@ -6,8 +6,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.http.HttpMethod;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
@@ -19,6 +24,7 @@ import com.gentics.cailun.core.data.service.GroupService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
+import com.gentics.cailun.core.rest.group.response.GroupListResponse;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
@@ -135,20 +141,69 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadGroups() throws Exception {
+
+		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
+
 		// Create and save some groups
-		for (int i = 0; i < 142; i++) {
-			Group group = new Group("group_" + i);
-			group = groupService.save(group);
-			roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		final int nGroups = 142;
+		try (Transaction tx = graphDb.beginTx()) {
+			for (int i = 0; i < nGroups; i++) {
+				Group group = new Group("group_" + i);
+				group = groupService.save(group);
+				roleService.addPermission(info.getRole(), group, PermissionType.READ);
+			}
+			tx.success();
 		}
 
 		Group extraGroupWithNoPerm = new Group("no_perm_group");
 		extraGroupWithNoPerm = groupService.save(extraGroupWithNoPerm);
+		// Don't grant permissions to extra group
 
+		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"sub group\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		GroupListResponse restResponse = JsonUtils.readValue(response, GroupListResponse.class);
+		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(25, restResponse.getData().size());
 
+		int perPage = 11;
+		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		restResponse = JsonUtils.readValue(response, GroupListResponse.class);
+		Assert.assertEquals(perPage, restResponse.getData().size());
+
+		// created groups + test data group
+		int totalGroups = nGroups + 1;
+		int totalPages = (int) Math.ceil(totalGroups / perPage);
+		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(totalGroups, restResponse.getMetainfo().getTotalCount());
+
+		List<GroupResponse> allGroups = new ArrayList<>();
+		for (int page = 0; page < totalPages; page++) {
+			response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + page, 200, "OK");
+			restResponse = JsonUtils.readValue(response, GroupListResponse.class);
+			allGroups.addAll(restResponse.getData());
+		}
+		Assert.assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups, allGroups.size());
+
+		// Verify that extra group is not part of the response
+		final String extraGroupName = extraGroupWithNoPerm.getName();
+		List<GroupResponse> filteredUserList = allGroups.parallelStream().filter(restGroup -> restGroup.getName().equals(extraGroupName))
+				.collect(Collectors.toList());
+		assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+
+		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 
 	@Test

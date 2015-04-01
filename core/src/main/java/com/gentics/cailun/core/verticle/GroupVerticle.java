@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
@@ -24,6 +25,8 @@ import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.cailun.core.rest.group.response.GroupListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -121,45 +124,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 	}
 
-	// private void addGroupChildGroupHandlers() {
-	// Route route = route("/:groupUuid/groups/:childGroupUuid").method(POST);
-	// route.handler(rc -> {
-	// Group group = null;
-	// try (Transaction tx = graphDb.beginTx()) {
-	// group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-	// Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
-	//
-	// if (group.addGroup(childGroup)) {
-	// groupService.save(group);
-	// } else {
-	// // TODO 200?
-	// }
-	// tx.success();
-	// }
-	// rc.response().setStatusCode(200);
-	// rc.response().end(toJson(groupService.transformToRest(group)));
-	// });
-	//
-	// route = route("/:groupUuid/groups/:childGroupUuid").method(DELETE);
-	// route.handler(rc -> {
-	// Group group = null;
-	// try (Transaction tx = graphDb.beginTx()) {
-	// group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-	// Group childGroup = getObject(rc, "childGroupUuid", PermissionType.READ);
-	//
-	// if (group.removeGroup(childGroup)) {
-	// groupService.save(group);
-	// } else {
-	// // TODO 200?
-	// }
-	// tx.success();
-	// }
-	// rc.response().setStatusCode(200);
-	// rc.response().end(toJson(groupService.transformToRest(group)));
-	//
-	// });
-	// }
-
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
@@ -221,23 +185,23 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		/*
 		 * List all groups when no parameter was specified
 		 */
-		route("/").method(GET).handler(rc -> {
-			GroupListResponse listResponse = new GroupListResponse();
-			// TODO paging
-				try (Transaction tx = graphDb.beginTx()) {
-					User requestUser = springConfiguration.authService().getUser(rc);
-
-					for (Group group : groupService.findAllVisible(requestUser, null)) {
-						boolean hasPerm = hasPermission(rc, group, PermissionType.READ);
-						if (hasPerm) {
+		route("/").method(GET).handler(
+				rc -> {
+					GroupListResponse listResponse = new GroupListResponse();
+					try (Transaction tx = graphDb.beginTx()) {
+						PagingInfo pagingInfo = getPagingInfo(rc);
+						User requestUser = springConfiguration.authService().getUser(rc);
+						Page<Group> groupPage = groupService.findAllVisible(requestUser, pagingInfo);
+						for (Group group : groupPage) {
 							listResponse.getData().add(groupService.transformToRest(group));
 						}
+						RestModelPagingHelper.setPaging(listResponse, groupPage.getNumber(), groupPage.getTotalPages(), pagingInfo.getPerPage(),
+								groupPage.getTotalElements());
+						tx.success();
 					}
-				}
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(listResponse));
-				return;
-			});
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(listResponse));
+				});
 	}
 
 	private void addCreateHandler() {

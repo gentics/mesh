@@ -76,7 +76,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(listResponse));
-			return;
 		});
 	}
 

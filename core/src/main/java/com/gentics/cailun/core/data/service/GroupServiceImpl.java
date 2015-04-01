@@ -48,18 +48,17 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 			restGroup.getRoles().add(role.getName());
 		}
 
-//		// Set<Group> children = groupRepository.findChildren(group);
-//		Set<Group> children = group.getGroups();
-//		for (Group childGroup : children) {
-//			restGroup.getGroups().add(childGroup.getName());
-//		}
+		// // Set<Group> children = groupRepository.findChildren(group);
+		// Set<Group> children = group.getGroups();
+		// for (Group childGroup : children) {
+		// restGroup.getGroups().add(childGroup.getName());
+		// }
 
 		return restGroup;
 	}
 
 	@Override
 	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		PageRequest pageRequest = new PageRequest(0, 25);
-		return groupRepository.findAll(requestUser, pageRequest);
+		return groupRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
 }

@@ -10,7 +10,6 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 
 @NodeEntity
 public class Group extends GenericNode {
@@ -27,15 +26,6 @@ public class Group extends GenericNode {
 	@Fetch
 	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.INCOMING, elementClass = Role.class)
 	private Set<Role> roles = new HashSet<>();
-
-//	@Fetch
-//	@RelatedTo(type = BasicRelationships.PARENT_OF, direction = Direction.OUTGOING, elementClass = Group.class)
-//	private Set<Group> parents = new HashSet<>();
-
-	// TODO we are loading the children and the parents. This means we are loading the whole hierarchy when loading one group. Not so good..
-//	@Fetch
-//	@RelatedTo(type = BasicRelationships.HAS_SUB_GROUP, direction = Direction.INCOMING, elementClass = Group.class)
-//	private Set<Group> children = new HashSet<>();
 
 	@SuppressWarnings("unused")
 	private Group() {
@@ -61,21 +51,9 @@ public class Group extends GenericNode {
 		return users;
 	}
 
-//	public boolean addGroup(Group group) {
-//		return this.children.add(group);
-//	}
-
-//	public Set<Group> getGroups() {
-//		return children;
-//	}
-
 	public Set<Role> getRoles() {
 		return roles;
 	}
-
-//	public Set<Group> getParents() {
-//		return parents;
-//	}
 
 	public boolean addRole(Role role) {
 		return roles.add(role);
@@ -93,15 +71,6 @@ public class Group extends GenericNode {
 		// TODO maybe a dedicated cypher statement would be faster?
 		return users.contains(user);
 	}
-
-//	public boolean removeGroup(Group group) {
-//		return this.children.remove(group);
-//
-//	}
-//
-//	public boolean hasGroup(Group group) {
-//		return this.children.contains(group);
-//	}
 
 	public boolean hasRole(Role role) {
 		return this.roles.contains(role);
