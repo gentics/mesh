@@ -139,7 +139,6 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			ProjectListResponse listResponse = new ProjectListResponse();
 			try (Transaction tx = graphDb.beginTx()) {
-
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				User requestUser = springConfiguration.authService().getUser(rc);
 				Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);

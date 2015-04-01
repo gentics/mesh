@@ -6,6 +6,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.http.HttpMethod;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -20,6 +24,7 @@ import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaUpdateRequest;
+import com.gentics.cailun.core.rest.schema.response.ObjectSchemaListResponse;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
@@ -109,10 +114,65 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
-	public void testReadAllSchemasForProject() throws Exception {
+	public void testReadAllSchemaList() throws Exception {
+		roleService.addPermission(info.getRole(), data().getContentSchema(), PermissionType.READ);
+
+		final int nSchemas = 142;
+		for (int i = 0; i < nSchemas; i++) {
+			ObjectSchema extraSchema = new ObjectSchema("extra_schema_" + i);
+			extraSchema = objectSchemaService.save(extraSchema);
+			roleService.addPermission(info.getRole(), extraSchema, PermissionType.READ);
+		}
+		ObjectSchema noPermSchema = new ObjectSchema("no_perm_schema");
+		noPermSchema = objectSchemaService.save(noPermSchema);
+
+		// Don't grant permissions to no perm schema
+
+		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
-		String json = "{\"custom-content\":{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Custom schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"custom-content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"string\",\"key\":\"secret\",\"order\":0}]},\"content\":{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}}";
-		assertEqualsSanitizedJson("The response json did not match the expected one.", json, response);
+		ObjectSchemaListResponse restResponse = JsonUtils.readValue(response, ObjectSchemaListResponse.class);
+		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(25, restResponse.getData().size());
+
+		int perPage = 11;
+		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		restResponse = JsonUtils.readValue(response, ObjectSchemaListResponse.class);
+		Assert.assertEquals(perPage, restResponse.getData().size());
+
+		// Extra schemas + aloha schema
+		int totalSchemas = nSchemas + 1;
+		int totalPages = (int) Math.ceil(totalSchemas / (double) perPage);
+		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(totalSchemas, restResponse.getMetainfo().getTotalCount());
+
+		List<ObjectSchemaResponse> allSchemas = new ArrayList<>();
+		for (int page = 0; page < totalPages; page++) {
+			response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + page, 200, "OK");
+			restResponse = JsonUtils.readValue(response, ObjectSchemaListResponse.class);
+			allSchemas.addAll(restResponse.getData());
+		}
+		Assert.assertEquals("Somehow not all schemas were loaded when loading all pages.", totalSchemas, allSchemas.size());
+
+		// Verify that the no perm schema is not part of the response
+		final String noPermSchemaName = noPermSchema.getName();
+		List<ObjectSchemaResponse> filteredSchemaList = allSchemas.parallelStream()
+				.filter(restSchema -> restSchema.getName().equals(noPermSchemaName)).collect(Collectors.toList());
+		assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
+
+		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+
+		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 
 	@Test

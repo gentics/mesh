@@ -8,13 +8,11 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.Route;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
@@ -28,9 +26,11 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaUpdateRequest;
-import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
+import com.gentics.cailun.core.rest.schema.response.ObjectSchemaListResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -201,23 +201,22 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		});
 
 		// produces(APPLICATION_JSON)
-		route("/").method(GET).handler(rc -> {
-			// TODO handle paging
-				Map<String, ObjectSchemaResponse> resultMap = new HashMap<>();
-				try (Transaction tx = graphDb.beginTx()) {
-
-					Iterable<ObjectSchema> schemas = schemaService.findAll();
-					if (schemas == null) {
-						throw new HttpStatusCodeErrorException(500, "No schemas could be loaded");
+		route("/").method(GET).handler(
+				rc -> {
+					ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
+					try (Transaction tx = graphDb.beginTx()) {
+						PagingInfo pagingInfo = getPagingInfo(rc);
+						User requestUser = springConfiguration.authService().getUser(rc);
+						Page<ObjectSchema> schemaPage = schemaService.findAllVisible(requestUser, pagingInfo);
+						for (ObjectSchema schema : schemaPage) {
+							listResponse.getData().add(schemaService.transformToRest(schema));
+						}
+						RestModelPagingHelper.setPaging(listResponse, schemaPage.getNumber(), schemaPage.getTotalPages(), pagingInfo.getPerPage(),
+								schemaPage.getTotalElements());
+						tx.success();
 					}
-					for (ObjectSchema schema : schemas) {
-						ObjectSchemaResponse restSchema = schemaService.transformToRest(schema);
-						resultMap.put(schema.getName(), restSchema);
-					}
-					tx.success();
-				}
-				rc.response().end(toJson(resultMap));
-			});
+					rc.response().end(toJson(listResponse));
+				});
 
 	}
 

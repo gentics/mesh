@@ -7,6 +7,8 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
@@ -15,12 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.PropertyTypeSchema;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.path.PagingInfo;
 
 @Component
 @Transactional
@@ -100,6 +104,11 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	@Override
 	public void deleteByUUID(String uuid) {
 		schemaRepository.deleteByUuid(uuid);
+	}
+
+	@Override
+	public Page<ObjectSchema> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+		return schemaRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
 }
 

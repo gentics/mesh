@@ -61,7 +61,6 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	@Override
 	public Page<Project> findAllVisible(User requestUser, PagingInfo pagingInfo) {
 		return projectRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
-
 	}
 
 }
