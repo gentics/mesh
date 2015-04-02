@@ -118,19 +118,4 @@ public class TagTest extends AbstractDBTest {
 		assertTrue("The tag should be removed.", reloadedNode.removeTag(subFolderTag));
 	}
 
-	@Test
-	@Transactional
-	public void testNodeProperties() {
-		final String TEST_PROPERTY_KEY = "myProperty";
-		final String TEST_PROPERTY_VALUE = "myValue";
-		Tag tag = new Tag();
-		tag.setProperty(TEST_PROPERTY_KEY, TEST_PROPERTY_VALUE);
-		tagService.save(tag);
-		Tag reloadedTag = tagService.findOne(tag.getId());
-		assertEquals("The node should have the property", TEST_PROPERTY_VALUE, reloadedTag.getProperty(TEST_PROPERTY_KEY));
-		assertTrue("The property must be removed.", reloadedTag.removeProperty(TEST_PROPERTY_KEY));
-		assertFalse("The property was already removed and removing it again must fail", reloadedTag.removeProperty(TEST_PROPERTY_KEY));
-		tag = tagService.findOne(tag.getId());
-		assertFalse("The node should no longer have property identified by the key", reloadedTag.hasProperty(TEST_PROPERTY_KEY));
-	}
 }

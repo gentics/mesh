@@ -23,58 +23,12 @@ public class GenericPropertyContainer extends GenericNode {
 
 	public static final String NAME_KEYWORD = "name";
 
-	protected DynamicProperties properties = new DynamicPropertiesContainer();
-
 	@Fetch
 	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
 	protected Set<Translated> i18nTranslations = new HashSet<>();
 
 	public String getName(Language language) {
 		return getProperty(language, NAME_KEYWORD);
-	}
-
-	/**
-	 * Set the property with the given key and value.
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	public void setProperty(String key, String value) {
-		this.properties.setProperty(key, value);
-	}
-
-	/**
-	 * Returns the value for the given key.
-	 * 
-	 * @param key
-	 * @return null, when the value could not be found
-	 */
-	public String getProperty(String key) {
-		return (String) properties.getProperty(key);
-	}
-
-	/**
-	 * Removes the property with the given key.
-	 * 
-	 * @param key
-	 * @return true, when the property could be removed. Otherwise false.
-	 */
-	public boolean removeProperty(String key) {
-		if (properties.removeProperty(key) == null) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	/**
-	 * Checks whether the property with the given key exists.
-	 * 
-	 * @param key
-	 * @return true, when the key was found. Otherwise false.
-	 */
-	public boolean hasProperty(String key) {
-		return properties.hasProperty(key);
 	}
 
 	public I18NProperties getI18NProperties(Language language) {
