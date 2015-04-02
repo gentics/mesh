@@ -245,14 +245,16 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 		// Tags
 		RootTag rootTag = new RootTag();
+		rootTag.setCreator(users.get(0));
 		rootTag.addProject(aloha);
-
+		rootTag = (RootTag) tagService.save(rootTag);
 		tagService.setName(rootTag, english, "/");
 
 		Tag homeTag = new Tag();
 		tagService.setName(homeTag, english, "home");
 		tagService.setName(homeTag, german, "heim");
 		homeTag.addProject(aloha);
+		homeTag.setCreator(users.get(0));
 		rootTag.addTag(homeTag);
 
 		Tag jotschiTag = new Tag();
@@ -265,31 +267,37 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 		tagService.setName(rootFolder, german, "wurzel");
 		tagService.setName(rootFolder, english, "root");
 		rootFolder.addProject(aloha);
+		rootFolder.setCreator(users.get(0));
 		rootTag.addTag(rootFolder);
 
 		Tag varFolder = new Tag();
 		tagService.setName(varFolder, german, "var");
 		varFolder.addProject(aloha);
+		varFolder.setCreator(users.get(0));
 		rootTag.addTag(varFolder);
 
 		Tag wwwFolder = new Tag();
 		tagService.setName(wwwFolder, english, "www");
 		wwwFolder.addProject(aloha);
+		wwwFolder.setCreator(users.get(0));
 		varFolder.addTag(wwwFolder);
 
 		Tag siteFolder = new Tag();
 		tagService.setName(siteFolder, english, "site");
 		siteFolder.addProject(aloha);
+		siteFolder.setCreator(users.get(0));
 		wwwFolder.addTag(siteFolder);
 
 		Tag postsFolder = new Tag();
 		tagService.setName(postsFolder, german, "posts");
 		postsFolder.addProject(aloha);
+		postsFolder.setCreator(users.get(0));
 		wwwFolder.addTag(postsFolder);
 
 		Tag blogsFolder = new Tag();
 		tagService.setName(blogsFolder, german, "blogs");
 		blogsFolder.addProject(aloha);
+		blogsFolder.setCreator(users.get(0));
 		wwwFolder.addTag(blogsFolder);
 
 		aloha.setRootTag(rootTag);

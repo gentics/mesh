@@ -213,6 +213,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				// TODO filtering
 				Page<Tag> tagPage = tagService.findAllVisible(requestUser, pagingInfo);
 				for (Tag tag : tagPage) {
+					log.info("Transforming tag {" + tag +"}");
 					listResponse.getData().add(tagService.transformToRest(tag, languages));
 				}
 				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),

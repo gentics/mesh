@@ -44,4 +44,5 @@ public class Tag extends GenericTag<Tag, GenericFile> {
 	public void setSchemaName(String schema) {
 		this.schemaName = schema;
 	}
+
 }

@@ -82,4 +82,9 @@ public abstract class AbstractPersistable implements Serializable {
 
 		return null == this.getId() ? false : this.getId().equals(that.getId());
 	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "#" + getUuid();
+	}
 }
