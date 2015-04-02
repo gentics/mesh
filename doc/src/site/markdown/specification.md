@@ -23,3 +23,55 @@ Roles are used to assign permissions to objects. Roles are assigned to groups. T
 Users can only assign permissions to roles to which they have access.
 
 A special permission or the update permission of a role (yet to be determined) enables users to create / update permissions on objects.
+
+
+## Versioning
+
+There is NO locking of versions. Relationships are NOT versioned (tag to content etc). Versioning is done for: tag, content, file, image
+Versions are individual property nodes of a language linked.
+
+## Content Languages
+
+A content node groups properties of a language together
+
+(de)—-(C)—-(en)
+
+* (C) is the content node
+* (de) is a german property node
+* (en) is an english property node
+
+There are NO non-i18n-properties - all properties must be translated, except id and uuid
+
+### Finding the latest version of a content
+
+ALL properties are translated
+there are no meta-properties that have no translation
+there needs to be a way to update single properties across all languages at once
+eg. binaries for images (you want to use the same image for all language variants)
+
+Editor and revision information is part of the versioned property node
+
+the content node always refers to the most recent property node
+the system then traverses backwards until it finds the property node thats currently online based on its online_from and ondline_to date
+
+(a)—->(b)—->(c)—->(X)—->(d)<—-(C)
+
+* (C) is the content node
+* (d) is a version prepared for future release
+* (X) is the version thats currently valid and online
+
+there is ONLY
+
+
+### Linking contents of different languages
+
+following a link to a page that does not exist in the current language leads to a mediator page. the mediator page informs the user that the content is not available in the current language, but available in english, german etc.
+
+links CAN include the target language
+
+
+## Tags
+
+### startpage handling
+
+Start pages of a tag are denoted by a relationship between the tag and the content
