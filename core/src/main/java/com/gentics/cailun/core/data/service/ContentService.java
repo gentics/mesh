@@ -29,6 +29,4 @@ public interface ContentService extends GenericContentService<Content> {
 
 	public Page<Content> findAllVisible(User requestUser, PagingInfo pagingInfo);
 
-//	public Content save(String projectName, String path, ContentResponse requestModel);
-
 }

@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.path.PagingInfo;
 
 @Component
@@ -40,6 +42,9 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 
 	@Autowired
 	private ContentRepository contentRepository;
+
+	@Autowired
+	private I18NService i18n;
 
 	public void setTeaser(Content page, Language language, String text) {
 		setProperty(page, language, Content.TEASER_KEY, text);
@@ -74,7 +79,8 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 			for (String languageTag : languages) {
 				Language language = languageService.findByLanguageTag(languageTag);
 				if (language == null) {
-					// TODO fail early
+					// TODO use request locale
+					throw new HttpStatusCodeErrorException(400, i18n.get(Locale.getDefault(), "error_language_not_found", languageTag));
 				}
 				// TODO handle schema
 				response.addProperty(languageTag, "name", content.getName(language));

@@ -207,9 +207,14 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadContentWithBogusLanguageCode() {
-		// de, ruski, atom -> 400er
-		fail("Not yet implemented");
+	public void testReadContentWithBogusLanguageCode() throws Exception {
+
+		Content content = data().getContentLevel1A1();
+		roleService.addPermission(info.getRole(), content, PermissionType.READ);
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=blabla,edgsdg", 400, "Bad Request");
+		expectMessageResponse("error_language_not_found", response, "blabla");
+
 	}
 
 	@Test

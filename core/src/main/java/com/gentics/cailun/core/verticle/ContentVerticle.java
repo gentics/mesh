@@ -160,6 +160,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				tx.success();
 			}
 			List<String> languageTags = getSelectedLanguageTags(rc);
+			rc.response().setStatusCode(200);
 			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
 
 		});
