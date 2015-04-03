@@ -165,7 +165,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 		});
 
-		Route readAllRoute = route("/").method(GET);
+		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
