@@ -295,7 +295,6 @@ public class Generator {
 
 		GroupCreateRequest groupCreate = new GroupCreateRequest();
 		groupCreate.setName("new group");
-		groupCreate.setGroupUuid(getUUID());
 		write(groupCreate);
 	}
 

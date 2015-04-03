@@ -1,4 +1,4 @@
-package com.gentics.cailun.test;
+package com.gentics.cailun.demo;
 
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;

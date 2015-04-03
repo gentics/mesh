@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
+import com.gentics.cailun.core.data.model.CaiLunRoot;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -210,31 +212,20 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
 				GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
-				String parentGroupUuid = requestModel.getGroupUuid();
-				if (StringUtils.isEmpty(parentGroupUuid)) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "group_missing_parentgroup_field"));
-				}
-				// TODO a groups node must be added and the permission to this root must be checked
-				if (true) {
-					throw new RuntimeException("not yet implemented");
-				}
-				// Group parentGroup = getObjectByUUID(rc, parentGroupUuid, PermissionType.CREATE);
+				
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
 				}
 
+				//TODO we should check a groups node instead see - CL-76
+				CaiLunRoot root = cailunRootService.findRoot();
+				failOnMissingPermission(rc, root, PermissionType.CREATE);
+
 				group = new Group(requestModel.getName());
 				group = groupService.save(group);
-
-				// Update the parent group
-				// parentGroup.addGroup(group);
-				// parentGroup = groupService.save(parentGroup);
-
-				// roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), group);
-
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root, PermissionType.CREATE), group);
 				tx.success();
-
 			}
 			group = groupService.reload(group);
 			rc.response().setStatusCode(200);

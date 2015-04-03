@@ -52,13 +52,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		request.setGroupUuid(info.getGroup().getUuid());
 
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\"}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\",\"roles\":[],\"users\":[],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		assertNotNull("Group should have been created.", groupService.findByName(name));
@@ -67,31 +66,30 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateDeleteGroup() throws Exception {
 
+		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
+
+		// Create the group
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		request.setGroupUuid(info.getGroup().getUuid());
 
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
 		String requestJson = JsonUtils.toJson(request);
-
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\"}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\",\"roles\":[],\"users\":[],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-
 		assertNotNull("Group should have been created.", groupService.findByName(name));
 
+		// Now delete the group
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
-		response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + restGroup.getUUID(), 200, "OK", requestJson);
+		response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + restGroup.getUuid(), 200, "OK", requestJson);
 
-		expectMessageResponse("group_deleted", response, restGroup.getUUID());
+		expectMessageResponse("group_deleted", response, restGroup.getUuid());
 	}
 
 	@Test
 	public void testCreateGroupWithMissingName() throws Exception {
 
 		GroupCreateRequest request = new GroupCreateRequest();
-		request.setGroupUuid(info.getGroup().getUuid());
 
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
 		String requestJson = JsonUtils.toJson(request);
@@ -102,32 +100,17 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateGroupWithMissingGroupUuid() throws Exception {
-
-		GroupCreateRequest request = new GroupCreateRequest();
-		final String name = "somenameforrequest";
-		request.setName(name);
-
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
-		String requestJson = JsonUtils.toJson(request);
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 400, "Bad Request", requestJson);
-		expectMessageResponse("group_missing_parentgroup_field", response);
-		assertNull("Group should not have been created.", groupService.findByName(name));
-
-	}
-
-	@Test
 	public void testCreateGroupWithNoPerm() throws Exception {
 
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		request.setGroupUuid(info.getGroup().getUuid());
 
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.DELETE);
+		// TODO we need a groups node in neo: CL-76
+		roleService.revokePermission(info.getRole(), data().getCaiLunRoot(), PermissionType.CREATE);
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
@@ -144,7 +127,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
 
 		// Create and save some groups
-		final int nGroups = 142;
+		final int nGroups = 21;
 		for (int i = 0; i < nGroups; i++) {
 			Group group = new Group("group_" + i);
 			group = groupService.save(group);
@@ -168,11 +151,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals(perPage, restResponse.getData().size());
 
 		// created groups + test data group
-		int totalGroups = nGroups + 1;
-		int totalPages = (int) Math.ceil(totalGroups / perPage);
+		int totalGroups = nGroups + data().getTotalGroups();
+		int totalPages = (int) Math.ceil(totalGroups / (double) perPage);
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
+				totalPages, restResponse.getMetainfo().getPageCount());
 		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 		Assert.assertEquals(totalGroups, restResponse.getMetainfo().getTotalCount());
 
@@ -198,7 +182,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":3,\"total_count\":65}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 
@@ -216,7 +200,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"groups\":[\"sub group\"],\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("The response does not match.", json, response);
 	}
 
@@ -233,6 +217,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), group, PermissionType.DELETE);
 		roleService.addPermission(info.getRole(), group, PermissionType.CREATE);
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+		roleService.revokePermission(info.getRole(), group, PermissionType.READ);
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
@@ -259,7 +244,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/groups/" + group.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		Group reloadedGroup = groupService.reload(group);
@@ -350,6 +335,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 		roleService.addPermission(info.getRole(), group, PermissionType.CREATE);
 		// Don't allow delete
+		roleService.revokePermission(info.getRole(), group, PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
 		String json = "{\"message\":\"Missing permissions on object \\\"" + group.getUuid() + "\\\"\"}";
@@ -367,12 +353,11 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		extraRole = roleService.save(extraRole);
 		extraRole = roleService.reload(extraRole);
 
-		// TODO check with cp whether perms are ok that way.
 		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"extraRole\",\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\",\"extraRole\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		group = groupService.reload(group);
 		assertTrue("Role should be assigned to group.", group.hasRole(extraRole));
@@ -389,6 +374,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		// TODO check with cp whether perms are ok that way.
 		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
 		roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
 		String json = "{\"message\":\"Missing permissions on object \\\"" + group.getUuid() + "\\\"\"}";
@@ -427,7 +413,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		group = groupService.reload(group);
 		assertFalse("Role should now no longer be assigned to group.", group.hasRole(extraRole));
@@ -443,9 +429,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		group.addRole(extraRole);
 		group = groupService.save(group);
 
-		// TODO check with cp whether perms are ok that way.
 		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
 		roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
 		String json = "{\"message\":\"Missing permissions on object \\\"" + group.getUuid() + "\\\"\"}";
@@ -484,7 +470,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\",\"extraUser\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\",\"extraUser\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		group = groupService.reload(group);
 		assertTrue("User should be member of the group.", group.hasUser(extraUser));
@@ -498,9 +484,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		extraUser = userService.save(extraUser);
 		extraUser = userService.reload(extraUser);
 
-		// TODO check with cp whether perms are ok that way.
 		roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
 		roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");
 		String json = "{\"message\":\"Missing permissions on object \\\"" + group.getUuid() + "\\\"\"}";
@@ -535,9 +521,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		Group group = info.getGroup();
 
-		// TODO check with cp whether perms are ok that way.
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 		roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 403, "Forbidden");
 		String json = "{\"message\":\"Missing permissions on object \\\"" + group.getUuid() + "\\\"\"}";
@@ -556,7 +542,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		group = groupService.reload(group);
 		assertFalse("User should not be member of the group.", group.hasUser(user));
@@ -572,7 +558,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		Group group = info.getGroup();
 
-		// TODO check with cp whether perms are ok that way.
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 

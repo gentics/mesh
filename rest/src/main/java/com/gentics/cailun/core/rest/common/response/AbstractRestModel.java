@@ -4,7 +4,7 @@ public abstract class AbstractRestModel {
 
 	private String uuid;
 
-	public String getUUID() {
+	public String getUuid() {
 		return uuid;
 	}
 

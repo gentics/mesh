@@ -401,8 +401,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 
-		response = request(info, HttpMethod.DELETE, "/api/v1/users/" + restUser.getUUID(), 200, "OK");
-		expectMessageResponse("user_deleted", response, restUser.getUUID());
+		response = request(info, HttpMethod.DELETE, "/api/v1/users/" + restUser.getUuid(), 200, "OK");
+		expectMessageResponse("user_deleted", response, restUser.getUuid());
 
 	}
 

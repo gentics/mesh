@@ -27,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.service.I18NService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.demo.DemoDataProvider;
+import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.etc.RouterStorage;
 import com.gentics.cailun.util.JsonUtils;
 
@@ -62,7 +64,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		latch = new CountDownLatch(1);
 		throwable.set(null);
 
-		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
+		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
 		AbstractRestVerticle verticle = getVerticle();
 		// Inject spring config

@@ -16,8 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.repository.RoleRepository;
+import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.test.AbstractDBTest;
-import com.gentics.cailun.test.UserInfo;
 
 public class RoleTest extends AbstractDBTest {
 
@@ -46,8 +46,8 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermission() {
 		Role role = info.getRole();
-		Content content = data().getContentLevel1A1();
-		Content content2 = data().getContentLevel1A2();
+		Content content = data().getNews2015Content();
+		Content content2 = data().getDealsSuperDeal();
 		roleService.addPermission(role, content, CREATE, READ, UPDATE, DELETE);
 		roleService.addPermission(role, content2, READ, DELETE);
 		roleService.addPermission(role, content2, CREATE);
@@ -63,7 +63,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testRevokePermission() {
 		Role role = info.getRole();
-		Content content = data().getContentLevel1A1();
+		Content content = data().getNews2015Content();
 		roleService.addPermission(role, content, CREATE, UPDATE, DELETE);
 		GraphPermission permission = roleService.revokePermission(role, content, CREATE);
 		assertFalse(permission.isPermitted(CREATE));

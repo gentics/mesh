@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
-import static com.gentics.cailun.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static org.junit.Assert.assertNotNull;
@@ -43,14 +43,14 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateContentWithBogusLanguageCode() throws HttpStatusCodeErrorException, Exception {
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.CREATE);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.CREATE);
 
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");
 		request.addProperty("english", "filename", "new-page.html");
 		request.addProperty("english", "name", "english content name");
 		request.addProperty("english", "content", "Blessed mealtime again!");
-		request.setTagUuid(data().getLevel1a().getUuid());
+		request.setTagUuid(data().getNews().getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 400, "Bad Request", JsonUtils.toJson(request));
 		expectMessageResponse("error_language_not_found", response, "english");
@@ -59,24 +59,24 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateContent() throws Exception {
 
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.CREATE);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.CREATE);
 
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");
 		request.addProperty("en", "filename", "new-page.html");
 		request.addProperty("en", "name", "english content name");
 		request.addProperty("en", "content", "Blessed mealtime again!");
-		request.setTagUuid(data().getLevel1a().getUuid());
+		request.setTagUuid(data().getNews().getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 200, "OK", JsonUtils.toJson(request));
-		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"order\":0}";
+		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"perms\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
 	}
 
 	@Test
 	public void testCreateContentWithMissingTagUuid() throws Exception {
 
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.CREATE);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.CREATE);
 
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");
@@ -93,19 +93,19 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateContentWithMissingPermission() throws Exception {
 
 		// Add all perms except create
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.DELETE);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.UPDATE);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.DELETE);
 
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");
 		request.addProperty("english", "filename", "new-page.html");
 		request.addProperty("english", "name", "english content name");
 		request.addProperty("english", "content", "Blessed mealtime again!");
-		request.setTagUuid(data().getLevel1a().getUuid());
+		request.setTagUuid(data().getNews().getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 403, "Forbidden", JsonUtils.toJson(request));
-		expectMessageResponse("error_missing_perm", response, data().getLevel1a().getUuid());
+		expectMessageResponse("error_missing_perm", response, data().getNews().getUuid());
 	}
 
 	// Read tests
@@ -113,9 +113,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContents() throws Exception {
 
-		roleService.addPermission(info.getRole(), data().getContentLevel1A1(), PermissionType.READ);
+		roleService.addPermission(info.getRole(), data().getNews2015Content(), PermissionType.READ);
 
-		final int nContents = 142;
+		final int nContents = 28;
 		for (int i = 0; i < nContents; i++) {
 			Content extraContent = new Content();
 			extraContent.setCreator(info.getUser());
@@ -143,8 +143,8 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Contents + permitted content
-		int totalContents = nContents + 1;
-		int totalPages = (int) Math.ceil(totalContents / perPage);
+		int totalContents = nContents + data().getTotalContents();
+		int totalPages = (int) Math.ceil(totalContents / (double)perPage);
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -161,7 +161,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 		// Verify that the no_perm_content is not part of the response
 		final String noPermContentUUID = noPermContent.getUuid();
-		List<ContentResponse> filteredUserList = allContents.parallelStream().filter(restContent -> restContent.getUUID().equals(noPermContentUUID))
+		List<ContentResponse> filteredUserList = allContents.parallelStream().filter(restContent -> restContent.getUuid().equals(noPermContentUUID))
 				.collect(Collectors.toList());
 		assertTrue("The no perm content should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
@@ -173,7 +173,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":145}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}
@@ -181,34 +181,34 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentsWithoutPermissions() throws Exception {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
-		String json = "{\"_metainfo\":{\"page\":0,\"per_page\":0,\"page_count\":0,\"total_count\":0,\"links\":{}}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":0,\"per_page\":25,\"page_count\":0,\"total_count\":0}}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
 
 	@Test
 	public void testReadContentByUUID() throws Exception {
-		Content content = data().getContentLevel1A1();
+		Content content = data().getNews2015Content();
 		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"filename\":\"test_1.de.html\",\"name\":\"test_1 german\",\"content\":\"Mahlzeit 1!\"},\"en\":{\"filename\":\"test_1.en.html\",\"name\":\"test_1 english\",\"content\":\"Blessed Mealtime 1!\"}},\"schemaName\":\"content\",\"order\":0}";
+		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"de\":{\"filename\":\"Special News_2014.de.html\",\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"},\"en\":{\"filename\":\"Special News_2014.en.html\",\"name\":\"Special News_2014 english\",\"content\":\"News!\"}},\"schemaName\":\"content\",\"perms\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
 
 	@Test
 	public void testReadContentByUUIDSingleLanguage() throws Exception {
-		Content content = data().getContentLevel1A1();
+		Content content = data().getNews2015Content();
 		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=de", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"filename\":\"test_1.de.html\",\"name\":\"test_1 german\",\"content\":\"Mahlzeit 1!\"}},\"schemaName\":\"content\",\"order\":0}";
+		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"de\":{\"filename\":\"Special News_2014.de.html\",\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"}},\"schemaName\":\"content\",\"perms\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
 
 	@Test
 	public void testReadContentWithBogusLanguageCode() throws Exception {
 
-		Content content = data().getContentLevel1A1();
+		Content content = data().getNews2015Content();
 		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=blabla,edgsdg", 400, "Bad Request");
@@ -218,7 +218,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByUUIDWithoutPermission() throws Exception {
-		Content content = data().getContentLevel1A1();
+		Content content = data().getNews2015Content();
 		roleService.addPermission(info.getRole(), content, PermissionType.DELETE);
 		roleService.addPermission(info.getRole(), content, PermissionType.UPDATE);
 		roleService.addPermission(info.getRole(), content, PermissionType.CREATE);

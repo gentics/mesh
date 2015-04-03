@@ -78,7 +78,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The project should have been created.", projectService.findByName(name));
 
 		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
-		response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + restProject.getUUID(), 200, "OK");
+		response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + restProject.getUuid(), 200, "OK");
 		expectMessageResponse("project_deleted", response, restProject.getName());
 
 	}

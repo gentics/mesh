@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
-import static com.gentics.cailun.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
 import io.vertx.core.http.HttpMethod;
@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
-import com.gentics.cailun.test.UserInfo;
 
 public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
@@ -26,10 +26,12 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadTagByPath() throws Exception {
 
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
-		roleService.addPermission(info.getRole(), data().getLevel2a(), PermissionType.READ);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
+		roleService.addPermission(info.getRole(), data().getNews2015(), PermissionType.READ);
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/level_1_a/ebene_2_a", 200, "OK");
+		String englishPath = data().getPathForNews2015Tag(data().getEnglish());
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"de\":{\"name\":\"ebene_2_a\"}}}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
@@ -44,8 +46,9 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadTagByPathWithoutPerm() throws Exception {
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/level_1_a/ebene_2_a", 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + data().getLevel2a().getUuid() + "}\"}";
+		String englishPath = data().getPathForNews2015Tag(data().getEnglish());
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
+		String json = "{\"message\":\"Missing permission on object {" + data().getNews().getUuid() + "}\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 

@@ -1,6 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
-import static com.gentics.cailun.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
@@ -43,7 +43,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllTags() throws Exception {
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
 
 		final int nTags = 142;
 		for (int i = 0; i < nTags; i++) {
@@ -70,16 +70,18 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		int perPage = 11;
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, TagListResponse.class);
+		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 		Assert.assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Tags + permitted tag
-		int totalTags = nTags + 1;
-		int totalPages = (int) Math.ceil(totalTags / perPage);
+		int totalTags = nTags + data().getTotalTags();
+		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(totalTags, restResponse.getMetainfo().getTotalCount());
+		Assert.assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
+				+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals((int)perPage, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
 
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 0; page < totalPages; page++) {
@@ -91,7 +93,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// Verify that the no_perm_tag is not part of the response
 		final String noPermTagUUID = noPermTag.getUuid();
-		List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUUID().equals(noPermTagUUID))
+		List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID))
 				.collect(Collectors.toList());
 		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
@@ -102,15 +104,18 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		perPage = 25;
+		totalPages = (int) Math.ceil(totalTags / (double)perPage);
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 4242, 200, "OK");
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":" + totalPages + ",\"total_count\":" + totalTags
+				+ "}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadTagByUUID() throws Exception {
 
-		Tag tag = data().getLevel1a();
+		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
@@ -123,34 +128,36 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadTagByUUIDWithSingleLanguage() throws Exception {
 
-		Tag tag = data().getLevel1a();
+		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"level_1_a\"}},\"childTags\":[],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadTagByUUIDWithMultipleLanguages() throws Exception {
 
-		Tag tag = data().getLevel1a();
+		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"ebene_1_a\"},\"en\":{\"name\":\"level_1_a\"}},\"childTags\":[],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 
-		Tag tag = data().getLevel1a();
+		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+
+		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
@@ -158,7 +165,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
-		Tag tag = data().getLevel1a();
+		Tag tag = data().getNews();
 
 		roleService.addPermission(info.getRole(), tag, PermissionType.UPDATE);
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
@@ -196,8 +203,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = data().getLevel1a();
+		Tag tag = data().getNews();
 
+		roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		// Create an tag update request
@@ -222,19 +230,21 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteTagByUUID() throws Exception {
 
-		roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.DELETE);
+		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.DELETE);
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getLevel1a().getUuid(), 200, "OK");
-		expectMessageResponse("tag_deleted", response, data().getLevel1a().getUuid());
-		assertNull("The tag should have been deleted", tagService.findByUUID(data().getLevel1a().getUuid()));
+		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getNews().getUuid(), 200, "OK");
+		expectMessageResponse("tag_deleted", response, data().getNews().getUuid());
+		assertNull("The tag should have been deleted", tagService.findByUUID(data().getNews().getUuid()));
 	}
 
 	@Test
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getLevel1a().getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, data().getLevel1a().getUuid());
-		assertNotNull("The tag should not have been deleted", tagService.findByUUID(data().getLevel1a().getUuid()));
+		roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.DELETE);
+
+		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getNews().getUuid(), 403, "Forbidden");
+		expectMessageResponse("error_missing_perm", response, data().getNews().getUuid());
+		assertNotNull("The tag should not have been deleted", tagService.findByUUID(data().getNews().getUuid()));
 	}
 
 }

@@ -25,8 +25,8 @@ import com.gentics.cailun.core.rest.role.request.RoleCreateRequest;
 import com.gentics.cailun.core.rest.role.request.RoleUpdateRequest;
 import com.gentics.cailun.core.rest.role.response.RoleListResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
+import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
-import com.gentics.cailun.test.UserInfo;
 import com.gentics.cailun.util.JsonUtils;
 
 public class RoleVerticleTest extends AbstractRestVerticleTest {
@@ -55,7 +55,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
@@ -70,12 +70,12 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
-		response = request(info, HttpMethod.DELETE, "/api/v1/roles/" + restRole.getUUID(), 200, "OK");
-		json = "{\"message\":\"Role with uuid \\\"" + restRole.getUUID() + "\\\" was deleted.\"}";
+		response = request(info, HttpMethod.DELETE, "/api/v1/roles/" + restRole.getUuid(), 200, "OK");
+		json = "{\"message\":\"Role with uuid \\\"" + restRole.getUuid() + "\\\" was deleted.\"}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
@@ -88,7 +88,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		// Add needed permission to group
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
-		// No Update permission of the parent group
+		roleService.revokePermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 403, "Forbidden", requestJson);
@@ -145,7 +145,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), info.getRole(), PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + role.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_role\",\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\"}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
 		assertEqualsSanitizedJson("The response does not match.", json, response);
 	}
 
@@ -165,8 +165,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"extra role\",\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\"}]}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		Assert.assertEquals(extraRole.getUuid(), restRole.getUuid());
+		Assert.assertEquals(extraRole.getName(), restRole.getName());
 	}
 
 	@Test
@@ -208,7 +209,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
 
 		// Create and save some roles
-		final int nRoles = 142;
+		final int nRoles = 21;
 		for (int i = 0; i < nRoles; i++) {
 			Role extraRole = new Role("extra role " + i);
 			extraRole = roleService.save(extraRole);
@@ -236,8 +237,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		// created roles + test data role
 		// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
-		int totalRoles = nRoles;
-		int totalPages = (int) Math.ceil(totalRoles / (double)perPage);
+		int totalRoles = nRoles + data().getTotalRoles() + 1;
+		int totalPages = (int) Math.ceil(totalRoles / (double) perPage);
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		Assert.assertEquals("The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
@@ -287,8 +288,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(extraRole.getUuid());
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"renamed role\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		Assert.assertEquals(request.getName(), restRole.getName());
+		Assert.assertEquals(extraRole.getUuid(), restRole.getUuid());
 
 		// Check that the extra role was updated as expected
 		Role reloadedRole = roleService.findByUUID(extraRole.getUuid());

@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.RoleService;
+import com.gentics.cailun.demo.DemoDataProvider;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
@@ -24,7 +25,7 @@ public abstract class AbstractDBTest {
 	protected LanguageService languageService;
 
 	@Autowired
-	private TestDataProvider dataProvider;
+	private DemoDataProvider dataProvider;
 
 	@Autowired
 	protected RoleService roleService;
@@ -40,7 +41,7 @@ public abstract class AbstractDBTest {
 		dataProvider.setup();
 	}
 
-	public TestDataProvider data() {
+	public DemoDataProvider data() {
 		return dataProvider;
 	}
 

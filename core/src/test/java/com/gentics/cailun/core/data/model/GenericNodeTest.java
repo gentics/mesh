@@ -23,7 +23,7 @@ public class GenericNodeTest extends AbstractDBTest {
 	@Test
 	public void testFindByUUID() {
 
-		Tag tag = data().getLevel1a();
+		Tag tag = data().getNews();
 		GenericNode node = nodeService.findByUUID(tag.getUuid());
 		assertNotNull(node);
 
