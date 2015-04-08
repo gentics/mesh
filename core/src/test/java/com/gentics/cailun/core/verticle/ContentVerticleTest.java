@@ -144,7 +144,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 		// Extra Contents + permitted content
 		int totalContents = nContents + data().getTotalContents();
-		int totalPages = (int) Math.ceil(totalContents / (double)perPage);
+		int totalPages = (int) Math.ceil(totalContents / (double) perPage);
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -192,6 +192,16 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
 		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"de\":{\"filename\":\"Special News_2014.de.html\",\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"},\"en\":{\"filename\":\"Special News_2014.en.html\",\"name\":\"Special News_2014 english\",\"content\":\"News!\"}},\"schemaName\":\"content\",\"perms\":[],\"order\":0}";
+		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
+	}
+
+	@Test
+	public void testReadContentByUUIDWithDepthParam() throws Exception {
+		Content content = data().getNews2015Content();
+		roleService.addPermission(info.getRole(), content, PermissionType.READ);
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?depth=2", 200, "OK");
+		String json = "ok";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
 
