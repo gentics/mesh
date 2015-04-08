@@ -21,7 +21,7 @@ public class GenericPropertyContainer extends GenericNode {
 
 	public static final String NAME_KEYWORD = "name";
 
-	protected String schema = null;
+	protected String schemaName = null;
 
 	@Fetch
 	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
@@ -70,12 +70,12 @@ public class GenericPropertyContainer extends GenericNode {
 		return i18nTranslations;
 	}
 
-	public String getSchema() {
+	public String getSchemaName() {
 		// TODO use labels instead
-		return schema;
+		return schemaName;
 	}
 
-	public void setSchemaName(String schema) {
-		this.schema = schema;
+	public void setSchemaName(String schemaName) {
+		this.schemaName = schemaName;
 	}
 }

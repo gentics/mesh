@@ -4,6 +4,7 @@ import io.vertx.ext.apex.RoutingContext;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -73,7 +74,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 	public ContentResponse transformToRest(RoutingContext rc, Content content, List<String> languageTags, int depth) {
 		ContentResponse response = new ContentResponse();
 		response.setUuid(content.getUuid());
-		response.setSchemaName(content.getSchema());
+		response.setSchemaName(content.getSchemaName());
 		UserResponse restUser = userService.transformToRest(content.getCreator());
 		response.setAuthor(restUser);
 		if (languageTags.size() == 0) {
@@ -102,7 +103,8 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		}
 
 		if (depth > 0) {
-			for (Tag currentTag : content.getTags()) {
+			 Set<Tag> tags = neo4jTemplate.fetch(content.getTags());
+			for (Tag currentTag : tags) {
 				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
 						new CaiLunPermission(currentTag, PermissionType.READ));
 				if (hasPerm) {

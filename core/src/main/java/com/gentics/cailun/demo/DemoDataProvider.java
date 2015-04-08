@@ -429,6 +429,7 @@ public class DemoDataProvider {
 			Map<String, Content> products = new HashMap<>();
 			productsTag = addTag(rootTag, "products", "Produkte");
 			totalTags++;
+			productsTag.addContent(news2015Content);
 
 			Content porsche911 = addContent(
 					productsTag,

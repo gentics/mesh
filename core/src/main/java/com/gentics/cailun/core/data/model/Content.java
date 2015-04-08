@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
@@ -19,7 +20,7 @@ public class Content extends GenericPropertyContainer {
 	public static final String TITLE_KEY = "title";
 
 	public Content() {
-		this.schema = "content";
+		this.schemaName = "content";
 	}
 
 	public String getTeaser(Language language) {
@@ -36,7 +37,8 @@ public class Content extends GenericPropertyContainer {
 
 	public static final String TEASER_KEYWORD = null;
 
-	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
+	@Fetch
+	@RelatedTo(type = BasicRelationships.HAS_CONTENT, direction = Direction.INCOMING, elementClass = Tag.class)
 	private Set<Tag> tags = new HashSet<>();
 
 	public String getFilename(Language language) {
@@ -53,13 +55,6 @@ public class Content extends GenericPropertyContainer {
 
 	// @RelatedToVia(type = BasicRelationships.LINKED, direction = Direction.OUTGOING, elementClass = Linked.class)
 	// private Collection<Linked> links = new HashSet<>();
-
-//	@Fetch
-//	protected Set<I18NProperties> filenames;
-//
-//	@Indexed
-//	@Fetch
-//	protected Set<I18NProperties> contents;
 
 	public String getContent(Language language) {
 		return getProperty(language, CONTENT_KEYWORD);

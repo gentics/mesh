@@ -26,9 +26,6 @@ public class Tag extends GenericPropertyContainer {
 
 	private static Label label = DynamicLabel.label(Tag.class.getSimpleName());
 
-	// TODO this should be a relationship to the schema node
-	private String schemaName;
-
 	public Tag() {
 		this.schemaName = "tag";
 	}
@@ -43,20 +40,12 @@ public class Tag extends GenericPropertyContainer {
 		return label;
 	}
 
-	public String getSchemaName() {
-		return schemaName;
-	}
-
-	public void setSchemaName(String schema) {
-		this.schemaName = schema;
-	}
-
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_CONTENT, direction = Direction.OUTGOING)
+	@RelatedTo(type = BasicRelationships.HAS_CONTENT, direction = Direction.OUTGOING, elementClass = Content.class)
 	private Set<Content> contents = new HashSet<>();
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING)
+	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
 
 	public void addTag(Tag tag) {
