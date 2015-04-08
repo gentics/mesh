@@ -15,6 +15,7 @@ import com.gentics.cailun.core.data.model.PropertyType;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
+import com.gentics.cailun.core.rest.content.response.ContentListResponse;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
@@ -35,6 +36,7 @@ import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
+import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
@@ -172,8 +174,10 @@ public class Generator {
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {
 
+		String lang = "en";
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
+		tag.addProperty(lang, "name", "Name for language tag de");
 		tag.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(tag);
 
@@ -185,6 +189,17 @@ public class Generator {
 		tagCreate.setSchemaName("content");
 		tagCreate.setTagUuid(getUUID());
 		write(tagCreate);
+
+		TagResponse tag2 = new TagResponse();
+		tag2.setUuid(getUUID());
+		tag2.addProperty("en", "name", "Name for language tag en");
+		tag2.setPerms("READ", "CREATE");
+
+		TagListResponse tagList = new TagListResponse();
+		tagList.getData().add(tag);
+		tagList.getData().add(tag2);
+		RestModelPagingHelper.setPaging(tagList, 1, 10, 2, 20);
+		write(tagList);
 	}
 
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -235,7 +250,7 @@ public class Generator {
 	}
 
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
-		String lang = "english";
+		String lang = "de";
 		ContentResponse content = new ContentResponse();
 		content.setUuid(getUUID());
 		content.setAuthor(getUser());
@@ -248,24 +263,42 @@ public class Generator {
 
 		ContentUpdateRequest contentUpdate = new ContentUpdateRequest();
 		contentUpdate.setUuid(getUUID());
-		contentUpdate.addProperty("en", "filename", "index-renamed.en.html");
+		contentUpdate.addProperty(lang, "filename", "index-renamed.en.html");
 		write(contentUpdate);
 
+		lang = "en";
 		ContentCreateRequest contentCreate = new ContentCreateRequest();
-		contentCreate.addProperty("en", "filename", "index.en.html");
-		contentCreate.addProperty("en", "content", "English content");
-		contentCreate.addProperty("en", "title", "English title");
-		contentCreate.addProperty("en", "teaser", "English teaser");
-		contentCreate.addProperty("en", "name", "English name");
+		contentCreate.addProperty(lang, "filename", "index.en.html");
+		contentCreate.addProperty(lang, "content", "English content");
+		contentCreate.addProperty(lang, "title", "English title");
+		contentCreate.addProperty(lang, "teaser", "English teaser");
+		contentCreate.addProperty(lang, "name", "English name");
 
-		contentCreate.addProperty("de", "filename", "index.de.html");
-		contentCreate.addProperty("de", "content", "Deutscher Inhalt");
-		contentCreate.addProperty("de", "title", "Deutscher Titel");
-		contentCreate.addProperty("de", "teaser", "Deutscher Teaser");
-		contentCreate.addProperty("de", "name", "Deutscher Name");
+		lang = "de";
+		contentCreate.addProperty(lang, "filename", "index.de.html");
+		contentCreate.addProperty(lang, "content", "Deutscher Inhalt");
+		contentCreate.addProperty(lang, "title", "Deutscher Titel");
+		contentCreate.addProperty(lang, "teaser", "Deutscher Teaser");
+		contentCreate.addProperty(lang, "name", "Deutscher Name");
 
 		contentCreate.setSchemaName("content");
 		write(contentCreate);
+
+		ContentResponse content2 = new ContentResponse();
+		content2.setUuid(getUUID());
+		content2.setAuthor(getUser());
+		lang = "en";
+		content2.addProperty(lang, "name", "Name for language tag en");
+		content2.addProperty(lang, "filename", "dummy-content.en.html");
+		content2.addProperty(lang, "teaser", "Dummy teaser for en");
+		content2.addProperty(lang, "content", "Content for language tag en");
+		content2.setPerms("READ", "CREATE");
+
+		ContentListResponse list = new ContentListResponse();
+		list.getData().add(content);
+		list.getData().add(content2);
+		RestModelPagingHelper.setPaging(list, 1, 10, 2, 20);
+		write(list);
 
 	}
 

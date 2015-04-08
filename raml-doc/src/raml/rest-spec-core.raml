@@ -106,6 +106,7 @@ schemas:
   - RoleCreateRequest: !include json/RoleCreateRequest.schema.json
 
   - TagResponse: !include json/TagResponse.schema.json
+  - TagListResponse: !include json/TagListResponse.schema.json
   - TagUpdateRequest: !include json/TagUpdateRequest.schema.json
   - TagCreateRequest: !include json/TagCreateRequest.schema.json
 
@@ -524,7 +525,14 @@ schemas:
   displayName: Contents
   /:
     get: 
+      is: [ localized, sortable, nested, paged ]
       description: Load all contents.
+      responses:
+        200:
+          body:
+            application/json:
+              schema: ContentListResponse
+              example: !include json/ContentListResponse.example.json
     post:
       description: Create content.
       body:
@@ -594,7 +602,13 @@ schemas:
 
   /:
     get:
+      is: [ localized, sortable, nested, paged ]
       description: Load all tags of the project. **Partially implemented**
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagListResponse.example.json
     post:
       description: Create a new tag. **Partially implemented**
       body:
