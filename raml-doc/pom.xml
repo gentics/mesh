@@ -50,11 +50,6 @@
 			<artifactId>cailun-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-binary</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 	</dependencies>
 
 	<build>

@@ -588,7 +588,11 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
         423:
-
+    /binary/{name}:
+      get:
+        description: Load the binary property value
+      put: 
+        description: Update the binary property value
 
 #------------------------------------------------------------------------------
 # Tag Verticle
@@ -681,54 +685,7 @@ schemas:
         description: Remove the tag from the content. **Not implemented**
 
 
-#------------------------------------------------------------------------------
-# Binary Verticle
-#------------------------------------------------------------------------------
-/{project_name}/binaries:
-  displayName: Binaries
-  is: [ localized, perm_listable ]
-  /:
-    get:
-      description: Load all binaries
-    post: 
-      description: Create a new binary file.
-      responses:
-        200:
-          body:
-            application/json:
-              schema: BinaryFileResponse
-              example: !include json/BinaryFileResponse.example.json
-  
-  /{uuid}:
-    uriParameters:
-      uuid:
-        description: Uuid of a binary file.
-        type: string
-    get:
-      headers:
-        Accept:
-         description: Can be set to *application/json* or *application/octet-stream* 
-                      to load either the json representation of the file or its binary contents.
-      description: Load the binary file with the given uuid. **Partially implemented** - **Not tested**
-    put:
-      description: Update the binary file with the given uuid. **Partially implemented** - **Not tested**
-    delete:
-      description: Delete the binary file with the given uuid. **Partially implemented** - **Not tested**
-      responses:
-        200:
-          body:
-            application/json:
-              schema: GenericMessageResponse
-              example: !include json/GenericMessageResponse.example.json
-    /tags/{uuid}:
-      uriParameters:
-        uuid:
-          description: Uuid of a tag.
-          type: string
-      post:
-        description: Create a new sub tag for the file. **Partially implemented**
-      delete:
-        description: Remove the sub tag from the file. **Partially implemented**
+
 
 #------------------------------------------------------------------------------
 # WebRoot Verticle

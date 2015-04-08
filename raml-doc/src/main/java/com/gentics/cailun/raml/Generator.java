@@ -44,7 +44,6 @@ import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.util.JsonUtils;
 import com.gentics.cailun.util.RestModelPagingHelper;
-import com.gentics.cailun.verticle.file.BinaryFileResponse;
 
 public class Generator {
 
@@ -102,7 +101,6 @@ public class Generator {
 		roleJson();
 		contentJson();
 		tagJson();
-		fileJson();
 		schemaJson();
 		projectJson();
 
@@ -239,14 +237,6 @@ public class Generator {
 		schemaCreate.setName("extended-content");
 		schemaCreate.setDescription("Just a dummy ");
 		write(schemaCreate);
-	}
-
-	private void fileJson() throws JsonGenerationException, JsonMappingException, IOException {
-		BinaryFileResponse file = new BinaryFileResponse();
-		file.setUuid(getUUID());
-		file.setFilename("some_binary_file.dat");
-		file.setPerms("READ", "UPDATE", "DELETE", "CREATE");
-		write(file);
 	}
 
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
