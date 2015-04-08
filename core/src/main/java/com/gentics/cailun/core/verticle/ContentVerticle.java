@@ -176,7 +176,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					PagingInfo pagingInfo = getPagingInfo(rc);
 					User requestUser = springConfiguration.authService().getUser(rc);
 				
-					Page<Content> contentPage = contentService.findAllVisible(requestUser, pagingInfo);
+					Page<Content> contentPage = contentService.findAllVisible(requestUser, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
 						listResponse.getData().add(contentService.transformToRest(content, languageTags));
 					}

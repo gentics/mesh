@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
@@ -24,6 +25,7 @@ public class Project extends GenericNode {
 	private static final long serialVersionUID = -3565883313897315008L;
 
 	@Fetch
+	@Indexed(unique = true)
 	protected String name;
 
 	@SuppressWarnings("unused")

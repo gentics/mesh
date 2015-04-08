@@ -96,8 +96,8 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	}
 
 	@Override
-	public Page<Content> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		return contentRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
+	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+		return contentRepository.findAll(requestUser, projectName, languageTags, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
 
 	// private Node getChildNodePageFromNodeTag(Node node, String pageFilename) {

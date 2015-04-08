@@ -27,6 +27,6 @@ public interface ContentService extends GenericContentService<Content> {
 	 */
 	public ContentResponse transformToRest(Content content, List<String> languageTags);
 
-	public Page<Content> findAllVisible(User requestUser, PagingInfo pagingInfo);
+	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
 }

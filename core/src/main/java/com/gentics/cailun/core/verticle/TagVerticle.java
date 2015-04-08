@@ -205,16 +205,14 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
 			TagListResponse listResponse = new TagListResponse();
-			List<String> languages = getSelectedLanguageTags(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 			try (Transaction tx = graphDb.beginTx()) {
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				User requestUser = springConfiguration.authService().getUser(rc);
-				// TODO filter by project!
-				// TODO filtering
-				Page<Tag> tagPage = tagService.findAllVisible(requestUser, pagingInfo);
+				// TODO filtering, sorting
+				Page<Tag> tagPage = tagService.findAllVisible(requestUser, projectName, languageTags, pagingInfo);
 				for (Tag tag : tagPage) {
-					log.info("Transforming tag {" + tag +"}");
-					listResponse.getData().add(tagService.transformToRest(tag, languages));
+					listResponse.getData().add(tagService.transformToRest(tag, languageTags));
 				}
 				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),
 						tagPage.getTotalElements());

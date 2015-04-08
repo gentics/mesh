@@ -175,8 +175,8 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 	}
 
 	@Override
-	public Page<Tag> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		return tagRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
+	public Page<Tag> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+		return tagRepository.findAll(requestUser, projectName, languageTags, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
 
 }

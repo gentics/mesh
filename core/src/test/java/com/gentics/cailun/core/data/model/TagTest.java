@@ -5,19 +5,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.transaction.NotSupportedException;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
 
-import com.gentics.cailun.core.data.model.Content;
-import com.gentics.cailun.core.data.model.Language;
-import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
+import com.gentics.cailun.path.PagingInfo;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class TagTest extends AbstractDBTest {
@@ -116,6 +118,23 @@ public class TagTest extends AbstractDBTest {
 		assertFalse("The test node should have the random created tag.", reloadedNode.hasTag(extraTag));
 
 		assertTrue("The tag should be removed.", reloadedNode.removeTag(subFolderTag));
+	}
+
+	@Test
+	public void testFindAll() {
+
+		User user = data().getUserInfo().getUser();
+		List<String> languageTags = new ArrayList<>();
+		languageTags.add("de");
+
+		Page<Tag> page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 10));
+		assertEquals(11, page.getTotalElements());
+		assertEquals(10, page.getSize());
+
+		languageTags.add("en");
+		page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 14));
+		assertEquals(15, page.getTotalElements());
+		assertEquals(14, page.getSize());
 	}
 
 }

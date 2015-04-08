@@ -18,6 +18,6 @@ public interface TagService extends GenericTagService<Tag, GenericFile> {
 
 	TagResponse transformToRest(Tag tag, List<String> languages);
 
-	Page<Tag> findAllVisible(User requestUser, PagingInfo pagingInfo);
+	Page<Tag> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
 }
