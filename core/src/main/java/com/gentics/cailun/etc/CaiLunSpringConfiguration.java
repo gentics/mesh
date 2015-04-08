@@ -27,7 +27,6 @@ import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.cailun.auth.ExposingShiroAuthProvider;
 import com.gentics.cailun.auth.Neo4jAuthorizingRealm;
-import com.gentics.cailun.cli.BootstrapInitializer;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
 

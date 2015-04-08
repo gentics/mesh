@@ -8,8 +8,6 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
-import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
-import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
@@ -22,6 +20,8 @@ public class GenericPropertyContainer extends GenericNode {
 	private static final long serialVersionUID = 7551202734708358487L;
 
 	public static final String NAME_KEYWORD = "name";
+
+	protected String schema = null;
 
 	@Fetch
 	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
@@ -70,4 +70,12 @@ public class GenericPropertyContainer extends GenericNode {
 		return i18nTranslations;
 	}
 
+	public String getSchema() {
+		// TODO use labels instead
+		return schema;
+	}
+
+	public void setSchemaName(String schema) {
+		this.schema = schema;
+	}
 }

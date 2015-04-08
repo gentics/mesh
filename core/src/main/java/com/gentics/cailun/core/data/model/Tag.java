@@ -1,11 +1,17 @@
 package com.gentics.cailun.core.data.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.gentics.cailun.core.data.model.generic.GenericFile;
-import com.gentics.cailun.core.data.model.generic.GenericTag;
+import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
+import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 
 /**
  * A tag is the main structural element. It allows the creation of tag hierarchies. Tags have important limitations. A tag can and must only have one parent.
@@ -14,7 +20,7 @@ import com.gentics.cailun.core.data.model.generic.GenericTag;
  *
  */
 @NodeEntity
-public class Tag extends GenericTag<Tag, GenericFile> {
+public class Tag extends GenericPropertyContainer {
 
 	private static final long serialVersionUID = 7645315435657775862L;
 
@@ -43,6 +49,51 @@ public class Tag extends GenericTag<Tag, GenericFile> {
 
 	public void setSchemaName(String schema) {
 		this.schemaName = schema;
+	}
+
+	@Fetch
+	@RelatedTo(type = BasicRelationships.HAS_CONTENT, direction = Direction.OUTGOING)
+	private Set<Content> contents = new HashSet<>();
+
+	@Fetch
+	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING)
+	private Set<Tag> childTags = new HashSet<>();
+
+	public void addTag(Tag tag) {
+		childTags.add(tag);
+	}
+
+	public boolean removeTag(Tag tag) {
+		return childTags.remove(tag);
+	}
+
+	public Set<Tag> getTags() {
+		return childTags;
+	}
+
+	public void setTags(Set<Tag> childTags) {
+		this.childTags = childTags;
+	}
+
+	public boolean hasTag(Tag tag) {
+		for (Tag childTag : childTags) {
+			if (tag.equals(childTag)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void addContent(Content content) {
+		this.contents.add(content);
+	}
+
+	public Set<Content> getContents() {
+		return contents;
+	}
+
+	public boolean removeContent(Content content) {
+		return contents.remove(content);
 	}
 
 }

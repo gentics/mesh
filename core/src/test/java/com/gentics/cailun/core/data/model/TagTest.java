@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.path.PagingInfo;
@@ -73,22 +72,22 @@ public class TagTest extends AbstractDBTest {
 		contentService.setName(content, german, "german content name");
 		contentService.save(content);
 
-		tag.addFile(content);
+		tag.addContent(content);
 		tagService.save(tag);
 
 		// Reload the tag and check whether the content was set
 		tag = tagService.findOne(tag.getId());
-		assertEquals("The tag should have exactly one file.", 1, tag.getFiles().size());
-		GenericFile fileFromTag = tag.getFiles().iterator().next();
-		assertNotNull(fileFromTag);
+		assertEquals("The tag should have exactly one file.", 1, tag.getContents().size());
+		Content contentFromTag = tag.getContents().iterator().next();
+		assertNotNull(contentFromTag);
 		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME,
-				fileFromTag.getFilename(german));
+				contentFromTag.getFilename(german));
 
 		// Remove the file/content and check whether the content was really removed
-		assertTrue(tag.removeFile(fileFromTag));
+		assertTrue(tag.removeContent(contentFromTag));
 		tagService.save(tag);
 		tag = tagService.findOne(tag.getId());
-		assertEquals("The tag should not have any file.", 0, tag.getFiles().size());
+		assertEquals("The tag should not have any file.", 0, tag.getContents().size());
 
 	}
 

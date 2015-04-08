@@ -1,6 +1,5 @@
 package com.gentics.cailun.nav.model;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.apex.RoutingContext;
 import io.vertx.ext.apex.Session;
@@ -15,10 +14,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.data.model.generic.GenericTag;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
@@ -28,7 +27,7 @@ import com.gentics.cailun.util.Neo4jGenericContentUtils;
 public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
-	GenericNodeRepository<GenericTag> tagRepository;
+	GenericNodeRepository<Tag> tagRepository;
 
 	@Autowired
 	CaiLunSpringConfiguration config;
@@ -43,7 +42,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	public void handle(RoutingContext rc) {
 		this.session = rc.session();
 		// LocalizedTag rootTag = tagRepository.findRootTag();
-		GenericTag rootTag = null;
+		Tag rootTag = null;
 		try {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
@@ -77,7 +76,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 * @return
 	 * @throws NodeNotFoundException
 	 */
-	private Navigation getNavigation(GenericTag rootTag) {
+	private Navigation getNavigation(Tag rootTag) {
 		// TODO handle language
 		Language language = null;
 		Navigation nav = new Navigation();

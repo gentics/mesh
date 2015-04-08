@@ -1,22 +1,23 @@
 package com.gentics.cailun.core.data.service;
 
+import io.vertx.ext.apex.RoutingContext;
+
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
-import com.gentics.cailun.core.data.service.generic.GenericTagService;
+import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerService;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.path.PagingInfo;
 import com.gentics.cailun.path.Path;
 
-public interface TagService extends GenericTagService<Tag, GenericFile> {
+public interface TagService extends GenericPropertyContainerService<Tag> {
 
 	Path findByProjectPath(String projectName, String path);
 
-	TagResponse transformToRest(Tag tag, List<String> languages);
+	TagResponse transformToRest(RoutingContext rc, Tag tag, List<String> languages, int depth);
 
 	Page<Tag> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 

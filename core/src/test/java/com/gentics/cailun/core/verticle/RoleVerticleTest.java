@@ -70,7 +70,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"joe1_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
@@ -145,7 +145,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), info.getRole(), PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + role.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"joe1_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"joe1_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
 		assertEqualsSanitizedJson("The response does not match.", json, response);
 	}
 

@@ -8,8 +8,8 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.core.data.model.generic.GenericTag;
-import com.gentics.cailun.core.repository.generic.GenericContentRepository;
+import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
 /**
@@ -24,13 +24,13 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private static final Logger log = LoggerFactory.getLogger(NavigationTask.class);
 
 	private static final long serialVersionUID = 8773519857036585642L;
-	private GenericTag tag;
+	private Tag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
-	private GenericContentRepository genericContentRepository;
+	private ContentRepository genericContentRepository;
 	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(GenericTag tag, NavigationElement element, NavigationRequestHandler handler, GenericContentRepository genericContentRepository,
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, ContentRepository genericContentRepository,
 			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;
@@ -43,7 +43,7 @@ public class NavigationTask extends RecursiveTask<Void> {
 	protected Void compute() {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
-		tag.getFiles().parallelStream().forEachOrdered(tagging -> {
+		tag.getContents().parallelStream().forEachOrdered(tagging -> {
 		});
 
 //		tag.getContents().parallelStream().forEachOrdered(content -> {

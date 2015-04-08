@@ -1,7 +1,8 @@
 package com.gentics.cailun.core.data.service;
 
+import io.vertx.ext.apex.RoutingContext;
+
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,15 +21,15 @@ import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
-import com.gentics.cailun.core.data.model.relationship.Translated;
-import com.gentics.cailun.core.data.service.generic.GenericTagServiceImpl;
+import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
 import com.gentics.cailun.path.Path;
 import com.gentics.cailun.path.PathSegment;
@@ -36,7 +37,7 @@ import com.google.common.collect.Lists;
 
 @Component
 @Transactional
-public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> implements TagService {
+public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> implements TagService {
 
 	private static final Logger log = LoggerFactory.getLogger(TagServiceImpl.class);
 
@@ -48,6 +49,9 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 
 	@Autowired
 	private ProjectService projectService;
+
+	@Autowired
+	private CaiLunSpringConfiguration springConfiguration;
 
 	@Autowired
 	private UserService userService;
@@ -138,7 +142,7 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 	}
 
 	@Override
-	public TagResponse transformToRest(Tag tag, List<String> languageTags) {
+	public TagResponse transformToRest(RoutingContext rc, Tag tag, List<String> languageTags, int depth) {
 		TagResponse response = new TagResponse();
 
 		for (String languageTag : languageTags) {
@@ -160,6 +164,16 @@ public class TagServiceImpl extends GenericTagServiceImpl<Tag, GenericFile> impl
 			} else {
 				log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
 				continue;
+			}
+		}
+		// TODO we should do this async
+		if (depth > 0) {
+			for (Tag currentTag : tag.getTags()) {
+				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
+						new CaiLunPermission(currentTag, PermissionType.READ));
+				if (hasPerm) {
+					response.getChildTags().add(transformToRest(rc, currentTag, languageTags, depth - 1));
+				}
 			}
 		}
 		response.setUuid(tag.getUuid());

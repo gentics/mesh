@@ -32,7 +32,6 @@ import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
@@ -124,14 +123,14 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				content = contentService.save(content);
 
 				// Assign the content to the tag and save the tag
-				rootTagForContent.addFile(content);
+				rootTagForContent.addContent(content);
 				rootTagForContent = tagService.save(rootTagForContent);
 				tx.success();
 			}
 			// Reload in order to update uuid field
 			content = contentService.reload(content);
 
-			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
+			rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 
 			// // TODO simplify language handling - looks a bit chaotic
 			// // Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
@@ -161,7 +160,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			}
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			rc.response().setStatusCode(200);
-			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
+			rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 
 		});
 
@@ -175,10 +174,10 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				try (Transaction tx = graphDb.beginTx()) {
 					PagingInfo pagingInfo = getPagingInfo(rc);
 					User requestUser = springConfiguration.authService().getUser(rc);
-				
+
 					Page<Content> contentPage = contentService.findAllVisible(requestUser, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
-						listResponse.getData().add(contentService.transformToRest(content, languageTags));
+						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, 0));
 					}
 					RestModelPagingHelper.setPaging(listResponse, contentPage.getNumber(), contentPage.getTotalPages(), pagingInfo.getPerPage(),
 							contentPage.getTotalElements());
@@ -272,12 +271,12 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			}
 
 			rc.response().setStatusCode(200);
-			rc.response().end(toJson(contentService.transformToRest(content, languageTags)));
+			rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 
 		});
 	}
 
-	private void resolveLinks(GenericContent content) throws InterruptedException, ExecutionException {
+	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a spring service
 		// TODO handle language
 		Language language = null;

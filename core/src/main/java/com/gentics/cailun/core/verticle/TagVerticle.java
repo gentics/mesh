@@ -139,7 +139,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			}
 
 			rc.response().setStatusCode(200);
-			rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
+			rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 		});
 
 	}
@@ -182,7 +182,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			newTag = tagService.reload(newTag);
 			rc.response().setStatusCode(200);
-			rc.response().end(toJson(tagService.transformToRest(newTag, languageTags)));
+			rc.response().end(toJson(tagService.transformToRest(rc, newTag, languageTags, 0)));
 
 		});
 	}
@@ -193,17 +193,20 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			List<String> languages = getSelectedLanguageTags(rc);
 			Tag tag;
+			int depth = getDepth(rc);
 			try (Transaction tx = graphDb.beginTx()) {
 				tag = getObject(rc, "uuid", PermissionType.READ);
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(tagService.transformToRest(rc, tag, languages, depth)));
 				tx.success();
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(tagService.transformToRest(tag, languages)));
+			
 		});
 
 		Route readAllRoute = route("/").method(GET);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
+			
 			TagListResponse listResponse = new TagListResponse();
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			try (Transaction tx = graphDb.beginTx()) {
@@ -212,7 +215,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				// TODO filtering, sorting
 				Page<Tag> tagPage = tagService.findAllVisible(requestUser, projectName, languageTags, pagingInfo);
 				for (Tag tag : tagPage) {
-					listResponse.getData().add(tagService.transformToRest(tag, languageTags));
+					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, 0));
 				}
 				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),
 						tagPage.getTotalElements());
@@ -230,7 +233,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = getProjectName(rc);
 			String uuid = rc.request().params().get("uuid");
 			try (Transaction tx = graphDb.beginTx()) {
-				// TODO load projec specific tag
+				// TODO load project specific tag
 				Tag tag = getObject(rc, "uuid", PermissionType.DELETE);
 				tagService.delete(tag);
 				tx.success();
@@ -263,7 +266,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 				}
 				rc.response().setStatusCode(200);
-				rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
+				rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 			});
 
 		Route deleteRoute = route("/:tagUuid/tags/:subtagUuid").method(DELETE);
@@ -286,7 +289,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					tx.success();
 				}
 				rc.response().setStatusCode(200);
-				rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
+				rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 			});
 
 	}

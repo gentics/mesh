@@ -8,15 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
-import com.gentics.cailun.core.data.model.generic.GenericTag;
+import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
-import com.gentics.cailun.core.repository.action.ProjectActions;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepositoryImpl;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
-public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> implements ProjectActions {
+public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectRepositoryImpl.class);
 
@@ -29,15 +28,13 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> im
 	@Autowired
 	private CaiLunSpringConfiguration springConfig;
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public GenericFile findFileByPath(String projectName, String path) {
+	public Content findFileByPath(String projectName, String path) {
 		if (log.isDebugEnabled()) {
 			log.debug("Searching for path {" + path + "}");
 		}
 		String parts[] = path.split("/");
 		Project project = projectRepository.findByName(projectName);
-		GenericTag tag = project.getRootTag();
+		Tag tag = project.getRootTag();
 		if (log.isDebugEnabled()) {
 			log.debug("Found {" + tag.getTags().size() + "} subtags.");
 		}
@@ -61,7 +58,7 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> im
 					if (fileNode == null) {
 						return null;
 					} else {
-						return template.load(fileNode, GenericFile.class);
+						return template.load(fileNode, Content.class);
 					}
 				}
 			}

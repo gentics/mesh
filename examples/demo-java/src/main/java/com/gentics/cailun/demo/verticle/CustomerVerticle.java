@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.data.model.generic.GenericContent;
 import com.gentics.cailun.demo.DemoDataProvider;
 
 /**
@@ -45,7 +45,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rh -> {
 			Session session = rh.session();
-			GenericContent content = contentService.findOne(23L);
+			Content content = contentService.findOne(23L);
 			boolean perm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(content, READ));
 			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
 		});

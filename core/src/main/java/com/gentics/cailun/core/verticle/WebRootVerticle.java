@@ -73,7 +73,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 					}
 					failOnMissingPermission(rc, tag, PermissionType.READ);
 					languageTags.add(lastSegment.getLanguageTag());
-					rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
+					rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 					return;
 				} else {
 					throw new EntityNotFoundException(i18n.get(rc, "tag_not_found_for_path", path));

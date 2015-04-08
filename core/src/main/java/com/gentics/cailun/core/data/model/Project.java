@@ -10,7 +10,6 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.cailun.core.data.model.generic.GenericNode;
-import com.gentics.cailun.core.data.model.generic.GenericTag;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 
 /**

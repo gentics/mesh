@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import io.vertx.ext.apex.RoutingContext;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -7,23 +9,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
-import com.gentics.cailun.core.data.service.generic.GenericContentServiceImpl;
+import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
 
 @Component
-@Transactional
-public class ContentServiceImpl extends GenericContentServiceImpl<Content> implements ContentService {
+public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Content> implements ContentService {
 
 	@Autowired
 	private LanguageService languageService;
@@ -39,6 +43,12 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 
 	@Autowired
 	private ObjectSchemaService objectSchemaService;
+
+	@Autowired
+	private TagService tagService;
+
+	@Autowired
+	private CaiLunSpringConfiguration springConfiguration;
 
 	@Autowired
 	private ContentRepository contentRepository;
@@ -60,13 +70,13 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	}
 
 	@Override
-	public ContentResponse transformToRest(Content content, List<String> languages) {
+	public ContentResponse transformToRest(RoutingContext rc, Content content, List<String> languageTags, int depth) {
 		ContentResponse response = new ContentResponse();
 		response.setUuid(content.getUuid());
 		response.setSchemaName(content.getSchema());
 		UserResponse restUser = userService.transformToRest(content.getCreator());
 		response.setAuthor(restUser);
-		if (languages.size() == 0) {
+		if (languageTags.size() == 0) {
 			for (Translated transalated : content.getI18nTranslations()) {
 				String languageTag = transalated.getLanguageTag();
 				// TODO handle schema
@@ -76,7 +86,7 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 				response.addProperty(languageTag, "teaser", transalated.getI18nValue().getProperty("teaser"));
 			}
 		} else {
-			for (String languageTag : languages) {
+			for (String languageTag : languageTags) {
 				Language language = languageService.findByLanguageTag(languageTag);
 				if (language == null) {
 					// TODO use request locale
@@ -89,6 +99,16 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 				response.addProperty(languageTag, "teaser", content.getTeaser(language));
 			}
 
+		}
+
+		if (depth > 0) {
+			for (Tag currentTag : content.getTags()) {
+				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
+						new CaiLunPermission(currentTag, PermissionType.READ));
+				if (hasPerm) {
+					response.getTags().add(tagService.transformToRest(rc, currentTag, languageTags, depth - 1));
+				}
+			}
 		}
 
 		return response;
@@ -182,4 +202,24 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 	// }
 	// return null;
 	// }
+
+	public void createLink(Content from, Content to) {
+		// TODO maybe extract information about link start and end to speedup rendering of page with links
+		// Linked link = new Linked(this, page);
+		// this.links.add(link);
+	}
+
+	public void addI18NContent(Content content, Language language, String text) {
+		setProperty(content, language, Content.CONTENT_KEYWORD, text);
+	}
+
+	public void setContent(Content content, Language language, String text) {
+		setProperty(content, language, Content.CONTENT_KEYWORD, text);
+	}
+
+	@Override
+	public void setFilename(Content content, Language language, String filename) {
+		// TODO Auto-generated method stub
+
+	}
 }

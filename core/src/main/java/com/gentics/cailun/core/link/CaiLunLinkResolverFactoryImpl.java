@@ -1,12 +1,10 @@
 package com.gentics.cailun.core.link;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.cailun.core.data.model.generic.GenericContent;
-import com.gentics.cailun.core.repository.generic.GenericContentRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
 
 /**
  * Factory which provides link resolvers
@@ -20,8 +18,8 @@ import com.gentics.cailun.core.repository.generic.GenericContentRepository;
 public class CaiLunLinkResolverFactoryImpl<T extends CaiLunLinkResolver> implements LinkResolverFactory<AbstractLinkResolver> {
 
 	@Autowired
-	@Qualifier("genericContentRepository")
-	GenericContentRepository<GenericContent> contentRepository;
+	//@Qualifier("genericContentRepository")
+	ContentRepository contentRepository;
 
 	private CaiLunLinkResolverFactoryImpl() {
 	}

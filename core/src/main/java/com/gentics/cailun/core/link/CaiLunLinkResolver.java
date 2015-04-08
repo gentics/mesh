@@ -2,8 +2,7 @@ package com.gentics.cailun.core.link;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.cailun.core.data.model.generic.GenericContent;
-import com.gentics.cailun.core.repository.generic.GenericContentRepository;
+import com.gentics.cailun.core.repository.ContentRepository;
 
 /**
  * This class will resolve cailun link placeholders.
@@ -13,13 +12,13 @@ import com.gentics.cailun.core.repository.generic.GenericContentRepository;
  */
 public class CaiLunLinkResolver extends AbstractLinkResolver {
 
-	private GenericContentRepository<GenericContent> contentRepository;
+	private ContentRepository contentRepository;
 
 	public CaiLunLinkResolver() {
 		super(null);
 	}
 
-	public CaiLunLinkResolver(String text, GenericContentRepository<GenericContent> contentRepository) {
+	public CaiLunLinkResolver(String text, ContentRepository contentRepository) {
 		super(text);
 		this.contentRepository = contentRepository;
 	}

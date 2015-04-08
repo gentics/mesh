@@ -3,7 +3,6 @@ package com.gentics.cailun.demo;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
-import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,8 +31,6 @@ import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.GenericContent;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
 import com.gentics.cailun.core.data.service.CaiLunRootService;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.GroupService;
@@ -179,27 +176,37 @@ public class DemoDataProvider {
 			contentSchema.addProject(project);
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setCreator(userInfo.getUser());
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			objectSchemaService.save(contentSchema);
 
+			contentSchema = new ObjectSchema("binary-content");
+			contentSchema.addProject(project);
+			contentSchema.setDescription("Default schema for binary contents");
+			contentSchema.setCreator(userInfo.getUser());
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.BINARY));
+			objectSchemaService.save(contentSchema);
+
+			
 			tagSchema = new ObjectSchema("tag");
 			tagSchema.addProject(project);
 			tagSchema.setDescription("Default schema for tags");
 			tagSchema.setCreator(userInfo.getUser());
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			objectSchemaService.save(tagSchema);
 
 			ObjectSchema customSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
 			customSchema.addProject(project);
 			customSchema.setDescription("Custom schema for tag categories");
 			customSchema.setCreator(userInfo.getUser());
-			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.NAME_KEYWORD, PropertyType.I18N_STRING));
-			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericFile.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(GenericContent.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			objectSchemaService.save(customSchema);
 			tx.success();
 		}
@@ -567,7 +574,7 @@ public class DemoDataProvider {
 		content = contentService.save(content);
 
 		// Add the content to the given tag
-		tag.addFile(content);
+		tag.addContent(content);
 		tag = tagService.save(tag);
 
 		return content;

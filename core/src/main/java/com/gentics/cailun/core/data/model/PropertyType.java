@@ -2,7 +2,7 @@ package com.gentics.cailun.core.data.model;
 
 public enum PropertyType {
 
-	I18N_STRING("i18n-string"), STRING("string"), NUMBER("number"), DATE("date"), BOOLEAN("boolean"), NULL("null"), HTML("html");
+	I18N_STRING("i18n-string"), STRING("string"), NUMBER("number"), DATE("date"), BOOLEAN("boolean"), NULL("null"), HTML("html"), BINARY("binary");
 
 	private String name;
 

@@ -8,10 +8,9 @@ import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.GenericFile;
-import com.gentics.cailun.core.repository.generic.GenericTagRepository;
+import com.gentics.cailun.core.repository.generic.GenericPropertyContainerRepository;
 
-public interface TagRepository extends GenericTagRepository<Tag, GenericFile> {
+public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 
 	// TODO filter by name?
 	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
