@@ -26,4 +26,20 @@ public interface ContentRepository extends GenericContentRepository<Content> {
 			
 		)
 	Page<Content> findAll(User requestUser, String projectName, List<String> languageTags,Pageable pageable);
+	
+	
+	@Query(
+			value="MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(content:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+					+ "MATCH (content)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+					+ "WHERE id(requestUser) = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+					+ "WITH p, content "
+					+ "ORDER by p.`properties-name` desc "
+					+ "RETURN DISTINCT content",
+			countQuery="MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(content:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+					+ "MATCH (content)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+					+ "WHERE id(requestUser) = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+					+ "RETURN count(DISTINCT content)"
+			
+		)
+	Page<Content> findAll(User requestUser, String projectName, Pageable pageable);
 }

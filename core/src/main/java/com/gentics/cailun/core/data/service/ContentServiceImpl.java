@@ -97,7 +97,12 @@ public class ContentServiceImpl extends GenericContentServiceImpl<Content> imple
 
 	@Override
 	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		return contentRepository.findAll(requestUser, projectName, languageTags, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
+		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());
+		if (languageTags == null || languageTags.size() == 0) {
+			return contentRepository.findAll(requestUser, projectName, pr);
+		} else {
+			return contentRepository.findAll(requestUser, projectName, languageTags, pr);
+		}
 	}
 
 	// private Node getChildNodePageFromNodeTag(Node node, String pageFilename) {
