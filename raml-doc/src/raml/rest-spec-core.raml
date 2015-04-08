@@ -588,7 +588,7 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
         423:
-    /binary/{name}:
+    /bin/{name}:
       get:
         description: Load the binary property value
       put: 
@@ -683,6 +683,12 @@ schemas:
         description: Assign the tag to the content. **Not implemented**
       delete:
         description: Remove the tag from the content. **Not implemented**
+
+    /bin/{name}:
+      get:
+        description: Load the binary property value
+      put: 
+        description: Update the binary property value
 
 
 
