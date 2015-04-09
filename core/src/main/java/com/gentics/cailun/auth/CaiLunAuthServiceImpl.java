@@ -28,7 +28,6 @@ import com.gentics.cailun.core.data.model.auth.User;
 public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 
 	private final Vertx vertx;
-	// private final ExposingShiroAuthProvider provider;
 	private final ExposingShiroAuthProvider provider;
 	protected final Map<String, LoginSession> loginSessions = new ConcurrentHashMap<>();
 	private long reaperPeriod = AuthService.DEFAULT_REAPER_PERIOD;

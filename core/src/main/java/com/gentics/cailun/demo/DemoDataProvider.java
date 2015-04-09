@@ -190,7 +190,6 @@ public class DemoDataProvider {
 			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.BINARY));
 			objectSchemaService.save(contentSchema);
 
-			
 			tagSchema = new ObjectSchema("tag");
 			tagSchema.addProject(project);
 			tagSchema.setDescription("Default schema for tags");
@@ -430,6 +429,8 @@ public class DemoDataProvider {
 			productsTag = addTag(rootTag, "products", "Produkte");
 			totalTags++;
 			productsTag.addContent(news2015Content);
+			productsTag = tagService.save(productsTag);
+
 
 			Content porsche911 = addContent(
 					productsTag,

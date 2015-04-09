@@ -2,6 +2,7 @@ package com.gentics.cailun.core.data.service;
 
 import io.vertx.ext.apex.RoutingContext;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -15,6 +16,7 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
@@ -77,6 +79,8 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		response.setSchemaName(content.getSchemaName());
 		UserResponse restUser = userService.transformToRest(content.getCreator());
 		response.setAuthor(restUser);
+		response.setPerms(userService.getPerms(rc, content));
+
 		if (languageTags.size() == 0) {
 			for (Translated transalated : content.getI18nTranslations()) {
 				String languageTag = transalated.getLanguageTag();
@@ -103,7 +107,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		}
 
 		if (depth > 0) {
-			 Set<Tag> tags = neo4jTemplate.fetch(content.getTags());
+			Set<Tag> tags = neo4jTemplate.fetch(content.getTags());
 			for (Tag currentTag : tags) {
 				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
 						new CaiLunPermission(currentTag, PermissionType.READ));
@@ -117,6 +121,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 
 	}
 
+	
 	@Override
 	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());

@@ -14,19 +14,10 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import com.gentics.cailun.core.data.model.auth.AuthRelationships;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
@@ -38,16 +29,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	private CaiLunSpringConfiguration securityConfig;
 
 	@Autowired
-	private Neo4jTemplate template;
-
-	@Autowired
-	private GraphDatabaseService graphDb;
-
-	@Autowired
 	private UserService userService;
-
-	@Autowired
-	private RoleService roleService;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -59,41 +41,12 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 		return Long.valueOf(nodeIdStr);
 	}
 
-	private boolean checkPermission(long userNodeId, CaiLunPermission genericPermission) throws Exception {
-		if (genericPermission.getTargetNode() == null) {
-			return false;
-		}
-
-		Node userNode = graphDb.getNodeById(userNodeId);
-		// Traverse the graph from user to the page. Collect all permission relations and check them individually
-		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-				.traverse(userNode).relationships()) {
-//			log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-//					+ rel.getStartNode().getId() + rel.getStartNode().getLabels());
-
-			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
-				// Check whether this relation in fact targets our object we want to check
-				boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
-				if (matchesTargetNode) {
-					// Convert the api relationship to a SDN relationship
-					GraphPermission perm = template.load(rel, GraphPermission.class);
-					if (genericPermission.implies(perm) == true) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
 	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
 		if (permission instanceof CaiLunPermission) {
 			CaiLunPermission basicPermission = (CaiLunPermission) permission;
 			try {
 				long userId = getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString());
-				return checkPermission(userId, basicPermission);
+				return userService.isPermitted(userId, basicPermission);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

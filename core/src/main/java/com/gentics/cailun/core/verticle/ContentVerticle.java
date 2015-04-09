@@ -147,20 +147,16 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 		Route route = route("/:uuid").method(GET);
 		route.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
+			int depth = getDepth(rc);
 			Content content = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				content = contentService.findByUUID(projectName, uuid);
-				if (content == null) {
-					throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_uuid", uuid));
-				}
-				failOnMissingPermission(rc, content, PermissionType.READ);
+				content = getObject(rc, "uuid", PermissionType.READ);
+				List<String> languageTags = getSelectedLanguageTags(rc);
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
 				tx.success();
 			}
-			List<String> languageTags = getSelectedLanguageTags(rc);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 
 		});
 
