@@ -19,6 +19,7 @@ import javax.naming.InvalidNameException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -26,14 +27,21 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.LanguageRoot;
+import com.gentics.cailun.core.data.model.ObjectSchemaRoot;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.ProjectRoot;
 import com.gentics.cailun.core.data.model.auth.Group;
+import com.gentics.cailun.core.data.model.auth.GroupRoot;
 import com.gentics.cailun.core.data.model.auth.Role;
+import com.gentics.cailun.core.data.model.auth.RoleRoot;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.model.auth.UserRoot;
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.core.repository.CaiLunRootRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.repository.LanguageRepository;
+import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.UserRepository;
@@ -66,6 +74,9 @@ public class BootstrapInitializer {
 	private CaiLunRootRepository rootRepository;
 
 	@Autowired
+	private ObjectSchemaRepository objectSchemaRepository;
+
+	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
@@ -85,6 +96,9 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private CaiLunSpringConfiguration springConfiguration;
+
+	@Autowired
+	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	private GraphDatabaseService graphDb;
@@ -217,12 +231,50 @@ public class BootstrapInitializer {
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
 
+		if (languageRepository.findRoot() == null) {
+			LanguageRoot languageRoot = new LanguageRoot();
+			neo4jTemplate.save(languageRoot);
+			log.info("Stored language root node");
+		}
+
+		GroupRoot groupRoot = groupRepository.findRoot();
+		if (groupRoot == null) {
+			groupRoot = new GroupRoot();
+			neo4jTemplate.save(groupRoot);
+			log.info("Stored group root node");
+		}
+		UserRoot userRoot = userRepository.findRoot();
+		if (userRoot == null) {
+			userRoot = new UserRoot();
+			neo4jTemplate.save(userRoot);
+			log.info("Stored user root node");
+		}
+		RoleRoot roleRoot = roleRepository.findRoot();
+		if (roleRoot == null) {
+			roleRoot = new RoleRoot();
+			neo4jTemplate.save(roleRoot);
+			log.info("Stored role root node");
+		}
+		ProjectRoot projectRoot = projectRepository.findRoot();
+		if (projectRoot == null) {
+			projectRoot = new ProjectRoot();
+			neo4jTemplate.save(projectRoot);
+			log.info("Stored project root node");
+		}
+
+		ObjectSchemaRoot schemaRoot = objectSchemaRepository.findRoot();
+		if (schemaRoot == null) {
+			schemaRoot = new ObjectSchemaRoot();
+			neo4jTemplate.save(schemaRoot);
+			log.info("Stored schema root node");
+		}
+
 		// Verify that the root node is existing
 		CaiLunRoot rootNode = rootRepository.findRoot();
 		if (rootNode == null) {
 			rootNode = new CaiLunRoot();
 			rootRepository.save(rootNode);
-			log.info("Stored root node");
+			log.info("Stored cailun root node");
 		}
 		// Reload the node to get one with a valid uuid
 		// TODO check whether this really works. I assume i would have to commit first.

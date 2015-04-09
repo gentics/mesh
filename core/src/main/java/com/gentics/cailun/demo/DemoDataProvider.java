@@ -3,6 +3,7 @@ package com.gentics.cailun.demo;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.cailun.cli.BootstrapInitializer;
 import com.gentics.cailun.cli.CaiLun;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Content;
@@ -95,6 +99,9 @@ public class DemoDataProvider {
 	@Autowired
 	protected CaiLunSpringConfiguration springConfig;
 
+	@Autowired
+	private BootstrapInitializer bootstrapInitializer;
+
 	// References to dummy data
 
 	private CaiLunRoot root;
@@ -162,14 +169,15 @@ public class DemoDataProvider {
 
 	}
 
-	public void setup() {
-		addData();
-		addSchemas();
+	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
+		bootstrapInitializer.initMandatoryData();
+		addData(multiplicator);
+		addSchemas(multiplicator);
 		updatePermissions();
 		updateUUIDs();
 	}
 
-	private void addSchemas() {
+	private void addSchemas(int multiplicator) {
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 			// Save the default object schema
 			contentSchema = new ObjectSchema("content");
@@ -264,7 +272,7 @@ public class DemoDataProvider {
 	 * Reload various nodes to refresh them and load the uuid field.
 	 */
 	private void updateUUIDs() {
-		root = rootService.reload(root);
+		root = rootService.findRoot();
 
 		news = tagService.reload(news);
 		news2015 = tagService.reload(news2015);
@@ -284,13 +292,9 @@ public class DemoDataProvider {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addData() {
+	private void addData(int multiplicator) {
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 
-			root = rootService.findRoot();
-			if (root == null) {
-				root = new CaiLunRoot();
-			}
 			project = new Project(PROJECT_NAME);
 			project = projectService.save(project);
 
@@ -308,7 +312,7 @@ public class DemoDataProvider {
 			totalGroups++;
 
 			// Extra User
-			for (int i = 0; i < 42; i++) {
+			for (int i = 0; i < 12 * multiplicator; i++) {
 				User user = new User("guest_" + i);
 				// userService.setPassword(user, "guestpw" + i);
 				user.setFirstname("Guest Firstname");
@@ -320,14 +324,14 @@ public class DemoDataProvider {
 				totalUsers++;
 			}
 			// Extra Groups
-			for (int i = 0; i < 42; i++) {
+			for (int i = 0; i < 12 * multiplicator; i++) {
 				Group group = new Group("extra_group_" + i);
 				group = groupService.save(group);
 				totalGroups++;
 			}
 
 			// Extra Roles
-			for (int i = 0; i < 42; i++) {
+			for (int i = 0; i < 12 * multiplicator; i++) {
 				Role role = new Role("extra_role_" + i);
 				roleService.save(role);
 				totalRoles++;
@@ -344,12 +348,11 @@ public class DemoDataProvider {
 				german = new Language("german", "de");
 				german = languageService.save(german);
 			}
-
+			root = rootService.findRoot();
 			root.setRootGroup(userInfo.getGroup());
 			root.addLanguage(english);
 			root.addLanguage(german);
 			root.addUser(userInfo.getUser());
-
 			rootService.save(root);
 
 			// Root Tag
@@ -378,7 +381,7 @@ public class DemoDataProvider {
 			totalTags++;
 			news2015Content = addContent(news2015, "Special News_2014", "News!", "Neuigkeiten!");
 			totalContents++;
-			for (int i = 0; i < 42; i++) {
+			for (int i = 0; i < 12 * multiplicator; i++) {
 				addContent(news2015, "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!");
 				totalContents++;
 			}
@@ -430,7 +433,6 @@ public class DemoDataProvider {
 			totalTags++;
 			productsTag.addContent(news2015Content);
 			productsTag = tagService.save(productsTag);
-
 
 			Content porsche911 = addContent(
 					productsTag,

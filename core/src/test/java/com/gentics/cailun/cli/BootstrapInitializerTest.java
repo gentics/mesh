@@ -25,7 +25,7 @@ public class BootstrapInitializerTest extends AbstractDBTest {
 	private LanguageRepository languageRepository;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		setupData();
 	}
 

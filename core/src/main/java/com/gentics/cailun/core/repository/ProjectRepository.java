@@ -6,10 +6,12 @@ import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.ProjectRoot;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.repository.action.ProjectActions;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 
-public interface ProjectRepository extends GenericNodeRepository<Project> {
+public interface ProjectRepository extends GenericNodeRepository<Project>, ProjectActions {
 
 	Project findByName(String string);
 
@@ -19,5 +21,8 @@ public interface ProjectRepository extends GenericNodeRepository<Project> {
 	public Page<Project> findAll(User requestUser, Pageable pageable);
 
 	public Content findFileByPath(String projectName, String path);
+	
+	@Query("MATCH (n:ProjectRoot) return n")
+	ProjectRoot findRoot();
 
 }

@@ -5,10 +5,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
+import com.gentics.cailun.core.data.model.ObjectSchemaRoot;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.repository.action.ObjectSchemaActions;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 
-public interface ObjectSchemaRepository extends GenericNodeRepository<ObjectSchema> {
+public interface ObjectSchemaRepository extends GenericNodeRepository<ObjectSchema>, ObjectSchemaActions {
 
 	// @Query("MATCH (project:Project)-[:ASSIGNED_TO_PROJECT]-(n:ObjectSchema) WHERE n.name = {1} AND project.name = {0} RETURN n")
 	// TODO fix query - somehow the project relationship is not matching
@@ -32,5 +34,8 @@ public interface ObjectSchemaRepository extends GenericNodeRepository<ObjectSche
 
 	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return schema ORDER BY schema.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return count(schema)")
 	public Page<ObjectSchema> findAll(User requestUser, Pageable pageable);
+
+	@Query("MATCH (n:ObjectSchemaRoot) return n")
+	ObjectSchemaRoot findRoot();
 
 }

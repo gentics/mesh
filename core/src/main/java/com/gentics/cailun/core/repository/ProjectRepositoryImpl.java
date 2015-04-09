@@ -10,12 +10,14 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.ProjectRoot;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
+import com.gentics.cailun.core.repository.action.ProjectActions;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepositoryImpl;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
-public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> {
+public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> implements ProjectActions {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectRepositoryImpl.class);
 
@@ -23,7 +25,7 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> {
 	ProjectRepository projectRepository;
 
 	@Autowired
-	private Neo4jTemplate template;
+	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	private CaiLunSpringConfiguration springConfig;
@@ -38,7 +40,7 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> {
 		if (log.isDebugEnabled()) {
 			log.debug("Found {" + tag.getTags().size() + "} subtags.");
 		}
-		Node rootTag = template.getPersistentState(tag);
+		Node rootTag = neo4jTemplate.getPersistentState(tag);
 
 		Node currentTag = rootTag;
 		Node lastTag = null;
@@ -58,7 +60,7 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> {
 					if (fileNode == null) {
 						return null;
 					} else {
-						return template.load(fileNode, Content.class);
+						return neo4jTemplate.load(fileNode, Content.class);
 					}
 				}
 			}
@@ -131,6 +133,18 @@ public class ProjectRepositoryImpl extends GenericNodeRepositoryImpl<Project> {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public Project save(Project project) {
+		ProjectRoot root = projectRepository.findRoot();
+		if (root == null) {
+			throw new NullPointerException("The project root node could not be found.");
+		}
+		project = neo4jTemplate.save(project);
+		root.getProjects().add(project);
+		neo4jTemplate.save(root);
+		return project;
 	}
 
 }

@@ -29,4 +29,7 @@ public class BasicRelationships {
 	public static final String HAS_OBJECT_SCHEMA = "HAS_OBJECT_SCHEMA";
 	public static final String HAS_SUB_GROUP = "HAS_SUB_GROUP";
 	public static final String HAS_CONTENT = "HAS_CONTENT";
+	public static final String HAS_GROUP = "HAS_GROUP";
+	public static final String HAS_ROLE = "HAS_ROLE";
+	public static final String HAS_SCHEMA = "HAS_SCHEMA";
 }

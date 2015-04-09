@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
@@ -38,6 +39,9 @@ public class CaiLunRoot extends AbstractPersistable {
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_GROUP, direction = Direction.INCOMING, elementClass = Group.class)
 	private Group rootGroup;
+
+	@Indexed(unique = true)
+	private String unique = CaiLunRoot.class.getSimpleName();
 
 	public Set<User> getUsers() {
 		return users;

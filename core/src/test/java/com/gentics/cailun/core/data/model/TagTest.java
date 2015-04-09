@@ -34,7 +34,7 @@ public class TagTest extends AbstractDBTest {
 	private ContentService contentService;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		setupData();
 	}
 

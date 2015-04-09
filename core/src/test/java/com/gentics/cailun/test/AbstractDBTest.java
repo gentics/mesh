@@ -1,5 +1,7 @@
 package com.gentics.cailun.test;
 
+import java.io.IOException;
+
 import org.junit.runner.RunWith;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -9,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.RoleService;
 import com.gentics.cailun.demo.DemoDataProvider;
@@ -36,9 +40,9 @@ public abstract class AbstractDBTest {
 	@Autowired
 	protected GraphDatabaseService graphDb;
 
-	public void setupData() {
+	public void setupData() throws JsonParseException, JsonMappingException, IOException {
 		purgeDatabase();
-		dataProvider.setup();
+		dataProvider.setup(1);
 	}
 
 	public DemoDataProvider data() {

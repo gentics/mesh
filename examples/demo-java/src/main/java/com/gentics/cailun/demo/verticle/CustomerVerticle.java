@@ -39,7 +39,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		addPermissionTestHandler();
-		demoDataProvider.setup();
+		demoDataProvider.setup(3);
 	}
 
 	private void addPermissionTestHandler() {

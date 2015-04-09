@@ -7,12 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
 
 import com.gentics.cailun.core.data.model.auth.Group;
+import com.gentics.cailun.core.data.model.auth.GroupRoot;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.repository.action.GroupActions;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 
-public interface GroupRepository extends GenericNodeRepository<Group> {
-
-	// @Query("MATCH (u:_User {0} ) MATCH (u)-[MEMBER_OF*]->(g) return g")
+public interface GroupRepository extends GenericNodeRepository<Group>, GroupActions {
 
 	/**
 	 * Return all groups that are assigned to the user
@@ -21,11 +21,14 @@ public interface GroupRepository extends GenericNodeRepository<Group> {
 	 * @return
 	 */
 	@Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
-	public List<Group> listAllGroups(User user);
+	List<Group> listAllGroups(User user);
 
-	public Group findByName(String string);
+	Group findByName(String string);
 
 	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup ORDER BY visibleGroup.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
-	public Page<Group> findAll(User requestUser, Pageable pageable);
+	Page<Group> findAll(User requestUser, Pageable pageable);
+
+	@Query("MATCH (n:GroupRoot) return n")
+	GroupRoot findRoot();
 
 }

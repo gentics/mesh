@@ -16,7 +16,7 @@ public class GenericNodeTest extends AbstractDBTest {
 	private GenericNodeService<GenericNode> nodeService;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		setupData();
 	}
 

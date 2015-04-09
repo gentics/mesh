@@ -16,7 +16,7 @@ public class Language extends GenericNode {
 	protected String nativeName;
 
 	/**
-	 * http://en.wikipedia.org/wiki/IETF_language_tag#Syntax_of_language_tags[IETF language tag]
+	 * http://en.wikipedia.org/wiki/ISO_639-1
 	 */
 	@Indexed(unique = true)
 	private String languageTag;

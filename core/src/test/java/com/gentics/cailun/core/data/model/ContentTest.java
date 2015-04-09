@@ -25,7 +25,7 @@ public class ContentTest extends AbstractDBTest {
 	TagRepository folderRepository;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		setupData();
 	}
 

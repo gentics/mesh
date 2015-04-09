@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -27,7 +28,7 @@ public class RoleTest extends AbstractDBTest {
 	private UserInfo info;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		setupData();
 		info = data().getUserInfo();
 
@@ -70,5 +71,19 @@ public class RoleTest extends AbstractDBTest {
 		assertTrue(permission.isPermitted(DELETE));
 		assertTrue(permission.isPermitted(UPDATE));
 		assertFalse(permission.isPermitted(READ));
+	}
+
+	@Test
+	@Transactional
+	public void testRoleRoot() {
+		int nRolesBefore = roleRepository.findRoot().getRoles().size();
+
+		final String roleName = "test2";
+		Role role = new Role(roleName);
+		roleRepository.save(role);
+
+		int nRolesAfter = roleRepository.findRoot().getRoles().size();
+		assertEquals(nRolesBefore + 1, nRolesAfter);
+
 	}
 }
