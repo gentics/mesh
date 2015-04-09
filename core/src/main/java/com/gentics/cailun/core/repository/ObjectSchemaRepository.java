@@ -3,14 +3,16 @@ package com.gentics.cailun.core.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.ObjectSchemaRoot;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.repository.action.ObjectSchemaActions;
+import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 
-public interface ObjectSchemaRepository extends GenericNodeRepository<ObjectSchema>, ObjectSchemaActions {
+public interface ObjectSchemaRepository extends UUIDCRUDActions<ObjectSchema>, ObjectSchemaActions {
 
 	// @Query("MATCH (project:Project)-[:ASSIGNED_TO_PROJECT]-(n:ObjectSchema) WHERE n.name = {1} AND project.name = {0} RETURN n")
 	// TODO fix query - somehow the project relationship is not matching
@@ -37,5 +39,7 @@ public interface ObjectSchemaRepository extends GenericNodeRepository<ObjectSche
 
 	@Query("MATCH (n:ObjectSchemaRoot) return n")
 	ObjectSchemaRoot findRoot();
+
+	Result<ObjectSchema> findAll();
 
 }

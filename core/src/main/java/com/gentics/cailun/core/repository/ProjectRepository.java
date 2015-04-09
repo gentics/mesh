@@ -3,15 +3,16 @@ package com.gentics.cailun.core.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.ProjectRoot;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.repository.action.ProjectActions;
-import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
+import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
 
-public interface ProjectRepository extends GenericNodeRepository<Project>, ProjectActions {
+public interface ProjectRepository extends UUIDCRUDActions<Project>, ProjectActions {
 
 	Project findByName(String string);
 
@@ -24,5 +25,7 @@ public interface ProjectRepository extends GenericNodeRepository<Project>, Proje
 	
 	@Query("MATCH (n:ProjectRoot) return n")
 	ProjectRoot findRoot();
+
+	Result<Project> findAll();
 
 }

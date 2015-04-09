@@ -10,10 +10,11 @@ import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.GroupRoot;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.repository.action.GroupActions;
-import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
+import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
 
-public interface GroupRepository extends GenericNodeRepository<Group>, GroupActions {
+public interface GroupRepository extends GroupActions, UUIDCRUDActions<Group> {
 
+	public Group findOne(Long id);
 	/**
 	 * Return all groups that are assigned to the user
 	 * 
