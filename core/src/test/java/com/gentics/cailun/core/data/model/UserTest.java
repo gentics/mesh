@@ -1,17 +1,17 @@
 package com.gentics.cailun.core.data.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.test.AbstractDBTest;
 
-@Transactional
 public class UserTest extends AbstractDBTest {
 
 	@Autowired
@@ -35,7 +35,11 @@ public class UserTest extends AbstractDBTest {
 		user.setFirstname(FIRSTNAME);
 		user.setLastname(LASTNAME);
 		user.setPasswordHash(PASSWDHASH);
-		userRepository.save(user);
+
+		try (Transaction tx = graphDb.beginTx()) {
+			user = userRepository.save(user);
+			tx.success();
+		}
 
 		User reloadedUser = userRepository.findOne(user.getId());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
@@ -46,11 +50,19 @@ public class UserTest extends AbstractDBTest {
 	}
 
 	@Test
+	public void testCreatedUser() {
+		assertNotNull("The uuid of the user should not be null since the entity was reloaded.", data().getUserInfo().getUser().getUuid());
+	}
+
+	@Test
 	public void testUserRoot() {
 		int nUserBefore = userRepository.findRoot().getUsers().size();
 
-		User user = new User("dummy12345");
-		userRepository.save(user);
+		try (Transaction tx = graphDb.beginTx()) {
+			User user = new User("dummy12345");
+			user = userRepository.save(user);
+			tx.success();
+		}
 
 		int nUserAfter = userRepository.findRoot().getUsers().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);

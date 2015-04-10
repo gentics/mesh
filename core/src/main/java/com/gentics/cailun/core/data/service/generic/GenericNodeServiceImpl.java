@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.repository.I18NValueRepository;
@@ -18,7 +17,6 @@ import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 @Component
-@Transactional
 public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNodeService<T> {
 
 	@Autowired

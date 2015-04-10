@@ -1,18 +1,21 @@
 package com.gentics.cailun.core.data.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.demo.DemoDataProvider;
 import com.gentics.cailun.path.PagingInfo;
 import com.gentics.cailun.test.AbstractDBTest;
 
@@ -50,19 +53,33 @@ public class ContentTest extends AbstractDBTest {
 	}
 
 	@Test
+	public void testCreateContent() {
+		Content content = new Content();
+		try (Transaction tx = graphDb.beginTx()) {
+			contentService.setContent(content, data().getEnglish(), "english content");
+			contentService.setFilename(content, data().getEnglish(), "english.html");
+			content = contentService.save(content);
+			tx.success();
+		}
+		content = contentService.reload(content);
+		assertNotNull(content.getUuid());
+		assertNotNull(content.getContent(data().getEnglish()));
+	}
+
+	@Test
 	public void testFindAll() {
 
 		User user = data().getUserInfo().getUser();
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
-		Page<Content> page = contentService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 10));
-		assertEquals(115, page.getTotalElements());
+		Page<Content> page = contentService.findAllVisible(user, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(0, 10));
+		assertEquals(55, page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
 		page = contentService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 15));
-		assertEquals(117, page.getTotalElements());
+		assertEquals(57, page.getTotalElements());
 		assertEquals(15, page.getSize());
 
 	}

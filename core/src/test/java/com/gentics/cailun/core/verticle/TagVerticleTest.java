@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
@@ -42,6 +43,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadAllTags() throws Exception {
 		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
 
@@ -113,6 +115,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadTagByUUID() throws Exception {
 
 		Tag tag = data().getNews();
@@ -126,6 +129,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadTagByUUIDWithDepthParam() throws Exception {
 
 		Tag tag = data().getNews();
@@ -139,6 +143,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadTagByUUIDWithSingleLanguage() throws Exception {
 
 		Tag tag = data().getNews();
@@ -152,6 +157,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadTagByUUIDWithMultipleLanguages() throws Exception {
 
 		Tag tag = data().getNews();
@@ -165,6 +171,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 
 		Tag tag = data().getNews();
@@ -177,6 +184,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testUpdateTagByUUID() throws Exception {
 		Tag tag = data().getNews();
 
@@ -215,6 +223,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = data().getNews();
 
@@ -241,6 +250,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	// Delete Tests
 	@Test
+	@Transactional
 	public void testDeleteTagByUUID() throws Exception {
 
 		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.DELETE);
@@ -251,6 +261,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 
 		roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.DELETE);

@@ -170,7 +170,10 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
-		bootstrapInitializer.initMandatoryData();
+		try (Transaction tx = graphDb.beginTx()) {
+			bootstrapInitializer.initMandatoryData();
+			tx.success();
+		}
 		addData(multiplicator);
 		addSchemas(multiplicator);
 		updatePermissions();
@@ -293,13 +296,16 @@ public class DemoDataProvider {
 
 	@SuppressWarnings("unchecked")
 	private void addData(int multiplicator) {
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+		try (Transaction tx = graphDb.beginTx()) {
 
 			project = new Project(PROJECT_NAME);
 			project = projectService.save(project);
 
 			// User, Groups, Roles
 			userInfo = createUserInfo("joe1", "Joe", "Doe");
+
+			english = languageService.findByLanguageTag("en");
+			german = languageService.findByLanguageTag("de");
 
 			// Guest Group / Role
 			Role guestRole = new Role("guest_role");
@@ -521,7 +527,7 @@ public class DemoDataProvider {
 
 			dealsSuperDeal = addContent(deals, "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!");
 			totalContents++;
-			for (int i = 0; i < 42; i++) {
+			for (int i = 0; i < 12 * multiplicator; i++) {
 				addContent(deals, "Special Deal June 2015 - " + i, "Buy two get three! " + i, "Kauf zwei und nimm drei mit!" + i);
 				totalContents++;
 			}

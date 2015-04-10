@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,6 @@ public class ProjectTest extends AbstractDBTest {
 	}
 
 	@Test
-	@Transactional
 	public void testCreation() {
 		Project project = new Project("test");
 		projectService.save(project);
@@ -37,7 +37,6 @@ public class ProjectTest extends AbstractDBTest {
 	}
 
 	@Test
-	@Transactional
 	public void testDeletion() {
 		Project project = data().getProject();
 		projectService.delete(project);
@@ -46,11 +45,14 @@ public class ProjectTest extends AbstractDBTest {
 	}
 
 	@Test
-	@Transactional
 	public void testProjectRootNode() {
 		int nProjectsBefore = projectRepository.findRoot().getProjects().size();
-		Project project = new Project("test1234556");
-		projectRepository.save(project);
+
+		try (Transaction tx = graphDb.beginTx()) {
+			Project project = new Project("test1234556");
+			projectRepository.save(project);
+			tx.success();
+		}
 		int nProjectsAfter = projectRepository.findRoot().getProjects().size();
 		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}

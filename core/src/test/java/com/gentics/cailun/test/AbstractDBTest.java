@@ -23,9 +23,6 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 public abstract class AbstractDBTest {
 
 	@Autowired
-	private GraphDatabaseService graphDatabaseService;
-
-	@Autowired
 	protected LanguageService languageService;
 
 	@Autowired
@@ -50,8 +47,8 @@ public abstract class AbstractDBTest {
 	}
 
 	protected void purgeDatabase() {
-		try (Transaction tx = graphDatabaseService.beginTx()) {
-			for (Node node : graphDatabaseService.getAllNodes()) {
+		try (Transaction tx = graphDb.beginTx()) {
+			for (Node node : graphDb.getAllNodes()) {
 				for (Relationship rel : node.getRelationships()) {
 					rel.delete();
 				}

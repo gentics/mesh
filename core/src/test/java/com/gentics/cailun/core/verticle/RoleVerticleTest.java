@@ -14,6 +14,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +46,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	// Create tests
 
 	@Test
+	@Transactional
 	public void testCreateRole() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
@@ -60,6 +62,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testCreateDeleteRole() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
@@ -81,6 +84,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testCreateRoleWithNoPermission() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
@@ -97,6 +101,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testCreateRoleWithBogusJson() throws Exception {
 
 		String requestJson = "bogus text";
@@ -106,6 +111,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testCreateRoleWithNoGroupId() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
@@ -121,6 +127,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testCreateRoleWithNoName() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setGroupUuid(info.getGroup().getUuid());
@@ -137,6 +144,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	// Read tests
 
 	@Test
+	@Transactional
 	public void testReadOwnRoleByUUID() throws Exception {
 		UserInfo info = data().getUserInfo();
 		Role role = info.getRole();
@@ -150,6 +158,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadExtraRoleByUUID() throws Exception {
 		UserInfo info = data().getUserInfo();
 
@@ -171,6 +180,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadExtraRoleByUUIDWithMissingPermission() throws Exception {
 		UserInfo info = data().getUserInfo();
 
@@ -191,6 +201,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
 		UserInfo info = data().getUserInfo();
 		Role role = info.getRole();
@@ -204,6 +215,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testReadRoles() throws Exception {
 
 		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
@@ -275,6 +287,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	// Update tests
 
 	@Test
+	@Transactional
 	public void testUpdateRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		Role extraRole = new Role("extra role");
 		roleService.save(extraRole);
@@ -298,6 +311,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		Role role = info.getRole();
 
@@ -317,6 +331,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	// Delete tests
 
 	@Test
+	@Transactional
 	public void testDeleteRoleByUUID() throws Exception {
 
 		roleService.addPermission(info.getRole(), info.getRole(), PermissionType.DELETE);
@@ -328,6 +343,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Transactional
 	public void testDeleteRoleByUUIDWithMissingPermission() throws Exception {
 		roleService.addPermission(info.getRole(), info.getRole(), PermissionType.READ);
 		String response = request(info, HttpMethod.DELETE, "/api/v1/roles/" + info.getRole().getUuid(), 403, "Forbidden");
@@ -335,52 +351,4 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The role should not have been deleted", roleService.findByUUID(info.getRole().getUuid()));
 	}
 
-	// Role Group Testcases - PUT / Add
-
-	// @Test
-	// public void testAddRoleToGroupWithPerm() {
-	// fail("Not yet implemented");
-	// }
-	//
-	// @Test
-	// public void testAddRoleToGroupWithoutPerm() {
-	// fail("Not yet implemented");
-	// }
-	//
-	// @Test
-	// public void testAddRoleToGroupWithBogusUUID() {
-	// fail("Not yet implemented");
-	// }
-	//
-	// @Test
-	// public void testAddRoleToGroupWithoutRoleReadPerm() {
-	// fail("Not yet implemented");
-	// }
-	//
-	// // Role Group Testcases - DELETE / Remove
-	//
-	// @Test
-	// public void testRemoveRoleFromGroupWithPerm() {
-	// fail("Not yet implemented");
-	// }
-	//
-	// @Test
-	// public void testRemoveRoleFromGroupWithoutPerm() {
-	//
-	// }
-	//
-	// @Test
-	// public void testRemoveRoleFromGroupWithBogusGroupID() {
-	// fail("Not yet implemented");
-	// }
-	//
-	// @Test
-	// public void testRemoveRoleFromLastGroup() {
-	// fail("Not yet implemented");
-	// }
-	//
-	// @Test
-	// public void testRemoveRoleFromGroupWithoutRoleReadPerm() {
-	// fail("Not yet implemented");
-	// }
 }
