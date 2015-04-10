@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.repository.RepositoryDefinition;
 
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.GroupRoot;
@@ -12,9 +13,11 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.repository.action.GroupActions;
 import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
 
+@RepositoryDefinition(domainClass = Group.class, idClass = Long.class)
 public interface GroupRepository extends GroupActions, UUIDCRUDActions<Group> {
 
 	public Group findOne(Long id);
+
 	/**
 	 * Return all groups that are assigned to the user
 	 * 

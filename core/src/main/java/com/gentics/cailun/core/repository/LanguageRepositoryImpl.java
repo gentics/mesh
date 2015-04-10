@@ -6,13 +6,9 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.LanguageRoot;
 import com.gentics.cailun.core.repository.action.LanguageActions;
-import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepositoryImpl;
 
 public class LanguageRepositoryImpl extends GenericNodeRepositoryImpl<Language> implements LanguageActions {
-
-	@Autowired
-	private GenericNodeRepository<Language> nodeRepository;
 
 	@Autowired
 	private Neo4jTemplate neo4jTemplate;

@@ -338,20 +338,7 @@ public class DemoDataProvider {
 			}
 
 			// Contents, Tags, Projects
-			english = languageService.findByLanguageTag("en");
-			if (english == null) {
-				english = new Language("english", "en");
-				english = languageService.save(english);
-			}
-			german = languageService.findByLanguageTag("de");
-			if (german == null) {
-				german = new Language("german", "de");
-				german = languageService.save(german);
-			}
 			root = rootService.findRoot();
-			root.setRootGroup(userInfo.getGroup());
-			root.addLanguage(english);
-			root.addLanguage(german);
 			root.addUser(userInfo.getUser());
 			rootService.save(root);
 

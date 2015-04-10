@@ -3,12 +3,14 @@ package com.gentics.cailun.core.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.repository.RepositoryDefinition;
 
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.auth.UserRoot;
 import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
 import com.gentics.cailun.core.repository.action.UserActions;
 
+@RepositoryDefinition(domainClass = User.class, idClass = Long.class)
 public interface UserRepository extends UUIDCRUDActions<User>, UserActions {
 
 	User findByFirstnameEquals(String firstname);

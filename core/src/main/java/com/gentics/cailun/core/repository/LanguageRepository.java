@@ -1,16 +1,18 @@
 package com.gentics.cailun.core.repository;
 
 import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.repository.RepositoryDefinition;
 
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.LanguageRoot;
 import com.gentics.cailun.core.repository.action.LanguageActions;
 import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
 
+@RepositoryDefinition(domainClass = Language.class, idClass = Long.class)
 public interface LanguageRepository extends UUIDCRUDActions<Language>, LanguageActions {
 
 	public Language findByName(String name);
-	
+
 	public Language findOne(Long id);
 
 	/**

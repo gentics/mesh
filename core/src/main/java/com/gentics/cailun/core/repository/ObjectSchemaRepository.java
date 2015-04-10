@@ -4,14 +4,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.data.repository.RepositoryDefinition;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.ObjectSchemaRoot;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.repository.action.ObjectSchemaActions;
 import com.gentics.cailun.core.repository.action.UUIDCRUDActions;
-import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 
+@RepositoryDefinition(domainClass = ObjectSchema.class, idClass = Long.class)
 public interface ObjectSchemaRepository extends UUIDCRUDActions<ObjectSchema>, ObjectSchemaActions {
 
 	// @Query("MATCH (project:Project)-[:ASSIGNED_TO_PROJECT]-(n:ObjectSchema) WHERE n.name = {1} AND project.name = {0} RETURN n")

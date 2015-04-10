@@ -231,41 +231,42 @@ public class BootstrapInitializer {
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
 
-		if (languageRepository.findRoot() == null) {
-			LanguageRoot languageRoot = new LanguageRoot();
-			neo4jTemplate.save(languageRoot);
+		LanguageRoot languageRoot = languageRepository.findRoot();
+		if (languageRoot == null) {
+			languageRoot = new LanguageRoot();
+			languageRoot = neo4jTemplate.save(languageRoot);
 			log.info("Stored language root node");
 		}
 
 		GroupRoot groupRoot = groupRepository.findRoot();
 		if (groupRoot == null) {
 			groupRoot = new GroupRoot();
-			neo4jTemplate.save(groupRoot);
+			groupRoot = neo4jTemplate.save(groupRoot);
 			log.info("Stored group root node");
 		}
 		UserRoot userRoot = userRepository.findRoot();
 		if (userRoot == null) {
 			userRoot = new UserRoot();
-			neo4jTemplate.save(userRoot);
+			userRoot = neo4jTemplate.save(userRoot);
 			log.info("Stored user root node");
 		}
 		RoleRoot roleRoot = roleRepository.findRoot();
 		if (roleRoot == null) {
 			roleRoot = new RoleRoot();
-			neo4jTemplate.save(roleRoot);
+			roleRoot = neo4jTemplate.save(roleRoot);
 			log.info("Stored role root node");
 		}
 		ProjectRoot projectRoot = projectRepository.findRoot();
 		if (projectRoot == null) {
 			projectRoot = new ProjectRoot();
-			neo4jTemplate.save(projectRoot);
+			projectRoot = neo4jTemplate.save(projectRoot);
 			log.info("Stored project root node");
 		}
 
-		ObjectSchemaRoot schemaRoot = objectSchemaRepository.findRoot();
-		if (schemaRoot == null) {
-			schemaRoot = new ObjectSchemaRoot();
-			neo4jTemplate.save(schemaRoot);
+		ObjectSchemaRoot objectSchemaRoot = objectSchemaRepository.findRoot();
+		if (objectSchemaRoot == null) {
+			objectSchemaRoot = new ObjectSchemaRoot();
+			objectSchemaRoot= neo4jTemplate.save(objectSchemaRoot);
 			log.info("Stored schema root node");
 		}
 
@@ -273,6 +274,12 @@ public class BootstrapInitializer {
 		CaiLunRoot rootNode = rootRepository.findRoot();
 		if (rootNode == null) {
 			rootNode = new CaiLunRoot();
+			rootNode.setProjectRoot(projectRoot);
+			rootNode.setGroupRoot(groupRoot);
+			rootNode.setRoleRoot(roleRoot);
+			rootNode.setLanguageRoot(languageRoot);
+			rootNode.setObjectSchemaRoot(objectSchemaRoot);
+			rootNode.setUserRoot(userRoot);
 			rootRepository.save(rootNode);
 			log.info("Stored cailun root node");
 		}
@@ -306,7 +313,7 @@ public class BootstrapInitializer {
 			groupRepository.save(adminGroup);
 			log.info("Stored admin group");
 		}
-		rootNode.setRootGroup(adminGroup);
+		rootNode.addGroup(adminGroup);
 		rootRepository.save(rootNode);
 
 		Role adminRole = roleRepository.findByName("admin");
