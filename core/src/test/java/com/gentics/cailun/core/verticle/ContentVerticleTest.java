@@ -92,10 +92,8 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateContentWithMissingPermission() throws Exception {
 
-		// Add all perms except create
-		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
-		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.DELETE);
+		// Revoke create perm
+		roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.CREATE);
 
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");

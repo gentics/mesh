@@ -5,13 +5,13 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.repository.LanguageRepository;
 import com.gentics.cailun.test.AbstractDBTest;
 
-@Transactional
 public class LanguageTest extends AbstractDBTest {
 
 	@Autowired
@@ -24,10 +24,13 @@ public class LanguageTest extends AbstractDBTest {
 
 	@Test
 	public void testCreation() {
-		final String languageName = "klingon";
 		final String languageTag = "tlh";
+		final String languageName = "klingon";
 		Language lang = new Language(languageName, languageTag);
-		languageRepository.save(lang);
+		try (Transaction tx = graphDb.beginTx()) {
+			lang = languageRepository.save(lang);
+			tx.success();
+		}
 		lang = languageRepository.findOne(lang.getId());
 		assertNotNull(lang);
 		assertEquals(languageName, lang.getName());
@@ -38,11 +41,15 @@ public class LanguageTest extends AbstractDBTest {
 	@Test
 	public void testLanguageRoot() {
 		int nLanguagesBefore = languageRepository.findRoot().getLanguages().size();
-		final String languageName = "klingon";
-		final String languageTag = "tlh";
-		Language lang = new Language(languageName, languageTag);
 
-		languageRepository.save(lang);
+		try (Transaction tx = graphDb.beginTx()) {
+			final String languageName = "klingon";
+			final String languageTag = "tlh";
+			Language lang = new Language(languageName, languageTag);
+			languageRepository.save(lang);
+			tx.success();
+
+		}
 
 		int nLanguagesAfter = languageRepository.findRoot().getLanguages().size();
 		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);

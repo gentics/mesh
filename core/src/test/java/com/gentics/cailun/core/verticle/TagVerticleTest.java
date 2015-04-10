@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
@@ -43,7 +42,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Transactional
 	public void testReadAllTags() throws Exception {
 		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
 
@@ -115,7 +113,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Transactional
 	public void testReadTagByUUID() throws Exception {
 
 		Tag tag = data().getNews();
@@ -124,12 +121,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{},\"childTags\":[],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
-	@Transactional
 	public void testReadTagByUUIDWithDepthParam() throws Exception {
 
 		Tag tag = data().getNews();
@@ -138,12 +134,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=2&lang=de,en", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"2014\"}},\"childTags\":[{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"2015\"}},\"childTags\":[],\"perms\":[]}],\"perms\":[]}],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"2014\"}},\"childTags\":[{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"2015\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
-	@Transactional
 	public void testReadTagByUUIDWithSingleLanguage() throws Exception {
 
 		Tag tag = data().getNews();
@@ -152,12 +147,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
-	@Transactional
 	public void testReadTagByUUIDWithMultipleLanguages() throws Exception {
 
 		Tag tag = data().getNews();
@@ -166,12 +160,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
-	@Transactional
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 
 		Tag tag = data().getNews();
@@ -184,7 +177,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Transactional
 	public void testUpdateTagByUUID() throws Exception {
 		Tag tag = data().getNews();
 
@@ -211,7 +203,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// TODO test with no ?lang query parameter
 		String requestJson = JsonUtils.toJson(request);
 		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"new Name\"}},\"childTags\":[],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"new Name\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// 4. read the tag again and verify that it was changed
@@ -223,7 +215,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Transactional
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = data().getNews();
 
@@ -250,7 +241,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	// Delete Tests
 	@Test
-	@Transactional
 	public void testDeleteTagByUUID() throws Exception {
 
 		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.DELETE);
@@ -261,7 +251,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Transactional
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 
 		roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.DELETE);

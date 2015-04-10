@@ -129,8 +129,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		AtomicReference<String> responseBody = new AtomicReference<String>(null);
 		HttpClientRequest req = client.request(method, port, "localhost", path, resp -> {
-			assertEquals("The response status code did not match the expected one.", statusCode, resp.statusCode());
-			assertEquals("The reponse status message did not match.", statusMessage, resp.statusMessage());
+			blockingAssertEquals("The response status code did not match the expected one.", statusCode, resp.statusCode());
+			blockingAssertEquals("The reponse status message did not match.", statusMessage, resp.statusMessage());
 			if (responseAction != null) {
 				responseAction.accept(resp);
 			}
@@ -163,7 +163,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 	}
 
-	private void assertEquals(String message, Object expected, Object actual) {
+	private void blockingAssertEquals(String message, Object expected, Object actual) {
 		try {
 			Assert.assertEquals(message, expected, actual);
 		} catch (AssertionError e) {

@@ -364,7 +364,7 @@ public class DemoDataProvider {
 			Tag news2014 = addTag(news, "2014");
 			totalTags++;
 
-			for (int i = 0; i < 21; i++) {
+			for (int i = 0; i < 12 * multiplicator; i++) {
 				addContent(news2014, "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!");
 				totalContents++;
 			}
