@@ -69,7 +69,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		request.setTagUuid(data().getNews().getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 200, "OK", JsonUtils.toJson(request));
-		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"perms\":[],\"order\":0}";
+		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"perms\":[],\"tags\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
 	}
 
@@ -181,8 +181,15 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentsWithoutPermissions() throws Exception {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":0,\"per_page\":25,\"page_count\":0,\"total_count\":0}}";
-		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
+
+		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
+
+		int nElements = restResponse.getData().size();
+		Assert.assertEquals("The amount of elements in the list did not match the expected count", 25, nElements);
+		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(3, restResponse.getMetainfo().getPageCount());
+		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
+		Assert.assertEquals(57, restResponse.getMetainfo().getTotalCount());
 	}
 
 	@Test
@@ -191,7 +198,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"de\":{\"filename\":\"Special News_2014.de.html\",\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"},\"en\":{\"filename\":\"Special News_2014.en.html\",\"name\":\"Special News_2014 english\",\"content\":\"News!\"}},\"schemaName\":\"content\",\"perms\":[],\"order\":0}";
+		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"},\"en\":{\"name\":\"Special News_2014 english\",\"content\":\"News!\"}},\"schemaName\":\"content\",\"perms\":[\"read\",\"create\",\"update\",\"delete\"],\"tags\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
 
@@ -201,7 +208,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?depth=2", 200, "OK");
-		String json = "ok";
+		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"},\"en\":{\"name\":\"Special News_2014 english\",\"content\":\"News!\"}},\"schemaName\":\"content\",\"perms\":[\"read\",\"create\",\"update\",\"delete\"],\"tags\":[{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]},{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
 
@@ -211,7 +218,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=de", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"],\"perms\":[]},\"properties\":{\"de\":{\"filename\":\"Special News_2014.de.html\",\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"}},\"schemaName\":\"content\",\"perms\":[],\"order\":0}";
+		String json = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"}},\"schemaName\":\"content\",\"perms\":[\"read\",\"create\",\"update\",\"delete\"],\"tags\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 	}
 
@@ -229,9 +236,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentByUUIDWithoutPermission() throws Exception {
 		Content content = data().getNews2015Content();
-		roleService.addPermission(info.getRole(), content, PermissionType.DELETE);
-		roleService.addPermission(info.getRole(), content, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), content, PermissionType.CREATE);
+		roleService.revokePermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, content.getUuid());
@@ -240,14 +245,14 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentByBogusUUID() throws Exception {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/bogusUUID", 404, "Not Found");
-		expectMessageResponse("content_not_found_for_uuid", response, "bogusUUID");
+		expectMessageResponse("object_not_found_for_uuid", response, "bogusUUID");
 	}
 
 	@Test
 	public void testReadContentByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + uuid, 404, "Not Found");
-		expectMessageResponse("content_not_found_for_uuid", response, uuid);
+		expectMessageResponse("object_not_found_for_uuid", response, uuid);
 	}
 
 }
