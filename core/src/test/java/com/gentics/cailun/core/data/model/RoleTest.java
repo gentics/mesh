@@ -35,7 +35,6 @@ public class RoleTest extends AbstractDBTest {
 	public void setup() throws Exception {
 		setupData();
 		info = data().getUserInfo();
-
 	}
 
 	@Test

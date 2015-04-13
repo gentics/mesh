@@ -12,6 +12,7 @@ import javax.transaction.NotSupportedException;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
@@ -40,11 +41,14 @@ public class TagTest extends AbstractDBTest {
 
 	@Test
 	public void testLocalizedFolder() {
-		Language german = languageService.findByName("german");
+		Language german = languageService.findByLanguageTag("de");
 
 		Tag tag = new Tag();
 		tagService.setName(tag, german, GERMAN_NAME);
-		tagService.save(tag);
+		try (Transaction tx = graphDb.beginTx()) {
+			tag = tagService.save(tag);
+			tx.success();
+		}
 		assertNotNull(tag.getId());
 		tag = tagService.findOne(tag.getId());
 		assertNotNull("The folder could not be found.", tag);
@@ -56,30 +60,35 @@ public class TagTest extends AbstractDBTest {
 
 		Tag tag = new Tag();
 
-		Language english = languageService.findByName("english");
+		Language english = languageService.findByLanguageTag("en");
 
 		tagService.setName(tag, english, ENGLISH_NAME);
-		tagService.save(tag);
+		try (Transaction tx = graphDb.beginTx()) {
+			tag = tagService.save(tag);
+			tx.success();
+		}
 		tag = tagService.findOne(tag.getId());
 		assertNotNull(tag);
 
 		final String GERMAN_TEST_FILENAME = "german.html";
 		Content content = new Content();
 
-		Language german = languageService.findByName("german");
+		Language german = languageService.findByLanguageTag("de");
 
-		contentService.setFilename(content, german, GERMAN_TEST_FILENAME);
-		contentService.setName(content, german, "german content name");
-		contentService.save(content);
-
-		tag.addContent(content);
-		tagService.save(tag);
-
+		try (Transaction tx = graphDb.beginTx()) {
+			contentService.setFilename(content, german, GERMAN_TEST_FILENAME);
+			contentService.setName(content, german, "german content name");
+			content = contentService.save(content);
+			tag.addContent(content);
+			tag = tagService.save(tag);
+			tx.success();
+		}
 		// Reload the tag and check whether the content was set
 		tag = tagService.findOne(tag.getId());
 		assertEquals("The tag should have exactly one file.", 1, tag.getContents().size());
 		Content contentFromTag = tag.getContents().iterator().next();
 		assertNotNull(contentFromTag);
+		assertEquals("We did not get the correct content.", content.getId(), contentFromTag.getId());
 		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME,
 				contentFromTag.getFilename(german));
 
@@ -93,7 +102,7 @@ public class TagTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeTagging() {
-		Language german = languageService.findByName("german");
+		Language german = languageService.findByLanguageTag("de");
 
 		// Create root with subfolder
 		final String TEST_TAG_NAME = "testTag";

@@ -119,7 +119,6 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 
 	}
 
-	
 	@Override
 	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());
@@ -224,7 +223,6 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 
 	@Override
 	public void setFilename(Content content, Language language, String filename) {
-		// TODO Auto-generated method stub
-
+		setProperty(content, language, Content.FILENAME_KEYWORD, filename);
 	}
 }

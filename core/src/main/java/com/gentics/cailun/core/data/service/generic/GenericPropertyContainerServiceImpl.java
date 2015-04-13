@@ -39,6 +39,9 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 	}
 
 	public void setName(T node, Language language, String name) {
+		if (language == null) {
+			throw new NullPointerException("The language for the name can't be null");
+		}
 		setProperty(node, language, GenericPropertyContainer.NAME_KEYWORD, name);
 	}
 }
