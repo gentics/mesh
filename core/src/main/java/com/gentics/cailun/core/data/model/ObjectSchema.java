@@ -27,6 +27,7 @@ public class ObjectSchema extends GenericNode {
 	@Indexed(unique = true)
 	private String name;
 
+	private String displayName;
 	// TODO i18n?
 	private String description;
 
@@ -80,6 +81,14 @@ public class ObjectSchema extends GenericNode {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getDisplayName() {
+		return displayName;
 	}
 
 }

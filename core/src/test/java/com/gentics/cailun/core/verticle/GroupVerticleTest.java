@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
@@ -106,11 +107,14 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.DELETE);
-		// TODO we need a groups node in neo: CL-76
-		roleService.revokePermission(info.getRole(), data().getCaiLunRoot(), PermissionType.CREATE);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
+			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
+			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.DELETE);
+			// TODO we need a groups node in neo: CL-76
+			roleService.revokePermission(info.getRole(), data().getCaiLunRoot(), PermissionType.CREATE);
+			tx.success();
+		}
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
@@ -128,14 +132,21 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		// Create and save some groups
 		final int nGroups = 21;
-		for (int i = 0; i < nGroups; i++) {
-			Group group = new Group("group_" + i);
-			group = groupService.save(group);
-			roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		try (Transaction tx = graphDb.beginTx()) {
+
+			for (int i = 0; i < nGroups; i++) {
+				Group group = new Group("group_" + i);
+				group = groupService.save(group);
+				roleService.addPermission(info.getRole(), group, PermissionType.READ);
+			}
+			tx.success();
 		}
 
 		Group extraGroupWithNoPerm = new Group("no_perm_group");
-		extraGroupWithNoPerm = groupService.save(extraGroupWithNoPerm);
+		try (Transaction tx = graphDb.beginTx()) {
+			extraGroupWithNoPerm = groupService.save(extraGroupWithNoPerm);
+			tx.success();
+		}
 		// Don't grant permissions to extra group
 
 		// Test default paging parameters
@@ -244,7 +255,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/groups/" + group.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\",\"roles\":[\"joe1_role\"],\"users\":[\"joe1\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		Group reloadedGroup = groupService.reload(group);
@@ -357,7 +368,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\",\"extraRole\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"joe1_group\",\"roles\":[\"joe1_role\",\"extraRole\"],\"users\":[\"joe1\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		group = groupService.reload(group);
 		assertTrue("Role should be assigned to group.", group.hasRole(extraRole));
@@ -470,7 +481,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\",\"extraUser\"],\"perms\":[]}";
+		String json = "{\"uuid\":\"uuid-value\",\"name\":\"joe1_group\",\"roles\":[\"joe1_role\"],\"users\":[\"extraUser\",\"joe1\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 		group = groupService.reload(group);
 		assertTrue("User should be member of the group.", group.hasUser(extraUser));

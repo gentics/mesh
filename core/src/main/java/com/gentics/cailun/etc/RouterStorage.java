@@ -142,6 +142,7 @@ public class RouterStorage {
 		corsHandler.allowedMethod(HttpMethod.PUT);
 		corsHandler.allowedMethod(HttpMethod.DELETE);
 		corsHandler.allowedHeader("Authorization");
+		corsHandler.allowedHeader("Content-Type");
 		router.route().handler(corsHandler);
 
 		router.route().handler(BodyHandler.create());

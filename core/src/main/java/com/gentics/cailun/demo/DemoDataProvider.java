@@ -248,11 +248,23 @@ public class DemoDataProvider {
 
 			categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
 			categoriesSchema.addProject(project);
+			categoriesSchema.setDisplayName("Category");
 			categoriesSchema.setDescription("Custom schema for tag categories");
 			categoriesSchema.setCreator(userInfo.getUser());
-			categoriesSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
-			categoriesSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			categoriesSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			PropertyTypeSchema nameProp = new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING);
+			nameProp.setDisplayName("Name");
+			nameProp.setDescription("The name of the category.");
+			categoriesSchema.addPropertyTypeSchema(nameProp);
+
+			PropertyTypeSchema filenameProp = new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+			filenameProp.setDisplayName("Filename");
+			filenameProp.setDescription("The filename property of the category.");
+			categoriesSchema.addPropertyTypeSchema(filenameProp);
+
+			PropertyTypeSchema contentProp = new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+			contentProp.setDisplayName("Content");
+			contentProp.setDescription("The main content html of the category.");
+			categoriesSchema.addPropertyTypeSchema(contentProp);
 			objectSchemaService.save(categoriesSchema);
 			tx.success();
 		}

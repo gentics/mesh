@@ -9,11 +9,12 @@ public class PropertyTypeSchema extends AbstractPersistable {
 
 	private static final long serialVersionUID = 6242394504946538888L;
 
-	PropertyType type;
-	String key;
+	private PropertyType type;
+	private String key;
 	// TODO i18n?
-	String description;
-	int order;
+	private String description;
+	private String displayName;
+	private int order;
 
 	public PropertyTypeSchema(String key, PropertyType type) {
 		this.key = key;
@@ -53,6 +54,14 @@ public class PropertyTypeSchema extends AbstractPersistable {
 
 	public void setOrder(int order) {
 		this.order = order;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 }

@@ -61,6 +61,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		}
 		ObjectSchemaResponse schemaForRest = new ObjectSchemaResponse();
 		schemaForRest.setDescription(schema.getDescription());
+		schemaForRest.setDisplayName(schema.getDisplayName());
 		schemaForRest.setName(schema.getName());
 		schemaForRest.setUuid(schema.getUuid());
 		// TODO creator
@@ -76,6 +77,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
 			propertyTypeSchemaForRest.setDescription(propertyTypeSchema.getDescription());
 			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType().getName());
+			propertyTypeSchemaForRest.setDisplayName(propertyTypeSchema.getDisplayName());
 			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
 		}
 
