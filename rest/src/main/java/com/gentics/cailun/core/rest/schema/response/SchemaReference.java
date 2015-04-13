@@ -5,6 +5,9 @@ public class SchemaReference {
 	private String schemaName;
 	private String schemaUuid;
 
+	public SchemaReference() {
+	}
+
 	public SchemaReference(String schemaName, String schemaUuid) {
 		this.schemaName = schemaName;
 		this.schemaUuid = schemaUuid;

@@ -3,6 +3,8 @@ package com.gentics.cailun.core.verticle;
 import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.http.HttpMethod;
@@ -20,6 +22,7 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
+import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
@@ -71,6 +74,26 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 200, "OK", JsonUtils.toJson(request));
 		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"perms\":[],\"tags\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
+	}
+
+	@Test
+	public void testUpdateContent() throws HttpStatusCodeErrorException, Exception {
+		ContentUpdateRequest request = new ContentUpdateRequest();
+		request.setSchemaName("content");
+		final String newFilename = "new-name.html";
+		request.addProperty("en", "filename", newFilename);
+		final String newName = "english renamed name";
+		request.addProperty("en", "name", newName);
+		final String newContent = "english renamed content!";
+		request.addProperty("en", "content", newContent);
+
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + data().getNews2015Content().getUuid() + "?lang=de", 200,
+				"OK", JsonUtils.toJson(request));
+		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
+		assertEquals(newFilename, restContent.getProperty("en", "filename"));
+		assertEquals(newName, restContent.getProperty("en", "name"));
+		assertEquals(newContent, restContent.getProperty("en", "content"));
+
 	}
 
 	@Test

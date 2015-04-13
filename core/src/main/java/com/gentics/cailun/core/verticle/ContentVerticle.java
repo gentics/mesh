@@ -93,7 +93,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
 
 				// TODO load the schema and set the reference to the tag
-				//content.setSchemaName(requestModel.getSchemaName());
+				// content.setSchemaName(requestModel.getSchemaName());
 
 				User user = springConfiguration.authService().getUser(rc);
 				content.setCreator(user);
@@ -209,21 +209,18 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
-			Content content = contentService.findByUUID(projectName, uuid);
-			if (content == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_uuid", uuid));
-			}
-			failOnMissingPermission(rc, content, PermissionType.UPDATE);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			try (Transaction tx = graphDb.beginTx()) {
+				Content content = getObject(rc, "uuid", PermissionType.READ);
 				// TODO update other fields as well?
 				// TODO Update user information
 				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
 				// Iterate through all properties and update the changed ones
-				for (String languageTag : languageTags) {
+				for (String languageTag : request.getProperties().keySet()) {
 					Language language = languageService.findByLanguageTag(languageTag);
 					if (language != null) {
+						languageTags.add(languageTag);
 						Map<String, String> properties = request.getProperties(languageTag);
 						if (properties != null) {
 							// TODO use schema and only handle those i18n properties that were specified within the schema.
@@ -260,15 +257,15 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 						}
 					} else {
-						log.error("Could not find language for languageTag {" + languageTag + "}");
+						//TODO i18n
+						throw new HttpStatusCodeErrorException(400, "Could not find language for languageTag {" + languageTag + "}");
 					}
 
 				}
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 				tx.success();
 			}
-
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 
 		});
 	}
