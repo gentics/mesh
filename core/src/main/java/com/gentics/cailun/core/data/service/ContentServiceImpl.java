@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
@@ -76,9 +77,8 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		ContentResponse response = new ContentResponse();
 		response.setUuid(content.getUuid());
 		if (content.getSchema() != null) {
-			String schemaName = content.getSchema().getName();
-			String schemaUuid = content.getSchema().getUuid();
-			response.setSchema(new SchemaReference(schemaName, schemaUuid));
+			ObjectSchema schema = neo4jTemplate.fetch(content.getSchema());
+			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
 		}
 		UserResponse restUser = userService.transformToRest(content.getCreator());
 		response.setAuthor(restUser);
