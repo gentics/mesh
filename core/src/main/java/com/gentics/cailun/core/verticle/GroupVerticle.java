@@ -151,25 +151,25 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
 				}
 
+				// TODO should we keep this? I don't think so since group save would fail anyway. Let the index handle this?
 				if (!group.getName().equals(requestModel.getName())) {
 
-					// TODO should we keep this?
-				Group groupWithSameName = groupService.findByName(requestModel.getName());
-				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-					throw new HttpStatusCodeErrorException(400, "Group name {" + groupWithSameName.getName()
-							+ "} is already taken. Choose a different one.");
+					Group groupWithSameName = groupService.findByName(requestModel.getName());
+					if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
+						throw new HttpStatusCodeErrorException(400, "Group name {" + groupWithSameName.getName()
+								+ "} is already taken. Choose a different one.");
+					}
+					group.setName(requestModel.getName());
 				}
-				group.setName(requestModel.getName());
+
+				// TODO update timestamps
+				group = groupService.save(group);
+				tx.success();
 			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(groupService.transformToRest(group)));
 
-			// TODO update timestamps
-			group = groupService.save(group);
-			tx.success();
-		}
-		rc.response().setStatusCode(200);
-		rc.response().end(toJson(groupService.transformToRest(group)));
-
-	}	);
+		});
 
 	}
 
@@ -212,19 +212,17 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
 				GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
-				
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
 				}
 
-				//TODO we should check a groups node instead see - CL-76
 				CaiLunRoot root = cailunRootService.findRoot();
-				failOnMissingPermission(rc, root, PermissionType.CREATE);
+				failOnMissingPermission(rc, root.getGroupRoot(), PermissionType.CREATE);
 
 				group = new Group(requestModel.getName());
 				group = groupService.save(group);
-				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root, PermissionType.CREATE), group);
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root.getGroupRoot(), PermissionType.CREATE), group);
 				tx.success();
 			}
 			group = groupService.reload(group);

@@ -38,14 +38,18 @@ public class ContentTest extends AbstractDBTest {
 	@Test
 	public void testPageLinks() {
 		Content content = new Content();
-		contentService.setContent(content, data().getEnglish(), "english content");
-		contentService.setFilename(content, data().getEnglish(), "english.html");
-		contentService.save(content);
-
 		Content content2 = new Content();
-		contentService.setContent(content2, data().getEnglish(), "english2 content");
-		contentService.setFilename(content2, data().getEnglish(), "english2.html");
-		contentService.save(content2);
+		try (Transaction tx = graphDb.beginTx()) {
+
+			contentService.setContent(content, data().getEnglish(), "english content");
+			contentService.setFilename(content, data().getEnglish(), "english.html");
+			contentService.save(content);
+
+			contentService.setContent(content2, data().getEnglish(), "english2 content");
+			contentService.setFilename(content2, data().getEnglish(), "english2.html");
+			contentService.save(content2);
+			tx.success();
+		}
 		contentService.createLink(content, content2);
 
 		// TODO verify that link relation has been created
@@ -74,12 +78,13 @@ public class ContentTest extends AbstractDBTest {
 		languageTags.add("de");
 
 		Page<Content> page = contentService.findAllVisible(user, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(0, 10));
-		assertEquals(55, page.getTotalElements());
+		// There are contents that are only available in english
+		assertEquals(data().getTotalContents() - 2, page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
 		page = contentService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 15));
-		assertEquals(57, page.getTotalElements());
+		assertEquals(data().getTotalContents(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 
 	}

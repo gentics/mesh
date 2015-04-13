@@ -22,7 +22,7 @@ public interface RoleRepository extends UUIDCRUDActions<Role>, RoleActions {
 
 	Result<Role> findAll();
 
-	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node:GenericNode) WHERE id(node) = {1} AND id(role) = {0} return r")
+	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
 	GraphPermission findPermission(Long roleId, Long nodeId);
 
 	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleRole:Role) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleRole ORDER BY visibleRole.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleRole:Role) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleRole)")

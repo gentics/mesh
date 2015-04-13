@@ -99,6 +99,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 			permission.revoke(permissionTypes[i]);
 		}
 		role.addPermission(permission);
+		permission = neo4jTemplate.save(permission);
 		return permission;
 	}
 

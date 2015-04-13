@@ -1,6 +1,8 @@
 package com.gentics.cailun.core.verticle;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -28,6 +30,7 @@ import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
+import com.gentics.cailun.util.RestAssert;
 
 public class UserVerticleTest extends AbstractRestVerticleTest {
 
@@ -60,19 +63,11 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 
-		assertUser(user, restUser);
+		RestAssert.assertUser(user, restUser);
 		// TODO assert groups
 		// TODO assert perms
 	}
 
-	public void assertUser(User user, UserResponse restUser) {
-		assertEquals(user.getUsername(), restUser.getUsername());
-		assertEquals(user.getEmailAddress(), restUser.getEmailAddress());
-		assertEquals(user.getFirstname(), restUser.getFirstname());
-		assertEquals(user.getLastname(), restUser.getLastname());
-		assertEquals(user.getUuid(), restUser.getUuid());
-		assertEquals(user.getGroups().size(), restUser.getGroups().size());
-	}
 
 	@Test
 	public void testReadByUUIDWithNoPermission() throws Exception {
@@ -211,8 +206,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
+		
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
-
+		roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
+		
 		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
 
@@ -471,9 +468,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 			tx.success();
 		}
+		user = userService.reload(user);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		expectMessageResponse("error_missing_perm", response, user.getUuid());
+		expectMessageResponse("user_deleted", response, user.getUuid());
 		assertNull("The user should have been deleted", userService.reload(user));
 	}
 

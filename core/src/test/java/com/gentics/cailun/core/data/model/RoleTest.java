@@ -14,9 +14,12 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.service.ContentService;
+import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.test.AbstractDBTest;
@@ -28,6 +31,9 @@ public class RoleTest extends AbstractDBTest {
 
 	@Autowired
 	private ContentService contentService;
+
+	@Autowired
+	private UserService userService;
 
 	private UserInfo info;
 
@@ -87,6 +93,18 @@ public class RoleTest extends AbstractDBTest {
 			assertTrue(permission.isPermitted(READ));
 			tx.success();
 		}
+	}
+
+	@Test
+	public void testRevokePermissionOnGroupRoot() throws Exception {
+
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), data().getCaiLunRoot().getGroupRoot(), PermissionType.CREATE);
+			tx.success();
+		}
+
+		assertFalse("The create permission to the groups root node should have been revoked.",
+				userService.isPermitted(info.getUser().getId(), new CaiLunPermission(data().getCaiLunRoot().getGroupRoot(), PermissionType.CREATE)));
 
 	}
 

@@ -54,12 +54,20 @@ public class CaiLunRoot extends AbstractPersistable {
 		return userRoot.getUsers();
 	}
 
+	public UserRoot getUserRoot() {
+		return userRoot;
+	}
+
 	public void addUser(User user) {
 		this.userRoot.getUsers().add(user);
 	}
 
 	public Set<Language> getLanguages() {
 		return languageRoot.getLanguages();
+	}
+
+	public LanguageRoot getLanguageRoot() {
+		return languageRoot;
 	}
 
 	public void addLanguage(Language language) {
@@ -70,12 +78,20 @@ public class CaiLunRoot extends AbstractPersistable {
 		return groupRoot.getGroups();
 	}
 
+	public GroupRoot getGroupRoot() {
+		return groupRoot;
+	}
+
 	public void addGroup(Group group) {
 		this.groupRoot.getGroups().add(group);
 	}
 
 	public Set<Role> getRoles() {
 		return roleRoot.getRoles();
+	}
+
+	public RoleRoot getRoleRoot() {
+		return roleRoot;
 	}
 
 	public void addRole(Role role) {
@@ -86,12 +102,20 @@ public class CaiLunRoot extends AbstractPersistable {
 		return objectSchemaRoot.getSchemas();
 	}
 
+	public ObjectSchemaRoot getObjectSchemaRoot() {
+		return objectSchemaRoot;
+	}
+
 	public void addSchema(ObjectSchema schema) {
 		this.objectSchemaRoot.getSchemas().add(schema);
 	}
 
 	public Set<Project> getProjects() {
 		return projectRoot.getProjects();
+	}
+
+	public ProjectRoot getProjectRoot() {
+		return projectRoot;
 	}
 
 	public void addProject(Project project) {

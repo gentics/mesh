@@ -15,7 +15,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<surefire.forkcount>20</surefire.forkcount>
+		<surefire.forkcount>10</surefire.forkcount>
 	</properties>
 
 	<dependencies>

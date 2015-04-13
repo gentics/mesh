@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.assertFalse;
+import static com.gentics.cailun.util.RestAssert.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -16,6 +17,7 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -53,9 +55,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
 		String requestJson = JsonUtils.toJson(request);
+
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(info.getRole(), data().getCaiLunRoot().getGroupRoot(), PermissionType.CREATE);
+			tx.success();
+		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 200, "OK", requestJson);
 		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\",\"roles\":[],\"users\":[],\"perms\":[]}";
@@ -106,19 +111,18 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-
-		try (Transaction tx = graphDb.beginTx()) {
-			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
-			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.UPDATE);
-			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.DELETE);
-			// TODO we need a groups node in neo: CL-76
-			roleService.revokePermission(info.getRole(), data().getCaiLunRoot(), PermissionType.CREATE);
-			tx.success();
-		}
 		String requestJson = JsonUtils.toJson(request);
 
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), data().getCaiLunRoot().getGroupRoot(), PermissionType.CREATE);
+			tx.success();
+		}
+
+		assertFalse("The create permission to the groups root node should have been revoked.",
+				userService.isPermitted(info.getUser().getId(), new CaiLunPermission(data().getCaiLunRoot().getGroupRoot(), PermissionType.CREATE)));
+
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
-		expectMessageResponse("error_missing_perm", response, info.getGroup().getUuid());
+		expectMessageResponse("error_missing_perm", response, data().getCaiLunRoot().getGroupRoot().getUuid());
 
 		assertNull(groupService.findByName(name));
 	}
@@ -144,17 +148,19 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		Group extraGroupWithNoPerm = new Group("no_perm_group");
 		try (Transaction tx = graphDb.beginTx()) {
+			// Don't grant permissions to extra group
 			extraGroupWithNoPerm = groupService.save(extraGroupWithNoPerm);
 			tx.success();
 		}
-		// Don't grant permissions to extra group
+
+		int totalGroups = nGroups + data().getTotalGroups();
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/", 200, "OK");
 		GroupListResponse restResponse = JsonUtils.readValue(response, GroupListResponse.class);
 		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
 		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(25, restResponse.getData().size());
+		Assert.assertEquals(totalGroups, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + 3, 200, "OK");
@@ -162,7 +168,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals(perPage, restResponse.getData().size());
 
 		// created groups + test data group
-		int totalGroups = nGroups + data().getTotalGroups();
 		int totalPages = (int) Math.ceil(totalGroups / (double) perPage);
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
@@ -211,8 +216,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		assertGroup(group, JsonUtils.readValue(response, GroupResponse.class));
+
 	}
 
 	@Test

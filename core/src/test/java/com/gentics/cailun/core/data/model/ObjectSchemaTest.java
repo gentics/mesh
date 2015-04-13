@@ -3,16 +3,17 @@ package com.gentics.cailun.core.data.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.demo.DemoDataProvider;
+import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.test.AbstractDBTest;
 
 @Transactional
@@ -42,8 +43,8 @@ public class ObjectSchemaTest extends AbstractDBTest {
 		int nSchemas = 0;
 		for (ObjectSchema schema : result) {
 			assertNotNull(schema);
-			nSchemas++;
 		}
+		nSchemas++;
 		assertEquals("There should be exactly one object schema for the given project with the name {" + DemoDataProvider.PROJECT_NAME + "}", 2,
 				nSchemas);
 	}
@@ -74,11 +75,16 @@ public class ObjectSchemaTest extends AbstractDBTest {
 	public void testDeleteByUUID() {
 		ObjectSchema schema = data().getContentSchema();
 		objectSchemaService.deleteByUUID(schema.getUuid());
+		assertNull(objectSchemaService.findOne(schema.getId()));
 	}
 
 	@Test
 	public void testDeleteWithNoPermission() {
-		fail("Not yet implemented");
+		UserInfo info = data().getUserInfo();
+		ObjectSchema schema = data().getContentSchema();
+		roleService.revokePermission(info.getRole(), schema, PermissionType.DELETE);
+		objectSchemaService.deleteByUUID(schema.getUuid());
+		assertNotNull(objectSchemaService.findOne(schema.getId()));
 	}
 
 	@Test

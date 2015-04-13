@@ -391,6 +391,7 @@ public class BootstrapInitializer {
 
 	protected void initLanguages(CaiLunRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
 
+		long start = System.currentTimeMillis();
 		final String filename = "languages.json";
 		final InputStream ins = getClass().getResourceAsStream("/" + filename);
 		if (ins == null) {
@@ -406,9 +407,11 @@ public class BootstrapInitializer {
 				language = new Language(languageName, languageTag);
 				language.setNativeName(languageNativeName);
 				rootNode.addLanguage(languageRepository.save(language));
-				log.info("Saved language {" + languageTag + " / " + languageName + "}");
+				log.debug("Saved language {" + languageTag + " / " + languageName + "}");
 				rootRepository.save(rootNode);
 			}
 		}
+		long diff = System.currentTimeMillis() - start;
+		log.info("Handling languages took: " + diff + " [ms]");
 	}
 }
