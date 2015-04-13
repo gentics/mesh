@@ -4,8 +4,10 @@ import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import static io.vertx.core.http.HttpMethod.DELETE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.http.HttpMethod;
 
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
@@ -74,47 +77,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 200, "OK", JsonUtils.toJson(request));
 		String responseJson = "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"perms\":[],\"tags\":[],\"order\":0}";
 		assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
-	}
-
-	@Test
-	public void testUpdateContent() throws HttpStatusCodeErrorException, Exception {
-		ContentUpdateRequest request = new ContentUpdateRequest();
-		request.setSchemaName("content");
-		final String newFilename = "new-name.html";
-		request.addProperty("en", "filename", newFilename);
-		final String newName = "english renamed name";
-		request.addProperty("en", "name", newName);
-		final String newContent = "english renamed content!";
-		request.addProperty("en", "content", newContent);
-
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + data().getNews2015Content().getUuid() + "?lang=de", 200,
-				"OK", JsonUtils.toJson(request));
-		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
-		assertEquals(newFilename, restContent.getProperty("en", "filename"));
-		assertEquals(newName, restContent.getProperty("en", "name"));
-		assertEquals(newContent, restContent.getProperty("en", "content"));
-
-	}
-
-	@Test
-	public void testUpdateContentWithExtraJson() throws HttpStatusCodeErrorException, Exception {
-		ContentUpdateRequest request = new ContentUpdateRequest();
-		request.setSchemaName("content");
-		final String newFilename = "new-name.html";
-		request.addProperty("en", "filename", newFilename);
-		final String newName = "english renamed name";
-		request.addProperty("en", "name", newName);
-		final String newContent = "english renamed content!";
-		request.addProperty("en", "content", newContent);
-
-		String json = "{\"author\": \"test\", \"properties\":{\"en\":{\"filename\":\"new-name.html\",\"name\":\"english renamed name\",\"content\":\"english renamed content!\"}},\"schemaName\":\"content\",\"order\":0}";
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + data().getNews2015Content().getUuid() + "?lang=de", 200,
-				"OK", json);
-		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
-		assertEquals(newFilename, restContent.getProperty("en", "filename"));
-		assertEquals(newName, restContent.getProperty("en", "name"));
-		assertEquals(newContent, restContent.getProperty("en", "content"));
-
 	}
 
 	@Test
@@ -295,6 +257,83 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + uuid, 404, "Not Found");
 		expectMessageResponse("object_not_found_for_uuid", response, uuid);
+	}
+
+	// Update
+
+	@Test
+	public void testUpdateContent() throws HttpStatusCodeErrorException, Exception {
+		ContentUpdateRequest request = new ContentUpdateRequest();
+		request.setSchemaName("content");
+		final String newFilename = "new-name.html";
+		request.addProperty("en", "filename", newFilename);
+		final String newName = "english renamed name";
+		request.addProperty("en", "name", newName);
+		final String newContent = "english renamed content!";
+		request.addProperty("en", "content", newContent);
+
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + data().getNews2015Content().getUuid() + "?lang=de", 200,
+				"OK", JsonUtils.toJson(request));
+		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
+		assertEquals(newFilename, restContent.getProperty("en", "filename"));
+		assertEquals(newName, restContent.getProperty("en", "name"));
+		assertEquals(newContent, restContent.getProperty("en", "content"));
+		// TODO verify that the content got updated
+
+	}
+
+	@Test
+	public void testUpdateContentWithExtraJson() throws HttpStatusCodeErrorException, Exception {
+		ContentUpdateRequest request = new ContentUpdateRequest();
+		request.setSchemaName("content");
+		final String newFilename = "new-name.html";
+		request.addProperty("en", "filename", newFilename);
+		final String newName = "english renamed name";
+		request.addProperty("en", "name", newName);
+		final String newContent = "english renamed content!";
+		request.addProperty("en", "content", newContent);
+
+		String json = "{\"author\": \"test\", \"properties\":{\"en\":{\"filename\":\"new-name.html\",\"name\":\"english renamed name\",\"content\":\"english renamed content!\"}},\"schemaName\":\"content\",\"order\":0}";
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + data().getNews2015Content().getUuid() + "?lang=de", 200,
+				"OK", json);
+		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
+		assertEquals(newFilename, restContent.getProperty("en", "filename"));
+		assertEquals(newName, restContent.getProperty("en", "name"));
+		assertEquals(newContent, restContent.getProperty("en", "content"));
+
+		Content reloaded = contentService.reload(data().getNews2015Content());
+		assertEquals(newFilename, reloaded.getFilename(data().getEnglish()));
+		assertEquals(newName, reloaded.getName(data().getEnglish()));
+		assertEquals(newContent, reloaded.getContent(data().getEnglish()));
+
+	}
+
+	// Delete
+
+	@Test
+	public void testDeleteContent() throws Exception {
+
+		Content content = data().getNews2015Content();
+		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
+		expectMessageResponse("content_deleted", response, content.getUuid());
+
+		assertNull(contentService.findByUUID(content.getUuid()));
+	}
+
+	@Test
+	public void testDeleteContentWithNoPerm() throws Exception {
+
+		Content content = data().getNews2015Content();
+
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), content, PermissionType.DELETE);
+			tx.success();
+		}
+
+		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 403, "Forbidden");
+		expectMessageResponse("error_missing_perm", response, content.getUuid());
+
+		assertNotNull(contentService.findByUUID(content.getUuid()));
 	}
 
 }
