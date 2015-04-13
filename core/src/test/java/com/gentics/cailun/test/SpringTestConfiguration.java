@@ -10,7 +10,9 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
+import org.neo4j.backup.OnlineBackupSettings;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.test.TestGraphDatabaseFactory;
 import org.openpcf.neo4vertx.neo4j.service.GraphService;
 import org.springframework.context.annotation.Bean;
@@ -48,8 +50,11 @@ public class SpringTestConfiguration extends Neo4jConfiguration {
 			}
 		});
 
-		GraphDatabaseService service = new TestGraphDatabaseFactory().newImpermanentDatabase(storeDir.getAbsolutePath());
-		service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
+		GraphDatabaseBuilder builder = new TestGraphDatabaseFactory().newImpermanentDatabaseBuilder(storeDir.getAbsolutePath());
+		builder.setConfig(OnlineBackupSettings.online_backup_enabled, "false");
+		GraphDatabaseService graphService = builder.newGraphDatabase();
+
+		graphService.registerTransactionEventHandler(new UUIDTransactionEventHandler(graphService));
 		Neo4jGraphVerticle.setService(new GraphService() {
 
 			@Override
@@ -58,7 +63,7 @@ public class SpringTestConfiguration extends Neo4jConfiguration {
 
 			@Override
 			public GraphDatabaseService getGraphDatabaseService() {
-				return service;
+				return graphService;
 			}
 
 			@Override
@@ -71,7 +76,7 @@ public class SpringTestConfiguration extends Neo4jConfiguration {
 			}
 
 		});
-		return service;
+		return graphService;
 	}
 
 	@Bean

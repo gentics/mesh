@@ -1,8 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -13,6 +11,7 @@ import java.util.stream.Collectors;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -59,8 +58,20 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), user, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
+
+		assertUser(user, restUser);
+		// TODO assert groups
+		// TODO assert perms
+	}
+
+	public void assertUser(User user, UserResponse restUser) {
+		assertEquals(user.getUsername(), restUser.getUsername());
+		assertEquals(user.getEmailAddress(), restUser.getEmailAddress());
+		assertEquals(user.getFirstname(), restUser.getFirstname());
+		assertEquals(user.getLastname(), restUser.getLastname());
+		assertEquals(user.getUuid(), restUser.getUuid());
+		assertEquals(user.getGroups().size(), restUser.getGroups().size());
 	}
 
 	@Test
@@ -370,7 +381,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"groups\":[\"joe1_group\"]}";
+		String json = "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]}";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 	}
@@ -430,10 +441,45 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		User user = info.getUser();
+		User user = new User("extraUser");
+		try (Transaction tx = graphDb.beginTx()) {
+			user = userService.save(user);
+			roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
+			roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
+			roleService.addPermission(info.getRole(), user, PermissionType.READ);
+			tx.success();
+		}
+		user = userService.reload(user);
+		assertNotNull(user.getUuid());
+
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
 		assertNotNull("The user should not have been deleted", userService.findByUUID(user.getUuid()));
 	}
 
+	@Test
+	public void testDeleteWithUuidNull() throws Exception {
+		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + null, 404, "Not Found");
+		expectMessageResponse("object_not_found_for_uuid", response, "null");
+	}
+
+	@Test
+	public void testDeleteByUUID() throws Exception {
+		User user = new User("extraUser");
+		try (Transaction tx = graphDb.beginTx()) {
+			user = userService.save(user);
+			roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
+			tx.success();
+		}
+
+		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
+		expectMessageResponse("error_missing_perm", response, user.getUuid());
+		assertNull("The user should have been deleted", userService.reload(user));
+	}
+
+	@Test
+	public void testDeleteOwnUser() {
+
+		// String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
+	}
 }
