@@ -43,4 +43,6 @@ public interface ObjectSchemaRepository extends UUIDCRUDActions<ObjectSchema>, O
 
 	Result<ObjectSchema> findAll();
 
+	ObjectSchema findByName(String string);
+
 }

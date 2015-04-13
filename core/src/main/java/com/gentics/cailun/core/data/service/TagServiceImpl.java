@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
@@ -28,6 +29,7 @@ import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.cailun.core.repository.TagRepository;
+import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
@@ -178,12 +180,17 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 			}
 		}
 		response.setUuid(tag.getUuid());
-		response.setSchemaName(tag.getSchemaName());
+		if (tag.getSchema() != null) {
+			ObjectSchema schema = neo4jTemplate.fetch(tag.getSchema());
+			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
+		}
 
 		// TODO handle files and subtags:
 		// tag.getTags()
 		// tag.getFiles()
-		response.setCreator(userService.transformToRest(tag.getCreator()));
+		if (tag.getCreator() != null) {
+			response.setCreator(userService.transformToRest(tag.getCreator()));
+		}
 		// TODO handle properties for the type of tag
 		return response;
 

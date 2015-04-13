@@ -22,6 +22,7 @@ import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServ
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -74,7 +75,11 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 	public ContentResponse transformToRest(RoutingContext rc, Content content, List<String> languageTags, int depth) {
 		ContentResponse response = new ContentResponse();
 		response.setUuid(content.getUuid());
-		response.setSchemaName(content.getSchemaName());
+		if (content.getSchema() != null) {
+			String schemaName = content.getSchema().getName();
+			String schemaUuid = content.getSchema().getUuid();
+			response.setSchema(new SchemaReference(schemaName, schemaUuid));
+		}
 		UserResponse restUser = userService.transformToRest(content.getCreator());
 		response.setAuthor(restUser);
 		response.setPerms(userService.getPerms(rc, content));

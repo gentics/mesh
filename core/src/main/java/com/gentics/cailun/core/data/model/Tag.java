@@ -27,7 +27,7 @@ public class Tag extends GenericPropertyContainer {
 	private static Label label = DynamicLabel.label(Tag.class.getSimpleName());
 
 	public Tag() {
-		this.schemaName = "tag";
+
 	}
 
 	public static Label getLabel() {

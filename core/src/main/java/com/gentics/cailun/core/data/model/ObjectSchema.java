@@ -24,7 +24,7 @@ public class ObjectSchema extends GenericNode {
 
 	private static final long serialVersionUID = -6822013445735068604L;
 
-	@Indexed
+	@Indexed(unique = true)
 	private String name;
 
 	// TODO i18n?

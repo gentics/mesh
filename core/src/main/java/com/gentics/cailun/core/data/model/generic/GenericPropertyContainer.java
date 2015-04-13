@@ -7,10 +7,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 
@@ -21,7 +23,8 @@ public class GenericPropertyContainer extends GenericNode {
 
 	public static final String NAME_KEYWORD = "name";
 
-	protected String schemaName = null;
+	@RelatedTo(type = BasicRelationships.HAS_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
+	protected ObjectSchema schema;
 
 	@Fetch
 	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
@@ -70,12 +73,12 @@ public class GenericPropertyContainer extends GenericNode {
 		return i18nTranslations;
 	}
 
-	public String getSchemaName() {
-		// TODO use labels instead
-		return schemaName;
+	public void setSchema(ObjectSchema schema) {
+		this.schema = schema;
+	}
+	
+	public ObjectSchema getSchema() {
+		return schema;
 	}
 
-	public void setSchemaName(String schemaName) {
-		this.schemaName = schemaName;
-	}
 }

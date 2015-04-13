@@ -158,7 +158,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				Tag rootTag = getObjectByUUID(rc, request.getTagUuid(), PermissionType.CREATE);
 
 				newTag = new Tag();
-				newTag.setSchemaName(request.getSchemaName());
+				// TODO load schema and set the reference to the tag
+				// newTag.setSchemaName(request.getSchemaName());
 				// TODO maybe projects should not be a set?
 				Project project = projectService.findByName(projectName);
 				newTag.addProject(project);
@@ -200,22 +201,23 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				rc.response().end(toJson(tagService.transformToRest(rc, tag, languages, depth)));
 				tx.success();
 			}
-			
+
 		});
 
 		Route readAllRoute = route("/").method(GET);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-			
+
 			TagListResponse listResponse = new TagListResponse();
 			List<String> languageTags = getSelectedLanguageTags(rc);
+			int depth = getDepth(rc);
 			try (Transaction tx = graphDb.beginTx()) {
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				User requestUser = springConfiguration.authService().getUser(rc);
 				// TODO filtering, sorting
 				Page<Tag> tagPage = tagService.findAllVisible(requestUser, projectName, languageTags, pagingInfo);
 				for (Tag tag : tagPage) {
-					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, 0));
+					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
 				}
 				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),
 						tagPage.getTotalElements());

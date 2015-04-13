@@ -20,5 +20,7 @@ public interface ObjectSchemaService extends GenericNodeService<ObjectSchema> {
 	public Result<ObjectSchema> findAll();
 
 	Page<ObjectSchema> findAllVisible(User requestUser, PagingInfo pagingInfo);
+	
+	ObjectSchema findByName(String name);
 
 }

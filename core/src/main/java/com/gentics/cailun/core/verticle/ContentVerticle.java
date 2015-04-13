@@ -92,7 +92,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				}
 				failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
 
-				content.setSchemaName(requestModel.getSchemaName());
+				// TODO load the schema and set the reference to the tag
+				//content.setSchemaName(requestModel.getSchemaName());
 
 				User user = springConfiguration.authService().getUser(rc);
 				content.setCreator(user);

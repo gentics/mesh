@@ -22,7 +22,7 @@ public interface GenericNodeService<T extends GenericNode> {
 	public Result<T> findAll();
 
 	public Iterable<T> findAll(String projectName);
-
+	
 	public T findByName(String projectName, String name);
 
 	public T findByUUID(String projectName, String uuid);

@@ -110,6 +110,11 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	public Page<ObjectSchema> findAllVisible(User requestUser, PagingInfo pagingInfo) {
 		return schemaRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
 	}
+
+	@Override
+	public ObjectSchema findByName(String name) {
+		return schemaRepository.findByName(name);
+	}
 }
 
 class PropertTypeSchemaComparator implements Comparator<PropertyTypeSchema> {

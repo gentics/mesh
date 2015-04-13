@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
+import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 
 public class TagResponse extends AbstractRestModel {
@@ -17,6 +18,8 @@ public class TagResponse extends AbstractRestModel {
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 
 	private List<TagResponse> childTags = new ArrayList<>();
+
+	private SchemaReference schema;
 
 	private String[] perms = {};
 
@@ -113,6 +116,14 @@ public class TagResponse extends AbstractRestModel {
 
 	public void setChildTags(List<TagResponse> childTags) {
 		this.childTags = childTags;
+	}
+
+	public SchemaReference getSchema() {
+		return schema;
+	}
+
+	public void setSchema(SchemaReference schema) {
+		this.schema = schema;
 	}
 
 }

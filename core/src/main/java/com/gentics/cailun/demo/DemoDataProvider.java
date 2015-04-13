@@ -53,7 +53,7 @@ public class DemoDataProvider {
 
 	public static final String PROJECT_NAME = "dummy";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
-
+	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 	private static SecureRandom random = new SecureRandom();
 
 	private int totalTags = 0;
@@ -118,6 +118,8 @@ public class DemoDataProvider {
 
 	private ObjectSchema tagSchema;
 
+	private ObjectSchema categoriesSchema;
+
 	private UserInfo userInfo;
 
 	/**
@@ -174,50 +176,84 @@ public class DemoDataProvider {
 			bootstrapInitializer.initMandatoryData();
 			tx.success();
 		}
-		addData(multiplicator);
+
+		addUserGroupRoleProject(multiplicator);
 		addSchemas(multiplicator);
+		addData(multiplicator);
 		updatePermissions();
-		updateUUIDs();
+	}
+
+	private void addUserGroupRoleProject(int multiplicator) {
+		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+
+			// User, Groups, Roles
+			userInfo = createUserInfo("joe1", "Joe", "Doe");
+
+			project = new Project(PROJECT_NAME);
+			project.setCreator(userInfo.getUser());
+			project = projectService.save(project);
+
+			english = languageService.findByLanguageTag("en");
+			german = languageService.findByLanguageTag("de");
+
+			// Guest Group / Role
+			Role guestRole = new Role("guest_role");
+			roleService.save(guestRole);
+			totalRoles++;
+
+			Group guests = new Group("guests");
+			guests.addRole(guestRole);
+			guests = groupService.save(guests);
+			totalGroups++;
+
+			// Extra User
+			for (int i = 0; i < 12 * multiplicator; i++) {
+				User user = new User("guest_" + i);
+				// userService.setPassword(user, "guestpw" + i);
+				user.setFirstname("Guest Firstname");
+				user.setLastname("Guest Lastname");
+				user.setEmailAddress("guest_" + i + "@spam.gentics.com");
+				userService.save(user);
+				guests.addUser(user);
+				guests = groupService.save(guests);
+				totalUsers++;
+			}
+			// Extra Groups
+			for (int i = 0; i < 12 * multiplicator; i++) {
+				Group group = new Group("extra_group_" + i);
+				group = groupService.save(group);
+				totalGroups++;
+			}
+
+			// Extra Roles
+			for (int i = 0; i < 12 * multiplicator; i++) {
+				Role role = new Role("extra_role_" + i);
+				roleService.save(role);
+				totalRoles++;
+			}
+			tx.success();
+		}
+
+		userInfo.setGroup(groupService.reload(userInfo.getGroup()));
+		userInfo.setUser(userService.reload(userInfo.getUser()));
+		userInfo.setRole(roleService.reload(userInfo.getRole()));
+		project = projectService.reload(project);
 	}
 
 	private void addSchemas(int multiplicator) {
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
-			// Save the default object schema
-			contentSchema = new ObjectSchema("content");
-			contentSchema.addProject(project);
-			contentSchema.setDescription("Default schema for contents");
-			contentSchema.setCreator(userInfo.getUser());
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
-			objectSchemaService.save(contentSchema);
 
-			contentSchema = new ObjectSchema("binary-content");
-			contentSchema.addProject(project);
-			contentSchema.setDescription("Default schema for binary contents");
-			contentSchema.setCreator(userInfo.getUser());
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.BINARY));
-			objectSchemaService.save(contentSchema);
+			tagSchema = objectSchemaService.findByName("tag");
+			contentSchema = objectSchemaService.findByName("content");
 
-			tagSchema = new ObjectSchema("tag");
-			tagSchema.addProject(project);
-			tagSchema.setDescription("Default schema for tags");
-			tagSchema.setCreator(userInfo.getUser());
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
-			objectSchemaService.save(tagSchema);
-
-			ObjectSchema customSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
-			customSchema.addProject(project);
-			customSchema.setDescription("Custom schema for tag categories");
-			customSchema.setCreator(userInfo.getUser());
-			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
-			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			customSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
-			objectSchemaService.save(customSchema);
+			categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
+			categoriesSchema.addProject(project);
+			categoriesSchema.setDescription("Custom schema for tag categories");
+			categoriesSchema.setCreator(userInfo.getUser());
+			categoriesSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			categoriesSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			categoriesSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			objectSchemaService.save(categoriesSchema);
 			tx.success();
 		}
 
@@ -271,77 +307,9 @@ public class DemoDataProvider {
 
 	}
 
-	/**
-	 * Reload various nodes to refresh them and load the uuid field.
-	 */
-	private void updateUUIDs() {
-		root = rootService.findRoot();
-
-		news = tagService.reload(news);
-		news2015 = tagService.reload(news2015);
-		news2015Content = contentService.reload(news2015Content);
-		dealsSuperDeal = contentService.reload(dealsSuperDeal);
-
-		productsTag = tagService.reload(productsTag);
-		deals = tagService.reload(deals);
-
-		project = projectService.reload(project);
-		contentSchema = objectSchemaService.reload(contentSchema);
-		tagSchema = objectSchemaService.reload(tagSchema);
-
-		userInfo.setGroup(groupService.reload(userInfo.getGroup()));
-		userInfo.setUser(userService.reload(userInfo.getUser()));
-		userInfo.setRole(roleService.reload(userInfo.getRole()));
-	}
-
 	@SuppressWarnings("unchecked")
 	private void addData(int multiplicator) {
 		try (Transaction tx = graphDb.beginTx()) {
-
-			project = new Project(PROJECT_NAME);
-			project = projectService.save(project);
-
-			// User, Groups, Roles
-			userInfo = createUserInfo("joe1", "Joe", "Doe");
-
-			english = languageService.findByLanguageTag("en");
-			german = languageService.findByLanguageTag("de");
-
-			// Guest Group / Role
-			Role guestRole = new Role("guest_role");
-			roleService.save(guestRole);
-			totalRoles++;
-
-			Group guests = new Group("guests");
-			guests.addRole(guestRole);
-			guests = groupService.save(guests);
-			totalGroups++;
-
-			// Extra User
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				User user = new User("guest_" + i);
-				// userService.setPassword(user, "guestpw" + i);
-				user.setFirstname("Guest Firstname");
-				user.setLastname("Guest Lastname");
-				user.setEmailAddress("guest_" + i + "@spam.gentics.com");
-				userService.save(user);
-				guests.addUser(user);
-				guests = groupService.save(guests);
-				totalUsers++;
-			}
-			// Extra Groups
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				Group group = new Group("extra_group_" + i);
-				group = groupService.save(group);
-				totalGroups++;
-			}
-
-			// Extra Roles
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				Role role = new Role("extra_role_" + i);
-				roleService.save(role);
-				totalRoles++;
-			}
 
 			// Contents, Tags, Projects
 			root = rootService.findRoot();
@@ -358,71 +326,61 @@ public class DemoDataProvider {
 			project = projectService.reload(project);
 
 			// News - 2014
-			news = addTag(rootTag, "News", "Neuigkeiten");
+			news = addTag(rootTag, "News", "Neuigkeiten", tagSchema);
 			totalTags++;
 
-			Tag news2014 = addTag(news, "2014");
+			Tag news2014 = addTag(news, "2014", null, tagSchema);
 			totalTags++;
 
 			for (int i = 0; i < 12 * multiplicator; i++) {
-				addContent(news2014, "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!");
+				addContent(news2014, "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 				totalContents++;
 			}
 
 			// News - 2015
-			news2015 = addTag(news2014, "2015");
+			news2015 = addTag(news2014, "2015", null, tagSchema);
 			totalTags++;
-			news2015Content = addContent(news2015, "Special News_2014", "News!", "Neuigkeiten!");
+			news2015Content = addContent(news2015, "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
 			totalContents++;
 			for (int i = 0; i < 12 * multiplicator; i++) {
-				addContent(news2015, "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!");
+				addContent(news2015, "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 				totalContents++;
 			}
 
 			// Tags for categories
-			Tag categories = addTag(rootTag, "categories");
+			Tag categories = addTag(rootTag, "categories", null, categoriesSchema);
 			totalTags++;
-			categories.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag vehicle = addTag(rootTag, "Vehicle", "Fahrzeug");
+			Tag vehicle = addTag(rootTag, "Vehicle", "Fahrzeug", categoriesSchema);
 			totalTags++;
-			vehicle.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag car = addTag(vehicle, "Car", "Auto");
+			Tag car = addTag(vehicle, "Car", "Auto", categoriesSchema);
 			totalTags++;
-			car.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag jeep = addTag(car, "Jeep");
+			Tag jeep = addTag(car, "Jeep", null, categoriesSchema);
 			totalTags++;
-			jeep.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag bike = addTag(vehicle, "Bike", "Fahrrad");
+			Tag bike = addTag(vehicle, "Bike", "Fahrrad", categoriesSchema);
 			totalTags++;
-			bike.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag motorcycle = addTag(vehicle, "Motorcycle", "Motorrad");
+			Tag motorcycle = addTag(vehicle, "Motorcycle", "Motorrad", categoriesSchema);
 			totalTags++;
-			motorcycle.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag bus = addTag(vehicle, "Bus", "Bus");
+			Tag bus = addTag(vehicle, "Bus", "Bus", categoriesSchema);
 			totalTags++;
-			bus.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag plane = addTag(rootTag, "Plane", "Flugzeug");
+			Tag plane = addTag(rootTag, "Plane", "Flugzeug", categoriesSchema);
 			totalTags++;
-			plane.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag jetFighter = addTag(plane, "JetFigther", "Düsenjäger");
+			Tag jetFighter = addTag(plane, "JetFigther", "Düsenjäger", categoriesSchema);
 			totalTags++;
-			jetFighter.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
-			Tag twinjet = addTag(plane, "Twinjet", "Zweistrahliges Flugzeug");
+			Tag twinjet = addTag(plane, "Twinjet", "Zweistrahliges Flugzeug", categoriesSchema);
 			totalTags++;
-			twinjet.setSchemaName(TAG_CATEGORIES_SCHEMA_NAME);
 
 			// productsTag
 			Map<String, Content> products = new HashMap<>();
-			productsTag = addTag(rootTag, "products", "Produkte");
+			productsTag = addTag(rootTag, "products", "Produkte", tagSchema);
 			totalTags++;
 			productsTag.addContent(news2015Content);
 			productsTag = tagService.save(productsTag);
@@ -431,7 +389,7 @@ public class DemoDataProvider {
 					productsTag,
 					"Porsche 911",
 					"997 is the internal designation for the Porsche 911 model manufactured and sold by German manufacturer Porsche between 2004 (as Model Year 2005) and 2012.",
-					"Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.");
+					"Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.", contentSchema);
 			porsche911.addTag(vehicle);
 			porsche911.addTag(car);
 			products.put("Porsche 911", porsche911);
@@ -441,7 +399,8 @@ public class DemoDataProvider {
 					productsTag,
 					"Nissan GT-R",
 					"The Nissan GT-R is a 2-door 2+2 sports coupé produced by Nissan and first released in Japan in 2007",
-					"Der Nissan GT-R ist ein seit Dezember 2007 produziertes Sportcoupé des japanischen Automobilherstellers Nissan und der Nachfolger des Nissan Skyline GT-R R34.");
+					"Der Nissan GT-R ist ein seit Dezember 2007 produziertes Sportcoupé des japanischen Automobilherstellers Nissan und der Nachfolger des Nissan Skyline GT-R R34.",
+					contentSchema);
 			nissanGTR.addTag(vehicle);
 			nissanGTR.addTag(car);
 			products.put("Nissan GTR", nissanGTR);
@@ -451,7 +410,8 @@ public class DemoDataProvider {
 					productsTag,
 					"BMW M3",
 					"The BMW M3 (first launched in 1986) is a high-performance version of the BMW 3-Series, developed by BMW's in-house motorsport division, BMW M.",
-					"Der BMW M3 ist ein Sportmodell der 3er-Reihe von BMW, das seit Anfang 1986 hergestellt wird. Dabei handelt es sich um ein Fahrzeug, welches von der BMW-Tochterfirma BMW M GmbH entwickelt und anfangs (E30 und E36) auch produziert wurde.");
+					"Der BMW M3 ist ein Sportmodell der 3er-Reihe von BMW, das seit Anfang 1986 hergestellt wird. Dabei handelt es sich um ein Fahrzeug, welches von der BMW-Tochterfirma BMW M GmbH entwickelt und anfangs (E30 und E36) auch produziert wurde.",
+					contentSchema);
 			bmwM3.addTag(vehicle);
 			bmwM3.addTag(car);
 			products.put("BMW M3", bmwM3);
@@ -461,7 +421,8 @@ public class DemoDataProvider {
 					productsTag,
 					"Concorde",
 					"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
-					"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
+					"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
+					contentSchema);
 			concorde.addTag(plane);
 			concorde.addTag(twinjet);
 			products.put("Concorde", concorde);
@@ -471,7 +432,8 @@ public class DemoDataProvider {
 					productsTag,
 					"Boeing 737",
 					"The Boeing 737 is a short- to medium-range twinjet narrow-body airliner. Originally developed as a shorter, lower-cost twin-engined airliner derived from Boeing's 707 and 727, the 737 has developed into a family of nine passenger models with a capacity of 85 to 215 passengers.",
-					"Die Boeing 737 des US-amerikanischen Flugzeugherstellers Boeing ist die weltweit meistgebaute Familie strahlgetriebener Verkehrsflugzeuge.");
+					"Die Boeing 737 des US-amerikanischen Flugzeugherstellers Boeing ist die weltweit meistgebaute Familie strahlgetriebener Verkehrsflugzeuge.",
+					contentSchema);
 			boeing737.addTag(plane);
 			boeing737.addTag(twinjet);
 			products.put("Boeing 737", boeing737);
@@ -481,7 +443,8 @@ public class DemoDataProvider {
 					productsTag,
 					"Airbus A300",
 					"The Airbus A300 is a short- to medium-range wide-body twin-engine jet airliner that was developed and manufactured by Airbus. Released in 1972 as the world's first twin-engined widebody, it was the first product of Airbus Industrie, a consortium of European aerospace manufacturers, now a subsidiary of Airbus Group.",
-					"Der Airbus A300 ist das erste zweistrahlige Großraumflugzeug der Welt, produziert vom europäischen Flugzeughersteller Airbus.");
+					"Der Airbus A300 ist das erste zweistrahlige Großraumflugzeug der Welt, produziert vom europäischen Flugzeughersteller Airbus.",
+					contentSchema);
 			a300.addTag(plane);
 			a300.addTag(twinjet);
 			products.put("Airbus A300", a300);
@@ -491,21 +454,21 @@ public class DemoDataProvider {
 					productsTag,
 					"Jeep Wrangler",
 					"The Jeep Wrangler is a compact and mid-size (Wrangler Unlimited models) four-wheel drive off-road and sport utility vehicle (SUV), manufactured by American automaker Chrysler, under its Jeep marque – and currently in its third generation.",
-					"Der Jeep Wrangler ist ein Geländewagen des US-amerikanischen Herstellers Jeep innerhalb des Chrysler-Konzerns.");
+					"Der Jeep Wrangler ist ein Geländewagen des US-amerikanischen Herstellers Jeep innerhalb des Chrysler-Konzerns.", contentSchema);
 			wrangler.addTag(vehicle);
 			wrangler.addTag(jeep);
 			products.put("Jeep Wrangler", wrangler);
 			totalContents++;
 
 			Content volvo = addContent(productsTag, "Volvo B10M",
-					"The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null);
+					"The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null, contentSchema);
 			volvo.addTag(vehicle);
 			volvo.addTag(bus);
 			products.put("Volvo B10M", volvo);
 			totalContents++;
 
 			Content hondact90 = addContent(productsTag, "Honda CT90",
-					"The Honda CT90 was a small step-through motorcycle manufactured by Honda from 1966 to 1979.", null);
+					"The Honda CT90 was a small step-through motorcycle manufactured by Honda from 1966 to 1979.", null, contentSchema);
 			hondact90.addTag(vehicle);
 			hondact90.addTag(motorcycle);
 			products.put("Honda CT90", hondact90);
@@ -515,38 +478,46 @@ public class DemoDataProvider {
 					productsTag,
 					"Honda NR",
 					"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
-					"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
+					"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
+					contentSchema);
 			hondaNR.addTag(vehicle);
 			hondaNR.addTag(motorcycle);
 			products.put("Honda NR", hondaNR);
 			totalContents++;
 
 			// Deals
-			deals = addTag(rootTag, "Deals", "Angebote");
+			deals = addTag(rootTag, "Deals", "Angebote", tagSchema);
 			totalTags++;
 
-			dealsSuperDeal = addContent(deals, "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!");
+			dealsSuperDeal = addContent(deals, "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!", contentSchema);
 			totalContents++;
 			for (int i = 0; i < 12 * multiplicator; i++) {
-				addContent(deals, "Special Deal June 2015 - " + i, "Buy two get three! " + i, "Kauf zwei und nimm drei mit!" + i);
+				addContent(deals, "Special Deal June 2015 - " + i, "Buy two get three! " + i, "Kauf zwei und nimm drei mit!" + i, contentSchema);
 				totalContents++;
 			}
 
 			tx.success();
 		}
+		news = tagService.reload(news);
+		news2015 = tagService.reload(news2015);
+		news2015Content = contentService.reload(news2015Content);
+		dealsSuperDeal = contentService.reload(dealsSuperDeal);
+
+		productsTag = tagService.reload(productsTag);
+		deals = tagService.reload(deals);
+
 	}
 
-	private Tag addTag(Tag rootTag, String englishName) {
-		return addTag(rootTag, englishName, null);
-	}
-
-	private Tag addTag(Tag rootTag, String englishName, String germanName) {
+	private Tag addTag(Tag rootTag, String englishName, String germanName, ObjectSchema schema) {
 		Tag tag = new Tag();
-		tagService.setName(tag, english, englishName);
+		if (englishName != null) {
+			tagService.setName(tag, english, englishName);
+		}
 		if (germanName != null) {
 			tagService.setName(tag, german, germanName);
 		}
 		tag.addProject(project);
+		tag.setSchema(schema);
 		tag.setCreator(userInfo.getUser());
 		tag = tagService.save(tag);
 		rootTag.addTag(tag);
@@ -554,7 +525,7 @@ public class DemoDataProvider {
 		return tag;
 	}
 
-	private Content addContent(Tag tag, String name, String englishContent, String germanContent) {
+	private Content addContent(Tag tag, String name, String englishContent, String germanContent, ObjectSchema schema) {
 		Content content = new Content();
 		contentService.setName(content, english, name + " english");
 		contentService.setFilename(content, english, name + ".en.html");
@@ -568,6 +539,7 @@ public class DemoDataProvider {
 		// TODO maybe set project should be done inside the save?
 		content.addProject(project);
 		content.setCreator(userInfo.getUser());
+		content.setSchema(schema);
 		content = contentService.save(content);
 
 		// Add the content to the given tag

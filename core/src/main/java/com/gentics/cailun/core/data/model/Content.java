@@ -20,7 +20,6 @@ public class Content extends GenericPropertyContainer {
 	public static final String TITLE_KEY = "title";
 
 	public Content() {
-		this.schemaName = "content";
 	}
 
 	public String getTeaser(Language language) {

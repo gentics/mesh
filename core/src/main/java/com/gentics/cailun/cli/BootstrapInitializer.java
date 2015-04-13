@@ -26,11 +26,15 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.LanguageRoot;
+import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.ObjectSchemaRoot;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.ProjectRoot;
+import com.gentics.cailun.core.data.model.PropertyType;
+import com.gentics.cailun.core.data.model.PropertyTypeSchema;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.GroupRoot;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -263,10 +267,44 @@ public class BootstrapInitializer {
 			log.info("Stored project root node");
 		}
 
+		// Save the default object schema
+		ObjectSchema contentSchema = objectSchemaRepository.findByName("content");
+		if (contentSchema == null) {
+			contentSchema = new ObjectSchema("content");
+			contentSchema.setDescription("Default schema for contents");
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			contentSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			objectSchemaService.save(contentSchema);
+		}
+
+		ObjectSchema binarySchema = objectSchemaRepository.findByName("binary-content");
+		if (binarySchema == null) {
+			binarySchema = new ObjectSchema("binary-content");
+			binarySchema.setDescription("Default schema for binary contents");
+			binarySchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			binarySchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			binarySchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.BINARY));
+			objectSchemaService.save(contentSchema);
+		}
+
+		ObjectSchema tagSchema = objectSchemaRepository.findByName("tag");
+		if (tagSchema == null) {
+			tagSchema = new ObjectSchema("tag");
+			tagSchema.setDescription("Default schema for tags");
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			objectSchemaService.save(tagSchema);
+		}
+
 		ObjectSchemaRoot objectSchemaRoot = objectSchemaRepository.findRoot();
 		if (objectSchemaRoot == null) {
 			objectSchemaRoot = new ObjectSchemaRoot();
-			objectSchemaRoot= neo4jTemplate.save(objectSchemaRoot);
+			objectSchemaRoot.getSchemas().add(tagSchema);
+			objectSchemaRoot.getSchemas().add(contentSchema);
+			objectSchemaRoot.getSchemas().add(binarySchema);
+			objectSchemaRoot = neo4jTemplate.save(objectSchemaRoot);
 			log.info("Stored schema root node");
 		}
 
