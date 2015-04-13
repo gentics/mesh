@@ -97,6 +97,27 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testUpdateContentWithExtraJson() throws HttpStatusCodeErrorException, Exception {
+		ContentUpdateRequest request = new ContentUpdateRequest();
+		request.setSchemaName("content");
+		final String newFilename = "new-name.html";
+		request.addProperty("en", "filename", newFilename);
+		final String newName = "english renamed name";
+		request.addProperty("en", "name", newName);
+		final String newContent = "english renamed content!";
+		request.addProperty("en", "content", newContent);
+
+		String json = "{\"author\": \"test\", \"properties\":{\"en\":{\"filename\":\"new-name.html\",\"name\":\"english renamed name\",\"content\":\"english renamed content!\"}},\"schemaName\":\"content\",\"order\":0}";
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + data().getNews2015Content().getUuid() + "?lang=de", 200,
+				"OK", json);
+		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
+		assertEquals(newFilename, restContent.getProperty("en", "filename"));
+		assertEquals(newName, restContent.getProperty("en", "name"));
+		assertEquals(newContent, restContent.getProperty("en", "content"));
+
+	}
+
+	@Test
 	public void testCreateContentWithMissingTagUuid() throws Exception {
 
 		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.CREATE);
