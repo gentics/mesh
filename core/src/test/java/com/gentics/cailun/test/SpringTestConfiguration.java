@@ -5,6 +5,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -31,7 +35,20 @@ public class SpringTestConfiguration extends Neo4jConfiguration {
 
 	@Bean
 	public GraphDatabaseService graphDatabaseService() {
-		GraphDatabaseService service = new TestGraphDatabaseFactory().newImpermanentDatabase();
+		final File storeDir = new File(System.getProperty("java.io.tmpdir"), "random_neo4jdb_" + TestUtil.getRandomHash(12));
+		storeDir.mkdirs();
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				try {
+					FileUtils.deleteDirectory(storeDir);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+		GraphDatabaseService service = new TestGraphDatabaseFactory().newImpermanentDatabase(storeDir.getAbsolutePath());
 		service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
 		Neo4jGraphVerticle.setService(new GraphService() {
 
@@ -52,11 +69,11 @@ public class SpringTestConfiguration extends Neo4jConfiguration {
 			@Override
 			public void shutdown() {
 			}
-			
+
 		});
 		return service;
 	}
-	
+
 	@Bean
 	public Neo4jAuthorizingRealm customSecurityRealm() {
 		Neo4jAuthorizingRealm realm = new Neo4jAuthorizingRealm();
