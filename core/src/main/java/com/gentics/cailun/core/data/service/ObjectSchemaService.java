@@ -13,14 +13,12 @@ public interface ObjectSchemaService extends GenericNodeService<ObjectSchema> {
 
 	ObjectSchemaResponse transformToRest(ObjectSchema schema);
 
-	void deleteByName(String projectName, String schemaName);
-
 	void deleteByUUID(String uuid);
-	
+
 	public Result<ObjectSchema> findAll();
 
 	Page<ObjectSchema> findAllVisible(User requestUser, PagingInfo pagingInfo);
-	
+
 	ObjectSchema findByName(String name);
 
 }

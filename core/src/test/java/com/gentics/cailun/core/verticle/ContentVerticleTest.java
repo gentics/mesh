@@ -196,7 +196,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
 		Assert.assertEquals(2, restResponse.getMetainfo().getPageCount());
 		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(57, restResponse.getMetainfo().getTotalCount());
+		Assert.assertEquals(data().getTotalContents(), restResponse.getMetainfo().getTotalCount());
 	}
 
 	@Test
@@ -302,18 +302,19 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		final String newContent = "english renamed content!";
 		request.addProperty("en", "content", newContent);
 
+		Content content = data().getNews2015Content();
 		String json = "{\"author\": \"test\", \"properties\":{\"en\":{\"filename\":\"new-name.html\",\"name\":\"english renamed name\",\"content\":\"english renamed content!\"}},\"schemaName\":\"content\",\"order\":0}";
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + data().getNews2015Content().getUuid() + "?lang=de", 200,
-				"OK", json);
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=de", 200, "OK", json);
 		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
 		assertEquals(newFilename, restContent.getProperty("en", "filename"));
 		assertEquals(newName, restContent.getProperty("en", "name"));
 		assertEquals(newContent, restContent.getProperty("en", "content"));
 
-		Content reloaded = contentService.reload(data().getNews2015Content());
-		assertEquals(newFilename, reloaded.getFilename(data().getEnglish()));
-		assertEquals(newName, reloaded.getName(data().getEnglish()));
-		assertEquals(newContent, reloaded.getContent(data().getEnglish()));
+		// Reload and update
+		content = contentService.reload(content);
+		assertEquals(newFilename, content.getFilename(data().getEnglish()));
+		assertEquals(newName, content.getName(data().getEnglish()));
+		assertEquals(newContent, content.getContent(data().getEnglish()));
 
 	}
 

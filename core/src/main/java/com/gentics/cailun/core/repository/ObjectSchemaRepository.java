@@ -23,13 +23,13 @@ public interface ObjectSchemaRepository extends UUIDCRUDActions<ObjectSchema>, O
 	/**
 	 * Delete the object schema and all assigned relationships like permissions and creator information. Also delete the connected PropertyTypeSchemas.
 	 */
-	@Query("MATCH (project:Project)<-[:ASSIGNED_TO_PROJECT]-(n:ObjectSchema {name: {1}}), OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema), OPTIONAL MATCH (n)-[r2]-() WHERE project.name = {0} DELETE n,r,p,r2")
+	@Query("MATCH (project:Project)<-[:ASSIGNED_TO_PROJECT]-(n:ObjectSchema {name: {1}}) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema)-[rp]-() OPTIONAL MATCH (n)-[r2]-() WHERE project.name = {0} DELETE n,r,p,r2,rp")
 	public void deleteByName(String projectName, String schemaName);
 
 	/**
 	 * Delete the object schema and all assigned relationships like permissions and creator information. Also delete the connected PropertyTypeSchemas.
 	 */
-	@Query("MATCH (n:ObjectSchema {uuid: {0}}), OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema), OPTIONAL MATCH (n)-[r2]-() DELETE n,r,p,r2")
+	@Query("MATCH (n:ObjectSchema {uuid: {0}}) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema)-[rp]-() OPTIONAL MATCH (n)-[r2]-() DELETE n,r,p,r2,rp")
 	public void deleteByUuid(String uuid);
 
 	@Query("MATCH (n:ObjectSchema)-[:ASSIGNED_TO_PROJECT]-(p:Project) WHERE p.name = {0} return n")

@@ -36,45 +36,10 @@ public class ObjectSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testFindAllSchemasForProject() {
-		Iterable<ObjectSchema> result = objectSchemaService.findAll(DemoDataProvider.PROJECT_NAME);
-
-		int nSchemas = 0;
-		for (ObjectSchema schema : result) {
-			assertNotNull(schema);
-		}
-		nSchemas++;
-		assertEquals("There should be exactly one object schema for the given project with the name {" + DemoDataProvider.PROJECT_NAME + "}", 2,
-				nSchemas);
-	}
-
-	@Test
 	public void testDeleteByObject() {
 		ObjectSchema schema = data().getContentSchema();
 		objectSchemaService.delete(schema);
 		assertNull(objectSchemaService.findOne(schema.getId()));
-	}
-
-	@Test
-	public void testDeleteByName() {
-		ObjectSchema schema = data().getContentSchema();
-		Project project = data().getProject();
-		try (Transaction tx = graphDb.beginTx()) {
-			objectSchemaService.deleteByName(project.getName(), schema.getName());
-			tx.success();
-		}
-		assertNull(objectSchemaService.findOne(schema.getId()));
-	}
-
-	@Test
-	public void testDeleteByNameWithInvalidProjectName() {
-		ObjectSchema schema = data().getContentSchema();
-		try (Transaction tx = graphDb.beginTx()) {
-
-			objectSchemaService.deleteByName("bogus", schema.getName());
-			tx.success();
-		}
-		assertNotNull(objectSchemaService.findOne(schema.getId()));
 	}
 
 	@Test
@@ -88,17 +53,17 @@ public class ObjectSchemaTest extends AbstractDBTest {
 		assertNull(objectSchemaService.findOne(schema.getId()));
 	}
 
-	@Test
-	public void testDeleteWithNoPermission() {
-		UserInfo info = data().getUserInfo();
-		ObjectSchema schema = data().getContentSchema();
-		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), schema, PermissionType.DELETE);
-			objectSchemaService.deleteByUUID(schema.getUuid());
-			tx.success();
-		}
-		assertNotNull(objectSchemaService.findOne(schema.getId()));
-	}
+	// @Test
+	// public void testDeleteWithNoPermission() {
+	// UserInfo info = data().getUserInfo();
+	// ObjectSchema schema = data().getContentSchema();
+	// try (Transaction tx = graphDb.beginTx()) {
+	// roleService.revokePermission(info.getRole(), schema, PermissionType.DELETE);
+	// objectSchemaService.deleteByUUID(schema.getUuid());
+	// tx.success();
+	// }
+	// assertNotNull(objectSchemaService.findOne(schema.getId()));
+	// }
 
 	@Test
 	public void testObjectSchemaRootNode() {

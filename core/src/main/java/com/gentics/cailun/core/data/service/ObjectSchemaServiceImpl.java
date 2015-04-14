@@ -99,11 +99,6 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public void deleteByName(String projectName, String schemaName) {
-		schemaRepository.deleteByName(projectName, schemaName);
-	}
-
-	@Override
 	public void deleteByUUID(String uuid) {
 		schemaRepository.deleteByUuid(uuid);
 	}
