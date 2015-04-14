@@ -30,6 +30,8 @@ import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
+import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
+import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 
 @Component
@@ -206,5 +208,44 @@ public class RestAssert {
 
 		// TODO assert for schema properties
 
+	}
+
+	public void assertUser(UserCreateRequest request, UserResponse restUser) {
+		assertNotNull(request);
+		assertNotNull(restUser);
+
+		assertEquals(request.getUsername(), restUser.getUsername());
+		assertEquals(request.getEmailAddress(), restUser.getEmailAddress());
+		assertEquals(request.getLastname(), restUser.getLastname());
+		assertEquals(request.getFirstname(), restUser.getFirstname());
+
+		// TODO check groupuuid vs groups loaded user
+
+		// String json =
+		// "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]}";
+		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		// assertEquals(newUser.getUsername(), user.getUsername());
+
+	}
+
+	public void assertUser(UserUpdateRequest request, UserResponse restUser) {
+		assertNotNull(request);
+		assertNotNull(restUser);
+
+		if (request.getUsername() != null) {
+			assertEquals(request.getUsername(), restUser.getUsername());
+		}
+
+		if (request.getEmailAddress() != null) {
+			assertEquals(request.getEmailAddress(), restUser.getEmailAddress());
+		}
+
+		if (request.getLastname() != null) {
+			assertEquals(request.getLastname(), restUser.getLastname());
+		}
+
+		if (request.getFirstname() != null) {
+			assertEquals(request.getFirstname(), restUser.getFirstname());
+		}
 	}
 }
