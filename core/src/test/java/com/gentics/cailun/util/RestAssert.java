@@ -2,7 +2,6 @@ package com.gentics.cailun.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Map.Entry;
 
@@ -15,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.ObjectSchema;
+import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
@@ -22,6 +22,9 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
+import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
+import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
+import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.core.rest.role.request.RoleCreateRequest;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
@@ -38,11 +41,12 @@ public class RestAssert {
 
 	public void assertGroup(Group group, GroupResponse restGroup) {
 		// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
+		// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
 		assertEquals(group.getUuid(), restGroup.getUuid());
 		assertEquals(group.getName(), restGroup.getName());
-		for (User user : group.getUsers()) {
-			assertTrue(restGroup.getUsers().contains(user.getUsername()));
-		}
+		// for (User user : group.getUsers()) {
+		// assertTrue(restGroup.getUsers().contains(user.getUsername()));
+		// }
 		// TODO roles
 		// group.getRoles()
 		// TODO perms
@@ -147,5 +151,30 @@ public class RestAssert {
 		assertEquals(request.getName(), restRole.getName());
 		assertNotNull(restRole.getUuid());
 		assertNotNull(restRole.getGroups());
+	}
+
+	public void assertProject(ProjectCreateRequest request, ProjectResponse restProject) {
+		assertNotNull(request);
+		assertNotNull(restProject);
+		assertEquals(request.getName(), restProject.getName());
+		assertNotNull(restProject.getUuid());
+		assertNotNull(restProject.getPerms());
+	}
+
+	public void assertProject(Project project, ProjectResponse restProject) {
+		assertNotNull(project);
+		assertNotNull(restProject);
+		assertNotNull(restProject.getUuid());
+		assertNotNull(restProject.getPerms());
+		assertEquals(project.getName(), restProject.getName());
+		assertEquals(project.getUuid(), restProject.getUuid());
+	}
+
+	public void assertProject(ProjectUpdateRequest request, ProjectResponse restProject) {
+		assertNotNull(request);
+		assertNotNull(restProject);
+		assertNotNull(restProject.getUuid());
+		assertEquals(request.getName(), restProject.getName());
+
 	}
 }

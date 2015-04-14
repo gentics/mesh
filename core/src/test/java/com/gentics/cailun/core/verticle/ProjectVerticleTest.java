@@ -1,8 +1,6 @@
 package com.gentics.cailun.core.verticle;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -13,6 +11,7 @@ import java.util.stream.Collectors;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -54,9 +53,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
 
+		test.assertProject(request, restProject);
 		assertNotNull("The project should have been created.", projectService.findByName(name));
 
 	}
@@ -72,14 +71,13 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		test.assertProject(request, restProject);
 
 		assertNotNull("The project should have been created.", projectService.findByName(name));
 
-		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
 		response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + restProject.getUuid(), 200, "OK");
-		expectMessageResponse("project_deleted", response, restProject.getName());
+		expectMessageResponse("project_deleted", response, restProject.getUuid());
 
 	}
 
@@ -157,8 +155,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), project, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		test.assertProject(project, restProject);
 	}
 
 	@Test
@@ -166,9 +164,13 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), project, PermissionType.READ);
+			tx.success();
+		}
+
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
-		String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		expectMessageResponse("error_missing_perm", response, project.getUuid());
 	}
 
 	// Update Tests
@@ -184,19 +186,22 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		request.setName("New Name");
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\"}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		test.assertProject(request, restProject);
 
 		Project reloadedProject = projectService.findByUUID(project.getUuid());
-
-		Assert.assertEquals("New Name", reloadedProject.getName());
+		assertEquals("New Name", reloadedProject.getName());
 	}
 
 	@Test
 	public void testUpdateProjectWithNoPerm() throws JsonProcessingException, Exception {
 		Project project = data().getProject();
 
-		roleService.addPermission(info.getRole(), project, PermissionType.READ);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(info.getRole(), project, PermissionType.READ);
+			roleService.revokePermission(info.getRole(), project, PermissionType.UPDATE);
+			tx.success();
+		}
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
@@ -218,7 +223,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), project, PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 200, "OK");
-		expectMessageResponse("project_deleted", response, project.getName());
+		expectMessageResponse("project_deleted", response, project.getUuid());
 		assertNull("The project should have been deleted", projectService.findByUUID(project.getUuid()));
 
 		// TODO check for removed routers?
@@ -227,6 +232,11 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteProjectByUUIDWithNoPermission() throws Exception {
 		Project project = data().getProject();
+
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), project, PermissionType.DELETE);
+			tx.success();
+		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
