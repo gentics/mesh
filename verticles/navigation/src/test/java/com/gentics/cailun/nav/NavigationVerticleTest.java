@@ -2,6 +2,7 @@ package com.gentics.cailun.nav;
 
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,6 +20,7 @@ public class NavigationVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testLoadSimpleNavigation() {
 		fail("Not yet implemented");
 	}

@@ -2,6 +2,7 @@ package com.gentics.cailun.verticle.tagcloud;
 
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,6 +20,7 @@ public class TagCloudVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testTagCloudRead() {
 		fail("Not yet implemented");
 	}

@@ -1,5 +1,6 @@
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,7 +19,8 @@ public class AdminVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testLoadSimpleNavigation() {
+	@Ignore("Not yet implemented")
+	public void testAdminStuff() {
 		fail("Not yet implemented");
 	}
 

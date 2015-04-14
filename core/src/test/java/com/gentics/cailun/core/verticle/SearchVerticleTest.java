@@ -2,6 +2,7 @@ package com.gentics.cailun.core.verticle;
 
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,6 +20,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testSearchContent() {
 		fail("Not yet implemented");
 	}
