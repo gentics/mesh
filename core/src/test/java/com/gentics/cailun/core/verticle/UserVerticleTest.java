@@ -33,19 +33,7 @@ import com.gentics.cailun.util.JsonUtils;
 import com.gentics.cailun.util.RestAssert;
 
 public class UserVerticleTest extends AbstractRestVerticleTest {
-
-	@Autowired
-	private UserVerticle userVerticle;
-
-	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private I18NService i18n;
-
+	
 	@Override
 	public AbstractRestVerticle getVerticle() {
 		return userVerticle;
@@ -63,7 +51,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 
-		RestAssert.assertUser(user, restUser);
+		test.assertUser(user, restUser);
 		// TODO assert groups
 		// TODO assert perms
 	}

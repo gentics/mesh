@@ -4,6 +4,7 @@ import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -13,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,7 @@ import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
+import com.gentics.cailun.util.RestAssert;
 
 public class TagVerticleTest extends AbstractRestVerticleTest {
 
@@ -35,6 +37,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private TagService tagService;
+
+	@Autowired
+	private RestAssert a;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -45,12 +50,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllTags() throws Exception {
 		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
 
-		final int nTags = 142;
-		for (int i = 0; i < nTags; i++) {
-			Tag extraTag = new Tag();
-			extraTag.setCreator(info.getUser());
-			extraTag = tagService.save(extraTag);
-			roleService.addPermission(info.getRole(), extraTag, PermissionType.READ);
+		final int nTags = 27;
+		try (Transaction tx = graphDb.beginTx()) {
+			for (int i = 0; i < nTags; i++) {
+				Tag extraTag = new Tag();
+				extraTag.setCreator(info.getUser());
+				extraTag = tagService.save(extraTag);
+				roleService.addPermission(info.getRole(), extraTag, PermissionType.READ);
+			}
+			tx.success();
 		}
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
@@ -63,25 +71,25 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/", 200, "OK");
 		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
-		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(15, restResponse.getData().size());
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(15, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, TagListResponse.class);
-		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(perPage, restResponse.getData().size());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Tags + permitted tag
 		int totalTags = nTags + data().getTotalTags();
 		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
-		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
 				+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
-		Assert.assertEquals((int) perPage, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
+		assertEquals((int) perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
 
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 0; page < totalPages; page++) {
@@ -89,7 +97,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 			restResponse = JsonUtils.readValue(response, TagListResponse.class);
 			allTags.addAll(restResponse.getData());
 		}
-		Assert.assertEquals("Somehow not all users were loaded when loading all pages.", totalTags, allTags.size());
+		assertEquals("Somehow not all users were loaded when loading all pages.", totalTags, allTags.size());
 
 		// Verify that the no_perm_tag is not part of the response
 		final String noPermTagUUID = noPermTag.getUuid();
@@ -116,13 +124,17 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByUUID() throws Exception {
 
 		Tag tag = data().getNews();
+
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		// String json =
+		// "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
+		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		a.assertTag(tag, restTag);
 	}
 
 	@Test
@@ -131,24 +143,34 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
-		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=3&lang=de,en", 200, "OK");
+		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=2&lang=de,en", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"2014\"}},\"childTags\":[{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"2015\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		assertEquals(1, restTag.getChildTags().size());
+		TagResponse childTag = restTag.getChildTags().get(0);
+		assertNotNull(childTag.getUuid());
+		assertEquals("2014", childTag.getProperty("en", "name"));
+
+		assertEquals(1, childTag.getChildTags().size());
+		TagResponse childTagOfChildTag = childTag.getChildTags().get(0);
+		assertNotNull(childTagOfChildTag.getUuid());
+		assertEquals("2015", childTagOfChildTag.getProperty("en", "name"));
 	}
 
 	@Test
 	public void testReadTagByUUIDWithSingleLanguage() throws Exception {
 
 		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+			tx.success();
+		}
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		assertNull("The returned tag should not have an german name property.", restTag.getProperty("de", "name"));
+		assertNotNull("The returned tag should have an english name property.", restTag.getProperty("en", "name"));
+		a.assertTag(tag, restTag);
 	}
 
 	@Test
@@ -160,8 +182,12 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		assertNotNull(restTag.getProperty("de", "name"));
+		assertNotNull(restTag.getProperty("en", "name"));
+		// String json =
+		// "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
+		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
@@ -191,27 +217,25 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		Assert.assertEquals(tag.getName(data().getEnglish()), tagResponse.getProperty("en", "name"));
+		assertEquals(tag.getName(data().getEnglish()), tagResponse.getProperty("en", "name"));
 
 		// 2. Setup the request object
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		final String newName = "new Name";
 		tagUpdateRequest.addProperty("en", "name", newName);
-		Assert.assertEquals(newName, tagUpdateRequest.getProperty("en", "name"));
+		assertEquals(newName, tagUpdateRequest.getProperty("en", "name"));
 
 		// 3. Send the request to the server
 		// TODO test with no ?lang query parameter
 		String requestJson = JsonUtils.toJson(request);
 		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"new Name\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		a.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		Assert.assertEquals(request.getProperty("en", "name"), tagResponse.getProperty("en", "name"));
-
-		// TODO verify that only that property was changed
+		assertEquals(request.getProperty("en", "name"), tagResponse.getProperty("en", "name"));
+		a.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 	}
 
 	@Test
@@ -236,7 +260,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
-		Assert.assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
+		assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
 	}
 
 	// Delete Tests

@@ -216,7 +216,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		assertGroup(group, JsonUtils.readValue(response, GroupResponse.class));
+		test.assertGroup(group, JsonUtils.readValue(response, GroupResponse.class));
 
 	}
 

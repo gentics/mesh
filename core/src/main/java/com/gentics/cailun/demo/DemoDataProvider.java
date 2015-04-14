@@ -176,6 +176,10 @@ public class DemoDataProvider {
 			bootstrapInitializer.initMandatoryData();
 			tx.success();
 		}
+		totalGroups = 0;
+		totalRoles = 0;
+		totalTags = 0;
+		totalUsers = 0;
 
 		addUserGroupRoleProject(multiplicator);
 		addSchemas(multiplicator);
@@ -510,13 +514,18 @@ public class DemoDataProvider {
 
 			tx.success();
 		}
-		news = tagService.reload(news);
-		news2015 = tagService.reload(news2015);
-		news2015Content = contentService.reload(news2015Content);
-		dealsSuperDeal = contentService.reload(dealsSuperDeal);
+		try (Transaction tx = graphDb.beginTx()) {
 
-		productsTag = tagService.reload(productsTag);
-		deals = tagService.reload(deals);
+			rootTag = neo4jTemplate.fetch(rootTag);
+			news = tagService.reload(news);
+			news2015 = tagService.reload(news2015);
+			news2015Content = contentService.reload(news2015Content);
+			dealsSuperDeal = contentService.reload(dealsSuperDeal);
+
+			productsTag = tagService.reload(productsTag);
+			deals = tagService.reload(deals);
+			tx.success();
+		}
 
 	}
 
