@@ -111,6 +111,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				schema = new ObjectSchema(requestModel.getName());
 				// TODO set creator
 				schema.setDescription(requestModel.getDescription());
+				schema.setDisplayName(requestModel.getDisplayName());
 
 				for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
 					// TODO validate field?

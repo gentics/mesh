@@ -142,6 +142,22 @@ public class DemoDataProvider {
 	private DemoDataProvider() {
 	}
 
+	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
+		try (Transaction tx = graphDb.beginTx()) {
+			bootstrapInitializer.initMandatoryData();
+			tx.success();
+		}
+		totalGroups = 0;
+		totalRoles = 0;
+		totalTags = 0;
+		totalUsers = 0;
+
+		addUserGroupRoleProject(multiplicator);
+		addSchemas(multiplicator);
+		addData(multiplicator);
+		updatePermissions();
+	}
+
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
 
 		String password = "test123";
@@ -169,22 +185,6 @@ public class DemoDataProvider {
 		UserInfo userInfo = new UserInfo(user, group, role, password);
 		return userInfo;
 
-	}
-
-	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
-		try (Transaction tx = graphDb.beginTx()) {
-			bootstrapInitializer.initMandatoryData();
-			tx.success();
-		}
-		totalGroups = 0;
-		totalRoles = 0;
-		totalTags = 0;
-		totalUsers = 0;
-
-		addUserGroupRoleProject(multiplicator);
-		addSchemas(multiplicator);
-		addData(multiplicator);
-		updatePermissions();
 	}
 
 	private void addUserGroupRoleProject(int multiplicator) {
@@ -248,7 +248,12 @@ public class DemoDataProvider {
 		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
 
 			tagSchema = objectSchemaService.findByName("tag");
+			tagSchema.addProject(project);
+			tagSchema = objectSchemaService.save(tagSchema);
+
 			contentSchema = objectSchemaService.findByName("content");
+			contentSchema.addProject(project);
+			contentSchema = objectSchemaService.save(contentSchema);
 
 			categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
 			categoriesSchema.addProject(project);

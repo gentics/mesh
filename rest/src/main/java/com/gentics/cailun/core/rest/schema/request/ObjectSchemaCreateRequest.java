@@ -8,7 +8,7 @@ public class ObjectSchemaCreateRequest extends ObjectSchemaUpdateRequest {
 	private String uuid;
 
 	private String projectUuid;
-
+	
 	public ObjectSchemaCreateRequest() {
 	}
 

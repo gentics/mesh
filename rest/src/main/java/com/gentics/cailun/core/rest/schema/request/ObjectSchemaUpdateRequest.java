@@ -19,6 +19,8 @@ public class ObjectSchemaUpdateRequest extends AbstractRestModel {
 
 	private String description;
 
+	private String displayName;
+
 	@JsonProperty("properties")
 	private List<PropertyTypeSchemaResponse> propertyTypeSchemas = new ArrayList<>();
 
@@ -59,6 +61,14 @@ public class ObjectSchemaUpdateRequest extends AbstractRestModel {
 
 	public void setPropertyTypeSchemas(List<PropertyTypeSchemaResponse> propertyTypeSchemas) {
 		this.propertyTypeSchemas = propertyTypeSchemas;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 }

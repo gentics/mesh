@@ -27,6 +27,8 @@ import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.core.rest.role.request.RoleCreateRequest;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
+import com.gentics.cailun.core.rest.schema.request.ObjectSchemaCreateRequest;
+import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 
@@ -175,6 +177,34 @@ public class RestAssert {
 		assertNotNull(restProject);
 		assertNotNull(restProject.getUuid());
 		assertEquals(request.getName(), restProject.getName());
+
+	}
+
+	public void assertSchema(ObjectSchema schema, ObjectSchemaResponse restSchema) {
+
+		assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
+		assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
+		assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
+
+		// TODO verify other fields
+		// String json =
+		// "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"},{\"uuid\":\"uuid-value\",\"name\":\"extraProject\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
+		// String json =
+		// "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
+
+	}
+
+	public void assertSchema(ObjectSchemaCreateRequest request, ObjectSchemaResponse restSchema) {
+		// String json =
+		// "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"new description\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new schema name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"html\",\"key\":\"extra-content\",\"desciption\":\"Some extra content\",\"order\":0}]}";
+
+		assertNotNull(request);
+		assertNotNull(restSchema);
+		assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
+		assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
+		assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
+
+		// TODO assert for schema properties
 
 	}
 }
