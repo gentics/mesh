@@ -84,6 +84,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		response.setAuthor(restUser);
 		response.setPerms(userService.getPerms(rc, content));
 
+		response.setOrder(content.getOrder());
 		if (languageTags.size() == 0) {
 			for (Translated transalated : content.getI18nTranslations()) {
 				String languageTag = transalated.getLanguageTag();
@@ -107,6 +108,11 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 				response.addProperty(languageTag, "teaser", content.getTeaser(language));
 			}
 
+		}
+
+		if (content.getSchema() != null) {
+			ObjectSchema schema = neo4jTemplate.fetch(content.getSchema());
+			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
 		}
 
 		if (depth > 0) {

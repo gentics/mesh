@@ -561,6 +561,7 @@ public class DemoDataProvider {
 		content.addProject(project);
 		content.setCreator(userInfo.getUser());
 		content.setSchema(schema);
+		content.setOrder(42);
 		content = contentService.save(content);
 
 		// Add the content to the given tag

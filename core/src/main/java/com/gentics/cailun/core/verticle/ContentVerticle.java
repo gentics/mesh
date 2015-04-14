@@ -28,6 +28,7 @@ import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
+import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
@@ -36,6 +37,7 @@ import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.link.CaiLunLinkResolver;
 import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.link.LinkReplacer;
+import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
@@ -57,6 +59,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
+
+	@Autowired
+	private ObjectSchemaRepository objectSchemaRepository;
 
 	public ContentVerticle() {
 		super("contents");
@@ -92,8 +97,19 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				}
 				failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
 
-				// TODO load the schema and set the reference to the tag
-				// content.setSchemaName(requestModel.getSchemaName());
+				if (StringUtils.isEmpty(requestModel.getSchemaName())) {
+					//TODO i18n
+					throw new HttpStatusCodeErrorException(400, "No valid schema name was specified.");
+				} else {
+					// TODO load the schema and set the reference to the tag
+					ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchemaName());
+					if (schema == null) {
+						// TODO i18n
+						throw new HttpStatusCodeErrorException(400, "The schema \"" + requestModel.getSchemaName() + "\" could not be found.");
+					} else {
+						content.setSchema(schema);
+					}
+				}
 
 				User user = springConfiguration.authService().getUser(rc);
 				content.setCreator(user);
@@ -128,10 +144,13 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				rootTagForContent = tagService.save(rootTagForContent);
 				tx.success();
 			}
-			// Reload in order to update uuid field
-			content = contentService.reload(content);
 
-			rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+			try (Transaction tx = graphDb.beginTx()) {
+				// Reload in order to update uuid field
+				content = contentService.reload(content);
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+			}
 
 			// // TODO simplify language handling - looks a bit chaotic
 			// // Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
@@ -257,7 +276,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 						}
 					} else {
-						//TODO i18n
+						// TODO i18n
 						throw new HttpStatusCodeErrorException(400, "Could not find language for languageTag {" + languageTag + "}");
 					}
 

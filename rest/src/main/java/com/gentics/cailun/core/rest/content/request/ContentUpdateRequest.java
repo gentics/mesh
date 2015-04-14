@@ -8,6 +8,8 @@ import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 public class ContentUpdateRequest extends AbstractRestModel {
 
 	private Map<String, Map<String, String>> properties = new HashMap<>();
+	
+	//TODO use schema ref here as well
 	private String schemaName;
 
 	private long order = 0;

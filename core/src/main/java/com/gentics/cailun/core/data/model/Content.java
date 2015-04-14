@@ -19,6 +19,8 @@ public class Content extends GenericPropertyContainer {
 	public static final String TEASER_KEY = "teaser";
 	public static final String TITLE_KEY = "title";
 
+	private long order = 0;
+
 	public Content() {
 	}
 
@@ -57,6 +59,14 @@ public class Content extends GenericPropertyContainer {
 
 	public String getContent(Language language) {
 		return getProperty(language, CONTENT_KEYWORD);
+	}
+
+	public long getOrder() {
+		return order;
+	}
+
+	public void setOrder(long order) {
+		this.order = order;
 	}
 
 }
