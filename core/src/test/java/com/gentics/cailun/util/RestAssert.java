@@ -21,6 +21,7 @@ import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
@@ -54,6 +55,14 @@ public class RestAssert {
 		// TODO roles
 		// group.getRoles()
 		// TODO perms
+	}
+
+	public void assertGroup(GroupCreateRequest request, GroupResponse restGroup) {
+		assertNotNull(request);
+		assertNotNull(restGroup);
+		assertEquals(request.getName(), restGroup.getName());
+		assertNotNull(restGroup.getUsers());
+		assertNotNull(restGroup.getUuid());
 	}
 
 	public void assertUser(User user, UserResponse restUser) {
@@ -248,4 +257,5 @@ public class RestAssert {
 			assertEquals(request.getFirstname(), restUser.getFirstname());
 		}
 	}
+
 }

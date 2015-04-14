@@ -71,8 +71,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateDeleteGroup() throws Exception {
 
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
-
 		// Create the group
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
@@ -80,12 +78,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"test12345\",\"roles\":[],\"users\":[],\"perms\":[]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		test.assertGroup(request, restGroup);
+
 		assertNotNull("Group should have been created.", groupService.findByName(name));
 
 		// Now delete the group
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + restGroup.getUuid(), 200, "OK", requestJson);
 
 		expectMessageResponse("group_deleted", response, restGroup.getUuid());
