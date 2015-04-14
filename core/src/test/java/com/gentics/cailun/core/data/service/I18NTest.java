@@ -41,10 +41,11 @@ public class I18NTest extends AbstractDBTest {
 		i18n.get(locale, "fadsfgasdgasdg");
 	}
 
-	@Test(expected = MissingResourceException.class)
+	@Test
 	public void testWrongI18NKey2() {
 		Locale locale = new Locale("jp");
-		i18n.get(locale, "fadsfgasdgasdg", "test");
+		String bogusKey = "fadsfgasdgasdg";
+		assertEquals(bogusKey, i18n.get(locale, bogusKey, "test"));
 	}
 
 	@Test
