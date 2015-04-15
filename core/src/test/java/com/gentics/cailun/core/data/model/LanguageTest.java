@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.repository.LanguageRepository;
 import com.gentics.cailun.test.AbstractDBTest;

@@ -48,23 +48,14 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllTags() throws Exception {
-		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.READ);
-
-		final int nTags = 27;
-		try (Transaction tx = graphDb.beginTx()) {
-			for (int i = 0; i < nTags; i++) {
-				Tag extraTag = new Tag();
-				extraTag.setCreator(info.getUser());
-				extraTag = tagService.save(extraTag);
-				roleService.addPermission(info.getRole(), extraTag, PermissionType.READ);
-			}
-			tx.success();
-		}
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		Tag noPermTag = new Tag();
-		noPermTag.setCreator(info.getUser());
-		noPermTag = tagService.save(noPermTag);
+		try (Transaction tx = graphDb.beginTx()) {
+			noPermTag = data().addTag(data().getNews(), "NoPermEN", "NoPermDE");
+			// noPermTag = tagService.save(noPermTag);
+			tx.success();
+		}
 		noPermTag = tagService.reload(noPermTag);
 		assertNotNull(noPermTag.getUuid());
 
@@ -73,28 +64,28 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(15, restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items", data().getTotalTags(), restResponse.getData().size());
 
-		int perPage = 11;
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 3, 200, "OK");
-		restResponse = JsonUtils.readValue(response, TagListResponse.class);
-		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		assertEquals(perPage, restResponse.getData().size());
-
+		int perPage = 4;
 		// Extra Tags + permitted tag
-		int totalTags = nTags + data().getTotalTags();
+		int totalTags = data().getTotalTags();
 		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
-		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
-				+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
-		assertEquals((int) perPage, restResponse.getMetainfo().getPerPage());
-		assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
-
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 0; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, TagListResponse.class);
+			int expectedItemsCount = perPage;
+			// The last page should only list 5 items
+			if (page == 3) {
+				expectedItemsCount = 3;
+			}
+			assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
+			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+			assertEquals(page, restResponse.getMetainfo().getCurrentPage());
+			assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
+					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
+			assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
+
 			allTags.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalTags, allTags.size());

@@ -185,9 +185,8 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
 		}
 
-		// TODO handle files and subtags:
+		// TODO handle subtags:
 		// tag.getTags()
-		// tag.getFiles()
 		if (tag.getCreator() != null) {
 			response.setCreator(userService.transformToRest(tag.getCreator()));
 		}

@@ -341,7 +341,8 @@ public class DemoDataProvider {
 			rootTag = new RootTag();
 			rootTag = (RootTag) tagService.save(rootTag);
 			rootTag.setCreator(userInfo.getUser());
-			totalTags++;
+			//totalTags++;
+
 			project.setRootTag(rootTag);
 			project = projectService.save(project);
 			project = projectService.reload(project);
@@ -534,7 +535,11 @@ public class DemoDataProvider {
 
 	}
 
-	private Tag addTag(Tag rootTag, String englishName, String germanName, ObjectSchema schema) {
+	public Tag addTag(Tag rootTag, String englishName, String germanName) {
+		return addTag(rootTag, englishName, germanName, tagSchema);
+	}
+
+	public Tag addTag(Tag rootTag, String englishName, String germanName, ObjectSchema schema) {
 		Tag tag = new Tag();
 		if (englishName != null) {
 			tagService.setName(tag, english, englishName);
@@ -629,7 +634,7 @@ public class DemoDataProvider {
 		return deals;
 	}
 
-	public Tag getproductsTag() {
+	public Tag getProductsTag() {
 		return productsTag;
 	}
 
@@ -671,6 +676,10 @@ public class DemoDataProvider {
 
 	public int getTotalUsers() {
 		return totalUsers;
+	}
+
+	public ObjectSchema getTagSchema() {
+		return tagSchema;
 	}
 
 }

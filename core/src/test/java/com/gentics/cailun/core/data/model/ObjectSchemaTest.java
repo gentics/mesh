@@ -9,11 +9,9 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.demo.DemoDataProvider;
-import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.test.AbstractDBTest;
 
 public class ObjectSchemaTest extends AbstractDBTest {
