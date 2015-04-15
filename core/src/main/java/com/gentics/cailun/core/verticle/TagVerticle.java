@@ -135,11 +135,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 						}
 					}
 				}
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 				tx.success();
 			}
-
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 		});
 
 	}

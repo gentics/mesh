@@ -341,7 +341,7 @@ public class DemoDataProvider {
 			rootTag = new RootTag();
 			rootTag = (RootTag) tagService.save(rootTag);
 			rootTag.setCreator(userInfo.getUser());
-			//totalTags++;
+			// totalTags++;
 
 			project.setRootTag(rootTag);
 			project = projectService.save(project);
@@ -354,13 +354,16 @@ public class DemoDataProvider {
 			Tag news2014 = addTag(news, "2014", null, tagSchema);
 			totalTags++;
 
+			Tag news2014March = addTag(news2014, "March", null, tagSchema);
+			
+			totalTags++;
 			for (int i = 0; i < 12 * multiplicator; i++) {
 				addContent(news2014, "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 				totalContents++;
 			}
 
 			// News - 2015
-			news2015 = addTag(news2014, "2015", null, tagSchema);
+			news2015 = addTag(news, "2015", null, tagSchema);
 			totalTags++;
 			news2015Content = addContent(news2015, "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
 			totalContents++;

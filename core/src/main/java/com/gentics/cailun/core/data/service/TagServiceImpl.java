@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
@@ -48,6 +49,9 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	@Autowired
 	private LanguageService languageService;
+
+	@Autowired
+	private ContentService contentService;
 
 	@Autowired
 	private ProjectService projectService;
@@ -172,10 +176,21 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		// TODO we should do this async
 		if (depth > 0) {
 			for (Tag currentTag : tag.getTags()) {
+				currentTag = neo4jTemplate.fetch(currentTag);
 				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
 						new CaiLunPermission(currentTag, PermissionType.READ));
 				if (hasPerm) {
 					response.getChildTags().add(transformToRest(rc, currentTag, languageTags, depth - 1));
+
+				}
+			}
+
+			for (Content currentContent : tag.getContents()) {
+				currentContent = neo4jTemplate.fetch(currentContent);
+				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
+						new CaiLunPermission(currentContent, PermissionType.READ));
+				if (hasPerm) {
+					response.getContents().add(contentService.transformToRest(rc, currentContent, languageTags, depth - 1));
 				}
 			}
 		}
@@ -185,8 +200,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
 		}
 
-		// TODO handle subtags:
-		// tag.getTags()
 		if (tag.getCreator() != null) {
 			response.setCreator(userService.transformToRest(tag.getCreator()));
 		}

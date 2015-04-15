@@ -2,6 +2,7 @@ package com.gentics.cailun.etc;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -99,10 +100,9 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 
 	@Bean
 	public Vertx vertx() {
-		// VertxOptions options = new VertxOptions();
-		// TODO remove debugging option
-		// options.setBlockedThreadCheckPeriod(Long.MAX_VALUE);
-		return Vertx.vertx();
+		VertxOptions options = new VertxOptions();
+		options.setBlockedThreadCheckPeriod(1000*60*60);
+		return Vertx.vertx(options);
 	}
 
 	@Bean

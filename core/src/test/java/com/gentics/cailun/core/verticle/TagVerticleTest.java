@@ -135,17 +135,22 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=3&lang=de,en", 200, "OK");
+		System.out.println(response);
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 
-		assertEquals(1, restTag.getChildTags().size());
-		TagResponse childTag = restTag.getChildTags().get(0);
-		assertNotNull(childTag.getUuid());
-		assertEquals("2014", childTag.getProperty("en", "name"));
+		assertEquals(2, restTag.getChildTags().size());
+		TagResponse childTag1 = restTag.getChildTags().get(0);
+		assertNotNull(childTag1.getUuid());
+		assertEquals("2014", childTag1.getProperty("en", "name"));
+		
+		TagResponse childTag2 = restTag.getChildTags().get(1);
+		assertNotNull(childTag2.getUuid());
+		assertEquals("2015", childTag2.getProperty("en", "name"));
 
-		assertEquals(1, childTag.getChildTags().size());
-		TagResponse childTagOfChildTag = childTag.getChildTags().get(0);
+		assertEquals(1, childTag1.getChildTags().size());
+		TagResponse childTagOfChildTag = childTag1.getChildTags().get(0);
 		assertNotNull(childTagOfChildTag.getUuid());
-		assertEquals("2015", childTagOfChildTag.getProperty("en", "name"));
+		assertEquals("March", childTagOfChildTag.getProperty("en", "name"));
 	}
 
 	@Test

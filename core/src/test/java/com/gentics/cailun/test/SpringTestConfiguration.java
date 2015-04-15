@@ -1,6 +1,7 @@
 package com.gentics.cailun.test;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
@@ -91,7 +92,9 @@ public class SpringTestConfiguration extends Neo4jConfiguration {
 
 	@Bean
 	public Vertx vertx() {
-		return Vertx.vertx();
+		VertxOptions options = new VertxOptions();
+		options.setBlockedThreadCheckPeriod(1000*60*60);
+		return Vertx.vertx(options);
 	}
 
 }
