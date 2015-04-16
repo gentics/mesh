@@ -202,12 +202,9 @@ public class BootstrapInitializer {
 	 * @throws InvalidNameException
 	 */
 	private void initProjects() throws InvalidNameException {
-		try (Transaction tx = graphDb.beginTx()) {
-			for (Project project : projectRepository.findAll()) {
-				routerStorage.addProjectRouter(project.getName());
-				log.info("Initalized project {" + project.getName() + "}");
-			}
-			tx.success();
+		for (Project project : projectRepository.findAll()) {
+			routerStorage.addProjectRouter(project.getName());
+			log.info("Initalized project {" + project.getName() + "}");
 		}
 	}
 

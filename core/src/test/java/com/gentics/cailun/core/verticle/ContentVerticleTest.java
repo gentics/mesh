@@ -178,6 +178,8 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentsWithoutPermissions() throws Exception {
+
+		// TODO add content that has no perms and check the response
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
 		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
 
