@@ -1,5 +1,5 @@
 package com.gentics.cailun.test;
 
 public class AbstractIntegrationTest {
-	protected static final long DEFAULT_TIMEOUT_SECONDS = 25;
+	protected static final long DEFAULT_TIMEOUT_SECONDS = 45;
 }
