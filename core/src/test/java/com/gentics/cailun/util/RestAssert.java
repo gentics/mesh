@@ -22,6 +22,7 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
+import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
@@ -256,6 +257,18 @@ public class RestAssert {
 		if (request.getFirstname() != null) {
 			assertEquals(request.getFirstname(), restUser.getFirstname());
 		}
+	}
+
+	public void assertGroup(GroupUpdateRequest request, GroupResponse restGroup) {
+		assertNotNull(request);
+		assertNotNull(restGroup);
+
+		if (request.getName() != null) {
+			assertEquals(request.getName(), restGroup.getName());
+		}
+
+		// String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\",\"roles\":[\"joe1_role\"],\"users\":[\"joe1\"],\"perms\":[]}";
+		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 }

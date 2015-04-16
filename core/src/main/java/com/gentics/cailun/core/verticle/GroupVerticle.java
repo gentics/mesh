@@ -156,8 +156,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 					Group groupWithSameName = groupService.findByName(requestModel.getName());
 					if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-						throw new HttpStatusCodeErrorException(400, "Group name {" + groupWithSameName.getName()
-								+ "} is already taken. Choose a different one.");
+						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name"));
 					}
 					group.setName(requestModel.getName());
 				}
@@ -217,9 +216,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
 				}
 
+				
 				CaiLunRoot root = cailunRootService.findRoot();
 				failOnMissingPermission(rc, root.getGroupRoot(), PermissionType.CREATE);
 
+				
+				//TODO handle conflicting group name: group_conflicting_name
 				group = new Group(requestModel.getName());
 				group = groupService.save(group);
 				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root.getGroupRoot(), PermissionType.CREATE), group);

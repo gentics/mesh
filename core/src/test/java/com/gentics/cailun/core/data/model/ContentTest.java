@@ -67,8 +67,11 @@ public class ContentTest extends AbstractDBTest {
 		}
 		content = contentService.reload(content);
 		assertNotNull(content.getUuid());
-		String text = contentService.getContent(content, data().getEnglish());
-		assertNotNull(text);
+		try (Transaction tx = graphDb.beginTx()) {
+			String text = contentService.getContent(content, data().getEnglish());
+			assertNotNull(text);
+			tx.success();
+		}
 	}
 
 	@Test
