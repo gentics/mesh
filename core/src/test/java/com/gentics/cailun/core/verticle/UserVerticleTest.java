@@ -272,11 +272,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an user with a conflicting username
 		User conflictingUser = new User("existing_username");
-		conflictingUser = userService.save(conflictingUser);
-		info.getGroup().addUser(conflictingUser);
-
-		// Add update permission to group in order to create the user in that group
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
+		try (Transaction tx = graphDb.beginTx()) {
+			conflictingUser = userService.save(conflictingUser);
+			info.getGroup().addUser(conflictingUser);
+			// Add update permission to group in order to create the user in that group
+			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
+			tx.success();
+		}
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
