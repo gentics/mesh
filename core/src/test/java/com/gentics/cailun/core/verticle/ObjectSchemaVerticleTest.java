@@ -271,7 +271,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 			extraProject = projectService.save(extraProject);
 			tx.success();
 		}
-		extraProject = projectService.reload(extraProject);
 
 		// Add only read perms
 		try (Transaction tx = graphDb.beginTx()) {
@@ -322,8 +321,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		try (Transaction tx = graphDb.beginTx()) {
 			project = neo4jTemplate.fetch(project);
 			assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
-			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-			roleService.addPermission(info.getRole(), project, PermissionType.UPDATE);
 			tx.success();
 		}
 
@@ -346,11 +343,9 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 
-		// Add only read perms
+		// Revoke read perms
 		try (Transaction tx = graphDb.beginTx()) {
-			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-			roleService.addPermission(info.getRole(), project, PermissionType.READ);
-			roleService.revokePermission(info.getRole(), project, PermissionType.UPDATE);
+			roleService.revokePermission(info.getRole(), project, PermissionType.READ);
 			tx.success();
 		}
 

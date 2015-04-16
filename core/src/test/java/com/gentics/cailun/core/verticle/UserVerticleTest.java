@@ -412,17 +412,17 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUID() throws Exception {
-		User user = new User("extraUser");
+		User extraUser = new User("extraUser");
 		try (Transaction tx = graphDb.beginTx()) {
-			user = userService.save(user);
-			roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
+			extraUser = userService.save(extraUser);
+			roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);
 			tx.success();
 		}
-		assertNotNull(user.getUuid());
+		assertNotNull(extraUser.getUuid());
 
-		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		expectMessageResponse("user_deleted", response, user.getUuid());
-		assertNull("The user should have been deleted", userService.reload(user));
+		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + extraUser.getUuid(), 200, "OK");
+		expectMessageResponse("user_deleted", response, extraUser.getUuid());
+		assertNull("The user should have been deleted", userService.reload(extraUser));
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Session;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,10 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		addPermissionTestHandler();
-		demoDataProvider.setup(3);
+		try (Transaction tx = graphDb.beginTx()) {
+			demoDataProvider.setup(3);
+			tx.success();
+		}
 	}
 
 	private void addPermissionTestHandler() {
