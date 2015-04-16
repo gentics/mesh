@@ -23,7 +23,6 @@ public class Project extends GenericNode {
 
 	private static final long serialVersionUID = -3565883313897315008L;
 
-	@Fetch
 	@Indexed(unique = true)
 	protected String name;
 
@@ -35,7 +34,6 @@ public class Project extends GenericNode {
 		this.name = name;
 	}
 
-	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = RootTag.class)
 	private RootTag rootTag;
 

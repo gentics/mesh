@@ -113,7 +113,7 @@ public class RestAssert {
 		// TODO how to match the parent tag?
 
 		assertNotNull(readValue.getUuid());
-		assertNotNull(readValue.getAuthor());
+		assertNotNull(readValue.getCreator());
 		assertNotNull(readValue.getPerms());
 		// String responseJson =
 		// "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"perms\":[],\"tags\":[],\"order\":0}";
@@ -143,7 +143,7 @@ public class RestAssert {
 
 		assertEquals(content.getUuid(), readValue.getUuid());
 
-		assertNotNull(readValue.getAuthor());
+		assertNotNull(readValue.getCreator());
 
 		// TODO match properties
 

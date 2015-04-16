@@ -19,11 +19,9 @@ public class Group extends GenericNode {
 	@Indexed(unique = true)
 	private String name;
 
-	@Fetch
 	@RelatedTo(type = AuthRelationships.MEMBER_OF, direction = Direction.INCOMING, elementClass = User.class)
 	private Set<User> users = new HashSet<>();
 
-	@Fetch
 	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.INCOMING, elementClass = Role.class)
 	private Set<Role> roles = new HashSet<>();
 

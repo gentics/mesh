@@ -27,7 +27,6 @@ public class User extends GenericNode {
 
 	private String passwordHash;
 
-	@Fetch
 	@RelatedTo(type = AuthRelationships.MEMBER_OF, direction = Direction.OUTGOING, elementClass = Group.class)
 	private Set<Group> groups = new HashSet<>();
 

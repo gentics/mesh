@@ -1,7 +1,6 @@
 package com.gentics.cailun.core.data.model.relationship;
 
 import org.springframework.data.neo4j.annotation.EndNode;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 
@@ -24,16 +23,15 @@ public class Translated extends AbstractPersistable {
 	@StartNode
 	private GenericNode startNode;
 
-	@Fetch
 	@EndNode
-	private I18NProperties i18nValue;
+	private I18NProperties i18nProperties;
 
 	public Translated() {
 	}
 
-	public Translated(GenericNode startNode, I18NProperties value, Language language) {
+	public Translated(GenericNode startNode, I18NProperties i18nProperties, Language language) {
 		this.startNode = startNode;
-		this.i18nValue = value;
+		this.i18nProperties = i18nProperties;
 		this.languageTag = language.getLanguageTag();
 	}
 
@@ -41,8 +39,8 @@ public class Translated extends AbstractPersistable {
 		return languageTag;
 	}
 
-	public I18NProperties getI18nValue() {
-		return i18nValue;
+	public I18NProperties getI18nProperties() {
+		return i18nProperties;
 	}
 
 	public GenericNode getStartNode() {

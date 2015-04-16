@@ -2,11 +2,15 @@ package com.gentics.cailun.core.data.service;
 
 import io.vertx.ext.apex.RoutingContext;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.slf4j.Logger;
@@ -17,20 +21,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.cailun.core.data.model.Content;
-import com.gentics.cailun.core.data.model.I18NProperties;
-import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
-import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
+import com.gentics.cailun.core.data.service.content.TransformationInfo;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
+import com.gentics.cailun.core.data.service.tag.TagTransformationTask;
 import com.gentics.cailun.core.repository.TagRepository;
-import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
@@ -60,7 +59,12 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	private CaiLunSpringConfiguration springConfiguration;
 
 	@Autowired
+	private GraphDatabaseService graphDb;
+
+	@Autowired
 	private UserService userService;
+
+	private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	@Override
 	public Path findByProjectPath(String projectName, String path) {
@@ -109,7 +113,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		Lists.newArrayList(node.getRelationships(BasicRelationships.TYPES.HAS_SUB_TAG, Direction.OUTGOING)).stream().forEach(rel -> {
 			Node nextHop = rel.getEndNode();
 			if (nextHop.hasLabel(Tag.getLabel())) {
-				String languageTag = getI18nPropertyLanguageTag(nextHop, GenericPropertyContainer.NAME_KEYWORD, i18nTagName);
+				String languageTag = getI18nPropertyLanguageTag(nextHop, ObjectSchema.NAME_KEYWORD, i18nTagName);
 				if (languageTag != null) {
 					foundNode.set(nextHop);
 					path.addSegment(new PathSegment(nextHop, languageTag));
@@ -149,63 +153,21 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	@Override
 	public TagResponse transformToRest(RoutingContext rc, Tag tag, List<String> languageTags, int depth) {
-		TagResponse response = new TagResponse();
-		response.setPerms(userService.getPerms(rc, tag));
 
-		for (String languageTag : languageTags) {
-			Language language = languageService.findByLanguageTag(languageTag);
-			if (language == null) {
-				// TODO should we just omit the language or abort?
-				log.error("No language found for language tag {" + languageTag + "}. Skipping lanuage.");
-				continue;
-			}
-			// TODO tags can also be dynamically enhanced. Maybe we should check the schema here? This would be costly. Currently we are just returning all
-			// found i18n properties for the language.
+		TransformationInfo info = new TransformationInfo(rc, depth, languageTags);
+		info.setUserService(userService);
+		info.setLanguageService(languageService);
+		info.setGraphDb(graphDb);
+		info.setContentService(contentService);
+		info.setSpringConfiguration(springConfiguration);
+		info.setTagService(this);
+		info.setNeo4jTemplate(neo4jTemplate);
 
-			// Add all i18n properties for the selected language to the response
-			I18NProperties i18nProperties = tag.getI18NProperties(language);
-			if (i18nProperties != null) {
-				for (String key : i18nProperties.getProperties().getPropertyKeys()) {
-					response.addProperty(languageTag, key, i18nProperties.getProperty(key));
-				}
-			} else {
-				log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
-				continue;
-			}
-		}
-		// TODO we should do this async
-		if (depth > 0) {
-			for (Tag currentTag : tag.getTags()) {
-				currentTag = neo4jTemplate.fetch(currentTag);
-				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
-						new CaiLunPermission(currentTag, PermissionType.READ));
-				if (hasPerm) {
-					response.getChildTags().add(transformToRest(rc, currentTag, languageTags, depth - 1));
+		TagResponse restTag = new TagResponse();
+		TagTransformationTask task = new TagTransformationTask(tag, info, restTag);
 
-				}
-			}
-
-			for (Content currentContent : tag.getContents()) {
-				currentContent = neo4jTemplate.fetch(currentContent);
-				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
-						new CaiLunPermission(currentContent, PermissionType.READ));
-				if (hasPerm) {
-					response.getContents().add(contentService.transformToRest(rc, currentContent, languageTags, depth - 1));
-				}
-			}
-		}
-		response.setUuid(tag.getUuid());
-		if (tag.getSchema() != null) {
-			ObjectSchema schema = neo4jTemplate.fetch(tag.getSchema());
-			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
-		}
-
-		if (tag.getCreator() != null) {
-			response.setCreator(userService.transformToRest(tag.getCreator()));
-		}
-		// TODO handle properties for the type of tag
-		return response;
-
+		pool.invoke(task);
+		return restTag;
 	}
 
 	@Override

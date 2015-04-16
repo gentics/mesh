@@ -42,9 +42,9 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 	 * Add the tagcloud load handler.
 	 */
 	private void addTagCloudHandler() {
-		//TODO handle languages
+		// TODO handle languages
 		Language language = null;
-		
+
 		route("/tagcloud").method(GET).handler(rc -> {
 			TagCloud cloud = new TagCloud();
 			// TODO transaction handling should be moved to abstract rest resource
@@ -52,7 +52,8 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 					List<TagCloudResult> res = pageRepository.getTagCloudInfo();
 					for (TagCloudResult current : res) {
 						TagCloudEntry entry = new TagCloudEntry();
-						entry.setName(current.getTag().getName(language));
+						String name = tagService.getName(current.getTag(), language);
+						entry.setName(name);
 						// TODO determine link
 						entry.setLink("TBD");
 						entry.setCount(current.getCounts());

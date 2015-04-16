@@ -77,7 +77,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 			int expectedItemsCount = perPage;
 			// The last page should only list 5 items
 			if (page == 3) {
-				expectedItemsCount = 3;
+				expectedItemsCount = 4;
 			}
 			assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
@@ -135,20 +135,19 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=3&lang=de,en", 200, "OK");
-		System.out.println(response);
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 
-		assertEquals(2, restTag.getChildTags().size());
-		TagResponse childTag1 = restTag.getChildTags().get(0);
+		assertEquals(2, restTag.getTags().size());
+		TagResponse childTag1 = restTag.getTags().get(0);
 		assertNotNull(childTag1.getUuid());
 		assertEquals("2014", childTag1.getProperty("en", "name"));
-		
-		TagResponse childTag2 = restTag.getChildTags().get(1);
+
+		TagResponse childTag2 = restTag.getTags().get(1);
 		assertNotNull(childTag2.getUuid());
 		assertEquals("2015", childTag2.getProperty("en", "name"));
 
-		assertEquals(1, childTag1.getChildTags().size());
-		TagResponse childTagOfChildTag = childTag1.getChildTags().get(0);
+		assertEquals(1, childTag1.getTags().size());
+		TagResponse childTagOfChildTag = childTag1.getTags().get(0);
 		assertNotNull(childTagOfChildTag.getUuid());
 		assertEquals("March", childTagOfChildTag.getProperty("en", "name"));
 	}
@@ -213,7 +212,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		assertEquals(tag.getName(data().getEnglish()), tagResponse.getProperty("en", "name"));
+		try (Transaction tx = graphDb.beginTx()) {
+			String name = tagService.getName(tag, data().getEnglish());
+			assertEquals(name, tagResponse.getProperty("en", "name"));
+			tx.success();
+		}
 
 		// 2. Setup the request object
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
@@ -238,16 +241,16 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = data().getNews();
 
-		roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
+			roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+			tx.success();
+		}
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setUuid(tag.getUuid());
 		request.addProperty("en", "name", "new Name");
-
-		TagResponse updateTagResponse = new TagResponse();
-		updateTagResponse.addProperty("english", "name", "new Name");
 
 		String requestJson = new ObjectMapper().writeValueAsString(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden", requestJson);
@@ -256,7 +259,12 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
-		assertEquals(tag.getName(data().getEnglish()), tagUpdateRequest.getProperty("en", "name"));
+
+		try (Transaction tx = graphDb.beginTx()) {
+			String name = tagService.getName(tag, data().getEnglish());
+			assertEquals(name, tagUpdateRequest.getProperty("en", "name"));
+			tx.success();
+		}
 	}
 
 	// Delete Tests

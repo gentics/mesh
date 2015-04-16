@@ -4,6 +4,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.apex.Session;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +22,18 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
+import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
+import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.path.PagingInfo;
 import com.gentics.cailun.test.AbstractDBTest;
+import com.gentics.cailun.util.JsonUtils;
 
 public class TagTest extends AbstractDBTest {
+
+	private static Logger log = LoggerFactory.getLogger(TagTest.class);
 
 	public static final String GERMAN_NAME = "test german name";
 
@@ -52,7 +63,11 @@ public class TagTest extends AbstractDBTest {
 		assertNotNull(tag.getId());
 		tag = tagService.findOne(tag.getId());
 		assertNotNull("The folder could not be found.", tag);
-		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, tag.getName(german));
+		try (Transaction tx = graphDb.beginTx()) {
+			String name = tagService.getName(tag, german);
+			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
+			tx.success();
+		}
 	}
 
 	@Test
@@ -84,18 +99,22 @@ public class TagTest extends AbstractDBTest {
 			tx.success();
 		}
 		// Reload the tag and check whether the content was set
-		tag = tagService.findOne(tag.getId());
-		assertEquals("The tag should have exactly one file.", 1, tag.getContents().size());
-		Content contentFromTag = tag.getContents().iterator().next();
-		assertNotNull(contentFromTag);
-		assertEquals("We did not get the correct content.", content.getId(), contentFromTag.getId());
-		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME,
-				contentFromTag.getFilename(german));
+		try (Transaction tx = graphDb.beginTx()) {
 
-		// Remove the file/content and check whether the content was really removed
-		assertTrue(tag.removeContent(contentFromTag));
-		tagService.save(tag);
-		tag = tagService.findOne(tag.getId());
+			tag = tagService.reload(tag);
+			assertEquals("The tag should have exactly one file.", 1, tag.getContents().size());
+			Content contentFromTag = tag.getContents().iterator().next();
+			assertNotNull(contentFromTag);
+			assertEquals("We did not get the correct content.", content.getId(), contentFromTag.getId());
+			String filename = contentService.getFilename(contentFromTag, german);
+			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
+
+			// Remove the file/content and check whether the content was really removed
+			assertTrue(tag.removeContent(contentFromTag));
+			tag = tagService.save(tag);
+			tx.success();
+		}
+		tag = tagService.reload(tag);
 		assertEquals("The tag should not have any file.", 0, tag.getContents().size());
 
 	}
@@ -125,7 +144,9 @@ public class TagTest extends AbstractDBTest {
 		tagService.setName(extraTag, german, "extra ordner");
 		assertFalse("The test node should have the random created tag.", reloadedNode.hasTag(extraTag));
 
-		assertTrue("The tag should be removed.", reloadedNode.removeTag(subFolderTag));
+		try (Transaction tx = graphDb.beginTx()) {
+			assertTrue("The tag should be removed.", reloadedNode.removeTag(subFolderTag));
+		}
 	}
 
 	@Test
@@ -141,8 +162,43 @@ public class TagTest extends AbstractDBTest {
 
 		languageTags.add("en");
 		page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 14));
-		assertEquals(15, page.getTotalElements());
+		assertEquals(16, page.getTotalElements());
 		assertEquals(14, page.getSize());
 	}
 
+	@Test
+	public void testTransformToRest() {
+		Tag tag = data().getNews();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+		List<String> languageTags = new ArrayList<>();
+		languageTags.add("en");
+		languageTags.add("de");
+		int depth = 3;
+
+		RoutingContext rc = getMockedRoutingContext();
+		for (int i = 0; i < 100; i++) {
+			long start = System.currentTimeMillis();
+			TagResponse response = tagService.transformToRest(rc, tag, languageTags, depth);
+			assertNotNull(response);
+			long dur = System.currentTimeMillis() - start;
+			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
+			System.out.println(JsonUtils.toJson(response));
+		}
+		// assertEquals(2, response.getChildTags().size());
+		// assertEquals(4, response.getPerms().length);
+	}
+
+	private RoutingContext getMockedRoutingContext() {
+		CaiLunAuthServiceImpl auth = springConfig.authService();
+
+		// Create login session
+		User user = data().getUserInfo().getUser();
+		String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
+
+		Session session = mock(Session.class);
+		RoutingContext rc = mock(RoutingContext.class);
+		when(rc.session()).thenReturn(session);
+		when(session.getLoginID()).thenReturn(loginSessionId);
+		return rc;
+	}
 }

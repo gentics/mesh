@@ -28,11 +28,9 @@ public class GenericNode extends AbstractPersistable {
 	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
 	protected Set<Project> projects = new HashSet<>();
 
-	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
 	protected User creator;
 
-	@Fetch
 	@RelatedToVia(type = BasicRelationships.IS_LOCKED, direction = Direction.OUTGOING, elementClass = Locked.class)
 	protected Locked locked;
 

@@ -6,7 +6,6 @@ import java.util.Set;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
@@ -40,11 +39,9 @@ public class Tag extends GenericPropertyContainer {
 		return label;
 	}
 
-	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_CONTENT, direction = Direction.OUTGOING, elementClass = Content.class)
 	private Set<Content> contents = new HashSet<>();
 
-	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
 	private Set<Tag> childTags = new HashSet<>();
 

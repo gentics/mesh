@@ -17,7 +17,7 @@ public class TagResponse extends AbstractRestModel {
 	private UserResponse creator;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 
-	private List<TagResponse> childTags = new ArrayList<>();
+	private List<TagResponse> tags = new ArrayList<>();
 
 	private List<ContentResponse> contents = new ArrayList<>();
 
@@ -104,12 +104,12 @@ public class TagResponse extends AbstractRestModel {
 		this.perms = perms;
 	}
 
-	public List<TagResponse> getChildTags() {
-		return childTags;
+	public List<TagResponse> getTags() {
+		return tags;
 	}
 
-	public void setChildTags(List<TagResponse> childTags) {
-		this.childTags = childTags;
+	public void setTags(List<TagResponse> tags) {
+		this.tags = tags;
 	}
 
 	public SchemaReference getSchema() {

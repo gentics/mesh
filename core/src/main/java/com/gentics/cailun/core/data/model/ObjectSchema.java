@@ -24,6 +24,12 @@ public class ObjectSchema extends GenericNode {
 
 	private static final long serialVersionUID = -6822013445735068604L;
 
+	public static final String CONTENT_KEYWORD = "content";
+	public static final String FILENAME_KEYWORD = "filename";
+	public static final String NAME_KEYWORD = "name";
+	public static final String TEASER_KEY = "teaser";
+	public static final String TITLE_KEY = "title";
+
 	@Indexed(unique = true)
 	private String name;
 
@@ -31,7 +37,6 @@ public class ObjectSchema extends GenericNode {
 	// TODO i18n?
 	private String description;
 
-	@Fetch
 	@RelatedTo(direction = Direction.OUTGOING, elementClass = PropertyTypeSchema.class, type = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA)
 	private Set<PropertyTypeSchema> propertyTypeSchemas = new HashSet<>();
 

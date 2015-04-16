@@ -13,6 +13,9 @@ public class SchemaReference {
 		this.schemaUuid = schemaUuid;
 	}
 
+	public SchemaReference(String name) {
+this.schemaName  = name;	}
+
 	public String getSchemaName() {
 		return schemaName;
 	}

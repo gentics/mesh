@@ -186,7 +186,7 @@ public class Generator {
 		write(tagUpdate);
 
 		TagCreateRequest tagCreate = new TagCreateRequest();
-		tagCreate.setSchemaName("content");
+		tagCreate.setSchema(new SchemaReference("content"));
 		tagCreate.setTagUuid(getUUID());
 		write(tagCreate);
 
@@ -246,7 +246,7 @@ public class Generator {
 		String lang = "de";
 		ContentResponse content = new ContentResponse();
 		content.setUuid(getUUID());
-		content.setAuthor(getUser());
+		content.setCreator(getUser());
 		content.addProperty(lang, "name", "Name for language tag de-DE");
 		content.addProperty(lang, "filename", "dummy-content.de.html");
 		content.addProperty(lang, "teaser", "Dummy teaser for de-DE");
@@ -280,7 +280,7 @@ public class Generator {
 
 		ContentResponse content2 = new ContentResponse();
 		content2.setUuid(getUUID());
-		content2.setAuthor(getUser());
+		content2.setCreator(getUser());
 		lang = "en";
 		content2.addProperty(lang, "name", "Name for language tag en");
 		content2.addProperty(lang, "filename", "dummy-content.en.html");

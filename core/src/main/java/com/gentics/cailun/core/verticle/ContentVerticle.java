@@ -98,7 +98,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
 
 				if (StringUtils.isEmpty(requestModel.getSchemaName())) {
-					//TODO i18n
+					// TODO i18n
 					throw new HttpStatusCodeErrorException(400, "No valid schema name was specified.");
 				} else {
 					// TODO load the schema and set the reference to the tag
@@ -128,7 +128,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					}
 					I18NProperties tagProps = new I18NProperties(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-						tagProps.addProperty(entry.getKey(), entry.getValue());
+						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
 					tagProps = neo4jTemplate.save(tagProps);
 					// Create the relationship to the i18n properties
@@ -185,7 +185,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			// TODO paging, filtering
+			// TODO filtering
 				ContentListResponse listResponse = new ContentListResponse();
 				try (Transaction tx = graphDb.beginTx()) {
 					PagingInfo pagingInfo = getPagingInfo(rc);
@@ -229,9 +229,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
-
+			Content content;
 			try (Transaction tx = graphDb.beginTx()) {
-				Content content = getObject(rc, "uuid", PermissionType.READ);
+				content = getObject(rc, "uuid", PermissionType.READ);
 				// TODO update other fields as well?
 				// TODO Update user information
 				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
@@ -243,44 +243,48 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 						Map<String, String> properties = request.getProperties(languageTag);
 						if (properties != null) {
 							// TODO use schema and only handle those i18n properties that were specified within the schema.
-							I18NProperties i18nProperties = content.getI18NProperties(language);
+							I18NProperties i18nProperties = contentService.getI18NProperties(content, language);
 							for (Map.Entry<String, String> set : properties.entrySet()) {
 								String key = set.getKey();
 								String value = set.getValue();
 								String i18nValue = i18nProperties.getProperty(key);
 								// Tag does not have the value so lets create it
 								if (i18nValue == null) {
-									i18nProperties.addProperty(key, value);
+									i18nProperties.setProperty(key, value);
 								} else {
 									// Lets compare and update if the value has changed
 									if (!value.equals(i18nValue)) {
-										i18nProperties.addProperty(key, value);
+										i18nProperties.setProperty(key, value);
 									}
 								}
 							}
+							neo4jTemplate.save(i18nProperties);
 
-							// Check whether there are any key missing in the request.
-							// This would mean we should remove those i18n properties. First lets collect those
-							// keys
-							Set<String> keysToBeRemoved = new HashSet<>();
-							for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
-								if (!properties.containsKey(i18nKey)) {
-									keysToBeRemoved.add(i18nKey);
-								}
-							}
-
-							// Now remove the keys
-							for (String key : keysToBeRemoved) {
-								i18nProperties.removeProperty(key);
-							}
+							// // Check whether there are any key missing in the request.
+							// // This would mean we should remove those i18n properties. First lets collect those
+							// // keys
+							// Set<String> keysToBeRemoved = new HashSet<>();
+							// for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
+							// if (!properties.containsKey(i18nKey)) {
+							// keysToBeRemoved.add(i18nKey);
+							// }
+							// }
+							//
+							// // Now remove the keys
+							// for (String key : keysToBeRemoved) {
+							// i18nProperties.removeProperty(key);
+							// }
 
 						}
 					} else {
-						// TODO i18n
-						throw new HttpStatusCodeErrorException(400, "Could not find language for languageTag {" + languageTag + "}");
+						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
 					}
 
 				}
+				tx.success();
+			}
+			// TODO check for content==null?
+			try (Transaction tx = graphDb.beginTx()) {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 				tx.success();

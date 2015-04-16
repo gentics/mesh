@@ -274,17 +274,17 @@ public class BootstrapInitializer {
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setDisplayName("Content");
 
-			PropertyTypeSchema nameProp = new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			contentSchema.addPropertyTypeSchema(nameProp);
 
-			PropertyTypeSchema filenameProp = new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
 			filenameProp.setDisplayName("Filename");
 			filenameProp.setDescription("The filename property of the content.");
 			contentSchema.addPropertyTypeSchema(filenameProp);
 
-			PropertyTypeSchema contentProp = new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema contentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 			contentProp.setDisplayName("Content");
 			contentProp.setDescription("The main content html of the content.");
 			contentSchema.addPropertyTypeSchema(contentProp);
@@ -298,17 +298,17 @@ public class BootstrapInitializer {
 			binarySchema.setDescription("Default schema for binary contents");
 			binarySchema.setDisplayName("Binary Content");
 
-			PropertyTypeSchema nameProp = new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			binarySchema.addPropertyTypeSchema(nameProp);
 
-			PropertyTypeSchema filenameProp = new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
 			filenameProp.setDisplayName("Filename");
 			filenameProp.setDescription("The filename of the content.");
 			binarySchema.addPropertyTypeSchema(filenameProp);
 
-			PropertyTypeSchema binaryContentProp = new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.BINARY);
+			PropertyTypeSchema binaryContentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.BINARY);
 			binaryContentProp.setDisplayName("Binary content");
 			binaryContentProp.setDescription("The binary content of the content");
 			binarySchema.addPropertyTypeSchema(binaryContentProp);
@@ -319,9 +319,9 @@ public class BootstrapInitializer {
 		if (tagSchema == null) {
 			tagSchema = new ObjectSchema("tag");
 			tagSchema.setDescription("Default schema for tags");
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			objectSchemaService.save(tagSchema);
 		}
 

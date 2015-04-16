@@ -18,7 +18,9 @@ import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
+import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.util.Neo4jGenericContentUtils;
 
@@ -27,13 +29,16 @@ import com.gentics.cailun.util.Neo4jGenericContentUtils;
 public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
-	GenericNodeRepository<Tag> tagRepository;
+	private GenericNodeRepository<Tag> tagRepository;
 
 	@Autowired
-	CaiLunSpringConfiguration config;
+	private CaiLunSpringConfiguration config;
 
 	@Autowired
-	Neo4jGenericContentUtils genericContentUtils;
+	private TagService tagService;
+
+	@Autowired
+	private Neo4jGenericContentUtils genericContentUtils;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
@@ -47,9 +52,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
 		} catch (Exception e) {
-			// TODO error handling
-			rc.fail(e);
-			rc.fail(500);
+			throw new HttpStatusCodeErrorException(500, "Could not build naviguation", e);
 		}
 	}
 
@@ -81,7 +84,8 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		Language language = null;
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
-		rootElement.setName(rootTag.getName(language));
+		String name = tagService.getName(rootTag, language);
+		rootElement.setName(name);
 		rootElement.setType(NavigationElementType.TAG);
 		nav.setRoot(rootElement);
 
@@ -90,9 +94,9 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		return nav;
 	}
 
-//	public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
-//		getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(object, PermissionType.READ), resultHandler);
-//	}
+	// public void canView(GenericNode object, Handler<AsyncResult<Boolean>> resultHandler) {
+	// getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(object, PermissionType.READ), resultHandler);
+	// }
 
 	/**
 	 * Wrapper for the permission checks. Check whether the given object can be viewed by the user.

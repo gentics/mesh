@@ -20,7 +20,6 @@ public class Role extends GenericNode {
 	@Indexed(unique = true)
 	private String name;
 
-	@Fetch
 	@RelatedToVia(type = AuthRelationships.HAS_PERMISSION, direction = Direction.OUTGOING, elementClass = GraphPermission.class)
 	protected Set<GraphPermission> permissions = new HashSet<>();
 
@@ -46,7 +45,7 @@ public class Role extends GenericNode {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public Set<Group> getGroups() {
 		return groups;
 	}

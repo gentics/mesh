@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,23 +139,23 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
 		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
-		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(25, restResponse.getData().size());
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, ContentListResponse.class);
-		Assert.assertEquals(perPage, restResponse.getData().size());
+		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Contents + permitted content
 		int totalContents = nContents + data().getTotalContents();
 		int totalPages = (int) Math.ceil(totalContents / (double) perPage);
-		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(totalContents, restResponse.getMetainfo().getTotalCount());
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(totalContents, restResponse.getMetainfo().getTotalCount());
 
 		List<ContentResponse> allContents = new ArrayList<>();
 		for (int page = 0; page < totalPages; page++) {
@@ -164,7 +163,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 			restResponse = JsonUtils.readValue(response, ContentListResponse.class);
 			allContents.addAll(restResponse.getData());
 		}
-		Assert.assertEquals("Somehow not all users were loaded when loading all pages.", totalContents, allContents.size());
+		assertEquals("Somehow not all users were loaded when loading all pages.", totalContents, allContents.size());
 
 		// Verify that the no_perm_content is not part of the response
 		final String noPermContentUUID = noPermContent.getUuid();
@@ -192,11 +191,11 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
 
 		int nElements = restResponse.getData().size();
-		Assert.assertEquals("The amount of elements in the list did not match the expected count", 25, nElements);
-		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(2, restResponse.getMetainfo().getPageCount());
-		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(data().getTotalContents(), restResponse.getMetainfo().getTotalCount());
+		assertEquals("The amount of elements in the list did not match the expected count", 25, nElements);
+		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(2, restResponse.getMetainfo().getPageCount());
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(data().getTotalContents(), restResponse.getMetainfo().getTotalCount());
 	}
 
 	@Test
@@ -303,7 +302,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		request.addProperty("en", "content", newContent);
 
 		Content content = data().getNews2015Content();
-		String json = "{\"author\": \"test\", \"properties\":{\"en\":{\"filename\":\"new-name.html\",\"name\":\"english renamed name\",\"content\":\"english renamed content!\"}},\"schemaName\":\"content\",\"order\":0}";
+		String json = JsonUtils.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=de", 200, "OK", json);
 		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
 		assertEquals(newFilename, restContent.getProperty("en", "filename"));
@@ -311,10 +310,13 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(newContent, restContent.getProperty("en", "content"));
 
 		// Reload and update
-		content = contentService.reload(content);
-		assertEquals(newFilename, content.getFilename(data().getEnglish()));
-		assertEquals(newName, content.getName(data().getEnglish()));
-		assertEquals(newContent, content.getContent(data().getEnglish()));
+		try (Transaction tx = graphDb.beginTx()) {
+			content = contentService.reload(content);
+			assertEquals(newFilename, contentService.getFilename(content, data().getEnglish()));
+			assertEquals(newName, contentService.getName(content, data().getEnglish()));
+			assertEquals(newContent, contentService.getContent(content, data().getEnglish()));
+			tx.success();
+		}
 
 	}
 

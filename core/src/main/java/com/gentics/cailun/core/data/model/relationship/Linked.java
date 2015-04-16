@@ -19,7 +19,6 @@ public class Linked extends AbstractPersistable {
 	@StartNode
 	private Content startContent;
 
-	@Fetch
 	@EndNode
 	private Content endContent;
 

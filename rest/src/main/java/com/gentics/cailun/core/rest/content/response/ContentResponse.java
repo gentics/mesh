@@ -12,7 +12,7 @@ import com.gentics.cailun.core.rest.user.response.UserResponse;
 
 public class ContentResponse extends AbstractRestModel {
 
-	private UserResponse author;
+	private UserResponse creator;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 	private String[] perms = {};
 
@@ -25,12 +25,12 @@ public class ContentResponse extends AbstractRestModel {
 	public ContentResponse() {
 	}
 
-	public UserResponse getAuthor() {
-		return author;
+	public UserResponse getCreator() {
+		return creator;
 	}
 
-	public void setAuthor(UserResponse author) {
-		this.author = author;
+	public void setCreator(UserResponse author) {
+		this.creator = author;
 	}
 
 	public Map<String, Map<String, String>> getProperties() {

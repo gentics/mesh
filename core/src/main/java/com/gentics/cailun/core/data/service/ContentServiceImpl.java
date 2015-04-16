@@ -3,29 +3,27 @@ package com.gentics.cailun.core.data.service;
 import io.vertx.ext.apex.RoutingContext;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
 
+import org.apache.commons.lang3.StringUtils;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
-import com.gentics.cailun.core.data.model.Tag;
-import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
+import com.gentics.cailun.core.data.service.content.ContentTransformationTask;
+import com.gentics.cailun.core.data.service.content.TransformationInfo;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
-import com.gentics.cailun.core.rest.schema.response.SchemaReference;
-import com.gentics.cailun.core.rest.user.response.UserResponse;
-import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
 
@@ -51,6 +49,9 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 	private TagService tagService;
 
 	@Autowired
+	private GraphDatabaseService graphDb;
+
+	@Autowired
 	private CaiLunSpringConfiguration springConfiguration;
 
 	@Autowired
@@ -59,12 +60,14 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 	@Autowired
 	private I18NService i18n;
 
-	public void setTeaser(Content page, Language language, String text) {
-		setProperty(page, language, Content.TEASER_KEY, text);
+	private static ForkJoinPool pool = new ForkJoinPool(8);
+
+	public void setTeaser(Content content, Language language, String text) {
+		setProperty(content, language, ObjectSchema.TEASER_KEY, text);
 	}
 
-	public void setTitle(Content page, Language language, String text) {
-		setProperty(page, language, Content.TITLE_KEY, text);
+	public void setTitle(Content content, Language language, String text) {
+		setProperty(content, language, ObjectSchema.TITLE_KEY, text);
 	}
 
 	@Override
@@ -74,59 +77,20 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 
 	@Override
 	public ContentResponse transformToRest(RoutingContext rc, Content content, List<String> languageTags, int depth) {
-		ContentResponse response = new ContentResponse();
-		response.setUuid(content.getUuid());
-		if (content.getSchema() != null) {
-			ObjectSchema schema = neo4jTemplate.fetch(content.getSchema());
-			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
-		}
-		UserResponse restUser = userService.transformToRest(content.getCreator());
-		response.setAuthor(restUser);
-		response.setPerms(userService.getPerms(rc, content));
+		TransformationInfo info = new TransformationInfo(rc, depth, languageTags);
+		info.setUserService(userService);
+		info.setLanguageService(languageService);
+		info.setGraphDb(graphDb);
+		info.setTagService(tagService);
+		info.setSpringConfiguration(springConfiguration);
+		info.setContentService(this);
+		info.setNeo4jTemplate(neo4jTemplate);
+		info.setI18nService(i18n);
 
-		response.setOrder(content.getOrder());
-		if (languageTags.size() == 0) {
-			for (Translated transalated : content.getI18nTranslations()) {
-				String languageTag = transalated.getLanguageTag();
-				// TODO handle schema
-				response.addProperty(languageTag, "name", transalated.getI18nValue().getProperty("name"));
-				response.addProperty(languageTag, "filename", transalated.getI18nValue().getProperty("filename"));
-				response.addProperty(languageTag, "content", transalated.getI18nValue().getProperty("content"));
-				response.addProperty(languageTag, "teaser", transalated.getI18nValue().getProperty("teaser"));
-			}
-		} else {
-			for (String languageTag : languageTags) {
-				Language language = languageService.findByLanguageTag(languageTag);
-				if (language == null) {
-					// TODO use request locale
-					throw new HttpStatusCodeErrorException(400, i18n.get(Locale.getDefault(), "error_language_not_found", languageTag));
-				}
-				// TODO handle schema
-				response.addProperty(languageTag, "name", content.getName(language));
-				response.addProperty(languageTag, "filename", content.getFilename(language));
-				response.addProperty(languageTag, "content", content.getContent(language));
-				response.addProperty(languageTag, "teaser", content.getTeaser(language));
-			}
-
-		}
-
-		if (content.getSchema() != null) {
-			ObjectSchema schema = neo4jTemplate.fetch(content.getSchema());
-			response.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
-		}
-
-		if (depth > 0) {
-			Set<Tag> tags = neo4jTemplate.fetch(content.getTags());
-			for (Tag currentTag : tags) {
-				boolean hasPerm = springConfiguration.authService().hasPermission(rc.session().getLoginID(),
-						new CaiLunPermission(currentTag, PermissionType.READ));
-				if (hasPerm) {
-					response.getTags().add(tagService.transformToRest(rc, currentTag, languageTags, depth - 1));
-				}
-			}
-		}
-
-		return response;
+		ContentResponse restContent = new ContentResponse();
+		ContentTransformationTask task = new ContentTransformationTask(content, info, restContent);
+		pool.invoke(task);
+		return restContent;
 
 	}
 
@@ -224,16 +188,5 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		// this.links.add(link);
 	}
 
-	public void addI18NContent(Content content, Language language, String text) {
-		setProperty(content, language, Content.CONTENT_KEYWORD, text);
-	}
 
-	public void setContent(Content content, Language language, String text) {
-		setProperty(content, language, Content.CONTENT_KEYWORD, text);
-	}
-
-	@Override
-	public void setFilename(Content content, Language language, String filename) {
-		setProperty(content, language, Content.FILENAME_KEYWORD, filename);
-	}
 }

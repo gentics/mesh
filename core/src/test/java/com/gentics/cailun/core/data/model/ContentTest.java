@@ -67,7 +67,8 @@ public class ContentTest extends AbstractDBTest {
 		}
 		content = contentService.reload(content);
 		assertNotNull(content.getUuid());
-		assertNotNull(content.getContent(data().getEnglish()));
+		String text = contentService.getContent(content, data().getEnglish());
+		assertNotNull(text);
 	}
 
 	@Test

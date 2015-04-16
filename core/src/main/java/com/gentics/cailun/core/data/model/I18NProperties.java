@@ -17,7 +17,6 @@ public class I18NProperties extends AbstractPersistable {
 
 	protected DynamicProperties properties = new DynamicPropertiesContainer();
 
-	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_LANGUAGE, direction = Direction.OUTGOING, elementClass = Language.class)
 	private Language language;
 
@@ -44,7 +43,7 @@ public class I18NProperties extends AbstractPersistable {
 	 * @param key
 	 * @param value
 	 */
-	public void addProperty(String key, String value) {
+	public void setProperty(String key, String value) {
 		this.properties.setProperty(key, value);
 	}
 

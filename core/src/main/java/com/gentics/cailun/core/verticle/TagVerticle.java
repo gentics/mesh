@@ -101,18 +101,18 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 						Map<String, String> properties = requestModel.getProperties(languageTag);
 						if (properties != null) {
 							// TODO use schema and only handle those i18n properties that were specified within the schema.
-							I18NProperties i18nProperties = tag.getI18NProperties(language);
+							I18NProperties i18nProperties = tagService.getI18NProperties(tag, language);
 							for (Map.Entry<String, String> set : properties.entrySet()) {
 								String key = set.getKey();
 								String value = set.getValue();
 								String i18nValue = i18nProperties.getProperty(key);
 								// Tag does not have the value so lets create it
 								if (i18nValue == null) {
-									i18nProperties.addProperty(key, value);
+									i18nProperties.setProperty(key, value);
 								} else {
 									// Lets compare and update if the value has changed
 									if (!value.equals(i18nValue)) {
-										i18nProperties.addProperty(key, value);
+										i18nProperties.setProperty(key, value);
 									}
 								}
 							}
@@ -135,6 +135,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 						}
 					}
 				}
+				tx.success();
+			}
+			try (Transaction tx = graphDb.beginTx()) {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 				tx.success();
@@ -170,7 +173,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					Language language = languageService.findByLanguageTag(languageTag);
 					I18NProperties tagProps = new I18NProperties(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-						tagProps.addProperty(entry.getKey(), entry.getValue());
+						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
 					// Create the relationship to the i18n properties
 					Translated translated = new Translated(newTag, tagProps, language);

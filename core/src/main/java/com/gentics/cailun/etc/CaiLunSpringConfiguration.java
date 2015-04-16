@@ -19,6 +19,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,6 +36,7 @@ import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
 @EnableNeo4jRepositories("com.gentics.cailun")
 @EnableTransactionManagement
 @ComponentScan(basePackages = { "com.gentics.cailun" })
+@EnableAspectJAutoProxy
 public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 
 	private static final Logger log = LoggerFactory.getLogger(CaiLunSpringConfiguration.class);

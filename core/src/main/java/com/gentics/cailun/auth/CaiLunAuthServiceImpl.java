@@ -41,7 +41,7 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 		setTimer();
 	}
 
-	private String createLoginSession(long timeout, Object principal) {
+	public String createLoginSession(long timeout, Object principal) {
 		String id = UUID.randomUUID().toString();
 		loginSessions.put(id, new LoginSession(timeout, principal));
 		return id;
@@ -142,6 +142,10 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 		} else {
 			return null;
 		}
+	}
+	
+	public Map<String, LoginSession> getLoginSessions() {
+		return loginSessions;
 	}
 
 	public boolean hasPermission(String loginID, Permission permission) {

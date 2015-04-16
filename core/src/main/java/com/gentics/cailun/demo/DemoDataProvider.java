@@ -260,17 +260,17 @@ public class DemoDataProvider {
 			categoriesSchema.setDisplayName("Category");
 			categoriesSchema.setDescription("Custom schema for tag categories");
 			categoriesSchema.setCreator(userInfo.getUser());
-			PropertyTypeSchema nameProp = new PropertyTypeSchema(Content.NAME_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the category.");
 			categoriesSchema.addPropertyTypeSchema(nameProp);
 
-			PropertyTypeSchema filenameProp = new PropertyTypeSchema(Content.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
 			filenameProp.setDisplayName("Filename");
 			filenameProp.setDescription("The filename property of the category.");
 			categoriesSchema.addPropertyTypeSchema(filenameProp);
 
-			PropertyTypeSchema contentProp = new PropertyTypeSchema(Content.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+			PropertyTypeSchema contentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 			contentProp.setDisplayName("Content");
 			contentProp.setDescription("The main content html of the category.");
 			categoriesSchema.addPropertyTypeSchema(contentProp);
@@ -355,7 +355,7 @@ public class DemoDataProvider {
 			totalTags++;
 
 			Tag news2014March = addTag(news2014, "March", null, tagSchema);
-			
+
 			totalTags++;
 			for (int i = 0; i < 12 * multiplicator; i++) {
 				addContent(news2014, "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
@@ -617,7 +617,10 @@ public class DemoDataProvider {
 	 * @return
 	 */
 	public String getPathForNews2015Tag(Language language) {
-		return getNews().getName(language) + "/" + getNews2015().getName(language);
+
+		String name = tagService.getName(getNews(), language);
+		String name2 = tagService.getName(getNews2015(), language);
+		return name + "/" + name2;
 	}
 
 	/**
