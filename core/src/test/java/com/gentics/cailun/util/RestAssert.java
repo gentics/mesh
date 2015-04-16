@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Map.Entry;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
@@ -46,8 +45,6 @@ public class RestAssert {
 	private GraphDatabaseService graphDb;
 
 	public void assertGroup(Group group, GroupResponse restGroup) {
-		// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
-		// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy_user_group\",\"roles\":[\"dummy_user_role\"],\"users\":[\"dummy_user\"],\"perms\":[]}";
 		assertEquals(group.getUuid(), restGroup.getUuid());
 		assertEquals(group.getName(), restGroup.getName());
 		// for (User user : group.getUsers()) {
@@ -76,17 +73,9 @@ public class RestAssert {
 		// TODO groups
 	}
 
+	@Transactional
 	public void assertTag(Tag tag, TagResponse restTag) {
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"new Name\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-
-		try (Transaction tx = graphDb.beginTx()) {
-			tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
-			tx.success();
-		}
-
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
+		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
 		assertEquals(tag.getUuid(), restTag.getUuid());
 		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getSchemaUuid());
 		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
@@ -116,9 +105,6 @@ public class RestAssert {
 		assertNotNull(readValue.getUuid());
 		assertNotNull(readValue.getCreator());
 		assertNotNull(readValue.getPerms());
-		// String responseJson =
-		// "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"en\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"Blessed mealtime again!\"}},\"schemaName\":\"content\",\"perms\":[],\"tags\":[],\"order\":0}";
-		// assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
 
 	}
 
@@ -126,12 +112,6 @@ public class RestAssert {
 	public void assertContent(Content content, ContentResponse readValue) {
 		assertNotNull(content);
 		assertNotNull(readValue);
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"},\"en\":{\"name\":\"Special News_2014 english\",\"content\":\"News!\"}},\"schemaName\":\"content\",\"perms\":[\"read\",\"create\",\"update\",\"delete\"],\"tags\":[],\"order\":0}";
-		// assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"author\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Special News_2014 german\",\"content\":\"Neuigkeiten!\"}},\"schemaName\":\"content\",\"perms\":[\"read\",\"create\",\"update\",\"delete\"],\"tags\":[],\"order\":0}";
-		// assertEqualsSanitizedJson("The response json did not match the expected one", json, response);
 
 		assertEquals(content.getOrder(), readValue.getOrder());
 		assertNotNull(readValue.getPerms());
@@ -199,16 +179,10 @@ public class RestAssert {
 		assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
 
 		// TODO verify other fields
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"},{\"uuid\":\"uuid-value\",\"name\":\"extraProject\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"Default schema for contents\",\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"content\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"content\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"filename\",\"order\":0},{\"uuid\":\"uuid-value\",\"type\":\"i18n-string\",\"key\":\"name\",\"order\":0}]}";
 
 	}
 
 	public void assertSchema(ObjectSchemaCreateRequest request, ObjectSchemaResponse restSchema) {
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"type\":\"object\",\"description\":\"new description\",\"projects\":[{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}],\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"new schema name\",\"properties\":[{\"uuid\":\"uuid-value\",\"type\":\"html\",\"key\":\"extra-content\",\"desciption\":\"Some extra content\",\"order\":0}]}";
 
 		assertNotNull(request);
 		assertNotNull(restSchema);
@@ -230,11 +204,6 @@ public class RestAssert {
 		assertEquals(request.getFirstname(), restUser.getFirstname());
 
 		// TODO check groupuuid vs groups loaded user
-
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"new_user\",\"emailAddress\":\"n.user@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]}";
-		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		// assertEquals(newUser.getUsername(), user.getUsername());
 
 	}
 
@@ -267,8 +236,6 @@ public class RestAssert {
 			assertEquals(request.getName(), restGroup.getName());
 		}
 
-		// String json = "{\"uuid\":\"uuid-value\",\"name\":\"New Name\",\"roles\":[\"joe1_role\"],\"users\":[\"joe1\"],\"perms\":[]}";
-		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 }

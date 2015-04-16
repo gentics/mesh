@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
@@ -35,6 +36,7 @@ import com.gentics.cailun.path.PathSegment;
 import com.google.common.collect.Lists;
 
 @Component
+@Transactional(readOnly = true)
 public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> implements TagService {
 
 	private static final Logger log = LoggerFactory.getLogger(TagServiceImpl.class);

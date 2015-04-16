@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
@@ -24,6 +25,7 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.path.PagingInfo;
 
 @Component
+@Transactional(readOnly=true)
 public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema> implements ObjectSchemaService {
 
 	@Autowired

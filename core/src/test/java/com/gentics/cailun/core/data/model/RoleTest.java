@@ -82,6 +82,29 @@ public class RoleTest extends AbstractDBTest {
 	}
 
 	@Test
+	public void testGrantPermissionTwice() {
+		Role role = info.getRole();
+		Content content = data().getNews2015Content();
+
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(role, content, CREATE);
+			tx.success();
+		}
+
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(role, content, CREATE);
+			tx.success();
+		}
+
+		GraphPermission permission = roleService.getGraphPermission(role, content);
+		assertNotNull(permission);
+		assertTrue(permission.isPermitted(CREATE));
+		assertTrue(permission.isPermitted(READ));
+		assertTrue(permission.isPermitted(DELETE));
+		assertTrue(permission.isPermitted(UPDATE));
+	}
+
+	@Test
 	public void testRevokePermission() {
 		Role role = info.getRole();
 		Content content = data().getNews2015Content();

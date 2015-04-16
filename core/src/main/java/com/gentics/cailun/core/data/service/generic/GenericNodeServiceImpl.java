@@ -98,10 +98,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Override
 	public T projectTo(Node node, Class<T> clazz) {
-		try (Transaction t = database.beginTx()) {
-			T entity = neo4jTemplate.projectTo(node, clazz);
-			t.success();
-			return entity;
-		}
+		T entity = neo4jTemplate.projectTo(node, clazz);
+		return entity;
 	}
 }

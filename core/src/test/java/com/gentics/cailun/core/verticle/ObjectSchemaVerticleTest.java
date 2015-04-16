@@ -70,8 +70,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		propertySchema.setDescription("Some extra content");
 		request.getPropertyTypeSchemas().add(propertySchema);
 
-		roleService.addPermission(info.getRole(), data().getProject(), PermissionType.CREATE);
-
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtils.toJson(request));
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
 		test.assertSchema(request, restSchema);
@@ -97,8 +95,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		propertySchema.setDescription("Some extra content");
 		request.getPropertyTypeSchemas().add(propertySchema);
 
-		roleService.addPermission(info.getRole(), data().getProject(), PermissionType.CREATE);
-
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtils.toJson(request));
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
 		test.assertSchema(request, restSchema);
@@ -117,18 +113,18 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllSchemaList() throws Exception {
-		roleService.addPermission(info.getRole(), data().getContentSchema(), PermissionType.READ);
-
-		final int nSchemas = 142;
-		for (int i = 0; i < nSchemas; i++) {
-			ObjectSchema extraSchema = new ObjectSchema("extra_schema_" + i);
-			extraSchema = objectSchemaService.save(extraSchema);
-			roleService.addPermission(info.getRole(), extraSchema, PermissionType.READ);
-		}
+		final int nSchemas = 22;
 		ObjectSchema noPermSchema = new ObjectSchema("no_perm_schema");
-		noPermSchema = objectSchemaService.save(noPermSchema);
-
-		// Don't grant permissions to no perm schema
+		try (Transaction tx = graphDb.beginTx()) {
+			for (int i = 0; i < nSchemas; i++) {
+				ObjectSchema extraSchema = new ObjectSchema("extra_schema_" + i);
+				extraSchema = objectSchemaService.save(extraSchema);
+				roleService.addPermission(info.getRole(), extraSchema, PermissionType.READ);
+			}
+			// Don't grant permissions to no perm schema
+			noPermSchema = objectSchemaService.save(noPermSchema);
+			tx.success();
+		}
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
@@ -180,9 +176,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
 		ObjectSchema schema = data().getContentSchema();
-
-		roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
 		test.assertSchema(schema, restSchema);
@@ -215,8 +208,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateSchemaByUUID() throws HttpStatusCodeErrorException, Exception {
 		ObjectSchema schema = data().getContentSchema();
-		roleService.addPermission(info.getRole(), schema, PermissionType.UPDATE);
-
 		ObjectSchemaUpdateRequest request = new ObjectSchemaUpdateRequest();
 		request.setUuid(schema.getUuid());
 		request.setName("new-name");
@@ -251,9 +242,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteSchemaByUUID() throws Exception {
 		ObjectSchema schema = data().getContentSchema();
-
-		roleService.addPermission(info.getRole(), schema, PermissionType.DELETE);
-
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
 		expectMessageResponse("schema_deleted", response, schema.getUuid());
 
@@ -263,7 +251,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	public void testDeleteSchemaWithMissingPermission() throws Exception {
 		ObjectSchema schema = data().getContentSchema();
-
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
 		String json = "error";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
@@ -309,12 +296,13 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 
 		Project extraProject = new Project("extraProject");
-		extraProject = projectService.save(extraProject);
-		extraProject = projectService.reload(extraProject);
-
-		// Add only read perms
-		roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-		roleService.addPermission(info.getRole(), project, PermissionType.READ);
+		try (Transaction tx = graphDb.beginTx()) {
+			extraProject = projectService.save(extraProject);
+			// Add only read perms
+			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
+			roleService.addPermission(info.getRole(), project, PermissionType.READ);
+			tx.success();
+		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 403,
 				"Forbidden");
@@ -334,12 +322,10 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		try (Transaction tx = graphDb.beginTx()) {
 			project = neo4jTemplate.fetch(project);
 			assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
+			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
+			roleService.addPermission(info.getRole(), project, PermissionType.UPDATE);
 			tx.success();
 		}
-
-		// Add only read perms
-		roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-		roleService.addPermission(info.getRole(), project, PermissionType.UPDATE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 200, "OK");
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
@@ -362,7 +348,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 		// Add only read perms
 		try (Transaction tx = graphDb.beginTx()) {
-
 			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
 			roleService.addPermission(info.getRole(), project, PermissionType.READ);
 			roleService.revokePermission(info.getRole(), project, PermissionType.UPDATE);

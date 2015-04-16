@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.auth.AuthRelationships;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
@@ -35,6 +36,7 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
 
 @Component
+@Transactional(readOnly = true)
 public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements RoleService {
 
 	@Autowired

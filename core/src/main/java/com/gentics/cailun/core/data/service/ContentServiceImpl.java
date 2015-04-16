@@ -5,19 +5,17 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
-import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
-import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.content.ContentTransformationTask;
 import com.gentics.cailun.core.data.service.content.TransformationInfo;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
@@ -28,6 +26,7 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
 
 @Component
+@Transactional(readOnly = true)
 public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Content> implements ContentService {
 
 	@Autowired

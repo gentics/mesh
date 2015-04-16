@@ -63,7 +63,10 @@ public abstract class AbstractDBTest {
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException {
 		purgeDatabase();
-		dataProvider.setup(1);
+		try (Transaction tx = graphDb.beginTx()) {
+			dataProvider.setup(1);
+			tx.success();
+		}
 	}
 
 	public DemoDataProvider data() {

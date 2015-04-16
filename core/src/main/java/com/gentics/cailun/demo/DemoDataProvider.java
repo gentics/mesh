@@ -11,7 +11,6 @@ import java.util.Map;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -142,10 +141,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
-		try (Transaction tx = graphDb.beginTx()) {
-			bootstrapInitializer.initMandatoryData();
-			tx.success();
-		}
+		bootstrapInitializer.initMandatoryData();
 		totalGroups = 0;
 		totalRoles = 0;
 		totalTags = 0;
@@ -188,96 +184,89 @@ public class DemoDataProvider {
 	}
 
 	private void addUserGroupRoleProject(int multiplicator) {
-		try (Transaction tx = graphDb.beginTx()) {
+		// User, Groups, Roles
+		userInfo = createUserInfo("joe1", "Joe", "Doe");
 
-			// User, Groups, Roles
-			userInfo = createUserInfo("joe1", "Joe", "Doe");
+		project = new Project(PROJECT_NAME);
+		project.setCreator(userInfo.getUser());
+		project = projectService.save(project);
 
-			project = new Project(PROJECT_NAME);
-			project.setCreator(userInfo.getUser());
-			project = projectService.save(project);
+		english = languageService.findByLanguageTag("en");
+		german = languageService.findByLanguageTag("de");
 
-			english = languageService.findByLanguageTag("en");
-			german = languageService.findByLanguageTag("de");
+		// Guest Group / Role
+		Role guestRole = new Role("guest_role");
+		roleService.save(guestRole);
+		totalRoles++;
 
-			// Guest Group / Role
-			Role guestRole = new Role("guest_role");
-			roleService.save(guestRole);
-			totalRoles++;
+		Group guests = new Group("guests");
+		guests.addRole(guestRole);
+		guests = groupService.save(guests);
+		totalGroups++;
 
-			Group guests = new Group("guests");
-			guests.addRole(guestRole);
+		// Extra User
+		for (int i = 0; i < 12 * multiplicator; i++) {
+			User user = new User("guest_" + i);
+			// userService.setPassword(user, "guestpw" + i);
+			user.setFirstname("Guest Firstname");
+			user.setLastname("Guest Lastname");
+			user.setEmailAddress("guest_" + i + "@spam.gentics.com");
+			user = userService.save(user);
+			guests.addUser(user);
 			guests = groupService.save(guests);
+			totalUsers++;
+		}
+		// Extra Groups
+		for (int i = 0; i < 12 * multiplicator; i++) {
+			Group group = new Group("extra_group_" + i);
+			group = groupService.save(group);
 			totalGroups++;
+		}
 
-			// Extra User
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				User user = new User("guest_" + i);
-				// userService.setPassword(user, "guestpw" + i);
-				user.setFirstname("Guest Firstname");
-				user.setLastname("Guest Lastname");
-				user.setEmailAddress("guest_" + i + "@spam.gentics.com");
-				user = userService.save(user);
-				guests.addUser(user);
-				guests = groupService.save(guests);
-				totalUsers++;
-			}
-			// Extra Groups
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				Group group = new Group("extra_group_" + i);
-				group = groupService.save(group);
-				totalGroups++;
-			}
-
-			// Extra Roles
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				Role role = new Role("extra_role_" + i);
-				roleService.save(role);
-				totalRoles++;
-			}
-			tx.success();
+		// Extra Roles
+		for (int i = 0; i < 12 * multiplicator; i++) {
+			Role role = new Role("extra_role_" + i);
+			roleService.save(role);
+			totalRoles++;
 		}
 	}
 
 	private void addSchemas(int multiplicator) {
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+		tagSchema = objectSchemaService.findByName("tag");
+		tagSchema.addProject(project);
+		tagSchema = objectSchemaService.save(tagSchema);
 
-			tagSchema = objectSchemaService.findByName("tag");
-			tagSchema.addProject(project);
-			tagSchema = objectSchemaService.save(tagSchema);
+		contentSchema = objectSchemaService.findByName("content");
+		contentSchema.addProject(project);
+		contentSchema = objectSchemaService.save(contentSchema);
 
-			contentSchema = objectSchemaService.findByName("content");
-			contentSchema.addProject(project);
-			contentSchema = objectSchemaService.save(contentSchema);
+		categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
+		categoriesSchema.addProject(project);
+		categoriesSchema.setDisplayName("Category");
+		categoriesSchema.setDescription("Custom schema for tag categories");
+		categoriesSchema.setCreator(userInfo.getUser());
+		PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		nameProp.setDisplayName("Name");
+		nameProp.setDescription("The name of the category.");
+		categoriesSchema.addPropertyTypeSchema(nameProp);
 
-			categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
-			categoriesSchema.addProject(project);
-			categoriesSchema.setDisplayName("Category");
-			categoriesSchema.setDescription("Custom schema for tag categories");
-			categoriesSchema.setCreator(userInfo.getUser());
-			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
-			nameProp.setDisplayName("Name");
-			nameProp.setDescription("The name of the category.");
-			categoriesSchema.addPropertyTypeSchema(nameProp);
+		PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+		filenameProp.setDisplayName("Filename");
+		filenameProp.setDescription("The filename property of the category.");
+		categoriesSchema.addPropertyTypeSchema(filenameProp);
 
-			PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
-			filenameProp.setDisplayName("Filename");
-			filenameProp.setDescription("The filename property of the category.");
-			categoriesSchema.addPropertyTypeSchema(filenameProp);
-
-			PropertyTypeSchema contentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
-			contentProp.setDisplayName("Content");
-			contentProp.setDescription("The main content html of the category.");
-			categoriesSchema.addPropertyTypeSchema(contentProp);
-			objectSchemaService.save(categoriesSchema);
-			tx.success();
-		}
+		PropertyTypeSchema contentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+		contentProp.setDisplayName("Content");
+		contentProp.setDescription("The main content html of the category.");
+		categoriesSchema.addPropertyTypeSchema(contentProp);
+		objectSchemaService.save(categoriesSchema);
+		// tx.success();
+		// }
 
 	}
 
 	private void updatePermissions() {
 		// // Add Permissions
-		// try (Transaction tx = graphDb.beginTx()) {
 		// // Add admin permissions to all nodes
 		// int i = 0;
 		// for (GenericNode currentNode : genericNodeService.findAll()) {
@@ -292,111 +281,108 @@ public class DemoDataProvider {
 		// log.info("Added permissions to {" + i + "} objects.");
 		// i++;
 		// }
-		// tx.success();
-		// }
 
 		// TODO determine why this is not working when using sdn
 		// Add Permissions
-		try (Transaction tx = graphDb.beginTx()) {
-			Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
-			int i = 0;
-			for (Node node : GlobalGraphOperations.at(graphDb).getAllNodes()) {
+		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
+		int i = 0;
+		for (Node node : GlobalGraphOperations.at(graphDb).getAllNodes()) {
 
-				if (roleNode.getId() == node.getId()) {
-					log.info("Skipping own role");
-					continue;
-				}
-				Relationship rel = roleNode.createRelationshipTo(node, AuthRelationships.TYPES.HAS_PERMISSION);
-				rel.setProperty("__type__", GraphPermission.class.getSimpleName());
-				rel.setProperty("permissions-read", true);
-				rel.setProperty("permissions-delete", true);
-				rel.setProperty("permissions-create", true);
-				rel.setProperty("permissions-update", true);
-				// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
-				// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
-				// genericNodeService.save(node);
-				log.info("Adding BasicPermission to node {" + node.getId() + "} " + i);
-				i++;
+			if (roleNode.getId() == node.getId()) {
+				log.info("Skipping own role");
+				continue;
 			}
-			tx.success();
+			Relationship rel = roleNode.createRelationshipTo(node, AuthRelationships.TYPES.HAS_PERMISSION);
+			rel.setProperty("__type__", GraphPermission.class.getSimpleName());
+			rel.setProperty("permissions-read", true);
+			rel.setProperty("permissions-delete", true);
+			rel.setProperty("permissions-create", true);
+			rel.setProperty("permissions-update", true);
+			// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
+			// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
+			// genericNodeService.save(node);
+			log.info("Adding BasicPermission to node {" + node.getId() + "} " + i);
+			i++;
 		}
+		// tx.success();
+		// }
 
 	}
 
 	@SuppressWarnings("unchecked")
 	private void addData(int multiplicator) {
-		try (Transaction tx = graphDb.beginTx()) {
 
-			// Contents, Tags, Projects
-			root = rootService.findRoot();
-			root.addUser(userInfo.getUser());
-			rootService.save(root);
+		// Contents, Tags, Projects
+		root = rootService.findRoot();
+		root.addUser(userInfo.getUser());
+		rootService.save(root);
 
-			// Root Tag
-			rootTag = new RootTag();
-			rootTag = (RootTag) tagService.save(rootTag);
-			rootTag.setCreator(userInfo.getUser());
-			// totalTags++;
+		// Root Tag
+		rootTag = new RootTag();
+		rootTag = (RootTag) tagService.save(rootTag);
+		rootTag.setCreator(userInfo.getUser());
+		// totalTags++;
 
-			project.setRootTag(rootTag);
-			project = projectService.save(project);
+		project.setRootTag(rootTag);
+		project = projectService.save(project);
 
-			// News - 2014
-			news = addTag(rootTag, "News", "Neuigkeiten", tagSchema);
-			totalTags++;
+		// News - 2014
+		news = addTag(rootTag, "News", "Neuigkeiten", tagSchema);
+		totalTags++;
 
-			Tag news2014 = addTag(news, "2014", null, tagSchema);
-			totalTags++;
+		Tag news2014 = addTag(news, "2014", null, tagSchema);
+		totalTags++;
 
-			Tag news2014March = addTag(news2014, "March", null, tagSchema);
+		Tag news2014March = addTag(news2014, "March", null, tagSchema);
 
-			totalTags++;
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				addContent(news2014, "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
-				totalContents++;
-			}
-
-			// News - 2015
-			news2015 = addTag(news, "2015", null, tagSchema);
-			totalTags++;
-			news2015Content = addContent(news2015, "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
+		totalTags++;
+		for (int i = 0; i < 12 * multiplicator; i++) {
+			addContent(news2014, "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 			totalContents++;
-			for (int i = 0; i < 12 * multiplicator; i++) {
-				addContent(news2015, "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
-				totalContents++;
-			}
+		}
 
-			// Tags for categories
-			Tag categories = addTag(rootTag, "categories", null, categoriesSchema);
-			totalTags++;
+		// News - 2015
+		news2015 = addTag(news, "2015", null, tagSchema);
+		totalTags++;
+		news2015Content = addContent(news2015, "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
+		totalContents++;
+		for (int i = 0; i < 12 * multiplicator; i++) {
+			addContent(news2015, "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
+			totalContents++;
+		}
 
-			Tag vehicle = addTag(rootTag, "Vehicle", "Fahrzeug", categoriesSchema);
-			totalTags++;
+		// Tags for categories
+		Tag categories = addTag(rootTag, "categories", null, categoriesSchema);
+		totalTags++;
 
-			Tag car = addTag(vehicle, "Car", "Auto", categoriesSchema);
-			totalTags++;
+		Tag vehicle = addTag(rootTag, "Vehicle", "Fahrzeug", categoriesSchema);
+		totalTags++;
 
-			Tag jeep = addTag(car, "Jeep", null, categoriesSchema);
-			totalTags++;
+		Tag car = addTag(vehicle, "Car", "Auto", categoriesSchema);
+		totalTags++;
 
-			Tag bike = addTag(vehicle, "Bike", "Fahrrad", categoriesSchema);
-			totalTags++;
+		Tag jeep = addTag(car, "Jeep", null, categoriesSchema);
+		totalTags++;
 
-			Tag motorcycle = addTag(vehicle, "Motorcycle", "Motorrad", categoriesSchema);
-			totalTags++;
+		Tag bike = addTag(vehicle, "Bike", "Fahrrad", categoriesSchema);
+		totalTags++;
 
-			Tag bus = addTag(vehicle, "Bus", "Bus", categoriesSchema);
-			totalTags++;
+		Tag motorcycle = addTag(vehicle, "Motorcycle", "Motorrad", categoriesSchema);
+		totalTags++;
 
-			Tag plane = addTag(rootTag, "Plane", "Flugzeug", categoriesSchema);
-			totalTags++;
+		Tag bus = addTag(vehicle, "Bus", "Bus", categoriesSchema);
+		totalTags++;
 
-			Tag jetFighter = addTag(plane, "JetFigther", "Düsenjäger", categoriesSchema);
-			totalTags++;
+		Tag plane = addTag(rootTag, "Plane", "Flugzeug", categoriesSchema);
+		totalTags++;
 
-			Tag twinjet = addTag(plane, "Twinjet", "Zweistrahliges Flugzeug", categoriesSchema);
-			totalTags++;
+		Tag jetFighter = addTag(plane, "JetFigther", "Düsenjäger", categoriesSchema);
+		totalTags++;
 
+		Tag twinjet = addTag(plane, "Twinjet", "Zweistrahliges Flugzeug", categoriesSchema);
+		totalTags++;
+
+		if (multiplicator != 0) {
 			// productsTag
 			Map<String, Content> products = new HashMap<>();
 			productsTag = addTag(rootTag, "products", "Produkte", tagSchema);
@@ -514,7 +500,6 @@ public class DemoDataProvider {
 				addContent(deals, "Special Deal June 2015 - " + i, "Buy two get three! " + i, "Kauf zwei und nimm drei mit!" + i, contentSchema);
 				totalContents++;
 			}
-			tx.success();
 		}
 	}
 

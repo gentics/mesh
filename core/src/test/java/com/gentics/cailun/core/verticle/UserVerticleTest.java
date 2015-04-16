@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.codehaus.jackson.JsonGenerationException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
@@ -417,6 +418,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			roleService.addPermission(info.getRole(), user, PermissionType.DELETE);
 			tx.success();
 		}
+		assertNotNull(user.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		expectMessageResponse("user_deleted", response, user.getUuid());
@@ -424,6 +426,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testDeleteOwnUser() {
 
 		// String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");

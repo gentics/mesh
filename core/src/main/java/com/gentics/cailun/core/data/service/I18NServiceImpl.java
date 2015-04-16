@@ -9,8 +9,10 @@ import java.util.ResourceBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Transactional(readOnly = true)
 public class I18NServiceImpl implements I18NService {
 
 	private static final Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);

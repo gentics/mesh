@@ -28,7 +28,6 @@ import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
-import com.gentics.cailun.util.RestAssert;
 
 public class TagVerticleTest extends AbstractRestVerticleTest {
 
@@ -147,11 +146,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByUUIDWithSingleLanguage() throws Exception {
 
 		Tag tag = data().getNews();
-		try (Transaction tx = graphDb.beginTx()) {
-			roleService.addPermission(info.getRole(), tag, PermissionType.READ);
-			tx.success();
-		}
-
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		assertNull("The returned tag should not have an german name property.", restTag.getProperty("de", "name"));

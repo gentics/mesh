@@ -3,12 +3,14 @@ package com.gentics.cailun.core.data.service;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.LanguageRepository;
 
 @Component
+@Transactional(readOnly = true)
 public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implements LanguageService {
 
 	@Autowired
