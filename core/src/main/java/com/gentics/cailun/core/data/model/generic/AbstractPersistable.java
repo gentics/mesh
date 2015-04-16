@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 import org.springframework.data.neo4j.annotation.GraphId;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Abstract class for all node entities.
  * 
@@ -44,12 +42,15 @@ public abstract class AbstractPersistable implements Serializable {
 		return uuid;
 	}
 
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
 	/**
 	 * Check whether the object was not yet saved.
 	 * 
 	 * @return true, when the object was not yet saved. Otherwise false.
 	 */
-	@JsonIgnore
 	public boolean isNew() {
 		return null == getId();
 	}

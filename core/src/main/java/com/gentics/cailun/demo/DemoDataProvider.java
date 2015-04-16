@@ -58,7 +58,6 @@ public class DemoDataProvider {
 
 	private int totalTags = 0;
 	private int totalContents = 0;
-
 	private int totalUsers = 0;
 	private int totalGroups = 0;
 	private int totalRoles = 0;
@@ -150,6 +149,7 @@ public class DemoDataProvider {
 		totalGroups = 0;
 		totalRoles = 0;
 		totalTags = 0;
+		totalContents = 0;
 		totalUsers = 0;
 
 		addUserGroupRoleProject(multiplicator);
@@ -188,7 +188,7 @@ public class DemoDataProvider {
 	}
 
 	private void addUserGroupRoleProject(int multiplicator) {
-		try (Transaction tx = springConfig.getGraphDatabaseService().beginTx()) {
+		try (Transaction tx = graphDb.beginTx()) {
 
 			// User, Groups, Roles
 			userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -217,7 +217,7 @@ public class DemoDataProvider {
 				user.setFirstname("Guest Firstname");
 				user.setLastname("Guest Lastname");
 				user.setEmailAddress("guest_" + i + "@spam.gentics.com");
-				userService.save(user);
+				user = userService.save(user);
 				guests.addUser(user);
 				guests = groupService.save(guests);
 				totalUsers++;
@@ -237,11 +237,6 @@ public class DemoDataProvider {
 			}
 			tx.success();
 		}
-
-		userInfo.setGroup(groupService.reload(userInfo.getGroup()));
-		userInfo.setUser(userService.reload(userInfo.getUser()));
-		userInfo.setRole(roleService.reload(userInfo.getRole()));
-		project = projectService.reload(project);
 	}
 
 	private void addSchemas(int multiplicator) {
@@ -345,7 +340,6 @@ public class DemoDataProvider {
 
 			project.setRootTag(rootTag);
 			project = projectService.save(project);
-			project = projectService.reload(project);
 
 			// News - 2014
 			news = addTag(rootTag, "News", "Neuigkeiten", tagSchema);
@@ -520,22 +514,8 @@ public class DemoDataProvider {
 				addContent(deals, "Special Deal June 2015 - " + i, "Buy two get three! " + i, "Kauf zwei und nimm drei mit!" + i, contentSchema);
 				totalContents++;
 			}
-
 			tx.success();
 		}
-		try (Transaction tx = graphDb.beginTx()) {
-
-			rootTag = neo4jTemplate.fetch(rootTag);
-			news = tagService.reload(news);
-			news2015 = tagService.reload(news2015);
-			news2015Content = contentService.reload(news2015Content);
-			dealsSuperDeal = contentService.reload(dealsSuperDeal);
-
-			productsTag = tagService.reload(productsTag);
-			deals = tagService.reload(deals);
-			tx.success();
-		}
-
 	}
 
 	public Tag addTag(Tag rootTag, String englishName, String germanName) {

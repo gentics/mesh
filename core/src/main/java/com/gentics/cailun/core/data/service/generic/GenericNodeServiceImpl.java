@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.data.service.generic;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -15,6 +16,7 @@ import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.repository.I18NValueRepository;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
 
 @Component
 public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNodeService<T> {
@@ -37,6 +39,9 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Override
 	public T save(T node) {
+		if (node.isNew() && node.getUuid() == null) {
+			node.setUuid(UUIDTransactionEventHandler.getUUID());
+		}
 		// TODO invoke a reload afterwards - otherwise the uuid is null and succeeding saving will fail.
 		return nodeRepository.save(node);
 	}

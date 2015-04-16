@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.auth.AuthRelationships;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
@@ -32,7 +31,6 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.path.PagingInfo;
 
 @Component
-@Transactional
 public class UserServiceImpl extends GenericNodeServiceImpl<User> implements UserService {
 
 	@Autowired

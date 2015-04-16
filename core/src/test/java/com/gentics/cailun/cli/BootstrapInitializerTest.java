@@ -8,7 +8,6 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -30,7 +29,6 @@ public class BootstrapInitializerTest extends AbstractDBTest {
 	}
 
 	@Test
-	@Transactional
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
 		bootstrapInitializer.initLanguages(data().getCaiLunRoot());
 		Language language = languageRepository.findByLanguageTag("xh");

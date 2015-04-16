@@ -8,6 +8,8 @@ import java.util.concurrent.RecursiveTask;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;
@@ -23,6 +25,8 @@ import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 
+@Transactional(readOnly = true)
+@Configurable
 public class ContentTransformationTask extends RecursiveTask<Void> {
 
 	private static final long serialVersionUID = -1480528776879617657L;

@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
-import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.LanguageRoot;
 import com.gentics.cailun.core.data.model.ObjectSchema;

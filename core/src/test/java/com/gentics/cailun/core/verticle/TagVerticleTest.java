@@ -38,9 +38,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private TagService tagService;
 
-	@Autowired
-	private RestAssert a;
-
 	@Override
 	public AbstractRestVerticle getVerticle() {
 		return tagVerticle;
@@ -115,17 +112,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByUUID() throws Exception {
 
 		Tag tag = data().getNews();
-
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		a.assertTag(tag, restTag);
+		test.assertTag(tag, restTag);
 	}
 
 	@Test
@@ -165,7 +156,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		assertNull("The returned tag should not have an german name property.", restTag.getProperty("de", "name"));
 		assertNotNull("The returned tag should have an english name property.", restTag.getProperty("en", "name"));
-		a.assertTag(tag, restTag);
+		test.assertTag(tag, restTag);
 	}
 
 	@Test
@@ -174,15 +165,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
-		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
-
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		test.assertTag(tag, restTag);
 		assertNotNull(restTag.getProperty("de", "name"));
 		assertNotNull(restTag.getProperty("en", "name"));
-		// String json =
-		// "{\"uuid\":\"uuid-value\",\"schemaName\":\"tag\",\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Doe\",\"firstname\":\"Joe\",\"username\":\"joe1\",\"emailAddress\":\"j.doe@spam.gentics.com\",\"groups\":[\"joe1_group\"],\"perms\":[]},\"properties\":{\"de\":{\"name\":\"Neuigkeiten\"},\"en\":{\"name\":\"News\"}},\"childTags\":[],\"perms\":[\"read\",\"create\",\"update\",\"delete\"]}";
-		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 	}
 
 	@Test
@@ -190,8 +177,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
+			tx.success();
+		}
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
@@ -199,10 +188,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
-		Tag tag = data().getNews();
 
-		roleService.addPermission(info.getRole(), tag, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+		Tag tag = data().getNews();
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -228,13 +215,13 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// TODO test with no ?lang query parameter
 		String requestJson = JsonUtils.toJson(request);
 		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
-		a.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
+		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		tagResponse = JsonUtils.readValue(response, TagResponse.class);
 		assertEquals(request.getProperty("en", "name"), tagResponse.getProperty("en", "name"));
-		a.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
+		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 	}
 
 	@Test
@@ -243,7 +230,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
-			roleService.addPermission(info.getRole(), tag, PermissionType.READ);
 			tx.success();
 		}
 
@@ -270,9 +256,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	// Delete Tests
 	@Test
 	public void testDeleteTagByUUID() throws Exception {
-
-		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.DELETE);
-
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getNews().getUuid(), 200, "OK");
 		expectMessageResponse("tag_deleted", response, data().getNews().getUuid());
 		assertNull("The tag should have been deleted", tagService.findByUUID(data().getNews().getUuid()));
@@ -280,8 +263,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
-
-		roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.DELETE);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.DELETE);
+			tx.success();
+		}
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getNews().getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, data().getNews().getUuid());

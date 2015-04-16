@@ -48,7 +48,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateContentWithBogusLanguageCode() throws HttpStatusCodeErrorException, Exception {
-		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.CREATE);
 
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");
@@ -79,8 +78,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateContentWithMissingTagUuid() throws Exception {
 
-		roleService.addPermission(info.getRole(), data().getNews(), PermissionType.CREATE);
-
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");
 		request.addProperty("en", "filename", "new-page.html");
@@ -96,7 +93,10 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateContentWithMissingPermission() throws Exception {
 
 		// Revoke create perm
-		roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.CREATE);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.CREATE);
+			tx.success();
+		}
 
 		ContentCreateRequest request = new ContentCreateRequest();
 		request.setSchemaName("content");
@@ -114,18 +114,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContents() throws Exception {
 
-		roleService.addPermission(info.getRole(), data().getNews2015Content(), PermissionType.READ);
-		final int nContents = 28;
-		try (Transaction tx = graphDb.beginTx()) {
-			for (int i = 0; i < nContents; i++) {
-				Content extraContent = new Content();
-				extraContent.setCreator(info.getUser());
-				extraContent = contentService.save(extraContent);
-				roleService.addPermission(info.getRole(), extraContent, PermissionType.READ);
-			}
-			tx.success();
-		}
-
 		// Don't grant permissions to the no perm content. We want to make sure that this one will not be listed.
 		Content noPermContent = new Content();
 		try (Transaction tx = graphDb.beginTx()) {
@@ -133,7 +121,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 			noPermContent = contentService.save(noPermContent);
 			tx.success();
 		}
-		noPermContent = contentService.reload(noPermContent);
+		// noPermContent = contentService.reload(noPermContent);
 		assertNotNull(noPermContent.getUuid());
 
 		// Test default paging parameters
@@ -149,7 +137,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Contents + permitted content
-		int totalContents = nContents + data().getTotalContents();
+		int totalContents = data().getTotalContents();
 		int totalPages = (int) Math.ceil(totalContents / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
@@ -179,15 +167,18 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":145}}";
-		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
+		ContentListResponse list = JsonUtils.readValue(response, ContentListResponse.class);
+		assertEquals(4242, list.getMetainfo().getCurrentPage());
+		assertEquals(0, list.getData().size());
+		assertEquals(25, list.getMetainfo().getPerPage());
+		assertEquals(2, list.getMetainfo().getPageCount());
+		assertEquals(data().getTotalContents(), list.getMetainfo().getTotalCount());
 
 	}
 
 	@Test
 	public void testReadContentsWithoutPermissions() throws Exception {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
-
 		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
 
 		int nElements = restResponse.getData().size();
@@ -201,18 +192,13 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentByUUID() throws Exception {
 		Content content = data().getNews2015Content();
-		roleService.addPermission(info.getRole(), content, PermissionType.READ);
-
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
-
 		test.assertContent(content, JsonUtils.readValue(response, ContentResponse.class));
-
 	}
 
 	@Test
 	public void testReadContentByUUIDWithDepthParam() throws Exception {
 		Content content = data().getNews2015Content();
-		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?depth=2", 200, "OK");
 		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
@@ -224,7 +210,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentByUUIDSingleLanguage() throws Exception {
 		Content content = data().getNews2015Content();
-		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=de", 200, "OK");
 		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
@@ -238,7 +223,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testReadContentWithBogusLanguageCode() throws Exception {
 
 		Content content = data().getNews2015Content();
-		roleService.addPermission(info.getRole(), content, PermissionType.READ);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?lang=blabla,edgsdg", 400, "Bad Request");
 		expectMessageResponse("error_language_not_found", response, "blabla");
@@ -248,8 +232,10 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentByUUIDWithoutPermission() throws Exception {
 		Content content = data().getNews2015Content();
-		roleService.revokePermission(info.getRole(), content, PermissionType.READ);
-
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.revokePermission(info.getRole(), content, PermissionType.READ);
+			tx.success();
+		}
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, content.getUuid());
 	}
@@ -328,7 +314,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		Content content = data().getNews2015Content();
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
 		expectMessageResponse("content_deleted", response, content.getUuid());
-
 		assertNull(contentService.findByUUID(content.getUuid()));
 	}
 
@@ -336,7 +321,6 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteContentWithNoPerm() throws Exception {
 
 		Content content = data().getNews2015Content();
-
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), content, PermissionType.DELETE);
 			tx.success();
