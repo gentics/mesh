@@ -280,12 +280,18 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		ObjectSchema schema = data().getContentSchema();
 
 		Project extraProject = new Project("extraProject");
-		extraProject = projectService.save(extraProject);
+		try (Transaction tx = graphDb.beginTx()) {
+			extraProject = projectService.save(extraProject);
+			tx.success();
+		}
 		extraProject = projectService.reload(extraProject);
 
 		// Add only read perms
-		roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-		roleService.addPermission(info.getRole(), extraProject, PermissionType.UPDATE);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
+			roleService.addPermission(info.getRole(), extraProject, PermissionType.UPDATE);
+			tx.success();
+		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);

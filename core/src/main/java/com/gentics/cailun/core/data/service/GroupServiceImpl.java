@@ -40,12 +40,20 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 		restGroup.setName(group.getName());
 
 		for (User user : group.getUsers()) {
-			restGroup.getUsers().add(user.getUsername());
+			user = neo4jTemplate.fetch(user);
+			String name = user.getUsername();
+			if (name != null) {
+				restGroup.getUsers().add(name);
+			}
 		}
 		Collections.sort(restGroup.getUsers());
 
 		for (Role role : group.getRoles()) {
-			restGroup.getRoles().add(role.getName());
+			role = neo4jTemplate.fetch(role);
+			String name = role.getName();
+			if (name != null) {
+				restGroup.getRoles().add(name);
+			}
 		}
 
 		// // Set<Group> children = groupRepository.findChildren(group);

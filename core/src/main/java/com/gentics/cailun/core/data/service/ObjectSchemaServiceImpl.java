@@ -2,8 +2,6 @@ package com.gentics.cailun.core.data.service;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,12 +64,9 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		schemaForRest.setUuid(schema.getUuid());
 		// TODO creator
 
-		// Sort the property types schema. Otherwise rest response is erratic
-		Set<PropertyTypeSchema> treeSet = new TreeSet<PropertyTypeSchema>(new PropertTypeSchemaComparator());
 		// TODO we need to add checks that prevents multiple schemas with the same key
-		treeSet.addAll(schema.getPropertyTypeSchemas());
-
-		for (PropertyTypeSchema propertyTypeSchema : treeSet) {
+		for (PropertyTypeSchema propertyTypeSchema : schema.getPropertyTypeSchemas()) {
+			propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
 			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
 			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
 			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
@@ -80,6 +75,8 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 			propertyTypeSchemaForRest.setDisplayName(propertyTypeSchema.getDisplayName());
 			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
 		}
+		Collections.sort(schemaForRest.getPropertyTypeSchemas(), new PropertTypeSchemaComparator());
+		// Sort the property types schema. Otherwise rest response is erratic
 
 		for (Project project : schema.getProjects()) {
 			project = neo4jTemplate.fetch(project);
@@ -114,9 +111,9 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 }
 
-class PropertTypeSchemaComparator implements Comparator<PropertyTypeSchema> {
+class PropertTypeSchemaComparator implements Comparator<PropertyTypeSchemaResponse> {
 	@Override
-	public int compare(PropertyTypeSchema o1, PropertyTypeSchema o2) {
+	public int compare(PropertyTypeSchemaResponse o1, PropertyTypeSchemaResponse o2) {
 		return o1.getKey().compareTo(o2.getKey());
 	}
 }
