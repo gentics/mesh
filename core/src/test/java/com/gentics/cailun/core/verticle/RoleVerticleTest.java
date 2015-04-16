@@ -152,20 +152,27 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		UserInfo info = data().getUserInfo();
 
 		Role extraRole = new Role("extra role");
-		extraRole = roleService.save(extraRole);
+		try (Transaction tx = graphDb.beginTx()) {
+			extraRole = roleService.save(extraRole);
+			tx.success();
+		}
 		extraRole = roleService.reload(extraRole);
-
-		info.getGroup().addRole(extraRole);
-		groupService.save(info.getGroup());
+		try (Transaction tx = graphDb.beginTx()) {
+			info.getGroup().addRole(extraRole);
+			groupService.save(info.getGroup());
+			tx.success();
+		}
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-
-		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
+		try (Transaction tx = graphDb.beginTx()) {
+			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
+			tx.success();
+		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
 		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
-		assertEquals(extraRole.getUuid(), restRole.getUuid());
-		assertEquals(extraRole.getName(), restRole.getName());
+		test.assertRole(extraRole, restRole);
+
 	}
 
 	@Test
@@ -173,11 +180,17 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		UserInfo info = data().getUserInfo();
 
 		Role extraRole = new Role("extra role");
-		extraRole = roleService.save(extraRole);
+		try (Transaction tx = graphDb.beginTx()) {
+			extraRole = roleService.save(extraRole);
+			tx.success();
+		}
 		extraRole = roleService.reload(extraRole);
 
-		info.getGroup().addRole(extraRole);
-		groupService.save(info.getGroup());
+		try (Transaction tx = graphDb.beginTx()) {
+			info.getGroup().addRole(extraRole);
+			groupService.save(info.getGroup());
+			tx.success();
+		}
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 
@@ -220,7 +233,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 			}
 
 			// Role with no permission
-
 			noPermRole = roleService.save(noPermRole);
 			info.getGroup().addRole(noPermRole);
 			tx.success();
@@ -233,9 +245,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(21, restResponse.getData().size());
 
 		int perPage = 11;
-		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + 1, 200, "OK");
+		int page = 1;
+		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + page, 200, "OK");
 		restResponse = JsonUtils.readValue(response, RoleListResponse.class);
-		assertEquals(perPage, restResponse.getData().size());
+		assertEquals("The amount of items for page {" + page + "} does not match the expected amount.", restResponse.getData().size());
 
 		// created roles + test data role
 		// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
@@ -249,7 +262,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(totalRoles, restResponse.getMetainfo().getTotalCount());
 
 		List<RoleResponse> allRoles = new ArrayList<>();
-		for (int page = 0; page < totalPages; page++) {
+		for (page = 0; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, RoleListResponse.class);
 			allRoles.addAll(restResponse.getData());
