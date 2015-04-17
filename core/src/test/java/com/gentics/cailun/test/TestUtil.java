@@ -56,24 +56,4 @@ public final class TestUtil {
 			}
 		}
 	}
-
-//	/**
-//	 * Compare both json strings but remove the uuids from the unsanitizedResponseJson before comparison.
-//	 * 
-//	 * @param expectedJson
-//	 * @param unsanitizedResponseJson
-//	 * @param modelClazz
-//	 * @throws JsonGenerationException
-//	 * @throws JsonMappingException
-//	 * @throws IOException
-//	 */
-//	public static <T extends AbstractRestModel> void assertEqualsSanitizedJson(String expectedJson, String unsanitizedResponseJson,
-//			Class<T> modelClazz) throws JsonGenerationException, JsonMappingException, IOException {
-//		T responseObject = new ObjectMapper().readValue(unsanitizedResponseJson, modelClazz);
-//		assertNotNull(responseObject);
-//		// Update the uuid and compare json afterwards
-//		responseObject.setUuid("uuid-value");
-//		String sanitizedJson = new ObjectMapper().writeValueAsString(responseObject);
-//		org.junit.Assert.assertEquals("The response json did not match the expected one.", expectedJson, sanitizedJson);
-//	}
 }

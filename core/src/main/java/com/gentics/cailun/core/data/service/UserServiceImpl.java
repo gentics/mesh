@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.RoutingContext;
 
 import java.util.HashSet;
@@ -34,6 +36,8 @@ import com.gentics.cailun.path.PagingInfo;
 @Component
 @Transactional(readOnly = true)
 public class UserServiceImpl extends GenericNodeServiceImpl<User> implements UserService {
+
+	private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	@Autowired
 	private CaiLunSpringConfiguration springConfiguration;
@@ -90,6 +94,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 		Set<GraphPermission> permissions = new HashSet<>();
 		Node userNode = neo4jTemplate.getPersistentState(user);
+
 		// Traverse the graph from user to the page. Collect all permission relations and check them individually
 		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
 				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
@@ -116,28 +121,49 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
-
 		Node userNode = graphDb.getNodeById(userNodeId);
-		// Traverse the graph from user to the page. Collect all permission relations and check them individually
-		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-				.traverse(userNode).relationships()) {
-			// log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-			// + rel.getStartNode().getId() + rel.getStartNode().getLabels());
-
-			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
-				// Check whether this relation in fact targets our object we want to check
-				boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
-				if (matchesTargetNode) {
-					// Convert the api relationship to a SDN relationship
-					GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
-					if (genericPermission.implies(perm) == true) {
-						return true;
+		for (Relationship groupRel : userNode.getRelationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)) {
+			Node group = groupRel.getEndNode();
+			System.out.println("Found group: " + group.getProperty("name"));
+			for (Relationship roleRel : group.getRelationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)) {
+				Node role = roleRel.getStartNode();
+				System.out.println("Found role: " + role.getProperty("name"));
+				for(Relationship authRel : role.getRelationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING)) {
+					
+					System.out.println("Permission from {" + authRel.getStartNode().getId() + " to " + authRel.getEndNode().getId());
+					boolean matchesTargetNode = authRel.getEndNode().getId() == genericPermission.getTargetNode().getId();
+					if (matchesTargetNode) {
+						System.out.println("Found permission");
+						// Convert the api relationship to a SDN relationship
+						GraphPermission perm = neo4jTemplate.load(authRel, GraphPermission.class);
+						if (genericPermission.implies(perm) == true) {
+							return true;
+						}
 					}
 				}
 			}
 		}
+
+//		// Traverse the graph from user to the page. Collect all permission relations and check them individually
+//		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
+//				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
+//				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+//				.traverse(userNode).relationships()) {
+//			log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+//					+ rel.getStartNode().getId() + rel.getStartNode().getLabels());
+//
+//			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
+//				// Check whether this relation in fact targets our object we want to check
+//				boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
+//				if (matchesTargetNode) {
+//					// Convert the api relationship to a SDN relationship
+//					GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
+//					if (genericPermission.implies(perm) == true) {
+//						return true;
+//					}
+//				}
+//			}
+//		}
 		return false;
 	}
 

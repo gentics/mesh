@@ -4,12 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
+import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 
 @NodeEntity
@@ -25,10 +25,6 @@ public class Role extends GenericNode {
 
 	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.OUTGOING, elementClass = Group.class)
 	private Set<Group> groups = new HashSet<>();
-
-	public boolean addPermission(GraphPermission permission) {
-		return permissions.add(permission);
-	}
 
 	@SuppressWarnings("unused")
 	private Role() {
@@ -50,4 +46,11 @@ public class Role extends GenericNode {
 		return groups;
 	}
 
+	public Set<GraphPermission> getPermissions() {
+		return permissions;
+	}
+	
+	public boolean addPermission(GraphPermission permission) {
+		return permissions.add(permission);
+	}
 }

@@ -79,9 +79,10 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		for (int i = 0; i < permissionTypes.length; i++) {
 			permission.grant(permissionTypes[i]);
 		}
-		role.addPermission(permission);
-		role = save(role);
+		neo4jTemplate.save(permission);
 	}
+	
+	
 
 	@Override
 	public GraphPermission getGraphPermission(Role role, AbstractPersistable node) {

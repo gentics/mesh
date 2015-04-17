@@ -1,12 +1,8 @@
 package com.gentics.cailun.core.data.service.generic;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
-import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
-import com.gentics.cailun.core.data.model.relationship.Translated;
 
 public interface GenericPropertyContainerService<T extends GenericPropertyContainer> extends GenericNodeService<T> {
 

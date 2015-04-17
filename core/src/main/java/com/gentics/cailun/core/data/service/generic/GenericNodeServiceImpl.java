@@ -1,11 +1,9 @@
 package com.gentics.cailun.core.data.service.generic;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.neo4j.conversion.Result;

@@ -2,7 +2,8 @@ package com.gentics.cailun.core.verticle;
 
 import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import io.vertx.core.http.HttpMethod;
 
 import org.junit.Test;
@@ -13,7 +14,6 @@ import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
-import com.gentics.cailun.demo.UserInfo;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
 

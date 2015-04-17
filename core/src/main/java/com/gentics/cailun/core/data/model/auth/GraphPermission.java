@@ -9,7 +9,7 @@ import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 
-@RelationshipEntity
+@RelationshipEntity(type = AuthRelationships.HAS_PERMISSION)
 public class GraphPermission extends AbstractPersistable implements org.apache.shiro.authz.Permission {
 
 	private static final long serialVersionUID = 8304718445043642942L;

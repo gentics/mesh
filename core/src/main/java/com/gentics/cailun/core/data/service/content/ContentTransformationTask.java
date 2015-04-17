@@ -8,8 +8,6 @@ import java.util.concurrent.RecursiveTask;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;

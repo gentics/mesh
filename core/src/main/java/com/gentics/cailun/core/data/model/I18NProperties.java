@@ -1,7 +1,6 @@
 package com.gentics.cailun.core.data.model;
 
 import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
