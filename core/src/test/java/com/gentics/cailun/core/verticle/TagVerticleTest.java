@@ -108,6 +108,44 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testReadSubTags() throws Exception {
+		Tag rootTag = data().getNews();
+		int perPage = 6;
+		int page = 0;
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
+				+ "&page=" + page, 200, "OK");
+		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
+		assertEquals(2, tagList.getData().size());
+		assertEquals(2, tagList.getMetainfo().getTotalCount());
+		assertEquals(1, tagList.getMetainfo().getPageCount());
+		assertEquals(0, tagList.getMetainfo().getCurrentPage());
+		// TODO assert two tags
+	}
+
+	@Test
+	public void testReadSubTagsWithLanguageTags() throws Exception {
+		Tag rootTag = data().getNews();
+
+		try (Transaction tx = graphDb.beginTx()) {
+			Tag tag = data().getNews2015();
+			tagService.setName(tag, data().getGerman(), "2015 - auf deutsch");
+			tagService.save(tag);
+			tx.success();
+		}
+
+		int perPage = 6;
+		int page = 0;
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
+				+ "&page=" + page + "&lang=de", 200, "OK");
+		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
+		assertEquals(1, tagList.getData().size());
+		assertEquals(1, tagList.getMetainfo().getTotalCount());
+		assertEquals(1, tagList.getMetainfo().getPageCount());
+		assertEquals(0, tagList.getMetainfo().getCurrentPage());
+		// TODO assert two tags
+	}
+
+	@Test
 	public void testReadTagByUUID() throws Exception {
 
 		Tag tag = data().getNews();

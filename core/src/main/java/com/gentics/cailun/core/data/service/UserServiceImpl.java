@@ -124,16 +124,15 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		Node userNode = graphDb.getNodeById(userNodeId);
 		for (Relationship groupRel : userNode.getRelationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)) {
 			Node group = groupRel.getEndNode();
-			System.out.println("Found group: " + group.getProperty("name"));
+			log.debug("Found group: " + group.getProperty("name"));
 			for (Relationship roleRel : group.getRelationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)) {
 				Node role = roleRel.getStartNode();
-				System.out.println("Found role: " + role.getProperty("name"));
-				for(Relationship authRel : role.getRelationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING)) {
-					
-					System.out.println("Permission from {" + authRel.getStartNode().getId() + " to " + authRel.getEndNode().getId());
+				log.debug("Found role: " + role.getProperty("name"));
+				for (Relationship authRel : role.getRelationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING)) {
+					log.debug("Permission from {" + authRel.getStartNode().getId() + " to " + authRel.getEndNode().getId());
 					boolean matchesTargetNode = authRel.getEndNode().getId() == genericPermission.getTargetNode().getId();
 					if (matchesTargetNode) {
-						System.out.println("Found permission");
+						log.debug("Found permission");
 						// Convert the api relationship to a SDN relationship
 						GraphPermission perm = neo4jTemplate.load(authRel, GraphPermission.class);
 						if (genericPermission.implies(perm) == true) {
@@ -149,8 +148,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 //				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
 //				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
 //				.traverse(userNode).relationships()) {
-//			log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-//					+ rel.getStartNode().getId() + rel.getStartNode().getLabels());
+//			// log.debug("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+//			// + rel.getStartNode().getId() + rel.getStartNode().getLabels());
 //
 //			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
 //				// Check whether this relation in fact targets our object we want to check

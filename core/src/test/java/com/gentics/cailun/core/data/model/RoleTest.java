@@ -18,6 +18,7 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.GraphPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
+import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.repository.RoleRepository;
@@ -79,6 +80,19 @@ public class RoleTest extends AbstractDBTest {
 		assertTrue(permission.isPermitted(DELETE));
 		assertFalse(permission.isPermitted(UPDATE));
 		roleService.addPermission(role, role, CREATE);
+	}
+
+	@Test
+	public void testIsPermitted() throws Exception {
+		User user = info.getUser();
+		CaiLunPermission perm = new CaiLunPermission(data().getNews(), PermissionType.READ);
+		long start = System.currentTimeMillis();
+		int nRuns = 200000;
+		for (int i = 0; i < nRuns; i++) {
+			userService.isPermitted(user.getId(), perm);
+		}
+		long dur = System.currentTimeMillis() - start;
+		System.out.println("Duration: " + dur/(double)nRuns);
 	}
 
 	@Test

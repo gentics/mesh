@@ -21,4 +21,6 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 
 	Page<Tag> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
+	Page<Tag> findAllVisibleSubTags(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+
 }

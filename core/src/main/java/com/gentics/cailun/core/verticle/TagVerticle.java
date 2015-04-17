@@ -75,8 +75,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addTagFilesHandlers();
-		// addTagSubTagHandlers();
+		addTagSubTagHandlers();
 	}
 
 	private void addUpdateHandler() {
@@ -248,6 +247,29 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTagSubTagHandlers() {
+		Route getRoute = route("/:uuid/tags/").method(GET);
+		getRoute.handler(rc -> {
+
+			try (Transaction tx = graphDb.beginTx()) {
+				String projectName = getProjectName(rc);
+				TagListResponse listResponse = new TagListResponse();
+				List<String> languageTags = getSelectedLanguageTags(rc);
+				int depth = getDepth(rc);
+				Tag rootTag = getObject(rc, "uuid", PermissionType.READ);
+				PagingInfo pagingInfo = getPagingInfo(rc);
+				User requestUser = springConfiguration.authService().getUser(rc);
+				// TODO filtering, sorting
+				Page<Tag> tagPage = tagService.findAllVisibleSubTags(requestUser, projectName, rootTag, languageTags, pagingInfo);
+				for (Tag tag : tagPage) {
+					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
+				}
+				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),
+						tagPage.getTotalElements());
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(listResponse));
+			}
+		});
+
 		Route postRoute = route("/:tagUuid/tags/:subtagUuid").method(POST);
 		postRoute.handler(rc -> {
 			String tagUuid = rc.request().params().get("tagUuid");
@@ -268,9 +290,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					tag.addTag(subTag);
 					tag = tagService.save(tag);
 
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 				}
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 			});
 
 		Route deleteRoute = route("/:tagUuid/tags/:subtagUuid").method(DELETE);
@@ -295,55 +317,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 			});
-
-	}
-
-	private void addTagFilesHandlers() {
-		Route postRoute = route("/:tagUuid/files/:fileUuid").method(POST);
-		postRoute.handler(rc -> {
-			String tagUuid = rc.request().params().get("tagUuid");
-			String fileUuid = rc.request().params().get("fileUuid");
-			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(fileUuid)) {
-				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
-			}
-			String projectName = getProjectName(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
-
-			Tag tag;
-			try (Transaction tx = graphDb.beginTx()) {
-
-				// Load objects and check permissions etc.
-				tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
-				tx.success();
-				// File file = file
-				throw new HttpStatusCodeErrorException(501, "Not yet implemented");
-				// TODO impl
-			}
-			// rc.response().setStatusCode(200);
-			// rc.response().end(toJson(tagService.transformToRest(tag, languageTags)));
-		});
-
-		Route deleteRoute = route("/:tagUuid/files/:fileUuid").method(DELETE);
-		deleteRoute.handler(rc -> {
-			String tagUuid = rc.request().params().get("tagUuid");
-			String fileUuid = rc.request().params().get("fileUuid");
-			if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(fileUuid)) {
-				throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
-			}
-			String projectName = getProjectName(rc);
-
-			Tag tag;
-			try (Transaction tx = graphDb.beginTx()) {
-				// Load objects and check permissions etc.
-				tag = getObjectByUUID(rc, projectName, tagUuid, PermissionType.UPDATE);
-				tx.success();
-				throw new HttpStatusCodeErrorException(501, "Not yet implemented");
-			}
-
-			// File file = file
-
-			// TODO impl
-		});
 
 	}
 

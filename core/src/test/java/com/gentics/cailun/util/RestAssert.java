@@ -63,7 +63,9 @@ public class RestAssert {
 		assertNotNull(restGroup.getUuid());
 	}
 
+	@Transactional
 	public void assertUser(User user, UserResponse restUser) {
+		user = neo4jTemplate.fetch(user);
 		assertEquals(user.getUsername(), restUser.getUsername());
 		assertEquals(user.getEmailAddress(), restUser.getEmailAddress());
 		assertEquals(user.getFirstname(), restUser.getFirstname());

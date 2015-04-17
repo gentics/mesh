@@ -134,15 +134,15 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
-		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + 2, 200, "OK");
 		restResponse = JsonUtils.readValue(response, ObjectSchemaListResponse.class);
-		assertEquals(perPage, restResponse.getData().size());
+		assertEquals(4, restResponse.getData().size());
 
-		// Extra schemas + aloha schema
-		int totalSchemas = nSchemas + 1;
+		// Extra schemas + default schema
+		int totalSchemas = nSchemas + 4;
 		int totalPages = (int) Math.ceil(totalSchemas / (double) perPage);
-		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals("The response did not contain the correct amount of items", 4, restResponse.getData().size());
+		assertEquals(2, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 		assertEquals(totalSchemas, restResponse.getMetainfo().getTotalCount());
@@ -169,8 +169,9 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
-		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
+		ObjectSchemaListResponse list = JsonUtils.readValue(response, ObjectSchemaListResponse.class);
+		assertEquals(4242, list.getMetainfo().getCurrentPage());
+		assertEquals(0, list.getData().size());
 	}
 
 	@Test

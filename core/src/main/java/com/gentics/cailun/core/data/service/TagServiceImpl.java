@@ -178,4 +178,14 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		}
 	}
 
+	@Override
+	public Page<Tag> findAllVisibleSubTags(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());
+		if (languageTags == null || languageTags.size() == 0) {
+			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, pr);
+		} else {
+			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, languageTags, pr);
+		}
+	}
+
 }

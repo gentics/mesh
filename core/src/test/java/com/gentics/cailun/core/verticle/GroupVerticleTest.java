@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
+import com.gentics.cailun.core.data.model.auth.GroupRoot;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -112,16 +113,19 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 		String requestJson = JsonUtils.toJson(request);
 
+		GroupRoot root;
 		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), data().getCaiLunRoot().getGroupRoot(), PermissionType.CREATE);
+			root = data().getCaiLunRoot().getGroupRoot();
+			root = neo4jTemplate.fetch(root);
+			roleService.revokePermission(info.getRole(), root, PermissionType.CREATE);
 			tx.success();
 		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				userService.isPermitted(info.getUser().getId(), new CaiLunPermission(data().getCaiLunRoot().getGroupRoot(), PermissionType.CREATE)));
+				userService.isPermitted(info.getUser().getId(), new CaiLunPermission(root, PermissionType.CREATE)));
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
-		expectMessageResponse("error_missing_perm", response, data().getCaiLunRoot().getGroupRoot().getUuid());
+		expectMessageResponse("error_missing_perm", response, root.getUuid());
 
 		assertNull(groupService.findByName(name));
 	}
