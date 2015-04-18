@@ -6,7 +6,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.core.spi.cluster.VertxSPI;
 import io.vertx.spi.cluster.impl.hazelcast.HazelcastClusterManager;
 
 import java.io.IOException;
@@ -20,7 +19,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -180,7 +178,7 @@ public class BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-//	@Transactional
+	// @Transactional
 	public void init(CaiLunConfiguration configuration, CaiLunCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.configuration = configuration;
 		if (configuration.isClusterMode()) {
@@ -212,7 +210,7 @@ public class BootstrapInitializer {
 	 */
 	private void joinCluster() {
 		HazelcastClusterManager manager = new HazelcastClusterManager();
-		manager.setVertx((VertxSPI) springConfiguration.vertx());
+		manager.setVertx(springConfiguration.vertx());
 		manager.join(rh -> {
 			if (!rh.succeeded()) {
 				log.error("Error while joining cailun cluster.", rh.cause());

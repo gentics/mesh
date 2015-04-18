@@ -13,6 +13,7 @@ import io.vertx.ext.apex.handler.CorsHandler;
 import io.vertx.ext.apex.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.apex.sstore.LocalSessionStore;
 import io.vertx.ext.apex.sstore.SessionStore;
+import io.vertx.ext.auth.AuthProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.http.LocaleContextDataHandler;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.error.EntityNotFoundException;
@@ -61,7 +61,7 @@ public class RouterStorage {
 	@PostConstruct
 	public void init() {
 		this.vertx = springConfiguration.vertx();
-		initAPIRouter(springConfiguration.authService());
+		initAPIRouter(springConfiguration.authProvider());
 	}
 
 	/**
@@ -131,8 +131,7 @@ public class RouterStorage {
 
 	}
 
-	// // TODO I think this functionality should be moved to a different place
-	private void initAPIRouter(CaiLunAuthServiceImpl caiLunAuthServiceImpl) {
+	private void initAPIRouter(AuthProvider caiLunAuthProvider) {
 		Router router = getAPIRouter();
 
 		CorsHandler corsHandler = CorsHandler.create("*");
@@ -149,7 +148,7 @@ public class RouterStorage {
 		router.route().handler(CookieHandler.create());
 		SessionStore store = LocalSessionStore.create(vertx);
 		router.route().handler(new SessionHandlerImpl("cailun.session", 30 * 60 * 1000, false, store));
-		AuthHandler authHandler = BasicAuthHandler.create(caiLunAuthServiceImpl, BasicAuthHandler.DEFAULT_REALM);
+		AuthHandler authHandler = BasicAuthHandler.create(caiLunAuthProvider, BasicAuthHandler.DEFAULT_REALM);
 		router.route().handler(authHandler);
 		router.route().handler(dataHandler);
 	}

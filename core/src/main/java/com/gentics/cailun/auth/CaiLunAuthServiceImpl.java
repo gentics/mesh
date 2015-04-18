@@ -6,6 +6,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.apex.Session;
 import io.vertx.ext.auth.AuthService;
 
 import java.util.Iterator;
@@ -37,7 +38,7 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 	public CaiLunAuthServiceImpl(Vertx vertx, JsonObject config, ExposingShiroAuthProvider provider) {
 		this.vertx = vertx;
 		this.provider = provider;
-		provider.init(config);
+		//provider.init(config);
 		setTimer();
 	}
 
@@ -47,29 +48,29 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 		return id;
 	}
 
-	@Override
-	public AuthService login(JsonObject credentials, Handler<AsyncResult<String>> resultHandler) {
-		loginWithTimeout(credentials, DEFAULT_LOGIN_TIMEOUT, resultHandler);
-		return this;
-	}
-
-	@Override
-	public AuthService loginWithTimeout(JsonObject credentials, long timeout, Handler<AsyncResult<String>> resultHandler) {
-		provider.login(credentials, res -> {
-			if (res.succeeded()) {
-				Object principal = res.result();
-				if (principal != null) {
-					String loginSessionID = createLoginSession(timeout, principal);
-					resultHandler.handle(Future.succeededFuture(loginSessionID));
-				} else {
-					resultHandler.handle(Future.failedFuture("null principal"));
-				}
-			} else {
-				resultHandler.handle(Future.failedFuture(res.cause()));
-			}
-		});
-		return this;
-	}
+	// @Override
+	// public AuthService login(JsonObject credentials, Handler<AsyncResult<String>> resultHandler) {
+	// loginWithTimeout(credentials, DEFAULT_LOGIN_TIMEOUT, resultHandler);
+	// return this;
+	// }
+	//
+	// @Override
+	// public AuthService loginWithTimeout(JsonObject credentials, long timeout, Handler<AsyncResult<String>> resultHandler) {
+	// provider.login(credentials, res -> {
+	// if (res.succeeded()) {
+	// Object principal = res.result();
+	// if (principal != null) {
+	// String loginSessionID = createLoginSession(timeout, principal);
+	// resultHandler.handle(Future.succeededFuture(loginSessionID));
+	// } else {
+	// resultHandler.handle(Future.failedFuture("null principal"));
+	// }
+	// } else {
+	// resultHandler.handle(Future.failedFuture(res.cause()));
+	// }
+	// });
+	// return this;
+	// }
 
 	@Override
 	public AuthService logout(String loginID, Handler<AsyncResult<Void>> resultHandler) {
@@ -132,7 +133,7 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 	}
 
 	public User getUser(RoutingContext rc) {
-		return getUser(rc.session().getLoginID());
+		return getUser(rc.session().id());
 	}
 
 	public User getUser(String loginID) {
@@ -143,25 +144,25 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 			return null;
 		}
 	}
-	
+
 	public Map<String, LoginSession> getLoginSessions() {
 		return loginSessions;
 	}
 
-	public boolean hasPermission(String loginID, Permission permission) {
-
-		LoginSession session = loginSessions.get(loginID);
-		if (session != null) {
-			if (session.principal() != null && session.principal() instanceof User) {
-				User user = (User) session.principal();
-				boolean hasPerm = getAuthRealm().hasPermission(user.getPrincipalId(), permission);
-				return hasPerm;
-			}
-			return false;
-		}
-		return false;
-
-	}
+//	public boolean hasPermission(Session session, Permission permission) {
+//		session.hasPermission(permission, resultHandler);
+//		LoginSession loginSession = loginSessions.get(loginID);
+//		if (loginSession != null) {
+//			if (loginSession.principal() != null && loginSession.principal() instanceof User) {
+//				User user = (User) loginSession.principal();
+//				boolean hasPerm = getAuthRealm().hasPermission(user.getPrincipalId(), permission);
+//				return hasPerm;
+//			}
+//			return false;
+//		}
+//		return false;
+//
+//	}
 
 	public EnhancedShiroAuthRealmImpl getAuthRealm() {
 		return (EnhancedShiroAuthRealmImpl) provider.getRealm();
@@ -185,6 +186,18 @@ public class CaiLunAuthServiceImpl implements AuthService, Handler<Long> {
 	@Override
 	public AuthService hasPermissions(String loginID, Set<String> permissions, Handler<AsyncResult<Boolean>> resultHandler) {
 		throw new NotImplementedException("Not yet implemented");
+	}
+
+	@Override
+	public AuthService login(JsonObject principal, JsonObject credentials, Handler<AsyncResult<String>> resultHandler) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AuthService loginWithTimeout(JsonObject principal, JsonObject credentials, long timeout, Handler<AsyncResult<String>> resultHandler) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -127,11 +127,12 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	@Override
 	public void addCRUDPermissionOnRole(RoutingContext rc, CaiLunPermission caiLunPermission, GenericNode targetNode) {
 
-		User requestUser = springConfiguration.authService().getUser(rc);
-		requestUser = userService.reload(requestUser);
+//		User requestUser = springConfiguration.authService().getUser(rc);
+		User user = null;
+		user = userService.reload(user);
 
 		// 1. Determine all roles that grant given permission
-		Node userNode = neo4jTemplate.getPersistentState(requestUser);
+		Node userNode = neo4jTemplate.getPersistentState(user);
 		Set<Role> roles = new HashSet<>();
 		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
 				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)

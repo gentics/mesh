@@ -139,8 +139,9 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 					try (Transaction tx = graphDb.beginTx()) {
 						PagingInfo pagingInfo = getPagingInfo(rc);
-						User requestUser = springConfiguration.authService().getUser(rc);
-						Page<Role> rolePage = roleService.findAllVisible(requestUser, pagingInfo);
+//						User requestUser = springConfiguration.authService().getUser(rc);
+						User user = null;
+						Page<Role> rolePage = roleService.findAllVisible(user, pagingInfo);
 						for (Role role : rolePage) {
 							listResponse.getData().add(roleService.transformToRest(role));
 						}

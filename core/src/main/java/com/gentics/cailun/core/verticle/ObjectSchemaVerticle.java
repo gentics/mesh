@@ -207,8 +207,9 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
 					try (Transaction tx = graphDb.beginTx()) {
 						PagingInfo pagingInfo = getPagingInfo(rc);
-						User requestUser = springConfiguration.authService().getUser(rc);
-						Page<ObjectSchema> schemaPage = schemaService.findAllVisible(requestUser, pagingInfo);
+//						User requestUser = springConfiguration.authService().getUser(rc);
+						User user = null;
+						Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
 						for (ObjectSchema schema : schemaPage) {
 							listResponse.getData().add(schemaService.transformToRest(schema));
 						}

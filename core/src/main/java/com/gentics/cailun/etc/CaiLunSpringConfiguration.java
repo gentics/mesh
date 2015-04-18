@@ -6,6 +6,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.IOException;
@@ -103,18 +104,8 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	@Bean
 	public Vertx vertx() {
 		VertxOptions options = new VertxOptions();
-		options.setBlockedThreadCheckPeriod(1000*60*60);
+		options.setBlockedThreadCheckPeriod(1000 * 60 * 60);
 		return Vertx.vertx(options);
-	}
-
-	@Bean
-	public CaiLunAuthServiceImpl authService() {
-		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
-		ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
-		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), new JsonObject(), provider);
-
-		SecurityUtils.setSecurityManager(realm.getSecurityManager());
-		return authService;
 	}
 
 	@Bean
@@ -129,6 +120,16 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
+	}
+
+	@Bean
+	public AuthProvider authProvider() {
+		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
+		ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
+//		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), new JsonObject(), provider);
+
+		SecurityUtils.setSecurityManager(realm.getSecurityManager());
+		return provider;
 	}
 
 }

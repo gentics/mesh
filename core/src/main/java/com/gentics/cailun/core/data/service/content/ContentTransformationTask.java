@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service.content;
 
+import io.vertx.ext.apex.Session;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
@@ -13,7 +15,7 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
-import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
@@ -22,6 +24,7 @@ import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.util.PermissionUtils;
 
 public class ContentTransformationTask extends RecursiveTask<Void> {
 
@@ -122,22 +125,21 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 
 								try (Transaction tx = info.getGraphDb().beginTx()) {
 									String currentUuid = currentTag.getUuid();
-									boolean hasPerm = info
-											.getSpringConfiguration()
-											.authService()
-											.hasPermission(info.getRoutingContext().session().getLoginID(),
-													new CaiLunPermission(currentTag, PermissionType.READ));
-									if (hasPerm) {
-										currentTag = info.getNeo4jTemplate().fetch(currentTag);
-										TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
-										if (currentRestTag == null) {
-											currentRestTag = new TagResponse();
-											// info.addTag(currentUuid, currentRestTag);
-											TagTransformationTask subTask = new TagTransformationTask(currentTag, info, currentRestTag, depth + 1);
-											tasks.add(subTask.fork());
+									Session session = info.getRoutingContext().session();
+									User user = null;
+									session.hasPermission(PermissionUtils.convert(currentTag, PermissionType.READ), handler -> {
+										if(handler.result()) {
+											TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
+											if (currentRestTag == null) {
+												Tag reloadedTag = info.getNeo4jTemplate().fetch(currentTag);
+												currentRestTag = new TagResponse();
+												// info.addTag(currentUuid, currentRestTag);
+												TagTransformationTask subTask = new TagTransformationTask(reloadedTag, info, currentRestTag, depth + 1);
+												tasks.add(subTask.fork());
+											}
+											restContent.getTags().add(currentRestTag);
 										}
-										restContent.getTags().add(currentRestTag);
-									}
+									});
 
 									tx.success();
 								}

@@ -167,7 +167,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	public String[] getPerms(RoutingContext rc, AbstractPersistable node) {
-		User user = springConfiguration.authService().getUser(rc);
+//		User user = springConfiguration.authService().getUser(rc);
+		User user = null;
 		Set<GraphPermission> permissions = findGraphPermissions(user, node);
 		Set<String> perms = new HashSet<>();
 		for (GraphPermission perm : permissions) {

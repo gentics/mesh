@@ -82,7 +82,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		// TODO add consumes and produces
 		Route route = route("/:uuid").method(PUT);
 		route.handler(rc -> {
-
 			String projectName = getProjectName(rc);
 			String uuid = rc.request().params().get("uuid");
 			Tag tag;
@@ -214,9 +213,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			int depth = getDepth(rc);
 			try (Transaction tx = graphDb.beginTx()) {
 				PagingInfo pagingInfo = getPagingInfo(rc);
-				User requestUser = springConfiguration.authService().getUser(rc);
+//				User requestUser = springConfiguration.authService().getUser(rc);
+				User user = null;
 				// TODO filtering, sorting
-				Page<Tag> tagPage = tagService.findAllVisible(requestUser, projectName, languageTags, pagingInfo);
+				Page<Tag> tagPage = tagService.findAllVisible(user, projectName, languageTags, pagingInfo);
 				for (Tag tag : tagPage) {
 					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
 				}
@@ -257,9 +257,11 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				int depth = getDepth(rc);
 				Tag rootTag = getObject(rc, "uuid", PermissionType.READ);
 				PagingInfo pagingInfo = getPagingInfo(rc);
-				User requestUser = springConfiguration.authService().getUser(rc);
+//				User requestUser = springConfiguration.authService().getUser(rc);
+				User user = null;
+
 				// TODO filtering, sorting
-				Page<Tag> tagPage = tagService.findAllVisibleSubTags(requestUser, projectName, rootTag, languageTags, pagingInfo);
+				Page<Tag> tagPage = tagService.findAllVisibleSubTags(user, projectName, rootTag, languageTags, pagingInfo);
 				for (Tag tag : tagPage) {
 					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
 				}

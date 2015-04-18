@@ -49,14 +49,17 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addReadHandler() {
 
 		route("/:uuid").method(GET).handler(rc -> {
-			User user;
-			try (Transaction tx = graphDb.beginTx()) {
-				user = getObject(rc, "uuid", PermissionType.READ);
-				tx.success();
-			}
-			UserResponse restUser = userService.transformToRest(user);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(restUser));
+			vertx.executeBlocking(handler -> {
+				User user;
+				try (Transaction tx = graphDb.beginTx()) {
+					user = getObject(rc, "uuid", PermissionType.READ);
+					tx.success();
+				}
+				UserResponse restUser = userService.transformToRest(user);
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(restUser));
+
+			}, null);
 		});
 
 		/*
@@ -66,12 +69,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			UserListResponse listResponse = new UserListResponse();
 			try (Transaction tx = graphDb.beginTx()) {
 				PagingInfo pagingInfo = getPagingInfo(rc);
-				User requestUser = springConfiguration.authService().getUser(rc);
-				Page<User> userPage = userService.findAllVisible(requestUser, pagingInfo);
-				for (User user : userPage) {
-					listResponse.getData().add(userService.transformToRest(user));
+				// User requestUser = springConfiguration.authService().getUser(rc);
+				User user = null;
+				Page<User> userPage = userService.findAllVisible(user, pagingInfo);
+				for (User currentUser : userPage) {
+					listResponse.getData().add(userService.transformToRest(currentUser));
 				}
-				RestModelPagingHelper.setPaging(listResponse, userPage.getNumber(), userPage.getTotalPages(), pagingInfo.getPerPage(), userPage.getTotalElements());
+				RestModelPagingHelper.setPaging(listResponse, userPage.getNumber(), userPage.getTotalPages(), pagingInfo.getPerPage(),
+						userPage.getTotalElements());
 				tx.success();
 			}
 			rc.response().setStatusCode(200);

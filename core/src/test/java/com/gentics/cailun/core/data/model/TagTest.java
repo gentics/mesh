@@ -189,16 +189,16 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	private RoutingContext getMockedRoutingContext() {
-		CaiLunAuthServiceImpl auth = springConfig.authService();
+//		CaiLunAuthServiceImpl auth = springConfig.authProvider();
 
 		// Create login session
 		User user = data().getUserInfo().getUser();
-		String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
-
+		//String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
+		String loginSessionId= null;
 		Session session = mock(Session.class);
 		RoutingContext rc = mock(RoutingContext.class);
 		when(rc.session()).thenReturn(session);
-		when(session.getLoginID()).thenReturn(loginSessionId);
+		when(session.id()).thenReturn(loginSessionId);
 		return rc;
 	}
 }

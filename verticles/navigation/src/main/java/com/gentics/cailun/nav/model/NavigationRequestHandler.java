@@ -61,14 +61,14 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		return mapper.writeValueAsString(navigation);
 	}
 
-	/**
-	 * Returns the cailun auth service which can be used to authenticate resources.
-	 * 
-	 * @return
-	 */
-	protected CaiLunAuthServiceImpl getAuthService() {
-		return config.authService();
-	}
+//	/**
+//	 * Returns the cailun auth service which can be used to authenticate resources.
+//	 * 
+//	 * @return
+//	 */
+//	protected CaiLunAuthServiceImpl getAuthService() {
+//		return config.authService();
+//	}
 
 	/**
 	 * Returns a content navigation.
@@ -98,13 +98,13 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	// getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(object, PermissionType.READ), resultHandler);
 	// }
 
-	/**
-	 * Wrapper for the permission checks. Check whether the given object can be viewed by the user.
-	 * 
-	 * @param object
-	 * @return true, when the user can view the object. Otherwise false.
-	 */
-	public boolean canView(GenericNode object) {
-		return getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(object, PermissionType.READ));
-	}
+//	/**
+//	 * Wrapper for the permission checks. Check whether the given object can be viewed by the user.
+//	 * 
+//	 * @param object
+//	 * @return true, when the user can view the object. Otherwise false.
+//	 */
+//	public boolean canView(GenericNode object) {
+//		return getAuthService().hasPermission(session.id(), new CaiLunPermission(object, PermissionType.READ));
+//	}
 }

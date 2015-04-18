@@ -27,4 +27,10 @@ public class CaiLunPermission implements Permission {
 	public AbstractPersistable getTargetNode() {
 		return targetNode;
 	}
+	
+	@Override
+	public String toString() {
+		//TODO check for null
+		return this.targetNode.getId() + "#" + this.type.getPropertyName();
+	}
 }

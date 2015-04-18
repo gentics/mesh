@@ -191,8 +191,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					GroupListResponse listResponse = new GroupListResponse();
 					try (Transaction tx = graphDb.beginTx()) {
 						PagingInfo pagingInfo = getPagingInfo(rc);
-						User requestUser = springConfiguration.authService().getUser(rc);
-						Page<Group> groupPage = groupService.findAllVisible(requestUser, pagingInfo);
+						
+//						User requestUser = rc.session().getUser();
+						User user = null;
+						Page<Group> groupPage = groupService.findAllVisible(user, pagingInfo);
 						for (Group group : groupPage) {
 							listResponse.getData().add(groupService.transformToRest(group));
 						}

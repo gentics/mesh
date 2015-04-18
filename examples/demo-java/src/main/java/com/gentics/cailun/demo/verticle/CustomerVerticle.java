@@ -4,7 +4,6 @@ import static com.gentics.cailun.core.data.model.auth.PermissionType.READ;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.Session;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
@@ -47,11 +46,11 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addPermissionTestHandler() {
-		route("/permtest").method(GET).handler(rh -> {
-			Session session = rh.session();
+		route("/permtest").method(GET).handler(rc -> {
 			Content content = contentService.findOne(23L);
-			boolean perm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(content, READ));
-			rh.response().end("User perm for node {" + content.getId() + "} : " + (perm ? "jow" : "noe"));
+			rc.session().hasPermission(new CaiLunPermission(content, READ).toString(), handler -> {
+				rc.response().end("User perm for node {" + content.getId() + "} : " + (handler.result() ? "jow" : "noe"));
+			});
 		});
 
 	}

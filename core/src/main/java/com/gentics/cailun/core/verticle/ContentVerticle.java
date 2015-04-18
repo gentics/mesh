@@ -109,7 +109,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					}
 				}
 
-				User user = springConfiguration.authService().getUser(rc);
+//				User user = springConfiguration.authService().getUser(rc);
+				User user = null;
 				content.setCreator(user);
 
 				// TODO maybe projects should not be a set?
@@ -187,9 +188,11 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				ContentListResponse listResponse = new ContentListResponse();
 				try (Transaction tx = graphDb.beginTx()) {
 					PagingInfo pagingInfo = getPagingInfo(rc);
-					User requestUser = springConfiguration.authService().getUser(rc);
+//					User requestUser = springConfiguration.authService().getUser(rc);
+					User user = null;
 
-					Page<Content> contentPage = contentService.findAllVisible(requestUser, projectName, languageTags, pagingInfo);
+
+					Page<Content> contentPage = contentService.findAllVisible(user, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
 						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, 0));
 					}

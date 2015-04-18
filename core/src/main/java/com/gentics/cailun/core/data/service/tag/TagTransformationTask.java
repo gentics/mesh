@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service.tag;
 
+import io.vertx.ext.apex.Session;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -11,11 +13,11 @@ import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Tag;
-import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.content.ContentTransformationTask;
@@ -24,6 +26,7 @@ import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
+import com.gentics.cailun.util.PermissionUtils;
 
 public class TagTransformationTask extends RecursiveTask<Void> {
 
@@ -101,51 +104,47 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 		}
 
 		if (depth < info.getMaxDepth()) {
-			tag.getTags()
-					.parallelStream()
-					.forEachOrdered(
-							currentTag -> {
-								try (Transaction tx = info.getGraphDb().beginTx()) {
-									String currentUuid = currentTag.getUuid();
-									boolean hasPerm = info
-											.getSpringConfiguration()
-											.authService()
-											.hasPermission(info.getRoutingContext().session().getLoginID(),
-													new CaiLunPermission(currentTag, PermissionType.READ));
-									if (hasPerm) {
-										currentTag = info.getNeo4jTemplate().fetch(currentTag);
-										TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
-										if (currentRestTag == null) {
-											currentRestTag = new TagResponse();
-											// info.addTag(currentUuid, currentRestTag);
-											TagTransformationTask subTask = new TagTransformationTask(currentTag, info, currentRestTag, depth + 1);
-											tasks.add(subTask.fork());
-										}
-										restTag.getTags().add(currentRestTag);
+			tag.getTags().parallelStream().forEachOrdered(currentTag -> {
+				try (Transaction tx = info.getGraphDb().beginTx()) {
+					String currentUuid = currentTag.getUuid();
+					Session session = info.getRoutingContext().session();
+					session.hasPermission(PermissionUtils.convert(currentTag, PermissionType.READ), handler -> {
+						if (handler.result()) {
+							Tag loadedTag = info.getNeo4jTemplate().fetch(currentTag);
+							TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
+							if (currentRestTag == null) {
+								currentRestTag = new TagResponse();
+								// info.addTag(currentUuid, currentRestTag);
+							TagTransformationTask subTask = new TagTransformationTask(loadedTag, info, currentRestTag, depth + 1);
+							tasks.add(subTask.fork());
+						}
+						restTag.getTags().add(currentRestTag);
 
-										Collections.sort(restTag.getTags(), new Comparator<TagResponse>() {
+						Collections.sort(restTag.getTags(), new Comparator<TagResponse>() {
 
-											@Override
-											public int compare(TagResponse o1, TagResponse o2) {
-												// TODO use order and sorting here?
-												String uuid1 = o1.getUuid();
-												String uuid2 = o2.getUuid();
-												if (uuid1 == null) {
-													uuid1 = "";
-												}
-												if (uuid2 == null) {
-													uuid2 = "";
-												}
-												return uuid1.compareTo(uuid2);
-											}
-
-										});
-
-									}
-									tx.success();
+							@Override
+							public int compare(TagResponse o1, TagResponse o2) {
+								// TODO use order and sorting here?
+								String uuid1 = o1.getUuid();
+								String uuid2 = o2.getUuid();
+								if (uuid1 == null) {
+									uuid1 = "";
 								}
+								if (uuid2 == null) {
+									uuid2 = "";
+								}
+								return uuid1.compareTo(uuid2);
+							}
 
-							});
+						});
+
+					}
+				}	);
+
+					tx.success();
+				}
+
+			});
 
 			tag.getContents()
 					.parallelStream()
@@ -153,22 +152,25 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 							currentContent -> {
 								try (Transaction tx = info.getGraphDb().beginTx()) {
 									String currentUuid = currentContent.getUuid();
-									boolean hasPerm = info
-											.getSpringConfiguration()
-											.authService()
-											.hasPermission(info.getRoutingContext().session().getLoginID(),
-													new CaiLunPermission(currentContent, PermissionType.READ));
-									if (hasPerm) {
-										currentContent = info.getNeo4jTemplate().fetch(currentContent);
-										ContentResponse currentRestContent = (ContentResponse) info.getObject(currentUuid);
-										if (currentRestContent == null) {
-											currentRestContent = new ContentResponse();
-											ContentTransformationTask subTask = new ContentTransformationTask(currentContent, info,
-													currentRestContent, depth + 1);
-											tasks.add(subTask.fork());
-										}
-										restTag.getContents().add(currentRestContent);
-									}
+									info.getRoutingContext()
+											.session()
+											.hasPermission(
+													PermissionUtils.convert(currentContent, PermissionType.READ),
+													handler -> {
+
+														if (handler.result()) {
+															Content loadedContent = info.getNeo4jTemplate().fetch(currentContent);
+															ContentResponse currentRestContent = (ContentResponse) info.getObject(currentUuid);
+															if (currentRestContent == null) {
+																currentRestContent = new ContentResponse();
+																ContentTransformationTask subTask = new ContentTransformationTask(loadedContent,
+																		info, currentRestContent, depth + 1);
+																tasks.add(subTask.fork());
+															}
+															restTag.getContents().add(currentRestContent);
+
+														}
+													});
 									tx.success();
 								}
 							});

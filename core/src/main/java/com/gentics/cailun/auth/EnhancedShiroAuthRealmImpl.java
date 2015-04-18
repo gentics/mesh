@@ -1,6 +1,6 @@
 package com.gentics.cailun.auth;
 
-import io.vertx.ext.auth.shiro.impl.ShiroAuthRealmImpl;
+import io.vertx.ext.auth.shiro.impl.ShiroAuthRealmBase;
 import io.vertx.ext.auth.shiro.impl.SimplePrincipalCollection;
 
 import org.apache.shiro.authz.AuthorizationException;
@@ -18,7 +18,7 @@ import org.apache.shiro.subject.support.DefaultSubjectContext;
  * @author johannes2
  *
  */
-public class EnhancedShiroAuthRealmImpl extends ShiroAuthRealmImpl {
+public class EnhancedShiroAuthRealmImpl extends ShiroAuthRealmBase {
 
 	public EnhancedShiroAuthRealmImpl(Realm realm) {
 		super(realm);

@@ -1,10 +1,10 @@
 package com.gentics.cailun.auth;
 
 import io.vertx.core.Vertx;
-import io.vertx.ext.auth.shiro.impl.ShiroAuthProvider;
-import io.vertx.ext.auth.shiro.impl.ShiroAuthRealm;
+import io.vertx.ext.auth.shiro.ShiroAuthRealm;
+import io.vertx.ext.auth.shiro.impl.ShiroAuthProviderImpl;
 
-public class ExposingShiroAuthProvider extends ShiroAuthProvider {
+public class ExposingShiroAuthProvider extends ShiroAuthProviderImpl {
 
 	protected ShiroAuthRealm realm;
 

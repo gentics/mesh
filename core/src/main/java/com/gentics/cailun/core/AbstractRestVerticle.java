@@ -6,7 +6,6 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.apex.Route;
 import io.vertx.ext.apex.Router;
 import io.vertx.ext.apex.RoutingContext;
-import io.vertx.ext.apex.Session;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -19,7 +18,6 @@ import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
@@ -29,6 +27,7 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.util.PermissionUtils;
 
 public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
@@ -97,15 +96,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	}
 
 	/**
-	 * Returns the cailun auth service which can be used to authenticate resources.
-	 * 
-	 * @return
-	 */
-	protected CaiLunAuthServiceImpl getAuthService() {
-		return springConfiguration.authService();
-	}
-
-	/**
 	 * Extract the given uri parameter and load the object. Permissions and load verification will also be done by this method.
 	 * 
 	 * @param rc
@@ -169,20 +159,11 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @return
 	 */
 	protected void failOnMissingPermission(RoutingContext rc, AbstractPersistable node, PermissionType type) throws InvalidPermissionException {
-		if (!hasPermission(rc, node, type)) {
-			throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()));
-		}
-	}
-
-	protected boolean hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type) {
-		if (node != null) {
-			Session session = rc.session();
-			boolean perm = getAuthService().hasPermission(session.getLoginID(), new CaiLunPermission(node, type));
-			if (perm) {
-				return true;
+		rc.session().hasPermission(new CaiLunPermission(node, type).toString(), handler -> {
+			if (!handler.result()) {
+				throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()));
 			}
-		}
-		return false;
+		});
 	}
 
 	public Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
