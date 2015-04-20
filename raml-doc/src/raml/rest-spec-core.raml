@@ -663,13 +663,26 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
+    /tags:
+      get:
+        description: Load a list of subtags
+    /tags/{uuid}:
+      uriParameters:
+        uuid:
+          description: Uuid of a tag.
+          type: string
+      post:
+        description: Assign the tag to the content. **Not implemented**
+      delete:
+        description: Remove the tag from the content. **Not implemented**
+    /contents:
+      get:
+        description: Load a list of contents that have been taged with the tag.
     /contents/{uuid}:
       uriParameters:
         uuid:
           description: Uuid of a content.
           type: string
-      get:
-        description: Load a list of contents that have been tagged.
       post:
         description: Assign the tag to the content. **Not implemented**
       delete:
@@ -695,7 +708,7 @@ schemas:
     is: [ localized, sortable, nested, perm_listable ]
     uriParameters:
       path:
-        description: Path to the content,tag or image file.
+        description: Path to a content or tag.
         type: string
     get:
       description: Retrieves the content with the given path. **Not implemented** - **Not tested**
