@@ -29,7 +29,7 @@ import com.gentics.cailun.core.rest.schema.request.ObjectSchemaUpdateRequest;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaListResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
@@ -212,8 +212,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 						for (ObjectSchema schema : schemaPage) {
 							listResponse.getData().add(schemaService.transformToRest(schema));
 						}
-						RestModelPagingHelper.setPaging(listResponse, schemaPage.getNumber(), schemaPage.getTotalPages(), pagingInfo.getPerPage(),
-								schemaPage.getTotalElements());
+						RestModelPagingHelper.setPaging(listResponse, schemaPage,pagingInfo);
 						tx.success();
 					}
 					rc.response().end(toJson(listResponse));

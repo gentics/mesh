@@ -27,7 +27,7 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.test.AbstractDBTest;
 import com.gentics.cailun.util.JsonUtils;
 

@@ -14,7 +14,7 @@ import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 
 public interface RoleService extends GenericNodeService<Role> {
 

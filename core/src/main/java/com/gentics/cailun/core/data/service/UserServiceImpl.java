@@ -31,7 +31,7 @@ import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 
 @Component
 @Transactional(readOnly = true)

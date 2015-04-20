@@ -28,7 +28,7 @@ import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
@@ -145,7 +145,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				for (Project project  : projectPage) {
 					listResponse.getData().add(projectService.transformToRest(project));
 				}
-				RestModelPagingHelper.setPaging(listResponse, projectPage.getNumber(), projectPage.getTotalPages(), pagingInfo.getPerPage(), projectPage.getTotalElements());
+				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
 				tx.success();
 			}
 			rc.response().setStatusCode(200);

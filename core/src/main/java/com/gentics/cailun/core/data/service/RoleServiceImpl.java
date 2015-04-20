@@ -33,7 +33,7 @@ import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 
 @Component
 @Transactional(readOnly = true)

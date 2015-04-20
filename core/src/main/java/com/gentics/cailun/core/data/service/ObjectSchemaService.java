@@ -7,7 +7,7 @@ import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 
 public interface ObjectSchemaService extends GenericNodeService<ObjectSchema> {
 

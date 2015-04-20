@@ -14,7 +14,7 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.group.response.GroupResponse;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 
 @Component
 @Transactional(readOnly = true)

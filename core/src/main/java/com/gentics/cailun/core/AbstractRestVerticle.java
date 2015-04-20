@@ -28,7 +28,7 @@ import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 
 public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
@@ -207,9 +207,9 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 */
 	protected PagingInfo getPagingInfo(RoutingContext rc) {
 		MultiMap params = rc.request().params();
-		int page = NumberUtils.toInt(params.get("page"), 0);
+		int page = NumberUtils.toInt(params.get("page"), 1);
 		int perPage = NumberUtils.toInt(params.get("per_page"), DEFAULT_PER_PAGE);
-		if (page < 0) {
+		if (page < 1) {
 			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_invalid_paging_parameters"));
 		}
 		if (perPage <= 0) {

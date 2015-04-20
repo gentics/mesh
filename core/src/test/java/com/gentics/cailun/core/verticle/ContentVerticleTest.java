@@ -128,7 +128,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
 		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
@@ -146,7 +146,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(totalContents, restResponse.getMetainfo().getTotalCount());
 
 		List<ContentResponse> allContents = new ArrayList<>();
-		for (int page = 0; page < totalPages; page++) {
+		for (int page = 1; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, ContentListResponse.class);
 			allContents.addAll(restResponse.getData());
@@ -159,14 +159,16 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("The no perm content should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=25&page=-1", 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=25&page=0", 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=0&page=1", 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=-1&page=1", 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=25&page=4242", 200, "OK");
 		ContentListResponse list = JsonUtils.readValue(response, ContentListResponse.class);
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());

@@ -12,7 +12,10 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.gentics.cailun.core.data.model.PropertyType;
+import com.gentics.cailun.core.rest.common.response.AbstractListResponse;
+import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.core.rest.common.response.PagingMetaInfo;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
@@ -131,7 +134,7 @@ public class Generator {
 		ProjectListResponse projectList = new ProjectListResponse();
 		projectList.getData().add(project);
 		projectList.getData().add(project2);
-		RestModelPagingHelper.setPaging(projectList, 1, 10, 2, 20);
+		setPaging(projectList, 1, 10, 2, 20);
 		write(projectList);
 
 		ProjectUpdateRequest projectUpdate = new ProjectUpdateRequest();
@@ -160,7 +163,7 @@ public class Generator {
 		RoleListResponse roleList = new RoleListResponse();
 		roleList.getData().add(role);
 		roleList.getData().add(role2);
-		RestModelPagingHelper.setPaging(roleList, 1, 10, 2, 20);
+		setPaging(roleList, 1, 10, 2, 20);
 		write(roleList);
 
 		RoleUpdateRequest roleUpdate = new RoleUpdateRequest();
@@ -201,8 +204,16 @@ public class Generator {
 		TagListResponse tagList = new TagListResponse();
 		tagList.getData().add(tag);
 		tagList.getData().add(tag2);
-		RestModelPagingHelper.setPaging(tagList, 1, 10, 2, 20);
+		setPaging(tagList, 1, 10, 2, 20);
 		write(tagList);
+	}
+
+	public void setPaging(AbstractListResponse<? extends AbstractRestModel> response, long currentPage, long pageCount, long perPage, long totalCount) {
+		PagingMetaInfo info = response.getMetainfo();
+		info.setCurrentPage(currentPage);
+		info.setPageCount(pageCount);
+		info.setPerPage(perPage);
+		info.setTotalCount(totalCount);
 	}
 
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -228,7 +239,7 @@ public class Generator {
 		ObjectSchemaListResponse schemaList = new ObjectSchemaListResponse();
 		schemaList.getData().add(schema);
 		schemaList.getData().add(schema2);
-		RestModelPagingHelper.setPaging(schemaList, 1, 10, 2, 20);
+		setPaging(schemaList, 1, 10, 2, 20);
 		write(schemaList);
 
 		ObjectSchemaUpdateRequest schemaUpdate = new ObjectSchemaUpdateRequest();
@@ -294,7 +305,7 @@ public class Generator {
 		ContentListResponse list = new ContentListResponse();
 		list.getData().add(content);
 		list.getData().add(content2);
-		RestModelPagingHelper.setPaging(list, 1, 10, 2, 20);
+		setPaging(list, 1, 10, 2, 20);
 		write(list);
 
 	}
@@ -316,7 +327,7 @@ public class Generator {
 		GroupListResponse groupList = new GroupListResponse();
 		groupList.getData().add(group);
 		groupList.getData().add(group2);
-		RestModelPagingHelper.setPaging(groupList, 1, 10, 2, 20);
+		setPaging(groupList, 1, 10, 2, 20);
 		write(groupList);
 
 		GroupUpdateRequest groupUpdate = new GroupUpdateRequest();
@@ -344,7 +355,7 @@ public class Generator {
 		UserListResponse userList = new UserListResponse();
 		userList.getData().add(user);
 		userList.getData().add(user2);
-		RestModelPagingHelper.setPaging(userList, 1, 10, 2, 20);
+		setPaging(userList, 1, 10, 2, 20);
 		write(userList);
 
 		UserUpdateRequest userUpdate = new UserUpdateRequest();

@@ -41,7 +41,7 @@ import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 /**
@@ -223,8 +223,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				for (Tag tag : tagPage) {
 					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
 				}
-				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),
-						tagPage.getTotalElements());
+				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
 				tx.success();
 			}
 			rc.response().setStatusCode(200);
@@ -248,7 +247,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
 		});
 	}
-	
+
 	private void addTagContentHandlers() {
 		Route getRoute = route("/:uuid/contents/").method(GET);
 		getRoute.handler(rc -> {
@@ -265,8 +264,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				for (Content content : contentPage) {
 					listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depth));
 				}
-				RestModelPagingHelper.setPaging(listResponse, contentPage.getNumber(), contentPage.getTotalPages(), pagingInfo.getPerPage(),
-						contentPage.getTotalElements());
+				RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(listResponse));
 			}
@@ -290,8 +288,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				for (Tag tag : tagPage) {
 					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
 				}
-				RestModelPagingHelper.setPaging(listResponse, tagPage.getNumber(), tagPage.getTotalPages(), pagingInfo.getPerPage(),
-						tagPage.getTotalElements());
+				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
 				rc.response().setStatusCode(200);
 				rc.response().end(toJson(listResponse));
 			}

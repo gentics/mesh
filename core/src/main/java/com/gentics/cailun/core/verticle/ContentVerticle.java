@@ -42,7 +42,7 @@ import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 /**
@@ -193,8 +193,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					for (Content content : contentPage) {
 						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, 0));
 					}
-					RestModelPagingHelper.setPaging(listResponse, contentPage.getNumber(), contentPage.getTotalPages(), pagingInfo.getPerPage(),
-							contentPage.getTotalElements());
+					RestModelPagingHelper.setPaging(listResponse, contentPage,pagingInfo);
 					tx.success();
 				}
 				rc.response().setStatusCode(200);

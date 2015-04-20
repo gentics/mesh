@@ -65,15 +65,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/", 200, "OK");
 		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The response did not contain the correct amount of items", data().getTotalTags(), restResponse.getData().size());
 
 		int perPage = 4;
 		// Extra Tags + permitted tag
 		int totalTags = data().getTotalTags();
-		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
+		int totalPages = (int) Math.ceil(totalTags / (double) perPage) + 1;
 		List<TagResponse> allTags = new ArrayList<>();
-		for (int page = 0; page < totalPages; page++) {
+		for (int page = 1; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, TagListResponse.class);
 			int expectedItemsCount = perPage;
@@ -83,7 +83,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 			}
 			assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals(page, restResponse.getMetainfo().getCurrentPage());
+			assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
+					.getCurrentPage());
 			assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
 					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
 			assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
@@ -100,13 +101,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 0, 400, "Bad Request");
+		expectMessageResponse("error_invalid_paging_parameters", response);
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		perPage = 25;
-		totalPages = (int) Math.ceil(totalTags / (double) perPage);
+		totalPages = (int) Math.ceil(totalTags / (double) perPage) + 1;
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 4242, 200, "OK");
 		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":" + totalPages + ",\"total_count\":" + totalTags
 				+ "}}";
@@ -117,15 +120,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadSubTagsForRootTag() throws Exception {
 		Tag rootTag = data().getRootTag();
 		int perPage = 6;
-		int page = 0;
+		int page = 1;
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
-				+ "&page=" + page +"&lang=de,en", 200, "OK");
+				+ "&page=" + page + "&lang=de,en", 200, "OK");
 		System.out.println(response);
 		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(4, tagList.getData().size());
 		assertEquals(4, tagList.getMetainfo().getTotalCount());
-		assertEquals(1, tagList.getMetainfo().getPageCount());
-		assertEquals(0, tagList.getMetainfo().getCurrentPage());
+		assertEquals(2, tagList.getMetainfo().getPageCount());
+		assertEquals(page, tagList.getMetainfo().getCurrentPage());
 		// TODO assert two tags
 	}
 
@@ -133,14 +136,14 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadSubTags() throws Exception {
 		Tag rootTag = data().getNews();
 		int perPage = 6;
-		int page = 0;
+		int page = 1;
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
 				+ "&page=" + page, 200, "OK");
 		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(2, tagList.getData().size());
 		assertEquals(2, tagList.getMetainfo().getTotalCount());
-		assertEquals(1, tagList.getMetainfo().getPageCount());
-		assertEquals(0, tagList.getMetainfo().getCurrentPage());
+		assertEquals(2, tagList.getMetainfo().getPageCount());
+		assertEquals(page, tagList.getMetainfo().getCurrentPage());
 		// TODO assert two tags
 	}
 
@@ -156,14 +159,14 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		int perPage = 6;
-		int page = 0;
+		int page = 1;
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
 				+ "&page=" + page + "&lang=de", 200, "OK");
 		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(1, tagList.getData().size());
 		assertEquals(1, tagList.getMetainfo().getTotalCount());
-		assertEquals(1, tagList.getMetainfo().getPageCount());
-		assertEquals(0, tagList.getMetainfo().getCurrentPage());
+		assertEquals(2, tagList.getMetainfo().getPageCount());
+		assertEquals(page, tagList.getMetainfo().getCurrentPage());
 		// TODO assert two tags
 	}
 
@@ -183,15 +186,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		int perPage = 6;
-		int page = 0;
-		int totalPages = (int) Math.ceil(nContents / (double) perPage) - 1;
+		int page = 1;
+		int totalPages = (int) Math.ceil(nContents / (double) perPage) + 1;
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/contents/?per_page=" + perPage
 				+ "&page=" + page + "&lang=de,en", 200, "OK");
 		ContentListResponse tagList = JsonUtils.readValue(response, ContentListResponse.class);
-		assertEquals(totalPages, tagList.getData().size());
+		assertEquals(perPage, tagList.getData().size());
 		assertEquals(nContents, tagList.getMetainfo().getTotalCount());
-		assertEquals(7, tagList.getMetainfo().getPageCount());
-		assertEquals(0, tagList.getMetainfo().getCurrentPage());
+		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
+		assertEquals(page, tagList.getMetainfo().getCurrentPage());
 		// TODO assert two contents
 	}
 

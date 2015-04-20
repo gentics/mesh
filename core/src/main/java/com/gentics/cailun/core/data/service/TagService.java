@@ -11,7 +11,7 @@ import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerService;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.path.Path;
 
 public interface TagService extends GenericPropertyContainerService<Tag> {
