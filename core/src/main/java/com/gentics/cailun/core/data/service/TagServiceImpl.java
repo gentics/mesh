@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
@@ -185,6 +186,16 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, pr);
 		} else {
 			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, languageTags, pr);
+		}
+	}
+
+	@Override
+	public Page<Content> findAllVisibleSubContents(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());
+		if (languageTags == null || languageTags.size() == 0) {
+			return tagRepository.findAllSubContents(requestUser, projectName, rootTag, pr);
+		} else {
+			return tagRepository.findAllSubContents(requestUser, projectName, rootTag, languageTags, pr);
 		}
 	}
 

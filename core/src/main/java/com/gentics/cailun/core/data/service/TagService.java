@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerService;
@@ -22,5 +23,7 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 	Page<Tag> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
 	Page<Tag> findAllVisibleSubTags(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+
+	Page<Content> findAllVisibleSubContents(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

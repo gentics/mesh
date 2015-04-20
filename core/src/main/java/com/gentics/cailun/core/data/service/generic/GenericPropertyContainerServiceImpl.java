@@ -28,7 +28,6 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 			i18nProperties = i18nPropertyRepository.save(i18nProperties);
 		}
 
-		
 	}
 
 	public void setName(T node, Language language, String name) {
@@ -36,10 +35,6 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 			throw new NullPointerException("The language for the name can't be null");
 		}
 		setProperty(node, language, ObjectSchema.NAME_KEYWORD, name);
-	}
-
-	public void addI18NContent(T node, Language language, String text) {
-		setProperty(node, language, ObjectSchema.CONTENT_KEYWORD, text);
 	}
 
 	public void setContent(T node, Language language, String text) {

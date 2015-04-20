@@ -20,9 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
+import com.gentics.cailun.core.rest.content.response.ContentListResponse;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
@@ -36,6 +39,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private TagService tagService;
+
+	@Autowired
+	private ContentService contentService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -143,6 +149,49 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(1, tagList.getMetainfo().getPageCount());
 		assertEquals(0, tagList.getMetainfo().getCurrentPage());
 		// TODO assert two tags
+	}
+
+	@Test
+	public void testReadSubContentsWithLanguageTags() throws Exception {
+		Tag rootTag = data().getNews();
+
+		int nContents = 42;
+		try (Transaction tx = graphDb.beginTx()) {
+			for (int i = 0; i < nContents; i++) {
+				Content content = new Content();
+				contentService.setContent(content, data().getGerman(), "some content " + i);
+				contentService.setFilename(content, data().getGerman(), "index" + i + ".de.html");
+				rootTag.addContent(content);
+			}
+			tx.success();
+		}
+
+		int perPage = 6;
+		int page = 0;
+		int totalPages = (int) Math.ceil(nContents / (double) perPage) - 1;
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/contents/?per_page=" + perPage
+				+ "&page=" + page + "&lang=de,en", 200, "OK");
+		ContentListResponse tagList = JsonUtils.readValue(response, ContentListResponse.class);
+		assertEquals(totalPages, tagList.getData().size());
+		assertEquals(nContents, tagList.getMetainfo().getTotalCount());
+		assertEquals(7, tagList.getMetainfo().getPageCount());
+		assertEquals(0, tagList.getMetainfo().getCurrentPage());
+		// TODO assert two contents
+	}
+
+	@Test
+	public void testReadSubContentsWithNoOptions() {
+		// "/tags/hhh/contents"
+	}
+
+	@Test
+	public void testReadSubContentsWithoutLanguageTags() {
+
+	}
+
+	@Test
+	public void testReadSubContentsWithoutRootTagReadPerm() {
+
 	}
 
 	@Test

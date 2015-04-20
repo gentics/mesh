@@ -25,6 +25,7 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Project;
@@ -35,6 +36,7 @@ import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
+import com.gentics.cailun.core.rest.content.response.ContentListResponse;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.cailun.core.rest.tag.response.TagListResponse;
@@ -76,6 +78,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addDeleteHandler();
 
 		addTagSubTagHandlers();
+		addTagContentHandlers();
 	}
 
 	private void addUpdateHandler() {
@@ -243,6 +246,30 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			}
 			rc.response().setStatusCode(200);
 			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
+		});
+	}
+	
+	private void addTagContentHandlers() {
+		Route getRoute = route("/:uuid/contents/").method(GET);
+		getRoute.handler(rc -> {
+			try (Transaction tx = graphDb.beginTx()) {
+				String projectName = getProjectName(rc);
+				ContentListResponse listResponse = new ContentListResponse();
+				List<String> languageTags = getSelectedLanguageTags(rc);
+				int depth = getDepth(rc);
+				Tag rootTag = getObject(rc, "uuid", PermissionType.READ);
+				PagingInfo pagingInfo = getPagingInfo(rc);
+				User requestUser = springConfiguration.authService().getUser(rc);
+				// TODO filtering, sorting
+				Page<Content> contentPage = tagService.findAllVisibleSubContents(requestUser, projectName, rootTag, languageTags, pagingInfo);
+				for (Content content : contentPage) {
+					listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depth));
+				}
+				RestModelPagingHelper.setPaging(listResponse, contentPage.getNumber(), contentPage.getTotalPages(), pagingInfo.getPerPage(),
+						contentPage.getTotalElements());
+				rc.response().setStatusCode(200);
+				rc.response().end(toJson(listResponse));
+			}
 		});
 	}
 

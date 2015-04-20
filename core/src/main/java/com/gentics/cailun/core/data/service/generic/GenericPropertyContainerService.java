@@ -20,8 +20,6 @@ public interface GenericPropertyContainerService<T extends GenericPropertyContai
 
 	public void setName(T node, Language language, String name);
 
-	public void addI18NContent(T node, Language language, String text);
-
 	public void setContent(T node, Language language, String text);
 
 	public void setFilename(T node, Language language, String filename);

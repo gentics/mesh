@@ -67,7 +67,7 @@ public class RoleTest extends AbstractDBTest {
 
 			// content2
 			content2 = new Content();
-			contentService.addI18NContent(content2, data().getEnglish(), "Test");
+			contentService.setContent(content2, data().getEnglish(), "Test");
 			content2 = contentService.save(content2);
 			roleService.addPermission(role, content2, READ, DELETE);
 			roleService.addPermission(role, content2, CREATE);
