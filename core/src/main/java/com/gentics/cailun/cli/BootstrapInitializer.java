@@ -17,10 +17,10 @@ import java.util.Map;
 import javax.naming.InvalidNameException;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -180,18 +180,25 @@ public class BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-//	@Transactional
+	// @Transactional
 	public void init(CaiLunConfiguration configuration, CaiLunCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.configuration = configuration;
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		initMandatoryData();
+
+		try (Transaction tx = graphDb.beginTx()) {
+			initMandatoryData();
+			tx.success();
+		}
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(springConfiguration.vertx());
 		}
-		initProjects();
+		try (Transaction tx = graphDb.beginTx()) {
+			initProjects();
+			tx.success();
+		}
 
 	}
 
