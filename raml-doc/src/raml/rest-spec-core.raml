@@ -66,10 +66,10 @@ traits:
   - paged:
       queryParameters:
         page:
-          description: The page to be displayed
+          description: The page to be displayed. Please note that page numbering is 1-based and that omitting the page parameter will return the first page 1.
           type: number
         per_page: 
-          description: The amount of items per page
+          description: The page size. A page size of 25 will be used when this parameter is omitted.
           type: number
 
   - pagedHeader:
