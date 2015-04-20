@@ -15,7 +15,6 @@ public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 
 	// TODO filter by name?
 	@Query(
-
 	value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
 			+ "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
 			+ "WHERE l.languageTag IN {2} AND id(requestUser) = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
