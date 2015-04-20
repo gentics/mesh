@@ -15,10 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
@@ -30,7 +30,8 @@ import com.gentics.cailun.core.data.service.tag.TagTransformationTask;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.CaiLunPageRequest;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.path.Path;
 import com.gentics.cailun.path.PathSegment;
 import com.google.common.collect.Lists;
@@ -170,7 +171,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	@Override
 	public Page<Tag> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());
+		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
 		if (languageTags == null || languageTags.size() == 0) {
 			return tagRepository.findAll(requestUser, projectName, pr);
 		} else {
@@ -180,11 +181,21 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	@Override
 	public Page<Tag> findAllVisibleSubTags(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());
+		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
 		if (languageTags == null || languageTags.size() == 0) {
 			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, pr);
 		} else {
 			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, languageTags, pr);
+		}
+	}
+
+	@Override
+	public Page<Content> findAllVisibleSubContents(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
+		if (languageTags == null || languageTags.size() == 0) {
+			return tagRepository.findAllSubContents(requestUser, projectName, rootTag, pr);
+		} else {
+			return tagRepository.findAllSubContents(requestUser, projectName, rootTag, languageTags, pr);
 		}
 	}
 

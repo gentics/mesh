@@ -1,4 +1,4 @@
-package com.gentics.cailun.path;
+package com.gentics.cailun.paging;
 
 public class PagingInfo {
 

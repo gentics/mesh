@@ -162,6 +162,7 @@ public class RestAssert {
 		assertNotNull(restProject);
 		assertNotNull(restProject.getUuid());
 		assertNotNull(restProject.getPerms());
+		assertNotNull(restProject.getRootTagUuid());
 		assertEquals(project.getName(), restProject.getName());
 		assertEquals(project.getUuid(), restProject.getUuid());
 	}

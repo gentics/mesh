@@ -27,7 +27,7 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.test.AbstractDBTest;
 import com.gentics.cailun.util.JsonUtils;
 
@@ -156,12 +156,12 @@ public class TagTest extends AbstractDBTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
-		Page<Tag> page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 10));
+		Page<Tag> page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(11, page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 14));
+		page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 14));
 		assertEquals(16, page.getTotalElements());
 		assertEquals(14, page.getSize());
 	}

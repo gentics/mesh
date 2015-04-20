@@ -121,7 +121,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
 
 		List<ProjectResponse> allProjects = new ArrayList<>();
-		for (int page = 0; page < totalPages; page++) {
+		for (int page = 1; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
 			allProjects.addAll(restResponse.getData());
@@ -136,9 +136,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=0&page=" + 1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=-1&page=" + 1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + 25 + "&page=" + 4242, 200, "OK");

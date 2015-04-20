@@ -8,7 +8,6 @@ import java.util.concurrent.ForkJoinPool;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +22,8 @@ import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.CaiLunPageRequest;
+import com.gentics.cailun.paging.PagingInfo;
 
 @Component
 @Transactional(readOnly = true)
@@ -95,7 +95,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 
 	@Override
 	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		PageRequest pr = new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage());
+		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
 		if (languageTags == null || languageTags.size() == 0) {
 			return contentRepository.findAll(requestUser, projectName, pr);
 		} else {

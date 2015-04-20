@@ -27,7 +27,7 @@ import com.gentics.cailun.core.rest.role.request.RoleUpdateRequest;
 import com.gentics.cailun.core.rest.role.response.RoleListResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
@@ -145,8 +145,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						for (Role role : rolePage) {
 							listResponse.getData().add(roleService.transformToRest(role));
 						}
-						RestModelPagingHelper.setPaging(listResponse, rolePage.getNumber(), rolePage.getTotalPages(), pagingInfo.getPerPage(),
-								rolePage.getTotalElements());
+						RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
 						tx.success();
 					}
 					rc.response().setStatusCode(200);

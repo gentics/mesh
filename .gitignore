@@ -4,6 +4,7 @@ target
 .settings
 .bin
 .*
+*.orig
 hs_err_*.log
 .vertx
 dependency-reduced-pom.xml

@@ -10,7 +10,7 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerService;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 
 public interface ContentService extends GenericPropertyContainerService<Content> {
 

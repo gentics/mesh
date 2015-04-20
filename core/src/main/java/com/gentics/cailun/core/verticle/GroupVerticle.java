@@ -27,7 +27,7 @@ import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
 import com.gentics.cailun.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.cailun.core.rest.group.response.GroupListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
@@ -198,8 +198,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						for (Group group : groupPage) {
 							listResponse.getData().add(groupService.transformToRest(group));
 						}
-						RestModelPagingHelper.setPaging(listResponse, groupPage.getNumber(), groupPage.getTotalPages(), pagingInfo.getPerPage(),
-								groupPage.getTotalElements());
+						RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
 						tx.success();
 					}
 					rc.response().setStatusCode(200);

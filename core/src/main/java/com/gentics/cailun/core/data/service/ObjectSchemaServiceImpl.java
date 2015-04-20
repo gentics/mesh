@@ -6,7 +6,6 @@ import java.util.Comparator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,8 @@ import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.cailun.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.CaiLunPageRequest;
+import com.gentics.cailun.paging.PagingInfo;
 
 @Component
 @Transactional(readOnly=true)
@@ -102,7 +102,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 	@Override
 	public Page<ObjectSchema> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		return schemaRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
+		return schemaRepository.findAll(requestUser, new CaiLunPageRequest(pagingInfo));
 	}
 
 	@Override

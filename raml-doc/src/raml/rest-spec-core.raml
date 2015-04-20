@@ -66,10 +66,10 @@ traits:
   - paged:
       queryParameters:
         page:
-          description: The page to be displayed
+          description: The page to be displayed. Please note that page numbering is 1-based and that omitting the page parameter will return the first page 1.
           type: number
         per_page: 
-          description: The amount of items per page
+          description: The page size. A page size of 25 will be used when this parameter is omitted.
           type: number
 
   - pagedHeader:
@@ -663,15 +663,21 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
-    /files/{uuid}:
+    /tags:
+      get:
+        description: Load a list of subtags
+    /tags/{uuid}:
       uriParameters:
         uuid:
-          description: Uuid of a file.
+          description: Uuid of a tag.
           type: string
       post:
-        description: Assign the tag to the file. **Partially implemented**
+        description: Assign the tag to the content. **Not implemented**
       delete:
-        description: Remove the tag from the file. **Partially implemented**
+        description: Remove the tag from the content. **Not implemented**
+    /contents:
+      get:
+        description: Load a list of contents that have been taged with the tag.
     /contents/{uuid}:
       uriParameters:
         uuid:
@@ -702,7 +708,7 @@ schemas:
     is: [ localized, sortable, nested, perm_listable ]
     uriParameters:
       path:
-        description: Path to the content,tag or image file.
+        description: Path to a content or tag.
         type: string
     get:
       description: Retrieves the content with the given path. **Not implemented** - **Not tested**

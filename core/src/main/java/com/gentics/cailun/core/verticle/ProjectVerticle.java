@@ -28,7 +28,7 @@ import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.path.PagingInfo;
+import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
 @Component
@@ -135,25 +135,21 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			}
 		});
 
-		route("/").method(GET).handler(
-				rc -> {
+		route("/").method(GET).handler(rc -> {
 
-					ProjectListResponse listResponse = new ProjectListResponse();
-					try (Transaction tx = graphDb.beginTx()) {
-						PagingInfo pagingInfo = getPagingInfo(rc);
-						rc.session().data();
-
-						User user = null;
-						Page<Project> projectPage = projectService.findAllVisible(user, pagingInfo);
-						for (Project project : projectPage) {
-							listResponse.getData().add(projectService.transformToRest(project));
-						}
-						RestModelPagingHelper.setPaging(listResponse, projectPage.getNumber(), projectPage.getTotalPages(), pagingInfo.getPerPage(),
-								projectPage.getTotalElements());
-						tx.success();
-					}
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(listResponse));
+			ProjectListResponse listResponse = new ProjectListResponse();
+			try (Transaction tx = graphDb.beginTx()) {
+				PagingInfo pagingInfo = getPagingInfo(rc);
+				User requestUser = springConfiguration.authService().getUser(rc);
+				Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
+				for (Project project  : projectPage) {
+					listResponse.getData().add(projectService.transformToRest(project));
+				}
+				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
+				tx.success();
+			}
+			rc.response().setStatusCode(200);
+			rc.response().end(toJson(listResponse));
 
 				});
 

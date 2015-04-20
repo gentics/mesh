@@ -321,6 +321,7 @@ public class DemoDataProvider {
 		rootTag = new RootTag();
 		rootTag = (RootTag) tagService.save(rootTag);
 		rootTag.setCreator(userInfo.getUser());
+		rootTag.addProject(project);
 		// totalTags++;
 
 		project.setRootTag(rootTag);
@@ -355,7 +356,7 @@ public class DemoDataProvider {
 		Tag categories = addTag(rootTag, "categories", null, categoriesSchema);
 		totalTags++;
 
-		Tag vehicle = addTag(rootTag, "Vehicle", "Fahrzeug", categoriesSchema);
+		Tag vehicle = addTag(categories, "Vehicle", "Fahrzeug", categoriesSchema);
 		totalTags++;
 
 		Tag car = addTag(vehicle, "Car", "Auto", categoriesSchema);
@@ -373,7 +374,7 @@ public class DemoDataProvider {
 		Tag bus = addTag(vehicle, "Bus", "Bus", categoriesSchema);
 		totalTags++;
 
-		Tag plane = addTag(rootTag, "Plane", "Flugzeug", categoriesSchema);
+		Tag plane = addTag(categories, "Plane", "Flugzeug", categoriesSchema);
 		totalTags++;
 
 		Tag jetFighter = addTag(plane, "JetFigther", "Düsenjäger", categoriesSchema);
