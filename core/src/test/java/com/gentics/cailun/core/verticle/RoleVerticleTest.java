@@ -13,16 +13,12 @@ import java.util.stream.Collectors;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Test;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
-import com.gentics.cailun.core.data.model.auth.AuthRelationships;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.service.GroupService;

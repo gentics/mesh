@@ -12,7 +12,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
@@ -33,6 +32,7 @@ import com.gentics.cailun.core.rest.group.response.GroupResponse;
 import com.gentics.cailun.core.rest.role.response.RoleResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.paging.CaiLunPageRequest;
 import com.gentics.cailun.paging.PagingInfo;
 
 @Component
@@ -161,7 +161,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public Page<Role> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		return roleRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
+		return roleRepository.findAll(requestUser, new CaiLunPageRequest(pagingInfo));
 	}
 
 }

@@ -16,7 +16,7 @@ public class RestModelPagingHelperTest {
 	public void testPagingOffsetCorrection() {
 		TestListResponse response = new TestListResponse();
 		Page<?> page = mock(Page.class);
-		
+
 		int nSDNPages = 3;
 		int nSDNCurrentPage = 0;
 		int nSDNTotalItems = 1000;
@@ -33,7 +33,7 @@ public class RestModelPagingHelperTest {
 
 		assertNotNull(response.getMetainfo());
 		assertEquals(nSDNCurrentPage + 1, response.getMetainfo().getCurrentPage());
-		assertEquals(nSDNPages, response.getMetainfo().getPageCount());
+		assertEquals(nSDNPages + 1, response.getMetainfo().getPageCount());
 		assertEquals(nSDNPageSize, response.getMetainfo().getTotalCount());
 		assertEquals(info.getPerPage(), response.getMetainfo().getPerPage());
 	}

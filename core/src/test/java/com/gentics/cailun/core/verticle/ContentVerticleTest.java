@@ -112,6 +112,16 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	// Read tests
 
 	@Test
+	public void testReadContentsDefaultPaging() throws Exception {
+		// Test default paging parameters
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
+		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, restResponse.getData().size());
+	}
+
+	@Test
 	public void testReadContents() throws Exception {
 
 		// Don't grant permissions to the no perm content. We want to make sure that this one will not be listed.
@@ -124,16 +134,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		// noPermContent = contentService.reload(noPermContent);
 		assertNotNull(noPermContent.getUuid());
 
-		// Test default paging parameters
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/", 200, "OK");
-		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(25, restResponse.getData().size());
-
 		int perPage = 11;
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + 3, 200, "OK");
-		restResponse = JsonUtils.readValue(response, ContentListResponse.class);
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/contents/?per_page=" + perPage + "&page=" + 3, 200, "OK");
+		ContentListResponse restResponse = JsonUtils.readValue(response, ContentListResponse.class);
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Contents + permitted content

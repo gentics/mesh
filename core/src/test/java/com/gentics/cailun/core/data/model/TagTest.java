@@ -156,12 +156,12 @@ public class TagTest extends AbstractDBTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
-		Page<Tag> page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 10));
+		Page<Tag> page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(11, page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 14));
+		page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 14));
 		assertEquals(16, page.getTotalElements());
 		assertEquals(14, page.getSize());
 	}

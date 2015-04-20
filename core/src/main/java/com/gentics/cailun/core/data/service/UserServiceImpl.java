@@ -14,7 +14,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +30,7 @@ import com.gentics.cailun.core.repository.UserRepository;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
+import com.gentics.cailun.paging.CaiLunPageRequest;
 import com.gentics.cailun.paging.PagingInfo;
 
 @Component
@@ -58,7 +58,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	@Override
 	public Page<User> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		return userRepository.findAll(requestUser, new PageRequest(pagingInfo.getPage(), pagingInfo.getPerPage()));
+		return userRepository.findAll(requestUser, new CaiLunPageRequest(pagingInfo));
 	}
 
 	@Override
