@@ -7,6 +7,8 @@ public class ProjectResponse extends AbstractRestModel {
 	private String name;
 	private String[] perms = {};
 
+	private String rootTagUuid;
+
 	public ProjectResponse() {
 	}
 
@@ -24,6 +26,14 @@ public class ProjectResponse extends AbstractRestModel {
 
 	public void setPerms(String... perms) {
 		this.perms = perms;
+	}
+
+	public String getRootTagUuid() {
+		return rootTagUuid;
+	}
+
+	public void setRootTagUuid(String rootTagUuid) {
+		this.rootTagUuid = rootTagUuid;
 	}
 
 }

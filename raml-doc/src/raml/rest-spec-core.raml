@@ -663,20 +663,13 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
-    /files/{uuid}:
-      uriParameters:
-        uuid:
-          description: Uuid of a file.
-          type: string
-      post:
-        description: Assign the tag to the file. **Partially implemented**
-      delete:
-        description: Remove the tag from the file. **Partially implemented**
     /contents/{uuid}:
       uriParameters:
         uuid:
           description: Uuid of a content.
           type: string
+      get:
+        description: Load a list of contents that have been tagged.
       post:
         description: Assign the tag to the content. **Not implemented**
       delete:
