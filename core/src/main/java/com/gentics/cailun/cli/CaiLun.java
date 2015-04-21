@@ -137,8 +137,9 @@ public class CaiLun {
 
 	private String getVertxVersion() {
 		// TODO extract from pom.xml metadata?
-		Package pack = Vertx.class.getPackage();
-		return pack.getImplementationVersion();
+		// Package pack = Vertx.class.getPackage();
+		// return pack.getImplementationVersion();
+		return new io.vertx.core.Starter().getVersion();
 	}
 
 	private static String infoLine(String text) {

@@ -160,6 +160,7 @@ public class DemoDataProvider {
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 
 		User user = new User(username);
+		user.setUuid("UUIDOFUSER1");
 		userService.setPassword(user, password);
 		log.info("Creating user with username: " + username + " and password: " + password);
 		user.setFirstname(firstname);
