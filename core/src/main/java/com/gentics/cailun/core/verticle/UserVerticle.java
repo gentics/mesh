@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.Route;
+import io.vertx.ext.apex.RoutingContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -20,6 +21,7 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
@@ -50,15 +52,21 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 		route("/:uuid").method(GET).handler(rc -> {
 			vertx.executeBlocking(handler -> {
-				User user;
 				try (Transaction tx = graphDb.beginTx()) {
-					user = getObject(rc, "uuid", PermissionType.READ);
+					loadObject(rc, "uuid", PermissionType.READ, rh -> {
+						if (rh.succeeded()) {
+							User user = (User) rh.result();
+							UserResponse restUser = userService.transformToRest(user);
+							rc.response().setStatusCode(200);
+							rc.response().end(toJson(restUser));
+						} else {
+							if (rh.failed()) {
+								rc.fail(rh.cause());
+							}
+						}
+					});
 					tx.success();
 				}
-				UserResponse restUser = userService.transformToRest(user);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(restUser));
-
 			}, null);
 		});
 

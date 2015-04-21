@@ -1,5 +1,8 @@
 package com.gentics.cailun.core;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -27,7 +30,6 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 import com.gentics.cailun.paging.PagingInfo;
-import com.gentics.cailun.util.PermissionUtils;
 
 public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
@@ -111,6 +113,40 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", param));
 		}
 		return getObjectByUUID(rc, uuid, perm);
+
+	}
+
+	public void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
+			Handler<AsyncResult<? extends AbstractPersistable>> resultHandler) {
+
+		String uuid = rc.request().params().get(uuidParamName);
+		if (StringUtils.isEmpty(uuid)) {
+			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", uuidParamName));
+		}
+
+		if (StringUtils.isEmpty(uuid)) {
+			// TODO i18n, add info about uuid source?
+			throw new HttpStatusCodeErrorException(400, "missing uuid");
+		}
+		vertx.executeBlocking((Future<AbstractPersistable> fut) -> {
+			GenericNode node = genericNodeService.findByUUID(uuid);
+			if (node == null) {
+				fut.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid)));
+				return;
+			}
+			rc.session().hasPermission(new CaiLunPermission(node, permType).toString(), handler -> {
+				if (!handler.result()) {
+					fut.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));
+					return;
+				} else {
+					fut.complete(node);
+					return;
+				}
+			});
+		}, res -> {
+			resultHandler.handle(res);
+			// System.out.println("The result is: " + res.result());
+			});
 
 	}
 

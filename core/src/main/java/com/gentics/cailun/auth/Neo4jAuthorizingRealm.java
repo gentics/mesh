@@ -12,13 +12,21 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
+import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.UserService;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 
 public class Neo4jAuthorizingRealm extends AuthorizingRealm {
@@ -31,27 +39,46 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private Neo4jTemplate neo4jTemplate;
+
+	@Autowired
+	private GraphDatabaseService graphDb;
+
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		return new SimpleAuthorizationInfo();
 	}
 
-	private long getNodeIdFromPrincipalId(String id) {
-		final String nodeIdStr = id.substring(id.lastIndexOf('#') + 1);
-		return Long.valueOf(nodeIdStr);
-	}
-
 	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-		if (permission instanceof CaiLunPermission) {
-			CaiLunPermission basicPermission = (CaiLunPermission) permission;
-			try {
-				long userId = getNodeIdFromPrincipalId(principals.getPrimaryPrincipal().toString());
-				return userService.isPermitted(userId, basicPermission);
-			} catch (Exception e) {
-				e.printStackTrace();
+		if (principals.getPrimaryPrincipal() instanceof Long) {
+			if (permission instanceof WildcardPermission) {
+				WildcardPermission wildcardPermission = (WildcardPermission) permission;
+				String perm = wildcardPermission.toString();
+				int mid = perm.indexOf("#");
+				String targetId = perm.substring(1, mid);
+				String permName = perm.substring(mid + 1, perm.length() - 1);
+				Long userId = (Long) principals.getPrimaryPrincipal();
+				boolean permitted = false;
+				try (Transaction tx = graphDb.beginTx()) {
+					try {
+						Node node = neo4jTemplate.getNode(Long.valueOf(targetId));
+						GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
+						PermissionType type = PermissionType.fromString(permName);
+						permitted = userService.isPermitted(userId, new CaiLunPermission(sdnNode, type));
+					} catch (Exception e) {
+						tx.failure();
+						throw new HttpStatusCodeErrorException(500, "Error while checking permission for user {" + userId + "}", e);
+					}
+					tx.success();
+				}
+				return permitted;
+			} else {
+				throw new HttpStatusCodeErrorException(500, "Permission format does not match expected values");
 			}
+		} else {
+			throw new HttpStatusCodeErrorException(500, "Permission format does not match expected values");
 		}
-		return false;
 	}
 
 	@Override

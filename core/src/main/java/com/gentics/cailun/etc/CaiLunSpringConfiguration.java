@@ -3,10 +3,11 @@ package com.gentics.cailun.etc;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.shiro.impl.ShiroAuthProviderImpl;
+import io.vertx.ext.auth.shiro.impl.ShiroAuthRealmBase;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
@@ -26,9 +26,7 @@ import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.auth.EnhancedShiroAuthRealmImpl;
-import com.gentics.cailun.auth.ExposingShiroAuthProvider;
 import com.gentics.cailun.auth.Neo4jAuthorizingRealm;
 import com.gentics.cailun.etc.config.CaiLunConfiguration;
 import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
@@ -125,11 +123,10 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	@Bean
 	public AuthProvider authProvider() {
 		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
-		ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
-//		CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), new JsonObject(), provider);
-
-		SecurityUtils.setSecurityManager(realm.getSecurityManager());
-		return provider;
+		//ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
+		//CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), new JsonObject(), provider);
+//		SecurityUtils.setSecurityManager(realm.getSecurityManager());
+		return new ShiroAuthProviderImpl(vertx(), realm);
 	}
 
 }

@@ -258,7 +258,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				int depth = getDepth(rc);
 				Tag rootTag = getObject(rc, "uuid", PermissionType.READ);
 				PagingInfo pagingInfo = getPagingInfo(rc);
-				User requestUser = springConfiguration.authService().getUser(rc);
+				//User requestUser = springConfiguration.authService().getUser(rc);
+				User requestUser= null;
 				// TODO filtering, sorting
 				Page<Content> contentPage = tagService.findAllVisibleSubContents(requestUser, projectName, rootTag, languageTags, pagingInfo);
 				for (Content content : contentPage) {

@@ -6,4 +6,15 @@ public enum PermissionType {
 	public String getPropertyName() {
 		return name().toLowerCase();
 	}
+
+	public static PermissionType fromString(String text) {
+		if (text != null) {
+			for (PermissionType b : PermissionType.values()) {
+				if (text.equalsIgnoreCase(b.name())) {
+					return b;
+				}
+			}
+		}
+		return null;
+	}
 }
