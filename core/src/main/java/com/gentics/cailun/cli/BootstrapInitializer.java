@@ -47,6 +47,7 @@ import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.core.repository.ProjectRepository;
 import com.gentics.cailun.core.repository.RoleRepository;
 import com.gentics.cailun.core.repository.UserRepository;
+import com.gentics.cailun.core.verticle.AdminVerticle;
 import com.gentics.cailun.core.verticle.ContentVerticle;
 import com.gentics.cailun.core.verticle.GroupVerticle;
 import com.gentics.cailun.core.verticle.ObjectSchemaVerticle;
@@ -121,7 +122,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(ObjectSchemaVerticle.class);
 		// addMandatoryVerticle(SearchVerticle.class);
 		// addMandatoryVerticle(AuthenticationVerticle.class);
-		// addMandatoryVerticle(AdminVerticle.class);
+		addMandatoryVerticle(AdminVerticle.class);
 
 	}
 

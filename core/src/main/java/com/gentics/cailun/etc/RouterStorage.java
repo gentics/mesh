@@ -61,7 +61,7 @@ public class RouterStorage {
 	@PostConstruct
 	public void init() {
 		this.vertx = springConfiguration.vertx();
-		initAPIRouter(springConfiguration.authProvider());
+		initAPIRouter();
 	}
 
 	/**
@@ -131,25 +131,12 @@ public class RouterStorage {
 
 	}
 
-	private void initAPIRouter(AuthProvider caiLunAuthProvider) {
+	private void initAPIRouter() {
 		Router router = getAPIRouter();
-
-		CorsHandler corsHandler = CorsHandler.create("*");
-		// corsHandler.allowCredentials(true);
-		corsHandler.allowedMethod(HttpMethod.GET);
-		corsHandler.allowedMethod(HttpMethod.POST);
-		corsHandler.allowedMethod(HttpMethod.PUT);
-		corsHandler.allowedMethod(HttpMethod.DELETE);
-		corsHandler.allowedHeader("Authorization");
-		corsHandler.allowedHeader("Content-Type");
-		router.route().handler(corsHandler);
-
+		router.route().handler(springConfiguration.corsHandler());
 		router.route().handler(BodyHandler.create());
 		router.route().handler(CookieHandler.create());
-		SessionStore store = LocalSessionStore.create(vertx);
-		router.route().handler(new SessionHandlerImpl("cailun.session", 30 * 60 * 1000, false, store));
-		AuthHandler authHandler = BasicAuthHandler.create(caiLunAuthProvider, BasicAuthHandler.DEFAULT_REALM);
-		router.route().handler(authHandler);
+		router.route().handler(springConfiguration.sessionHandler());
 		router.route().handler(dataHandler);
 	}
 

@@ -38,7 +38,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
-	public void testReadTagByUUID() throws Exception {
+	public void testReadByUUID() throws Exception {
 		User user = info.getUser();
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
 

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
+import org.apache.shiro.util.PermissionUtils;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.content.ContentTransformationTask;
@@ -26,7 +28,6 @@ import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.util.PermissionUtils;
 
 public class TagTransformationTask extends RecursiveTask<Void> {
 
@@ -108,7 +109,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				try (Transaction tx = info.getGraphDb().beginTx()) {
 					String currentUuid = currentTag.getUuid();
 					Session session = info.getRoutingContext().session();
-					session.hasPermission(PermissionUtils.convert(currentTag, PermissionType.READ), handler -> {
+					session.hasPermission(new CaiLunPermission(currentTag, PermissionType.READ).toString(), handler -> {
 						if (handler.result()) {
 							Tag loadedTag = info.getNeo4jTemplate().fetch(currentTag);
 							TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
@@ -155,7 +156,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 									info.getRoutingContext()
 											.session()
 											.hasPermission(
-													PermissionUtils.convert(currentContent, PermissionType.READ),
+													new CaiLunPermission(currentContent, PermissionType.READ).toString(),
 													handler -> {
 
 														if (handler.result()) {

@@ -5,8 +5,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.cailun.core.AbstractRestVerticle;
+import com.gentics.cailun.core.verticle.AdminVerticle;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
-import com.gentics.cailun.verticle.admin.AdminVerticle;
 
 public class AdminVerticleTest extends AbstractRestVerticleTest {
 

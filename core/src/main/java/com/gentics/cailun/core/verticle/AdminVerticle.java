@@ -1,4 +1,4 @@
-package com.gentics.cailun.verticle.admin;
+package com.gentics.cailun.core.verticle;
 
 import static com.gentics.cailun.util.DeploymentUtils.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -38,7 +38,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	public static final long DEFAULT_GIT_CHECKER_INTERVAL = 60 * 5 * 100; // 5 Min
 
 	@Autowired
-	private CaiLunSpringConfiguration caiLunConfig;
+	private CaiLunSpringConfiguration springConfiguration;
 
 	GitPullChecker gitChecker;
 
@@ -52,6 +52,9 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 			gitChecker = new GitPullChecker(config().getLong(GIT_PULL_CHECKER_INTERVAL_KEY, DEFAULT_GIT_CHECKER_INTERVAL));
 		}
 
+		addStatusHandler();
+
+		// TODO secure handlers below
 		addBackupHandler();
 		addNeo4VertxRestartHandler();
 
@@ -59,8 +62,6 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		// addServiceHandler();
 
 	}
-
-	
 
 	@Override
 	public void stop() throws Exception {
@@ -70,12 +71,20 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		}
 	}
 
+	private void addStatusHandler() {
+		route("/status").method(GET).handler(rc -> {
+			rc.response().setStatusCode(200);
+			rc.response().end("OK");
+		});
+
+	}
+
 	private void addNeo4VertxRestartHandler() {
-		route("/neo4vertx/restart").method(GET).handler(ctx -> {
+		route("/neo4vertx/restart").method(GET).handler(rc -> {
 			try {
-				caiLunConfig.neo4VertxVerticle().stop();
-				caiLunConfig.neo4VertxVerticle().config().put(Neo4VertxConfiguration.PATH_KEY, "/tmp/backup");
-				caiLunConfig.neo4VertxVerticle().start();
+				springConfiguration.neo4VertxVerticle().stop();
+				springConfiguration.neo4VertxVerticle().config().put(Neo4VertxConfiguration.PATH_KEY, "/tmp/backup");
+				springConfiguration.neo4VertxVerticle().start();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -84,7 +93,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addBackupHandler() {
-		route("/backup").method(GET).handler(ctx -> {
+		route("/backup").method(GET).handler(rc -> {
 			log.info("Backup started");
 			// TODO handle path by config setting
 			// TODO check for admin role

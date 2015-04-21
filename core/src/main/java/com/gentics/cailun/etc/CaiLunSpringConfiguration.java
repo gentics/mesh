@@ -3,11 +3,18 @@ package com.gentics.cailun.etc;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.apex.handler.AuthHandler;
+import io.vertx.ext.apex.handler.BasicAuthHandler;
+import io.vertx.ext.apex.handler.CorsHandler;
+import io.vertx.ext.apex.handler.SessionHandler;
+import io.vertx.ext.apex.handler.impl.SessionHandlerImpl;
+import io.vertx.ext.apex.sstore.LocalSessionStore;
+import io.vertx.ext.apex.sstore.SessionStore;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.shiro.impl.ShiroAuthProviderImpl;
-import io.vertx.ext.auth.shiro.impl.ShiroAuthRealmBase;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.IOException;
@@ -121,12 +128,35 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	}
 
 	@Bean
+	public SessionHandler sessionHandler() {
+		SessionStore store = LocalSessionStore.create(vertx());
+		return new SessionHandlerImpl("cailun.session", 30 * 60 * 1000, false, store);
+	}
+
+	@Bean
+	public AuthHandler authHandler() {
+		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
+	}
+
+	@Bean
 	public AuthProvider authProvider() {
 		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
-		//ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
-		//CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), new JsonObject(), provider);
-//		SecurityUtils.setSecurityManager(realm.getSecurityManager());
+		// ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
+		// CaiLunAuthServiceImpl authService = new CaiLunAuthServiceImpl(vertx(), new JsonObject(), provider);
+		// SecurityUtils.setSecurityManager(realm.getSecurityManager());
 		return new ShiroAuthProviderImpl(vertx(), realm);
+	}
+
+	public CorsHandler corsHandler() {
+		CorsHandler corsHandler = CorsHandler.create("*");
+		// corsHandler.allowCredentials(true);
+		corsHandler.allowedMethod(HttpMethod.GET);
+		corsHandler.allowedMethod(HttpMethod.POST);
+		corsHandler.allowedMethod(HttpMethod.PUT);
+		corsHandler.allowedMethod(HttpMethod.DELETE);
+		corsHandler.allowedHeader("Authorization");
+		corsHandler.allowedHeader("Content-Type");
+		return corsHandler;
 	}
 
 }

@@ -7,7 +7,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.apex.Route;
-import io.vertx.ext.apex.RoutingContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -21,7 +20,6 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.user.request.UserCreateRequest;
 import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
@@ -42,6 +40,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		route("/*").handler(springConfiguration.authHandler());
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -49,7 +48,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-
 		route("/:uuid").method(GET).handler(rc -> {
 			vertx.executeBlocking(handler -> {
 				try (Transaction tx = graphDb.beginTx()) {

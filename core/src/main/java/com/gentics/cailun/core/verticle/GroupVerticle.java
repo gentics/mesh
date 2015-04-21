@@ -41,6 +41,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		route("/*").handler(springConfiguration.authHandler());
 		// addGroupChildGroupHandlers();
 		addGroupUserHandlers();
 		addGroupRoleHandlers();

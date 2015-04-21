@@ -43,6 +43,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		route("/*").handler(springConfiguration.authHandler());
 		addSchemaProjectHandlers();
 
 		addCreateHandler();

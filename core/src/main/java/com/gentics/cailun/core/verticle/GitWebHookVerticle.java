@@ -1,4 +1,4 @@
-package com.gentics.cailun.verticle.admin;
+package com.gentics.cailun.core.verticle;
 
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.eventbus.Message;

@@ -72,6 +72,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		route("/*").handler(springConfiguration.authHandler());
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();

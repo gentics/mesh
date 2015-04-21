@@ -45,6 +45,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		route("/*").handler(springConfiguration.authHandler());
 		addPathHandler();
 	}
 

@@ -28,7 +28,6 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 		addLoginHandler();
 		addUserInfoHandler();
-
 	}
 
 	private void addUserInfoHandler() {

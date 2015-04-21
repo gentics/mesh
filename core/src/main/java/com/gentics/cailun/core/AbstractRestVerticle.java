@@ -53,6 +53,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		if (localRouter == null) {
 			throw new CaiLunConfigurationException("The local router was not setup correctly. Startup failed.");
 		}
+
 		log.info("Starting http server..");
 		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
 		server.requestHandler(routerStorage.getRootRouter()::accept);
@@ -85,7 +86,8 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @return
 	 */
 	protected Route route(String path) {
-		return localRouter.route(path);
+		Route route = localRouter.route(path);
+		return route;
 	}
 
 	/**
@@ -94,7 +96,8 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @return
 	 */
 	protected Route route() {
-		return localRouter.route();
+		Route route = localRouter.route();
+		return route;
 	}
 
 	/**

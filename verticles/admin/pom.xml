@@ -17,18 +17,5 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.eclipse.jgit</groupId>
-			<artifactId>org.eclipse.jgit</artifactId>
-			<version>3.6.2.201501210735-r</version>
-		</dependency>
-	</dependencies>
 
-	<repositories>
-		<repository>
-			<id>jgit-repository</id>
-			<url>https://repo.eclipse.org/content/groups/releases/</url>
-		</repository>
-	</repositories>
 </project>

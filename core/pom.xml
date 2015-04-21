@@ -160,6 +160,12 @@
 		<!-- For Vert.x Apex <dependency> <groupId>com.google.code.gson</groupId> 
 			<artifactId>gson</artifactId> <version>2.3.1</version> </dependency> -->
 
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>3.6.2.201501210735-r</version>
+		</dependency>
+
 		<!-- Neo4J -->
 		<dependency>
 			<groupId>org.openpcf</groupId>
@@ -339,5 +345,14 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+
+
+	<repositories>
+		<repository>
+			<id>jgit-repository</id>
+			<url>https://repo.eclipse.org/content/groups/releases/</url>
+		</repository>
+	</repositories>
 
 </project>

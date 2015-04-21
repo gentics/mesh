@@ -16,6 +16,7 @@ import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
@@ -24,7 +25,6 @@ import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
-import com.gentics.cailun.util.PermissionUtils;
 
 public class ContentTransformationTask extends RecursiveTask<Void> {
 
@@ -127,7 +127,7 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 									String currentUuid = currentTag.getUuid();
 									Session session = info.getRoutingContext().session();
 									User user = null;
-									session.hasPermission(PermissionUtils.convert(currentTag, PermissionType.READ), handler -> {
+									session.hasPermission(new CaiLunPermission(currentTag, PermissionType.READ).toString(), handler -> {
 										if(handler.result()) {
 											TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
 											if (currentRestTag == null) {
