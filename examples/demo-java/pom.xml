@@ -78,7 +78,7 @@
 								<wait>
 									<url>http://${dockerIP}:${cailun.port}/api/v1/admin/status</url>
 									<log>.*Initalized project.*</log>
-									<time>120000</time>
+									<time>50000</time>
 								</wait>
 								<log>
 									<color>cyan</color>
@@ -108,13 +108,14 @@
 			</plugin>
 
 			<plugin>
-				<groupId>com.lazerycode.jmeter</groupId>
-				<artifactId>jmeter-maven-plugin</artifactId>
-				<version>1.10.1</version>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>chronos-jmeter-maven-plugin</artifactId>
+				<version>1.1.0</version>
+				<configuration>
+					<input>${basedir}/src/test/jmeter/test.jmx</input>
+				</configuration>
 				<executions>
 					<execution>
-						<id>jmeter-tests</id>
-						<phase>integration-test</phase>
 						<goals>
 							<goal>jmeter</goal>
 						</goals>
