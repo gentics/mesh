@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
-import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
@@ -100,39 +99,14 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		return route;
 	}
 
-	/**
-	 * Extract the given uri parameter and load the object. Permissions and load verification will also be done by this method.
-	 * 
-	 * @param rc
-	 * @param param
-	 *            Name of the uri parameter which hold the uuid
-	 * @param perm
-	 *            Permission type which will be checked
-	 * @return
-	 */
-	public <T> T getObject(RoutingContext rc, String param, PermissionType perm) {
-		String uuid = rc.request().params().get(param);
-		if (StringUtils.isEmpty(uuid)) {
-			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", param));
-		}
-		return getObjectByUUID(rc, uuid, perm);
-
-	}
-
-	public void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
-			Handler<AsyncResult<? extends AbstractPersistable>> resultHandler) {
-
-		String uuid = rc.request().params().get(uuidParamName);
-		if (StringUtils.isEmpty(uuid)) {
-			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", uuidParamName));
-		}
-
+	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
+			Handler<AsyncResult<T>> resultHandler) {
 		if (StringUtils.isEmpty(uuid)) {
 			// TODO i18n, add info about uuid source?
 			throw new HttpStatusCodeErrorException(400, "missing uuid");
 		}
-		vertx.executeBlocking((Future<AbstractPersistable> fut) -> {
-			GenericNode node = genericNodeService.findByUUID(uuid);
+		vertx.executeBlocking((Future<T> fut) -> {
+			T node = (T) genericNodeService.findByUUID(uuid);
 			if (node == null) {
 				fut.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid)));
 				return;
@@ -147,60 +121,41 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 				}
 			});
 		}, res -> {
-			resultHandler.handle(res);
-			// System.out.println("The result is: " + res.result());
-			});
+			if (res.failed()) {
+				rc.fail(res.cause());
+			} else {
+				resultHandler.handle(res);
+			}
+		});
 
 	}
 
-	public <T> T getObjectByUUID(RoutingContext rc, String projectName, String uuid, PermissionType perm) {
-		if (StringUtils.isEmpty(uuid)) {
-			// TODO i18n, add info about uuid source?
-			throw new HttpStatusCodeErrorException(400, "missing uuid");
-		}
-		GenericNode object = genericNodeService.findByUUID(projectName, uuid);
-		if (object == null) {
-			throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
-		}
-		failOnMissingPermission(rc, object, perm);
-		// TODO type check
-		return (T) object;
-	}
+	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
+			Handler<AsyncResult<T>> resultHandler) {
 
-	/**
-	 * Load the object with the given uuid and check the given permissions.
-	 * 
-	 * @param rc
-	 * @param uuid
-	 * @param perm
-	 * @return
-	 */
-	public <T> T getObjectByUUID(RoutingContext rc, String uuid, PermissionType perm) {
+		String uuid = rc.request().params().get(uuidParamName);
 		if (StringUtils.isEmpty(uuid)) {
-			// TODO i18n, add info about uuid source?
-			throw new HttpStatusCodeErrorException(400, "missing uuid");
+			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", uuidParamName));
 		}
-		GenericNode object = genericNodeService.findByUUID(uuid);
-		if (object == null) {
-			throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
-		}
-		failOnMissingPermission(rc, object, perm);
-		// TODO type check
-		return (T) object;
+
+		loadObjectByUuid(rc, uuid, permType, resultHandler);
 	}
 
 	/**
 	 * Check the permission and throw an invalid permission exception when no matching permission could be found.
-	 * 
+	 *
 	 * @param rc
 	 * @param node
 	 * @param type
 	 * @return
 	 */
-	protected void failOnMissingPermission(RoutingContext rc, AbstractPersistable node, PermissionType type) throws InvalidPermissionException {
+	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler)
+			throws InvalidPermissionException {
 		rc.session().hasPermission(new CaiLunPermission(node, type).toString(), handler -> {
 			if (!handler.result()) {
 				throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()));
+			} else {
+				resultHandler.handle(Future.succeededFuture(handler.result()));
 			}
 		});
 	}

@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.core.AsyncResult;
 import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,23 +50,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			vertx.executeBlocking(handler -> {
-				try (Transaction tx = graphDb.beginTx()) {
-					loadObject(rc, "uuid", PermissionType.READ, rh -> {
-						if (rh.succeeded()) {
-							User user = (User) rh.result();
-							UserResponse restUser = userService.transformToRest(user);
-							rc.response().setStatusCode(200);
-							rc.response().end(toJson(restUser));
-						} else {
-							if (rh.failed()) {
-								rc.fail(rh.cause());
-							}
-						}
-					});
-					tx.success();
-				}
-			}, null);
+			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
+				User user = rh.result();
+				UserResponse restUser = userService.transformToRest(user);
+				rc.response().setStatusCode(200).end(toJson(restUser));
+			});
 		});
 
 		/*
@@ -73,47 +62,43 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).handler(rc -> {
 			UserListResponse listResponse = new UserListResponse();
-			try (Transaction tx = graphDb.beginTx()) {
-				PagingInfo pagingInfo = getPagingInfo(rc);
-				// User requestUser = springConfiguration.authService().getUser(rc);
-				User user = null;
-				Page<User> userPage = userService.findAllVisible(user, pagingInfo);
-				for (User currentUser : userPage) {
-					listResponse.getData().add(userService.transformToRest(currentUser));
-				}
-				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
-				tx.success();
+			PagingInfo pagingInfo = getPagingInfo(rc);
+			Page<User> userPage = userService.findAllVisible(rc, pagingInfo);
+			for (User currentUser : userPage) {
+				listResponse.getData().add(userService.transformToRest(currentUser));
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(listResponse));
+			RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
+			rc.response().setStatusCode(200).end(toJson(listResponse));
 		});
 	}
 
+	// TODO invalidate active sessions for this user
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			// TODO invalidate active sessions for this user
+			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<User> rh) -> {
 				try (Transaction tx = graphDb.beginTx()) {
-					User user = getObject(rc, "uuid", PermissionType.DELETE);
+					User user = rh.result();
 					userService.delete(user);
+					rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 					tx.success();
 				}
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 			});
+
+		});
 	}
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
-			User user = null;
-			try (Transaction tx = graphDb.beginTx()) {
-				user = getObject(rc, "uuid", PermissionType.UPDATE);
+			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<User> rh) -> {
+				User user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
 				if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
 					if (userService.findByUsername(requestModel.getUsername()) != null) {
-						throw new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username"));
+						rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username")));
+						return;
 					}
 					user.setUsername(requestModel.getUsername());
 				}
@@ -133,13 +118,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				if (!StringUtils.isEmpty(requestModel.getPassword())) {
 					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				}
-
 				user = userService.save(user);
-				tx.success();
+				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
 
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(userService.transformToRest(user)));
+			});
 
 		});
 	}
@@ -147,55 +129,55 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
-			User user = null;
-			try (Transaction tx = graphDb.beginTx()) {
 
-				UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
-				if (requestModel == null) {
-					// TODO exception would be nice, add i18n
-					String message = "Could not parse request json.";
-					rc.response().setStatusCode(400);
-					rc.response().end(toJson(new GenericMessageResponse(message)));
-					return;
-				}
-				if (StringUtils.isEmpty(requestModel.getPassword())) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_password"));
-				}
-				if (StringUtils.isEmpty(requestModel.getUsername())) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_username"));
-				}
-				String groupUuid = requestModel.getGroupUuid();
-				if (StringUtils.isEmpty(groupUuid)) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field"));
-				}
-				// Load the parent group for the user
-				Group parentGroup = getObjectByUUID(rc, groupUuid, PermissionType.CREATE);
-
-				// Check for conflicting usernames
-				if (userService.findByUsername(requestModel.getUsername()) != null) {
-					String message = i18n.get(rc, "user_conflicting_username");
-					throw new HttpStatusCodeErrorException(409, message);
-				}
-
-				user = new User(requestModel.getUsername());
-				user.setFirstname(requestModel.getFirstname());
-				user.setLastname(requestModel.getLastname());
-				user.setEmailAddress(requestModel.getEmailAddress());
-				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
-				user = userService.save(user);
-
-				// Add the user to the parent group and reload user
-				parentGroup.addUser(user);
-				parentGroup = groupService.save(parentGroup);
-
-				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), user);
-
-				tx.success();
+			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
+			if (requestModel == null) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_parse_request_json_error")));
+				return;
 			}
-			user = userService.reload(user);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(userService.transformToRest(user)));
+			if (StringUtils.isEmpty(requestModel.getPassword())) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_password")));
+				return;
+			}
+			if (StringUtils.isEmpty(requestModel.getUsername())) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_username")));
+				return;
+			}
+			String groupUuid = requestModel.getGroupUuid();
+			if (StringUtils.isEmpty(groupUuid)) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field")));
+				return;
+			}
+			// Load the parent group for the user
+			loadObjectByUuid(rc, groupUuid, PermissionType.CREATE, (AsyncResult<Group> rh) -> {
+				try (Transaction tx = graphDb.beginTx()) {
+
+					Group parentGroup = rh.result();
+
+					if (userService.findByUsername(requestModel.getUsername()) != null) {
+						String message = i18n.get(rc, "user_conflicting_username");
+						rc.fail(new HttpStatusCodeErrorException(409, message));
+						return;
+					}
+
+					User user = new User(requestModel.getUsername());
+					user.setFirstname(requestModel.getFirstname());
+					user.setLastname(requestModel.getLastname());
+					user.setEmailAddress(requestModel.getEmailAddress());
+					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+					user.getGroups().add(parentGroup);
+					user = userService.save(user);
+
+					// parentGroup.addUser(user);
+					// parentGroup = groupService.save(parentGroup);
+
+					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), user);
+					rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
+					tx.success();
+				}
+			});
 
 		});
 	}
+
 }

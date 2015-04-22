@@ -1,7 +1,6 @@
 package com.gentics.cailun.core.data.model.auth;
 
 import org.apache.shiro.authz.Permission;
-import org.apache.shiro.authz.permission.WildcardPermission;
 
 import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 

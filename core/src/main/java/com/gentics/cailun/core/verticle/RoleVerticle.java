@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.core.AsyncResult;
 import io.vertx.ext.apex.Session;
 
 import org.apache.commons.lang3.StringUtils;
@@ -83,23 +84,19 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			try (Transaction tx = graphDb.beginTx()) {
-				Role role = getObject(rc, "uuid", PermissionType.DELETE);
+			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Role> rh) -> {
+				Role role = rh.result();
 				roleService.delete(role);
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "role_deleted", uuid))));
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "role_deleted", uuid))));
+			});
 
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			Role role;
-			try (Transaction tx = graphDb.beginTx()) {
-
-				role = getObject(rc, "uuid", PermissionType.UPDATE);
+			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Role> rh) -> {
+				Role role = rh.result();
 				RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 
 				if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
@@ -110,48 +107,35 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					role.setName(requestModel.getName());
 				}
 				role = roleService.save(role);
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(roleService.transformToRest(role)));
+				rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
+			});
 		});
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			Role role;
-			try (Transaction tx = graphDb.beginTx()) {
-				role = getObject(rc, "uuid", PermissionType.READ);
-				tx.success();
-			}
-			RoleResponse restRole = roleService.transformToRest(role);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(restRole));
+			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Role> rh) -> {
+				Role role = rh.result();
+				RoleResponse restRole = roleService.transformToRest(role);
+				rc.response().setStatusCode(200).end(toJson(restRole));
+			});
 		});
 
 		/*
 		 * List all roles when no parameter was specified
 		 */
-		route("/").method(GET).handler(
-				rc -> {
-					Session session = rc.session();
-					RoleListResponse listResponse = new RoleListResponse();
+		route("/").method(GET).handler(rc -> {
+			RoleListResponse listResponse = new RoleListResponse();
 
-
-					try (Transaction tx = graphDb.beginTx()) {
-						PagingInfo pagingInfo = getPagingInfo(rc);
-//						User requestUser = springConfiguration.authService().getUser(rc);
-						User user = null;
-						Page<Role> rolePage = roleService.findAllVisible(user, pagingInfo);
-						for (Role role : rolePage) {
-							listResponse.getData().add(roleService.transformToRest(role));
-						}
-						RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
-						tx.success();
-					}
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(listResponse));
-				});
+			PagingInfo pagingInfo = getPagingInfo(rc);
+			User user = userService.findUser(rc);
+			Page<Role> rolePage = roleService.findAllVisible(user, pagingInfo);
+			for (Role role : rolePage) {
+				listResponse.getData().add(roleService.transformToRest(role));
+			}
+			RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+			rc.response().setStatusCode(200).end(toJson(listResponse));
+		});
 	}
 
 	private void addCreateHandler() {
@@ -159,33 +143,33 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			RoleCreateRequest requestModel = fromJson(rc, RoleCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+				return;
 			}
 
 			if (StringUtils.isEmpty(requestModel.getGroupUuid())) {
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "role_missing_parentgroup_field"));
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "role_missing_parentgroup_field")));
+				return;
 			}
-			Role role;
-			try (Transaction tx = graphDb.beginTx()) {
 
-				if (roleService.findByName(requestModel.getName()) != null) {
-					throw new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name"));
+			if (roleService.findByName(requestModel.getName()) != null) {
+				rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name")));
+				return;
+			}
+
+			loadObjectByUuid(rc, requestModel.getGroupUuid(), PermissionType.CREATE, (AsyncResult<Group> rh) -> {
+				try (Transaction tx = graphDb.beginTx()) {
+					Role role = new Role(requestModel.getName());
+					Group parentGroup = rh.result();
+					role.getGroups().add(parentGroup);
+					role = roleService.save(role);
+
+					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), role);
+					rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
+					tx.success();
 				}
+			});
 
-				Group parentGroup = getObjectByUUID(rc, requestModel.getGroupUuid(), PermissionType.CREATE);
-
-				role = new Role(requestModel.getName());
-				role = roleService.save(role);
-				parentGroup.addRole(role);
-				groupService.save(parentGroup);
-
-				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), role);
-
-				tx.success();
-			}
-			role = roleService.reload(role);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(roleService.transformToRest(role)));
 		});
 	}
 }

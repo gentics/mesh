@@ -27,6 +27,7 @@ import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
+import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
 import com.gentics.cailun.util.JsonUtils;
@@ -50,7 +51,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateContentWithBogusLanguageCode() throws HttpStatusCodeErrorException, Exception {
 
 		ContentCreateRequest request = new ContentCreateRequest();
-		request.setSchemaName("content");
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		request.setSchema(schemaReference);
 		request.addProperty("english", "filename", "new-page.html");
 		request.addProperty("english", "name", "english content name");
 		request.addProperty("english", "content", "Blessed mealtime again!");
@@ -64,7 +67,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateContent() throws Exception {
 
 		ContentCreateRequest request = new ContentCreateRequest();
-		request.setSchemaName("content");
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		request.setSchema(schemaReference);
 		request.addProperty("en", "filename", "new-page.html");
 		request.addProperty("en", "name", "english content name");
 		request.addProperty("en", "content", "Blessed mealtime again!");
@@ -79,7 +84,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateContentWithMissingTagUuid() throws Exception {
 
 		ContentCreateRequest request = new ContentCreateRequest();
-		request.setSchemaName("content");
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		request.setSchema(schemaReference);
 		request.addProperty("en", "filename", "new-page.html");
 		request.addProperty("en", "name", "english content name");
 		request.addProperty("en", "content", "Blessed mealtime again!");
@@ -99,7 +106,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		ContentCreateRequest request = new ContentCreateRequest();
-		request.setSchemaName("content");
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		request.setSchema(schemaReference);
 		request.addProperty("english", "filename", "new-page.html");
 		request.addProperty("english", "name", "english content name");
 		request.addProperty("english", "content", "Blessed mealtime again!");
@@ -265,7 +274,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateContent() throws HttpStatusCodeErrorException, Exception {
 		ContentUpdateRequest request = new ContentUpdateRequest();
-		request.setSchemaName("content");
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
 		request.addProperty("en", "filename", newFilename);
 		final String newName = "english renamed name";
@@ -286,7 +297,9 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateContentWithExtraJson() throws HttpStatusCodeErrorException, Exception {
 		ContentUpdateRequest request = new ContentUpdateRequest();
-		request.setSchemaName("content");
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
 		request.addProperty("en", "filename", newFilename);
 		final String newName = "english renamed name";

@@ -1,5 +1,6 @@
 package com.gentics.cailun.core.rest.schema.response;
 
+
 public class SchemaReference {
 
 	private String schemaName;
@@ -8,19 +9,19 @@ public class SchemaReference {
 	public SchemaReference() {
 	}
 
-	public SchemaReference(String schemaName, String schemaUuid) {
-		this.schemaName = schemaName;
-		this.schemaUuid = schemaUuid;
-	}
-
-	public SchemaReference(String name) {
-this.schemaName  = name;	}
-
 	public String getSchemaName() {
 		return schemaName;
 	}
 
+	public void setSchemaName(String schemaName) {
+		this.schemaName = schemaName;
+	}
+
 	public String getSchemaUuid() {
 		return schemaUuid;
+	}
+
+	public void setSchemaUuid(String schemaUuid) {
+		this.schemaUuid = schemaUuid;
 	}
 }

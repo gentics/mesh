@@ -22,7 +22,6 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
-import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.data.service.content.TransformationInfo;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
@@ -170,32 +169,38 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	}
 
 	@Override
-	public Page<Tag> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<Tag> findAllVisible(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
+		String userUuid = rc.session().getPrincipal().getString("uuid");
 		if (languageTags == null || languageTags.size() == 0) {
-			return tagRepository.findAll(requestUser, projectName, pr);
+			return tagRepository.findAll(userUuid, projectName, pr);
 		} else {
-			return tagRepository.findAll(requestUser, projectName, languageTags, pr);
+			return tagRepository.findAll(userUuid, projectName, languageTags, pr);
 		}
 	}
 
 	@Override
-	public Page<Tag> findAllVisibleSubTags(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<Tag> findAllVisibleSubTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+
 		if (languageTags == null || languageTags.size() == 0) {
-			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, pr);
+			return tagRepository.findAllSubTags(userUuid, projectName, rootTag, pr);
 		} else {
-			return tagRepository.findAllSubTags(requestUser, projectName, rootTag, languageTags, pr);
+			return tagRepository.findAllSubTags(userUuid, projectName, rootTag, languageTags, pr);
 		}
 	}
 
 	@Override
-	public Page<Content> findAllVisibleSubContents(User requestUser, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<Content> findAllVisibleSubContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags,
+			PagingInfo pagingInfo) {
 		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+
 		if (languageTags == null || languageTags.size() == 0) {
-			return tagRepository.findAllSubContents(requestUser, projectName, rootTag, pr);
+			return tagRepository.findAllSubContents(userUuid, projectName, rootTag, pr);
 		} else {
-			return tagRepository.findAllSubContents(requestUser, projectName, rootTag, languageTags, pr);
+			return tagRepository.findAllSubContents(userUuid, projectName, rootTag, languageTags, pr);
 		}
 	}
 

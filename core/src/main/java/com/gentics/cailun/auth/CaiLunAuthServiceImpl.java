@@ -6,7 +6,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.apex.RoutingContext;
-import io.vertx.ext.apex.Session;
 import io.vertx.ext.auth.AuthService;
 
 import java.util.Iterator;
@@ -16,7 +15,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.shiro.authz.Permission;
 
 import com.gentics.cailun.core.data.model.auth.User;
 

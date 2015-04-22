@@ -9,7 +9,6 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
-import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 
 @NodeEntity

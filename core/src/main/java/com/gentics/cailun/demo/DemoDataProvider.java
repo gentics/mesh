@@ -555,7 +555,7 @@ public class DemoDataProvider {
 		return root;
 	}
 
-	public Tag getRootTag() {
+	public RootTag getRootTag() {
 		return rootTag;
 	}
 

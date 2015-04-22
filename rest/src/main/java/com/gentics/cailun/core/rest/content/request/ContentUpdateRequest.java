@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
+import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 
 public class ContentUpdateRequest extends AbstractRestModel {
 
 	private Map<String, Map<String, String>> properties = new HashMap<>();
-	
-	//TODO use schema ref here as well
-	private String schemaName;
+
+	private SchemaReference schema;
 
 	private long order = 0;
 
@@ -57,12 +57,12 @@ public class ContentUpdateRequest extends AbstractRestModel {
 		}
 	}
 
-	public String getSchemaName() {
-		return schemaName;
+	public SchemaReference getSchema() {
+		return schema;
 	}
 
-	public void setSchemaName(String schemaName) {
-		this.schemaName = schemaName;
+	public void setSchema(SchemaReference schema) {
+		this.schema = schema;
 	}
 
 	public long getOrder() {

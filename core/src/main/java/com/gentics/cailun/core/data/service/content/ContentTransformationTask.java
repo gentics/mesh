@@ -61,7 +61,10 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 				restContent.setUuid(content.getUuid());
 				if (content.getSchema() != null) {
 					ObjectSchema schema = info.getNeo4jTemplate().fetch(content.getSchema());
-					restContent.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
+					SchemaReference schemaReference = new SchemaReference();
+					schemaReference.setSchemaName(schema.getName());
+					schemaReference.setSchemaUuid(schema.getUuid());
+					restContent.setSchema(schemaReference);
 				}
 
 				User creator = content.getCreator();
@@ -108,7 +111,10 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 
 				if (content.getSchema() != null) {
 					ObjectSchema schema = info.getNeo4jTemplate().fetch(content.getSchema());
-					restContent.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
+					SchemaReference schemaReference = new SchemaReference();
+					schemaReference.setSchemaName(schema.getName());
+					schemaReference.setSchemaUuid(schema.getUuid());
+					restContent.setSchema(schemaReference);
 				}
 				tx.success();
 			}

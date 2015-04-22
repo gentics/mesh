@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.core.AsyncResult;
 import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,76 +55,106 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addGroupRoleHandlers() {
 		route("/:groupUuid/roles/:roleUuid").method(POST).handler(rc -> {
-			Group group = null;
-			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-				Role role = getObject(rc, "roleUuid", PermissionType.READ);
 
-				if (group.addRole(role)) {
-					group = groupService.save(group);
-				} else {
-					// TODO 200?
+			try (Transaction tx = graphDb.beginTx()) {
+				loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+					if (grh.failed()) {
+						rc.fail(grh.cause());
+					}
+
+					loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
+						if (rrh.failed()) {
+							rc.fail(rrh.cause());
+						}
+						Group group = grh.result();
+
+						Role role = rrh.result();
+						if (group.addRole(role)) {
+							group = groupService.save(group);
+						}
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group)));
+					});
+				});
+				tx.success();
 			}
-			tx.success();
-		}
-		rc.response().setStatusCode(200);
-		rc.response().end(toJson(groupService.transformToRest(group)));
-	}	);
+
+		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).handler(rc -> {
-			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-				Role role = getObject(rc, "roleUuid", PermissionType.READ);
+				loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+					if (grh.failed()) {
+						rc.fail(grh.cause());
+					}
+					Group group = grh.result();
+					loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
+						if (rrh.failed()) {
+							rc.fail(rrh.cause());
+						}
+						Role role = rrh.result();
+						Group savedGroup = group;
 
-				if (group.removeRole(role)) {
-					group = groupService.save(group);
-
-				} else {
-					// TODO 200?
+						if (group.removeRole(role)) {
+							savedGroup = groupService.save(group);
+						}
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(savedGroup)));
+					});
+				});
+				tx.success();
 			}
-			tx.success();
-		}
-		rc.response().setStatusCode(200);
-		rc.response().end(toJson(groupService.transformToRest(group)));
-	}	);
+		});
 	}
 
 	private void addGroupUserHandlers() {
 		Route route = route("/:groupUuid/users/:userUuid").method(POST);
 		route.handler(rc -> {
-			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-				User user = getObject(rc, "userUuid", PermissionType.READ);
 
-				if (group.addUser(user)) {
-					group = groupService.save(group);
-				} else {
-					// TODO 200?
-				}
+				loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+					if (grh.failed()) {
+						rc.fail(grh.cause());
+					}
+					Group group = grh.result();
+					loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
+						if (urh.failed()) {
+							rc.fail(urh.cause());
+						}
+						User user = urh.result();
+						Group savedGroup = group;
+						if (group.addUser(user)) {
+							savedGroup = groupService.save(group);
+						}
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(savedGroup)));
+					});
+				});
 				tx.success();
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE);
 		route.handler(rc -> {
-			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-				User user = getObject(rc, "userUuid", PermissionType.READ);
 
-				if (group.removeUser(user)) {
-					groupService.save(group);
-				} else {
-					// TODO 200?
-				}
+				loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+					if (grh.failed()) {
+						rc.fail(grh.cause());
+					}
+					Group group = grh.result();
+					loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
+						if (urh.failed()) {
+							rc.fail(urh.cause());
+						}
+						User user = urh.result();
+
+						if (group.removeUser(user)) {
+							groupService.save(group);
+						}
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group)));
+					});
+				});
 				tx.success();
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
+
 		});
 	}
 
@@ -131,43 +162,50 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			try (Transaction tx = graphDb.beginTx()) {
-				Group group = getObject(rc, "uuid", PermissionType.DELETE);
-				groupService.delete(group);
+				loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Group> grh) -> {
+					if (grh.failed()) {
+						rc.fail(grh.cause());
+					}
+					Group group = grh.result();
+					groupService.delete(group);
+					rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
+				});
 				tx.success();
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
 
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).handler(rc -> {
-			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "uuid", PermissionType.UPDATE);
-				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
-
-				if (StringUtils.isEmpty(requestModel.getName())) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
-				}
-
-				// TODO should we keep this? I don't think so since group save would fail anyway. Let the index handle this?
-				if (!group.getName().equals(requestModel.getName())) {
-
-					Group groupWithSameName = groupService.findByName(requestModel.getName());
-					if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name"));
+				loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+					if (grh.failed()) {
+						rc.fail(grh.cause());
 					}
-					group.setName(requestModel.getName());
-				}
+					Group group = grh.result();
+					GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
-				// TODO update timestamps
-				group = groupService.save(group);
+					if (StringUtils.isEmpty(requestModel.getName())) {
+						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
+					}
+
+					// TODO should we keep this? I don't think so since group save would fail anyway. Let the index handle this?
+						if (!group.getName().equals(requestModel.getName())) {
+
+							Group groupWithSameName = groupService.findByName(requestModel.getName());
+							if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
+								throw new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name"));
+							}
+							group.setName(requestModel.getName());
+						}
+
+						// TODO update timestamps
+						group = groupService.save(group);
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group)));
+					});
 				tx.success();
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 
 		});
 
@@ -175,42 +213,42 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			Group group;
 			try (Transaction tx = graphDb.beginTx()) {
-				group = getObject(rc, "uuid", PermissionType.READ);
+				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
+					if (grh.failed()) {
+						rc.fail(grh.cause());
+					}
+					Group group = grh.result();
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group)));
+				});
 				tx.success();
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 		});
 
 		/*
 		 * List all groups when no parameter was specified
 		 */
-		route("/").method(GET).handler(
-				rc -> {
-					GroupListResponse listResponse = new GroupListResponse();
-					try (Transaction tx = graphDb.beginTx()) {
-						PagingInfo pagingInfo = getPagingInfo(rc);
-						
-//						User requestUser = rc.session().getUser();
-						User user = null;
-						Page<Group> groupPage = groupService.findAllVisible(user, pagingInfo);
-						for (Group group : groupPage) {
-							listResponse.getData().add(groupService.transformToRest(group));
-						}
-						RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
-						tx.success();
-					}
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(listResponse));
-				});
+		route("/").method(GET).handler(rc -> {
+			GroupListResponse listResponse = new GroupListResponse();
+			try (Transaction tx = graphDb.beginTx()) {
+				PagingInfo pagingInfo = getPagingInfo(rc);
+
+				// User requestUser = rc.session().getUser();
+				User user = null;
+				Page<Group> groupPage = groupService.findAllVisible(user, pagingInfo);
+				for (Group group : groupPage) {
+					listResponse.getData().add(groupService.transformToRest(group));
+				}
+				RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
+				tx.success();
+			}
+			rc.response().setStatusCode(200).end(toJson(listResponse));
+		});
 	}
 
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
 
-			Group group = null;
 			try (Transaction tx = graphDb.beginTx()) {
 				GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
 
@@ -218,20 +256,17 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
 				}
 
-				
 				CaiLunRoot root = cailunRootService.findRoot();
-				failOnMissingPermission(rc, root.getGroupRoot(), PermissionType.CREATE);
+				hasPermission(rc, root.getGroupRoot(), PermissionType.CREATE, rh -> {
+					// TODO handle conflicting group name: group_conflicting_name
+						Group group = new Group(requestModel.getName());
+						group = groupService.save(group);
+						roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root.getGroupRoot(), PermissionType.CREATE), group);
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group)));
+						tx.success();
+					});
 
-				
-				//TODO handle conflicting group name: group_conflicting_name
-				group = new Group(requestModel.getName());
-				group = groupService.save(group);
-				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root.getGroupRoot(), PermissionType.CREATE), group);
-				tx.success();
 			}
-			group = groupService.reload(group);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(groupService.transformToRest(group)));
 
 		});
 

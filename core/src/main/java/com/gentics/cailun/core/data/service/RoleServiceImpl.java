@@ -81,8 +81,6 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		}
 		neo4jTemplate.save(permission);
 	}
-	
-	
 
 	@Override
 	public GraphPermission getGraphPermission(Role role, AbstractPersistable node) {
@@ -127,9 +125,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	@Override
 	public void addCRUDPermissionOnRole(RoutingContext rc, CaiLunPermission caiLunPermission, GenericNode targetNode) {
 
-//		User requestUser = springConfiguration.authService().getUser(rc);
-		User user = null;
-		user = userService.reload(user);
+		User user = userService.findByUUID(rc.session().getPrincipal().getString("uuid"));
 
 		// 1. Determine all roles that grant given permission
 		Node userNode = neo4jTemplate.getPersistentState(user);

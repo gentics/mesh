@@ -6,11 +6,11 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.core.AsyncResult;
 import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -54,25 +54,23 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
 		route.handler(rc -> {
-			Project project;
-			try (Transaction tx = graphDb.beginTx()) {
 
-				project = getObject(rc, "uuid", PermissionType.UPDATE);
+			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+				Project project = rh.result();
+
 				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 
 				// Check for conflicting project name
-				if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
-					if (projectService.findByName(requestModel.getName()) != null) {
-						throw new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name"));
+					if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
+						if (projectService.findByName(requestModel.getName()) != null) {
+							throw new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name"));
+						}
+						project.setName(requestModel.getName());
 					}
-					project.setName(requestModel.getName());
-				}
 
-				project = projectService.save(project);
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(projectService.transformToRest(project)));
+					project = projectService.save(project);
+					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(project)));
+				});
 		});
 	}
 
@@ -87,34 +85,27 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "project_missing_name"));
 			}
 
-			Project project;
-			try (Transaction tx = graphDb.beginTx()) {
-
-				CaiLunRoot cailunRoot = cailunRootService.findRoot();
-				failOnMissingPermission(rc, cailunRoot, PermissionType.CREATE);
-
+			CaiLunRoot cailunRoot = cailunRootService.findRoot();
+			hasPermission(rc, cailunRoot, PermissionType.CREATE, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name"));
 				}
 
-				project = projectService.transformFromRest(requestModel);
+				Project project = projectService.transformFromRest(requestModel);
 				project = projectService.save(project);
 
 				try {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					tx.success();
 					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(cailunRoot, PermissionType.CREATE), project);
 
 				} catch (Exception e) {
 					// TODO should we really fail here?
-					tx.failure();
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage"));
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage")));
 				}
-			}
-			project = projectService.reload(project);
-			rc.response().end(toJson(projectService.transformToRest(project)));
+				rc.response().end(toJson(projectService.transformToRest(project)));
+			});
 
 		});
 	}
@@ -126,51 +117,41 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				Project project;
-				try (Transaction tx = graphDb.beginTx()) {
-					project = getObject(rc, "uuid", PermissionType.READ);
-					tx.success();
-				}
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(projectService.transformToRest(project)));
+				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Project> rh) -> {
+					Project project = rh.result();
+					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(project)));
+				});
 			}
 		});
 
 		route("/").method(GET).handler(rc -> {
 
 			ProjectListResponse listResponse = new ProjectListResponse();
-			try (Transaction tx = graphDb.beginTx()) {
-				PagingInfo pagingInfo = getPagingInfo(rc);
-				
-				//User requestUser = springConfiguration.authService().getUser(rc);
-				User requestUser = null;
-				Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
-				for (Project project  : projectPage) {
-					listResponse.getData().add(projectService.transformToRest(project));
-				}
-				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(listResponse));
+			PagingInfo pagingInfo = getPagingInfo(rc);
 
-				});
+			User requestUser = userService.findUser(rc);
+			Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
+			for (Project project : projectPage) {
+				listResponse.getData().add(projectService.transformToRest(project));
+			}
+			RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
+			rc.response().setStatusCode(200).end(toJson(listResponse));
+
+		});
 
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			try (Transaction tx = graphDb.beginTx()) {
 
-				Project project = getObject(rc, "uuid", PermissionType.DELETE);
+			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Project> rh) -> {
+				Project project = rh.result();
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
-				tx.success();
-			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", uuid))));
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", uuid))));
+			});
 		});
 	}
 }

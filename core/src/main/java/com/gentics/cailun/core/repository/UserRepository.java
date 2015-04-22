@@ -29,8 +29,8 @@ public interface UserRepository extends UUIDCRUDActions<User>, UserActions {
 	 * @param pageable
 	 * @return
 	 */
-	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where id(requestUser) = {0} and perm.`permissions-read` = true return user ORDER BY user.username", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where id(requestUser) = {0} and perm.`permissions-read` = true return count(user)")
-	public Page<User> findAll(User requestUser, Pageable pageable);
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
+	public Page<User> findAll(String userUuid, Pageable pageable);
 
 	@Query("MATCH (n:UserRoot) return n")
 	UserRoot findRoot();

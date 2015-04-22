@@ -1,6 +1,7 @@
 package com.gentics.cailun.core.data.service.generic;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.I18NProperties;
 import com.gentics.cailun.core.data.model.Language;
@@ -8,6 +9,7 @@ import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 
+@Transactional(readOnly = true)
 public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> {
 
 	public void setProperty(T node, Language language, String key, String value) {

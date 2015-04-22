@@ -3,13 +3,12 @@ package com.gentics.cailun.core.data.service.tag;
 import io.vertx.ext.apex.Session;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
+import java.util.function.Consumer;
 
-import org.apache.shiro.util.PermissionUtils;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +64,10 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				restTag.setUuid(tag.getUuid());
 				if (tag.getSchema() != null) {
 					ObjectSchema schema = info.getNeo4jTemplate().fetch(tag.getSchema());
-					restTag.setSchema(new SchemaReference(schema.getName(), schema.getUuid()));
+					SchemaReference schemaReference = new SchemaReference();
+					schemaReference.setSchemaName(schema.getName());
+					schemaReference.setSchemaUuid(schema.getUuid());
+					restTag.setSchema(schemaReference);
 				}
 
 				User creator = tag.getCreator();
@@ -110,74 +112,84 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					String currentUuid = currentTag.getUuid();
 					Session session = info.getRoutingContext().session();
 					session.hasPermission(new CaiLunPermission(currentTag, PermissionType.READ).toString(), handler -> {
-						if (handler.result()) {
-							Tag loadedTag = info.getNeo4jTemplate().fetch(currentTag);
-							TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
-							if (currentRestTag == null) {
-								currentRestTag = new TagResponse();
-								// info.addTag(currentUuid, currentRestTag);
+
+						try (Transaction tx2 = info.getGraphDb().beginTx()) {
+							if (handler.result()) {
+								Tag loadedTag = info.getNeo4jTemplate().fetch(currentTag);
+								TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
+								if (currentRestTag == null) {
+									currentRestTag = new TagResponse();
+									// info.addTag(currentUuid, currentRestTag);
 							TagTransformationTask subTask = new TagTransformationTask(loadedTag, info, currentRestTag, depth + 1);
 							tasks.add(subTask.fork());
+
 						}
 						restTag.getTags().add(currentRestTag);
-
-						Collections.sort(restTag.getTags(), new Comparator<TagResponse>() {
-
-							@Override
-							public int compare(TagResponse o1, TagResponse o2) {
-								// TODO use order and sorting here?
-								String uuid1 = o1.getUuid();
-								String uuid2 = o2.getUuid();
-								if (uuid1 == null) {
-									uuid1 = "";
-								}
-								if (uuid2 == null) {
-									uuid2 = "";
-								}
-								return uuid1.compareTo(uuid2);
-							}
-
-						});
-
+						tx2.success();
 					}
-				}	);
+
+					Collections.sort(restTag.getTags(), new UuidRestModelComparator<TagResponse>());
+
+				}
+			}		);
 
 					tx.success();
 				}
 
 			});
 
-			tag.getContents()
-					.parallelStream()
-					.forEachOrdered(
-							currentContent -> {
-								try (Transaction tx = info.getGraphDb().beginTx()) {
-									String currentUuid = currentContent.getUuid();
-									info.getRoutingContext()
-											.session()
-											.hasPermission(
-													new CaiLunPermission(currentContent, PermissionType.READ).toString(),
-													handler -> {
-
-														if (handler.result()) {
-															Content loadedContent = info.getNeo4jTemplate().fetch(currentContent);
-															ContentResponse currentRestContent = (ContentResponse) info.getObject(currentUuid);
-															if (currentRestContent == null) {
-																currentRestContent = new ContentResponse();
-																ContentTransformationTask subTask = new ContentTransformationTask(loadedContent,
-																		info, currentRestContent, depth + 1);
-																tasks.add(subTask.fork());
-															}
-															restTag.getContents().add(currentRestContent);
-
-														}
-													});
-									tx.success();
-								}
-							});
+			ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, depth, restTag, tasks);
+			tag.getContents().parallelStream().forEachOrdered(contentConsumer);
 
 		}
 		tasks.forEach(action -> action.join());
 		return null;
 	}
+}
+
+class ContentTraversalConsumer implements Consumer<Content> {
+
+	private TransformationInfo info;
+	private int currentDepth;
+	private TagResponse restTag;
+	private Set<ForkJoinTask<Void>> tasks; 
+
+	public ContentTraversalConsumer(TransformationInfo info, int currentDepth, TagResponse restTag, Set<ForkJoinTask<Void>>  tasks) {
+		this.info = info;
+		this.currentDepth = currentDepth;
+		this.restTag = restTag;
+		this.tasks = tasks;
+	}
+
+	@Override
+	public void accept(Content content) {
+		try (Transaction tx = info.getGraphDb().beginTx()) {
+			String currentUuid = content.getUuid();
+			info.getRoutingContext()
+					.session()
+					.hasPermission(
+							new CaiLunPermission(content, PermissionType.READ).toString(),
+							handler -> {
+								try (Transaction tx2 = info.getGraphDb().beginTx()) {
+
+									if (handler.result()) {
+										Content loadedContent = info.getNeo4jTemplate().fetch(content);
+										ContentResponse currentRestContent = (ContentResponse) info.getObject(currentUuid);
+										if (currentRestContent == null) {
+											currentRestContent = new ContentResponse();
+											ContentTransformationTask subTask = new ContentTransformationTask(loadedContent, info,
+													currentRestContent, currentDepth + 1);
+											tasks.add(subTask.fork());
+										}
+										restTag.getContents().add(currentRestContent);
+
+									}
+									tx2.success();
+								}
+							});
+			tx.success();
+		}
+
+	}
+
 }

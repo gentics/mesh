@@ -3,6 +3,7 @@ package com.gentics.cailun.core.data.service;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.apex.Session;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -57,8 +58,10 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public Page<User> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		return userRepository.findAll(requestUser, new CaiLunPageRequest(pagingInfo));
+	public Page<User> findAllVisible(RoutingContext rc, PagingInfo pagingInfo) {
+		Session session = rc.session();
+		String userUuid = session.getPrincipal().getString("uuid");
+		return userRepository.findAll(userUuid, new CaiLunPageRequest(pagingInfo));
 	}
 
 	@Override
@@ -143,32 +146,32 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 			}
 		}
 
-//		// Traverse the graph from user to the page. Collect all permission relations and check them individually
-//		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-//				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-//				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-//				.traverse(userNode).relationships()) {
-//			// log.debug("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-//			// + rel.getStartNode().getId() + rel.getStartNode().getLabels());
-//
-//			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
-//				// Check whether this relation in fact targets our object we want to check
-//				boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
-//				if (matchesTargetNode) {
-//					// Convert the api relationship to a SDN relationship
-//					GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
-//					if (genericPermission.implies(perm) == true) {
-//						return true;
-//					}
-//				}
-//			}
-//		}
+		// // Traverse the graph from user to the page. Collect all permission relations and check them individually
+		// for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
+		// .relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
+		// .relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+		// .traverse(userNode).relationships()) {
+		// // log.debug("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+		// // + rel.getStartNode().getId() + rel.getStartNode().getLabels());
+		//
+		// if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
+		// // Check whether this relation in fact targets our object we want to check
+		// boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
+		// if (matchesTargetNode) {
+		// // Convert the api relationship to a SDN relationship
+		// GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
+		// if (genericPermission.implies(perm) == true) {
+		// return true;
+		// }
+		// }
+		// }
+		// }
 		return false;
 	}
 
 	public String[] getPerms(RoutingContext rc, AbstractPersistable node) {
-//		User user = springConfiguration.authService().getUser(rc);
-		User user = null;
+		String uuid = rc.session().getPrincipal().getString("uuid");
+		User user = findByUUID(uuid);
 		Set<GraphPermission> permissions = findGraphPermissions(user, node);
 		Set<String> perms = new HashSet<>();
 		for (GraphPermission perm : permissions) {
@@ -186,6 +189,12 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 			}
 		}
 		return perms.toArray(new String[perms.size()]);
+	}
+
+	@Override
+	public User findUser(RoutingContext rc) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return findByUUID(userUuid);
 	}
 
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.cailun.core.AbstractProjectRestVerticle;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
@@ -72,7 +73,10 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						String message = i18n.get(rc, "tag_not_found_for_path", path);
 						throw new EntityNotFoundException(message);
 					}
-					failOnMissingPermission(rc, tag, PermissionType.READ);
+					rc.session().hasPermission(new CaiLunPermission(tag, PermissionType.READ).toString(), rh -> {
+						
+					});
+					
 					languageTags.add(lastSegment.getLanguageTag());
 					rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 					return;

@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.core.AsyncResult;
 import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,38 +57,56 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		// TODO consumes, produces, document needed permissions?
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST);
 		route.handler(rc -> {
-			ObjectSchema schema;
 			try (Transaction tx = graphDb.beginTx()) {
+				loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+					if (rh.failed()) {
+						rc.fail(rh.cause());
+					}
+					Project project = rh.result();
+					loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+						if (srh.failed()) {
+							rc.fail(srh.cause());
+						}
+						ObjectSchema schema = srh.result();
+						if (schema.addProject(project)) {
+							schema = schemaService.save(schema);
+						}
+						rc.response().setStatusCode(200);
+						rc.response().end(toJson(schemaService.transformToRest(schema)));
+						tx.success();
+					});
+				});
 
-				Project project = getObject(rc, "projectUuid", PermissionType.UPDATE);
-				schema = getObject(rc, "schemaUuid", PermissionType.READ);
-
-				if (schema.addProject(project)) {
-					schema = schemaService.save(schema);
-				} else {
-					// TODO 200?
-				}
-				tx.success();
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(schemaService.transformToRest(schema)));
 		});
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE);
 		route.handler(rc -> {
-			ObjectSchema schema;
 			try (Transaction tx = graphDb.beginTx()) {
-				Project project = getObject(rc, "projectUuid", PermissionType.UPDATE);
-				schema = getObject(rc, "schemaUuid", PermissionType.READ);
-				if (schema.removeProject(project)) {
-					schema = schemaService.save(schema);
-				} else {
-					// TODO - 200?
-				}
-				tx.success();
+
+				loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+					if (rh.failed()) {
+						rc.fail(rh.cause());
+					}
+					Project project = rh.result();
+					loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+						if (srh.failed()) {
+							rc.fail(srh.cause());
+						}
+						ObjectSchema schema = srh.result();
+
+						if (schema.removeProject(project)) {
+							schema = schemaService.save(schema);
+						}
+
+						tx.success();
+						rc.response().setStatusCode(200);
+						rc.response().end(toJson(schemaService.transformToRest(schema)));
+					});
+
+				});
+
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(schemaService.transformToRest(schema)));
 		});
 	}
 
@@ -106,33 +125,38 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				// TODO i18n
 				throw new HttpStatusCodeErrorException(400, "The project uuid is mandatory for schema creation and cannot be omitted.");
 			}
-			ObjectSchema schema;
 			try (Transaction tx = graphDb.beginTx()) {
-				Project project = getObjectByUUID(rc, requestModel.getProjectUuid(), PermissionType.CREATE);
-				schema = new ObjectSchema(requestModel.getName());
-				// TODO set creator
-				schema.setDescription(requestModel.getDescription());
-				schema.setDisplayName(requestModel.getDisplayName());
 
-				for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
-					// TODO validate field?
-					PropertyTypeSchema propSchema = new PropertyTypeSchema();
-					propSchema.setDescription(restPropSchema.getDesciption());
-					propSchema.setKey(restPropSchema.getKey());
-					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
-					propSchema.setType(type);
-					schema.addPropertyTypeSchema(propSchema);
-				}
-				schema.addProject(project);
-				schema = schemaService.save(schema);
+				loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
+					if (srh.failed()) {
+						rc.fail(srh.cause());
+					}
+					Project project = srh.result();
 
-				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(project, PermissionType.CREATE), schema);
+					ObjectSchema schema = new ObjectSchema(requestModel.getName());
+					// TODO set creator
+						schema.setDescription(requestModel.getDescription());
+						schema.setDisplayName(requestModel.getDisplayName());
 
-				tx.success();
+						for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
+							// TODO validate field?
+						PropertyTypeSchema propSchema = new PropertyTypeSchema();
+						propSchema.setDescription(restPropSchema.getDesciption());
+						propSchema.setKey(restPropSchema.getKey());
+						PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
+						propSchema.setType(type);
+						schema.addPropertyTypeSchema(propSchema);
+					}
+					schema.addProject(project);
+					schema = schemaService.save(schema);
+
+					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(project, PermissionType.CREATE), schema);
+
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(schemaService.transformToRest(schema)));
+					tx.success();
+				});
 			}
-			schema = schemaService.reload(schema);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(schemaService.transformToRest(schema)));
 		});
 
 	}
@@ -141,31 +165,33 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		// TODO consumes, produces
 		Route route = route("/:uuid").method(PUT);
 		route.handler(rc -> {
-			ObjectSchema schema;
 			try (Transaction tx = graphDb.beginTx()) {
+				loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<ObjectSchema> srh) -> {
+					if (srh.failed()) {
+						rc.fail(srh.cause());
+					}
+					ObjectSchema schema = srh.result();
+					ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
 
-				schema = getObject(rc, "uuid", PermissionType.UPDATE);
-				ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
+					// Update name
+						if (StringUtils.isEmpty(requestModel.getName())) {
+							throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
+						}
+						if (!schema.getName().equals(requestModel.getName())) {
+							schema.setName(requestModel.getName());
+						}
 
-				// Update name
-				if (StringUtils.isEmpty(requestModel.getName())) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
-				}
-				if (!schema.getName().equals(requestModel.getName())) {
-					schema.setName(requestModel.getName());
-				}
-
-				// Update description
-				if (schema.getDescription() != null && (!schema.getDescription().equals(requestModel.getDescription()))) {
-					schema.setDescription(requestModel.getDescription());
-				}
-				// TODO update modification timestamps
-				schema = schemaService.save(schema);
-				tx.success();
+						// Update description
+						if (schema.getDescription() != null && (!schema.getDescription().equals(requestModel.getDescription()))) {
+							schema.setDescription(requestModel.getDescription());
+						}
+						// TODO update modification timestamps
+						schema = schemaService.save(schema);
+						rc.response().setStatusCode(200);
+						rc.response().end(toJson(schemaService.transformToRest(schema)));
+						tx.success();
+					});
 			}
-
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(schemaService.transformToRest(schema)));
 
 		});
 	}
@@ -176,12 +202,18 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			try (Transaction tx = graphDb.beginTx()) {
-				ObjectSchema schema = getObject(rc, "uuid", PermissionType.DELETE);
-				schemaService.delete(schema);
-				tx.success();
+
+				loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
+					if (srh.failed()) {
+						rc.fail(srh.cause());
+					}
+					ObjectSchema schema = srh.result();
+					schemaService.delete(schema);
+					tx.success();
+					rc.response().setStatusCode(200);
+					rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", uuid))));
+				});
 			}
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", uuid))));
 		});
 
 	}
@@ -192,33 +224,36 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				ObjectSchema schema;
 				try (Transaction tx = graphDb.beginTx()) {
-					schema = getObject(rc, "uuid", PermissionType.READ);
-					tx.success();
+					loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+						if (srh.failed()) {
+							rc.fail(srh.cause());
+						}
+						ObjectSchema schema = srh.result();
+						rc.response().setStatusCode(200);
+						rc.response().end(toJson(schemaService.transformToRest(schema)));
+						tx.success();
+					});
 				}
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(schemaService.transformToRest(schema)));
 			}
 		});
 
 		// produces(APPLICATION_JSON)
-		route("/").method(GET).handler(
-				rc -> {
-					ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
-					try (Transaction tx = graphDb.beginTx()) {
-						PagingInfo pagingInfo = getPagingInfo(rc);
-//						User requestUser = springConfiguration.authService().getUser(rc);
-						User user = null;
-						Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
-						for (ObjectSchema schema : schemaPage) {
-							listResponse.getData().add(schemaService.transformToRest(schema));
-						}
-						RestModelPagingHelper.setPaging(listResponse, schemaPage,pagingInfo);
-						tx.success();
-					}
-					rc.response().end(toJson(listResponse));
-				});
+		route("/").method(GET).handler(rc -> {
+			ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
+			try (Transaction tx = graphDb.beginTx()) {
+				PagingInfo pagingInfo = getPagingInfo(rc);
+				// User requestUser = springConfiguration.authService().getUser(rc);
+				User user = null;
+				Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
+				for (ObjectSchema schema : schemaPage) {
+					listResponse.getData().add(schemaService.transformToRest(schema));
+				}
+				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
+				tx.success();
+			}
+			rc.response().end(toJson(listResponse));
+		});
 
 	}
 

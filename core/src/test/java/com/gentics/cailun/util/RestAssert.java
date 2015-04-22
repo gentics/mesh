@@ -98,7 +98,7 @@ public class RestAssert {
 			}
 		}
 
-		String schemaName = request.getSchemaName();
+		String schemaName = request.getSchema().getSchemaName();
 		assertEquals("The schemaname of the request does not match the response schema name", schemaName, readValue.getSchema().getSchemaName());
 		assertEquals(request.getOrder(), readValue.getOrder());
 		String tagUuid = request.getTagUuid();

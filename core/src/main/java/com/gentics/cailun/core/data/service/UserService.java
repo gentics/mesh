@@ -22,13 +22,13 @@ public interface UserService extends GenericNodeService<User> {
 	User findByUsername(String username);
 
 	/**
-	 * Find all users that are readable by the given user. Utilize the paging info when returning paged user data.
+	 * Find all users that are readable. Utilize the paging info when returning paged user data.
 	 * 
-	 * @param requestUser
+	 * @param rc
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<User> findAllVisible(User requestUser, PagingInfo pagingInfo);
+	Page<User> findAllVisible(RoutingContext rc, PagingInfo pagingInfo);
 
 	UserResponse transformToRest(User user);
 
@@ -39,5 +39,7 @@ public interface UserService extends GenericNodeService<User> {
 	boolean isPermitted(long userNodeId, CaiLunPermission genericPermission) throws Exception;
 
 	String[] getPerms(RoutingContext rc, AbstractPersistable node);
+
+	User findUser(RoutingContext rc);
 
 }

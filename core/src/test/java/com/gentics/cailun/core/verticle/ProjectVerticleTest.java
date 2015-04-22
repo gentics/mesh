@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
@@ -91,6 +92,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		final int nProjects = 142;
 		for (int i = 0; i < nProjects; i++) {
 			Project extraProject = new Project("extra_project_" + i);
+			extraProject.setRootTag(data().getRootTag());
 			extraProject = projectService.save(extraProject);
 			roleService.addPermission(info.getRole(), extraProject, PermissionType.READ);
 		}
@@ -103,7 +105,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/", 200, "OK");
 		ProjectListResponse restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
 		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		Assert.assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		Assert.assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
@@ -113,7 +115,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		// Extra projects + aloha project
 		int totalProjects = nProjects + 1;
-		int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
+		int totalPages = (int) Math.ceil(totalProjects / (double) perPage) +1;
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -142,7 +144,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":7,\"total_count\":143}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}

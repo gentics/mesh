@@ -1,19 +1,11 @@
 package com.gentics.cailun.etc;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Router;
-import io.vertx.ext.apex.handler.AuthHandler;
-import io.vertx.ext.apex.handler.BasicAuthHandler;
 import io.vertx.ext.apex.handler.BodyHandler;
 import io.vertx.ext.apex.handler.CookieHandler;
-import io.vertx.ext.apex.handler.CorsHandler;
-import io.vertx.ext.apex.handler.impl.SessionHandlerImpl;
-import io.vertx.ext.apex.sstore.LocalSessionStore;
-import io.vertx.ext.apex.sstore.SessionStore;
-import io.vertx.ext.auth.AuthProvider;
 
 import java.util.HashMap;
 import java.util.Map;

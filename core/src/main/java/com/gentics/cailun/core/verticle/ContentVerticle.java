@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import io.vertx.core.AsyncResult;
 import io.vertx.ext.apex.Route;
 
 import java.util.List;
@@ -40,7 +41,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.request.ContentUpdateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
-import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
@@ -81,75 +81,66 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			Content content = new Content();
 			try (Transaction tx = graphDb.beginTx()) {
 
 				if (StringUtils.isEmpty(requestModel.getTagUuid())) {
 					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field"));
 				}
 
-				Tag rootTagForContent = tagService.findByUUID(projectName, requestModel.getTagUuid());
-				if (rootTagForContent == null) {
-					// TODO i18n
-					String message = "Root tag could not be found. Maybe it is not part of project {" + projectName + "}";
-					throw new HttpStatusCodeErrorException(400, message);
-				}
-				failOnMissingPermission(rc, rootTagForContent, PermissionType.CREATE);
+				loadObjectByUuid(rc, requestModel.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 
-				if (StringUtils.isEmpty(requestModel.getSchemaName())) {
-					// TODO i18n
-					throw new HttpStatusCodeErrorException(400, "No valid schema name was specified.");
-				} else {
-					// TODO load the schema and set the reference to the tag
-					ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchemaName());
-					if (schema == null) {
+					Tag rootTagForContent = rh.result();
+					Content content = new Content();
+
+					if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
 						// TODO i18n
-						throw new HttpStatusCodeErrorException(400, "The schema \"" + requestModel.getSchemaName() + "\" could not be found.");
+						throw new HttpStatusCodeErrorException(400, "No valid schema name was specified.");
+					} else {
+						// TODO load the schema and set the reference to the tag
+						ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchema().getSchemaName());
+						if (schema == null) {
+							// TODO i18n
+						throw new HttpStatusCodeErrorException(400, "The schema \"" + requestModel.getSchema().getSchemaName()
+								+ "\" could not be found.");
 					} else {
 						content.setSchema(schema);
 					}
 				}
 
-//				User user = springConfiguration.authService().getUser(rc);
-				User user = null;
+				User user = userService.findUser(rc);
 				content.setCreator(user);
 
 				// TODO maybe projects should not be a set?
-				Project project = projectService.findByName(projectName);
-				content.addProject(project);
-				content = neo4jTemplate.save(content);
+						Project project = projectService.findByName(projectName);
+						content.addProject(project);
+						// content = neo4jTemplate.save(content);
 
-				// Add the i18n properties to the newly created tag
-				for (String languageTag : requestModel.getProperties().keySet()) {
-					Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
-					Language language = languageService.findByLanguageTag(languageTag);
-					if (language == null) {
-						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
-					}
-					I18NProperties tagProps = new I18NProperties(language);
-					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-						tagProps.setProperty(entry.getKey(), entry.getValue());
-					}
-					tagProps = neo4jTemplate.save(tagProps);
-					// Create the relationship to the i18n properties
-					Translated translated = new Translated(content, tagProps, language);
-					translated = neo4jTemplate.save(translated);
-					content.getI18nTranslations().add(translated);
-				}
+						// Add the i18n properties to the newly created tag
+						for (String languageTag : requestModel.getProperties().keySet()) {
+							Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
+							Language language = languageService.findByLanguageTag(languageTag);
+							if (language == null) {
+								throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
+							}
+							I18NProperties tagProps = new I18NProperties(language);
+							for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
+								tagProps.setProperty(entry.getKey(), entry.getValue());
+							}
+							tagProps = neo4jTemplate.save(tagProps);
+							// Create the relationship to the i18n properties
+							Translated translated = new Translated(content, tagProps, language);
+							translated = neo4jTemplate.save(translated);
+							content.getI18nTranslations().add(translated);
+						}
 
-				content = contentService.save(content);
+						content = contentService.save(content);
 
-				// Assign the content to the tag and save the tag
-				rootTagForContent.addContent(content);
-				rootTagForContent = tagService.save(rootTagForContent);
-				tx.success();
-			}
-
-			try (Transaction tx = graphDb.beginTx()) {
-				// Reload in order to update uuid field
-				content = contentService.reload(content);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+						// Assign the content to the tag and save the tag
+						rootTagForContent.addContent(content);
+						rootTagForContent = tagService.save(rootTagForContent);
+						rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+						tx.success();
+					});
 			}
 
 			// // TODO simplify language handling - looks a bit chaotic
@@ -169,13 +160,13 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			int depth = getDepth(rc);
-			Content content = null;
 			try (Transaction tx = graphDb.beginTx()) {
-				content = getObject(rc, "uuid", PermissionType.READ);
-				List<String> languageTags = getSelectedLanguageTags(rc);
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
-				tx.success();
+				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
+					Content content = rh.result();
+					List<String> languageTags = getSelectedLanguageTags(rc);
+					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
+					tx.success();
+				});
 			}
 
 		});
@@ -189,107 +180,96 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				ContentListResponse listResponse = new ContentListResponse();
 				try (Transaction tx = graphDb.beginTx()) {
 					PagingInfo pagingInfo = getPagingInfo(rc);
-//					User requestUser = springConfiguration.authService().getUser(rc);
-					User user = null;
-
-
+					User user = userService.findUser(rc);
 					Page<Content> contentPage = contentService.findAllVisible(user, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
 						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, 0));
 					}
-					RestModelPagingHelper.setPaging(listResponse, contentPage,pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 					tx.success();
 				}
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(listResponse));
+				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 	}
 
+	// TODO filter project name
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
-
-			Content content = contentService.findByUUID(projectName, uuid);
-			if (content == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "content_not_found_for_uuid", uuid));
-			}
-			failOnMissingPermission(rc, content, PermissionType.DELETE);
-
-			contentService.delete(content);
-			rc.response().setStatusCode(200);
-			rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "content_deleted", uuid))));
+			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Content> rh) -> {
+				Content content = rh.result();
+				contentService.delete(content);
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "content_deleted", uuid))));
+			});
 		});
 	}
 
+	// TODO filter by project name
 	private void addUpdateHandler() {
 
 		Route route = route("/:uuid").consumes(APPLICATION_JSON).method(PUT);
 		route.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
-			Content content;
-			try (Transaction tx = graphDb.beginTx()) {
-				content = getObject(rc, "uuid", PermissionType.READ);
-				// TODO update other fields as well?
-				// TODO Update user information
-				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
-				// Iterate through all properties and update the changed ones
-				for (String languageTag : request.getProperties().keySet()) {
-					Language language = languageService.findByLanguageTag(languageTag);
-					if (language != null) {
-						languageTags.add(languageTag);
-						Map<String, String> properties = request.getProperties(languageTag);
-						if (properties != null) {
-							// TODO use schema and only handle those i18n properties that were specified within the schema.
-							I18NProperties i18nProperties = contentService.getI18NProperties(content, language);
-							for (Map.Entry<String, String> set : properties.entrySet()) {
-								String key = set.getKey();
-								String value = set.getValue();
-								String i18nValue = i18nProperties.getProperty(key);
-								// Tag does not have the value so lets create it
-								if (i18nValue == null) {
-									i18nProperties.setProperty(key, value);
-								} else {
-									// Lets compare and update if the value has changed
-									if (!value.equals(i18nValue)) {
-										i18nProperties.setProperty(key, value);
-									}
-								}
+
+			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
+				try (Transaction tx = graphDb.beginTx()) {
+					Content content = rh.result();
+					// TODO update other fields as well?
+					// TODO Update user information
+					ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
+					// Iterate through all properties and update the changed ones
+					for (String languageTag : request.getProperties().keySet()) {
+						Language language = languageService.findByLanguageTag(languageTag);
+						if (language != null) {
+							languageTags.add(languageTag);
+							Map<String, String> properties = request.getProperties(languageTag);
+							if (properties != null) {
+								// TODO use schema and only handle those i18n properties that were specified within the schema.
+					I18NProperties i18nProperties = contentService.getI18NProperties(content, language);
+					for (Map.Entry<String, String> set : properties.entrySet()) {
+						String key = set.getKey();
+						String value = set.getValue();
+						String i18nValue = i18nProperties.getProperty(key);
+						// Tag does not have the value so lets create it
+						if (i18nValue == null) {
+							i18nProperties.setProperty(key, value);
+						} else {
+							// Lets compare and update if the value has changed
+							if (!value.equals(i18nValue)) {
+								i18nProperties.setProperty(key, value);
 							}
-							neo4jTemplate.save(i18nProperties);
-
-							// // Check whether there are any key missing in the request.
-							// // This would mean we should remove those i18n properties. First lets collect those
-							// // keys
-							// Set<String> keysToBeRemoved = new HashSet<>();
-							// for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
-							// if (!properties.containsKey(i18nKey)) {
-							// keysToBeRemoved.add(i18nKey);
-							// }
-							// }
-							//
-							// // Now remove the keys
-							// for (String key : keysToBeRemoved) {
-							// i18nProperties.removeProperty(key);
-							// }
-
 						}
-					} else {
-						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
 					}
+					neo4jTemplate.save(i18nProperties);
+
+					// // Check whether there are any key missing in the request.
+					// // This would mean we should remove those i18n properties. First lets collect those
+					// // keys
+					// Set<String> keysToBeRemoved = new HashSet<>();
+					// for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
+					// if (!properties.containsKey(i18nKey)) {
+					// keysToBeRemoved.add(i18nKey);
+					// }
+					// }
+					//
+					// // Now remove the keys
+					// for (String key : keysToBeRemoved) {
+					// i18nProperties.removeProperty(key);
+					// }
 
 				}
-				tx.success();
+			} else {
+				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
 			}
-			// TODO check for content==null?
-			try (Transaction tx = graphDb.beginTx()) {
-				rc.response().setStatusCode(200);
-				rc.response().end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
-				tx.success();
-			}
+
+		}
+		rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+		tx.success();
+	}
+}			);
 
 		});
 	}

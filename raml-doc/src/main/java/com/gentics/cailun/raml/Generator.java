@@ -47,7 +47,6 @@ import com.gentics.cailun.core.rest.user.request.UserUpdateRequest;
 import com.gentics.cailun.core.rest.user.response.UserListResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 import com.gentics.cailun.util.JsonUtils;
-import com.gentics.cailun.util.RestModelPagingHelper;
 
 public class Generator {
 
@@ -178,12 +177,16 @@ public class Generator {
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {
 
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("tag");
+		schemaReference.setSchemaUuid(getUUID());
+		
 		String lang = "en";
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
 		tag.addProperty(lang, "name", "Name for language tag de");
 		tag.setPerms("READ", "UPDATE", "DELETE", "CREATE");
-		tag.setSchema(new SchemaReference("tag", getUUID()));
+		tag.setSchema(schemaReference);
 		write(tag);
 
 		TagUpdateRequest tagUpdate = new TagUpdateRequest();
@@ -191,14 +194,14 @@ public class Generator {
 		write(tagUpdate);
 
 		TagCreateRequest tagCreate = new TagCreateRequest();
-		tagCreate.setSchema(new SchemaReference("content"));
+		tagCreate.setSchema(schemaReference);
 		tagCreate.setTagUuid(getUUID());
 		write(tagCreate);
 
 		TagResponse tag2 = new TagResponse();
 		tag2.setUuid(getUUID());
 		tag2.addProperty("en", "name", "Name for language tag en");
-		tag2.setSchema(new SchemaReference("tag", getUUID()));
+		tag2.setSchema(schemaReference);
 		tag2.setPerms("READ", "CREATE");
 
 		TagListResponse tagList = new TagListResponse();
@@ -256,6 +259,11 @@ public class Generator {
 	}
 
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
+
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		schemaReference.setSchemaUuid(getUUID());
+
 		String lang = "de";
 		ContentResponse content = new ContentResponse();
 		content.setUuid(getUUID());
@@ -264,7 +272,7 @@ public class Generator {
 		content.addProperty(lang, "filename", "dummy-content.de.html");
 		content.addProperty(lang, "teaser", "Dummy teaser for de-DE");
 		content.addProperty(lang, "content", "Content for language tag de-DE");
-		content.setSchema(new SchemaReference("content", getUUID()));
+		content.setSchema(schemaReference);
 		content.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(content);
 
@@ -275,6 +283,7 @@ public class Generator {
 
 		lang = "en";
 		ContentCreateRequest contentCreate = new ContentCreateRequest();
+		contentCreate.setTagUuid(getUUID());
 		contentCreate.addProperty(lang, "filename", "index.en.html");
 		contentCreate.addProperty(lang, "content", "English content");
 		contentCreate.addProperty(lang, "title", "English title");
@@ -288,7 +297,7 @@ public class Generator {
 		contentCreate.addProperty(lang, "teaser", "Deutscher Teaser");
 		contentCreate.addProperty(lang, "name", "Deutscher Name");
 
-		contentCreate.setSchemaName("content");
+		contentCreate.setSchema(schemaReference);
 		write(contentCreate);
 
 		ContentResponse content2 = new ContentResponse();
@@ -299,7 +308,7 @@ public class Generator {
 		content2.addProperty(lang, "filename", "dummy-content.en.html");
 		content2.addProperty(lang, "teaser", "Dummy teaser for en");
 		content2.addProperty(lang, "content", "Content for language tag en");
-		content2.setSchema(new SchemaReference("content", getUUID()));
+		content2.setSchema(schemaReference);
 		content2.setPerms("READ", "CREATE");
 
 		ContentListResponse list = new ContentListResponse();

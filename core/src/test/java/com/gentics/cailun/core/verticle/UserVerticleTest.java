@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.Transaction;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -75,32 +76,30 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			user3 = userService.save(user3);
 			info.getGroup().addUser(user3);
 			groupService.save(info.getGroup());
+			// Don't grant permissions to user3
 			tx.success();
 		}
-
-		// Don't grant permissions to user3
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
 		UserListResponse restResponse = JsonUtils.readValue(response, UserListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(25, restResponse.getData().size());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(14, restResponse.getData().size());
 
-		int perPage = 11;
+		int perPage = 2;
+		int totalUsers = data().getTotalUsers();
+		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage)) + 1;
 		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, UserListResponse.class);
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
-
-		// Extrausers + user for login
-		int totalUsers = data().getTotalUsers();
-		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage)) - 1;
-		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
 				totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
+
+		perPage = 11;
 
 		List<UserResponse> allUsers = new ArrayList<>();
 		for (int page = 0; page < totalPages; page++) {
@@ -377,8 +376,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	// Delete tests
-
-	@Test
+	@Test(expected = EntityNotFoundException.class)
 	public void testDeleteUserByUUID() throws Exception {
 		User user = info.getUser();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");

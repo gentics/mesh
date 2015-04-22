@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.RoutingContext;
@@ -22,7 +23,6 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
-import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
@@ -151,17 +151,16 @@ public class TagTest extends AbstractDBTest {
 
 	@Test
 	public void testFindAll() {
-
-		User user = data().getUserInfo().getUser();
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
+		RoutingContext rc = getMockedRoutingContext();
 
-		Page<Tag> page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 10));
+		Page<Tag> page = tagService.findAllVisible(rc, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(11, page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = tagService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 14));
+		page = tagService.findAllVisible(rc, "dummy", languageTags, new PagingInfo(1, 14));
 		assertEquals(16, page.getTotalElements());
 		assertEquals(14, page.getSize());
 	}
@@ -189,16 +188,22 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	private RoutingContext getMockedRoutingContext() {
-//		CaiLunAuthServiceImpl auth = springConfig.authProvider();
 
-		// Create login session
 		User user = data().getUserInfo().getUser();
-		//String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
-		String loginSessionId= null;
-		Session session = mock(Session.class);
+
 		RoutingContext rc = mock(RoutingContext.class);
+		Session session = mock(Session.class);
 		when(rc.session()).thenReturn(session);
-		when(session.id()).thenReturn(loginSessionId);
+		JsonObject principal = new JsonObject();
+		principal.put("uuid", user.getUuid());
+		when(session.getPrincipal()).thenReturn(principal);
+		// Create login session
+		// String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
+		// String loginSessionId = null;
+		// Session session = mock(Session.class);
+		// RoutingContext rc = mock(RoutingContext.class);
+		// when(rc.session()).thenReturn(session);
+		// when(session.id()).thenReturn(loginSessionId);
 		return rc;
 	}
 }
