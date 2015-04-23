@@ -80,7 +80,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The project should have been created.", projectService.findByName(name));
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + restProject.getUuid(), 200, "OK");
-		expectMessageResponse("project_deleted", response, restProject.getUuid());
+		expectMessageResponse("project_deleted", response, restProject.getName());
 
 	}
 
@@ -227,7 +227,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), project, PermissionType.DELETE);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 200, "OK");
-		expectMessageResponse("project_deleted", response, project.getUuid());
+		expectMessageResponse("project_deleted", response, project.getName());
 		assertNull("The project should have been deleted", projectService.findByUUID(project.getUuid()));
 
 		// TODO check for removed routers?

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.AbstractCoreApiVerticle;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Project;
+import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
@@ -94,17 +95,22 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				Project project = projectService.transformFromRest(requestModel);
-				project = projectService.save(project);
+				// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
+				// cases. They must show up in any case.
+					Project project = new Project(requestModel.getName());
+					User user = userService.findUser(rc);
+					project.setRootTag(new RootTag());
+					project.setCreator(user);
+					project = projectService.save(project);
 
-				try {
-					routerStorage.addProjectRouter(project.getName());
-					String msg = "Registered project {" + project.getName() + "}";
-					log.info(msg);
-					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(cailunRoot, PermissionType.CREATE), project);
+					try {
+						routerStorage.addProjectRouter(project.getName());
+						String msg = "Registered project {" + project.getName() + "}";
+						log.info(msg);
+						roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(cailunRoot, PermissionType.CREATE), project);
 
-				} catch (Exception e) {
-					// TODO should we really fail here?
+					} catch (Exception e) {
+						// TODO should we really fail here?
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage")));
 					return;
 				}

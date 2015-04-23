@@ -14,7 +14,6 @@ import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.cailun.core.repository.ProjectRepository;
-import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectResponse;
 import com.gentics.cailun.paging.CaiLunPageRequest;
 import com.gentics.cailun.paging.PagingInfo;
@@ -46,14 +45,6 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	@Override
 	public void deleteByName(String name) {
 		projectRepository.deleteByName(name);
-	}
-
-	@Override
-	public Project transformFromRest(ProjectCreateRequest requestModel) {
-		Project project = new Project(requestModel.getName());
-		// TODO handle creator and roottag
-		// project.setCreator(creator);
-		return project;
 	}
 
 	@Override
