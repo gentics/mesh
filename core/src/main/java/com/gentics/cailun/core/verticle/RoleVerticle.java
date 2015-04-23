@@ -56,7 +56,6 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				roleService.delete(role);
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "role_deleted", uuid))));
 			});
-
 		});
 	}
 
@@ -68,8 +67,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 				if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
 					if (roleService.findByName(requestModel.getName()) != null) {
-						rc.response().setStatusCode(409);
-						throw new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name"));
+						rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name")));
+						return;
 					}
 					role.setName(requestModel.getName());
 				}

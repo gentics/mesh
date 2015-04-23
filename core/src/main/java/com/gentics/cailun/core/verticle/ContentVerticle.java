@@ -87,80 +87,67 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				return;
 			}
 
-			loadObjectByUuid(
-					rc,
-					requestModel.getTagUuid(),
-					PermissionType.CREATE,
-					(AsyncResult<Tag> rh) -> {
+			loadObjectByUuid(rc, requestModel.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 
-						Tag rootTagForContent = rh.result();
-						Content content = new Content();
+				Tag rootTagForContent = rh.result();
+				Content content = new Content();
 
-						if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
-							// TODO i18n
-							throw new HttpStatusCodeErrorException(400, "No valid schema name was specified.");
-						} else {
-							// TODO load the schema and set the reference to the tag
-							ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchema().getSchemaName());
-							if (schema == null) {
-								// TODO i18n
-								throw new HttpStatusCodeErrorException(400, "The schema \"" + requestModel.getSchema().getSchemaName()
-										+ "\" could not be found.");
-							} else {
-								content.setSchema(schema);
-							}
+				if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
+					return;
+				} else {
+					// TODO handle schema by name / by uuid - move that code in a seperate handler
+					// TODO load the schema and set the reference to the tag
+					ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchema().getSchemaName());
+					if (schema == null) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getSchemaName())));
+						return;
+					} else {
+						content.setSchema(schema);
+					}
+				}
+
+				User user = userService.findUser(rc);
+				content.setCreator(user);
+
+				// TODO maybe projects should not be a set?
+					Project project = projectService.findByName(projectName);
+					content.addProject(project);
+
+					// Add the i18n properties to the newly created tag
+					for (String languageTag : requestModel.getProperties().keySet()) {
+						Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
+						Language language = languageService.findByLanguageTag(languageTag);
+						if (language == null) {
+							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+							return;
 						}
-
-						User user = userService.findUser(rc);
-						content.setCreator(user);
-
-						// TODO maybe projects should not be a set?
-						Project project = projectService.findByName(projectName);
-						content.addProject(project);
-						// content = neo4jTemplate.save(content);
-
-						// Add the i18n properties to the newly created tag
-						for (String languageTag : requestModel.getProperties().keySet()) {
-							Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
-							Language language = languageService.findByLanguageTag(languageTag);
-							if (language == null) {
-								rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-								return;
-							}
-							I18NProperties tagProps = new I18NProperties(language);
-							for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-								tagProps.setProperty(entry.getKey(), entry.getValue());
-							}
-							tagProps = neo4jTemplate.save(tagProps);
-							// Create the relationship to the i18n properties
-							Translated translated = new Translated(content, tagProps, language);
-							translated = neo4jTemplate.save(translated);
-							content.getI18nTranslations().add(translated);
+						I18NProperties tagProps = new I18NProperties(language);
+						for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
+							tagProps.setProperty(entry.getKey(), entry.getValue());
 						}
+						tagProps = neo4jTemplate.save(tagProps);
+						// Create the relationship to the i18n properties
+						Translated translated = new Translated(content, tagProps, language);
+						translated = neo4jTemplate.save(translated);
+						content.getI18nTranslations().add(translated);
+					}
 
-						content = contentService.save(content);
+					content = contentService.save(content);
 
-						// Assign the content to the tag and save the tag
-						rootTagForContent.addContent(content);
-						rootTagForContent = tagService.save(rootTagForContent);
-						rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
-					});
-
-			// // TODO simplify language handling - looks a bit chaotic
-			// // Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
-			// handleResponse(rc, content, Arrays.asList(language.getName()));
-			// } else {
-			// // TODO handle error, i18n
-			// throw new HttpStatusCodeErrorException(500, "Could not save content");
-			// }
+					// Assign the content to the tag and save the tag
+					rootTagForContent.addContent(content);
+					rootTagForContent = tagService.save(rootTagForContent);
+					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+				});
 
 		});
 	}
 
+	// TODO filter by project name
+	// TODO filtering
 	private void addReadHandler() {
-		// TODO filter by project name
-		// TODO filtering
-		Route route = route("/:uuid").method(GET);
+		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			int depth = getDepth(rc);
@@ -171,8 +158,6 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			});
 		});
 
-		// TODO filtering
-		// TODO filter by project name
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);

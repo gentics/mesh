@@ -63,7 +63,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				// Check for conflicting project name
 					if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
 						if (projectService.findByName(requestModel.getName()) != null) {
-							throw new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name"));
+							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name")));
+							return;
 						}
 						project.setName(requestModel.getName());
 					}
@@ -82,13 +83,15 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "project_missing_name"));
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_missing_name")));
+				return;
 			}
 
 			CaiLunRoot cailunRoot = cailunRootService.findRoot();
 			hasPermission(rc, cailunRoot, PermissionType.CREATE, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name"));
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
+					return;
 				}
 
 				Project project = projectService.transformFromRest(requestModel);
@@ -103,6 +106,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				} catch (Exception e) {
 					// TODO should we really fail here?
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage")));
+					return;
 				}
 				rc.response().end(toJson(projectService.transformToRest(project)));
 			});

@@ -7,11 +7,11 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -54,7 +54,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSchemaProjectHandlers() {
-		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
 				loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
@@ -64,7 +64,6 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 						schema = schemaService.save(schema);
 					}
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
-
 				});
 			});
 
@@ -72,7 +71,6 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-
 			loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
 				loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
 					ObjectSchema schema = srh.result();
@@ -80,10 +78,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					if (schema.removeProject(project)) {
 						schema = schemaService.save(schema);
 					}
-
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
-
 			});
 		});
 	}
@@ -95,13 +91,13 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 
 			ObjectSchemaCreateRequest requestModel = fromJson(rc, ObjectSchemaCreateRequest.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				// TODO i18n
-				rc.fail(new HttpStatusCodeErrorException(400, "The name of a schema is mandatory and cannot be omitted."));
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_name")));
+				return;
 			}
 
 			if (StringUtils.isEmpty(requestModel.getProjectUuid())) {
-				// TODO i18n
-				rc.fail(new HttpStatusCodeErrorException(400, "The project uuid is mandatory for schema creation and cannot be omitted."));
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_project_uuid")));
+				return;
 			}
 
 			loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
@@ -124,12 +120,13 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				schema = schemaService.save(schema);
 
 				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(project, PermissionType.CREATE), schema);
-
 				rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 			});
 		});
 
 	}
+
+	// TODO update modification timestamps
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
@@ -140,19 +137,18 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+					return;
 				}
 				if (!schema.getName().equals(requestModel.getName())) {
 					schema.setName(requestModel.getName());
 				}
 
-				// Update description
-					if (schema.getDescription() != null && (!schema.getDescription().equals(requestModel.getDescription()))) {
-						schema.setDescription(requestModel.getDescription());
-					}
-					// TODO update modification timestamps
-					schema = schemaService.save(schema);
-					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
-				});
+				if (schema.getDescription() != null && (!schema.getDescription().equals(requestModel.getDescription()))) {
+					schema.setDescription(requestModel.getDescription());
+				}
+				schema = schemaService.save(schema);
+				rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
+			});
 
 		});
 	}
@@ -160,12 +156,10 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
 				ObjectSchema schema = srh.result();
 				schemaService.delete(schema);
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", uuid))));
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", schema.getName()))));
 			});
 		});
 
@@ -185,17 +179,22 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
 			PagingInfo pagingInfo = getPagingInfo(rc);
-			User user = userService.findUser(rc);
-			Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
-			for (ObjectSchema schema : schemaPage) {
-				listResponse.getData().add(schemaService.transformToRest(schema));
-			}
-			RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
-			rc.response().setStatusCode(200).end(toJson(listResponse));
+			vertx.executeBlocking((Future<ObjectSchemaListResponse> bch) -> {
+				ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
+				User user = userService.findUser(rc);
+				Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
+				for (ObjectSchema schema : schemaPage) {
+					listResponse.getData().add(schemaService.transformToRest(schema));
+				}
+				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
+				bch.complete(listResponse);
+			}, (AsyncResult<ObjectSchemaListResponse> rh) -> {
+				ObjectSchemaListResponse listResponse = rh.result();
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+			});
+
 		});
 
 	}
-
 }

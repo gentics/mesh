@@ -1,6 +1,9 @@
 package com.gentics.cailun.core.verticle;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
@@ -18,7 +21,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
