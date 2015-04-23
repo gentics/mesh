@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.entity.ContentType;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	private static final Logger log = LoggerFactory.getLogger(AbstractRestVerticle.class);
 
 	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
+	private static final String DEPTH_PARAM_KEY = "depth";
 
 	public static final int DEFAULT_PER_PAGE = 25;
 
@@ -124,7 +126,10 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			if (res.failed()) {
 				rc.fail(res.cause());
 			} else {
-				resultHandler.handle(res);
+				try (Transaction tx = graphDb.beginTx()) {
+					resultHandler.handle(res);
+					tx.success();
+				}
 			}
 		});
 
@@ -155,7 +160,10 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			if (!handler.result()) {
 				throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()));
 			} else {
-				resultHandler.handle(Future.succeededFuture(handler.result()));
+				try (Transaction tx = graphDb.beginTx()) {
+					resultHandler.handle(Future.succeededFuture(handler.result()));
+					tx.success();
+				}
 			}
 		});
 	}
@@ -191,6 +199,19 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_invalid_paging_parameters"));
 		}
 		return new PagingInfo(page, perPage);
+	}
+
+	protected int getDepth(RoutingContext rc) {
+		String query = rc.request().query();
+		Map<String, String> queryPairs;
+		try {
+			queryPairs = splitQuery(query);
+		} catch (UnsupportedEncodingException e) {
+			log.error("Could not decode query string.", e);
+			return 0;
+		}
+		String value = queryPairs.get(DEPTH_PARAM_KEY);
+		return NumberUtils.toInt(value, 0);
 	}
 
 }

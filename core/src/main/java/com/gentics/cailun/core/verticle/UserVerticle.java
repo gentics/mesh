@@ -7,11 +7,11 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -49,10 +49,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-		route("/:uuid").method(GET).handler(rc -> {
+		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			int depth = getDepth(rc);
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
 				User user = rh.result();
-				UserResponse restUser = userService.transformToRest(user);
+				UserResponse restUser = userService.transformToRest(user, depth);
 				rc.response().setStatusCode(200).end(toJson(restUser));
 			});
 		});
@@ -60,36 +61,41 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		/*
 		 * List all users when no parameter was specified
 		 */
-		route("/").method(GET).handler(rc -> {
-			UserListResponse listResponse = new UserListResponse();
+		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			PagingInfo pagingInfo = getPagingInfo(rc);
-			Page<User> userPage = userService.findAllVisible(rc, pagingInfo);
-			for (User currentUser : userPage) {
-				listResponse.getData().add(userService.transformToRest(currentUser));
-			}
-			RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
-			rc.response().setStatusCode(200).end(toJson(listResponse));
+			int depth = getDepth(rc);
+
+			vertx.executeBlocking((Future<UserListResponse> bch) -> {
+				UserListResponse listResponse = new UserListResponse();
+
+				Page<User> userPage = userService.findAllVisible(rc, pagingInfo);
+				for (User currentUser : userPage) {
+					listResponse.getData().add(userService.transformToRest(currentUser, depth));
+				}
+				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
+				bch.complete(listResponse);
+			}, (AsyncResult<UserListResponse> arh) -> {
+				UserListResponse list = arh.result();
+				rc.response().setStatusCode(200).end(toJson(list));
+			});
 		});
 	}
 
 	// TODO invalidate active sessions for this user
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).handler(rc -> {
+		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<User> rh) -> {
-				try (Transaction tx = graphDb.beginTx()) {
-					User user = rh.result();
-					userService.delete(user);
-					rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
-					tx.success();
-				}
+				User user = rh.result();
+				userService.delete(user);
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 			});
 
 		});
 	}
 
 	private void addUpdateHandler() {
-		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
+		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<User> rh) -> {
 				User user = rh.result();
@@ -119,7 +125,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				}
 				user = userService.save(user);
-				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
+				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user, 0)));
 
 			});
 
@@ -127,7 +133,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCreateHandler() {
-		Route route = route("/").method(POST).consumes(APPLICATION_JSON);
+		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
 			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
@@ -150,31 +156,25 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			}
 			// Load the parent group for the user
 			loadObjectByUuid(rc, groupUuid, PermissionType.CREATE, (AsyncResult<Group> rh) -> {
-				try (Transaction tx = graphDb.beginTx()) {
 
-					Group parentGroup = rh.result();
+				Group parentGroup = rh.result();
 
-					if (userService.findByUsername(requestModel.getUsername()) != null) {
-						String message = i18n.get(rc, "user_conflicting_username");
-						rc.fail(new HttpStatusCodeErrorException(409, message));
-						return;
-					}
-
-					User user = new User(requestModel.getUsername());
-					user.setFirstname(requestModel.getFirstname());
-					user.setLastname(requestModel.getLastname());
-					user.setEmailAddress(requestModel.getEmailAddress());
-					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
-					user.getGroups().add(parentGroup);
-					user = userService.save(user);
-
-					// parentGroup.addUser(user);
-					// parentGroup = groupService.save(parentGroup);
-
-					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), user);
-					rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
-					tx.success();
+				if (userService.findByUsername(requestModel.getUsername()) != null) {
+					String message = i18n.get(rc, "user_conflicting_username");
+					rc.fail(new HttpStatusCodeErrorException(409, message));
+					return;
 				}
+
+				User user = new User(requestModel.getUsername());
+				user.setFirstname(requestModel.getFirstname());
+				user.setLastname(requestModel.getLastname());
+				user.setEmailAddress(requestModel.getEmailAddress());
+				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+				user.getGroups().add(parentGroup);
+				user = userService.save(user);
+
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), user);
+				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user, 0)));
 			});
 
 		});

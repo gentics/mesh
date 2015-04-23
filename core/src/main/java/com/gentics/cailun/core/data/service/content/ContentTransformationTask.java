@@ -70,7 +70,7 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 				User creator = content.getCreator();
 				if (creator != null) {
 					creator = info.getNeo4jTemplate().fetch(creator);
-					restContent.setCreator(info.getUserService().transformToRest(creator));
+					restContent.setCreator(info.getUserService().transformToRest(creator, 0));
 				}
 
 				restContent.setOrder(content.getOrder());
@@ -124,33 +124,30 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 		}
 
 		if (depth < info.getMaxDepth()) {
-			content.getTags()
-					.parallelStream()
-					.forEachOrdered(
-							currentTag -> {
+			content.getTags().parallelStream().forEachOrdered(currentTag -> {
 
-								try (Transaction tx = info.getGraphDb().beginTx()) {
-									String currentUuid = currentTag.getUuid();
-									Session session = info.getRoutingContext().session();
-									User user = null;
-									session.hasPermission(new CaiLunPermission(currentTag, PermissionType.READ).toString(), handler -> {
-										if(handler.result()) {
-											TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
-											if (currentRestTag == null) {
-												Tag reloadedTag = info.getNeo4jTemplate().fetch(currentTag);
-												currentRestTag = new TagResponse();
-												// info.addTag(currentUuid, currentRestTag);
-												TagTransformationTask subTask = new TagTransformationTask(reloadedTag, info, currentRestTag, depth + 1);
-												tasks.add(subTask.fork());
-											}
-											restContent.getTags().add(currentRestTag);
-										}
-									});
+				try (Transaction tx = info.getGraphDb().beginTx()) {
+					String currentUuid = currentTag.getUuid();
+					Session session = info.getRoutingContext().session();
+					User user = null;
+					session.hasPermission(new CaiLunPermission(currentTag, PermissionType.READ).toString(), handler -> {
+						if (handler.result()) {
+							TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
+							if (currentRestTag == null) {
+								Tag reloadedTag = info.getNeo4jTemplate().fetch(currentTag);
+								currentRestTag = new TagResponse();
+								// info.addTag(currentUuid, currentRestTag);
+							TagTransformationTask subTask = new TagTransformationTask(reloadedTag, info, currentRestTag, depth + 1);
+							tasks.add(subTask.fork());
+						}
+						restContent.getTags().add(currentRestTag);
+					}
+				}	);
 
-									tx.success();
-								}
+					tx.success();
+				}
 
-							});
+			});
 			// for (Tag currentTag : content.getTags()) {
 			// boolean hasPerm = info.getSpringConfiguration().authService()
 			// .hasPermission(info.getRoutingContext().session().getLoginID(), new CaiLunPermission(currentTag, PermissionType.READ));

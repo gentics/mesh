@@ -41,7 +41,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private int port;
 
-	private static final Integer DEFAULT_TIMEOUT_SECONDS = 400;
+	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
 
 	private HttpClient client;
 
@@ -155,12 +155,17 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	 */
 	private void awaitCompletion() throws InterruptedException, AssertionError {
 
-		boolean allLatchesFree = latch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+		int timeout = 2000;
+		boolean allLatchesFree = latch.await(timeout, TimeUnit.SECONDS);
 		if (throwable.get() != null) {
 			throw (AssertionError) throwable.get();
 		} else if (!allLatchesFree) {
-			fail("Timeout of {" + DEFAULT_TIMEOUT_SECONDS + "} seconds reached.");
+			fail("Timeout of {" + timeout + "} seconds reached.");
 		}
+	}
+	
+	public int getTimeout() {
+		return port;
 	}
 
 	private void blockingAssertEquals(String message, Object expected, Object actual) {

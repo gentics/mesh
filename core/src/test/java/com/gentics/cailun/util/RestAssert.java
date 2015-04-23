@@ -65,6 +65,8 @@ public class RestAssert {
 
 	@Transactional
 	public void assertUser(User user, UserResponse restUser) {
+		assertNotNull("The user must not be null.", user);
+		assertNotNull("The restuser must not be null", restUser);
 		user = neo4jTemplate.fetch(user);
 		assertEquals(user.getUsername(), restUser.getUsername());
 		assertEquals(user.getEmailAddress(), restUser.getEmailAddress());
@@ -172,29 +174,24 @@ public class RestAssert {
 		assertNotNull(restProject);
 		assertNotNull(restProject.getUuid());
 		assertEquals(request.getName(), restProject.getName());
-
 	}
 
 	public void assertSchema(ObjectSchema schema, ObjectSchemaResponse restSchema) {
-
+		assertNotNull(schema);
+		assertNotNull(restSchema);
 		assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
 		assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
 		assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
-
 		// TODO verify other fields
-
 	}
 
 	public void assertSchema(ObjectSchemaCreateRequest request, ObjectSchemaResponse restSchema) {
-
 		assertNotNull(request);
 		assertNotNull(restSchema);
 		assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
 		assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
 		assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
-
 		// TODO assert for schema properties
-
 	}
 
 	public void assertUser(UserCreateRequest request, UserResponse restUser) {

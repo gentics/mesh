@@ -70,7 +70,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public UserResponse transformToRest(User user) {
+	public UserResponse transformToRest(User user, int depth) {
 		if (user == null) {
 			throw new HttpStatusCodeErrorException(500, "User can't be null");
 		}

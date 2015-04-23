@@ -2,13 +2,14 @@ package com.gentics.cailun.test;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 
 public final class TestUtil {
 
 	private TestUtil() {
 
 	}
-	
+
 	/**
 	 * Creates a random hash
 	 * 
@@ -29,9 +30,17 @@ public final class TestUtil {
 		return hash;
 	}
 
+	public static boolean isHost(String hostname) throws UnknownHostException {
+		return getHostname().equalsIgnoreCase(hostname);
+	}
+
+	public static String getHostname() throws UnknownHostException {
+		java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();
+		return localMachine.getHostName();
+	}
 
 	/**
-	 * Not the most elegant or efficient solution, but works.
+	 * Return a free port random port by opening an socket and check whether it is currently used. Not the most elegant or efficient solution, but works.
 	 * 
 	 * @param port
 	 * @return

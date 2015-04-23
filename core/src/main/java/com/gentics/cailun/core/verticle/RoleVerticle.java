@@ -7,11 +7,10 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
-import io.vertx.ext.apex.Session;
+import io.vertx.core.Future;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -47,39 +46,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
-		// addRoleGroupHandlers();
 	}
-
-	// private void addRoleGroupHandlers() {
-	// // TODO document needed permissions
-	// route("/:roleUuid/groups/:groupUuid").method(PUT).handler(rc -> {
-	// Role role = getObject(rc, "roleUuid", PermissionType.READ);
-	// Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-	//
-	// if (group.addRole(role)) {
-	// group = groupService.save(group);
-	// // TODO reload role?
-	// rc.response().setStatusCode(200);
-	// rc.response().end(toJson(roleService.transformToRest(role)));
-	// } else {
-	// // TODO 200?
-	// }
-	// });
-	// route("/:roleUuid/groups/:groupUuid").method(DELETE).handler(rc -> {
-	// Role role = getObject(rc, "roleUuid", PermissionType.READ);
-	// Group group = getObject(rc, "groupUuid", PermissionType.UPDATE);
-	//
-	// if (group.removeRole(role)) {
-	// group = groupService.save(group);
-	// // TODO reload role?
-	// rc.response().setStatusCode(200);
-	// rc.response().end(toJson(roleService.transformToRest(role)));
-	// } else {
-	// // TODO 200?
-	// }
-	// });
-	//
-	// }
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
@@ -125,16 +92,25 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		 * List all roles when no parameter was specified
 		 */
 		route("/").method(GET).handler(rc -> {
-			RoleListResponse listResponse = new RoleListResponse();
 
 			PagingInfo pagingInfo = getPagingInfo(rc);
-			User user = userService.findUser(rc);
-			Page<Role> rolePage = roleService.findAllVisible(user, pagingInfo);
-			for (Role role : rolePage) {
-				listResponse.getData().add(roleService.transformToRest(role));
-			}
-			RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
-			rc.response().setStatusCode(200).end(toJson(listResponse));
+
+			vertx.executeBlocking((Future<RoleListResponse> bch) -> {
+				RoleListResponse listResponse = new RoleListResponse();
+				User user = userService.findUser(rc);
+				Page<Role> rolePage = roleService.findAllVisible(user, pagingInfo);
+				for (Role role : rolePage) {
+					listResponse.getData().add(roleService.transformToRest(role));
+				}
+				RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+
+				bch.complete(listResponse);
+			}, (AsyncResult<RoleListResponse> rh) -> {
+				RoleListResponse listResponse = rh.result();
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+
+			});
+
 		});
 	}
 
@@ -158,16 +134,13 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			}
 
 			loadObjectByUuid(rc, requestModel.getGroupUuid(), PermissionType.CREATE, (AsyncResult<Group> rh) -> {
-				try (Transaction tx = graphDb.beginTx()) {
-					Role role = new Role(requestModel.getName());
-					Group parentGroup = rh.result();
-					role.getGroups().add(parentGroup);
-					role = roleService.save(role);
+				Role role = new Role(requestModel.getName());
+				Group parentGroup = rh.result();
+				role.getGroups().add(parentGroup);
+				role = roleService.save(role);
 
-					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), role);
-					rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
-					tx.success();
-				}
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), role);
+				rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
 			});
 
 		});

@@ -30,7 +30,7 @@ public interface UserService extends GenericNodeService<User> {
 	 */
 	Page<User> findAllVisible(RoutingContext rc, PagingInfo pagingInfo);
 
-	UserResponse transformToRest(User user);
+	UserResponse transformToRest(User user, int depth);
 
 	boolean removeUserFromGroup(User user, Group group);
 

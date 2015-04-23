@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
 import java.util.List;
@@ -81,36 +82,39 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			try (Transaction tx = graphDb.beginTx()) {
+			if (StringUtils.isEmpty(requestModel.getTagUuid())) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field")));
+				return;
+			}
 
-				if (StringUtils.isEmpty(requestModel.getTagUuid())) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field"));
-				}
+			loadObjectByUuid(
+					rc,
+					requestModel.getTagUuid(),
+					PermissionType.CREATE,
+					(AsyncResult<Tag> rh) -> {
 
-				loadObjectByUuid(rc, requestModel.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
+						Tag rootTagForContent = rh.result();
+						Content content = new Content();
 
-					Tag rootTagForContent = rh.result();
-					Content content = new Content();
-
-					if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
-						// TODO i18n
-						throw new HttpStatusCodeErrorException(400, "No valid schema name was specified.");
-					} else {
-						// TODO load the schema and set the reference to the tag
-						ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchema().getSchemaName());
-						if (schema == null) {
+						if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
 							// TODO i18n
-						throw new HttpStatusCodeErrorException(400, "The schema \"" + requestModel.getSchema().getSchemaName()
-								+ "\" could not be found.");
-					} else {
-						content.setSchema(schema);
-					}
-				}
+							throw new HttpStatusCodeErrorException(400, "No valid schema name was specified.");
+						} else {
+							// TODO load the schema and set the reference to the tag
+							ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchema().getSchemaName());
+							if (schema == null) {
+								// TODO i18n
+								throw new HttpStatusCodeErrorException(400, "The schema \"" + requestModel.getSchema().getSchemaName()
+										+ "\" could not be found.");
+							} else {
+								content.setSchema(schema);
+							}
+						}
 
-				User user = userService.findUser(rc);
-				content.setCreator(user);
+						User user = userService.findUser(rc);
+						content.setCreator(user);
 
-				// TODO maybe projects should not be a set?
+						// TODO maybe projects should not be a set?
 						Project project = projectService.findByName(projectName);
 						content.addProject(project);
 						// content = neo4jTemplate.save(content);
@@ -120,7 +124,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 							Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
 							Language language = languageService.findByLanguageTag(languageTag);
 							if (language == null) {
-								throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
+								rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+								return;
 							}
 							I18NProperties tagProps = new I18NProperties(language);
 							for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
@@ -139,9 +144,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 						rootTagForContent.addContent(content);
 						rootTagForContent = tagService.save(rootTagForContent);
 						rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
-						tx.success();
 					});
-			}
 
 			// // TODO simplify language handling - looks a bit chaotic
 			// // Language language = languageService.findByLanguageTag(requestModel.getLanguageTag());
@@ -155,46 +158,50 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandler() {
-
+		// TODO filter by project name
+		// TODO filtering
 		Route route = route("/:uuid").method(GET);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			int depth = getDepth(rc);
-			try (Transaction tx = graphDb.beginTx()) {
-				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
-					Content content = rh.result();
-					List<String> languageTags = getSelectedLanguageTags(rc);
-					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
-					tx.success();
-				});
-			}
-
+			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
+				Content content = rh.result();
+				List<String> languageTags = getSelectedLanguageTags(rc);
+				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
+			});
 		});
 
+		// TODO filtering
+		// TODO filter by project name
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
+			int depth = getDepth(rc);
 
-			// TODO filtering
+			vertx.executeBlocking((Future<ContentListResponse> bch) -> {
 				ContentListResponse listResponse = new ContentListResponse();
 				try (Transaction tx = graphDb.beginTx()) {
 					PagingInfo pagingInfo = getPagingInfo(rc);
 					User user = userService.findUser(rc);
 					Page<Content> contentPage = contentService.findAllVisible(user, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
-						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, 0));
+						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depth));
 					}
 					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
+					bch.complete(listResponse);
 					tx.success();
 				}
+			}, (AsyncResult<ContentListResponse> arh) -> {
+				ContentListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
+		});
 	}
 
 	// TODO filter project name
 	private void addDeleteHandler() {
-		Route route = route("/:uuid").method(DELETE);
+		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
@@ -207,18 +214,18 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	}
 
 	// TODO filter by project name
+	// TODO handle depth
 	private void addUpdateHandler() {
 
-		Route route = route("/:uuid").consumes(APPLICATION_JSON).method(PUT);
+		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
-				try (Transaction tx = graphDb.beginTx()) {
-					Content content = rh.result();
-					// TODO update other fields as well?
-					// TODO Update user information
+				Content content = rh.result();
+				// TODO update other fields as well?
+				// TODO Update user information
 					ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
 					// Iterate through all properties and update the changed ones
 					for (String languageTag : request.getProperties().keySet()) {
@@ -262,14 +269,13 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 				}
 			} else {
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag));
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+				return;
 			}
 
 		}
 		rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
-		tx.success();
-	}
-}			);
+	}		);
 
 		});
 	}

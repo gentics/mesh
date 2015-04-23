@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,6 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
 
 	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
-	private static final Object DEPTH_PARAM_KEY = "depth";
 
 	@Autowired
 	protected ProjectService projectService;
@@ -78,17 +76,6 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
 	}
 
-	protected int getDepth(RoutingContext rc) {
-		String query = rc.request().query();
-		Map<String, String> queryPairs;
-		try {
-			queryPairs = splitQuery(query);
-		} catch (UnsupportedEncodingException e) {
-			log.error("Could not decode query string.", e);
-			return 0;
-		}
-		String value = queryPairs.get(DEPTH_PARAM_KEY);
-		return NumberUtils.toInt(value, 0);
-	}
+
 
 }

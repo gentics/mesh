@@ -73,7 +73,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				User creator = tag.getCreator();
 				if (creator != null) {
 					creator = info.getNeo4jTemplate().fetch(creator);
-					restTag.setCreator(info.getUserService().transformToRest(creator));
+					restTag.setCreator(info.getUserService().transformToRest(creator, 0));
 				}
 
 				for (String languageTag : info.getLanguageTags()) {
@@ -152,9 +152,9 @@ class ContentTraversalConsumer implements Consumer<Content> {
 	private TransformationInfo info;
 	private int currentDepth;
 	private TagResponse restTag;
-	private Set<ForkJoinTask<Void>> tasks; 
+	private Set<ForkJoinTask<Void>> tasks;
 
-	public ContentTraversalConsumer(TransformationInfo info, int currentDepth, TagResponse restTag, Set<ForkJoinTask<Void>>  tasks) {
+	public ContentTraversalConsumer(TransformationInfo info, int currentDepth, TagResponse restTag, Set<ForkJoinTask<Void>> tasks) {
 		this.info = info;
 		this.currentDepth = currentDepth;
 		this.restTag = restTag;

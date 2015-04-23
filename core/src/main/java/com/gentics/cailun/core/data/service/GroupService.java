@@ -14,7 +14,7 @@ public interface GroupService extends GenericNodeService<Group> {
 
 	public Group findByUUID(String uuid);
 
-	public GroupResponse transformToRest(Group group);
+	public GroupResponse transformToRest(Group group, int depth);
 
 	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo);
 

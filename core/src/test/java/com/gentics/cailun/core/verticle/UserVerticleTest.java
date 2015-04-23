@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.Transaction;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -88,7 +87,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(14, restResponse.getData().size());
 
 		int perPage = 2;
-		int totalUsers = data().getTotalUsers();
+		int totalUsers = data().getTotalUsers() +1;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage)) + 1;
 		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, UserListResponse.class);
@@ -102,7 +101,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		perPage = 11;
 
 		List<UserResponse> allUsers = new ArrayList<>();
-		for (int page = 0; page < totalPages; page++) {
+		for (int page = 1; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, UserListResponse.class);
 			allUsers.addAll(restResponse.getData());
@@ -123,7 +122,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":14}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}
@@ -376,7 +375,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	// Delete tests
-	@Test(expected = EntityNotFoundException.class)
+	@Test
 	public void testDeleteUserByUUID() throws Exception {
 		User user = info.getUser();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");

@@ -2,6 +2,7 @@ package com.gentics.cailun.core.data.service;
 
 import java.util.Collections;
 
+import org.neo4j.cypher.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -30,11 +31,17 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 
 	@Override
 	public Group findByUUID(String uuid) {
-		return groupRepository.findByUUID(uuid);
+		try {
+			return groupRepository.findByUUID(uuid);
+		} catch (EntityNotFoundException e) {
+			//TODO log error
+			return null;
+		}
 	}
 
+	// TODO handle depth
 	@Override
-	public GroupResponse transformToRest(Group group) {
+	public GroupResponse transformToRest(Group group, int depth) {
 		GroupResponse restGroup = new GroupResponse();
 		restGroup.setUuid(group.getUuid());
 		restGroup.setName(group.getName());

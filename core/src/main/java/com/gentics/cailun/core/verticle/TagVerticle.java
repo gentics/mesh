@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Route;
@@ -17,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
@@ -93,12 +93,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			loadObjectByUuid(rc, uuid, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				try (Transaction tx = graphDb.beginTx()) {
+				Tag tag = rh.result();
 
-					Tag tag = rh.result();
-
-					TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
-					// Iterate through all properties and update the changed ones
+				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
+				// Iterate through all properties and update the changed ones
 					for (String languageTag : languageTags) {
 						Language language = languageService.findByLanguageTag(languageTag);
 						if (language != null) {
@@ -139,51 +137,46 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					}
 					tag = tagService.save(tag);
 					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
-					tx.success();
-				}
-			});
+				});
 
 		});
 
 	}
 
+	// TODO load project specific root tag
+	// TODO handle creator
+	// TODO load schema and set the reference to the tag
+	// newTag.setSchemaName(request.getSchemaName());
+	// TODO maybe projects should not be a set?
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
-			try (Transaction tx = graphDb.beginTx()) {
 
-				TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
-				// TODO load project specific root tag
-				loadObjectByUuid(rc, request.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
-					Tag rootTag = rh.result();
+			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
+			loadObjectByUuid(rc, request.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
+				Tag rootTag = rh.result();
 
-					Tag newTag = new Tag();
-					// TODO load schema and set the reference to the tag
-					// newTag.setSchemaName(request.getSchemaName());
-					// TODO maybe projects should not be a set?
-						Project project = projectService.findByName(projectName);
-						newTag.addProject(project);
-						// TODO handle creator
+				Tag newTag = new Tag();
 
-						// Add the i18n properties to the newly created tag
-						for (String languageTag : request.getProperties().keySet()) {
-							Map<String, String> i18nProperties = request.getProperties(languageTag);
-							Language language = languageService.findByLanguageTag(languageTag);
-							I18NProperties tagProps = new I18NProperties(language);
-							for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-								tagProps.setProperty(entry.getKey(), entry.getValue());
-							}
-							// Create the relationship to the i18n properties
-							Translated translated = new Translated(newTag, tagProps, language);
-							newTag.getI18nTranslations().add(translated);
-						}
-						newTag = tagService.save(newTag);
-						rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, newTag, languageTags, 0)));
-						tx.success();
-					});
-			}
+				Project project = projectService.findByName(projectName);
+				newTag.addProject(project);
+
+				for (String languageTag : request.getProperties().keySet()) {
+					Map<String, String> i18nProperties = request.getProperties(languageTag);
+					Language language = languageService.findByLanguageTag(languageTag);
+					I18NProperties tagProps = new I18NProperties(language);
+					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
+						tagProps.setProperty(entry.getKey(), entry.getValue());
+					}
+					// Create the relationship to the i18n properties
+					Translated translated = new Translated(newTag, tagProps, language);
+					newTag.getI18nTranslations().add(translated);
+				}
+				newTag = tagService.save(newTag);
+				rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, newTag, languageTags, 0)));
+			});
 
 		});
 	}
@@ -191,7 +184,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	// TODO filtering, sorting
 	private void addReadHandler() {
 
-		Route route = route("/:uuid").method(GET);
+		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			List<String> languages = getSelectedLanguageTags(rc);
 			int depth = getDepth(rc);
@@ -201,22 +194,24 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			});
 		});
 
-		Route readAllRoute = route("/").method(GET);
+		// TODO check filtering by project name
+		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-
-			TagListResponse listResponse = new TagListResponse();
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			int depth = getDepth(rc);
 
-			vertx.executeBlocking(bch -> {
+			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
+				TagListResponse listResponse = new TagListResponse();
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				Page<Tag> tagPage = tagService.findAllVisible(rc, projectName, languageTags, pagingInfo);
 				for (Tag tag : tagPage) {
 					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
 				}
 				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
-			}, rh -> {
+				bcr.complete(listResponse);
+			}, (AsyncResult<TagListResponse> arh) -> {
+				TagListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 
@@ -238,30 +233,28 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		});
 	}
 
+	// TODO filtering, sorting
+
 	private void addTagContentHandlers() {
 		Route getRoute = route("/:uuid/contents/").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			try (Transaction tx = graphDb.beginTx()) {
-				String projectName = getProjectName(rc);
-				ContentListResponse listResponse = new ContentListResponse();
-				List<String> languageTags = getSelectedLanguageTags(rc);
-				int depth = getDepth(rc);
+			String projectName = getProjectName(rc);
+			ContentListResponse listResponse = new ContentListResponse();
+			List<String> languageTags = getSelectedLanguageTags(rc);
+			int depth = getDepth(rc);
 
-				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
-					Tag rootTag = rh.result();
+			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
+				Tag rootTag = rh.result();
 
-					PagingInfo pagingInfo = getPagingInfo(rc);
-					// User requestUser = springConfiguration.authService().getUser(rc);
-						User requestUser = null;
-						// TODO filtering, sorting
-						Page<Content> contentPage = tagService.findAllVisibleSubContents(rc, projectName, rootTag, languageTags, pagingInfo);
-						for (Content content : contentPage) {
-							listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depth));
-						}
-						RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
-						rc.response().setStatusCode(200).end(toJson(listResponse));
-					});
-			}
+				PagingInfo pagingInfo = getPagingInfo(rc);
+				User requestUser = userService.findUser(rc);
+				Page<Content> contentPage = tagService.findAllVisibleSubContents(rc, projectName, rootTag, languageTags, pagingInfo);
+				for (Content content : contentPage) {
+					listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depth));
+				}
+				RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+			});
 		});
 	}
 
@@ -269,84 +262,60 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addTagSubTagHandlers() {
 		Route getRoute = route("/:uuid/tags/").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
+			String projectName = getProjectName(rc);
+			TagListResponse listResponse = new TagListResponse();
+			List<String> languageTags = getSelectedLanguageTags(rc);
+			int depth = getDepth(rc);
 
-			try (Transaction tx = graphDb.beginTx()) {
-				String projectName = getProjectName(rc);
-				TagListResponse listResponse = new TagListResponse();
-				List<String> languageTags = getSelectedLanguageTags(rc);
-				int depth = getDepth(rc);
+			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
+				Tag rootTag = rh.result();
 
-				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
-					Tag rootTag = rh.result();
+				PagingInfo pagingInfo = getPagingInfo(rc);
 
-					PagingInfo pagingInfo = getPagingInfo(rc);
-
-					Page<Tag> tagPage = tagService.findAllVisibleSubTags(rc, projectName, rootTag, languageTags, pagingInfo);
-					for (Tag tag : tagPage) {
-						listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
-					}
-					RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
-					rc.response().setStatusCode(200).end(toJson(listResponse));
-				});
-			}
+				Page<Tag> tagPage = tagService.findAllVisibleSubTags(rc, projectName, rootTag, languageTags, pagingInfo);
+				for (Tag tag : tagPage) {
+					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
+				}
+				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+			});
 		});
 
 		Route postRoute = route("/:tagUuid/tags/:subtagUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
-			// String tagUuid = rc.request().params().get("tagUuid");
-			// String subTagUuid = rc.request().params().get("subtagUuid");
-			// TODO be more specific
-			// if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
-			// throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
-			// }
-				String projectName = getProjectName(rc);
-				List<String> languageTags = getSelectedLanguageTags(rc);
-				try (Transaction tx = graphDb.beginTx()) {
+			String projectName = getProjectName(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
-					loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-						loadObject(rc, "subtagUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
-							Tag tag = rh.result();
-							Tag subTag = srh.result();
+			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "subtagUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+					Tag tag = rh.result();
+					Tag subTag = srh.result();
 
-							tag.addTag(subTag);
-							tag = tagService.save(tag);
+					tag.addTag(subTag);
+					tag = tagService.save(tag);
+					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
+				});
 
-							rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
-							tx.success();
-						});
-
-					});
-
-				}
 			});
+		});
 
-		//TODO fix error handling. This does not fail when tagUuid could not be found
+		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Route deleteRoute = route("/:tagUuid/tags/:subtagUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			// String tagUuid = rc.request().params().get("tagUuid");
-			// String subTagUuid = rc.request().params().get("subtagUuid");
-			// TODO be more specific?
-			// if (StringUtils.isEmpty(tagUuid) || StringUtils.isEmpty(subTagUuid)) {
-			// throw new HttpStatusCodeErrorException(404, "Missing uuid parameter");
-			// }
-				String projectName = getProjectName(rc);
-				List<String> languageTags = getSelectedLanguageTags(rc);
+			String projectName = getProjectName(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
-				try (Transaction tx = graphDb.beginTx()) {
-
-					loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-						loadObject(rc, "subtagUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
-							Tag tag = rh.result();
-							Tag subTag = srh.result();
-							tag.removeTag(subTag);
-							tag = tagService.save(tag);
-							rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
-							tx.success();
-						});
-					});
-
-				}
+			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "subtagUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+					Tag tag = rh.result();
+					Tag subTag = srh.result();
+					tag.removeTag(subTag);
+					tag = tagService.save(tag);
+					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
+				});
 			});
+
+		});
 
 	}
 

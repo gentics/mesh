@@ -54,205 +54,146 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSchemaProjectHandlers() {
-		// TODO consumes, produces, document needed permissions?
-		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST);
+		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			try (Transaction tx = graphDb.beginTx()) {
-				loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
-					if (rh.failed()) {
-						rc.fail(rh.cause());
-					}
+			loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+				loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
 					Project project = rh.result();
-					loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
-						if (srh.failed()) {
-							rc.fail(srh.cause());
-						}
-						ObjectSchema schema = srh.result();
-						if (schema.addProject(project)) {
-							schema = schemaService.save(schema);
-						}
-						rc.response().setStatusCode(200);
-						rc.response().end(toJson(schemaService.transformToRest(schema)));
-						tx.success();
-					});
-				});
+					ObjectSchema schema = srh.result();
+					if (schema.addProject(project)) {
+						schema = schemaService.save(schema);
+					}
+					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 
-			}
+				});
+			});
+
 		});
 
-		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE);
+		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			try (Transaction tx = graphDb.beginTx()) {
 
-				loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
-					if (rh.failed()) {
-						rc.fail(rh.cause());
-					}
+			loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+				loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+					ObjectSchema schema = srh.result();
 					Project project = rh.result();
-					loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
-						if (srh.failed()) {
-							rc.fail(srh.cause());
-						}
-						ObjectSchema schema = srh.result();
+					if (schema.removeProject(project)) {
+						schema = schemaService.save(schema);
+					}
 
-						if (schema.removeProject(project)) {
-							schema = schemaService.save(schema);
-						}
-
-						tx.success();
-						rc.response().setStatusCode(200);
-						rc.response().end(toJson(schemaService.transformToRest(schema)));
-					});
-
+					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
 
-			}
+			});
 		});
 	}
 
+	// TODO set creator
 	private void addCreateHandler() {
-		// TODO add consumes, produces
-		Route route = route("/").method(POST);
+		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
 			ObjectSchemaCreateRequest requestModel = fromJson(rc, ObjectSchemaCreateRequest.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				// TODO i18n
-				throw new HttpStatusCodeErrorException(400, "The name of a schema is mandatory and cannot be omitted.");
+				rc.fail(new HttpStatusCodeErrorException(400, "The name of a schema is mandatory and cannot be omitted."));
 			}
 
 			if (StringUtils.isEmpty(requestModel.getProjectUuid())) {
 				// TODO i18n
-				throw new HttpStatusCodeErrorException(400, "The project uuid is mandatory for schema creation and cannot be omitted.");
+				rc.fail(new HttpStatusCodeErrorException(400, "The project uuid is mandatory for schema creation and cannot be omitted."));
 			}
-			try (Transaction tx = graphDb.beginTx()) {
 
-				loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
-					if (srh.failed()) {
-						rc.fail(srh.cause());
-					}
-					Project project = srh.result();
+			loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
+				Project project = srh.result();
 
-					ObjectSchema schema = new ObjectSchema(requestModel.getName());
-					// TODO set creator
-						schema.setDescription(requestModel.getDescription());
-						schema.setDisplayName(requestModel.getDisplayName());
+				ObjectSchema schema = new ObjectSchema(requestModel.getName());
+				schema.setDescription(requestModel.getDescription());
+				schema.setDisplayName(requestModel.getDisplayName());
 
-						for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
-							// TODO validate field?
-						PropertyTypeSchema propSchema = new PropertyTypeSchema();
-						propSchema.setDescription(restPropSchema.getDesciption());
-						propSchema.setKey(restPropSchema.getKey());
-						PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
-						propSchema.setType(type);
-						schema.addPropertyTypeSchema(propSchema);
-					}
-					schema.addProject(project);
-					schema = schemaService.save(schema);
+				for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
+					// TODO validate field?
+					PropertyTypeSchema propSchema = new PropertyTypeSchema();
+					propSchema.setDescription(restPropSchema.getDesciption());
+					propSchema.setKey(restPropSchema.getKey());
+					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
+					propSchema.setType(type);
+					schema.addPropertyTypeSchema(propSchema);
+				}
+				schema.addProject(project);
+				schema = schemaService.save(schema);
 
-					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(project, PermissionType.CREATE), schema);
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(project, PermissionType.CREATE), schema);
 
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(schemaService.transformToRest(schema)));
-					tx.success();
-				});
-			}
+				rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
+			});
 		});
 
 	}
 
 	private void addUpdateHandler() {
-		// TODO consumes, produces
-		Route route = route("/:uuid").method(PUT);
+		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			try (Transaction tx = graphDb.beginTx()) {
-				loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<ObjectSchema> srh) -> {
-					if (srh.failed()) {
-						rc.fail(srh.cause());
+			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<ObjectSchema> srh) -> {
+				ObjectSchema schema = srh.result();
+				ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
+
+				if (StringUtils.isEmpty(requestModel.getName())) {
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+				}
+				if (!schema.getName().equals(requestModel.getName())) {
+					schema.setName(requestModel.getName());
+				}
+
+				// Update description
+					if (schema.getDescription() != null && (!schema.getDescription().equals(requestModel.getDescription()))) {
+						schema.setDescription(requestModel.getDescription());
 					}
-					ObjectSchema schema = srh.result();
-					ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
-
-					// Update name
-						if (StringUtils.isEmpty(requestModel.getName())) {
-							throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
-						}
-						if (!schema.getName().equals(requestModel.getName())) {
-							schema.setName(requestModel.getName());
-						}
-
-						// Update description
-						if (schema.getDescription() != null && (!schema.getDescription().equals(requestModel.getDescription()))) {
-							schema.setDescription(requestModel.getDescription());
-						}
-						// TODO update modification timestamps
-						schema = schemaService.save(schema);
-						rc.response().setStatusCode(200);
-						rc.response().end(toJson(schemaService.transformToRest(schema)));
-						tx.success();
-					});
-			}
+					// TODO update modification timestamps
+					schema = schemaService.save(schema);
+					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
+				});
 
 		});
 	}
 
 	private void addDeleteHandler() {
-		// TODO consumes, produces
-		Route route = route("/:uuid").method(DELETE);
+		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			try (Transaction tx = graphDb.beginTx()) {
 
-				loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
-					if (srh.failed()) {
-						rc.fail(srh.cause());
-					}
-					ObjectSchema schema = srh.result();
-					schemaService.delete(schema);
-					tx.success();
-					rc.response().setStatusCode(200);
-					rc.response().end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", uuid))));
-				});
-			}
+			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
+				ObjectSchema schema = srh.result();
+				schemaService.delete(schema);
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", uuid))));
+			});
 		});
 
 	}
 
 	private void addReadHandlers() {
-		route("/:uuid").method(GET).handler(rc -> {
+		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				try (Transaction tx = graphDb.beginTx()) {
-					loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
-						if (srh.failed()) {
-							rc.fail(srh.cause());
-						}
-						ObjectSchema schema = srh.result();
-						rc.response().setStatusCode(200);
-						rc.response().end(toJson(schemaService.transformToRest(schema)));
-						tx.success();
-					});
-				}
+				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+					ObjectSchema schema = srh.result();
+					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
+				});
 			}
 		});
 
-		// produces(APPLICATION_JSON)
-		route("/").method(GET).handler(rc -> {
+		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
-			try (Transaction tx = graphDb.beginTx()) {
-				PagingInfo pagingInfo = getPagingInfo(rc);
-				// User requestUser = springConfiguration.authService().getUser(rc);
-				User user = null;
-				Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
-				for (ObjectSchema schema : schemaPage) {
-					listResponse.getData().add(schemaService.transformToRest(schema));
-				}
-				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
-				tx.success();
+			PagingInfo pagingInfo = getPagingInfo(rc);
+			User user = userService.findUser(rc);
+			Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
+			for (ObjectSchema schema : schemaPage) {
+				listResponse.getData().add(schemaService.transformToRest(schema));
 			}
-			rc.response().end(toJson(listResponse));
+			RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
+			rc.response().setStatusCode(200).end(toJson(listResponse));
 		});
 
 	}

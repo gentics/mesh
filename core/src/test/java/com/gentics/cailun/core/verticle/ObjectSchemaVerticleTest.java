@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +131,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
 		ObjectSchemaListResponse restResponse = JsonUtils.readValue(response, ObjectSchemaListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
@@ -240,7 +241,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	// Delete Tests
 
-	@Test
+	@Test(expected= EntityNotFoundException.class)
 	public void testDeleteSchemaByUUID() throws Exception {
 		ObjectSchema schema = data().getContentSchema();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");

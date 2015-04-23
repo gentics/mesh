@@ -216,8 +216,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/", 200, "OK");
 		RoleListResponse restResponse = JsonUtils.readValue(response, RoleListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(21, restResponse.getData().size());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		int page = 1;
@@ -228,9 +228,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		// created roles + test data role
 		// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
 		int totalRoles = nRoles + data().getTotalRoles() + 1;
-		int totalPages = (int) Math.ceil(totalRoles / (double) perPage);
+		int totalPages = (int) Math.ceil(totalRoles / (double) perPage) +1;
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
 				+ "} roles per page. Thus we expect {" + totalPages + "} pages", totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
@@ -250,14 +250,14 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + perPage + "&page=-1", 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=0&page=1", 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=-1&page=1", 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
-		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=25&page=" + 4242, 200, "OK");
 		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":142}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}

@@ -52,7 +52,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON);
+		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
 			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
@@ -75,7 +75,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCreateHandler() {
-		Route route = route("/").method(POST).consumes(APPLICATION_JSON);
+		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			// TODO also create a default object schema for the project. Move this into service class
 			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
@@ -112,7 +112,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 
-		route("/:uuid").method(GET).handler(rc -> {
+		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -124,7 +124,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			}
 		});
 
-		route("/").method(GET).handler(rc -> {
+		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 
 			ProjectListResponse listResponse = new ProjectListResponse();
 			PagingInfo pagingInfo = getPagingInfo(rc);
@@ -142,15 +142,13 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-
+		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", uuid))));
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", name))));
 			});
 		});
 	}
