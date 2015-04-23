@@ -31,10 +31,6 @@ import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
 
-
-
-
-
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -149,13 +145,15 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
-					throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+					return;
 				}
 
 				if (!group.getName().equals(requestModel.getName())) {
 					Group groupWithSameName = groupService.findByName(requestModel.getName());
 					if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-						throw new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name"));
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name")));
+						return;
 					}
 					group.setName(requestModel.getName());
 				}
@@ -182,11 +180,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		 * List all groups when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			
+
 			PagingInfo pagingInfo = getPagingInfo(rc);
 			int depth = getDepth(rc);
 
-			vertx.executeBlocking((Future<GroupListResponse> glr )-> {
+			vertx.executeBlocking((Future<GroupListResponse> glr) -> {
 				GroupListResponse listResponse = new GroupListResponse();
 				User user = userService.findUser(rc);
 				Page<Group> groupPage = groupService.findAllVisible(user, pagingInfo);
@@ -207,7 +205,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set"));
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+				return;
 			}
 
 			int depth = getDepth(rc);
