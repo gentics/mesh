@@ -93,7 +93,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addGroupUserHandlers() {
-		Route route = route("/:groupUuid/users/:userUuid").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			int depth = getDepth(rc);
 

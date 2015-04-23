@@ -140,7 +140,8 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 		String uuid = rc.request().params().get(uuidParamName);
 		if (StringUtils.isEmpty(uuid)) {
-			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", uuidParamName));
+			rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", uuidParamName)));
+			return;
 		}
 
 		loadObjectByUuid(rc, uuid, permType, resultHandler);
@@ -158,7 +159,8 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			throws InvalidPermissionException {
 		rc.session().hasPermission(new CaiLunPermission(node, type).toString(), handler -> {
 			if (!handler.result()) {
-				throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()));
+				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));
+				return;
 			} else {
 				try (Transaction tx = graphDb.beginTx()) {
 					resultHandler.handle(Future.succeededFuture(handler.result()));
