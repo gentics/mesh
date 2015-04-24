@@ -66,8 +66,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					}
 				}, trh -> {
 					Group group = grh.result();
-					toJson(groupService.transformToRest(group, depth));
-					rc.response().setStatusCode(200).end();
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
 				});
 			});
 

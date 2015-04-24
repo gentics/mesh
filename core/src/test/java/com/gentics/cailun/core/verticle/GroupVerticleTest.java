@@ -347,6 +347,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
+		System.out.println(response);
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		test.assertGroup(group, restGroup);
 

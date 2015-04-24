@@ -163,6 +163,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				Content content = trh.result();
 				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
 			});
+
 		});
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);

@@ -1,5 +1,6 @@
 package com.gentics.cailun.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -23,7 +24,6 @@ import java.util.function.Consumer;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -183,7 +183,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private void blockingAssertEquals(String message, Object expected, Object actual) {
 		try {
-			Assert.assertEquals(message, expected, actual);
+			assertEquals(message, expected, actual);
 		} catch (AssertionError e) {
 			// Only store the first encountered exception
 			if (throwable.get() == null) {
@@ -194,7 +194,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
 		String sanitizedJson = unsanitizedResponseJson.replaceAll("uuid\":\"[^\"]*\"", "uuid\":\"uuid-value\"");
-		org.junit.Assert.assertEquals(msg, expectedJson, sanitizedJson);
+		assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
 	protected void expectMessageResponse(String i18nKey, String response, String... i18nParams) {
@@ -202,7 +202,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		String message = i18n.get(en, i18nKey, i18nParams);
 		GenericMessageResponse responseObject = new GenericMessageResponse(message);
 		String json = JsonUtils.toJson(responseObject);
-		assertEqualsSanitizedJson("The response does not match.", json, response);
+		assertEquals("The response does not match.", json, response);
 	}
 
 }

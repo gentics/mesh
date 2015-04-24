@@ -106,7 +106,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + restSchema.getUuid(), 200, "OK");
-		expectMessageResponse("schema_deleted", response, restSchema.getUuid());
+		expectMessageResponse("schema_deleted", response, restSchema.getName());
 
 	}
 
@@ -241,11 +241,12 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	// Delete Tests
 
-	@Test(expected= EntityNotFoundException.class)
+	@Test
 	public void testDeleteSchemaByUUID() throws Exception {
 		ObjectSchema schema = data().getContentSchema();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
-		expectMessageResponse("schema_deleted", response, schema.getUuid());
+		System.out.println(response);
+		expectMessageResponse("schema_deleted", response, schema.getName());
 
 		ObjectSchema reloaded = objectSchemaService.findByUUID(schema.getUuid());
 		assertNull("The schema should have been deleted.", reloaded);

@@ -29,7 +29,6 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectListResponse;
-import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
@@ -94,6 +93,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
+			Future<Project> projectCreated = Future.future();
 			CaiLunRoot cailunRoot = cailunRootService.findRoot();
 			hasPermission(rc, cailunRoot, PermissionType.CREATE, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
@@ -112,12 +112,14 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
 					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(cailunRoot, PermissionType.CREATE), project);
-
+					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage")));
 					return;
 				}
+			}, trh-> {
+				Project project = projectCreated.result();
 				rc.response().end(toJson(projectService.transformToRest(project)));
 			});
 
@@ -142,7 +144,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
-			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
+			vertx.executeBlocking((Future<ProjectListResponse> bcr) -> {
 				ProjectListResponse listResponse = new ProjectListResponse();
 				User requestUser = userService.findUser(rc);
 				Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
@@ -150,8 +152,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					listResponse.getData().add(projectService.transformToRest(project));
 				}
 				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
+				bcr.complete(listResponse);
 			}, arh -> {
-				TagListResponse listResponse = arh.result();
+				ProjectListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 		});
