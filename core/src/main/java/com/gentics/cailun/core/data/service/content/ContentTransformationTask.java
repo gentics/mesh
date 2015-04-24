@@ -129,7 +129,7 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 				try (Transaction tx = info.getGraphDb().beginTx()) {
 					String currentUuid = currentTag.getUuid();
 					Session session = info.getRoutingContext().session();
-					User user = null;
+//					User user = info.getUserService().findUser(info.getRoutingContext());
 					session.hasPermission(new CaiLunPermission(currentTag, PermissionType.READ).toString(), handler -> {
 						if (handler.result()) {
 							TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
