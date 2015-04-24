@@ -85,7 +85,6 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		info.setContentService(this);
 		info.setNeo4jTemplate(neo4jTemplate);
 		info.setI18nService(i18n);
-
 		ContentResponse restContent = new ContentResponse();
 		ContentTransformationTask task = new ContentTransformationTask(content, info, restContent);
 		pool.invoke(task);
@@ -186,6 +185,5 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		// Linked link = new Linked(this, page);
 		// this.links.add(link);
 	}
-
 
 }

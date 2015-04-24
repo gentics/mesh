@@ -81,13 +81,13 @@ public class ContentTest extends AbstractDBTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
-		Page<Content> page = contentService.findAllVisible(user, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(0, 10));
+		Page<Content> page = contentService.findAllVisible(user, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are contents that are only available in english
 		assertEquals(data().getTotalContents() - 2, page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = contentService.findAllVisible(user, "dummy", languageTags, new PagingInfo(0, 15));
+		page = contentService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 15));
 		assertEquals(data().getTotalContents(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 

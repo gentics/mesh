@@ -132,6 +132,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			if (res.failed()) {
 				rc.fail(res.cause());
 			} else {
+				try {
 				try (Transaction tx = graphDb.beginTx()) {
 					resultHandler.handle(res);
 					tx.success();
@@ -139,6 +140,9 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 				if (transactionCompletedHandler != null) {
 					AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
 					transactionCompletedHandler.handle(transactionCompletedFuture);
+				}
+				} catch (Exception e) {
+					rc.fail(e);
 				}
 			}
 		});
