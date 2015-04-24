@@ -103,10 +103,16 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler) {
+		loadObjectByUuid(rc, uuid, permType, resultHandler, null);
+	}
+
+	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
+			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		if (StringUtils.isEmpty(uuid)) {
 			// TODO i18n, add info about uuid source?
-			throw new HttpStatusCodeErrorException(400, "missing uuid");
+			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_uuid_must_be_specified"));
 		}
+
 		vertx.executeBlocking((Future<T> fut) -> {
 			T node = (T) genericNodeService.findByUUID(uuid);
 			if (node == null) {
@@ -130,6 +136,10 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 					resultHandler.handle(res);
 					tx.success();
 				}
+				if (transactionCompletedHandler != null) {
+					AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
+					transactionCompletedHandler.handle(transactionCompletedFuture);
+				}
 			}
 		});
 
@@ -137,6 +147,11 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler) {
+		loadObject(rc, uuidParamName, permType, resultHandler, null);
+	}
+
+	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
+			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
 
 		String uuid = rc.request().params().get(uuidParamName);
 		if (StringUtils.isEmpty(uuid)) {
@@ -144,7 +159,13 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 			return;
 		}
 
-		loadObjectByUuid(rc, uuid, permType, resultHandler);
+		loadObjectByUuid(rc, uuid, permType, resultHandler, transactionCompleteHandler);
+	}
+	
+	
+	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler)
+	{
+		hasPermission(rc, node, type, resultHandler, null);
 	}
 
 	/**
@@ -155,16 +176,21 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @param type
 	 * @return
 	 */
-	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler)
+	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler, Handler<AsyncResult<Boolean>> transactionCompletedHandler)
 			throws InvalidPermissionException {
 		rc.session().hasPermission(new CaiLunPermission(node, type).toString(), handler -> {
 			if (!handler.result()) {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));
-				return;
+				AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
+				transactionCompletedHandler.handle(transactionCompletedFuture);
 			} else {
 				try (Transaction tx = graphDb.beginTx()) {
 					resultHandler.handle(Future.succeededFuture(handler.result()));
 					tx.success();
+				}
+				if (transactionCompletedHandler != null) {
+					AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
+					transactionCompletedHandler.handle(transactionCompletedFuture);
 				}
 			}
 		});

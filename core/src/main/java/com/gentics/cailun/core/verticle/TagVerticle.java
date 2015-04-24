@@ -63,7 +63,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private Neo4jTemplate template;
 
 	@Autowired
-	LanguageService languageService;
+	private LanguageService languageService;
 
 	public TagVerticle() {
 		super("tags");
@@ -154,6 +154,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
+			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
 			loadObjectByUuid(rc, request.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 				Tag rootTag = rh.result();
@@ -175,6 +176,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					newTag.getI18nTranslations().add(translated);
 				}
 				newTag = tagService.save(newTag);
+				tagCreated.complete(newTag);
+			}, trh -> {
+				Tag newTag = tagCreated.result();
 				rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, newTag, languageTags, 0)));
 			});
 
@@ -190,6 +194,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			int depth = getDepth(rc);
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
+			}, trh -> {
+				Tag tag = trh.result();
 				rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languages, depth)));
 			});
 		});
@@ -210,7 +216,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				}
 				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
 				bcr.complete(listResponse);
-			}, (AsyncResult<TagListResponse> arh) -> {
+			}, arh -> {
 				TagListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
@@ -228,6 +234,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 				tagService.delete(tag);
+			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
 			});
 		});
@@ -253,6 +260,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depth));
 				}
 				RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
+			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 		});
@@ -277,6 +285,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depth));
 				}
 				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 		});
@@ -293,6 +302,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 					tag.addTag(subTag);
 					tag = tagService.save(tag);
+				}, trh -> {
+					Tag tag = rh.result();
 					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 				});
 
@@ -311,6 +322,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					Tag subTag = srh.result();
 					tag.removeTag(subTag);
 					tag = tagService.save(tag);
+				}, trh -> {
+					Tag tag = rh.result();
 					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
 				});
 			});

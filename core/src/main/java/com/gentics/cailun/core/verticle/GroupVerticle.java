@@ -64,7 +64,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					if (group.addRole(role)) {
 						group = groupService.save(group);
 					}
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
+				}, trh -> {
+					Group group = grh.result();
+					toJson(groupService.transformToRest(group, depth));
+					rc.response().setStatusCode(200).end();
 				});
 			});
 
@@ -74,15 +77,15 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			int depth = getDepth(rc);
 
 			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
-				Group group = grh.result();
 				loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
+					Group group = grh.result();
 					Role role = rrh.result();
-					Group savedGroup = group;
-
 					if (group.removeRole(role)) {
-						savedGroup = groupService.save(group);
+						group = groupService.save(group);
 					}
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(savedGroup, depth)));
+				}, trh -> {
+					Group group = grh.result();
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
 				});
 			});
 		});
@@ -97,11 +100,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
 					Group group = grh.result();
 					User user = urh.result();
-					Group savedGroup = group;
 					if (group.addUser(user)) {
-						savedGroup = groupService.save(group);
+						group = groupService.save(group);
 					}
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(savedGroup, depth)));
+				}, trh -> {
+					Group group = grh.result();
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
 				});
 			});
 		});
@@ -117,6 +121,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					if (group.removeUser(user)) {
 						groupService.save(group);
 					}
+				}, trh -> {
+					Group group = grh.result();
 					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
 				});
 			});
@@ -129,6 +135,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 				groupService.delete(group);
+			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
 			});
 		});
@@ -138,9 +145,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+			int depth = getDepth(rc);
 			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
-				int depth = getDepth(rc);
-
 				Group group = grh.result();
 				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
@@ -159,6 +165,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				}
 
 				group = groupService.save(group);
+			}, trh -> {
+				Group group = trh.result();
 				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
 			});
 
@@ -169,9 +177,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			int depth = getDepth(rc);
-
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
+			}, trh -> {
+				Group group = trh.result();
 				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
 			});
 		});
@@ -193,12 +202,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				}
 				RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
 				glr.complete(listResponse);
-			}, (AsyncResult<GroupListResponse> ar) -> {
+			}, ar -> {
 				rc.response().setStatusCode(200).end(toJson(ar.result()));
 			});
 		});
 	}
 
+	// TODO handle conflicting group name: group_conflicting_name
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
 
@@ -211,14 +221,18 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 			int depth = getDepth(rc);
 
+			Future<Group> groupCreated = Future.future();
+
 			CaiLunRoot root = cailunRootService.findRoot();
 			hasPermission(rc, root.getGroupRoot(), PermissionType.CREATE, rh -> {
-				// TODO handle conflicting group name: group_conflicting_name
-					Group group = new Group(requestModel.getName());
-					group = groupService.save(group);
-					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root.getGroupRoot(), PermissionType.CREATE), group);
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depth)));
-				});
+				Group group = new Group(requestModel.getName());
+				group = groupService.save(group);
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(root.getGroupRoot(), PermissionType.CREATE), group);
+				groupCreated.complete(group);
+			}, tch -> {
+				Group createdGroup = groupCreated.result();
+				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(createdGroup, depth)));
+			});
 
 		});
 

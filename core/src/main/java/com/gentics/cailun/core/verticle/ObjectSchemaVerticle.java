@@ -63,6 +63,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					if (schema.addProject(project)) {
 						schema = schemaService.save(schema);
 					}
+				}, trh -> {
+					ObjectSchema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
 			});
@@ -78,6 +80,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					if (schema.removeProject(project)) {
 						schema = schemaService.save(schema);
 					}
+				}, trh -> {
+					ObjectSchema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
 			});
@@ -100,6 +104,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
+			Future<ObjectSchema> schemaCreated = Future.future();
 			loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
 
@@ -118,8 +123,10 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				}
 				schema.addProject(project);
 				schema = schemaService.save(schema);
-
 				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(project, PermissionType.CREATE), schema);
+				schemaCreated.complete(schema);
+			}, trh -> {
+				ObjectSchema schema = schemaCreated.result();
 				rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 			});
 		});
@@ -147,6 +154,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					schema.setDescription(requestModel.getDescription());
 				}
 				schema = schemaService.save(schema);
+			}, trh -> {
+				ObjectSchema schema = trh.result();
 				rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 			});
 
@@ -159,6 +168,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
 				ObjectSchema schema = srh.result();
 				schemaService.delete(schema);
+			}, trh -> {
+				ObjectSchema schema = trh.result();
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", schema.getName()))));
 			});
 		});
@@ -172,7 +183,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				rc.next();
 			} else {
 				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
-					ObjectSchema schema = srh.result();
+				}, trh -> {
+					ObjectSchema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
 			}
@@ -189,7 +201,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				}
 				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
 				bch.complete(listResponse);
-			}, (AsyncResult<ObjectSchemaListResponse> rh) -> {
+			}, rh -> {
 				ObjectSchemaListResponse listResponse = rh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});

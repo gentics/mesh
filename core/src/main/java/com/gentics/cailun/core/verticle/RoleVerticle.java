@@ -54,6 +54,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				roleService.delete(role);
+			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "role_deleted", uuid))));
 			});
 		});
@@ -73,6 +74,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					role.setName(requestModel.getName());
 				}
 				role = roleService.save(role);
+			}, trh -> {
+				Role role = trh.result();
 				rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
 			});
 		});
@@ -104,10 +107,9 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
 
 				bch.complete(listResponse);
-			}, (AsyncResult<RoleListResponse> rh) -> {
+			}, rh -> {
 				RoleListResponse listResponse = rh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
-
 			});
 
 		});
@@ -131,14 +133,16 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name")));
 				return;
 			}
-
+			Future<Role> roleCreated = Future.future();
 			loadObjectByUuid(rc, requestModel.getGroupUuid(), PermissionType.CREATE, (AsyncResult<Group> rh) -> {
 				Role role = new Role(requestModel.getName());
 				Group parentGroup = rh.result();
 				role.getGroups().add(parentGroup);
 				role = roleService.save(role);
-
 				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), role);
+				roleCreated.complete(role);
+			}, trh -> {
+				Role role = roleCreated.result();
 				rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
 			});
 

@@ -87,6 +87,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				return;
 			}
 
+			Future<Content> contentCreated = Future.future();
+
 			loadObjectByUuid(rc, requestModel.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 
 				Tag rootTagForContent = rh.result();
@@ -138,6 +140,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					// Assign the content to the tag and save the tag
 					rootTagForContent.addContent(content);
 					rootTagForContent = tagService.save(rootTagForContent);
+					contentCreated.complete(content);
+				}, trh -> {
+					Content content = contentCreated.result();
 					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
 				});
 
@@ -151,9 +156,11 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			int depth = getDepth(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
+
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
-				Content content = rh.result();
-				List<String> languageTags = getSelectedLanguageTags(rc);
+			}, trh -> {
+				Content content = trh.result();
 				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
 			});
 		});
@@ -177,7 +184,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					bch.complete(listResponse);
 					tx.success();
 				}
-			}, (AsyncResult<ContentListResponse> arh) -> {
+			}, arh -> {
 				ContentListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
@@ -190,9 +197,11 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
+
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Content> rh) -> {
 				Content content = rh.result();
 				contentService.delete(content);
+			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "content_deleted", uuid))));
 			});
 		});
@@ -200,6 +209,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	// TODO filter by project name
 	// TODO handle depth
+	// TODO update other fields as well?
+	// TODO Update user information
+	// TODO use schema and only handle those i18n properties that were specified within the schema.
 	private void addUpdateHandler() {
 
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
@@ -209,58 +221,43 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
 				Content content = rh.result();
-				// TODO update other fields as well?
-				// TODO Update user information
-					ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
-					// Iterate through all properties and update the changed ones
+
+				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
+				// Iterate through all properties and update the changed ones
 					for (String languageTag : request.getProperties().keySet()) {
 						Language language = languageService.findByLanguageTag(languageTag);
 						if (language != null) {
 							languageTags.add(languageTag);
 							Map<String, String> properties = request.getProperties(languageTag);
 							if (properties != null) {
-								// TODO use schema and only handle those i18n properties that were specified within the schema.
-					I18NProperties i18nProperties = contentService.getI18NProperties(content, language);
-					for (Map.Entry<String, String> set : properties.entrySet()) {
-						String key = set.getKey();
-						String value = set.getValue();
-						String i18nValue = i18nProperties.getProperty(key);
-						// Tag does not have the value so lets create it
-						if (i18nValue == null) {
-							i18nProperties.setProperty(key, value);
-						} else {
-							// Lets compare and update if the value has changed
-							if (!value.equals(i18nValue)) {
-								i18nProperties.setProperty(key, value);
+								I18NProperties i18nProperties = contentService.getI18NProperties(content, language);
+								for (Map.Entry<String, String> set : properties.entrySet()) {
+									String key = set.getKey();
+									String value = set.getValue();
+									String i18nValue = i18nProperties.getProperty(key);
+									/* Tag does not have the value so lets create it */
+									if (i18nValue == null) {
+										i18nProperties.setProperty(key, value);
+									} else {
+										/* Lets compare and update if the value has changed */
+										if (!value.equals(i18nValue)) {
+											i18nProperties.setProperty(key, value);
+										}
+									}
+								}
+								neo4jTemplate.save(i18nProperties);
+
 							}
+						} else {
+							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+							return;
 						}
+
 					}
-					neo4jTemplate.save(i18nProperties);
-
-					// // Check whether there are any key missing in the request.
-					// // This would mean we should remove those i18n properties. First lets collect those
-					// // keys
-					// Set<String> keysToBeRemoved = new HashSet<>();
-					// for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
-					// if (!properties.containsKey(i18nKey)) {
-					// keysToBeRemoved.add(i18nKey);
-					// }
-					// }
-					//
-					// // Now remove the keys
-					// for (String key : keysToBeRemoved) {
-					// i18nProperties.removeProperty(key);
-					// }
-
-				}
-			} else {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-				return;
-			}
-
-		}
-		rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
-	}		);
+				}, trh -> {
+					Content content = trh.result();
+					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+				});
 
 		});
 	}

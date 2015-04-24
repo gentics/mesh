@@ -5,6 +5,7 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -56,7 +57,11 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public Role findByUUID(String uuid) {
-		return roleRepository.findByUUID(uuid);
+		try {
+			return roleRepository.findByUUID(uuid);
+		} catch (EntityNotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override

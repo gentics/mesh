@@ -11,7 +11,10 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 
+import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +37,8 @@ import com.gentics.cailun.util.JsonUtils;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
+	private static final Logger log = LoggerFactory.getLogger(AbstractRestVerticleTest.class);
+
 	@Autowired
 	private I18NService i18n;
 
@@ -41,7 +46,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private int port;
 
-	private static final Integer DEFAULT_TIMEOUT_SECONDS = 10;
+	private static final Integer CI_TIMEOUT_SECONDS = 10;
+
+	private static final Integer DEV_TIMEOUT_SECONDS = 100000;
 
 	private HttpClient client;
 
@@ -152,10 +159,11 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	 * 
 	 * @throws InterruptedException
 	 * @throws AssertionError
+	 * @throws UnknownHostException
 	 */
-	private void awaitCompletion() throws InterruptedException, AssertionError {
+	private void awaitCompletion() throws InterruptedException, AssertionError, UnknownHostException {
 
-		int timeout = 2000;
+		int timeout = getTimeout();
 		boolean allLatchesFree = latch.await(timeout, TimeUnit.SECONDS);
 		if (throwable.get() != null) {
 			throw (AssertionError) throwable.get();
@@ -163,9 +171,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			fail("Timeout of {" + timeout + "} seconds reached.");
 		}
 	}
-	
-	public int getTimeout() {
-		return port;
+
+	public int getTimeout() throws UnknownHostException {
+		int timeout = DEV_TIMEOUT_SECONDS;
+		if (TestUtil.isHost("jenkins.office")) {
+			timeout = CI_TIMEOUT_SECONDS;
+		}
+		log.info("Using test timeout of {" + timeout + "} seconds for host {" + TestUtil.getHostname() + "}");
+		return timeout;
 	}
 
 	private void blockingAssertEquals(String message, Object expected, Object actual) {

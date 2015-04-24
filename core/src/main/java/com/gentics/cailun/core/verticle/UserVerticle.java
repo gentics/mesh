@@ -52,7 +52,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			int depth = getDepth(rc);
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
-				User user = rh.result();
+//				User user = rh.result();
+			}, trh -> {
+				User user = trh.result();
 				UserResponse restUser = userService.transformToRest(user, depth);
 				rc.response().setStatusCode(200).end(toJson(restUser));
 			});
@@ -74,7 +76,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 				bch.complete(listResponse);
-			}, (AsyncResult<UserListResponse> arh) -> {
+			}, arh -> {
 				UserListResponse list = arh.result();
 				rc.response().setStatusCode(200).end(toJson(list));
 			});
@@ -88,9 +90,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<User> rh) -> {
 				User user = rh.result();
 				userService.delete(user);
+			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 			});
-
 		});
 	}
 
@@ -125,8 +127,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				}
 				user = userService.save(user);
-				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user, 0)));
 
+			}, trh -> {
+				User user = trh.result();
+				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user, 0)));
 			});
 
 		});
@@ -154,6 +158,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field")));
 				return;
 			}
+
+			Future<User> userCreated = Future.future();
 			// Load the parent group for the user
 			loadObjectByUuid(rc, groupUuid, PermissionType.CREATE, (AsyncResult<Group> rh) -> {
 
@@ -172,8 +178,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				user.getGroups().add(parentGroup);
 				user = userService.save(user);
-
 				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(parentGroup, PermissionType.CREATE), user);
+				userCreated.complete(user);
+			}, trh -> {
+				User user = userCreated.result();
 				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user, 0)));
 			});
 

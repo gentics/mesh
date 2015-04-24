@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.cailun.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.cailun.core.rest.project.response.ProjectListResponse;
+import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
@@ -71,11 +73,15 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					}
 
 					project = projectService.save(project);
+				}, trh -> {
+					Project project = trh.result();
 					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(project)));
 				});
 		});
 	}
 
+	// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
+	// cases. They must show up in any case.
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
@@ -95,22 +101,20 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
-				// cases. They must show up in any case.
-					Project project = new Project(requestModel.getName());
-					User user = userService.findUser(rc);
-					project.setRootTag(new RootTag());
-					project.setCreator(user);
-					project = projectService.save(project);
+				Project project = new Project(requestModel.getName());
+				User user = userService.findUser(rc);
+				project.setRootTag(new RootTag());
+				project.setCreator(user);
+				project = projectService.save(project);
 
-					try {
-						routerStorage.addProjectRouter(project.getName());
-						String msg = "Registered project {" + project.getName() + "}";
-						log.info(msg);
-						roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(cailunRoot, PermissionType.CREATE), project);
+				try {
+					routerStorage.addProjectRouter(project.getName());
+					String msg = "Registered project {" + project.getName() + "}";
+					log.info(msg);
+					roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(cailunRoot, PermissionType.CREATE), project);
 
-					} catch (Exception e) {
-						// TODO should we really fail here?
+				} catch (Exception e) {
+					// TODO should we really fail here?
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage")));
 					return;
 				}
@@ -136,17 +140,20 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 
-			ProjectListResponse listResponse = new ProjectListResponse();
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
-			User requestUser = userService.findUser(rc);
-			Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
-			for (Project project : projectPage) {
-				listResponse.getData().add(projectService.transformToRest(project));
-			}
-			RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
-			rc.response().setStatusCode(200).end(toJson(listResponse));
-
+			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
+				ProjectListResponse listResponse = new ProjectListResponse();
+				User requestUser = userService.findUser(rc);
+				Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
+				for (Project project : projectPage) {
+					listResponse.getData().add(projectService.transformToRest(project));
+				}
+				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
+			}, arh -> {
+				TagListResponse listResponse = arh.result();
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+			});
 		});
 
 	}
@@ -158,6 +165,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
+			}, trh -> {
+				String name = trh.result().getName();
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", name))));
 			});
 		});

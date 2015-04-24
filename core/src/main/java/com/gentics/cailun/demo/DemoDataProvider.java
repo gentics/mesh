@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.cailun.cli.BootstrapInitializer;
-import com.gentics.cailun.cli.CaiLun;
 import com.gentics.cailun.core.data.model.CaiLunRoot;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
@@ -48,7 +47,7 @@ import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 @Component
 public class DemoDataProvider {
 
-	private static final Logger log = LoggerFactory.getLogger(CaiLun.class);
+	private static final Logger log = LoggerFactory.getLogger(DemoDataProvider.class);
 
 	public static final String PROJECT_NAME = "dummy";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
@@ -286,7 +285,6 @@ public class DemoDataProvider {
 		// TODO determine why this is not working when using sdn
 		// Add Permissions
 		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
-		int i = 0;
 		for (Node node : GlobalGraphOperations.at(graphDb).getAllNodes()) {
 
 			if (roleNode.getId() == node.getId()) {
@@ -302,11 +300,9 @@ public class DemoDataProvider {
 			// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
 			// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
 			// genericNodeService.save(node);
-			log.info("Adding BasicPermission to node {" + node.getId() + "} " + i);
-			i++;
+
 		}
-		// tx.success();
-		// }
+		log.info("Added BasicPermissions to nodes");
 
 	}
 
