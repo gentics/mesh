@@ -1,6 +1,5 @@
 package com.gentics.cailun.error;
 
-
 public class HttpStatusCodeErrorException extends RuntimeException {
 
 	private static final long serialVersionUID = 2209919403583173663L;
@@ -15,7 +14,7 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		this.code = code;
 	}
 
-	public HttpStatusCodeErrorException(int code, String message, Exception e) {
+	public HttpStatusCodeErrorException(int code, String message, Throwable e) {
 		super(message, e);
 		this.code = code;
 	}

@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.repository.I18NValueRepository;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
-import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.neo4j.UUIDTransactionEventHandler;
 
 @Component
@@ -28,9 +27,6 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	protected GenericNodeRepository<T> nodeRepository;
 
 	@Autowired
-	protected CaiLunSpringConfiguration springConfig;
-
-	@Autowired
 	protected GraphDatabaseService database;
 
 	@Autowired
@@ -41,7 +37,6 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 		if (node.isNew() && node.getUuid() == null) {
 			node.setUuid(UUIDTransactionEventHandler.getUUID());
 		}
-		// TODO invoke a reload afterwards - otherwise the uuid is null and succeeding saving will fail.
 		return nodeRepository.save(node);
 	}
 
@@ -89,7 +84,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	public T findByUUID(String uuid) {
 		try {
 			return nodeRepository.findByUUID(uuid);
-		} catch(EntityNotFoundException e) {
+		} catch (EntityNotFoundException e) {
 			//log.debug("Could not find object by uuid {"+ uuid + "}", e);
 			return null;
 		}

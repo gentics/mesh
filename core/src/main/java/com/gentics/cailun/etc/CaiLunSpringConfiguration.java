@@ -96,9 +96,14 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 		return null;
 	}
 
+	public static CaiLunConfiguration getConfiguration() {
+		return configuration;
+	}
+	
 	public static void setConfiguration(CaiLunConfiguration conf) {
 		configuration = conf;
 	}
+
 
 	@PostConstruct
 	private void setup() {

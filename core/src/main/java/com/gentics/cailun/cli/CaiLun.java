@@ -73,8 +73,8 @@ public class CaiLun {
 			throw new CaiLunConfigurationException("Configuration is null or not valid.");
 		}
 		CaiLunSpringConfiguration.setConfiguration(conf);
-
 		printProductInformation();
+
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(CaiLunSpringConfiguration.class)) {
 			SpringVerticleFactory.setParentContext(ctx);
 			BootstrapInitializer initalizer = ctx.getBean(BootstrapInitializer.class);

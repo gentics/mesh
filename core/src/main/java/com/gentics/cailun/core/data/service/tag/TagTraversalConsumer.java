@@ -49,11 +49,9 @@ public class TagTraversalConsumer implements Consumer<Tag> {
 					}
 					tagContainer.getTags().add(currentRestTag);
 				}
-
-				Collections.sort(tagContainer.getTags(), new UuidRestModelComparator<AbstractTagContainerModel>());
-
 			}
 		});
+		Collections.sort(tagContainer.getTags(), new UuidRestModelComparator<AbstractTagContainerModel>());
 
 	}
 

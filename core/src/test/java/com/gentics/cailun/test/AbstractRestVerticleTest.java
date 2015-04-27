@@ -32,7 +32,9 @@ import com.gentics.cailun.core.data.service.I18NService;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.demo.DemoDataProvider;
 import com.gentics.cailun.demo.UserInfo;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.RouterStorage;
+import com.gentics.cailun.etc.config.CaiLunConfiguration;
 import com.gentics.cailun.util.JsonUtils;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
@@ -82,6 +84,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		verticle.init(vertx, context);
 		verticle.start();
 		verticle.registerEndPoints();
+		CaiLunSpringConfiguration.setConfiguration(new CaiLunConfiguration());
+
 	}
 
 	public abstract AbstractRestVerticle getVerticle();

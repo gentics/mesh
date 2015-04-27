@@ -233,7 +233,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 25, nElements);
-		assertEquals(0, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(2, restResponse.getMetainfo().getPageCount());
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(data().getTotalContents(), restResponse.getMetainfo().getTotalCount());
@@ -244,6 +244,15 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		Content content = data().getNews2015Content();
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid(), 200, "OK");
 		test.assertContent(content, JsonUtils.readValue(response, ContentResponse.class));
+	}
+
+	@Test
+	public void testReadContentByUUIDWithExceedingDepthParam() throws Exception {
+		Content content = data().getNews2015Content();
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + content.getUuid() + "?depth=999", 400, "Bad Request");
+		expectMessageResponse("error_depth_max_exceeded", response, "999", "5");
+
 	}
 
 	@Test

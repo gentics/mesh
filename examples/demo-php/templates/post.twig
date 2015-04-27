@@ -9,16 +9,16 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>%cailun.page.title%</title>
+    <title>{{page.title}}</title>
 
-    <link rel="shortcut icon" href="/img/g_logo_small.png" type="image/png" />
+    <link rel="shortcut icon" href="/static/img/g_logo_small.png" type="image/png" />
 
 
     <!-- Bootstrap Core CSS -->
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="/css/clean-blog.min.css" rel="stylesheet">
+    <link href="/static/css/clean-blog.min.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -47,23 +47,23 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">Start Bootstrap</a>
+                <a class="navbar-brand" href="/staticindex.html">Start Bootstrap</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="index.html">Home</a>
+                        <a href="/staticindex.html">Home</a>
                     </li>
                     <li>
-                        <a href="about.html">About</a>
+                        <a href="/staticabout.html">About</a>
                     </li>
                     <li>
-                        <a href="post.html">Sample Post</a>
+                        <a href="/staticpost.html">Sample Post</a>
                     </li>
                     <li>
-                        <a href="contact.html">Contact</a>
+                        <a href="/staticcontact.html">Contact</a>
                     </li>
                 </ul>
             </div>
@@ -74,14 +74,14 @@
 
     <!-- Page Header -->
     <!-- Set your background image for this header on the line below. -->
-    <header class="intro-header" style="background-image: url('/img/post-bg.jpg')">
+    <header class="intro-header" style="background-image: url('/static/img/post-bg.jpg')">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
-                        <h1>%cailun.page.title%</h1>
-                        <h2 class="subheading">%cailun.page.teaser%</h2>
-                        <span class="meta">Posted by <a href="#">%cailun.page.author%</a> on %cailun.page.date%</span>
+                        <h1>{{page.title}}</h1>
+                        <h2 class="subheading">{{page.teaser}}</h2>
+                        <span class="meta">Posted by <a href="#">{{page.author}}</a> on {{page.date}}</span>
                     </div>
                 </div>
             </div>
@@ -93,11 +93,11 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="main_content">
-                        %cailun.page.content%
+                        {{page.content}}
                     </div>
                     <div class="tagcloud"></div>
                     <div class="navigation">
-                        %cailun.navigation%
+                        {{navigation}}
                     </div>
                 </div>
             </div>
@@ -144,20 +144,20 @@
     </footer>
 
     <!-- jQuery -->
-    <script src="/js/jquery.js"></script>
-    <script src="/js/aloha.min.js"></script>
-    <script src="/js/editing.js"></script>
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/aloha.min.js"></script>
+    <script src="/static/js/editing.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="/js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
 
     <!-- Custom Theme JavaScript -->
-    <script src="/js/clean-blog.min.js"></script>
+    <script src="/static/js/clean-blog.min.js"></script>
     <script>
-        window.pageId = %cailun.page.id%;
+        window.pageId = {{page.id}};
     </script>
-    <script src="/js/d3.js"></script>
-    <script src="/js/d3.layout.cloud.js"></script>
+    <script src="/static/js/d3.js"></script>
+    <script src="/static/js/d3.layout.cloud.js"></script>
     <script>
         var words = [];
         $.ajax({

@@ -142,6 +142,7 @@ public class RestAssert {
 	public void assertContent(Content content, ContentResponse readValue) {
 		assertNotNull(content);
 		assertNotNull(readValue);
+		assertEquals(content.getUuid(), readValue.getUuid());
 
 		assertEquals(content.getOrder(), readValue.getOrder());
 		assertNotNull(readValue.getPerms());
@@ -151,8 +152,6 @@ public class RestAssert {
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), readValue.getSchema().getSchemaName());
 		assertEquals(schema.getUuid(), readValue.getSchema().getSchemaUuid());
-
-		assertEquals(content.getUuid(), readValue.getUuid());
 
 		assertNotNull(readValue.getCreator());
 

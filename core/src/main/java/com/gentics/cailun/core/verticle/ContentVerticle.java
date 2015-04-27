@@ -163,13 +163,14 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
-			int depth = getDepth(rc);
+			Future<Integer> depthFuture = getDepth(rc);
+
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
 			}, trh -> {
 				Content content = trh.result();
-				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depth)));
+				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depthFuture.result())));
 			});
 
 		});
@@ -178,7 +179,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
-			int depth = getDepth(rc);
+			Future<Integer> depthFuture = getDepth(rc);
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<ContentListResponse> bch) -> {
@@ -187,7 +188,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					User user = userService.findUser(rc);
 					Page<Content> contentPage = contentService.findAllVisible(user, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
-						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depth));
+						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depthFuture.result()));
 					}
 					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 					bch.complete(listResponse);

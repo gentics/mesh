@@ -50,12 +50,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			int depth = getDepth(rc);
+			Future<Integer> depthFuture = getDepth(rc);
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
-//				User user = rh.result();
 			}, trh -> {
 				User user = trh.result();
-				UserResponse restUser = userService.transformToRest(user, depth);
+				UserResponse restUser = userService.transformToRest(user, depthFuture.result());
 				rc.response().setStatusCode(200).end(toJson(restUser));
 			});
 		});
@@ -65,14 +64,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			PagingInfo pagingInfo = getPagingInfo(rc);
-			int depth = getDepth(rc);
+			Future<Integer> depthFuture = getDepth(rc);
 
 			vertx.executeBlocking((Future<UserListResponse> bch) -> {
 				UserListResponse listResponse = new UserListResponse();
 
 				Page<User> userPage = userService.findAllVisible(rc, pagingInfo);
 				for (User currentUser : userPage) {
-					listResponse.getData().add(userService.transformToRest(currentUser, depth));
+					listResponse.getData().add(userService.transformToRest(currentUser, depthFuture.result()));
 				}
 				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 				bch.complete(listResponse);

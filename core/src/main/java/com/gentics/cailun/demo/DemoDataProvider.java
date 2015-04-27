@@ -133,6 +133,7 @@ public class DemoDataProvider {
 	 */
 	private Content news2015Content;
 	private Content dealsSuperDeal;
+	private Content concorde;
 	private Tag productsTag;
 	private Tag deals;
 
@@ -420,7 +421,7 @@ public class DemoDataProvider {
 			products.put("BMW M3", bmwM3);
 			totalContents++;
 
-			Content concorde = addContent(
+			concorde = addContent(
 					productsTag,
 					"Concorde",
 					"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
@@ -649,6 +650,10 @@ public class DemoDataProvider {
 
 	public ObjectSchema getTagSchema() {
 		return tagSchema;
+	}
+
+	public Content getConcorde() {
+		return concorde;
 	}
 
 }

@@ -2,6 +2,7 @@ package com.gentics.cailun.core.verticle;
 
 import static com.gentics.cailun.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.GET;
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Route;
@@ -9,6 +10,7 @@ import io.vertx.ext.apex.Route;
 import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -21,6 +23,7 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.error.EntityNotFoundException;
+import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.path.Path;
 import com.gentics.cailun.path.PathSegment;
 
@@ -54,36 +57,50 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		return getRouter().routeWithRegex("\\/(.*)");
 	}
 
+	// TODO findbyproject path should also handle files and contents and store the type of the segment
+	// TODO last segment can also be a file or a content. Handle this
 	private void addPathHandler() {
 
-		// TODO add .produces(APPLICATION_JSON)
-		pathRoute().method(GET).handler(rc -> {
+		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			// TODO findbyproject path should also handle files and contents and store the type of the segment
+			vertx.executeBlocking((Future<Tag> bch) -> {
 				Path tagPath = tagService.findByProjectPath(projectName, path);
 				PathSegment lastSegment = tagPath.getLast();
-				if (lastSegment != null) {
 
-					// TODO last segment can also be a file or a content. Handle this
-					Tag tag = tagService.projectTo(lastSegment.getNode(), Tag.class);
-					if (tag == null) {
-						String message = i18n.get(rc, "tag_not_found_for_path", path);
-						throw new EntityNotFoundException(message);
+				if (lastSegment != null) {
+					try (Transaction tx = graphDb.beginTx()) {
+						Tag tag = tagService.projectTo(lastSegment.getNode(), Tag.class);
+						if (tag == null) {
+							String message = i18n.get(rc, "tag_not_found_for_path", path);
+							throw new EntityNotFoundException(message);
+						}
+						rc.session().hasPermission(new CaiLunPermission(tag, PermissionType.READ).toString(), rh -> {
+							languageTags.add(lastSegment.getLanguageTag());
+							if (rh.result()) {
+								bch.complete(tag);
+							} else {
+								bch.fail(new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm")));
+							}
+						});
+						tx.success();
 					}
-					rc.session().hasPermission(new CaiLunPermission(tag, PermissionType.READ).toString(), rh -> {
-						
-					});
-					
-					languageTags.add(lastSegment.getLanguageTag());
-					rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
-					return;
 				} else {
 					throw new EntityNotFoundException(i18n.get(rc, "tag_not_found_for_path", path));
 				}
-			});
+			}, arh -> {
+				//TODO copy this to all other handlers. We need to catch async errors as well elsewhere
+					if (arh.succeeded()) {
+						Tag tag = arh.result();
+						rc.response().end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
+					} else {
+						rc.fail(new HttpStatusCodeErrorException(500, "error", arh.cause()));
+					}
+				});
+
+		});
 
 	}
 

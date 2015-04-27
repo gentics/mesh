@@ -152,6 +152,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	@Override
 	public TagResponse transformToRest(RoutingContext rc, Tag tag, List<String> languageTags, int depth) {
 
+		
 		TransformationInfo info = new TransformationInfo(rc, depth, languageTags);
 		info.setUserService(userService);
 		info.setLanguageService(languageService);

@@ -28,6 +28,7 @@ import com.gentics.cailun.core.data.model.generic.AbstractPersistable;
 import com.gentics.cailun.error.EntityNotFoundException;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
 import com.gentics.cailun.error.InvalidPermissionException;
+import com.gentics.cailun.etc.CaiLunSpringConfiguration;
 import com.gentics.cailun.etc.config.CaiLunConfigurationException;
 import com.gentics.cailun.paging.PagingInfo;
 
@@ -133,14 +134,14 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 				rc.fail(res.cause());
 			} else {
 				try {
-				try (Transaction tx = graphDb.beginTx()) {
-					resultHandler.handle(res);
-					tx.success();
-				}
-				if (transactionCompletedHandler != null) {
-					AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
-					transactionCompletedHandler.handle(transactionCompletedFuture);
-				}
+					try (Transaction tx = graphDb.beginTx()) {
+						resultHandler.handle(res);
+						tx.success();
+					}
+					if (transactionCompletedHandler != null) {
+						AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
+						transactionCompletedHandler.handle(transactionCompletedFuture);
+					}
 				} catch (Exception e) {
 					rc.fail(e);
 				}
@@ -165,10 +166,8 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 		loadObjectByUuid(rc, uuid, permType, resultHandler, transactionCompleteHandler);
 	}
-	
-	
-	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler)
-	{
+
+	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler) {
 		hasPermission(rc, node, type, resultHandler, null);
 	}
 
@@ -180,8 +179,8 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	 * @param type
 	 * @return
 	 */
-	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler, Handler<AsyncResult<Boolean>> transactionCompletedHandler)
-			throws InvalidPermissionException {
+	protected void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler,
+			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
 		rc.session().hasPermission(new CaiLunPermission(node, type).toString(), handler -> {
 			if (!handler.result()) {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));
@@ -233,17 +232,29 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		return new PagingInfo(page, perPage);
 	}
 
-	protected int getDepth(RoutingContext rc) {
+	protected Future<Integer> getDepth(RoutingContext rc) {
+
+		Future<Integer> depthFut = Future.future();
+
 		String query = rc.request().query();
 		Map<String, String> queryPairs;
 		try {
 			queryPairs = splitQuery(query);
 		} catch (UnsupportedEncodingException e) {
+			//TODO fail
 			log.error("Could not decode query string.", e);
-			return 0;
+			depthFut.complete(0);
+			return depthFut;
 		}
 		String value = queryPairs.get(DEPTH_PARAM_KEY);
-		return NumberUtils.toInt(value, 0);
-	}
 
+		int depth = NumberUtils.toInt(value, 0);
+		int maxDepth = CaiLunSpringConfiguration.getConfiguration().getMaxDepth();
+		if (depth > maxDepth) {
+			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_depth_max_exceeded", String.valueOf(depth), String.valueOf(maxDepth)));
+		}
+		depthFut.complete(depth);
+
+		return depthFut;
+	}
 }
