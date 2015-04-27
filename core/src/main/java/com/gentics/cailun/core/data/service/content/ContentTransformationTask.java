@@ -117,32 +117,8 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 		}
 
 		if (depth < info.getMaxDepth()) {
-
 			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restContent, tasks);
 			content.getTags().parallelStream().forEachOrdered(tagConsumer);
-
-			//			content.getTags().parallelStream().forEachOrdered(currentTag -> {
-			//				String currentUuid = currentTag.getUuid();
-			//				Session session = info.getRoutingContext().session();
-			//
-			//				session.hasPermission(new CaiLunPermission(currentTag, PermissionType.READ).toString(), handler -> {
-			//					if (handler.result()) {
-			//						TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
-			//						if (currentRestTag == null) {
-			//							try (Transaction tx = info.getGraphDb().beginTx()) {
-			//								Tag reloadedTag = info.getNeo4jTemplate().fetch(currentTag);
-			//								currentRestTag = new TagResponse();
-			//								TagTransformationTask subTask = new TagTransformationTask(reloadedTag, info, currentRestTag, depth + 1);
-			//								tasks.add(subTask.fork());
-			//								tx.success();
-			//							}
-			//						}
-			//						restContent.getTags().add(currentRestTag);
-			//					}
-			//				});
-			//
-			//			});
-
 		}
 
 		tasks.forEach(action -> action.join());
