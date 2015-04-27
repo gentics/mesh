@@ -12,12 +12,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.Group;
 import com.gentics.cailun.core.data.model.auth.Role;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.service.ContentService;
+import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.group.request.GroupCreateRequest;
@@ -43,6 +46,12 @@ public class RestAssert {
 
 	@Autowired
 	private GraphDatabaseService graphDb;
+
+	@Autowired
+	private ContentService contentService;
+
+	@Autowired
+	private LanguageService languageService;
 
 	public void assertGroup(Group group, GroupResponse restGroup) {
 		assertEquals(group.getUuid(), restGroup.getUuid());
@@ -89,27 +98,44 @@ public class RestAssert {
 	 * Compare the create request with a content response.
 	 * 
 	 * @param request
-	 * @param readValue
+	 * @param restContent
 	 */
-	public void assertContent(ContentCreateRequest request, ContentResponse readValue) {
+	public void assertContent(ContentCreateRequest request, ContentResponse restContent) {
 
 		for (String languageTag : request.getProperties().keySet()) {
 			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
 				assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
-						readValue.getProperty(languageTag, entry.getKey()));
+						restContent.getProperty(languageTag, entry.getKey()));
 			}
 		}
 
 		String schemaName = request.getSchema().getSchemaName();
-		assertEquals("The schemaname of the request does not match the response schema name", schemaName, readValue.getSchema().getSchemaName());
-		assertEquals(request.getOrder(), readValue.getOrder());
+		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restContent.getSchema().getSchemaName());
+		assertEquals(request.getOrder(), restContent.getOrder());
 		String tagUuid = request.getTagUuid();
 		// TODO how to match the parent tag?
 
-		assertNotNull(readValue.getUuid());
-		assertNotNull(readValue.getCreator());
-		assertNotNull(readValue.getPerms());
+		assertNotNull(restContent.getUuid());
+		assertNotNull(restContent.getCreator());
+		assertNotNull(restContent.getPerms());
 
+	}
+
+	@Transactional
+	public void assertContent(ContentCreateRequest request, Content content) {
+		assertNotNull(request);
+		assertNotNull(content);
+
+		for (String languageTag : request.getProperties().keySet()) {
+			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
+				Language language = languageService.findByLanguageTag(languageTag);
+				String propValue = contentService.getProperty(content, language, entry.getKey());
+				assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
+			}
+		}
+
+		assertNotNull(content.getUuid());
+		assertNotNull(content.getCreator());
 	}
 
 	@Transactional

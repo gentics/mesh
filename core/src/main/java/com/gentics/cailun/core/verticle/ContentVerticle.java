@@ -31,6 +31,7 @@ import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
+import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
@@ -75,6 +76,10 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		addDeleteHandler();
 	}
 
+	// TODO maybe projects should not be a set?
+	// TODO handle schema by name / by uuid - move that code in a seperate
+	// handler
+	// TODO load the schema and set the reference to the tag
 	private void addCreateHandler() {
 		Route route = route("/").method(POST);
 		route.handler(rc -> {
@@ -98,8 +103,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
 					return;
 				} else {
-					// TODO handle schema by name / by uuid - move that code in a seperate handler
-					// TODO load the schema and set the reference to the tag
+
 					ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchema().getSchemaName());
 					if (schema == null) {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getSchemaName())));
@@ -112,39 +116,43 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				User user = userService.findUser(rc);
 				content.setCreator(user);
 
-				// TODO maybe projects should not be a set?
-					Project project = projectService.findByName(projectName);
-					content.addProject(project);
+				Project project = projectService.findByName(projectName);
+				content.addProject(project);
 
-					// Add the i18n properties to the newly created tag
-					for (String languageTag : requestModel.getProperties().keySet()) {
-						Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
-						Language language = languageService.findByLanguageTag(languageTag);
-						if (language == null) {
-							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-							return;
-						}
-						I18NProperties tagProps = new I18NProperties(language);
-						for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-							tagProps.setProperty(entry.getKey(), entry.getValue());
-						}
-						tagProps = neo4jTemplate.save(tagProps);
-						// Create the relationship to the i18n properties
-						Translated translated = new Translated(content, tagProps, language);
-						translated = neo4jTemplate.save(translated);
-						content.getI18nTranslations().add(translated);
+				content = contentService.save(content);
+
+				/* Add the i18n properties to the newly created tag */
+				for (String languageTag : requestModel.getProperties().keySet()) {
+					Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
+					Language language = languageService.findByLanguageTag(languageTag);
+					if (language == null) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+						return;
 					}
+					I18NProperties tagProps = new I18NProperties(language);
+					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
+						tagProps.setProperty(entry.getKey(), entry.getValue());
+					}
+					tagProps = neo4jTemplate.save(tagProps);
+					// Create the relationship to the i18n properties
+					Translated translated = new Translated(content, tagProps, language);
+					translated = neo4jTemplate.save(translated);
+					content.getI18nTranslations().add(translated);
+				}
 
-					content = contentService.save(content);
+				roleService.addCRUDPermissionOnRole(rc, new CaiLunPermission(rootTagForContent, PermissionType.CREATE), content);
 
-					// Assign the content to the tag and save the tag
-					rootTagForContent.addContent(content);
-					rootTagForContent = tagService.save(rootTagForContent);
-					contentCreated.complete(content);
-				}, trh -> {
-					Content content = contentCreated.result();
-					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
-				});
+				content = contentService.save(content);
+
+				/* Assign the content to the tag and save the tag */
+				rootTagForContent.addContent(content);
+				rootTagForContent = tagService.save(rootTagForContent);
+
+				contentCreated.complete(content);
+			}, trh -> {
+				Content content = contentCreated.result();
+				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+			});
 
 		});
 	}
@@ -171,11 +179,11 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			int depth = getDepth(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<ContentListResponse> bch) -> {
 				ContentListResponse listResponse = new ContentListResponse();
 				try (Transaction tx = graphDb.beginTx()) {
-					PagingInfo pagingInfo = getPagingInfo(rc);
 					User user = userService.findUser(rc);
 					Page<Content> contentPage = contentService.findAllVisible(user, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
@@ -212,7 +220,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	// TODO handle depth
 	// TODO update other fields as well?
 	// TODO Update user information
-	// TODO use schema and only handle those i18n properties that were specified within the schema.
+	// TODO use schema and only handle those i18n properties that were specified
+	// within the schema.
 	private void addUpdateHandler() {
 
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
@@ -224,7 +233,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				Content content = rh.result();
 
 				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
-				// Iterate through all properties and update the changed ones
+				// Iterate through all properties and update the changed
+				// ones
 					for (String languageTag : request.getProperties().keySet()) {
 						Language language = languageService.findByLanguageTag(languageTag);
 						if (language != null) {
@@ -236,11 +246,15 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 									String key = set.getKey();
 									String value = set.getValue();
 									String i18nValue = i18nProperties.getProperty(key);
-									/* Tag does not have the value so lets create it */
+									/*
+									 * Tag does not have the value so lets create it
+									 */
 									if (i18nValue == null) {
 										i18nProperties.setProperty(key, value);
 									} else {
-										/* Lets compare and update if the value has changed */
+										/*
+										 * Lets compare and update if the value has changed
+										 */
 										if (!value.equals(i18nValue)) {
 											i18nProperties.setProperty(key, value);
 										}
@@ -264,11 +278,13 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
-		// TODO fix issues with generics - Maybe move the link replacer to a spring service
+		// TODO fix issues with generics - Maybe move the link replacer to a
+		// spring service
 		// TODO handle language
 		Language language = null;
 		LinkReplacer replacer = new LinkReplacer(resolver);
-		// content.setContent(language, replacer.replace(content.getContent(language)));
+		// content.setContent(language,
+		// replacer.replace(content.getContent(language)));
 	}
 
 }

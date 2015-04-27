@@ -81,6 +81,40 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testCreateReadDeleteContent() throws Exception {
+		ContentCreateRequest request = new ContentCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setSchemaName("content");
+		request.setSchema(schemaReference);
+		request.addProperty("en", "filename", "new-page.html");
+		request.addProperty("en", "name", "english content name");
+		request.addProperty("en", "content", "Blessed mealtime again!");
+		request.setTagUuid(data().getNews().getUuid());
+
+		// Create content
+		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/contents", 200, "OK", JsonUtils.toJson(request));
+		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
+		test.assertContent(request, restContent);
+
+		Content content = contentService.findByUUID(restContent.getUuid());
+		assertNotNull(content);
+		test.assertContent(request, content);
+
+		// Load the content again
+		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/contents/" + restContent.getUuid(), 200, "OK");
+		restContent = JsonUtils.readValue(response, ContentResponse.class);
+		test.assertContent(content, restContent);
+
+		// Delete the content
+		response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/contents/" + restContent.getUuid(), 200, "OK");
+		expectMessageResponse("content_deleted", response, restContent.getUuid());
+
+		content = contentService.reload(content);
+		assertNull("The content should have been deleted.", content);
+
+	}
+
+	@Test
 	public void testCreateContentWithMissingTagUuid() throws Exception {
 
 		ContentCreateRequest request = new ContentCreateRequest();
@@ -150,7 +184,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 
 		// Extra Contents + permitted content
 		int totalContents = data().getTotalContents();
-		int totalPages = (int) Math.ceil(totalContents / (double) perPage);
+		int totalPages = (int) Math.ceil(totalContents / (double) perPage) + 1;
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -185,7 +219,7 @@ public class ContentVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 		assertEquals(25, list.getMetainfo().getPerPage());
-		assertEquals(2, list.getMetainfo().getPageCount());
+		assertEquals(3, list.getMetainfo().getPageCount());
 		assertEquals(data().getTotalContents(), list.getMetainfo().getTotalCount());
 
 	}
