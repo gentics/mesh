@@ -5,19 +5,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gentics.cailun.core.rest.common.response.AbstractRestModel;
+import com.gentics.cailun.core.rest.common.response.AbstractTagContainerModel;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 
-public class TagResponse extends AbstractRestModel {
+public class TagResponse extends AbstractTagContainerModel {
 
 	private long order = 0;
 
 	private UserResponse creator;
 	private Map<String, Map<String, String>> properties = new HashMap<>();
-
-	private List<TagResponse> tags = new ArrayList<>();
 
 	private List<ContentResponse> contents = new ArrayList<>();
 
@@ -102,14 +100,6 @@ public class TagResponse extends AbstractRestModel {
 
 	public void setPerms(String... perms) {
 		this.perms = perms;
-	}
-
-	public List<TagResponse> getTags() {
-		return tags;
-	}
-
-	public void setTags(List<TagResponse> tags) {
-		this.tags = tags;
 	}
 
 	public SchemaReference getSchema() {
