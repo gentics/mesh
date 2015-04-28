@@ -4,17 +4,12 @@ import static com.gentics.cailun.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-
 import io.vertx.core.http.HttpMethod;
 
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Tag;
@@ -57,7 +52,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		System.out.println(response);
 		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
 		test.assertContent(concordeContent, restContent);
-		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
+		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
 				restContent.getProperties("de"));
 		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
 				restContent.getProperties("en"));

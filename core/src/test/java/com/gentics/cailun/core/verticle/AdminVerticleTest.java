@@ -1,3 +1,4 @@
+package com.gentics.cailun.core.verticle;
 import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
