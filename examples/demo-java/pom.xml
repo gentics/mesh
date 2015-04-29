@@ -107,13 +107,11 @@
 				</executions>
 			</plugin>
 
-
 			<plugin>
 				<groupId>com.lazerycode.jmeter</groupId>
 				<artifactId>jmeter-maven-plugin</artifactId>
 				<version>1.8.1</version>
 				<executions>
-
 					<execution>
 						<phase>integration-test</phase>
 						<goals>
