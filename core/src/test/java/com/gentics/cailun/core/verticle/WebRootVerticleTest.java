@@ -52,10 +52,8 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		System.out.println(response);
 		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
 		test.assertContent(concordeContent, restContent);
-		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
-				restContent.getProperties("de"));
-		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
-				restContent.getProperties("en"));
+		assertNotNull(restContent.getProperties("de"));
+		assertNotNull(restContent.getProperties("en"));
 	}
 
 	@Test

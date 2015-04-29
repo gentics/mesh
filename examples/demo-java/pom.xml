@@ -107,22 +107,31 @@
 				</executions>
 			</plugin>
 
+
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>chronos-jmeter-maven-plugin</artifactId>
-				<version>1.1.0</version>
-				<configuration>
-					<input>${basedir}/src/test/jmeter/test.jmx</input>
-				</configuration>
+				<groupId>com.lazerycode.jmeter</groupId>
+				<artifactId>jmeter-maven-plugin</artifactId>
+				<version>1.8.1</version>
 				<executions>
+
 					<execution>
+						<phase>integration-test</phase>
 						<goals>
 							<goal>jmeter</goal>
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<propertiesUser>
+						<webservice.host>${dockerIP}</webservice.host>
+						<webservice.port>${cailun.port}</webservice.port>
+					</propertiesUser>
+				</configuration>
 			</plugin>
-
+			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>chronos-jmeter-maven-plugin</artifactId> 
+				<version>1.1.0</version> <configuration> <input>${basedir}/src/test/jmeter/test.jmx</input> 
+				</configuration> <executions> <execution> <goals> <goal>jmeter</goal> </goals> 
+				</execution> </executions> </plugin> -->
 			<!-- Tell surefire to skip test, we are using the failsafe plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -1,13 +1,16 @@
 package com.gentics.cailun.etc;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.apex.RoutingContext;
 import io.vertx.ext.apex.handler.AuthHandler;
 import io.vertx.ext.apex.handler.BasicAuthHandler;
+import io.vertx.ext.apex.handler.BodyHandler;
 import io.vertx.ext.apex.handler.CorsHandler;
 import io.vertx.ext.apex.handler.SessionHandler;
 import io.vertx.ext.apex.handler.impl.SessionHandlerImpl;
@@ -99,11 +102,10 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 	public static CaiLunConfiguration getConfiguration() {
 		return configuration;
 	}
-	
+
 	public static void setConfiguration(CaiLunConfiguration conf) {
 		configuration = conf;
 	}
-
 
 	@PostConstruct
 	private void setup() {
@@ -162,6 +164,13 @@ public class CaiLunSpringConfiguration extends Neo4jConfiguration {
 		corsHandler.allowedHeader("Authorization");
 		corsHandler.allowedHeader("Content-Type");
 		return corsHandler;
+	}
+
+	@Bean
+	public Handler<RoutingContext> bodyHandler() {
+		BodyHandler handler = BodyHandler.create();
+		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
+		return handler;
 	}
 
 }

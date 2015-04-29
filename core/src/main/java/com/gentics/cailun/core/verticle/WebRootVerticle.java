@@ -90,12 +90,11 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 								if (rh.result()) {
 									bch.complete(tag);
 								} else {
-									bch.fail(new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm")));
+									throw new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm"));
 								}
 							});
 
-						}
-						if (lastSegment.getNode().hasLabel(Content.getLabel())) {
+						} else if (lastSegment.getNode().hasLabel(Content.getLabel())) {
 							Content content = contentService.projectTo(lastSegment.getNode(), Content.class);
 							if (content == null) {
 								String message = i18n.get(rc, "object_not_found_for_path", path);
@@ -120,18 +119,18 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 					throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_path", path));
 				}
 			}, arh -> {
-				// TODO copy this to all other handlers. We need to catch async errors as well elsewhere
-					if (arh.succeeded()) {
-						GenericPropertyContainer container = arh.result();
-						if (container instanceof Content) {
-							rc.response().end(toJson(contentService.transformToRest(rc, (Content) container, languageTags, 0)));
-						} else if (container instanceof Tag) {
-							rc.response().end(toJson(tagService.transformToRest(rc, (Tag) container, languageTags, 0)));
-						}
-					} else {
-						rc.fail(new HttpStatusCodeErrorException(500, "error", arh.cause()));
+				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
+				if (arh.succeeded()) {
+					GenericPropertyContainer container = arh.result();
+					if (container instanceof Content) {
+						rc.response().end(toJson(contentService.transformToRest(rc, (Content) container, languageTags, 0)));
+					} else if (container instanceof Tag) {
+						rc.response().end(toJson(tagService.transformToRest(rc, (Tag) container, languageTags, 0)));
 					}
-				});
+				} else {
+					rc.fail(new HttpStatusCodeErrorException(500, "error", arh.cause()));
+				}
+			});
 
 		});
 
