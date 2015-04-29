@@ -1,11 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<artifactId>cailun-doc</artifactId>
-	<packaging>jar</packaging>
-	<name>Cailun - Documentation</name>
 
 	<parent>
 		<groupId>com.gentics.cailun</groupId>
@@ -13,13 +10,24 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 
+
+	<artifactId>cailun-doc</artifactId>
+	<packaging>jar</packaging>
+	<name>Cailun - Documentation</name>
 	<description>Parent module for documentation</description>
 
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<asciidoclet.version>1.5.1</asciidoclet.version>
+		<apacheds-protocol-dns.version>1.5.7</apacheds-protocol-dns.version>
+		<asciidoc.dir>${project.build.directory}/asciidoc</asciidoc.dir>
+		<github.global.server>github</github.global.server>
+	</properties>
+
 	<dependencies>
+
 		<dependency>
 			<artifactId>cailun-core</artifactId>
 			<groupId>${project.groupId}</groupId>
@@ -33,17 +41,101 @@
 			<version>${project.version}</version>
 			<type>zip</type>
 		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>highlightjs</artifactId>
+			<version>8.4-4</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
 		<plugins>
+			<!-- Process all .adoc files -->
+			<plugin>
+				<groupId>org.asciidoctor</groupId>
+				<artifactId>asciidoctor-maven-plugin</artifactId>
+				<version>1.5.2</version>
+				<configuration>
+					<backend>html</backend>
+					<doctype>book</doctype>
+					<relativeBaseDir>true</relativeBaseDir>
+					<preserveDirectories>true</preserveDirectories>
+					<eruby>erb</eruby>
+					<templateDir>${basedir}/src/main/docs/templates</templateDir>
+					<attributes>
+						<stylesheet>/stylesheets/docs.css</stylesheet>
+						<linkcss></linkcss>
+					</attributes>
+					<sourceHighlighter>prettify</sourceHighlighter>
+				</configuration>
+				<executions>
+					<execution>
+						<id>process-site-docs</id>
+						<goals>
+							<goal>process-asciidoc</goal>
+						</goals>
+						<phase>site</phase>
+						<configuration>
+							<attributes>
+								<toc>left</toc>
+							</attributes>
+							<sourceDirectory>${basedir}/src/main/asciidoc</sourceDirectory>
+							<outputDirectory>${project.build.directory}/docs-generated</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+					<skipDeploy>true</skipDeploy>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<configuration>
+							<target>
+								<!-- Copy assets from webjars to site dir -->
+								<copy todir="${project.build.directory}/site/javascripts/styles"
+									file="${project.build.directory}/webjars/META-INF/resources/webjars/highlightjs/8.4-4/styles/rainbow.min.css"/>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<phase>site</phase>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
+
+					<!-- unpack webjars -->
+					<execution>
+						<id>unpack-webjars</id>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<phase>pre-site</phase>
+						<configuration>
+							<includeGroupIds>org.webjars</includeGroupIds>
+							<includeArtifactIds>highlightjs</includeArtifactIds>
+							<includes>META-INF/resources/webjars/**/*</includes>
+							<useSubDirectoryPerArtifact>false</useSubDirectoryPerArtifact>
+							<outputDirectory>${project.build.directory}/webjars</outputDirectory>
+						</configuration>
+					</execution>
 					<execution>
 						<id>unpack-javadoc</id>
-						<phase>process-resources</phase>
+						<phase>site</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
@@ -56,14 +148,14 @@
 									<type>jar</type>
 									<classifier>javadoc</classifier>
 									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.directory}/site/javadoc</outputDirectory>
+									<outputDirectory>${project.build.directory}/site/docs/javadoc</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
 					</execution>
 					<execution>
 						<id>unpack-raml</id>
-						<phase>process-resources</phase>
+						<phase>site</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
@@ -75,51 +167,53 @@
 									<version>${project.version}</version>
 									<type>zip</type>
 									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.directory}/site/raml</outputDirectory>
+									<outputDirectory>${project.build.directory}/site/docs/raml</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+			<!-- generate site (install node.js and run gulp) -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-				<configuration>
-					<skip>false</skip>
-					<generateReports>false</generateReports>
-					<generateProjectInfo>false</generateProjectInfo>
-					<generateSitemap>false</generateSitemap>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>lt.velykis.maven.skins</groupId>
-						<artifactId>reflow-velocity-tools</artifactId>
-						<version>1.1.1</version>
-					</dependency>
-					<!-- Reflow skin requires Velocity >= 1.7 -->
-					<dependency>
-						<groupId>org.apache.velocity</groupId>
-						<artifactId>velocity</artifactId>
-						<version>1.7</version>
-					</dependency>
-					<dependency>
-						<groupId>org.tinyjee.dim</groupId>
-						<artifactId>doxia-include-macro</artifactId>
-						<version>1.1</version>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.maven.doxia</groupId>
-						<artifactId>doxia-module-markdown</artifactId>
-						<version>1.3</version>
-					</dependency>
-					<!-- add support for ssh/scp -->
-					<dependency>
-						<groupId>org.apache.maven.wagon</groupId>
-						<artifactId>wagon-ssh</artifactId>
-						<version>1.0</version>
-					</dependency>
-				</dependencies>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>0.0.23</version>
+				<executions>
+					<!-- install node.js -->
+					<execution>
+						<id>install node and npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+						<phase>site</phase>
+						<configuration>
+							<nodeVersion>v0.12.2</nodeVersion>
+							<npmVersion>2.7.6</npmVersion>
+						</configuration>
+					</execution>
+
+					<!-- install npm modules -->
+					<execution>
+						<id>npm install</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>site</phase>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+
+					<!-- run gulp -->
+					<execution>
+						<id>gulp</id>
+						<goals>
+							<goal>gulp</goal>
+						</goals>
+						<phase>site</phase>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -141,7 +235,10 @@
 					</execution>
 				</executions>
 			</plugin>
+
+
 		</plugins>
+
 		<pluginManagement>
 			<plugins>
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
@@ -179,6 +276,8 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+
 	<distributionManagement>
 		<site>
 			<id>github-site</id>

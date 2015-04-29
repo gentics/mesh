@@ -1,0 +1,39 @@
+{
+  "name": "cailun-web-site",
+  "version": "1.0.0",
+  "description": "The Cai.Lun Website",
+  "main": "gulpfile.js",
+  "private": true,
+  "devDependencies": {
+    "compression": "^1.4.3",
+    "connect": "^3.3.5",
+    "consolidate": "^0.12.1",
+    "del": "^1.1.1",
+    "gulp": "^3.8.11",
+    "gulp-bower": "0.0.10",
+    "gulp-decompress": "^1.0.2",
+    "gulp-flatten": "0.0.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.3",
+    "gulp-streamify": "0.0.5",
+    "gulp-util": "^3.0.4",
+    "metalsmith": "^1.5.0",
+    "metalsmith-autoprefixer": "^1.0.2",
+    "metalsmith-clean-css": "^2.0.0",
+    "metalsmith-define": "^1.0.0",
+    "metalsmith-html-minifier": "^1.1.0",
+    "metalsmith-ignore": "^0.1.2",
+    "metalsmith-less": "^2.0.0",
+    "metalsmith-templates": "^0.7.0",
+    "pretty-hrtime": "^1.0.0",
+    "request": "^2.55.0",
+    "serve-static": "^1.9.2",
+    "swig": "^1.4.2",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gentics/cailun.git"
+  }
+}

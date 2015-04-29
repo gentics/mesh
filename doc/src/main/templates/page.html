@@ -1,0 +1,20 @@
+{% include "header.html" %}
+
+{% if heading %}
+  <div class="page-header{% if subheading %}-large{% endif %}" id="content">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <h1>{{ heading }}</h1>
+          {% if subheading %}
+          <p>{{ subheading }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{{ contents | safe }}
+
+{% include "footer.html" %}
