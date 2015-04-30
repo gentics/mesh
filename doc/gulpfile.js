@@ -64,7 +64,7 @@ var paths = {
 	target_asciidoctor_bs_themes : "target/asciidoctor-bs-themes",
 	target_docs : "target/site/docs",
 	target_icons : "target/site/assets/icons",
-	target_scripts : "target/site/javascripts",
+	target_scripts : "target/site/javascript",
 	target_stylesheets : "target/site/stylesheets",
 	templates : "src/main/templates"
 };
