@@ -42,7 +42,7 @@ public class Neo4jGenericContentUtils {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
 		List<String> segments = new ArrayList<>();
 		Node fromNode = template.getPersistentState(from);
-		for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_SUB_TAG)
+		for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_TAG)
 				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
 			System.out.println(node.getId() + " " + node.getLabels());
 

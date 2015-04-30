@@ -83,7 +83,7 @@ public class WebRootServiceImpl implements WebRootService {
 		AtomicReference<Node> foundNode = new AtomicReference<>();
 		// TODO i wonder whether streams are useful in this case. We need to benchmark this section
 
-		RelationshipType targetRelationship = BasicRelationships.TYPES.HAS_SUB_TAG;
+		RelationshipType targetRelationship = BasicRelationships.TYPES.HAS_TAG;
 		String keyword = ObjectSchema.NAME_KEYWORD;
 		if (isLastSegment) {
 			targetRelationship = BasicRelationships.TYPES.HAS_CONTENT;
@@ -283,7 +283,7 @@ public class WebRootServiceImpl implements WebRootService {
 	 * @return
 	 */
 	private Node findSubTagWithName(Node rootTag, String name) {
-		for (Relationship rel : rootTag.getRelationships(BasicRelationships.TYPES.HAS_SUB_TAG, Direction.OUTGOING)) {
+		for (Relationship rel : rootTag.getRelationships(BasicRelationships.TYPES.HAS_TAG, Direction.OUTGOING)) {
 			Node endNode = rel.getEndNode();
 			if (endNode != null && hasNodeI18NProperty(endNode, "name", name)) {
 				return endNode;

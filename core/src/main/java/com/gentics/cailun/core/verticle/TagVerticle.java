@@ -32,9 +32,12 @@ import com.gentics.cailun.core.data.model.Project;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
+import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
+import com.gentics.cailun.core.rest.common.response.AbstractListResponse;
+import com.gentics.cailun.core.rest.common.response.AbstractTagContainerModel;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
@@ -77,8 +80,75 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addTagSubTagHandlers();
+		addTagHandlers();
+		addTagChildrenHandlers();
 		addTagContentHandlers();
+	}
+
+	private void addTagHandlers() {
+
+		Route getRoute = route("/:uuid/tags/").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			String projectName = getProjectName(rc);
+			TagListResponse listResponse = new TagListResponse();
+			List<String> languageTags = getSelectedLanguageTags(rc);
+			Future<Integer> depthFuture = getDepth(rc);
+
+			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
+				Tag rootTag = rh.result();
+
+				PagingInfo pagingInfo = getPagingInfo(rc);
+
+				Page<Tag> tagPage = tagService.findAllVisibleTags(rc, projectName, rootTag, languageTags, pagingInfo);
+				for (Tag tag : tagPage) {
+					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depthFuture.result()));
+				}
+				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+			}, trh -> {
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+			});
+		});
+
+		Route postRoute = route("/:tagUuid/tags/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
+		postRoute.handler(rc -> {
+			String projectName = getProjectName(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
+
+			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+					Tag tag = rh.result();
+					Tag subTag = srh.result();
+
+					tag.addTag(subTag);
+					tag = tagService.save(tag);
+				}, trh -> {
+					Tag tag = rh.result();
+					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
+				});
+
+			});
+		});
+
+		// TODO fix error handling. This does not fail when tagUuid could not be found
+		Route deleteRoute = route("/:tagUuid/tags/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
+		deleteRoute.handler(rc -> {
+			String projectName = getProjectName(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
+
+			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+					Tag tag = rh.result();
+					Tag subTag = srh.result();
+					tag.removeTag(subTag);
+					tag = tagService.save(tag);
+				}, trh -> {
+					Tag tag = rh.result();
+					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag, languageTags, 0)));
+				});
+			});
+
+		});
+
 	}
 
 	// TODO fetch project specific tag
@@ -255,7 +325,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				User requestUser = userService.findUser(rc);
-				Page<Content> contentPage = tagService.findAllVisibleSubContents(rc, projectName, rootTag, languageTags, pagingInfo);
+				Page<Content> contentPage = tagService.findAllVisibleContents(rc, projectName, rootTag, languageTags, pagingInfo);
 				for (Content content : contentPage) {
 					listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depthFuture.result()));
 				}
@@ -267,36 +337,48 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	// TODO filtering, sorting
-	private void addTagSubTagHandlers() {
-		Route getRoute = route("/:uuid/tags/").method(GET).produces(APPLICATION_JSON);
+	private void addTagChildrenHandlers() {
+		Route getRoute = route("/:uuid/children/").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-			TagListResponse listResponse = new TagListResponse();
+			AbstractListResponse<AbstractTagContainerModel> listResponse = new AbstractListResponse<>();
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			Future<Integer> depthFuture = getDepth(rc);
 
-			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
-				Tag rootTag = rh.result();
+			loadObject(
+					rc,
+					"uuid",
+					PermissionType.READ,
+					(AsyncResult<Tag> rh) -> {
+						Tag rootTag = rh.result();
 
-				PagingInfo pagingInfo = getPagingInfo(rc);
+						PagingInfo pagingInfo = getPagingInfo(rc);
 
-				Page<Tag> tagPage = tagService.findAllVisibleSubTags(rc, projectName, rootTag, languageTags, pagingInfo);
-				for (Tag tag : tagPage) {
-					listResponse.getData().add(tagService.transformToRest(rc, tag, languageTags, depthFuture.result()));
-				}
-				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
-			}, trh -> {
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
+						Page<? extends GenericPropertyContainer> containerPage = tagService.findAllVisibleChildNodes(rc, projectName, rootTag,
+								languageTags, pagingInfo);
+						for (GenericPropertyContainer container : containerPage) {
+							if (container instanceof Content) {
+								listResponse.getData().add(
+										contentService.transformToRest(rc, (Content) container, languageTags, depthFuture.result()));
+							} else if (container instanceof Tag) {
+								listResponse.getData().add(tagService.transformToRest(rc, (Tag) container, languageTags, depthFuture.result()));
+							} else {
+								//ERROR
+							}
+						}
+						RestModelPagingHelper.setPaging(listResponse, containerPage, pagingInfo);
+					}, trh -> {
+						rc.response().setStatusCode(200).end(toJson(listResponse));
+					});
 		});
 
-		Route postRoute = route("/:tagUuid/tags/:subtagUuid").method(POST).produces(APPLICATION_JSON);
+		Route postRoute = route("/:tagUuid/children/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "subtagUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 
@@ -311,13 +393,13 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		});
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
-		Route deleteRoute = route("/:tagUuid/tags/:subtagUuid").method(DELETE).produces(APPLICATION_JSON);
+		Route deleteRoute = route("/:tagUuid/children/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "subtagUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 					tag.removeTag(subTag);

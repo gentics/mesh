@@ -94,6 +94,11 @@ public class TagResponse extends AbstractTagContainerModel {
 		this.order = order;
 	}
 
+	/**
+	 * Returns the set of permissions that are granted for this tag.
+	 * 
+	 * @return
+	 */
 	public String[] getPerms() {
 		return perms;
 	}

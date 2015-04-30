@@ -39,36 +39,8 @@ public class Tag extends GenericPropertyContainer {
 		return label;
 	}
 
-	@RelatedTo(type = BasicRelationships.HAS_CONTENT, direction = Direction.OUTGOING, elementClass = Content.class)
+	@RelatedTo(type = BasicRelationships.HAS_TAG, direction = Direction.INCOMING, elementClass = Content.class)
 	private Set<Content> contents = new HashSet<>();
-
-	@RelatedTo(type = BasicRelationships.HAS_SUB_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
-	private Set<Tag> childTags = new HashSet<>();
-
-	public void addTag(Tag tag) {
-		childTags.add(tag);
-	}
-
-	public boolean removeTag(Tag tag) {
-		return childTags.remove(tag);
-	}
-
-	public Set<Tag> getTags() {
-		return childTags;
-	}
-
-	public void setTags(Set<Tag> childTags) {
-		this.childTags = childTags;
-	}
-
-	public boolean hasTag(Tag tag) {
-		for (Tag childTag : childTags) {
-			if (tag.equals(childTag)) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public void addContent(Content content) {
 		this.contents.add(content);

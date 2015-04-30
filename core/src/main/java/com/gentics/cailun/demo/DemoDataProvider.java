@@ -117,7 +117,11 @@ public class DemoDataProvider {
 
 	private ObjectSchema categoriesSchema;
 
+	private ObjectSchema colorSchema;
+
 	private UserInfo userInfo;
+
+	private Tag carTag;
 
 	/**
 	 * Path: /news
@@ -241,12 +245,21 @@ public class DemoDataProvider {
 		contentSchema.addProject(project);
 		contentSchema = objectSchemaService.save(contentSchema);
 
+		colorSchema = new ObjectSchema("tagColors");
+		colorSchema.setDescription("Colors");
+		colorSchema.setDescription("Colors");
+		PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		nameProp.setDisplayName("Name");
+		nameProp.setDescription("The name of the category.");
+		colorSchema.addPropertyTypeSchema(nameProp);
+		objectSchemaService.save(colorSchema);
+
 		categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
 		categoriesSchema.addProject(project);
 		categoriesSchema.setDisplayName("Category");
 		categoriesSchema.setDescription("Custom schema for tag categories");
 		categoriesSchema.setCreator(userInfo.getUser());
-		PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		categoriesSchema.addPropertyTypeSchema(nameProp);
@@ -261,8 +274,6 @@ public class DemoDataProvider {
 		contentProp.setDescription("The main content html of the category.");
 		categoriesSchema.addPropertyTypeSchema(contentProp);
 		objectSchemaService.save(categoriesSchema);
-		// tx.success();
-		// }
 
 	}
 
@@ -320,17 +331,14 @@ public class DemoDataProvider {
 		rootTag = (RootTag) tagService.save(rootTag);
 		rootTag.setCreator(userInfo.getUser());
 		rootTag.addProject(project);
-		// totalTags++;
 
 		project.setRootTag(rootTag);
 		project = projectService.save(project);
 
 		// News - 2014
 		news = addTag(rootTag, "News", "Neuigkeiten", tagSchema);
-		totalTags++;
 
 		Tag news2014 = addTag(news, "2014", null, tagSchema);
-		totalTags++;
 
 		Tag news2014March = addTag(news2014, "March", null, tagSchema);
 
@@ -350,42 +358,40 @@ public class DemoDataProvider {
 			totalContents++;
 		}
 
+		// Tags for colors
+		Tag colors = addTag(rootTag, "colors", null, colorSchema);
+		Tag red = addTag(colors, "red", null, colorSchema);
+		Tag blue = addTag(colors, "blue", null, colorSchema);
+		Tag green = addTag(colors, "green", null, colorSchema);
+
 		// Tags for categories
 		Tag categories = addTag(rootTag, "categories", null, categoriesSchema);
-		totalTags++;
 
 		Tag vehicle = addTag(categories, "Vehicle", "Fahrzeug", categoriesSchema);
-		totalTags++;
 
-		Tag car = addTag(vehicle, "Car", "Auto", categoriesSchema);
-		totalTags++;
+		carTag = addTag(vehicle, "Car", "Auto", categoriesSchema);
+		carTag.addTag(green);
+		carTag.addTag(blue);
 
-		Tag jeep = addTag(car, "Jeep", null, categoriesSchema);
-		totalTags++;
+		Tag jeep = addTag(carTag, "Jeep", null, categoriesSchema);
 
 		Tag bike = addTag(vehicle, "Bike", "Fahrrad", categoriesSchema);
-		totalTags++;
 
 		Tag motorcycle = addTag(vehicle, "Motorcycle", "Motorrad", categoriesSchema);
-		totalTags++;
 
 		Tag bus = addTag(vehicle, "Bus", "Bus", categoriesSchema);
-		totalTags++;
 
 		Tag plane = addTag(categories, "Plane", "Flugzeug", categoriesSchema);
-		totalTags++;
+		plane.addTag(green);
 
 		Tag jetFighter = addTag(plane, "JetFigther", "Düsenjäger", categoriesSchema);
-		totalTags++;
 
 		Tag twinjet = addTag(plane, "Twinjet", "Zweistrahliges Flugzeug", categoriesSchema);
-		totalTags++;
 
 		if (multiplicator != 0) {
 			// productsTag
 			Map<String, Content> products = new HashMap<>();
 			productsTag = addTag(rootTag, "products", "Produkte", tagSchema);
-			totalTags++;
 			productsTag.addContent(news2015Content);
 			productsTag = tagService.save(productsTag);
 
@@ -395,9 +401,8 @@ public class DemoDataProvider {
 					"997 is the internal designation for the Porsche 911 model manufactured and sold by German manufacturer Porsche between 2004 (as Model Year 2005) and 2012.",
 					"Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.", contentSchema);
 			porsche911.addTag(vehicle);
-			porsche911.addTag(car);
+			porsche911.addTag(carTag);
 			products.put("Porsche 911", porsche911);
-			totalContents++;
 
 			Content nissanGTR = addContent(
 					productsTag,
@@ -406,9 +411,9 @@ public class DemoDataProvider {
 					"Der Nissan GT-R ist ein seit Dezember 2007 produziertes Sportcoupé des japanischen Automobilherstellers Nissan und der Nachfolger des Nissan Skyline GT-R R34.",
 					contentSchema);
 			nissanGTR.addTag(vehicle);
-			nissanGTR.addTag(car);
+			nissanGTR.addTag(carTag);
 			products.put("Nissan GTR", nissanGTR);
-			totalContents++;
+			nissanGTR.addTag(green);
 
 			Content bmwM3 = addContent(
 					productsTag,
@@ -417,9 +422,9 @@ public class DemoDataProvider {
 					"Der BMW M3 ist ein Sportmodell der 3er-Reihe von BMW, das seit Anfang 1986 hergestellt wird. Dabei handelt es sich um ein Fahrzeug, welches von der BMW-Tochterfirma BMW M GmbH entwickelt und anfangs (E30 und E36) auch produziert wurde.",
 					contentSchema);
 			bmwM3.addTag(vehicle);
-			bmwM3.addTag(car);
+			bmwM3.addTag(carTag);
+			bmwM3.addTag(blue);
 			products.put("BMW M3", bmwM3);
-			totalContents++;
 
 			concorde = addContent(
 					productsTag,
@@ -429,8 +434,8 @@ public class DemoDataProvider {
 					contentSchema);
 			concorde.addTag(plane);
 			concorde.addTag(twinjet);
+			concorde.addTag(red);
 			products.put("Concorde", concorde);
-			totalContents++;
 
 			Content boeing737 = addContent(
 					productsTag,
@@ -441,7 +446,6 @@ public class DemoDataProvider {
 			boeing737.addTag(plane);
 			boeing737.addTag(twinjet);
 			products.put("Boeing 737", boeing737);
-			totalContents++;
 
 			Content a300 = addContent(
 					productsTag,
@@ -451,8 +455,9 @@ public class DemoDataProvider {
 					contentSchema);
 			a300.addTag(plane);
 			a300.addTag(twinjet);
+			a300.addTag(red);
+
 			products.put("Airbus A300", a300);
-			totalContents++;
 
 			Content wrangler = addContent(
 					productsTag,
@@ -462,7 +467,6 @@ public class DemoDataProvider {
 			wrangler.addTag(vehicle);
 			wrangler.addTag(jeep);
 			products.put("Jeep Wrangler", wrangler);
-			totalContents++;
 
 			Content volvo = addContent(productsTag, "Volvo B10M",
 					"The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null, contentSchema);
@@ -476,7 +480,6 @@ public class DemoDataProvider {
 			hondact90.addTag(vehicle);
 			hondact90.addTag(motorcycle);
 			products.put("Honda CT90", hondact90);
-			totalContents++;
 
 			Content hondaNR = addContent(
 					productsTag,
@@ -486,18 +489,16 @@ public class DemoDataProvider {
 					contentSchema);
 			hondaNR.addTag(vehicle);
 			hondaNR.addTag(motorcycle);
+			hondaNR.addTag(green);
 			products.put("Honda NR", hondaNR);
-			totalContents++;
 
 			// Deals
 			deals = addTag(rootTag, "Deals", "Angebote", tagSchema);
-			totalTags++;
 
 			dealsSuperDeal = addContent(deals, "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!", contentSchema);
 			totalContents++;
 			for (int i = 0; i < 12 * multiplicator; i++) {
 				addContent(deals, "Special Deal June 2015 - " + i, "Buy two get three! " + i, "Kauf zwei und nimm drei mit!" + i, contentSchema);
-				totalContents++;
 			}
 		}
 	}
@@ -518,12 +519,13 @@ public class DemoDataProvider {
 		tag.setSchema(schema);
 		tag.setCreator(userInfo.getUser());
 		tag = tagService.save(tag);
-		rootTag.addTag(tag);
+		rootTag.setParent(tag);
 		tagService.save(rootTag);
+		totalTags++;
 		return tag;
 	}
 
-	private Content addContent(Tag tag, String name, String englishContent, String germanContent, ObjectSchema schema) {
+	private Content addContent(Tag parentTag, String name, String englishContent, String germanContent, ObjectSchema schema) {
 		Content content = new Content();
 		contentService.setName(content, english, name + " english");
 		contentService.setFilename(content, english, name + ".en.html");
@@ -540,10 +542,12 @@ public class DemoDataProvider {
 		content.setSchema(schema);
 		content.setOrder(42);
 		content = contentService.save(content);
-
+		content.setParent(parentTag);
+		contentService.save(content);
 		// Add the content to the given tag
-		tag.addContent(content);
-		tag = tagService.save(tag);
+		//		parentTag.addContent(content);
+		//		parentTag = tagService.save(parentTag);
+		totalContents++;
 
 		return content;
 	}
@@ -656,4 +660,7 @@ public class DemoDataProvider {
 		return concorde;
 	}
 
+	public Tag getCarTag() {
+		return carTag;
+	}
 }

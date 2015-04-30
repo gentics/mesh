@@ -664,9 +664,16 @@ schemas:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     /tags:
+      get: 
+        description: Load all tags which were used for tagging.
+      post:
+        description: Tag the tag.
+      delete:
+        description: Untag the tag.
+    /children:
       get:
-        description: Load a list of subtags
-    /tags/{uuid}:
+        description: Load a list of childtags
+    /children/{uuid}:
       uriParameters:
         uuid:
           description: Uuid of a tag.

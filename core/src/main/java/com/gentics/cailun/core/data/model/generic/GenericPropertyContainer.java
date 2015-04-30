@@ -11,6 +11,7 @@ import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
+import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 
@@ -28,6 +29,20 @@ public class GenericPropertyContainer extends GenericNode {
 	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
 	protected Set<Translated> i18nTranslations = new HashSet<>();
 
+	@RelatedTo(type = BasicRelationships.HAS_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
+	private Set<Tag> tags = new HashSet<>();
+
+	@RelatedTo(type = BasicRelationships.HAS_PARENT_TAG, direction = Direction.OUTGOING, elementClass = Tag.class)
+	private Tag parentTag;
+
+	public Tag getParentTag() {
+		return parentTag;
+	}
+
+	public void setParent(Tag tag) {
+		this.parentTag = tag;
+	}
+
 	public Set<Translated> getI18nTranslations() {
 		return i18nTranslations;
 	}
@@ -38,6 +53,31 @@ public class GenericPropertyContainer extends GenericNode {
 
 	public ObjectSchema getSchema() {
 		return schema;
+	}
+
+	public void addTag(Tag tag) {
+		tags.add(tag);
+	}
+
+	public boolean removeTag(Tag tag) {
+		return tags.remove(tag);
+	}
+
+	public Set<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(Set<Tag> childTags) {
+		this.tags = childTags;
+	}
+
+	public boolean hasTag(Tag tag) {
+		for (Tag childTag : tags) {
+			if (tag.equals(childTag)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.cailun.core.AbstractRestVerticle;
 import com.gentics.cailun.core.data.model.Content;
+import com.gentics.cailun.core.data.model.RootTag;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ContentService;
@@ -46,6 +47,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	@Override
 	public AbstractRestVerticle getVerticle() {
 		return tagVerticle;
+	}
+
+	@Test
+	public void testReadTagsForTag2() throws Exception {
+		Tag carTag = data().getCarTag();
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + carTag.getUuid() + "/tags", 200, "OK");
+		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
+		assertEquals(2, restResponse.getData().size());
+		// should list two colors
 	}
 
 	@Test
@@ -117,11 +127,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadSubTagsForRootTag() throws Exception {
+	public void testReadTagsForRootTag() throws Exception {
 		Tag rootTag = data().getRootTag();
 		int perPage = 6;
 		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/children/?per_page=" + perPage
 				+ "&page=" + page + "&lang=de,en", 200, "OK");
 		System.out.println(response);
 		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
@@ -133,11 +143,20 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadSubTags() throws Exception {
+	public void testReadChildrenForRootTag() throws Exception {
+		RootTag root = data().getRootTag();
+		//TODO add content to root tag
+		
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + root.getUuid() + "/children", 200, "OK");
+
+	}
+
+	@Test
+	public void testReadChildrenForTag() throws Exception {
 		Tag rootTag = data().getNews();
 		int perPage = 6;
 		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/children/?per_page=" + perPage
 				+ "&page=" + page, 200, "OK");
 		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(2, tagList.getData().size());
@@ -148,7 +167,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadSubTagsWithLanguageTags() throws Exception {
+	public void testReadChildrenWithLanguageTags() throws Exception {
 		Tag rootTag = data().getNews();
 
 		try (Transaction tx = graphDb.beginTx()) {
@@ -160,7 +179,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		int perPage = 6;
 		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/tags/?per_page=" + perPage
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/children/?per_page=" + perPage
 				+ "&page=" + page + "&lang=de", 200, "OK");
 		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(1, tagList.getData().size());
@@ -171,7 +190,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadSubContentsWithLanguageTags() throws Exception {
+	public void testReadContentsWithLanguageTags() throws Exception {
 		Tag rootTag = data().getNews();
 
 		int nContents = 42;

@@ -5,11 +5,11 @@ import org.neo4j.graphdb.RelationshipType;
 public class BasicRelationships {
 
 	public static enum TYPES implements RelationshipType {
-		LINKED, HAS_SUB_TAG, ASSIGNED_TO_PROJECT, HAS_USER, HAS_PROJECT, HAS_I18N_PROPERTIES, HAS_CONTENT
+		LINKED, HAS_TAG, ASSIGNED_TO_PROJECT, HAS_USER, HAS_PROJECT, HAS_I18N_PROPERTIES, HAS_CONTENT
 	}
 
 	public static final String LINKED = "LINKED";
-	public static final String HAS_SUB_TAG = "HAS_SUB_TAG";
+	public static final String HAS_TAG = "HAS_TAG";
 	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
 	public static final String HAS_USER = "HAS_USER";
 	public static final String HAS_PROJECT = "HAS_PROJECT";
@@ -30,4 +30,5 @@ public class BasicRelationships {
 	public static final String HAS_GROUP = "HAS_GROUP";
 	public static final String HAS_ROLE = "HAS_ROLE";
 	public static final String HAS_SCHEMA = "HAS_SCHEMA";
+	public static final String HAS_PARENT_TAG = "HAS_PARENT_TAG";
 }

@@ -319,6 +319,7 @@ public class BootstrapInitializer {
 		ObjectSchema tagSchema = objectSchemaRepository.findByName("tag");
 		if (tagSchema == null) {
 			tagSchema = new ObjectSchema("tag");
+			tagSchema.setDisplayName("Tag");
 			tagSchema.setDescription("Default schema for tags");
 			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
 			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING));
