@@ -1,28 +1,76 @@
 = Functional specification
 
-== Tagging
+== Intro
 
-There is only one root tag per project. The root tag is linked to various other tags which can be of different types. Tags can have i18n properties.
+ * [Graph Model](http://gist.neo4j.org/?693a270722b01d647849)
 
-A tag must have a specify schema. Schemas can be created using the schemas verticle. The schema defines the type and name of each property.
+== Verticles
+
+CaiLun consists of various [Vert.x](http://vertx.io/) verticles. Each verticle provides REST endpoints that enable CRUD operations on core entities.
+
+== Projects
+
+A project is the root element for a tag hierarchy. Schemas can be assigned to the project in order to allow creation of contents which use one of the assigned schemas.
+ 
+ * ProjectVerticle
+
+== Tags
+
+Tags are one of main structural building blocks. Tags can be hierarchically structured. The root tag of this hierarchy is always bound to a specific project. Tags can also be tagged by other tags. The hierarchically structure is mainly used to organise tags.   
+
+Tags can have i18n properties which are specified by the schema.
+
+ * TagVerticle
+
+=== Startpage handling
+
+Start pages of a tag are denoted by a relationship between the tag and the content
+
+== Contents
+
+Contents are similar to tags with one major exception. Contents can not be nested. This means a content does not have a parent child relationship to another content. Only tags have this kind of relationship. A content can only have one parent tag. Contents can be tagged by any number of tags.
+
+ * ContentVerticle
+
+=== Linking contents of different languages
+
+Following a link to a page that does not exist in the current language leads to a mediator page. The mediator page informs the user that the content is not available in the current language, but available in english, german etc.
+
+Links CAN include the target language
+
+== Schemas 
+
+Schemas can be created using the schemas verticle. The schema defines the type and name of each property for a tag or a content. You can think of a schema as a blueprint for new tags and contents.
 
 A tag must only have a single parent.
 
 The root Tag of a project can not be deleted.
 
-== Groups
+ * ObjectSchemaVerticle
+
+== Permissions / ACL
+
+=== Groups
 
 Groups are used to organize users. Roles can be assigned to groups. A user in a group with roles inherits those roles and the linked permissions to those roles.
 
 Groups are not nested.
 
-== Roles
+=== Roles
 
 Roles are used to assign permissions to objects. Roles are assigned to groups. The create permission for a group enabled the creation of roles.
 
 Users can only assign permissions to roles to which they have access.
 
 A special permission or the update permission of a role (yet to be determined) enables users to create / update permissions on objects.
+
+=== Verticles
+
+ * UserVerticle
+ * GroupVerticle
+ * RoleVerticle
+
+
 
 == Versioning
 
@@ -58,19 +106,3 @@ the system then traverses backwards until it finds the property node thats curre
 * (C) is the content node
 * (d) is a version prepared for future release
 * (X) is the version thats currently valid and online
-
-there is ONLY
-
-
-=== Linking contents of different languages
-
-following a link to a page that does not exist in the current language leads to a mediator page. the mediator page informs the user that the content is not available in the current language, but available in english, german etc.
-
-links CAN include the target language
-
-
-== Tags
-
-=== startpage handling
-
-Start pages of a tag are denoted by a relationship between the tag and the content

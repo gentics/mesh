@@ -10,8 +10,6 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
-
-
 	<artifactId>cailun-doc</artifactId>
 	<packaging>jar</packaging>
 	<name>Cailun - Documentation</name>
@@ -47,10 +45,99 @@
 			<version>8.4-4</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.raml</groupId>
+			<artifactId>raml-parser</artifactId>
+			<version>0.8.11</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.cailun</groupId>
+			<artifactId>cailun-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.cailun</groupId>
+			<artifactId>cailun-navigation</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.cailun</groupId>
+			<artifactId>cailun-tagcloud</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.cailun</groupId>
+			<artifactId>cailun-admin</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.cailun</groupId>
+			<artifactId>cailun-admin-gui</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+
+				</executions>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.3.2</version>
+				<executions>
+					<execution>
+						<id>Generate JSON files</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>pre-site</phase>
+						<configuration>
+							<executable>java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath/>
+								<argument>com.gentics.cailun.raml.Generator</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>packaging</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<attach>true</attach>
+							<descriptors>
+								<descriptor>src/assembly/raml2html.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- Process all .adoc files -->
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
@@ -94,7 +181,6 @@
 					<skipDeploy>true</skipDeploy>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
@@ -117,7 +203,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
-
 					<!-- unpack webjars -->
 					<execution>
 						<id>unpack-webjars</id>
@@ -149,25 +234,6 @@
 									<classifier>javadoc</classifier>
 									<overWrite>false</overWrite>
 									<outputDirectory>${project.build.directory}/site/docs/javadoc</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-raml</id>
-						<phase>site</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>cailun-raml-doc</artifactId>
-									<version>${project.version}</version>
-									<type>zip</type>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.directory}/site/docs/raml</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
@@ -235,8 +301,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-
 		</plugins>
 
 		<pluginManagement>
@@ -250,6 +314,25 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											exec-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.3.2,)
+										</versionRange>
+										<goals>
+											<goal>exec</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
@@ -277,6 +360,28 @@
 		</pluginManagement>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>mulesoft</id>
+			<name>mulesoft repo</name>
+			<url>https://repository.mulesoft.org/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.4.4</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.4.4</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<distributionManagement>
 		<site>

@@ -75,8 +75,9 @@ public class Generator {
 	}
 
 	public void start() throws IOException {
-		File baseDir = new File("target", "raml2html");
+		File baseDir = new File("target" + File.separator + "site" + File.separator + "docs" + File.separator + "raml");
 		outputDir = new File(baseDir, "json");
+		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");
 		outputDir.mkdirs();
 		// Raml raml = new Raml();
 
@@ -180,7 +181,7 @@ public class Generator {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("tag");
 		schemaReference.setSchemaUuid(getUUID());
-		
+
 		String lang = "en";
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
