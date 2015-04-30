@@ -119,25 +119,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>packaging</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
-							<attach>true</attach>
-							<descriptors>
-								<descriptor>src/assembly/raml2html.xml</descriptor>
-							</descriptors>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<!-- Process all .adoc files -->
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
