@@ -22,7 +22,7 @@ public interface ContentService extends GenericPropertyContainerService<Content>
 	 *            List of IETF language tags
 	 * @return Rest response pojo
 	 */
-	public ContentResponse transformToRest(RoutingContext rc, Content content, List<String> languageTags, int depth);
+	public ContentResponse transformToRest(RoutingContext rc, Content content);
 
 	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 

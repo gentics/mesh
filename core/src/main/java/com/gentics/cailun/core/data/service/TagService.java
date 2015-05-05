@@ -15,7 +15,7 @@ import com.gentics.cailun.paging.PagingInfo;
 
 public interface TagService extends GenericPropertyContainerService<Tag> {
 
-	TagResponse transformToRest(RoutingContext rc, Tag tag, List<String> languages, int depth);
+	TagResponse transformToRest(RoutingContext rc, Tag tag);
 
 	/**
 	 * Retrieve all visible tags in the given project.

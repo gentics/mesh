@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.data.service.tag;
+package com.gentics.cailun.core.data.service.transformation.tag;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,8 +14,8 @@ import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.service.content.ContentTraversalConsumer;
-import com.gentics.cailun.core.data.service.content.TransformationInfo;
+import com.gentics.cailun.core.data.service.transformation.TransformationInfo;
+import com.gentics.cailun.core.data.service.transformation.content.ContentTraversalConsumer;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
@@ -29,13 +29,13 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 	private Tag tag;
 	private TransformationInfo info;
 	private TagResponse restTag;
-	private int depth;
+	private int currentDepth;
 
 	public TagTransformationTask(Tag tag, TransformationInfo info, TagResponse restTag, int depth) {
 		this.tag = tag;
 		this.info = info;
 		this.restTag = restTag;
-		this.depth = depth;
+		this.currentDepth = depth;
 	}
 
 	public TagTransformationTask(Tag tag, TransformationInfo info, TagResponse restTag) {
@@ -97,18 +97,33 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 		} else {
 			restTag = foundTag;
 		}
+		
+//		if (currentDepth < info.getMaxDepth()) {
+//		}
 
-		if (depth < info.getMaxDepth()) {
-			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restTag, tasks);
+		if (info.isIncludeTags()) {
+			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
 			tag.getTags().parallelStream().forEachOrdered(tagConsumer);
-
-			ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, depth, restTag, tasks);
-			tag.getContents().parallelStream().forEachOrdered(contentConsumer);
+		} else {
+			restTag.setTags(null);
 		}
+
+		if (info.isIncludeContents()) {
+			ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, currentDepth, restTag, tasks);
+			tag.getContents().parallelStream().forEachOrdered(contentConsumer);
+		} else {
+			restTag.setContents(null);
+		}
+
+		if (info.isIncludeChildTags()) {
+			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
+			tag.getChildTags().parallelStream().forEachOrdered(tagConsumer);
+		} else {
+			restTag.setChildTags(null);
+		}
+
 		// Wait for our forked tasks
 		tasks.forEach(action -> action.join());
 		return null;
 	}
 }
-
-

@@ -55,7 +55,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addGroupRoleHandlers() {
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			Future<Integer> depthFuture = getDepth(rc);
 
 			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
 				loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
@@ -66,14 +65,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					}
 				}, trh -> {
 					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depthFuture.result())));
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
 			});
 
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			Future<Integer> depthFuture = getDepth(rc);
 
 			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
 				loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
@@ -84,7 +82,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					}
 				}, trh -> {
 					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depthFuture.result())));
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
 			});
 		});
@@ -93,7 +91,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupUserHandlers() {
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			Future<Integer> depthFuture = getDepth(rc);
 
 			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
 				loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
@@ -104,14 +101,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					}
 				}, trh -> {
 					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depthFuture.result())));
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
 			});
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			Future<Integer> depthFuture = getDepth(rc);
 
 			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
 				loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
@@ -122,7 +118,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					}
 				}, trh -> {
 					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depthFuture.result())));
+					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
 			});
 		});
@@ -144,7 +140,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			Future<Integer> depthFuture = getDepth(rc);
 			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
@@ -166,7 +161,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				group = groupService.save(group);
 			}, trh -> {
 				Group group = trh.result();
-				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depthFuture.result())));
+				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 			});
 
 		});
@@ -175,12 +170,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			Future<Integer> depthFuture = getDepth(rc);
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 			}, trh -> {
 				Group group = trh.result();
-				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(group, depthFuture.result())));
+				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 			});
 		});
 
@@ -189,15 +183,14 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 
-			PagingInfo pagingInfo = getPagingInfo(rc);
-			Future<Integer> depthFuture = getDepth(rc);
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<GroupListResponse> glr) -> {
 				GroupListResponse listResponse = new GroupListResponse();
 				User user = userService.findUser(rc);
 				Page<Group> groupPage = groupService.findAllVisible(user, pagingInfo);
 				for (Group group : groupPage) {
-					listResponse.getData().add(groupService.transformToRest(group, depthFuture.result()));
+					listResponse.getData().add(groupService.transformToRest(rc, group));
 				}
 				RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
 				glr.complete(listResponse);
@@ -218,8 +211,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
-			Future<Integer> depthFuture = getDepth(rc);
-
 			Future<Group> groupCreated = Future.future();
 
 			CaiLunRoot root = cailunRootService.findRoot();
@@ -230,7 +221,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				groupCreated.complete(group);
 			}, tch -> {
 				Group createdGroup = groupCreated.result();
-				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(createdGroup, depthFuture.result())));
+				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, createdGroup)));
 			});
 
 		});

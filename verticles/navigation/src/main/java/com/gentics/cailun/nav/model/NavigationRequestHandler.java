@@ -12,12 +12,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.cailun.auth.CaiLunAuthServiceImpl;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.Tag;
-import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
-import com.gentics.cailun.core.data.model.auth.PermissionType;
-import com.gentics.cailun.core.data.model.generic.GenericNode;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.repository.generic.GenericNodeRepository;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;

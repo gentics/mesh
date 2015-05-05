@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.data.service.content;
+package com.gentics.cailun.core.data.service.transformation;
 
 import io.vertx.ext.apex.RoutingContext;
 
@@ -31,16 +31,18 @@ public class TransformationInfo {
 	private ContentService contentService;
 	private I18NService i18nService;
 
+	// Configuration
+	private boolean includeTags;
+	private boolean includeContents;
+	private boolean includeChildTags;
 	private int maxDepth;
 
 	private List<String> languageTags = new ArrayList<>();
 
 	private Map<String, AbstractRestModel> objectReferences = new HashMap<>();
 
-	public TransformationInfo(RoutingContext rc, int maxDepth, List<String> languageTags) {
+	public TransformationInfo(RoutingContext rc) {
 		this.routingContext = rc;
-		this.maxDepth = maxDepth;
-		this.languageTags = languageTags;
 	}
 
 	public Map<String, AbstractRestModel> getObjectReferences() {
@@ -133,6 +135,30 @@ public class TransformationInfo {
 
 	public void setI18nService(I18NService i18nService) {
 		this.i18nService = i18nService;
+	}
+
+	public boolean isIncludeTags() {
+		return includeTags;
+	}
+
+	public void setIncludeTags(boolean includeTags) {
+		this.includeTags = includeTags;
+	}
+
+	public boolean isIncludeChildTags() {
+		return includeChildTags;
+	}
+
+	public void setIncludeChildTags(boolean includeChildTags) {
+		this.includeChildTags = includeChildTags;
+	}
+
+	public boolean isIncludeContents() {
+		return includeContents;
+	}
+
+	public void setIncludeContents(boolean includeContents) {
+		this.includeContents = includeContents;
 	}
 
 }

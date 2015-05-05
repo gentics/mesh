@@ -71,6 +71,7 @@ var paths = {
 
 var onError = function(e) {
 	console.log("Error: " + e.message);
+        console.dir(e);
 	process.exit(10);
 }
 

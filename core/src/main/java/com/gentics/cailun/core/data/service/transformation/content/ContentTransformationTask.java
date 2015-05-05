@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.data.service.content;
+package com.gentics.cailun.core.data.service.transformation.content;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,7 +15,8 @@ import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
-import com.gentics.cailun.core.data.service.tag.TagTraversalConsumer;
+import com.gentics.cailun.core.data.service.transformation.TransformationInfo;
+import com.gentics.cailun.core.data.service.transformation.tag.TagTraversalConsumer;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;

@@ -67,8 +67,8 @@ public class GenericPropertyContainer extends GenericNode {
 		return tags;
 	}
 
-	public void setTags(Set<Tag> childTags) {
-		this.tags = childTags;
+	public void setTags(Set<Tag> tags) {
+		this.tags = tags;
 	}
 
 	public boolean hasTag(Tag tag) {

@@ -191,7 +191,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			PagingInfo pagingInfo = getPagingInfo(rc);
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 			vertx.executeBlocking((Future<ObjectSchemaListResponse> bch) -> {
 				ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
 				User user = userService.findUser(rc);

@@ -1,4 +1,4 @@
-package com.gentics.cailun.core.data.service.content;
+package com.gentics.cailun.core.data.service.transformation.content;
 
 import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
@@ -9,6 +9,7 @@ import org.neo4j.graphdb.Transaction;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
+import com.gentics.cailun.core.data.service.transformation.TransformationInfo;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 

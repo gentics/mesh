@@ -15,9 +15,9 @@ import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Language;
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.auth.User;
-import com.gentics.cailun.core.data.service.content.ContentTransformationTask;
-import com.gentics.cailun.core.data.service.content.TransformationInfo;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
+import com.gentics.cailun.core.data.service.transformation.TransformationInfo;
+import com.gentics.cailun.core.data.service.transformation.content.ContentTransformationTask;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
@@ -75,8 +75,9 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 	}
 
 	@Override
-	public ContentResponse transformToRest(RoutingContext rc, Content content, List<String> languageTags, int depth) {
-		TransformationInfo info = new TransformationInfo(rc, depth, languageTags);
+	public ContentResponse transformToRest(RoutingContext rc, Content content) {
+
+		TransformationInfo info = new TransformationInfo(rc);
 		info.setUserService(userService);
 		info.setLanguageService(languageService);
 		info.setGraphDb(graphDb);

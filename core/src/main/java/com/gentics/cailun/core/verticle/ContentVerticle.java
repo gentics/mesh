@@ -85,7 +85,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
-			List<String> languageTags = getSelectedLanguageTags(rc);
+			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			if (StringUtils.isEmpty(requestModel.getTagUuid())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field")));
@@ -151,7 +151,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				contentCreated.complete(content);
 			}, trh -> {
 				Content content = contentCreated.result();
-				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
 			});
 
 		});
@@ -163,14 +163,14 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
-			Future<Integer> depthFuture = getDepth(rc);
+			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 
-			List<String> languageTags = getSelectedLanguageTags(rc);
+			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
 			}, trh -> {
 				Content content = trh.result();
-				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, depthFuture.result())));
+				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
 			});
 
 		});
@@ -178,9 +178,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
-			Future<Integer> depthFuture = getDepth(rc);
-			PagingInfo pagingInfo = getPagingInfo(rc);
+			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<ContentListResponse> bch) -> {
 				ContentListResponse listResponse = new ContentListResponse();
@@ -188,7 +188,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					User user = userService.findUser(rc);
 					Page<Content> contentPage = contentService.findAllVisible(user, projectName, languageTags, pagingInfo);
 					for (Content content : contentPage) {
-						listResponse.getData().add(contentService.transformToRest(rc, content, languageTags, depthFuture.result()));
+						listResponse.getData().add(contentService.transformToRest(rc, content));
 					}
 					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 					bch.complete(listResponse);
@@ -228,7 +228,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
+			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
 				Content content = rh.result();
@@ -272,7 +272,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					}
 				}, trh -> {
 					Content content = trh.result();
-					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content, languageTags, 0)));
+					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
 				});
 
 		});

@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import io.vertx.ext.apex.RoutingContext;
+
 import org.springframework.data.domain.Page;
 
 import com.gentics.cailun.core.data.model.auth.Group;
@@ -14,7 +16,7 @@ public interface GroupService extends GenericNodeService<Group> {
 
 	public Group findByUUID(String uuid);
 
-	public GroupResponse transformToRest(Group group, int depth);
+	public GroupResponse transformToRest(RoutingContext rc, Group group);
 
 	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo);
 

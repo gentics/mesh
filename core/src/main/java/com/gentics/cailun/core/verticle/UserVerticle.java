@@ -50,7 +50,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			Future<Integer> depthFuture = getDepth(rc);
+			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
 			}, trh -> {
 				User user = trh.result();
@@ -63,8 +63,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			PagingInfo pagingInfo = getPagingInfo(rc);
-			Future<Integer> depthFuture = getDepth(rc);
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 
 			vertx.executeBlocking((Future<UserListResponse> bch) -> {
 				UserListResponse listResponse = new UserListResponse();

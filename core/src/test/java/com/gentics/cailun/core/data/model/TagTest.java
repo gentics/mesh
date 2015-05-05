@@ -177,7 +177,7 @@ public class TagTest extends AbstractDBTest {
 		RoutingContext rc = getMockedRoutingContext();
 		for (int i = 0; i < 100; i++) {
 			long start = System.currentTimeMillis();
-			TagResponse response = tagService.transformToRest(rc, tag, languageTags, depth);
+			TagResponse response = tagService.transformToRest(rc, tag);
 			assertNotNull(response);
 			long dur = System.currentTimeMillis() - start;
 			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");

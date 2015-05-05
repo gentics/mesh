@@ -3,12 +3,6 @@ package com.gentics.cailun.core;
 import io.vertx.ext.apex.Router;
 import io.vertx.ext.apex.RoutingContext;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +21,6 @@ import com.gentics.cailun.etc.RouterStorage;
 public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
-
-	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
 
 	@Autowired
 	protected ProjectService projectService;
@@ -52,30 +44,5 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 	protected String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}
-
-	/**
-	 * Extracts the lang parameter values from the query.
-	 * 
-	 * @param rc
-	 * @return List of languages. List can be empty.
-	 */
-	protected List<String> getSelectedLanguageTags(RoutingContext rc) {
-		String query = rc.request().query();
-		Map<String, String> queryPairs;
-		try {
-			queryPairs = splitQuery(query);
-		} catch (UnsupportedEncodingException e) {
-			log.error("Could not decode query string.", e);
-			return new ArrayList<>();
-		}
-		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
-		if (value == null) {
-			return new ArrayList<>();
-		}
-		return new ArrayList<>(Arrays.asList(value.split(",")));
-
-	}
-
-
 
 }

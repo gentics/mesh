@@ -1,5 +1,7 @@
 package com.gentics.cailun.core.data.service;
 
+import io.vertx.ext.apex.RoutingContext;
+
 import java.util.Collections;
 
 import org.neo4j.cypher.EntityNotFoundException;
@@ -41,7 +43,7 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 
 	// TODO handle depth
 	@Override
-	public GroupResponse transformToRest(Group group, int depth) {
+	public GroupResponse transformToRest(RoutingContext rc, Group group) {
 		GroupResponse restGroup = new GroupResponse();
 		restGroup.setUuid(group.getUuid());
 		restGroup.setName(group.getName());

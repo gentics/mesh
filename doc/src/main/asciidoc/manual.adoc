@@ -7,6 +7,8 @@ Mesh - #def
 
 === What is Mesh?
 
+=== Hosting Solutions
 
+==== Cloud
 
-
+==== On premise

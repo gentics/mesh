@@ -15,6 +15,7 @@ import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.ObjectSchemaService;
 import com.gentics.cailun.core.data.service.ProjectService;
 import com.gentics.cailun.core.data.service.RoleService;
+import com.gentics.cailun.core.data.service.RoutingContextService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.data.service.UserService;
 import com.gentics.cailun.core.data.service.generic.GenericNodeService;
@@ -35,6 +36,9 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected RouterStorage routerStorage;
 
 	@Autowired
+	protected RoutingContextService rcs;
+
+	@Autowired
 	protected I18NService i18n;
 
 	@Autowired
@@ -42,7 +46,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	@Autowired
 	protected UserService userService;
-	
+
 	@Autowired
 	protected LanguageService languageService;
 
@@ -66,7 +70,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	@Autowired
 	protected ContentService contentService;
-	
+
 	@Autowired
 	protected TagService tagService;
 

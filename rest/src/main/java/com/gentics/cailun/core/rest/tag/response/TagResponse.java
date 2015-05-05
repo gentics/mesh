@@ -1,118 +1,18 @@
 package com.gentics.cailun.core.rest.tag.response;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.gentics.cailun.core.rest.common.response.AbstractTagContainerModel;
+import com.gentics.cailun.core.rest.common.response.AbstractTaggableModel;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
-import com.gentics.cailun.core.rest.schema.response.SchemaReference;
-import com.gentics.cailun.core.rest.user.response.UserResponse;
 
-public class TagResponse extends AbstractTagContainerModel {
-
-	private long order = 0;
-
-	private UserResponse creator;
-	private Map<String, Map<String, String>> properties = new HashMap<>();
+public class TagResponse extends AbstractTaggableModel {
 
 	private List<ContentResponse> contents = new ArrayList<>();
 
-	private SchemaReference schema;
-
-	private String[] perms = {};
+	private List<TagResponse> childTags = new ArrayList<>();
 
 	public TagResponse() {
-	}
-
-	/**
-	 * Return all properties for all languages that were loaded.
-	 * 
-	 * @return
-	 */
-	public Map<String, Map<String, String>> getProperties() {
-		return properties;
-	}
-
-	/**
-	 * Return the properties for the language with the given language key.
-	 * 
-	 * @param languageKey
-	 * @return
-	 */
-	public Map<String, String> getProperties(String languageKey) {
-		return properties.get(languageKey);
-	}
-
-	/**
-	 * Return the language specific property for the given language and the given key.
-	 * 
-	 * @param languageKey
-	 * @param key
-	 * @return
-	 */
-	public String getProperty(String languageKey, String key) {
-		Map<String, String> languageProperties = properties.get(languageKey);
-		if (languageProperties == null) {
-			return null;
-		}
-		return languageProperties.get(key);
-	}
-
-	/**
-	 * Add a language specific property to the set of properties.
-	 * 
-	 * @param languageKey
-	 * @param key
-	 * @param value
-	 */
-	public void addProperty(String languageKey, String key, String value) {
-		Map<String, String> map = properties.get(languageKey);
-		if (map == null) {
-			map = new HashMap<>();
-			properties.put(languageKey, map);
-		}
-		if (value != null) {
-			map.put(key, value);
-		}
-	}
-
-	public UserResponse getCreator() {
-		return creator;
-	}
-
-	public void setCreator(UserResponse creator) {
-		this.creator = creator;
-	}
-
-	public long getOrder() {
-		return order;
-	}
-
-	public void setOrder(long order) {
-		this.order = order;
-	}
-
-	/**
-	 * Returns the set of permissions that are granted for this tag.
-	 * 
-	 * @return
-	 */
-	public String[] getPerms() {
-		return perms;
-	}
-
-	public void setPerms(String... perms) {
-		this.perms = perms;
-	}
-
-	public SchemaReference getSchema() {
-		return schema;
-	}
-
-	public void setSchema(SchemaReference schema) {
-		this.schema = schema;
 	}
 
 	public List<ContentResponse> getContents() {
@@ -121,6 +21,14 @@ public class TagResponse extends AbstractTagContainerModel {
 
 	public void setContents(List<ContentResponse> contents) {
 		this.contents = contents;
+	}
+
+	public List<TagResponse> getChildTags() {
+		return childTags;
+	}
+
+	public void setChildTags(List<TagResponse> childTags) {
+		this.childTags = childTags;
 	}
 
 }

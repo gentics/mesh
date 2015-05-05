@@ -5,6 +5,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -146,7 +147,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadChildrenForRootTag() throws Exception {
 		RootTag root = data().getRootTag();
 		//TODO add content to root tag
-		
+
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + root.getUuid() + "/children", 200, "OK");
 
 	}
@@ -241,6 +242,65 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
+	}
+
+	@Test
+	public void testReadTagWithTagsDisabled() throws Exception {
+		Tag tag = data().getNews();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?tags=false", 200, "OK");
+		assertFalse(response.indexOf("\"tags\":") > 0);
+	}
+
+	@Test
+	public void testReadTagWithTagsEnabled() throws Exception {
+		Tag tag = data().getNews();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?tags=true", 200, "OK");
+		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		assertNotNull(restTag.getTags());
+	}
+
+	@Test
+	public void testReadTagWithContentsEnabled() throws Exception {
+		Tag tag = data().getNews();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?contents=true", 200, "OK");
+		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		assertNotNull(restTag.getContents());
+	}
+
+	@Test
+	public void testReadTagWithContentsDisabled() throws Exception {
+		Tag tag = data().getNews();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?contents=false", 200, "OK");
+		assertFalse("The contents field should not be loaded or returned in the response but it was. {" + response + "}",
+				response.indexOf("\"contents\":") > 0);
+	}
+
+	@Test
+	public void testReadTagWithChildTagsEnabled() throws Exception {
+		Tag tag = data().getNews();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childTags=true", 200, "OK");
+		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		assertNotNull(restTag.getChildTags());
+	}
+
+	@Test
+	public void testReadTagWithChildTagsDisabled() throws Exception {
+		Tag tag = data().getNews();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childTags=false", 200, "OK");
+		assertFalse(response.indexOf("\"childTags\":") > 0);
+
 	}
 
 	@Test

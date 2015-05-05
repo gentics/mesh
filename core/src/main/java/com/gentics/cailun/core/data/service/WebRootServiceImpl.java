@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.cailun.core.data.model.ObjectSchema;
 import com.gentics.cailun.core.data.model.Project;
-import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.relationship.BasicRelationships;
 import com.gentics.cailun.path.Path;
 import com.gentics.cailun.path.PathSegment;

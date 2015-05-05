@@ -95,7 +95,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).handler(rc -> {
 
-			PagingInfo pagingInfo = getPagingInfo(rc);
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 				RoleListResponse listResponse = new RoleListResponse();

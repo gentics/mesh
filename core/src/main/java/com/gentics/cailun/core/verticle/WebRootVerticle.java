@@ -70,7 +70,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			String projectName = getProjectName(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
+			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			vertx.executeBlocking((Future<GenericPropertyContainer> bch) -> {
 				Path nodePath = webrootService.findByProjectPath(projectName, path);
@@ -123,9 +123,9 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				if (arh.succeeded()) {
 					GenericPropertyContainer container = arh.result();
 					if (container instanceof Content) {
-						rc.response().end(toJson(contentService.transformToRest(rc, (Content) container, languageTags, 0)));
+						rc.response().end(toJson(contentService.transformToRest(rc, (Content) container)));
 					} else if (container instanceof Tag) {
-						rc.response().end(toJson(tagService.transformToRest(rc, (Tag) container, languageTags, 0)));
+						rc.response().end(toJson(tagService.transformToRest(rc, (Tag) container)));
 					}
 				} else {
 					rc.fail(new HttpStatusCodeErrorException(500, "error", arh.cause()));

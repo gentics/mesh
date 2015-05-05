@@ -1,5 +1,6 @@
 package com.gentics.cailun.core.data.service;
 
+import io.vertx.core.Future;
 import io.vertx.ext.apex.RoutingContext;
 
 import java.util.List;
@@ -16,9 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.cailun.core.data.model.Content;
 import com.gentics.cailun.core.data.model.Tag;
 import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
-import com.gentics.cailun.core.data.service.content.TransformationInfo;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
-import com.gentics.cailun.core.data.service.tag.TagTransformationTask;
+import com.gentics.cailun.core.data.service.transformation.TransformationInfo;
+import com.gentics.cailun.core.data.service.transformation.tag.TagTransformationTask;
 import com.gentics.cailun.core.repository.TagRepository;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.etc.CaiLunSpringConfiguration;
@@ -52,12 +53,15 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private RoutingContextService rcs;
+
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	@Override
-	public TagResponse transformToRest(RoutingContext rc, Tag tag, List<String> languageTags, int depth) {
+	public TagResponse transformToRest(RoutingContext rc, Tag tag) {
 
-		TransformationInfo info = new TransformationInfo(rc, depth, languageTags);
+		TransformationInfo info = new TransformationInfo(rc);
 		info.setUserService(userService);
 		info.setLanguageService(languageService);
 		info.setGraphDb(graphDb);
@@ -65,6 +69,16 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		info.setSpringConfiguration(springConfiguration);
 		info.setTagService(this);
 		info.setNeo4jTemplate(neo4jTemplate);
+		
+		// Configuration
+//		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+//		Future<Integer> depthFuture = rcs.getDepthParameter(rc);
+		Future<Boolean> tagsIncludeFuture = rcs.getTagsIncludeParameter(rc);
+		info.setIncludeTags(tagsIncludeFuture.result());
+		Future<Boolean> contentIncludeFuture = rcs.getContentsIncludeParameter(rc);
+		info.setIncludeContents(contentIncludeFuture.result());
+		Future<Boolean> childTagIncludeFuture = rcs.getChildTagIncludeParameter(rc);
+		info.setIncludeChildTags(childTagIncludeFuture.result());
 
 		TagResponse restTag = new TagResponse();
 		TagTransformationTask task = new TagTransformationTask(tag, info, restTag);
@@ -97,8 +111,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	}
 
 	@Override
-	public Page<Content> findAllVisibleContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags,
-			PagingInfo pagingInfo) {
+	public Page<Content> findAllVisibleContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 
@@ -110,7 +123,8 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	}
 
 	@Override
-	public Page<? extends GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<? extends GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag,
+			List<String> languageTags, PagingInfo pagingInfo) {
 		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 
@@ -118,6 +132,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 			return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, pr);
 		} else {
 			return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, languageTags, pr);
-		}	}
+		}
+	}
 
 }
