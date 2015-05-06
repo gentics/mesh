@@ -62,6 +62,6 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<? extends GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

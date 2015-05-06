@@ -26,9 +26,7 @@ public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 			+ "RETURN count(DISTINCT tag)")
 	public Page<Tag> findAll(String userUuid, String projectName, List<String> languageTags, Pageable pageable);
 
-	@Query(
-
-	value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
 			+ "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
 			+ "WHERE requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
 			+ "WITH p, tag "
@@ -39,9 +37,7 @@ public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 			+ "WHERE requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} " + "RETURN count(DISTINCT tag)")
 	public Page<Tag> findAll(String userUuid, String projectName, Pageable pageable);
 
-	@Query(
-
-	value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
 			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
 			+ "MATCH (rootTag)-[:HAS_TAG]->(subTag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
 			+ "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
@@ -54,9 +50,7 @@ public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 			+ "RETURN count(DISTINCT subTag)")
 	public Page<Tag> findAllTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, Pageable pr);
 
-	@Query(
-
-	value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
 			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
 			+ "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
 			+ "MATCH (rootTag)-[:HAS_TAG]->(subTag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  " + "WITH p, subTag "
@@ -69,9 +63,7 @@ public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 			+ "RETURN count(DISTINCT subTag)")
 	public Page<Tag> findAllTags(String userUuid, String projectName, Tag rootTag, Pageable pr);
 
-	@Query(
-
-	value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
 			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
 			+ "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
 			+ "MATCH (rootTag)-[:HAS_CONTENT]->(subContent:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  " + "WITH p, subContent "
@@ -84,9 +76,7 @@ public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 			+ "RETURN count(DISTINCT subContent)")
 	public Page<Content> findAllVisibleContents(String userUuid, String projectName, Tag rootTag, Pageable pr);
 
-	@Query(
-
-	value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
 			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
 			+ "MATCH (rootTag)-[:HAS_CONTENT]->(subContent:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
 			+ "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
@@ -99,11 +89,31 @@ public interface TagRepository extends GenericPropertyContainerRepository<Tag> {
 			+ "RETURN count(DISTINCT subContent)")
 	public Page<Content> findAllVisibleContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, Pageable pr);
 
-	@Query()
-	public Page<? extends GenericPropertyContainer> findAllVisibleChildNodes(String userUuid, String projectName, Tag rootTag,
-			List<String> languageTags, Pageable pr);
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+			+ "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+			+ "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+			+ "WITH p, childNode " + "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT childNode",
 
-	@Query()
-	public Page<? extends GenericPropertyContainer> findAllVisibleChildNodes(String userUuid, String projectName, Tag rootTag, Pageable pr);
+	countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+			+ "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+			+ "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+			+ "RETURN count(DISTINCT childNode)")
+	public Page<GenericPropertyContainer> findAllVisibleChildNodes(String userUuid, String projectName, Tag rootTag, List<String> languageTags,
+			Pageable pr);
+
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+			+ "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+			+ "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) WITH p, childNode "
+			+ "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT childNode",
+
+	countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+			+ "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+			+ "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  "
+			+ "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+			+ "RETURN count(DISTINCT childNode)")
+	public Page<GenericPropertyContainer> findAllVisibleChildNodes(String userUuid, String projectName, Tag rootTag, Pageable pr);
 
 }

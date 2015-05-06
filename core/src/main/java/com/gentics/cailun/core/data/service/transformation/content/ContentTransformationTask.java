@@ -2,6 +2,7 @@ package com.gentics.cailun.core.data.service.transformation.content;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
@@ -17,6 +18,7 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.transformation.TransformationInfo;
 import com.gentics.cailun.core.data.service.transformation.tag.TagTraversalConsumer;
+import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.error.HttpStatusCodeErrorException;
@@ -41,6 +43,18 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 
 	public ContentTransformationTask(Content content, TransformationInfo info, ContentResponse restContent) {
 		this(content, info, restContent, 0);
+	}
+
+	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
+		// TODO fix issues with generics - Maybe move the link replacer to a
+		// spring service
+		// TODO handle language
+		//		@Autowired
+		//		private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
+		//		Language language = null;
+		//		LinkReplacer replacer = new LinkReplacer(resolver);
+		// content.setContent(language,
+		// replacer.replace(content.getContent(language)));
 	}
 
 	@Override

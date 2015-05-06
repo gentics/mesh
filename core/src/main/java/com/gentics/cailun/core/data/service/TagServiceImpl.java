@@ -69,10 +69,11 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		info.setSpringConfiguration(springConfiguration);
 		info.setTagService(this);
 		info.setNeo4jTemplate(neo4jTemplate);
-		
+
 		// Configuration
-//		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-//		Future<Integer> depthFuture = rcs.getDepthParameter(rc);
+		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+		info.setLanguageTags(languageTags);
+		//		Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 		Future<Boolean> tagsIncludeFuture = rcs.getTagsIncludeParameter(rc);
 		info.setIncludeTags(tagsIncludeFuture.result());
 		Future<Boolean> contentIncludeFuture = rcs.getContentsIncludeParameter(rc);
@@ -123,7 +124,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	}
 
 	@Override
-	public Page<? extends GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag,
+	public Page<GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag,
 			List<String> languageTags, PagingInfo pagingInfo) {
 		CaiLunPageRequest pr = new CaiLunPageRequest(pagingInfo);
 		String userUuid = rc.session().getPrincipal().getString("uuid");

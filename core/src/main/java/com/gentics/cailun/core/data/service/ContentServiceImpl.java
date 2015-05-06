@@ -18,6 +18,8 @@ import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.cailun.core.data.service.transformation.TransformationInfo;
 import com.gentics.cailun.core.data.service.transformation.content.ContentTransformationTask;
+import com.gentics.cailun.core.link.CaiLunLinkResolver;
+import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
 import com.gentics.cailun.core.repository.ContentRepository;
 import com.gentics.cailun.core.repository.GroupRepository;
 import com.gentics.cailun.core.rest.content.response.ContentResponse;

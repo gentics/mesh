@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -268,7 +269,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?contents=true", 200, "OK");
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childContents=true", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		assertNotNull(restTag.getContents());
 	}
@@ -278,7 +279,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getNews();
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?contents=false", 200, "OK");
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childContents=false", 200, "OK");
 		assertFalse("The contents field should not be loaded or returned in the response but it was. {" + response + "}",
 				response.indexOf("\"contents\":") > 0);
 	}
@@ -304,6 +305,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("removed depth param")
 	public void testReadTagByUUIDWithDepthParam() throws Exception {
 
 		Tag tag = data().getNews();
@@ -377,10 +379,14 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
+		System.out.println(response);
 		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
 		try (Transaction tx = graphDb.beginTx()) {
 			String name = tagService.getName(tag, data().getEnglish());
-			assertEquals(name, tagResponse.getProperty("en", "name"));
+			assertNotNull("The name of the tag should be loaded.", name);
+			String restName = tagResponse.getProperty("en", "name");
+			assertNotNull("The english name should be listed in the rest response since we requested the english tag", restName);
+			assertEquals(name, restName);
 			tx.success();
 		}
 

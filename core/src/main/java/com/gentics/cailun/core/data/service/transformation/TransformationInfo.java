@@ -36,9 +36,9 @@ public class TransformationInfo {
 	private boolean includeContents;
 	private boolean includeChildTags;
 	private int maxDepth;
-
 	private List<String> languageTags = new ArrayList<>();
 
+	// Storage for object references
 	private Map<String, AbstractRestModel> objectReferences = new HashMap<>();
 
 	public TransformationInfo(RoutingContext rc) {
@@ -65,6 +65,10 @@ public class TransformationInfo {
 		return languageTags;
 	}
 
+	public void setLanguageTags(List<String> languageTags) {
+		this.languageTags = languageTags;
+	}
+	
 	public LanguageService getLanguageService() {
 		return languageService;
 	}

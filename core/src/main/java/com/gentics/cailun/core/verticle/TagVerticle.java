@@ -92,7 +92,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = getProjectName(rc);
 			TagListResponse listResponse = new TagListResponse();
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 
 			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
 				Tag rootTag = rh.result();
@@ -112,10 +111,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route postRoute = route("/:tagUuid/tags/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-
-			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 
@@ -133,10 +130,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route deleteRoute = route("/:tagUuid/tags/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 					tag.removeTag(subTag);
@@ -159,10 +155,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
-			String uuid = rc.request().params().get("uuid");
-
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			loadObjectByUuid(rc, uuid, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+			loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
@@ -258,7 +252,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	// TODO filtering, sorting
 	// TODO check filtering by project name
 	private void addReadHandler() {
-
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "uuid", PermissionType.READ, null, (AsyncResult<Tag> trh) -> {
@@ -294,11 +287,11 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
-			String uuid = rc.request().params().get("uuid");
-			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Tag> rh) -> {
+			loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 				tagService.delete(tag);
 			}, trh -> {
+				String uuid = rc.request().params().get("uuid");
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
 			});
 		});
@@ -318,18 +311,18 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			loadObject(
 					rc,
 					"uuid",
+					projectName,
 					PermissionType.READ,
 					(AsyncResult<Tag> rh) -> {
 						Tag rootTag = rh.result();
 
 						PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-						Page<? extends GenericPropertyContainer> containerPage = tagService.findAllVisibleChildNodes(rc, projectName, rootTag,
+						Page<GenericPropertyContainer> containerPage = tagService.findAllVisibleChildNodes(rc, projectName, rootTag,
 								languageTags, pagingInfo);
 						for (GenericPropertyContainer container : containerPage) {
 							if (container instanceof Content) {
-								listResponse.getData().add(
-										contentService.transformToRest(rc, (Content) container));
+								listResponse.getData().add(contentService.transformToRest(rc, (Content) container));
 							} else if (container instanceof Tag) {
 								listResponse.getData().add(tagService.transformToRest(rc, (Tag) container));
 							} else {
@@ -345,9 +338,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route postRoute = route("/:tagUuid/children/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-
-			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 
@@ -365,10 +357,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route deleteRoute = route("/:tagUuid/children/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-
-			loadObject(rc, "tagUuid", PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 					tag.removeTag(subTag);

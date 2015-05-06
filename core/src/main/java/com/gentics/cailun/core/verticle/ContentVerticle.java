@@ -12,7 +12,6 @@ import io.vertx.ext.apex.Route;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -35,9 +34,6 @@ import com.gentics.cailun.core.data.model.auth.CaiLunPermission;
 import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.model.auth.User;
 import com.gentics.cailun.core.data.model.relationship.Translated;
-import com.gentics.cailun.core.link.CaiLunLinkResolver;
-import com.gentics.cailun.core.link.CaiLunLinkResolverFactoryImpl;
-import com.gentics.cailun.core.link.LinkReplacer;
 import com.gentics.cailun.core.repository.ObjectSchemaRepository;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.content.request.ContentCreateRequest;
@@ -56,9 +52,6 @@ import com.gentics.cailun.util.RestModelPagingHelper;
 public class ContentVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
-
-	@Autowired
-	private CaiLunLinkResolverFactoryImpl<CaiLunLinkResolver> resolver;
 
 	@Autowired
 	private ObjectSchemaRepository objectSchemaRepository;
@@ -85,7 +78,6 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			if (StringUtils.isEmpty(requestModel.getTagUuid())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field")));
@@ -94,7 +86,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 			Future<Content> contentCreated = Future.future();
 
-			loadObjectByUuid(rc, requestModel.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
+			loadObjectByUuid(rc, requestModel.getTagUuid(), projectName, PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 
 				Tag rootTagForContent = rh.result();
 				Content content = new Content();
@@ -145,7 +137,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 				content = contentService.save(content);
 
 				/* Assign the content to the tag and save the tag */
-				rootTagForContent.addContent(content);
+//				rootTagForContent.(content);
 				rootTagForContent = tagService.save(rootTagForContent);
 
 				contentCreated.complete(content);
@@ -163,11 +155,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = getProjectName(rc);
-			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
-
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-
-			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
+			loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
 			}, trh -> {
 				Content content = trh.result();
 				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
@@ -179,7 +167,6 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		readAllRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<ContentListResponse> bch) -> {
@@ -205,13 +192,12 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
 			String projectName = getProjectName(rc);
-
-			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Content> rh) -> {
+			loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Content> rh) -> {
 				Content content = rh.result();
 				contentService.delete(content);
 			}, trh -> {
+				String uuid = rc.request().params().get("uuid");
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "content_deleted", uuid))));
 			});
 		});
@@ -230,7 +216,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			String projectName = getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Content> rh) -> {
+			loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
 				Content content = rh.result();
 
 				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
@@ -278,14 +264,6 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		});
 	}
 
-	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
-		// TODO fix issues with generics - Maybe move the link replacer to a
-		// spring service
-		// TODO handle language
-		Language language = null;
-		LinkReplacer replacer = new LinkReplacer(resolver);
-		// content.setContent(language,
-		// replacer.replace(content.getContent(language)));
-	}
+
 
 }

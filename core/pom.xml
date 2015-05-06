@@ -111,32 +111,12 @@
 			<version>1.2.3</version>
 		</dependency>
 
-		<!-- HDFS / Binary FS -->
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-hdfs</artifactId>
-			<version>2.7.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-client</artifactId>
-			<version>2.7.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
-			<version>2.7.0</version>
-		</dependency>
-
-
-
 		<!-- UUID Support -->
 		<dependency>
 			<groupId>com.fasterxml.uuid</groupId>
 			<artifactId>java-uuid-generator</artifactId>
 			<version>3.1.4</version>
 		</dependency>
-
 
 		<!-- Bcrypt -->
 		<dependency>

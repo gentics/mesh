@@ -168,6 +168,11 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		loadObject(rc, uuidParamName, permType, resultHandler, null);
 	}
 
+	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName,  String projectName, PermissionType permType,
+			Handler<AsyncResult<T>> resultHandler) { 
+		loadObject(rc, uuidParamName, projectName, permType, resultHandler, null);
+	}
+
 	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
 

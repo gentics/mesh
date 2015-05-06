@@ -8,7 +8,7 @@ import com.gentics.cailun.core.rest.content.response.ContentResponse;
 
 public class TagResponse extends AbstractTaggableModel {
 
-	private List<ContentResponse> contents = new ArrayList<>();
+	private List<ContentResponse> childContents = new ArrayList<>();
 
 	private List<TagResponse> childTags = new ArrayList<>();
 
@@ -16,11 +16,11 @@ public class TagResponse extends AbstractTaggableModel {
 	}
 
 	public List<ContentResponse> getContents() {
-		return contents;
+		return childContents;
 	}
 
 	public void setContents(List<ContentResponse> contents) {
-		this.contents = contents;
+		this.childContents = contents;
 	}
 
 	public List<TagResponse> getChildTags() {
