@@ -12,7 +12,7 @@ public final class RestModelPagingHelper {
 	public static void setPaging(AbstractListResponse<? extends AbstractRestModel> response, Page<?> page, PagingInfo pagingInfo) {
 		PagingMetaInfo info = response.getMetainfo();
 		info.setCurrentPage(page.getNumber() + 1);
-		info.setPageCount(page.getTotalPages()+1);
+		info.setPageCount(page.getTotalPages());
 		info.setPerPage(pagingInfo.getPerPage());
 		info.setTotalCount(page.getTotalElements());
 	}

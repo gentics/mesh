@@ -29,7 +29,9 @@ import com.gentics.cailun.core.data.model.auth.PermissionType;
 import com.gentics.cailun.core.data.service.ContentService;
 import com.gentics.cailun.core.data.service.TagService;
 import com.gentics.cailun.core.rest.content.response.ContentListResponse;
+import com.gentics.cailun.core.rest.content.response.ContentResponse;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
+import com.gentics.cailun.core.rest.tag.response.TagChildrenListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.test.AbstractRestVerticleTest;
@@ -159,13 +161,22 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		int perPage = 6;
 		int page = 1;
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/children/?per_page=" + perPage
-				+ "&page=" + page, 200, "OK");
-		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
-		assertEquals(2, tagList.getData().size());
-		assertEquals(2, tagList.getMetainfo().getTotalCount());
-		assertEquals(2, tagList.getMetainfo().getPageCount());
-		assertEquals(page, tagList.getMetainfo().getCurrentPage());
-		// TODO assert two tags
+				+ "&page=" + page + "&lang=en", 200, "OK");
+		TagChildrenListResponse listResponse = JsonUtils.readValue(response, TagChildrenListResponse.class);
+		assertEquals(3, listResponse.getData().size());
+		assertEquals(3, listResponse.getMetainfo().getTotalCount());
+		assertEquals(1, listResponse.getMetainfo().getPageCount());
+		assertEquals(page, listResponse.getMetainfo().getCurrentPage());
+
+		System.out.println(listResponse.getData().get(0).getClass());
+		ContentResponse foundContent = (ContentResponse) listResponse.getData().get(0);
+		assertEquals("News Overview english", foundContent.getProperty("en", "name"));
+
+		TagResponse foundTag = (TagResponse) listResponse.getData().get(1);
+		assertEquals("2015", foundTag.getProperty("en", "name"));
+
+		TagResponse foundTag2 = (TagResponse) listResponse.getData().get(2);
+		assertEquals("2014", foundTag2.getProperty("en", "name"));
 	}
 
 	@Test

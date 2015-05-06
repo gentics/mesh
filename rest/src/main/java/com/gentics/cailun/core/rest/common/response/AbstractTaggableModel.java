@@ -9,7 +9,7 @@ import com.gentics.cailun.core.rest.schema.response.SchemaReference;
 import com.gentics.cailun.core.rest.tag.response.TagResponse;
 import com.gentics.cailun.core.rest.user.response.UserResponse;
 
-public abstract class AbstractTaggableModel extends AbstractRestModel {
+public class AbstractTaggableModel extends AbstractRestModel {
 
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 
@@ -21,6 +21,9 @@ public abstract class AbstractTaggableModel extends AbstractRestModel {
 	private long order = 0;
 	private UserResponse creator;
 	private String parentTagUuid;
+
+	public AbstractTaggableModel() {
+	}
 
 	public UserResponse getCreator() {
 		return creator;

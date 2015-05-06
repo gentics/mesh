@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 public class AbstractListResponse<T extends AbstractRestModel> {
 
@@ -23,6 +25,7 @@ public class AbstractListResponse<T extends AbstractRestModel> {
 		this.metainfo = metainfo;
 	}
 
+	@JsonTypeInfo(use = Id.CLASS)
 	public List<T> getData() {
 		return data;
 	}

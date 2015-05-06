@@ -35,11 +35,10 @@ import com.gentics.cailun.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.cailun.core.data.model.relationship.Translated;
 import com.gentics.cailun.core.data.service.LanguageService;
 import com.gentics.cailun.core.data.service.TagService;
-import com.gentics.cailun.core.rest.common.response.AbstractListResponse;
-import com.gentics.cailun.core.rest.common.response.AbstractTaggableModel;
 import com.gentics.cailun.core.rest.common.response.GenericMessageResponse;
 import com.gentics.cailun.core.rest.tag.request.TagCreateRequest;
 import com.gentics.cailun.core.rest.tag.request.TagUpdateRequest;
+import com.gentics.cailun.core.rest.tag.response.TagChildrenListResponse;
 import com.gentics.cailun.core.rest.tag.response.TagListResponse;
 import com.gentics.cailun.paging.PagingInfo;
 import com.gentics.cailun.util.RestModelPagingHelper;
@@ -305,7 +304,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route getRoute = route("/:uuid/children/").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
 			String projectName = getProjectName(rc);
-			AbstractListResponse<AbstractTaggableModel> listResponse = new AbstractListResponse<>();
+			TagChildrenListResponse listResponse = new TagChildrenListResponse();
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			loadObject(

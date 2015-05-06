@@ -338,6 +338,8 @@ public class DemoDataProvider {
 		// News - 2014
 		news = addTag(rootTag, "News", "Neuigkeiten", tagSchema);
 
+		Content newsIndexPage = addContent(news, "News Overview", "News Overview", "News Übersicht", contentSchema);
+		
 		Tag news2014 = addTag(news, "2014", null, tagSchema);
 
 		Tag news2014March = addTag(news2014, "March", null, tagSchema);
@@ -518,9 +520,9 @@ public class DemoDataProvider {
 		tag.addProject(project);
 		tag.setSchema(schema);
 		tag.setCreator(userInfo.getUser());
+		tag.setParent(rootTag);
 		tag = tagService.save(tag);
-		rootTag.setParent(tag);
-		tagService.save(rootTag);
+//		tagService.save(rootTag);
 		totalTags++;
 		return tag;
 	}
@@ -541,9 +543,8 @@ public class DemoDataProvider {
 		content.setCreator(userInfo.getUser());
 		content.setSchema(schema);
 		content.setOrder(42);
-		content = contentService.save(content);
 		content.setParent(parentTag);
-		contentService.save(content);
+		content = contentService.save(content);
 		// Add the content to the given tag
 		//		parentTag.addContent(content);
 		//		parentTag = tagService.save(parentTag);
