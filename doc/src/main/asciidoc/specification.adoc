@@ -19,8 +19,7 @@ A project is the root element for a tag hierarchy. Schemas can be assigned to th
 Tags are one of main structural building blocks. Tags can be hierarchically structured. The root tag of this hierarchy is always bound to a specific project. Tags can also be tagged by other tags. The hierarchically structure is mainly used to organise tags.   
 
 Tags can have i18n properties which are specified by the schema.
-
- * TagVerticle
+Tags can be manipulated using the  TagVerticle class.
 
 === Startpage handling
 
@@ -29,8 +28,7 @@ Start pages of a tag are denoted by a relationship between the tag and the conte
 == Contents
 
 Contents are similar to tags with one major exception. Contents can not be nested. This means a content does not have a parent child relationship to another content. Only tags have this kind of relationship. A content can only have one parent tag. Contents can be tagged by any number of tags.
-
- * ContentVerticle
+Contents can be manipulated using the ContentVerticle class.
 
 === Object Relationships
 
@@ -42,15 +40,14 @@ It should be possible to create arbitrary relationships between contents / tags 
 
 Following a link to a page that does not exist in the current language leads to a mediator page. The mediator page informs the user that the content is not available in the current language, but available in english, german etc.
 
-Links CAN include the target language
-
+Links CAN include the target language.
 
 == Paging
 
 * /tags
 * /contents
 
-Tags have tags and cildren. Both can be filtered and paged individually within the tag or content response.
+Tags have tags and children. Both can be filtered and paged individually within the tag or content response.
 
 == Schemas 
 
@@ -59,8 +56,16 @@ Schemas can be created using the schemas verticle. The schema defines the type a
 A tag must only have a single parent.
 
 The root Tag of a project can not be deleted.
+Schemas can be manipulated using the ObjectSchemaVerticle class.
+Schema updates must directly be synchronized with all affected contents.
 
- * ObjectSchemaVerticle
+== Microschemas
+
+A microschemas is a blueprint for a content element that can be added to a content property. In this way it is similar to a schemas.
+Typical examples for microschemas are image galleries, vcard boxes, text segments.
+Microschemas can not be nested. Content elements that were created using microschemas can be sorted within the context of the parent content property.
+The schema for the content defines property types that can be used when creating a new content. It is possible to set a whitelist of microschemas for a property type. When whitelisting microschemas it is not possible to insert a content element of an microschema type that is not allowed by the whitelist. 
+A microschema can contain references to a binary contents. This is important if a microschemas is used to create a datastructure for an image gallery. 
 
 == Permissions / ACL
 
