@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>cailun-demo-java</artifactId>
+	<artifactId>mesh-demo-java</artifactId>
 	<packaging>jar</packaging>
-	<name>Cailun - Examples - Java Demo</name>
+	<name>Mesh - Examples - Java Demo</name>
 
 	<parent>
-		<groupId>com.gentics.cailun</groupId>
-		<artifactId>cailun-examples</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh-examples</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
@@ -22,23 +22,23 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-core</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-navigation</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-navigation</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-tagcloud</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tagcloud</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-admin-gui</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -58,8 +58,8 @@
 					<dockerHost>http://cetus.office:2375</dockerHost>
 					<images>
 						<image>
-							<name>gentics/cailun:0.1</name>
-							<alias>cailun</alias>
+							<name>gentics/mesh:0.1</name>
+							<alias>mesh</alias>
 							<build>
 								<from>java:8u40</from>
 								<assembly>
@@ -68,15 +68,15 @@
 								<ports>
 									<port>8080</port>
 								</ports>
-								<command>java -jar /maven/cailun.jar</command>
+								<command>java -jar /maven/mesh.jar</command>
 							</build>
 							<!-- Running the container -->
 							<run>
 								<ports>
-									<port>cailun.port:8080</port>
+									<port>mesh.port:8080</port>
 								</ports>
 								<wait>
-									<url>http://${dockerIP}:${cailun.port}/api/v1/admin/status</url>
+									<url>http://${dockerIP}:${mesh.port}/api/v1/admin/status</url>
 									<log>.*Initalized project.*</log>
 									<time>50000</time>
 								</wait>
@@ -122,7 +122,7 @@
 				<configuration>
 					<propertiesUser>
 						<webservice.host>${dockerIP}</webservice.host>
-						<webservice.port>${cailun.port}</webservice.port>
+						<webservice.port>${mesh.port}</webservice.port>
 					</propertiesUser>
 				</configuration>
 			</plugin>
@@ -156,7 +156,7 @@
 				</executions>
 				<configuration>
 					<systemPropertyVariables>
-						<cailun.url>http://${dockerIP}:${cailun.port}</cailun.url>
+						<mesh.url>http://${dockerIP}:${mesh.port}</mesh.url>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
@@ -167,7 +167,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>com.gentics.cailun.demo.DemoRunner</mainClass>
+							<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -196,7 +196,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.gentics.cailun.demo.DemoRunner</mainClass>
+									<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

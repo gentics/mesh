@@ -25,7 +25,7 @@ RUN rm /etc/apache2/sites-enabled/*
 RUN rm /var/www/index.html
 EXPOSE 80
 
-#CaiLun
+#Mesh
 EXPOSE 8080
 EXPOSE 7474
 
@@ -35,14 +35,11 @@ RUN echo 'root:finger' | chpasswd
 RUN sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 EXPOSE 22
 
-RUN mkdir -p /opt/cailun
-ADD ./cailun-starter.jar /opt/cailun/
+RUN mkdir -p /opt/mesh
+ADD ./mesh-starter.jar /opt/mesh/
 ADD ./demo/ /var/www/
-ADD ./cailun-demo.conf /etc/apache2/sites-enabled/
+ADD ./mesh-demo.conf /etc/apache2/sites-enabled/
 
 # Add init script
 ADD ./startup.sh /opt/startup.sh
 CMD ["/bin/bash", "/opt/startup.sh"]
-
-    
-    

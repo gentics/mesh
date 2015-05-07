@@ -1,16 +1,16 @@
 <?php
 
-namespace Gentics\CaiLunDemo;
+namespace Gentics\MeshDemo;
 
 ini_set ( 'display_errors', 'on' );
 
-require_once __DIR__ . '/cailun.php';
+require_once __DIR__ . '/mesh-client.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
-$cailun = new CaiLunPHPDemo ( "joe1", "test123", "dummy");
-// $cailun->handleRequest ();
+$mesh = new MeshPHPDemo ( "joe1", "test123", "dummy");
+// $mesh->handleRequest ();
 
-var_dump($cailun->webroot("/2014"));
+var_dump($mesh->webroot("/2014"));
 
 die();
 
@@ -21,7 +21,7 @@ $app->register ( new \Silex\Provider\TwigServiceProvider (), array (
 ) );
 
 $app->get ( '/{path}', function ($path) use($app) {
-// 	$cailun->webroot($path);
+// 	$mesh->webroot($path);
 	$page = array();
 	$page['content'] = "hallo";
 	$page['title'] = "du";

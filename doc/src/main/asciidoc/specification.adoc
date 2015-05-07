@@ -6,7 +6,7 @@
 
 == Verticles
 
-CaiLun consists of various [Vert.x](http://vertx.io/) verticles. Each verticle provides REST endpoints that enable CRUD operations on core entities.
+Mesh consists of various [Vert.x](http://vertx.io/) verticles. Each verticle provides REST endpoints that enable CRUD operations on core entities.
 
 == Projects
 

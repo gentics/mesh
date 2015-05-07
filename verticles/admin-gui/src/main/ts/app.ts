@@ -17,7 +17,7 @@ module CLAdminUi {
 		return 'text';
 	}
 
-	angular.module('cailunAdminInterface', ['ngRoute'])
+	angular.module('meshAdminInterface', ['ngRoute'])
 		.config(['$routeProvider', function ($routeProvider) {
 			$routeProvider.
 				when('/list/', {

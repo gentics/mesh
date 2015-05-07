@@ -7,10 +7,10 @@
 		<dependencySet>
 			<useProjectArtifact>true</useProjectArtifact>
 			<includes>
-				<include>com.gentics.cailun:cailun-demo-java</include>
+				<include>com.gentics.mesh:mesh-demo-java</include>
 			</includes>
 			<outputDirectory>.</outputDirectory>
-			<outputFileNameMapping>cailun.jar</outputFileNameMapping>
+			<outputFileNameMapping>mesh.jar</outputFileNameMapping>
 		</dependencySet>
 	</dependencySets>
 </assembly>

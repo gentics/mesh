@@ -1,8 +1,8 @@
-# Cai Lun
+# Mesh
 
 ## Usage 
 
-java -jar cailun.jar
+java -jar mesh.jar
 
 ## Development
 

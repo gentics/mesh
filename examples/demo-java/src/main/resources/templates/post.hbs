@@ -9,7 +9,7 @@
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>{{cailun.page.title}}</title>
+    <title>{{mesh.page.title}}</title>
 
     <link rel="shortcut icon" href="/img/g_logo_small.png" type="image/png" />
 
@@ -79,9 +79,9 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
-                        <h1>{{cailun.page.title}}</h1>
-                        <h2 class="subheading">{{cailun.page.teaser}}</h2>
-                        <span class="meta">Posted by <a href="#">{{cailun.page.author}}</a> on {{cailun.page.date}}</span>
+                        <h1>{{mesh.page.title}}</h1>
+                        <h2 class="subheading">{{mesh.page.teaser}}</h2>
+                        <span class="meta">Posted by <a href="#">{{mesh.page.author}}</a> on {{mesh.page.date}}</span>
                     </div>
                 </div>
             </div>
@@ -93,11 +93,11 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="main_content">
-                        {{cailun-page-content}}
+                        {{mesh-page-content}}
                     </div>
                     <div class="tagcloud"></div>
                     <div class="navigation">
-                        {{cailun.navigation}}
+                        {{mesh.navigation}}
                     </div>
                 </div>
             </div>
@@ -154,7 +154,7 @@
     <!-- Custom Theme JavaScript -->
     <script src="/js/clean-blog.min.js"></script>
     <script>
-        window.pageId = ${cailun.page.id};
+        window.pageId = ${mesh.page.id};
     </script>
     <script src="/js/d3.js"></script>
     <script src="/js/d3.layout.cloud.js"></script>

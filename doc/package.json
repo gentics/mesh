@@ -1,7 +1,7 @@
 {
-  "name": "cailun-web-site",
+  "name": "mesh-web-site",
   "version": "1.0.0",
-  "description": "The Cai.Lun Website",
+  "description": "The Mesh Website",
   "main": "gulpfile.js",
   "private": true,
   "devDependencies": {
@@ -36,6 +36,6 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gentics/cailun.git"
+    "url": "https://github.com/gentics/mesh.git"
   }
 }

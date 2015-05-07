@@ -20,11 +20,11 @@ docker="docker"
 # Prepare build dir
 mkdir -p $BUILDDIR
 cp -ra $BASEDIR/* $BUILDDIR
-cp $TARGET/cailun-starter-${VERSION}.jar $BUILDDIR/cailun-starter.jar
+cp $TARGET/mesh-starter-${VERSION}.jar $BUILDDIR/mesh-starter.jar
 cp -ra $DEMODIR $BUILDDIR
 
 # Invoke build
 cd $BUILDDIR
-$docker build --rm -t registry.office/cailun:$VERSION .
-#$docker push registry.office/cailun:$VERSION
+$docker build --rm -t registry.office/mesh:$VERSION .
+#$docker push registry.office/mesh:$VERSION
 

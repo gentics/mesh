@@ -4,8 +4,8 @@ function startServices() {
   echo "Starting services"
   service ssh start
   service apache2 start
-  cd /opt/cailun
-  java -jar /opt/cailun/cailun-starter.jar
+  cd /opt/mesh
+  java -jar /opt/mesh/mesh-starter.jar
 }
 
 function dontExit() {
@@ -17,9 +17,3 @@ function dontExit() {
 
 startServices
 dontExit
-~                                                                                                                                                                      
-~                                                                                                                                                                      
-~                                                                                                                                                                      
-~                                                                                                                                                                      
-~                                                                                                                                                                      
-~                                         

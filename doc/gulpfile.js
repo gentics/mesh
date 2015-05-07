@@ -31,7 +31,7 @@ var mkdirp = require("mkdirp");
 
 // path to website on the server in production mode (i.e. when running
 // `gulp build`). MUST BE ABSOLUTE AND MUST END WITH A SLASH!
-var contextPath = "/cailun/";
+var contextPath = "/mesh/";
 
 // path to website on the server in development mode (i.e. when running
 // `gulp watch`). MUST BE ABSOLUTE AND MUST END WITH A SLASH!

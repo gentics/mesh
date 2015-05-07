@@ -1,0 +1,17 @@
+{
+  "neo4jConfiguration" : {
+    "mode" : "default",
+    "path" : "/home/johannes2/workspace_mesh/mesh/core/target/graphdb",
+    "webserver_bind_address" : "0.0.0.0",
+    "rest_url" : null,
+    "base_address" : null,
+    "ha_initial_hosts" : null,
+    "ha_cluster_server" : null,
+    "ha_slave_only" : false,
+    "ha_server" : null,
+    "ha_server_id" : null
+  },
+  "httpPort" : 8080,
+  "clusterMode" : false,
+  "verticles" : { }
+}

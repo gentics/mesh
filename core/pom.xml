@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>cailun-core</artifactId>
+	<artifactId>mesh-core</artifactId>
 	<packaging>jar</packaging>
-	<name>Cailun - Core</name>
+	<name>Mesh - Core</name>
 
 	<parent>
-		<groupId>com.gentics.cailun</groupId>
-		<artifactId>cailun</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
@@ -22,7 +22,7 @@
 		<!-- Internal dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>cailun-rest</artifactId>
+			<artifactId>mesh-rest</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -258,7 +258,7 @@
 							<archive>
 								<manifest>
 									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-									<mainClass>com.gentics.cailun.cli.CaiLun</mainClass>
+									<mainClass>com.gentics.mesh.cli.Mesh</mainClass>
 								</manifest>
 								<manifestEntries>
 									<url>${project.url}</url>
@@ -299,14 +299,14 @@
 				</goals> <configuration> <executable>bash</executable> <arguments> <argument>${project.basedir}/src/main/docker/build.sh</argument> 
 				</arguments> </configuration> </plugin> <plugin> <groupId>org.apache.maven.plugins</groupId> 
 				<artifactId>maven-jar-plugin</artifactId> <configuration> <archive> <manifest> 
-				<addClasspath>true</addClasspath> <mainClass>com.gentics.vertx.cailun.starter.Runner</mainClass> 
+				<addClasspath>true</addClasspath> <mainClass>com.gentics.vertx.mesh.starter.Runner</mainClass> 
 				</manifest> </archive> </configuration> </plugin> <plugin> <groupId>org.apache.maven.plugins</groupId> 
 				<artifactId>maven-shade-plugin</artifactId> <executions> <execution> <phase>package</phase> 
 				<goals> <goal>shade</goal> </goals> <configuration> <filters> <filter> <artifact>*:*</artifact> 
 				<excludes> <exclude>META-INF/*.SF</exclude> <exclude>META-INF/*.DSA</exclude> 
 				<exclude>META-INF/*.RSA</exclude> </excludes> </filter> </filters> <transformers> 
 				<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> 
-				<mainClass>com.gentics.vertx.cailun.starter.Runner</mainClass> </transformer> 
+				<mainClass>com.gentics.vertx.mesh.starter.Runner</mainClass> </transformer> 
 				</transformers> </configuration> </execution> </executions> </plugin> -->
 		</plugins>
 		<pluginManagement>

@@ -3,18 +3,18 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.gentics.cailun</groupId>
-	<artifactId>cailun</artifactId>
+	<groupId>com.gentics.mesh</groupId>
+	<artifactId>mesh</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
-	<name>Cailun</name>
+	<name>Mesh</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<gh-pages.url>http://gentics.github.io/cailun/</gh-pages.url>
-		<gh-url>https://github.com/gentics/cailun/tree/master</gh-url>
+		<gh-pages.url>http://gentics.github.io/mesh/</gh-pages.url>
+		<gh-url>https://github.com/gentics/mesh/tree/master</gh-url>
 
 		<asm.version>3.3.1</asm.version>
 		<spring.data.version>3.3.0.RELEASE</spring.data.version>
@@ -217,14 +217,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>lan.releases.staging.cailun</id>
+			<id>lan.releases.staging.mesh</id>
 			<name>Gentics Releases Repository</name>
-			<url>http://artifactory.office/repository/lan.releases.staging.cailun</url>
+			<url>http://artifactory.office/repository/lan.releases.staging.mesh</url>
 		</repository>
 		<snapshotRepository>
 			<id>lan.snapshots</id>
 			<name>Gentics Snapshots Repository</name>
-			<url>http://artifactory.office/repository/lan.snapshots.cailun</url>
+			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
 		</snapshotRepository>
 	</distributionManagement>
 

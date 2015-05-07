@@ -5,14 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.gentics.cailun</groupId>
-		<artifactId>cailun</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>cailun-doc</artifactId>
+	<artifactId>mesh-doc</artifactId>
 	<packaging>jar</packaging>
-	<name>Cailun - Documentation</name>
+	<name>Mesh - Documentation</name>
 	<description>Parent module for documentation</description>
 
 
@@ -27,17 +27,11 @@
 	<dependencies>
 
 		<dependency>
-			<artifactId>cailun-core</artifactId>
+			<artifactId>mesh-core</artifactId>
 			<groupId>${project.groupId}</groupId>
 			<version>${project.version}</version>
 			<type>jar</type>
 			<classifier>javadoc</classifier>
-		</dependency>
-		<dependency>
-			<artifactId>cailun-raml-doc</artifactId>
-			<groupId>${project.groupId}</groupId>
-			<version>${project.version}</version>
-			<type>zip</type>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -51,28 +45,28 @@
 			<version>0.8.11</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-core</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-navigation</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-navigation</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-tagcloud</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tagcloud</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-admin</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-admin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.cailun</groupId>
-			<artifactId>cailun-admin-gui</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -113,7 +107,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath/>
-								<argument>com.gentics.cailun.raml.Generator</argument>
+								<argument>com.gentics.mesh.raml.Generator</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -209,7 +203,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>cailun-core</artifactId>
+									<artifactId>mesh-core</artifactId>
 									<version>${project.version}</version>
 									<type>jar</type>
 									<classifier>javadoc</classifier>
@@ -367,7 +361,7 @@
 	<distributionManagement>
 		<site>
 			<id>github-site</id>
-			<url>scm:git:git@github.com:gentics/cailun.git</url>
+			<url>scm:git:git@github.com:gentics/mesh.git</url>
 		</site>
 	</distributionManagement>
 
