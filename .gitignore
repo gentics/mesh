@@ -10,7 +10,7 @@ hs_err_*.log
 .vertx
 dependency-reduced-pom.xml
 .checkstyle
-cailun.json
+mesh.json
 .bak
 verticles/admin-gui/node_modules
 verticles/admin-gui/bower_components
