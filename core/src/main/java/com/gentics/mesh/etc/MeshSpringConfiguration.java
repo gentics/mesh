@@ -1,6 +1,5 @@
 package com.gentics.mesh.etc;
 
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -18,15 +17,21 @@ import io.vertx.ext.apex.sstore.LocalSessionStore;
 import io.vertx.ext.apex.sstore.SessionStore;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.shiro.impl.ShiroAuthProviderImpl;
-import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
-
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
+import org.neo4j.cluster.ClusterSettings;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
+import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.ha.HaSettings;
+import org.neo4j.server.Bootstrapper;
+import org.neo4j.server.WrappingNeoServerBootstrapper;
+import org.neo4j.server.configuration.Configurator;
+import org.neo4j.server.configuration.ServerConfigurator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +44,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.gentics.mesh.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.mesh.auth.Neo4jAuthorizingRealm;
 import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.etc.config.MeshNeo4jConfiguration;
 import com.gentics.mesh.etc.neo4j.UUIDTransactionEventHandler;
 
 @Configuration
@@ -58,38 +64,49 @@ public class MeshSpringConfiguration extends Neo4jConfiguration {
 		setBasePackage("com.gentics.mesh");
 	}
 
-	private void deployNeo4Vertx() throws IOException, InterruptedException {
-		log.info("Deploying neo4vertx...");
-
-		final CountDownLatch latch = new CountDownLatch(1);
-
-		// TODO use deployment utils
-		vertx().deployVerticle(neo4VertxVerticle(), new DeploymentOptions().setConfig(configuration.getNeo4jConfiguration().getJsonConfig()),
-				handler -> {
-					log.info("Deployed neo4vertx => " + handler.result());
-					if (handler.failed()) {
-						log.error("Could not deploy neo4vertx. Aborting..");
-						// TODO safe exit
-			} else {
-				log.info("Neo4Vertx deployed successfully");
+	private void registerShutdownHook(final GraphDatabaseService graphDatabaseService) {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				graphDatabaseService.shutdown();
 			}
-
-			// TODO handle exceptions
-				latch.countDown();
-			});
-		latch.await();
+		});
 	}
 
 	@Bean
-	public Neo4jGraphVerticle neo4VertxVerticle() {
-		return new Neo4jGraphVerticle();
-	}
+	public GraphDatabaseService graphDatabaseService() throws Exception {
+		MeshNeo4jConfiguration neo4jConfig = configuration.getNeo4jConfiguration();
+		final String mode = neo4jConfig.getMode();
 
-	@Bean
-	public GraphDatabaseService graphDatabaseService() {
+		GraphDatabaseService service = null;
+		switch (mode) {
+		case MeshNeo4jConfiguration.DEFAULT_MODE:
+			service = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(neo4jConfig.getPath()).newGraphDatabase();
+			break;
+		case MeshNeo4jConfiguration.CLUSTER_MODE:
+			GraphDatabaseBuilder builder = new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(neo4jConfig.getPath());
+
+			// Set various HA settings we support
+			builder.setConfig(ClusterSettings.server_id, neo4jConfig.getHAServerID());
+			builder.setConfig(HaSettings.ha_server, neo4jConfig.getHAServer());
+			builder.setConfig(HaSettings.slave_only, String.valueOf(neo4jConfig.getHASlaveOnly()));
+			builder.setConfig(ClusterSettings.cluster_server, neo4jConfig.getHAClusterServer());
+			builder.setConfig(ClusterSettings.initial_hosts, neo4jConfig.getHAInitialHosts());
+
+			GraphDatabaseService graphDatabaseService = builder.newGraphDatabase();
+			registerShutdownHook(graphDatabaseService);
+			break;
+		case MeshNeo4jConfiguration.GUI_MODE:
+			service = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(neo4jConfig.getPath()).newGraphDatabase();
+			ServerConfigurator webConfig = new ServerConfigurator((GraphDatabaseAPI) service);
+			webConfig.configuration().setProperty(Configurator.WEBSERVER_ADDRESS_PROPERTY_KEY, neo4jConfig.getWebServerBindAddress());
+			Bootstrapper bootStrapper = new WrappingNeoServerBootstrapper((GraphDatabaseAPI) service, webConfig);
+			bootStrapper.start();
+			break;
+		default:
+			throw new Exception("Invalid mode " + mode + " specified");
+		}
 		try {
-			deployNeo4Vertx();
-			GraphDatabaseService service = Neo4jGraphVerticle.getService().getGraphDatabaseService();
 			// Add UUID transaction handler that injects uuid in new neo4j nodes and relationships
 			service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
 			return service;
@@ -108,7 +125,7 @@ public class MeshSpringConfiguration extends Neo4jConfiguration {
 	}
 
 	@PostConstruct
-	private void setup() {
+	private void setup() throws Exception {
 		log.debug("Setting up {" + getClass().getCanonicalName() + "}");
 		graphDatabaseService();
 	}

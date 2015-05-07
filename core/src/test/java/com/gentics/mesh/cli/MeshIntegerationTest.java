@@ -2,7 +2,6 @@ package com.gentics.mesh.cli;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -10,8 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.etc.config.MeshNeo4jConfiguration;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 import com.gentics.mesh.test.TestUtil;
 
@@ -21,7 +20,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 	public void testStartup() throws Exception {
 		MeshConfiguration config = new MeshConfiguration();
 		config.setHttpPort(TestUtil.getRandomPort());
-		config.getNeo4jConfiguration().setMode(Neo4jGraphVerticle.DEFAULT_MODE);
+		config.getNeo4jConfiguration().setMode(MeshNeo4jConfiguration.DEFAULT_MODE);
 
 		final Mesh mesh = Mesh.mesh();
 		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);

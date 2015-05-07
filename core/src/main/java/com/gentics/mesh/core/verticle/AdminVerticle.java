@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.util.DeploymentUtils.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 
 import java.io.File;
 
@@ -56,7 +55,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 
 		// TODO secure handlers below
 		addBackupHandler();
-		addNeo4VertxRestartHandler();
+		addNeo4JRestartHandler();
 
 		// addVerticleHandler();
 		// addServiceHandler();
@@ -79,12 +78,12 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	}
 
-	private void addNeo4VertxRestartHandler() {
-		route("/neo4vertx/restart").method(GET).handler(rc -> {
+	private void addNeo4JRestartHandler() {
+		route("/neo4j/restart").method(GET).handler(rc -> {
 			try {
-				springConfiguration.neo4VertxVerticle().stop();
-				springConfiguration.neo4VertxVerticle().config().put(Neo4VertxConfiguration.PATH_KEY, "/tmp/backup");
-				springConfiguration.neo4VertxVerticle().start();
+//				springConfiguration.neo4VertxVerticle().stop();
+//				springConfiguration.neo4VertxVerticle().config().put(Neo4JConfiguration.PATH_KEY, "/tmp/backup");
+//				springConfiguration.neo4VertxVerticle().start();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

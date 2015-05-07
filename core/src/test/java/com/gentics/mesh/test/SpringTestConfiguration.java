@@ -2,9 +2,6 @@ package com.gentics.mesh.test;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
-import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +12,6 @@ import org.neo4j.backup.OnlineBackupSettings;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.test.TestGraphDatabaseFactory;
-import org.openpcf.neo4vertx.neo4j.service.GraphService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -58,27 +54,7 @@ public class SpringTestConfiguration extends Neo4jConfiguration {
 		GraphDatabaseService graphService = builder.newGraphDatabase();
 
 		graphService.registerTransactionEventHandler(new UUIDTransactionEventHandler(graphService));
-		Neo4jGraphVerticle.setService(new GraphService() {
 
-			@Override
-			public void initialize(Neo4VertxConfiguration configuration) throws Exception {
-			}
-
-			@Override
-			public GraphDatabaseService getGraphDatabaseService() {
-				return graphService;
-			}
-
-			@Override
-			public JsonObject query(JsonObject request) throws Exception {
-				return null;
-			}
-
-			@Override
-			public void shutdown() {
-			}
-
-		});
 		return graphService;
 	}
 

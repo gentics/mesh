@@ -1,7 +1,5 @@
 package com.gentics.mesh.etc.config;
 
-import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +23,7 @@ public class MeshConfiguration {
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 
 	@JsonProperty("neo4j_config")
-	private Neo4VertxConfiguration neo4jConfiguration;
+	private MeshNeo4jConfiguration neo4jConfiguration;
 
 	@JsonProperty("http_port")
 	private int httpPort = DEFAULT_HTTP_PORT;
@@ -40,7 +38,7 @@ public class MeshConfiguration {
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
 
 	public MeshConfiguration() {
-		neo4jConfiguration = new Neo4VertxConfiguration();
+		neo4jConfiguration = new MeshNeo4jConfiguration();
 		neo4jConfiguration.setMode(DEFAULT_NEO4VERTX_MODE);
 		neo4jConfiguration.setWebServerBindAddress(DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS);
 		// Check for target directory and use it as a subdirectory if possible
@@ -64,7 +62,7 @@ public class MeshConfiguration {
 		this.clusterMode = clusterMode;
 	}
 
-	public Neo4VertxConfiguration getNeo4jConfiguration() {
+	public MeshNeo4jConfiguration getNeo4jConfiguration() {
 		return neo4jConfiguration;
 	}
 

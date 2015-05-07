@@ -96,13 +96,6 @@
 			<version>${vertx.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.turn</groupId>
-			<artifactId>ttorrent</artifactId>
-			<version>1.5-SNAPSHOT</version>
-		</dependency>
-
-
 		<!-- Vertx / Spring -->
 		<dependency>
 			<groupId>org.jacpfx.vertx.spring</groupId>
@@ -173,15 +166,30 @@
 
 		<!-- Neo4J -->
 		<dependency>
-			<groupId>org.openpcf</groupId>
-			<artifactId>neo4vertx-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-cypher-dsl</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>org.neo4j.app</groupId> <artifactId>neo4j-server</artifactId> 
-			<version>${neo4j.version}</version> <scope>provided</scope> </dependency> -->
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-ha</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j</artifactId>
+		</dependency>
+
+		<!-- Neo4j GUI -->
+		<dependency>
+			<groupId>org.neo4j.app</groupId>
+			<artifactId>neo4j-server</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j.app</groupId>
+			<artifactId>neo4j-server</artifactId>
+			<classifier>static-web</classifier>
+		</dependency>
+
 
 		<!-- Spring -->
 		<dependency>
