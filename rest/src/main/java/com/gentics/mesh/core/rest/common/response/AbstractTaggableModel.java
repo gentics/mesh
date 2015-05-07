@@ -13,7 +13,6 @@ public class AbstractTaggableModel extends AbstractRestModel {
 
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 
-	private List<TagResponse> tags = new ArrayList<>();
 	private SchemaReference schema;
 
 	private String[] perms = {};
@@ -31,14 +30,6 @@ public class AbstractTaggableModel extends AbstractRestModel {
 
 	public void setCreator(UserResponse author) {
 		this.creator = author;
-	}
-
-	public List<TagResponse> getTags() {
-		return tags;
-	}
-
-	public void setTags(List<TagResponse> tags) {
-		this.tags = tags;
 	}
 
 	public void setSchema(SchemaReference schema) {

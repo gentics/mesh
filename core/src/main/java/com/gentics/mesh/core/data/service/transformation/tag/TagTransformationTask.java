@@ -100,27 +100,26 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 		
 //		if (currentDepth < info.getMaxDepth()) {
 //		}
-
-		if (info.isIncludeTags()) {
-			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
-			tag.getTags().parallelStream().forEachOrdered(tagConsumer);
-		} else {
-			restTag.setTags(null);
-		}
-
-		if (info.isIncludeContents()) {
-			ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, currentDepth, restTag, tasks);
-			tag.getContents().parallelStream().forEachOrdered(contentConsumer);
-		} else {
-			restTag.setContents(null);
-		}
-
-		if (info.isIncludeChildTags()) {
-			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
-			tag.getChildTags().parallelStream().forEachOrdered(tagConsumer);
-		} else {
-			restTag.setChildTags(null);
-		}
+//		if (info.isIncludeTags()) {
+//			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
+//			tag.getTags().parallelStream().forEachOrdered(tagConsumer);
+//		} else {
+//			restTag.setTags(null);
+//		}
+//
+//		if (info.isIncludeContents()) {
+//			ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, currentDepth, restTag, tasks);
+//			tag.getContents().parallelStream().forEachOrdered(contentConsumer);
+//		} else {
+//			restTag.setContents(null);
+//		}
+//
+//		if (info.isIncludeChildTags()) {
+//			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
+//			tag.getChildTags().parallelStream().forEachOrdered(tagConsumer);
+//		} else {
+//			restTag.setChildTags(null);
+//		}
 
 		// Wait for our forked tasks
 		tasks.forEach(action -> action.join());

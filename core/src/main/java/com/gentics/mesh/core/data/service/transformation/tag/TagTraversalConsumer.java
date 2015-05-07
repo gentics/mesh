@@ -33,26 +33,26 @@ public class TagTraversalConsumer implements Consumer<Tag> {
 
 	@Override
 	public void accept(Tag tag) {
-		String currentUuid = tag.getUuid();
-		Session session = info.getRoutingContext().session();
-		session.hasPermission(new MeshPermission(tag, PermissionType.READ).toString(), handler -> {
-			if (handler.result()) {
-				try (Transaction tx = info.getGraphDb().beginTx()) {
-					Tag loadedTag = info.getNeo4jTemplate().fetch(tag);
-					TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
-					if (currentRestTag == null) {
-						currentRestTag = new TagResponse();
-						/* info.addTag(currentUuid, currentRestTag); */
-						TagTransformationTask subTask = new TagTransformationTask(loadedTag, info, currentRestTag, currentDepth + 1);
-						tasks.add(subTask.fork());
-
-						tx.success();
-					}
-					tagContainer.getTags().add(currentRestTag);
-				}
-			}
-		});
-		Collections.sort(tagContainer.getTags(), new UuidRestModelComparator<AbstractTaggableModel>());
+//		String currentUuid = tag.getUuid();
+//		Session session = info.getRoutingContext().session();
+//		session.hasPermission(new MeshPermission(tag, PermissionType.READ).toString(), handler -> {
+//			if (handler.result()) {
+//				try (Transaction tx = info.getGraphDb().beginTx()) {
+//					Tag loadedTag = info.getNeo4jTemplate().fetch(tag);
+//					TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
+//					if (currentRestTag == null) {
+//						currentRestTag = new TagResponse();
+//						/* info.addTag(currentUuid, currentRestTag); */
+//						TagTransformationTask subTask = new TagTransformationTask(loadedTag, info, currentRestTag, currentDepth + 1);
+//						tasks.add(subTask.fork());
+//
+//						tx.success();
+//					}
+//					tagContainer.getTags().add(currentRestTag);
+//				}
+//			}
+//		});
+//		Collections.sort(tagContainer.getTags(), new UuidRestModelComparator<AbstractTaggableModel>());
 
 	}
 

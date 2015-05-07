@@ -30,30 +30,30 @@ public class ContentTraversalConsumer implements Consumer<Content> {
 	@Override
 	public void accept(Content content) {
 		try (Transaction tx = info.getGraphDb().beginTx()) {
-			String currentUuid = content.getUuid();
-			info.getRoutingContext()
-					.session()
-					.hasPermission(
-							new MeshPermission(content, PermissionType.READ).toString(),
-							handler -> {
-								try (Transaction tx2 = info.getGraphDb().beginTx()) {
-
-									if (handler.result()) {
-										Content loadedContent = info.getNeo4jTemplate().fetch(content);
-										ContentResponse currentRestContent = (ContentResponse) info.getObject(currentUuid);
-										if (currentRestContent == null) {
-											currentRestContent = new ContentResponse();
-											ContentTransformationTask subTask = new ContentTransformationTask(loadedContent, info,
-													currentRestContent, currentDepth + 1);
-											tasks.add(subTask.fork());
-										}
-										restTag.getContents().add(currentRestContent);
-
-									}
-									tx2.success();
-								}
-							});
-			tx.success();
+//			String currentUuid = content.getUuid();
+//			info.getRoutingContext()
+//					.session()
+//					.hasPermission(
+//							new MeshPermission(content, PermissionType.READ).toString(),
+//							handler -> {
+//								try (Transaction tx2 = info.getGraphDb().beginTx()) {
+//
+//									if (handler.result()) {
+//										Content loadedContent = info.getNeo4jTemplate().fetch(content);
+//										ContentResponse currentRestContent = (ContentResponse) info.getObject(currentUuid);
+//										if (currentRestContent == null) {
+//											currentRestContent = new ContentResponse();
+//											ContentTransformationTask subTask = new ContentTransformationTask(loadedContent, info,
+//													currentRestContent, currentDepth + 1);
+//											tasks.add(subTask.fork());
+//										}
+//										restTag.getContents().add(currentRestContent);
+//
+//									}
+//									tx2.success();
+//								}
+//							});
+//			tx.success();
 		}
 
 	}

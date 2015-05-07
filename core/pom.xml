@@ -96,6 +96,12 @@
 			<version>${vertx.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.turn</groupId>
+			<artifactId>ttorrent</artifactId>
+			<version>1.5-SNAPSHOT</version>
+		</dependency>
+
 
 		<!-- Vertx / Spring -->
 		<dependency>
@@ -345,12 +351,14 @@
 		</pluginManagement>
 	</build>
 
-
-
 	<repositories>
 		<repository>
 			<id>jgit-repository</id>
 			<url>https://repo.eclipse.org/content/groups/releases/</url>
+		</repository>
+		<repository>
+			<id>jboss-3rd-party-releases</id>
+			<url>https://repository.jboss.org/nexus/content/repositories/thirdparty-releases/</url>
 		</repository>
 	</repositories>
 
