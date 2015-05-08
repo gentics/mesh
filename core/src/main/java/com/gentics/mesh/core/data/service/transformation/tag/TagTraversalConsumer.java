@@ -1,21 +1,12 @@
 package com.gentics.mesh.core.data.service.transformation.tag;
 
-import io.vertx.ext.apex.Session;
-
-import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
-import org.neo4j.graphdb.Transaction;
-
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
 import com.gentics.mesh.core.rest.common.response.AbstractTaggableModel;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
 
 public class TagTraversalConsumer implements Consumer<Tag> {
 

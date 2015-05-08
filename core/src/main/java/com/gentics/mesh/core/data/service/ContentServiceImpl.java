@@ -18,8 +18,6 @@ import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.content.ContentTransformationTask;
-import com.gentics.mesh.core.link.LinkResolver;
-import com.gentics.mesh.core.link.LinkResolverFactoryImpl;
 import com.gentics.mesh.core.repository.ContentRepository;
 import com.gentics.mesh.core.repository.GroupRepository;
 import com.gentics.mesh.core.rest.content.response.ContentResponse;

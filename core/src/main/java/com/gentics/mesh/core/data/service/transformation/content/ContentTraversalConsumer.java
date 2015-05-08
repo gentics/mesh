@@ -7,10 +7,7 @@ import java.util.function.Consumer;
 import org.neo4j.graphdb.Transaction;
 
 import com.gentics.mesh.core.data.model.Content;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.content.response.ContentResponse;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 
 public class ContentTraversalConsumer implements Consumer<Content> {

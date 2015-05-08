@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.rest.common.response;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 
 public class AbstractTaggableModel extends AbstractRestModel {
