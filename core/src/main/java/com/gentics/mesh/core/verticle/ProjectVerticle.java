@@ -57,7 +57,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
-			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 
 				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
@@ -95,7 +95,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			Future<Project> projectCreated = Future.future();
 			MeshRoot meshRoot = meshRootService.findRoot();
-			hasPermission(rc, meshRoot, PermissionType.CREATE, rh -> {
+			rcs.hasPermission(rc, meshRoot, PermissionType.CREATE, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
 					return;
@@ -133,7 +133,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Project> rh) -> {
 					Project project = rh.result();
 					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(project)));
 				});
@@ -163,7 +163,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);

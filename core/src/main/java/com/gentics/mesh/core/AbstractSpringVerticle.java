@@ -77,5 +77,9 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;
 	}
+	
+	public RoutingContextService getRcs() {
+		return rcs;
+	}
 
 }

@@ -51,7 +51,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				roleService.delete(role);
 			}, trh -> {
@@ -62,7 +62,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 
@@ -83,7 +83,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleResponse restRole = roleService.transformToRest(role);
 				rc.response().setStatusCode(200).end(toJson(restRole));
@@ -134,7 +134,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 			Future<Role> roleCreated = Future.future();
-			loadObjectByUuid(rc, requestModel.getGroupUuid(), PermissionType.CREATE, (AsyncResult<Group> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), PermissionType.CREATE, (AsyncResult<Group> rh) -> {
 				Role role = new Role(requestModel.getName());
 				Group parentGroup = rh.result();
 				role.getGroups().add(parentGroup);

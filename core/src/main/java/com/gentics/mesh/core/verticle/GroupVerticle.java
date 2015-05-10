@@ -56,8 +56,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupRoleHandlers() {
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
 
-			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
-				loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
+			rcs.loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
 					Group group = grh.result();
 					Role role = rrh.result();
 					if (group.addRole(role)) {
@@ -73,8 +73,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 
-			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
-				loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
+			rcs.loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
 					Group group = grh.result();
 					Role role = rrh.result();
 					if (group.removeRole(role)) {
@@ -92,8 +92,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
-			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
-				loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
+			rcs.loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
 					Group group = grh.result();
 					User user = urh.result();
 					if (group.addUser(user)) {
@@ -109,8 +109,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
-			loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
-				loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
+			rcs.loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
 					Group group = grh.result();
 					User user = urh.result();
 					if (group.removeUser(user)) {
@@ -127,7 +127,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 				groupService.delete(group);
 			}, trh -> {
@@ -140,7 +140,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
@@ -170,7 +170,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 			}, trh -> {
 				Group group = trh.result();
@@ -214,7 +214,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			Future<Group> groupCreated = Future.future();
 
 			MeshRoot root = meshRootService.findRoot();
-			hasPermission(rc, root.getGroupRoot(), PermissionType.CREATE, rh -> {
+			rcs.hasPermission(rc, root.getGroupRoot(), PermissionType.CREATE, rh -> {
 				Group group = new Group(requestModel.getName());
 				group = groupService.save(group);
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(root.getGroupRoot(), PermissionType.CREATE), group);

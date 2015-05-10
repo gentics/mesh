@@ -56,8 +56,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	private void addSchemaProjectHandlers() {
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
-				loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+			rcs.loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
 					Project project = rh.result();
 					ObjectSchema schema = srh.result();
 					if (schema.addProject(project)) {
@@ -73,8 +73,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
-				loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+			rcs.loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
 					ObjectSchema schema = srh.result();
 					Project project = rh.result();
 					if (schema.removeProject(project)) {
@@ -105,7 +105,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			}
 
 			Future<ObjectSchema> schemaCreated = Future.future();
-			loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
 
 				ObjectSchema schema = new ObjectSchema(requestModel.getName());
@@ -138,7 +138,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<ObjectSchema> srh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<ObjectSchema> srh) -> {
 				ObjectSchema schema = srh.result();
 				ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
 
@@ -165,7 +165,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
 				ObjectSchema schema = srh.result();
 				schemaService.delete(schema);
 			}, trh -> {
@@ -182,7 +182,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+				rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
 				}, trh -> {
 					ObjectSchema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));

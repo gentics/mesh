@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.mesh.core.data.model.Content;
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
@@ -73,7 +72,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		// Configuration
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 		info.setLanguageTags(languageTags);
-		//		Future<Integer> depthFuture = rcs.getDepthParameter(rc);
+		// Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 		Future<Boolean> tagsIncludeFuture = rcs.getTagsIncludeParameter(rc);
 		info.setIncludeTags(tagsIncludeFuture.result());
 		Future<Boolean> contentIncludeFuture = rcs.getContentsIncludeParameter(rc);
@@ -88,52 +87,78 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		return restTag;
 	}
 
+	// @Override
+	// public Page<Tag> findAllVisibleProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	// String userUuid = rc.session().getPrincipal().getString("uuid");
+	// if (languageTags == null || languageTags.size() == 0) {
+	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, pr);
+	// } else {
+	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, languageTags, pr);
+	// }
+	// }
+
 	@Override
-	public Page<Tag> findAllVisible(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	public Page<Tag> findChildTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		if (languageTags == null || languageTags.size() == 0) {
-			return tagRepository.findAll(userUuid, projectName, pr);
-		} else {
-			return tagRepository.findAll(userUuid, projectName, languageTags, pr);
-		}
+		return tagRepository.findChildTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
 	}
 
 	@Override
-	public Page<Tag> findAllVisibleTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	public Page<Content> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags,
+			PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-
-		if (languageTags == null || languageTags.size() == 0) {
-			return tagRepository.findAllTags(userUuid, projectName, rootTag, pr);
-		} else {
-			return tagRepository.findAllTags(userUuid, projectName, rootTag, languageTags, pr);
-		}
+		return tagRepository.findChildContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
 	}
 
 	@Override
-	public Page<Content> findAllVisibleContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	public Page<Content> findTaggedContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags,
+			PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 
-		if (languageTags == null || languageTags.size() == 0) {
-			return tagRepository.findAllVisibleContents(userUuid, projectName, rootTag, pr);
-		} else {
-			return tagRepository.findAllVisibleContents(userUuid, projectName, rootTag, languageTags, pr);
-		}
+		return tagRepository.findTaggedContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
 	}
 
 	@Override
-	public Page<GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag,
-			List<String> languageTags, PagingInfo pagingInfo) {
-		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-		String userUuid = rc.session().getPrincipal().getString("uuid");
-
-		if (languageTags == null || languageTags.size() == 0) {
-			return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, pr);
-		} else {
-			return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, languageTags, pr);
-		}
+	public Page<Tag> findAllVisibleTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+		return null;
 	}
+
+	@Override
+	public Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	// @Override
+	// public Page<Tag> findAllVisibleProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	// String userUuid = rc.session().getPrincipal().getString("uuid");
+	//
+	// if (languageTags == null || languageTags.size() == 0) {
+	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, rootTag, pr);
+	// } else {
+	// return tagRepository.findAllVisibleTags(userUuid, projectName, rootTag, languageTags, pr);
+	// }
+	// }
+
+	// @Override
+	// public Page<GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag,
+	// List<String> languageTags, PagingInfo pagingInfo) {
+	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	// String userUuid = rc.session().getPrincipal().getString("uuid");
+	//
+	// if (languageTags == null || languageTags.size() == 0) {
+	// return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, pr);
+	// } else {
+	// return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, languageTags, pr);
+	// }
+	// }
 
 }

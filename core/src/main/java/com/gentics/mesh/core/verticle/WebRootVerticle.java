@@ -69,7 +69,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String path = rc.request().params().get("param0");
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			vertx.executeBlocking((Future<GenericPropertyContainer> bch) -> {

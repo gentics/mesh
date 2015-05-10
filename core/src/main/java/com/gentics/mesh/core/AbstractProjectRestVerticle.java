@@ -35,14 +35,4 @@ public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 		return localRouter;
 	}
 
-	/**
-	 * Extracts the project name from the routing context
-	 * 
-	 * @param rc
-	 * @return extracted project name
-	 */
-	protected String getProjectName(RoutingContext rc) {
-		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
-	}
-
 }

@@ -51,7 +51,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
-			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
 			}, trh -> {
 				User user = trh.result();
 				UserResponse restUser = userService.transformToRest(user, depthFuture.result());
@@ -86,7 +86,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<User> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<User> rh) -> {
 				User user = rh.result();
 				userService.delete(user);
 			}, trh -> {
@@ -98,7 +98,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<User> rh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<User> rh) -> {
 				User user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
@@ -160,7 +160,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			Future<User> userCreated = Future.future();
 			// Load the parent group for the user
-			loadObjectByUuid(rc, groupUuid, PermissionType.CREATE, (AsyncResult<Group> rh) -> {
+			rcs.loadObjectByUuid(rc, groupUuid, PermissionType.CREATE, (AsyncResult<Group> rh) -> {
 
 				Group parentGroup = rh.result();
 

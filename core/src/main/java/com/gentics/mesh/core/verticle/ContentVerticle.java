@@ -76,7 +76,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST);
 		route.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getTagUuid())) {
@@ -86,7 +86,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 			Future<Content> contentCreated = Future.future();
 
-			loadObjectByUuid(rc, requestModel.getTagUuid(), projectName, PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getTagUuid(), projectName, PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 
 				Tag rootTagForContent = rh.result();
 				Content content = new Content();
@@ -154,8 +154,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = getProjectName(rc);
-			loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
 			}, trh -> {
 				Content content = trh.result();
 				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
@@ -165,7 +165,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
@@ -192,8 +192,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = getProjectName(rc);
-			loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Content> rh) -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Content> rh) -> {
 				Content content = rh.result();
 				contentService.delete(content);
 			}, trh -> {
@@ -213,10 +213,10 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
 				Content content = rh.result();
 
 				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);

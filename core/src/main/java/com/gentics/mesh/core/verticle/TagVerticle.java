@@ -11,6 +11,7 @@ import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Route;
+import io.vertx.ext.apex.RoutingContext;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.mesh.core.rest.tag.response.TagChildrenListResponse;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
+import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
@@ -64,6 +66,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private LanguageService languageService;
+	
+	@Autowired
+	TagListHandler tagListHandler;
 
 	public TagVerticle() {
 		super("tags");
@@ -77,41 +82,53 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addTagHandlers();
-		addTagChildrenHandlers();
+		addChildTagsHandlers();
+		addChildContentsHandlers();
+
+		addParentTagHandler();
+		addTaggedContentsHandler();
+
+		addTaggedTagsHandlers();
+		addTaggingTagsHandler();
+	}
+
+	private void addTaggingTagsHandler() {
+		Route getRoute = route("/:uuid/taggingTags").method(GET).produces(APPLICATION_JSON);
+
+	}
+
+	private void addChildContentsHandlers() {
+		Route getRoute = route("/:uuid/childContents").method(GET).produces(APPLICATION_JSON);
+
+	}
+
+	private void addParentTagHandler() {
+		Route getRoute = route("/:uuid/parenttag").method(GET).produces(APPLICATION_JSON);
+
+	}
+
+	private void addTaggedContentsHandler() {
+		Route getRoute = route("/:uuid/taggedContent").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			tagListHandler.handle(rc);
+		});
 	}
 
 	/**
-	 * Handler that allows loading of tagged tags for the tag.
+	 * Handler that allows listing tags that are tagged by the given tag
 	 */
-	private void addTagHandlers() {
+	private void addTaggedTagsHandlers() {
 
-		Route getRoute = route("/:uuid/tags/").method(GET).produces(APPLICATION_JSON);
+		Route getRoute = route("/:uuid/taggedTags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
-			TagListResponse listResponse = new TagListResponse();
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
-				Tag rootTag = rh.result();
-
-				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-
-				Page<Tag> tagPage = tagService.findAllVisibleTags(rc, projectName, rootTag, languageTags, pagingInfo);
-				for (Tag tag : tagPage) {
-					listResponse.getData().add(tagService.transformToRest(rc, tag));
-				}
-				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
-			}, trh -> {
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
 		});
 
 		Route postRoute = route("/:tagUuid/tags/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
-			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				rcs.loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 
@@ -128,10 +145,10 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Route deleteRoute = route("/:tagUuid/tags/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 
-			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				rcs.loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 					tag.removeTag(subTag);
@@ -153,9 +170,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
@@ -214,12 +231,12 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
-			loadObjectByUuid(rc, request.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
+			rcs.loadObjectByUuid(rc, request.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 				Tag rootTag = rh.result();
 
 				Tag newTag = new Tag();
@@ -253,7 +270,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "uuid", PermissionType.READ, null, (AsyncResult<Tag> trh) -> {
+			rcs.loadObject(rc, "uuid", PermissionType.READ, null, (AsyncResult<Tag> trh) -> {
 				Tag tag = trh.result();
 				rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag)));
 			});
@@ -261,21 +278,21 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
 				TagListResponse listResponse = new TagListResponse();
 				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-				Page<Tag> tagPage = tagService.findAllVisible(rc, projectName, languageTags, pagingInfo);
-				for (Tag tag : tagPage) {
-					listResponse.getData().add(tagService.transformToRest(rc, tag));
-				}
-				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
-				bcr.complete(listResponse);
-			}, arh -> {
-				TagListResponse listResponse = arh.result();
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
+				// Page<Tag> tagPage = tagService.findAllVisible(rc, projectName, languageTags, pagingInfo);
+				// for (Tag tag : tagPage) {
+				// listResponse.getData().add(tagService.transformToRest(rc, tag));
+				// }
+				// RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+					bcr.complete(listResponse);
+				}, arh -> {
+					TagListResponse listResponse = arh.result();
+					rc.response().setStatusCode(200).end(toJson(listResponse));
+				});
 
 		});
 
@@ -285,8 +302,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = getProjectName(rc);
-			loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Tag> rh) -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 				tagService.delete(tag);
 			}, trh -> {
@@ -300,45 +317,40 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	 * Handler that allows handling of child elements (tags/contents)
 	 */
 	// TODO filtering, sorting
-	private void addTagChildrenHandlers() {
-		Route getRoute = route("/:uuid/children/").method(GET).produces(APPLICATION_JSON);
+	private void addChildTagsHandlers() {
+		Route getRoute = route("/:uuid/childTags/").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
+			String projectName = rcs.getProjectName(rc);
 			TagChildrenListResponse listResponse = new TagChildrenListResponse();
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			loadObject(
-					rc,
-					"uuid",
-					projectName,
-					PermissionType.READ,
-					(AsyncResult<Tag> rh) -> {
-						Tag rootTag = rh.result();
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Tag> rh) -> {
+				Tag rootTag = rh.result();
 
-						PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-						Page<GenericPropertyContainer> containerPage = tagService.findAllVisibleChildNodes(rc, projectName, rootTag,
-								languageTags, pagingInfo);
-						for (GenericPropertyContainer container : containerPage) {
-							if (container instanceof Content) {
-								listResponse.getData().add(contentService.transformToRest(rc, (Content) container));
-							} else if (container instanceof Tag) {
-								listResponse.getData().add(tagService.transformToRest(rc, (Tag) container));
-							} else {
-								//ERROR
-							}
-						}
-						RestModelPagingHelper.setPaging(listResponse, containerPage, pagingInfo);
-					}, trh -> {
-						rc.response().setStatusCode(200).end(toJson(listResponse));
-					});
+				// Page<GenericPropertyContainer> containerPage = tagService.findAllVisibleChildTags(rc, projectName, rootTag,
+				// languageTags, pagingInfo);
+				// for (GenericPropertyContainer container : containerPage) {
+				// if (container instanceof Content) {
+				// listResponse.getData().add(contentService.transformToRest(rc, (Content) container));
+				// } else if (container instanceof Tag) {
+				// listResponse.getData().add(tagService.transformToRest(rc, (Tag) container));
+				// } else {
+				// //ERROR
+				// }
+				// }
+				// RestModelPagingHelper.setPaging(listResponse, containerPage, pagingInfo);
+				}, trh -> {
+					rc.response().setStatusCode(200).end(toJson(listResponse));
+				});
 		});
 
 		Route postRoute = route("/:tagUuid/children/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
-			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				rcs.loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 
@@ -355,9 +367,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Route deleteRoute = route("/:tagUuid/children/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
-			loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-				loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+				rcs.loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
 					Tag tag = rh.result();
 					Tag subTag = srh.result();
 					tag.removeTag(subTag);
