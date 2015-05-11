@@ -11,7 +11,6 @@ import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.Route;
-import io.vertx.ext.apex.RoutingContext;
 
 import java.util.HashSet;
 import java.util.List;
@@ -21,18 +20,15 @@ import java.util.Set;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.Content;
 import com.gentics.mesh.core.data.model.I18NProperties;
 import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.relationship.Translated;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -41,9 +37,9 @@ import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.mesh.core.rest.tag.response.TagChildrenListResponse;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
+import com.gentics.mesh.core.verticle.handler.ContentListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.util.RestModelPagingHelper;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -66,9 +62,12 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private LanguageService languageService;
-	
+
 	@Autowired
-	TagListHandler tagListHandler;
+	private TagListHandler tagListHandler;
+
+	@Autowired
+	private ContentListHandler contentListHandler;
 
 	public TagVerticle() {
 		super("tags");
@@ -86,31 +85,46 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addChildContentsHandlers();
 
 		addParentTagHandler();
-		addTaggedContentsHandler();
 
+		addTaggedContentsHandler();
 		addTaggedTagsHandlers();
 		addTaggingTagsHandler();
 	}
 
 	private void addTaggingTagsHandler() {
 		Route getRoute = route("/:uuid/taggingTags").method(GET).produces(APPLICATION_JSON);
-
+		getRoute.handler(rc -> {
+			tagListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
+				return tagService.findTaggedTags(rc, projectName, rootTag, languageTags, pagingInfo);
+			});
+		});
 	}
 
 	private void addChildContentsHandlers() {
 		Route getRoute = route("/:uuid/childContents").method(GET).produces(APPLICATION_JSON);
-
+		getRoute.handler(rc -> {
+			contentListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
+				return tagService.findChildContents(rc, projectName, rootTag, languageTags, pagingInfo);
+			});
+		});
 	}
 
 	private void addParentTagHandler() {
-		Route getRoute = route("/:uuid/parenttag").method(GET).produces(APPLICATION_JSON);
-
+		Route getRoute = route("/:uuid/parentTag").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			rcs.loadObject(rc, "uuid", PermissionType.READ, null, (AsyncResult<Tag> trh) -> {
+				Tag tag = trh.result();
+				rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag.getParentTag())));
+			});
+		});
 	}
 
 	private void addTaggedContentsHandler() {
 		Route getRoute = route("/:uuid/taggedContent").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			tagListHandler.handle(rc);
+			contentListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
+				return tagService.findTaggedContents(rc, projectName, rootTag, languageTags, pagingInfo);
+			});
 		});
 	}
 
@@ -121,7 +135,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 		Route getRoute = route("/:uuid/taggedTags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-
+			tagListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
+				return tagService.findTaggedTags(rc, projectName, rootTag, languageTags, pagingInfo);
+			});
 		});
 
 		Route postRoute = route("/:tagUuid/tags/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
@@ -278,22 +294,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
-				TagListResponse listResponse = new TagListResponse();
-				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-				// Page<Tag> tagPage = tagService.findAllVisible(rc, projectName, languageTags, pagingInfo);
-				// for (Tag tag : tagPage) {
-				// listResponse.getData().add(tagService.transformToRest(rc, tag));
-				// }
-				// RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
-					bcr.complete(listResponse);
-				}, arh -> {
-					TagListResponse listResponse = arh.result();
-					rc.response().setStatusCode(200).end(toJson(listResponse));
-				});
-
+			tagListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
+				return tagService.findProjectTags(rc, projectName, languageTags, pagingInfo);
+			});
 		});
 
 	}
@@ -318,7 +321,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	 */
 	// TODO filtering, sorting
 	private void addChildTagsHandlers() {
-		Route getRoute = route("/:uuid/childTags/").method(GET).produces(APPLICATION_JSON);
+		Route getRoute = route("/:uuid/childTags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			TagChildrenListResponse listResponse = new TagChildrenListResponse();
@@ -346,7 +349,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				});
 		});
 
-		Route postRoute = route("/:tagUuid/children/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
+		Route postRoute = route("/:tagUuid/childTags/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
@@ -365,7 +368,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		});
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
-		Route deleteRoute = route("/:tagUuid/children/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
+		Route deleteRoute = route("/:tagUuid/childTags/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {

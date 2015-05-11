@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTa
 import com.gentics.mesh.core.repository.TagRepository;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
@@ -87,17 +86,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		return restTag;
 	}
 
-	// @Override
-	// public Page<Tag> findAllVisibleProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-	// String userUuid = rc.session().getPrincipal().getString("uuid");
-	// if (languageTags == null || languageTags.size() == 0) {
-	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, pr);
-	// } else {
-	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, languageTags, pr);
-	// }
-	// }
-
 	@Override
 	public Page<Tag> findChildTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
@@ -105,60 +93,33 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	}
 
 	@Override
-	public Page<Content> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags,
-			PagingInfo pagingInfo) {
+	public Page<Content> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 		return tagRepository.findChildContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
 	}
 
 	@Override
-	public Page<Content> findTaggedContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags,
-			PagingInfo pagingInfo) {
+	public Page<Content> findTaggedContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-
 		return tagRepository.findTaggedContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
 	}
 
 	@Override
-	public Page<Tag> findAllVisibleTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		return null;
+	public Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
 	}
 
 	@Override
 	public Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		// TODO Auto-generated method stub
-		return null;
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return tagRepository.findTaggedTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
 	}
 
 	@Override
-	public Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		// TODO Auto-generated method stub
-		return null;
+	public Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return tagRepository.findTaggingTags(userUuid, projectName, tag, languageTags, pagingInfo);
 	}
-
-	// @Override
-	// public Page<Tag> findAllVisibleProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-	// String userUuid = rc.session().getPrincipal().getString("uuid");
-	//
-	// if (languageTags == null || languageTags.size() == 0) {
-	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, rootTag, pr);
-	// } else {
-	// return tagRepository.findAllVisibleTags(userUuid, projectName, rootTag, languageTags, pr);
-	// }
-	// }
-
-	// @Override
-	// public Page<GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag,
-	// List<String> languageTags, PagingInfo pagingInfo) {
-	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-	// String userUuid = rc.session().getPrincipal().getString("uuid");
-	//
-	// if (languageTags == null || languageTags.size() == 0) {
-	// return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, pr);
-	// } else {
-	// return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, languageTags, pr);
-	// }
-	// }
 
 }

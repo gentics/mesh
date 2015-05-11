@@ -16,30 +16,34 @@ public interface TagActions {
 	 * @param userUuid
 	 * @param projectName
 	 * @param languageTags
-	 * @param pageingInfo
+	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Tag> findProjectTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pageingInfo);
+	public Page<Tag> findProjectTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all visible tags that are tagging the given tag.
+	 * 
 	 * @param userUuid
 	 * @param projectName
+	 * @param tag
 	 * @param languageTags
-	 * @param pageingInfo
+	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Tag> findTaggingTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pageingInfo);
+	public Page<Tag> findTaggingTags(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all visible tags that are tagged using the given tag.
+	 * 
 	 * @param userUuid
 	 * @param projectName
+	 * @param rootTag
 	 * @param languageTags
-	 * @param pageingInfo
+	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Tag> findTaggedTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pageingInfo);
+	public Page<Tag> findTaggedTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all visible child tags for the given project and roottag. /tags/:uuid/childTags
@@ -48,10 +52,10 @@ public interface TagActions {
 	 * @param projectName
 	 * @param rootTag
 	 * @param languageTags
-	 * @param pageingInfo
+	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Tag> findChildTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pageingInfo);
+	public Page<Tag> findChildTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all visible child contents for a given root tag and project. /tags/:uuid/childContents
@@ -60,10 +64,10 @@ public interface TagActions {
 	 * @param projectName
 	 * @param rootTag
 	 * @param languageTags
-	 * @param pageingInfo
+	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Content> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pageingInfo);
+	public Page<Content> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all visible tags that use this tag for tagging. /tags/:uuid/tags
@@ -72,9 +76,9 @@ public interface TagActions {
 	 * @param projectName
 	 * @param rootTag
 	 * @param languageTags
-	 * @param pageingInfo
+	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Content> findTaggedContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pageingInfo);
+	public Page<Content> findTaggedContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

@@ -9,27 +9,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.model.Content;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.service.ContentService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.rest.tag.response.TagListResponse;
+import com.gentics.mesh.core.rest.content.response.ContentListResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.JsonUtils;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
-public class TagListHandler {
+public class ContentListHandler {
 
 	@Autowired
 	private TagService tagService;
 
 	@Autowired
+	private ContentService contentService;
+
+	@Autowired
 	private RoutingContextService rcs;
 
-	public void handle(RoutingContext rc, TagListCallable tlc) {
+	public void handle(RoutingContext rc, ContentListCallable clc) {
 		String projectName = rcs.getProjectName(rc);
-		TagListResponse listResponse = new TagListResponse();
+		ContentListResponse listResponse = new ContentListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
@@ -37,15 +42,14 @@ public class TagListHandler {
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-			Page<Tag> tagPage = tlc.findTags(projectName, rootTag, languageTags, pagingInfo);
-			for (Tag tag : tagPage) {
-				listResponse.getData().add(tagService.transformToRest(rc, tag));
+			Page<Content> contentPage = clc.findContents(projectName, rootTag, languageTags, pagingInfo);
+			for (Content content : contentPage) {
+				listResponse.getData().add(contentService.transformToRest(rc, content));
 			}
-			RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+			RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 
 		}, trh -> {
 			rc.response().setStatusCode(200).end(JsonUtils.toJson(listResponse));
 		});
 	}
-
 }

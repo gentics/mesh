@@ -23,14 +23,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.ContentService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.JsonUtils;
@@ -170,14 +169,14 @@ public class TagTest extends AbstractDBTest {
 		languageTags.add("de");
 		RoutingContext rc = getMockedRoutingContext();
 
-		// Page<Tag> page = tagService.findAllVisibleProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 10));
-		// assertEquals(11, page.getTotalElements());
-		// assertEquals(10, page.getSize());
+		Page<Tag> page = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 10));
+		assertEquals(11, page.getTotalElements());
+		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		// page = tagService.findAllVisibleProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 14));
-		// assertEquals(16, page.getTotalElements());
-		// assertEquals(14, page.getSize());
+		page = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 14));
+		assertEquals(20, page.getTotalElements());
+		assertEquals(14, page.getSize());
 	}
 
 	@Test

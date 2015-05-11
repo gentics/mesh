@@ -16,19 +16,16 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 
 	TagResponse transformToRest(RoutingContext rc, Tag tag);
 
-	Page<Tag> findAllVisibleTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo);
-
 	/**
-	 * Find all tags that tag the given root tag. (rootTag:Tag)-[:HAS_TAG]->(tag:Tag)
+	 * Find all tags that were assigned to the given project
 	 * 
 	 * @param rc
 	 * @param projectName
-	 * @param rootTag
 	 * @param languageTags
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all tags that are tagged by the given tag. (rootTag:Tag)<-[:HAS_TAG]-(tag:Tag)
@@ -43,7 +40,7 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 	Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
-	 * Find all child contents for the given tag.
+	 * Find all tags that tag the given root tag. (rootTag:Tag)-[:HAS_TAG]->(tag:Tag)
 	 * 
 	 * @param rc
 	 * @param projectName
@@ -52,7 +49,7 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<Content> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all child tags for the given tag.
@@ -65,6 +62,18 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 	 * @return
 	 */
 	Page<Tag> findChildTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+
+	/**
+	 * Find all child contents for the given tag.
+	 * 
+	 * @param rc
+	 * @param projectName
+	 * @param rootTag
+	 * @param languageTags
+	 * @param pagingInfo
+	 * @return
+	 */
+	Page<Content> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all contents that are tagged by the given tag.
