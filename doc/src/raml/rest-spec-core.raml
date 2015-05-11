@@ -689,18 +689,21 @@ schemas:
         description: Tag the tag.
       delete:
         description: Untag the tag.
-    /children:
+    /childTags:
       get:
-        description: Load a list of child elements. (Tags/Contents)
-    /children/{uuid}:
+        description: Load a list of child tags.
+    /childContents:
+      get:
+        description: Load a list of child contents.
+    /childTags/{uuid}:
       uriParameters:
         uuid:
           description: Uuid of the parent tag tag for the elements.
           type: string
       post:
-        description: Assign the element to the tag.
+        description: Assign the tag to the parent tag.
       delete:
-        description: Remove the element from the content.
+        description: Remove the tag from the parent tag.
     /bin/{name}:
       get:
         description: Load the binary property value.
@@ -786,7 +789,7 @@ schemas:
 /admin:
   displayName: Admin
 
-  /neo4vertx/restart:
+  /neo4j/restart:
     is: [ localized ]
     description: Restart the neo4vertx verticle.
     get:

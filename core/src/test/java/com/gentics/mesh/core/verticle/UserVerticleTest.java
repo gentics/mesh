@@ -88,7 +88,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		int perPage = 2;
 		int totalUsers = data().getTotalUsers() +1;
-		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage)) + 1;
+		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, UserListResponse.class);
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
@@ -122,7 +122,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":14}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":1,\"total_count\":14}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}
