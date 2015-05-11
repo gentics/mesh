@@ -21,11 +21,26 @@
 	</properties>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- neo4j -->
+		<dependency>
+			<groupId>org.neo4j.app</groupId>
+			<artifactId>neo4j-server</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j.app</groupId>
+			<artifactId>neo4j-server</artifactId>
+			<classifier>static-web</classifier>
+		</dependency>
+
+
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-navigation</artifactId>
@@ -42,19 +57,7 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- neo4j -->
-		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<version>${neo4j.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<classifier>static-web</classifier>
-			<version>${neo4j.version}</version>
-		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -135,10 +138,6 @@
 					</propertiesUser>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>chronos-jmeter-maven-plugin</artifactId> 
-				<version>1.1.0</version> <configuration> <input>${basedir}/src/test/jmeter/test.jmx</input> 
-				</configuration> <executions> <execution> <goals> <goal>jmeter</goal> </goals> 
-				</execution> </executions> </plugin> -->
 			<!-- Tell surefire to skip test, we are using the failsafe plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
