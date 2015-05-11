@@ -35,7 +35,6 @@ public class DemoRunner {
 			// deployAndWait(vertx, AuthenticationVerticle.class);
 			// deployAndWait(vertx, NavigationVerticle.class);
 			// deployAndWait(vertx, TagCloudVerticle.class);
-			// deployAndWait(vertx, TagVerticle.class);
 			// deployAndWait(vertx, StaticContentVerticle.class);
 			// deployAndWait(vertx, AdminGUIVerticle.class);
 		});
@@ -47,6 +46,8 @@ public class DemoRunner {
 		// // });
 		// // deployAndWait(vertx, "", "TestJSVerticle.js");
 		// });
+
+		// Setup custom config to enable neo4j web console
 		MeshConfiguration config = ConfigurationLoader.createOrloadConfiguration();
 		config.getNeo4jConfiguration().setMode("gui");
 		config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());

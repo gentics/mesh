@@ -184,7 +184,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 				Content content = new Content();
 				contentService.setContent(content, data().getGerman(), "some content " + i);
 				contentService.setFilename(content, data().getGerman(), "index" + i + ".de.html");
-				rootTag.addContent(content);
+				content.getProjects().add(data().getProject());
+				content.setParent(rootTag);
+				contentService.save(content);
+				roleService.addPermission(info.getRole(), content, PermissionType.READ);
 			}
 			tx.success();
 		}
@@ -196,7 +199,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 				+ perPage + "&page=" + page + "&lang=de,en", 200, "OK");
 		ContentListResponse tagList = JsonUtils.readValue(response, ContentListResponse.class);
 		assertEquals(perPage, tagList.getData().size());
-		assertEquals(nContents, tagList.getMetainfo().getTotalCount());
+		assertEquals(nContents + 1, tagList.getMetainfo().getTotalCount());
 		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 		assertEquals(page, tagList.getMetainfo().getCurrentPage());
 		// TODO assert two contents

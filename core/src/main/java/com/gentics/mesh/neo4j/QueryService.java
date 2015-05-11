@@ -33,15 +33,16 @@ public class QueryService {
 			log.debug("Parameters: " + parameters);
 			log.debug("Paging: " + pagingInfo);
 		}
-		System.out.println(query);
-		System.out.println(parameters);
+//		System.out.println(query);
+//		System.out.println(parameters);
+//		System.out.println(pagingInfo.getPage());
 		Result<Map<String, Object>> result = neo4jTemplate.query(query, parameters);
 		List<T> nodes = new ArrayList<>();
 
 		for (Map<String, Object> r : result.slice(pagingInfo.getPage() - 1, pagingInfo.getPerPage())) {
-			T tag = (T) neo4jTemplate.getDefaultConverter().convert(r.get("n"), classOfT);
-			if (tag != null) {
-				nodes.add(tag);
+			T node = (T) neo4jTemplate.getDefaultConverter().convert(r.get("n"), classOfT);
+			if (node != null) {
+				nodes.add(node);
 			}
 		}
 		Map<String, Object> countResult = neo4jTemplate.query(countQuery, parameters).singleOrNull();

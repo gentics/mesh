@@ -21,6 +21,7 @@ public class TagRepositoryImpl implements TagActions {
 	static String USER_PERMISSION_FILTER = " requestUser.uuid = {userUuid} AND perm.`permissions-read` = true ";
 	static String PROJECT_FILTER = "pr.name = {projectName} ";
 	static String ROOT_TAG_FILTER = "id(rootTag) = {rootTagId} ";
+	static String ORDER_BY_NAME = "ORDER BY p.`properties-name` desc";
 
 	@Autowired
 	Neo4jTemplate neo4jTemplate;
@@ -87,7 +88,7 @@ public class TagRepositoryImpl implements TagActions {
 		baseQuery += "MATCH (rootTag:Tag)<-[:HAS_TAG]-(tag)-[la:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
 		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
 
-		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
+		String query = baseQuery + " WITH sp, tag ORDER BY " + ORDER_BY_NAME + " RETURN DISTINCT tag as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
@@ -109,7 +110,7 @@ public class TagRepositoryImpl implements TagActions {
 		baseQuery += "MATCH (rootTag:Tag)<-[:HAS_PARENT_TAG]-(tag)-[la:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
 		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER + " AND " + ROOT_TAG_FILTER;
 
-		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
+		String query = baseQuery + " WITH sp, tag " + ORDER_BY_NAME + " RETURN DISTINCT tag as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
@@ -125,20 +126,22 @@ public class TagRepositoryImpl implements TagActions {
 		String langFilter = getLanguageFilter("l");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
+		} else {
+			langFilter += " AND ";
 		}
 		String baseQuery = PERMISSION_PATTERN_ON_CONTENT;
 		baseQuery += "MATCH (content)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
-		baseQuery += "MATCH (rootTag:Tag)-[:HAS_PARENT_TAG]->(content)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
-		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
+		baseQuery += "MATCH (rootTag:Tag)<-[:HAS_PARENT_TAG]-(content) ";
+		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER + " AND " + ROOT_TAG_FILTER;
 
-		String query = baseQuery + " WITH sp, content ORDER BY sp.`properties-name` desc RETURN DISTINCT content as n";
+		String query = baseQuery + " WITH p, content " + ORDER_BY_NAME + " RETURN DISTINCT content as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT content) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("languageTags", languageTags);
 		parameters.put("projectName", projectName);
 		parameters.put("userUuid", userUuid);
-		parameters.put("rootTag", rootTag);
+		parameters.put("rootTagId", rootTag.getId());
 		return queryService.query(query, countQuery, parameters, pagingInfo, Content.class);
 	}
 
@@ -153,7 +156,7 @@ public class TagRepositoryImpl implements TagActions {
 		baseQuery += "MATCH (rootTag:Tag)-[:HAS_PARENT_TAG]->(content)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
 		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
 
-		String query = baseQuery + " WITH sp, content ORDER BY sp.`properties-name` desc RETURN DISTINCT content";
+		String query = baseQuery + " WITH sp, content " + ORDER_BY_NAME + " RETURN DISTINCT content as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT content) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
