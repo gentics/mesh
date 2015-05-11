@@ -70,14 +70,13 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		Tag noPermTag = new Tag();
 		try (Transaction tx = graphDb.beginTx()) {
 			noPermTag = data().addTag(data().getNews(), "NoPermEN", "NoPermDE");
-			// noPermTag = tagService.save(noPermTag);
+			noPermTag = tagService.save(noPermTag);
 			tx.success();
 		}
-		noPermTag = tagService.reload(noPermTag);
 		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/", 200, "OK");
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags", 200, "OK");
 		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
@@ -89,7 +88,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		int totalPages = (int) Math.ceil(totalTags / (double) perPage) + 1;
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 1; page < totalPages; page++) {
-			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + page, 200, "OK");
+			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, TagListResponse.class);
 			int expectedItemsCount = perPage;
 			// The last page should only list 5 items
@@ -114,18 +113,18 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 0, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + 0, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		perPage = 25;
 		totalPages = (int) Math.ceil(totalTags / (double) perPage) + 1;
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/?per_page=" + perPage + "&page=" + 4242, 200, "OK");
+		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + 4242, 200, "OK");
 		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":" + totalPages + ",\"total_count\":" + totalTags
 				+ "}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);

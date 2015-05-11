@@ -20,6 +20,7 @@ import java.util.Set;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
@@ -35,11 +36,11 @@ import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
-import com.gentics.mesh.core.rest.tag.response.TagChildrenListResponse;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.ContentListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.RestModelPagingHelper;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -282,7 +283,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	}
 
 	// TODO filtering, sorting
-	// TODO check filtering by project name
 	private void addReadHandler() {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
@@ -292,11 +292,24 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			});
 		});
 
-		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
+		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			tagListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
-				return tagService.findProjectTags(rc, projectName, languageTags, pagingInfo);
+			String projectName = rcs.getProjectName(rc);
+			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
+				TagListResponse listResponse = new TagListResponse();
+				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+				Page<Tag> tagPage = tagService.findProjectTags(rc, projectName, languageTags, pagingInfo);
+				for (Tag tag : tagPage) {
+					listResponse.getData().add(tagService.transformToRest(rc, tag));
+				}
+				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+				bcr.complete(listResponse);
+			}, arh -> {
+				TagListResponse listResponse = arh.result();
+				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
+
 		});
 
 	}
