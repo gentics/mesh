@@ -18,9 +18,9 @@ public class TagRepositoryImpl implements TagActions {
 
 	static String PERMISSION_PATTERN_ON_TAG = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
 	static String PERMISSION_PATTERN_ON_CONTENT = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(content:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
-	static String USER_PERMISSION_FILTER = " requestUser.uuid = {userUuid} AND perm.`permissions-read` = true";
-	static String PROJECT_FILTER = "pr.name = {projectName}";
-	static String LANGUAGE_TAG_FILTER = " l.languageTag IN {languageTags} ";
+	static String USER_PERMISSION_FILTER = " requestUser.uuid = {userUuid} AND perm.`permissions-read` = true ";
+	static String PROJECT_FILTER = "pr.name = {projectName} ";
+	static String ROOT_TAG_FILTER = "id(rootTag) = {rootTagId} ";
 
 	@Autowired
 	Neo4jTemplate neo4jTemplate;
@@ -28,9 +28,14 @@ public class TagRepositoryImpl implements TagActions {
 	@Autowired
 	private QueryService queryService;
 
+	public static String getLanguageFilter(String field) {
+		String filter = " " + field + ".languageTag IN {languageTags} ";
+		return filter;
+	}
+
 	public Page<Tag> findProjectTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 
-		String extraFilter = LANGUAGE_TAG_FILTER;
+		String extraFilter = getLanguageFilter("l");
 		if (languageTags == null || languageTags.isEmpty()) {
 			extraFilter = "";
 		}
@@ -38,7 +43,7 @@ public class TagRepositoryImpl implements TagActions {
 		baseQuery += "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
 		baseQuery += "WHERE " + extraFilter + " AND " + USER_PERMISSION_FILTER + "AND " + PROJECT_FILTER;
 
-		String query = baseQuery + " WITH p, tag ORDER BY p.`properties-name` desc RETURN DISTINCT tag";
+		String query = baseQuery + " WITH p, tag ORDER BY p.`properties-name` desc RETURN DISTINCT tag as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
@@ -50,7 +55,7 @@ public class TagRepositoryImpl implements TagActions {
 
 	@Override
 	public Page<Tag> findTaggingTags(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-		String langFilter = LANGUAGE_TAG_FILTER;
+		String langFilter = getLanguageFilter("l");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
 		}
@@ -60,7 +65,7 @@ public class TagRepositoryImpl implements TagActions {
 		baseQuery += "MATCH (rootTag:Tag)-[:HAS_TAG]->(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
 		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
 
-		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag";
+		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
@@ -73,16 +78,16 @@ public class TagRepositoryImpl implements TagActions {
 
 	@Override
 	public Page<Tag> findTaggedTags(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-		String langFilter = LANGUAGE_TAG_FILTER;
+		String langFilter = getLanguageFilter("la");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
 		}
 		String baseQuery = PERMISSION_PATTERN_ON_TAG;
 		baseQuery += "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
-		baseQuery += "MATCH (rootTag:Tag)<-[:HAS_TAG]-(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
+		baseQuery += "MATCH (rootTag:Tag)<-[:HAS_TAG]-(tag)-[la:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
 		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
 
-		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag";
+		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
@@ -95,29 +100,29 @@ public class TagRepositoryImpl implements TagActions {
 
 	@Override
 	public Page<Tag> findChildTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		String langFilter = LANGUAGE_TAG_FILTER;
+		String langFilter = getLanguageFilter("la");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
 		}
 		String baseQuery = PERMISSION_PATTERN_ON_TAG;
 		baseQuery += "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
-		baseQuery += "MATCH (rootTag:Tag)-[:HAS_PARENT_TAG]->(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
-		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
+		baseQuery += "MATCH (rootTag:Tag)<-[:HAS_PARENT_TAG]-(tag)-[la:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
+		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER + " AND " + ROOT_TAG_FILTER;
 
-		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag";
+		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("languageTags", languageTags);
 		parameters.put("projectName", projectName);
 		parameters.put("userUuid", userUuid);
-		parameters.put("rootTag", rootTag);
+		parameters.put("rootTagId", rootTag.getId());
 		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
 	}
 
 	@Override
 	public Page<Content> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		String langFilter = LANGUAGE_TAG_FILTER;
+		String langFilter = getLanguageFilter("l");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
 		}
@@ -126,7 +131,7 @@ public class TagRepositoryImpl implements TagActions {
 		baseQuery += "MATCH (rootTag:Tag)-[:HAS_PARENT_TAG]->(content)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
 		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
 
-		String query = baseQuery + " WITH sp, content ORDER BY sp.`properties-name` desc RETURN DISTINCT content";
+		String query = baseQuery + " WITH sp, content ORDER BY sp.`properties-name` desc RETURN DISTINCT content as n";
 		String countQuery = baseQuery + " RETURN count(DISTINCT content) as count";
 
 		Map<String, Object> parameters = new HashMap<>();
@@ -139,7 +144,7 @@ public class TagRepositoryImpl implements TagActions {
 
 	@Override
 	public Page<Content> findTaggedContents(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-		String langFilter = LANGUAGE_TAG_FILTER;
+		String langFilter = getLanguageFilter("l");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
 		}

@@ -323,30 +323,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addChildTagsHandlers() {
 		Route getRoute = route("/:uuid/childTags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-			TagChildrenListResponse listResponse = new TagChildrenListResponse();
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Tag> rh) -> {
-				Tag rootTag = rh.result();
-
-				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-
-				// Page<GenericPropertyContainer> containerPage = tagService.findAllVisibleChildTags(rc, projectName, rootTag,
-				// languageTags, pagingInfo);
-				// for (GenericPropertyContainer container : containerPage) {
-				// if (container instanceof Content) {
-				// listResponse.getData().add(contentService.transformToRest(rc, (Content) container));
-				// } else if (container instanceof Tag) {
-				// listResponse.getData().add(tagService.transformToRest(rc, (Tag) container));
-				// } else {
-				// //ERROR
-				// }
-				// }
-				// RestModelPagingHelper.setPaging(listResponse, containerPage, pagingInfo);
-				}, trh -> {
-					rc.response().setStatusCode(200).end(toJson(listResponse));
-				});
+			tagListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
+				return tagService.findChildTags(rc, projectName, rootTag, languageTags, pagingInfo);
+			});
 		});
 
 		Route postRoute = route("/:tagUuid/childTags/:tagChildUuid").method(POST).produces(APPLICATION_JSON);

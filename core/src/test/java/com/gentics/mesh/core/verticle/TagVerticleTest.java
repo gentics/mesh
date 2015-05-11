@@ -132,56 +132,27 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagsForRootTag() throws Exception {
-		Tag rootTag = data().getRootTag();
-		int perPage = 6;
-		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/children/?per_page=" + perPage
-				+ "&page=" + page + "&lang=de,en", 200, "OK");
-		System.out.println(response);
-		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
-		assertEquals(4, tagList.getData().size());
-		assertEquals(4, tagList.getMetainfo().getTotalCount());
-		assertEquals(2, tagList.getMetainfo().getPageCount());
-		assertEquals(page, tagList.getMetainfo().getCurrentPage());
-		// TODO assert two tags
-	}
-
-	@Test
-	public void testReadChildrenForRootTag() throws Exception {
-		RootTag root = data().getRootTag();
-		//TODO add content to root tag
-
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + root.getUuid() + "/children", 200, "OK");
-
-	}
-
-	@Test
-	public void testReadChildrenForTag() throws Exception {
+	public void testReadChildTagsForTag() throws Exception {
 		Tag rootTag = data().getNews();
 		int perPage = 6;
 		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/children/?per_page=" + perPage
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
 				+ "&page=" + page + "&lang=en", 200, "OK");
 		TagChildrenListResponse listResponse = JsonUtils.readValue(response, TagChildrenListResponse.class);
-		assertEquals(3, listResponse.getData().size());
-		assertEquals(3, listResponse.getMetainfo().getTotalCount());
+		assertEquals("The response did not contain the correct amount of child tags. {" + response + "}", 2, listResponse.getData().size());
+		assertEquals(2, listResponse.getMetainfo().getTotalCount());
 		assertEquals(1, listResponse.getMetainfo().getPageCount());
 		assertEquals(page, listResponse.getMetainfo().getCurrentPage());
 
-		System.out.println(listResponse.getData().get(0).getClass());
-		ContentResponse foundContent = (ContentResponse) listResponse.getData().get(0);
-		assertEquals("News Overview english", foundContent.getProperty("en", "name"));
-
-		TagResponse foundTag = (TagResponse) listResponse.getData().get(1);
+		TagResponse foundTag = (TagResponse) listResponse.getData().get(0);
 		assertEquals("2015", foundTag.getProperty("en", "name"));
- 
-		TagResponse foundTag2 = (TagResponse) listResponse.getData().get(2);
+
+		TagResponse foundTag2 = (TagResponse) listResponse.getData().get(1);
 		assertEquals("2014", foundTag2.getProperty("en", "name"));
 	}
 
 	@Test
-	public void testReadChildrenWithLanguageTags() throws Exception {
+	public void testReadChildTagsnWithLanguageTags() throws Exception {
 		Tag rootTag = data().getNews();
 
 		try (Transaction tx = graphDb.beginTx()) {
@@ -193,7 +164,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		int perPage = 6;
 		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/children/?per_page=" + perPage
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
 				+ "&page=" + page + "&lang=de", 200, "OK");
 		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(1, tagList.getData().size());
@@ -204,7 +175,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadContentsWithLanguageTags() throws Exception {
+	public void testReadChildContentsWithLanguageTags() throws Exception {
 		Tag rootTag = data().getNews();
 
 		int nContents = 42;
@@ -221,29 +192,14 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		int perPage = 6;
 		int page = 1;
 		int totalPages = (int) Math.ceil(nContents / (double) perPage) + 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/contents/?per_page=" + perPage
-				+ "&page=" + page + "&lang=de,en", 200, "OK");
+		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childContents?per_page="
+				+ perPage + "&page=" + page + "&lang=de,en", 200, "OK");
 		ContentListResponse tagList = JsonUtils.readValue(response, ContentListResponse.class);
 		assertEquals(perPage, tagList.getData().size());
 		assertEquals(nContents, tagList.getMetainfo().getTotalCount());
 		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 		assertEquals(page, tagList.getMetainfo().getCurrentPage());
 		// TODO assert two contents
-	}
-
-	@Test
-	public void testReadSubContentsWithNoOptions() {
-		// "/tags/hhh/contents"
-	}
-
-	@Test
-	public void testReadSubContentsWithoutLanguageTags() {
-
-	}
-
-	@Test
-	public void testReadSubContentsWithoutRootTagReadPerm() {
-
 	}
 
 	@Test
@@ -258,65 +214,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagWithTagsDisabled() throws Exception {
-		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?tags=false", 200, "OK");
-		assertFalse(response.indexOf("\"tags\":") > 0);
-	}
-
-	@Test
-	public void testReadTagWithTagsEnabled() throws Exception {
-		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?tags=true", 200, "OK");
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-//		assertNotNull(restTag.getTags());
-	}
-
-	@Test
-	public void testReadTagWithContentsEnabled() throws Exception {
-		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childContents=true", 200, "OK");
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-//		assertNotNull(restTag.getContents());
-	}
-
-	@Test
-	public void testReadTagWithContentsDisabled() throws Exception {
-		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childContents=false", 200, "OK");
-		assertFalse("The contents field should not be loaded or returned in the response but it was. {" + response + "}",
-				response.indexOf("\"contents\":") > 0);
-	}
-
-	@Test
-	public void testReadTagWithChildTagsEnabled() throws Exception {
-		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childTags=true", 200, "OK");
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-//		assertNotNull(restTag.getChildTags());
-	}
-
-	@Test
-	public void testReadTagWithChildTagsDisabled() throws Exception {
-		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?childTags=false", 200, "OK");
-		assertFalse(response.indexOf("\"childTags\":") > 0);
-
-	}
-
-	@Test
 	@Ignore("removed depth param")
 	public void testReadTagByUUIDWithDepthParam() throws Exception {
 
@@ -326,19 +223,19 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=3&lang=de,en", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 
-//		assertEquals(2, restTag.getTags().size());
-//		TagResponse childTag1 = restTag.getTags().get(0);
-//		assertNotNull(childTag1.getUuid());
-//		assertEquals("2014", childTag1.getProperty("en", "name"));
-//
-//		TagResponse childTag2 = restTag.getTags().get(1);
-//		assertNotNull(childTag2.getUuid());
-//		assertEquals("2015", childTag2.getProperty("en", "name"));
-//
-//		assertEquals(1, childTag1.getTags().size());
-//		TagResponse childTagOfChildTag = childTag1.getTags().get(0);
-//		assertNotNull(childTagOfChildTag.getUuid());
-//		assertEquals("March", childTagOfChildTag.getProperty("en", "name"));
+		//		assertEquals(2, restTag.getTags().size());
+		//		TagResponse childTag1 = restTag.getTags().get(0);
+		//		assertNotNull(childTag1.getUuid());
+		//		assertEquals("2014", childTag1.getProperty("en", "name"));
+		//
+		//		TagResponse childTag2 = restTag.getTags().get(1);
+		//		assertNotNull(childTag2.getUuid());
+		//		assertEquals("2015", childTag2.getProperty("en", "name"));
+		//
+		//		assertEquals(1, childTag1.getTags().size());
+		//		TagResponse childTagOfChildTag = childTag1.getTags().get(0);
+		//		assertNotNull(childTagOfChildTag.getUuid());
+		//		assertEquals("March", childTagOfChildTag.getProperty("en", "name"));
 	}
 
 	@Test
