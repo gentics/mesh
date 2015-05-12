@@ -21,6 +21,13 @@
 	</properties>
 
 	<dependencies>
+		<!-- This is a workaround/hack - We need to specifiy the lucene index dependency. 
+			Otherwise the fatjar is not build correctly. -->
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-lucene-index</artifactId>
+			<version>${neo4j.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>

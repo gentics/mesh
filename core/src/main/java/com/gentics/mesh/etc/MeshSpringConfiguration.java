@@ -69,12 +69,14 @@ public class MeshSpringConfiguration extends Neo4jConfiguration {
 					log.info("Deployed neo4vertx => " + handler.result());
 					if (handler.failed()) {
 						log.error("Could not deploy neo4vertx. Aborting..");
-						// TODO safe exit
-			} else {
-				log.info("Neo4Vertx deployed successfully");
-			}
+						log.error("Error:", handler.cause());
+						/* TODO safe exit */
+						System.exit(10);
+					} else {
+						log.info("Neo4Vertx deployed successfully");
+					}
 
-			// TODO handle exceptions
+					// TODO handle exceptions
 				latch.countDown();
 			});
 		latch.await();
