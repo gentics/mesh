@@ -21,26 +21,11 @@
 	</properties>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<!-- neo4j -->
-		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<classifier>static-web</classifier>
-		</dependency>
-
-
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-navigation</artifactId>
@@ -56,8 +41,11 @@
 			<artifactId>mesh-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-
+		<dependency>
+			<groupId>org.openpcf</groupId>
+			<artifactId>neo4vertx-gui-extension</artifactId>
+			<version>${neo4vertx.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

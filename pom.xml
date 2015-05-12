@@ -22,6 +22,7 @@
 		<neo4j.version>2.1.8</neo4j.version>
 		<neo4j.cypher.version>2.1.4</neo4j.cypher.version>
 		<spring.version>4.0.7.RELEASE</spring.version>
+		<neo4vertx.version>2.0.0-SNAPSHOT</neo4vertx.version>
 	</properties>
 
 	<parent>
@@ -83,28 +84,12 @@
 				<artifactId>neo4j-cypher-dsl</artifactId>
 				<version>${neo4j.cypher.version}</version>
 			</dependency>
+
+			<!-- neo4vertx -->
 			<dependency>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j-ha</artifactId>
-				<version>${neo4j.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j</artifactId>
-				<version>${neo4j.version}</version>
-			</dependency>
-			<!-- Neo4j Web GUI -->
-			<dependency>
-				<groupId>org.neo4j.app</groupId>
-				<artifactId>neo4j-server</artifactId>
-				<version>${neo4j.version}</version>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.neo4j.app</groupId>
-				<artifactId>neo4j-server</artifactId>
-				<classifier>static-web</classifier>
-				<version>${neo4j.version}</version>
+				<groupId>org.openpcf</groupId>
+				<artifactId>neo4vertx-core</artifactId>
+				<version>${neo4vertx.version}</version>
 			</dependency>
 
 

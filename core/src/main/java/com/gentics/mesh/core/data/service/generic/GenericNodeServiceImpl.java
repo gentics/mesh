@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.service.generic;
 
 import java.util.List;
 
-import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,12 +81,8 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Override
 	public T findByUUID(String uuid) {
-		try {
-			return nodeRepository.findByUUID(uuid);
-		} catch (EntityNotFoundException e) {
-			//log.debug("Could not find object by uuid {"+ uuid + "}", e);
-			return null;
-		}
+		return nodeRepository.findByUUID(uuid);
+
 	}
 
 	@Override

@@ -5,7 +5,6 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -19,9 +18,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.GraphPermission;
 import com.gentics.mesh.core.data.model.auth.Group;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
@@ -57,11 +56,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public Role findByUUID(String uuid) {
-		try {
-			return roleRepository.findByUUID(uuid);
-		} catch (EntityNotFoundException e) {
-			return null;
-		}
+		return roleRepository.findByUUID(uuid);
 	}
 
 	@Override

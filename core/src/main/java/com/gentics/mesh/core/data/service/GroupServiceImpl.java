@@ -4,7 +4,6 @@ import io.vertx.ext.apex.RoutingContext;
 
 import java.util.Collections;
 
-import org.neo4j.cypher.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -33,12 +32,7 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 
 	@Override
 	public Group findByUUID(String uuid) {
-		try {
-			return groupRepository.findByUUID(uuid);
-		} catch (EntityNotFoundException e) {
-			//TODO log error
-			return null;
-		}
+		return groupRepository.findByUUID(uuid);
 	}
 
 	// TODO handle depth
