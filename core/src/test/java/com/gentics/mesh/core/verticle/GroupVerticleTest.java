@@ -18,9 +18,9 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.GroupRoot;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.group.response.GroupListResponse;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
@@ -151,7 +150,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		int totalGroups = nGroups + data().getTotalGroups();
+		int totalGroups = nGroups + data().getGroups().size();
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/", 200, "OK");

@@ -6,7 +6,7 @@ import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 
 @RelationshipEntity
@@ -16,23 +16,23 @@ public class Linked extends AbstractPersistable {
 
 	@JsonIgnore
 	@StartNode
-	private Content startContent;
+	private MeshNode startContent;
 
 	@EndNode
-	private Content endContent;
+	private MeshNode endContent;
 
-	public Linked(Content startPage, Content endPage) {
+	public Linked(MeshNode startPage, MeshNode endPage) {
 		this.startContent = startPage;
 		this.endContent = endPage;
 	}
 
 	@JsonIgnore
-	public Content getStartPage() {
+	public MeshNode getStartPage() {
 		return startContent;
 	}
 
 	@JsonIgnore
-	public Content getEndPage() {
+	public MeshNode getEndPage() {
 		return endContent;
 	}
 

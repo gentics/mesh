@@ -36,7 +36,7 @@ public class QueryServiceTest extends AbstractDBTest {
 		}
 
 		// Exclude the root tag
-		assertEquals(data().getTotalTags() - 1, tagPage.getTotalElements());
+		assertEquals(data().getTags().size() - 1, tagPage.getTotalElements());
 
 	}
 }

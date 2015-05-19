@@ -41,7 +41,7 @@ public class WebRootServiceImpl implements WebRootService {
 		Path tagPath = new Path();
 
 		// Traverse the graph and buildup the result path while doing so
-		Node currentNode = neo4jTemplate.getPersistentState(project.getRootTag());
+		Node currentNode = neo4jTemplate.getPersistentState(project.getRootNode());
 		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i];
 

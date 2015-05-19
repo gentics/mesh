@@ -42,21 +42,21 @@ public class Tag extends GenericPropertyContainer {
 	//	@RelatedTo(type = BasicRelationships.HAS_TAG, direction = Direction.INCOMING, elementClass = Content.class)
 	//	private Set<Content> contents = new HashSet<>();
 
-	@RelatedTo(type = BasicRelationships.HAS_PARENT_TAG, direction = Direction.INCOMING, elementClass = GenericPropertyContainer.class)
+	@RelatedTo(type = BasicRelationships.HAS_PARENT_NODE, direction = Direction.INCOMING, elementClass = GenericPropertyContainer.class)
 	private Set<Tag> childTags;
 
-	@RelatedTo(type = BasicRelationships.HAS_PARENT_TAG, direction = Direction.INCOMING, elementClass = GenericPropertyContainer.class)
-	private Set<Content> childContents;
+	@RelatedTo(type = BasicRelationships.HAS_PARENT_NODE, direction = Direction.INCOMING, elementClass = GenericPropertyContainer.class)
+	private Set<MeshNode> childContents;
 
-	public void addContent(Content content) {
+	public void addContent(MeshNode content) {
 		this.childContents.add(content);
 	}
 
-	public Set<Content> getContents() {
+	public Set<MeshNode> getContents() {
 		return childContents;
 	}
 
-	public boolean removeContent(Content content) {
+	public boolean removeContent(MeshNode content) {
 		return childContents.remove(content);
 	}
 
@@ -65,7 +65,7 @@ public class Tag extends GenericPropertyContainer {
 		return new HashSet<Tag>();
 	}
 
-	public Set<Content> getChildContents() {
+	public Set<MeshNode> getChildContents() {
 		return childContents;
 	}
 }

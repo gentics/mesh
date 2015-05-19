@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.demo.DemoDataProvider;
 
@@ -47,7 +47,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rc -> {
-			Content content = contentService.findOne(23L);
+			MeshNode content = nodeService.findOne(23L);
 			rc.session().hasPermission(new MeshPermission(content, READ).toString(), handler -> {
 				rc.response().end("User perm for node {" + content.getId() + "} : " + (handler.result() ? "jow" : "noe"));
 			});

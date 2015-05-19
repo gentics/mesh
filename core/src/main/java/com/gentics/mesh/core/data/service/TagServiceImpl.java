@@ -14,7 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -37,7 +37,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	private LanguageService languageService;
 
 	@Autowired
-	private ContentService contentService;
+	private MeshNodeService nodeService;
 
 	@Autowired
 	private ProjectService projectService;
@@ -63,7 +63,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		info.setUserService(userService);
 		info.setLanguageService(languageService);
 		info.setGraphDb(graphDb);
-		info.setContentService(contentService);
+		info.setContentService(nodeService);
 		info.setSpringConfiguration(springConfiguration);
 		info.setTagService(this);
 		info.setNeo4jTemplate(neo4jTemplate);
@@ -86,20 +86,20 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		return restTag;
 	}
 
-	@Override
-	public Page<Tag> findChildTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findChildTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
-	}
+//	@Override
+//	public Page<Tag> findChildTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+//		String userUuid = rc.session().getPrincipal().getString("uuid");
+//		return tagRepository.findChildTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
+//	}
+//
+//	@Override
+//	public Page<MeshNode> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+//		String userUuid = rc.session().getPrincipal().getString("uuid");
+//		return tagRepository.findChildContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
+//	}
 
 	@Override
-	public Page<Content> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findChildContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
-	}
-
-	@Override
-	public Page<Content> findTaggedContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> findTaggedContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 		return tagRepository.findTaggedContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
 	}
@@ -110,16 +110,16 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		return tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
 	}
 
-	@Override
-	public Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findTaggedTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
-	}
-
-	@Override
-	public Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findTaggingTags(userUuid, projectName, tag, languageTags, pagingInfo);
-	}
+//	@Override
+//	public Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+//		String userUuid = rc.session().getPrincipal().getString("uuid");
+//		return tagRepository.findTaggedTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
+//	}
+//
+//	@Override
+//	public Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
+//		String userUuid = rc.session().getPrincipal().getString("uuid");
+//		return tagRepository.findTaggingTags(userUuid, projectName, tag, languageTags, pagingInfo);
+//	}
 
 }

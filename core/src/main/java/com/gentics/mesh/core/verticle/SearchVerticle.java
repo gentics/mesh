@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.repository.ContentRepository;
+import com.gentics.mesh.core.repository.MeshNodeRepository;
 import com.gentics.mesh.core.repository.TagRepository;
 
 @Component
@@ -15,7 +15,7 @@ import com.gentics.mesh.core.repository.TagRepository;
 public class SearchVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
-	private ContentRepository contentRepository;
+	private MeshNodeRepository contentRepository;
 
 	@Autowired
 	private TagRepository tagRepository;

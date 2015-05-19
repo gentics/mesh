@@ -6,11 +6,11 @@ import java.util.function.Consumer;
 
 import org.neo4j.graphdb.Transaction;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 
-public class ContentTraversalConsumer implements Consumer<Content> {
+public class ContentTraversalConsumer implements Consumer<MeshNode> {
 
 	private TransformationInfo info;
 	private int currentDepth;
@@ -25,7 +25,7 @@ public class ContentTraversalConsumer implements Consumer<Content> {
 	}
 
 	@Override
-	public void accept(Content content) {
+	public void accept(MeshNode content) {
 		try (Transaction tx = info.getGraphDb().beginTx()) {
 //			String currentUuid = content.getUuid();
 //			info.getRoutingContext()

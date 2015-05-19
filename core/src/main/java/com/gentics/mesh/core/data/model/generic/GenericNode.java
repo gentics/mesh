@@ -6,12 +6,10 @@ import java.util.Set;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.relationship.Locked;
 
 /**
  * This class represents a basic mesh node. All models that make use of this model will automatically be able to be handled by the permission system.
@@ -30,8 +28,8 @@ public class GenericNode extends AbstractPersistable {
 	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
 	protected User creator;
 
-	@RelatedToVia(type = BasicRelationships.IS_LOCKED, direction = Direction.OUTGOING, elementClass = Locked.class)
-	protected Locked locked;
+//	@RelatedToVia(type = BasicRelationships.IS_LOCKED, direction = Direction.OUTGOING, elementClass = Locked.class)
+//	protected Locked locked;
 
 	public User getCreator() {
 		return creator;
@@ -53,12 +51,12 @@ public class GenericNode extends AbstractPersistable {
 		return this.projects.remove(project);
 	}
 
-	public boolean isLocked() {
-		if (locked == null) {
-			return false;
-		} else {
-			return locked.isValidLock();
-		}
-	}
+//	public boolean isLocked() {
+//		if (locked == null) {
+//			return false;
+//		} else {
+//			return locked.isValidLock();
+//		}
+//	}
 
 }

@@ -11,12 +11,9 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Content;
-import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.rest.content.response.ContentResponse;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import com.gentics.mesh.core.verticle.WebRootVerticle;
+import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
 
@@ -34,27 +31,27 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByPath() throws Exception {
 
 		String englishPath = data().getPathForNews2015Tag(data().getEnglish());
-		Tag tag = data().getNews2015();
+		MeshNode folder = data().getFolder("news2015");
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath;
 		String response = request(info, GET, path, 200, "OK");
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-		test.assertTag(tag, restTag);
+		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		test.assertMeshNode(folder, restNode);
 		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
-				restTag.getProperties("de"));
+				restNode.getProperties("de"));
 		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
-				restTag.getProperties("en"));
+				restNode.getProperties("en"));
 	}
 
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/categories/Plane/Concorde.en.html?lang=en,de";
-		Content concordeContent = data().getConcorde();
+		MeshNode concordeNode = data().getContent("concorde");
 		String response = request(info, GET, path, 200, "OK");
 		System.out.println(response);
-		ContentResponse restContent = JsonUtils.readValue(response, ContentResponse.class);
-		test.assertContent(concordeContent, restContent);
-		assertNotNull(restContent.getProperties("de"));
-		assertNotNull(restContent.getProperties("en"));
+		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		test.assertMeshNode(concordeNode, restNode);
+		assertNotNull(restNode.getProperties("de"));
+		assertNotNull(restNode.getProperties("en"));
 	}
 
 	@Test
@@ -67,10 +64,10 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByPathWithoutPerm() throws Exception {
 		try (Transaction tx = graphDb.beginTx()) {
 			String englishPath = data().getPathForNews2015Tag(data().getEnglish());
-			Tag tag = data().getNews2015();
-			roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
+			MeshNode newsFolder = data().getFolder("News2015");
+			roleService.revokePermission(info.getRole(), newsFolder, PermissionType.READ);
 			String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
-			expectMessageResponse("error_missing_perm", response, data().getNews().getUuid());
+			expectMessageResponse("error_missing_perm", response, newsFolder.getUuid());
 			tx.success();
 		}
 	}
@@ -79,10 +76,10 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	public void testReadContentByValidPath() throws Exception {
 		try (Transaction tx = graphDb.beginTx()) {
 			String englishPath = data().getPathForNews2015Tag(data().getEnglish());
-			Tag tag = data().getNews2015();
+			MeshNode folder = data().getFolder("news2015");
 			String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 200, "OK");
-			TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-			test.assertTag(tag, restTag);
+			MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+			test.assertMeshNode(folder, restNode);
 			tx.success();
 		}
 	}

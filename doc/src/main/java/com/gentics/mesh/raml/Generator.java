@@ -16,14 +16,14 @@ import com.gentics.mesh.core.rest.common.response.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.response.PagingMetaInfo;
-import com.gentics.mesh.core.rest.content.request.ContentCreateRequest;
-import com.gentics.mesh.core.rest.content.request.ContentUpdateRequest;
-import com.gentics.mesh.core.rest.content.response.ContentListResponse;
-import com.gentics.mesh.core.rest.content.response.ContentResponse;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.group.response.GroupListResponse;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
+import com.gentics.mesh.core.rest.meshnode.request.MeshNodeCreateRequest;
+import com.gentics.mesh.core.rest.meshnode.request.MeshNodeUpdateRequest;
+import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
+import com.gentics.mesh.core.rest.meshnode.response.NodeListResponse;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.project.response.ProjectListResponse;
@@ -266,7 +266,7 @@ public class Generator {
 		schemaReference.setSchemaUuid(getUUID());
 
 		String lang = "de";
-		ContentResponse content = new ContentResponse();
+		MeshNodeResponse content = new MeshNodeResponse();
 		content.setUuid(getUUID());
 		content.setCreator(getUser());
 		content.addProperty(lang, "name", "Name for language tag de-DE");
@@ -277,14 +277,14 @@ public class Generator {
 		content.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		write(content);
 
-		ContentUpdateRequest contentUpdate = new ContentUpdateRequest();
+		MeshNodeUpdateRequest contentUpdate = new MeshNodeUpdateRequest();
 		contentUpdate.setUuid(getUUID());
 		contentUpdate.addProperty(lang, "filename", "index-renamed.en.html");
 		write(contentUpdate);
 
 		lang = "en";
-		ContentCreateRequest contentCreate = new ContentCreateRequest();
-		contentCreate.setTagUuid(getUUID());
+		MeshNodeCreateRequest contentCreate = new MeshNodeCreateRequest();
+		contentCreate.setParentNodeUuid(getUUID());
 		contentCreate.addProperty(lang, "filename", "index.en.html");
 		contentCreate.addProperty(lang, "content", "English content");
 		contentCreate.addProperty(lang, "title", "English title");
@@ -301,7 +301,7 @@ public class Generator {
 		contentCreate.setSchema(schemaReference);
 		write(contentCreate);
 
-		ContentResponse content2 = new ContentResponse();
+		MeshNodeResponse content2 = new MeshNodeResponse();
 		content2.setUuid(getUUID());
 		content2.setCreator(getUser());
 		lang = "en";
@@ -312,7 +312,7 @@ public class Generator {
 		content2.setSchema(schemaReference);
 		content2.setPerms("READ", "CREATE");
 
-		ContentListResponse list = new ContentListResponse();
+		NodeListResponse list = new NodeListResponse();
 		list.getData().add(content);
 		list.getData().add(content2);
 		setPaging(list, 1, 10, 2, 20);

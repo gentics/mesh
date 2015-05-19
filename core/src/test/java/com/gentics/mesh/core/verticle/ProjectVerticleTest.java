@@ -53,7 +53,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 
-		roleService.addPermission(info.getRole(), data().getMeshRoot(), PermissionType.CREATE);
+		roleService.addPermission(info.getRole(), data().getProject().getRootNode(), PermissionType.CREATE);
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
@@ -71,7 +71,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 
-		roleService.addPermission(info.getRole(), data().getMeshRoot(), PermissionType.CREATE);
+		roleService.addPermission(info.getRole(), data().getProject().getRootNode(), PermissionType.CREATE);
 		String requestJson = JsonUtils.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
@@ -95,7 +95,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		final int nProjects = 142;
 		for (int i = 0; i < nProjects; i++) {
 			Project extraProject = new Project("extra_project_" + i);
-			extraProject.setRootTag(data().getRootTag());
+			extraProject.setRootNode(data().getProject().getRootNode());
 			extraProject = projectService.save(extraProject);
 			roleService.addPermission(info.getRole(), extraProject, PermissionType.READ);
 		}

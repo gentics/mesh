@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.model;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
@@ -33,26 +32,30 @@ public class Project extends GenericNode {
 		this.name = name;
 	}
 
-	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = RootTag.class)
-	private RootTag rootTag;
+	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = TagFamilyRoot.class)
+	private Set<TagFamilyRoot> tagFamilies;
 
-	@RelatedTo(type = BasicRelationships.HAS_OBJECT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
-	private Set<ObjectSchema> objectSchema = new HashSet<>();
+	@RelatedTo(type = BasicRelationships.HAS_ROOT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchemaRoot.class)
+	private ObjectSchemaRoot rootSchema;
+	
+	@RelatedTo(type= BasicRelationships.HAS_ROOT_NODE, direction = Direction.OUTGOING, elementClass = MeshNode.class)
+	private MeshNode rootNode;
 
+	
+	public MeshNode getRootNode() {
+		return rootNode;
+	}
+	
+	public void setRootNode(MeshNode rootNode) {
+		this.rootNode = rootNode;
+	}
+	
 	public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public RootTag getRootTag() {
-		return rootTag;
-	}
-
-	public void setRootTag(RootTag rootTag) {
-		this.rootTag = rootTag;
 	}
 
 }

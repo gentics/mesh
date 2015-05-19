@@ -36,14 +36,14 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testDeleteByObject() {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		objectSchemaService.delete(schema);
 		assertNull(objectSchemaService.findOne(schema.getId()));
 	}
 
 	@Test
 	public void testDeleteByUUID() {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		try (Transaction tx = graphDb.beginTx()) {
 
 			objectSchemaService.deleteByUUID(schema.getUuid());

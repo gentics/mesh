@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.repository.action;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 
 
-public interface PathActions<T extends Content> {
+public interface PathActions<T extends MeshNode> {
 
 	/**
 	 * Finds and loads the object within the given project and path.

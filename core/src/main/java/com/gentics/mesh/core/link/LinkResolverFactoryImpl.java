@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.mesh.core.repository.ContentRepository;
+import com.gentics.mesh.core.repository.MeshNodeRepository;
 
 /**
  * Factory which provides link resolvers
@@ -19,7 +19,7 @@ public class LinkResolverFactoryImpl<T extends LinkResolver> implements LinkReso
 
 	@Autowired
 	//@Qualifier("genericContentRepository")
-	ContentRepository contentRepository;
+	MeshNodeRepository contentRepository;
 
 	private LinkResolverFactoryImpl() {
 	}

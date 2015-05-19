@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
@@ -46,7 +46,7 @@ public class Neo4jGenericContentUtils {
 				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
 			System.out.println(node.getId() + " " + node.getLabels());
 
-			if (node.hasLabel(DynamicLabel.label(Content.class.getSimpleName()))) {
+			if (node.hasLabel(DynamicLabel.label(MeshNode.class.getSimpleName()))) {
 				segments.add((String) node.getProperty("filename"));
 			}
 			if (node.hasLabel(DynamicLabel.label(Tag.class.getSimpleName()))) {

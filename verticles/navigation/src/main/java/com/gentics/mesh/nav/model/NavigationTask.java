@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.repository.ContentRepository;
+import com.gentics.mesh.core.repository.MeshNodeRepository;
 import com.gentics.mesh.util.Neo4jGenericContentUtils;
 
 /**
@@ -27,10 +27,10 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private Tag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
-	private ContentRepository genericContentRepository;
+	private MeshNodeRepository genericContentRepository;
 	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, ContentRepository genericContentRepository,
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, MeshNodeRepository genericContentRepository,
 			Neo4jGenericContentUtils genericContentUtils) {
 		this.tag = tag;
 		this.element = element;

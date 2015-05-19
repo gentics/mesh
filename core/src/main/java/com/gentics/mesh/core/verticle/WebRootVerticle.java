@@ -17,7 +17,7 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
@@ -94,8 +94,8 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 								}
 							});
 
-						} else if (lastSegment.getNode().hasLabel(Content.getLabel())) {
-							Content content = contentService.projectTo(lastSegment.getNode(), Content.class);
+						} else if (lastSegment.getNode().hasLabel(MeshNode.getLabel())) {
+							MeshNode content = nodeService.projectTo(lastSegment.getNode(), MeshNode.class);
 							if (content == null) {
 								String message = i18n.get(rc, "object_not_found_for_path", path);
 								throw new EntityNotFoundException(message);
@@ -122,8 +122,8 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
 					GenericPropertyContainer container = arh.result();
-					if (container instanceof Content) {
-						rc.response().end(toJson(contentService.transformToRest(rc, (Content) container)));
+					if (container instanceof MeshNode) {
+						rc.response().end(toJson(nodeService.transformToRest(rc, (MeshNode) container)));
 					} else if (container instanceof Tag) {
 						rc.response().end(toJson(tagService.transformToRest(rc, (Tag) container)));
 					}

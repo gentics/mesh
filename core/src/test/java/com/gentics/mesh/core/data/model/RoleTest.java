@@ -14,13 +14,13 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.GraphPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.service.ContentService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.repository.RoleRepository;
 import com.gentics.mesh.demo.UserInfo;
@@ -32,7 +32,7 @@ public class RoleTest extends AbstractDBTest {
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private ContentService contentService;
+	private MeshNodeService contentService;
 
 	@Autowired
 	private UserService userService;
@@ -61,13 +61,13 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermission() {
 		Role role = info.getRole();
-		Content content = data().getNews2015Content();
-		Content content2;
+		MeshNode content = data().getContent("News2015");
+		MeshNode content2;
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(role, content, CREATE, READ, UPDATE, DELETE);
 
 			// content2
-			content2 = new Content();
+			content2 = new MeshNode();
 			contentService.setContent(content2, data().getEnglish(), "Test");
 			content2 = contentService.save(content2);
 			roleService.addPermission(role, content2, READ, DELETE);
@@ -86,7 +86,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testIsPermitted() throws Exception {
 		User user = info.getUser();
-		MeshPermission perm = new MeshPermission(data().getNews(), PermissionType.READ);
+		MeshPermission perm = new MeshPermission(data().getFolder("news"), PermissionType.READ);
 		long start = System.currentTimeMillis();
 		int nRuns = 200000;
 		for (int i = 0; i < nRuns; i++) {
@@ -99,7 +99,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermissionTwice() {
 		Role role = info.getRole();
-		Content content = data().getNews2015Content();
+		MeshNode content = data().getContent("News2015");
 
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(role, content, CREATE);
@@ -122,7 +122,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testRevokePermission() {
 		Role role = info.getRole();
-		Content content = data().getNews2015Content();
+		MeshNode content = data().getContent("news2015");
 		try (Transaction tx = graphDb.beginTx()) {
 			GraphPermission permission = roleService.revokePermission(role, content, CREATE);
 			assertFalse(permission.isPermitted(CREATE));

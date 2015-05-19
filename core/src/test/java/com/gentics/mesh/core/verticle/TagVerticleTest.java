@@ -5,7 +5,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -15,26 +14,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Content;
-import com.gentics.mesh.core.data.model.RootTag;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.service.ContentService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.rest.content.response.ContentListResponse;
-import com.gentics.mesh.core.rest.content.response.ContentResponse;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
-import com.gentics.mesh.core.rest.tag.response.TagChildrenListResponse;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import com.gentics.mesh.core.verticle.TagVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
 
@@ -47,7 +39,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	private TagService tagService;
 
 	@Autowired
-	private ContentService contentService;
+	private MeshNodeService contentService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -56,7 +48,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadTagsForTag2() throws Exception {
-		Tag carTag = data().getCarTag();
+		Tag carTag = data().getTag("car");
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + carTag.getUuid() + "/tags", 200, "OK");
 		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(2, restResponse.getData().size());
@@ -69,7 +61,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		Tag noPermTag = new Tag();
 		try (Transaction tx = graphDb.beginTx()) {
-			noPermTag = data().addTag(data().getNews(), "NoPermEN", "NoPermDE");
+			noPermTag = data().addTag("NoPermEN", "NoPermDE");
 			noPermTag = tagService.save(noPermTag);
 			tx.success();
 		}
@@ -80,11 +72,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The response did not contain the correct amount of items", data().getTotalTags(), restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items", data().getTags().size(), restResponse.getData().size());
 
 		int perPage = 4;
 		// Extra Tags + permitted tag
-		int totalTags = data().getTotalTags();
+		int totalTags = data().getTags().size();
 		int totalPages = (int) Math.ceil(totalTags / (double) perPage) + 1;
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 1; page < totalPages; page++) {
@@ -130,84 +122,84 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 
-	@Test
-	public void testReadChildTagsForTag() throws Exception {
-		Tag rootTag = data().getNews();
-		int perPage = 6;
-		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
-				+ "&page=" + page + "&lang=en", 200, "OK");
-		TagChildrenListResponse listResponse = JsonUtils.readValue(response, TagChildrenListResponse.class);
-		assertEquals("The response did not contain the correct amount of child tags. {" + response + "}", 2, listResponse.getData().size());
-		assertEquals(2, listResponse.getMetainfo().getTotalCount());
-		assertEquals(1, listResponse.getMetainfo().getPageCount());
-		assertEquals(page, listResponse.getMetainfo().getCurrentPage());
+//	@Test
+//	public void testReadChildTagsForTag() throws Exception {
+//		Tag rootTag = data().getTag(name)
+//		int perPage = 6;
+//		int page = 1;
+//		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
+//				+ "&page=" + page + "&lang=en", 200, "OK");
+//		TagChildrenListResponse listResponse = JsonUtils.readValue(response, TagChildrenListResponse.class);
+//		assertEquals("The response did not contain the correct amount of child tags. {" + response + "}", 2, listResponse.getData().size());
+//		assertEquals(2, listResponse.getMetainfo().getTotalCount());
+//		assertEquals(1, listResponse.getMetainfo().getPageCount());
+//		assertEquals(page, listResponse.getMetainfo().getCurrentPage());
+//
+//		TagResponse foundTag = (TagResponse) listResponse.getData().get(0);
+//		assertEquals("2015", foundTag.getProperty("en", "name"));
+//
+//		TagResponse foundTag2 = (TagResponse) listResponse.getData().get(1);
+//		assertEquals("2014", foundTag2.getProperty("en", "name"));
+//	}
 
-		TagResponse foundTag = (TagResponse) listResponse.getData().get(0);
-		assertEquals("2015", foundTag.getProperty("en", "name"));
-
-		TagResponse foundTag2 = (TagResponse) listResponse.getData().get(1);
-		assertEquals("2014", foundTag2.getProperty("en", "name"));
-	}
-
-	@Test
-	public void testReadChildTagsnWithLanguageTags() throws Exception {
-		Tag rootTag = data().getNews();
-
-		try (Transaction tx = graphDb.beginTx()) {
-			Tag tag = data().getNews2015();
-			tagService.setName(tag, data().getGerman(), "2015 - auf deutsch");
-			tagService.save(tag);
-			tx.success();
-		}
-
-		int perPage = 6;
-		int page = 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
-				+ "&page=" + page + "&lang=de", 200, "OK");
-		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
-		assertEquals(1, tagList.getData().size());
-		assertEquals(1, tagList.getMetainfo().getTotalCount());
-		assertEquals(2, tagList.getMetainfo().getPageCount());
-		assertEquals(page, tagList.getMetainfo().getCurrentPage());
-		// TODO assert two tags
-	}
-
-	@Test
-	public void testReadChildContentsWithLanguageTags() throws Exception {
-		Tag rootTag = data().getNews();
-
-		int nContents = 42;
-		try (Transaction tx = graphDb.beginTx()) {
-			for (int i = 0; i < nContents; i++) {
-				Content content = new Content();
-				contentService.setContent(content, data().getGerman(), "some content " + i);
-				contentService.setFilename(content, data().getGerman(), "index" + i + ".de.html");
-				content.getProjects().add(data().getProject());
-				content.setParent(rootTag);
-				contentService.save(content);
-				roleService.addPermission(info.getRole(), content, PermissionType.READ);
-			}
-			tx.success();
-		}
-
-		int perPage = 6;
-		int page = 1;
-		int totalPages = (int) Math.ceil(nContents / (double) perPage) + 1;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childContents?per_page="
-				+ perPage + "&page=" + page + "&lang=de,en", 200, "OK");
-		ContentListResponse tagList = JsonUtils.readValue(response, ContentListResponse.class);
-		assertEquals(perPage, tagList.getData().size());
-		assertEquals(nContents + 1, tagList.getMetainfo().getTotalCount());
-		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
-		assertEquals(page, tagList.getMetainfo().getCurrentPage());
-		// TODO assert two contents
-	}
+//	@Test
+//	public void testReadChildTagsnWithLanguageTags() throws Exception {
+//		MEs rootTag = data().getFolder("news");
+//
+//		try (Transaction tx = graphDb.beginTx()) {
+//			Tag tag = data().getNews2015();
+//			tagService.setName(tag, data().getGerman(), "2015 - auf deutsch");
+//			tagService.save(tag);
+//			tx.success();
+//		}
+//
+//		int perPage = 6;
+//		int page = 1;
+//		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
+//				+ "&page=" + page + "&lang=de", 200, "OK");
+//		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
+//		assertEquals(1, tagList.getData().size());
+//		assertEquals(1, tagList.getMetainfo().getTotalCount());
+//		assertEquals(2, tagList.getMetainfo().getPageCount());
+//		assertEquals(page, tagList.getMetainfo().getCurrentPage());
+//		// TODO assert two tags
+//	}
+//
+//	@Test
+//	public void testReadChildContentsWithLanguageTags() throws Exception {
+//		Tag rootTag = data().getFolder("news");
+//
+//		int nContents = 42;
+//		try (Transaction tx = graphDb.beginTx()) {
+//			for (int i = 0; i < nContents; i++) {
+//				MeshNode content = new MeshNode();
+//				contentService.setContent(content, data().getGerman(), "some content " + i);
+//				contentService.setFilename(content, data().getGerman(), "index" + i + ".de.html");
+//				content.getProjects().add(data().getProject());
+//				content.setParent(rootTag);
+//				contentService.save(content);
+//				roleService.addPermission(info.getRole(), content, PermissionType.READ);
+//			}
+//			tx.success();
+//		}
+//
+//		int perPage = 6;
+//		int page = 1;
+//		int totalPages = (int) Math.ceil(nContents / (double) perPage) + 1;
+//		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childContents?per_page="
+//				+ perPage + "&page=" + page + "&lang=de,en", 200, "OK");
+//		NodeListResponse tagList = JsonUtils.readValue(response, NodeListResponse.class);
+//		assertEquals(perPage, tagList.getData().size());
+//		assertEquals(nContents + 1, tagList.getMetainfo().getTotalCount());
+//		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
+//		assertEquals(page, tagList.getMetainfo().getCurrentPage());
+//		// TODO assert two contents
+//	}
 
 	@Test
 	public void testReadTagByUUID() throws Exception {
 
-		Tag tag = data().getNews();
+		Tag tag = data().getTag("red");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
@@ -215,35 +207,35 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		test.assertTag(tag, restTag);
 	}
 
-	@Test
-	@Ignore("removed depth param")
-	public void testReadTagByUUIDWithDepthParam() throws Exception {
-
-		Tag tag = data().getNews();
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=3&lang=de,en", 200, "OK");
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-
-		//		assertEquals(2, restTag.getTags().size());
-		//		TagResponse childTag1 = restTag.getTags().get(0);
-		//		assertNotNull(childTag1.getUuid());
-		//		assertEquals("2014", childTag1.getProperty("en", "name"));
-		//
-		//		TagResponse childTag2 = restTag.getTags().get(1);
-		//		assertNotNull(childTag2.getUuid());
-		//		assertEquals("2015", childTag2.getProperty("en", "name"));
-		//
-		//		assertEquals(1, childTag1.getTags().size());
-		//		TagResponse childTagOfChildTag = childTag1.getTags().get(0);
-		//		assertNotNull(childTagOfChildTag.getUuid());
-		//		assertEquals("March", childTagOfChildTag.getProperty("en", "name"));
-	}
+//	@Test
+//	@Ignore("removed depth param")
+//	public void testReadTagByUUIDWithDepthParam() throws Exception {
+//
+//		Tag tag = data().getNews();
+//		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+//
+//		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=3&lang=de,en", 200, "OK");
+//		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+//
+//		//		assertEquals(2, restTag.getTags().size());
+//		//		TagResponse childTag1 = restTag.getTags().get(0);
+//		//		assertNotNull(childTag1.getUuid());
+//		//		assertEquals("2014", childTag1.getProperty("en", "name"));
+//		//
+//		//		TagResponse childTag2 = restTag.getTags().get(1);
+//		//		assertNotNull(childTag2.getUuid());
+//		//		assertEquals("2015", childTag2.getProperty("en", "name"));
+//		//
+//		//		assertEquals(1, childTag1.getTags().size());
+//		//		TagResponse childTagOfChildTag = childTag1.getTags().get(0);
+//		//		assertNotNull(childTagOfChildTag.getUuid());
+//		//		assertEquals("March", childTagOfChildTag.getProperty("en", "name"));
+//	}
 
 	@Test
 	public void testReadTagByUUIDWithSingleLanguage() throws Exception {
 
-		Tag tag = data().getNews();
+		Tag tag = data().getTag("vehicle");
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		assertNull("The returned tag should not have an german name property.", restTag.getProperty("de", "name"));
@@ -254,7 +246,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadTagByUUIDWithMultipleLanguages() throws Exception {
 
-		Tag tag = data().getNews();
+		Tag tag = data().getTag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
@@ -267,7 +259,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 
-		Tag tag = data().getNews();
+		Tag tag = data().getTag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
@@ -281,7 +273,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
 
-		Tag tag = data().getNews();
+		Tag tag = data().getTag("vehicle");
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -322,7 +314,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = data().getNews();
+		Tag tag = data().getTag("vehicle");
 
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
@@ -352,21 +344,21 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	// Delete Tests
 	@Test
 	public void testDeleteTagByUUID() throws Exception {
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getNews().getUuid(), 200, "OK");
-		expectMessageResponse("tag_deleted", response, data().getNews().getUuid());
-		assertNull("The tag should have been deleted", tagService.findByUUID(data().getNews().getUuid()));
+		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getTag("vehicle").getUuid(), 200, "OK");
+		expectMessageResponse("tag_deleted", response, data().getFolder("news").getUuid());
+		assertNull("The tag should have been deleted", tagService.findByUUID(data().getTag("vehicle").getUuid()));
 	}
 
 	@Test
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), data().getNews(), PermissionType.DELETE);
+			roleService.revokePermission(info.getRole(), data().getFolder("news"), PermissionType.DELETE);
 			tx.success();
 		}
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getNews().getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, data().getNews().getUuid());
-		assertNotNull("The tag should not have been deleted", tagService.findByUUID(data().getNews().getUuid()));
+		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + data().getTag("vehicle").getUuid(), 403, "Forbidden");
+		expectMessageResponse("error_missing_perm", response, data().getFolder("news").getUuid());
+		assertNotNull("The tag should not have been deleted", tagService.findByUUID(data().getFolder("vehicle").getUuid()));
 	}
 
 }

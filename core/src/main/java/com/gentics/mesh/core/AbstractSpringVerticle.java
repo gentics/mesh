@@ -8,7 +8,7 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.ContentService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
@@ -69,7 +69,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected GroupService groupService;
 
 	@Autowired
-	protected ContentService contentService;
+	protected MeshNodeService nodeService;
 
 	@Autowired
 	protected TagService tagService;

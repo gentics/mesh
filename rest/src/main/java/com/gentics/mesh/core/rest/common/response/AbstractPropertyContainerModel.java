@@ -6,7 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 
-public class AbstractTaggableModel extends AbstractRestModel {
+public class AbstractPropertyContainerModel extends AbstractRestModel {
 
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 
@@ -16,9 +16,8 @@ public class AbstractTaggableModel extends AbstractRestModel {
 
 	private long order = 0;
 	private UserResponse creator;
-	private String parentTagUuid;
 
-	public AbstractTaggableModel() {
+	public AbstractPropertyContainerModel() {
 	}
 
 	public UserResponse getCreator() {
@@ -51,14 +50,6 @@ public class AbstractTaggableModel extends AbstractRestModel {
 
 	public void setPerms(String... perms) {
 		this.perms = perms;
-	}
-
-	public String getParentTagUuid() {
-		return parentTagUuid;
-	}
-
-	public void setParentTagUuid(String parentTagUuid) {
-		this.parentTagUuid = parentTagUuid;
 	}
 
 	/**

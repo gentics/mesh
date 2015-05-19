@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.paging.PagingInfo;
 
@@ -67,7 +67,7 @@ public interface TagActions {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Content> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	public Page<MeshNode> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
 	 * Find all visible tags that use this tag for tagging. /tags/:uuid/tags
@@ -79,6 +79,6 @@ public interface TagActions {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Content> findTaggedContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	public Page<MeshNode> findTaggedContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

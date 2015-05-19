@@ -10,6 +10,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
+
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
@@ -18,10 +19,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.MeshRoot;
 import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.RootTag;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.User;
@@ -103,7 +105,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 				Project project = new Project(requestModel.getName());
 				User user = userService.findUser(rc);
-				project.setRootTag(new RootTag());
+				project.setRootNode(new MeshNode());
 				project.setCreator(user);
 				project = projectService.save(project);
 

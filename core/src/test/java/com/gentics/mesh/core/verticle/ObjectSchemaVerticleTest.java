@@ -141,7 +141,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 		// Extra schemas + default schema
 		int totalSchemas = nSchemas + 4;
-		int totalPages = (int) Math.ceil(totalSchemas / (double) perPage) +1;
+		int totalPages = (int) Math.ceil(totalSchemas / (double) perPage) + 1;
 		assertEquals("The response did not contain the correct amount of items", 11, restResponse.getData().size());
 		assertEquals(2, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -177,7 +177,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
 		test.assertSchema(schema, restSchema);
@@ -185,7 +185,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadSchemaByUUIDWithNoPerm() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(info.getRole(), schema, PermissionType.DELETE);
@@ -209,7 +209,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateSchemaByUUID() throws HttpStatusCodeErrorException, Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		ObjectSchemaUpdateRequest request = new ObjectSchemaUpdateRequest();
 		request.setUuid(schema.getUuid());
 		request.setName("new-name");
@@ -225,7 +225,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateSchemaByBogusUUID() throws HttpStatusCodeErrorException, Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 
 		ObjectSchemaUpdateRequest request = new ObjectSchemaUpdateRequest();
 		request.setUuid("bogus");
@@ -243,7 +243,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteSchemaByUUID() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
 		System.out.println(response);
 		expectMessageResponse("schema_deleted", response, schema.getName());
@@ -253,7 +253,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	public void testDeleteSchemaWithMissingPermission() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
 		String json = "error";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
@@ -267,7 +267,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddSchemaToProjectWithPerm() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 
 		Project extraProject = new Project("extraProject");
 		try (Transaction tx = graphDb.beginTx()) {
@@ -294,7 +294,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddSchemaToProjectWithoutPerm() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		Project project = data().getProject();
 
 		Project extraProject = new Project("extraProject");
@@ -319,7 +319,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	// Schema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		Project project = data().getProject();
 		try (Transaction tx = graphDb.beginTx()) {
 			project = neo4jTemplate.fetch(project);
@@ -341,7 +341,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
-		ObjectSchema schema = data().getContentSchema();
+		ObjectSchema schema = data().getSchema("content");
 		Project project = data().getProject();
 
 		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));

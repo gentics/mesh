@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.core.verticle.ContentVerticle;
+import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 
 /**
@@ -20,7 +20,7 @@ import com.gentics.mesh.etc.RouterStorage;
  */
 public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
 
 	@Autowired
 	protected ProjectService projectService;

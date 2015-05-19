@@ -11,23 +11,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.content.ContentTransformationTask;
-import com.gentics.mesh.core.repository.ContentRepository;
+import com.gentics.mesh.core.repository.MeshNodeRepository;
 import com.gentics.mesh.core.repository.GroupRepository;
-import com.gentics.mesh.core.rest.content.response.ContentResponse;
+import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
 @Transactional(readOnly = true)
-public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Content> implements ContentService {
+public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<MeshNode> implements MeshNodeService {
 
 	@Autowired
 	private LanguageService languageService;
@@ -54,28 +54,28 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	private ContentRepository contentRepository;
+	private MeshNodeRepository contentRepository;
 
 	@Autowired
 	private I18NService i18n;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
-	public void setTeaser(Content content, Language language, String text) {
+	public void setTeaser(MeshNode content, Language language, String text) {
 		setProperty(content, language, ObjectSchema.TEASER_KEY, text);
 	}
 
-	public void setTitle(Content content, Language language, String text) {
+	public void setTitle(MeshNode content, Language language, String text) {
 		setProperty(content, language, ObjectSchema.TITLE_KEY, text);
 	}
 
 	@Override
-	public Iterable<Content> findAll(String project) {
+	public Iterable<MeshNode> findAll(String project) {
 		return contentRepository.findAll(project);
 	}
 
 	@Override
-	public ContentResponse transformToRest(RoutingContext rc, Content content) {
+	public MeshNodeResponse transformToRest(RoutingContext rc, MeshNode content) {
 
 		TransformationInfo info = new TransformationInfo(rc);
 		info.setUserService(userService);
@@ -86,7 +86,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		info.setContentService(this);
 		info.setNeo4jTemplate(neo4jTemplate);
 		info.setI18nService(i18n);
-		ContentResponse restContent = new ContentResponse();
+		MeshNodeResponse restContent = new MeshNodeResponse();
 		ContentTransformationTask task = new ContentTransformationTask(content, info, restContent);
 		pool.invoke(task);
 		return restContent;
@@ -94,7 +94,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 	}
 
 	@Override
-	public Page<Content> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
 		if (languageTags == null || languageTags.size() == 0) {
 			return contentRepository.findAll(requestUser, projectName, pr);
@@ -103,7 +103,7 @@ public class ContentServiceImpl extends GenericPropertyContainerServiceImpl<Cont
 		}
 	}
 
-	public void createLink(Content from, Content to) {
+	public void createLink(MeshNode from, MeshNode to) {
 		// TODO maybe extract information about link start and end to speedup rendering of page with links
 		// Linked link = new Linked(this, page);
 		// this.links.add(link);

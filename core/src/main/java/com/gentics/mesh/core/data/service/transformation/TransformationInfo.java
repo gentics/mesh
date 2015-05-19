@@ -10,7 +10,7 @@ import java.util.Map;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import com.gentics.mesh.core.data.service.ContentService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -28,7 +28,7 @@ public class TransformationInfo {
 	private TagService tagService;
 	private Neo4jTemplate neo4jTemplate;
 	private MeshSpringConfiguration springConfiguration;
-	private ContentService contentService;
+	private MeshNodeService contentService;
 	private I18NService i18nService;
 
 	// Configuration
@@ -109,11 +109,11 @@ public class TransformationInfo {
 		this.neo4jTemplate = neo4jTemplate;
 	}
 
-	public ContentService getContentService() {
+	public MeshNodeService getContentService() {
 		return contentService;
 	}
 
-	public void setContentService(ContentService contentService) {
+	public void setContentService(MeshNodeService contentService) {
 		this.contentService = contentService;
 	}
 

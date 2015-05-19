@@ -13,9 +13,9 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.service.ContentService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.link.LinkResolver;
 import com.gentics.mesh.core.link.LinkResolverFactoryImpl;
 import com.gentics.mesh.core.link.LinkReplacer;
@@ -29,7 +29,7 @@ public class LinkRendererTest extends AbstractDBTest {
 	private LinkResolverFactoryImpl<LinkResolver> resolverFactory;
 
 	@Autowired
-	private ContentService contentService;
+	private MeshNodeService contentService;
 
 	@Before
 	public void setup() throws Exception {
@@ -43,7 +43,7 @@ public class LinkRendererTest extends AbstractDBTest {
 		Language english = data().getEnglish();
 
 		// Create some dummy content
-		Content content = new Content();
+		MeshNode content = new MeshNode();
 		try (Transaction tx = graphDb.beginTx()) {
 			contentService.setName(content, german, "german name");
 			contentService.setFilename(content, german, "german.html");
@@ -51,7 +51,7 @@ public class LinkRendererTest extends AbstractDBTest {
 			tx.success();
 		}
 
-		Content content2 = new Content();
+		MeshNode content2 = new MeshNode();
 		try (Transaction tx = graphDb.beginTx()) {
 			contentService.setName(content2, english, "content 2 english");
 			contentService.setFilename(content2, english, "english.html");

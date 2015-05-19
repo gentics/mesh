@@ -10,7 +10,7 @@ import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.I18NProperties;
 import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.ObjectSchema;
@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.relationship.Translated;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
-import com.gentics.mesh.core.rest.content.response.ContentResponse;
+import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 
@@ -28,23 +28,23 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentTransformationTask.class);
 
-	private Content content;
+	private MeshNode content;
 	private TransformationInfo info;
-	private ContentResponse restContent;
+	private MeshNodeResponse restContent;
 	private int depth;
 
-	public ContentTransformationTask(Content content, TransformationInfo info, ContentResponse restContent, int depth) {
+	public ContentTransformationTask(MeshNode content, TransformationInfo info, MeshNodeResponse restContent, int depth) {
 		this.content = content;
 		this.info = info;
 		this.restContent = restContent;
 		this.depth = depth;
 	}
 
-	public ContentTransformationTask(Content content, TransformationInfo info, ContentResponse restContent) {
+	public ContentTransformationTask(MeshNode content, TransformationInfo info, MeshNodeResponse restContent) {
 		this(content, info, restContent, 0);
 	}
 
-	private void resolveLinks(Content content) throws InterruptedException, ExecutionException {
+	private void resolveLinks(MeshNode content) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a
 		// spring service
 		// TODO handle language
@@ -62,7 +62,7 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		String uuid = content.getUuid();
 		// Check whether the content has already been transformed by another task
-		ContentResponse foundContent = (ContentResponse) info.getObjectReferences().get(uuid);
+		MeshNodeResponse foundContent = (MeshNodeResponse) info.getObjectReferences().get(uuid);
 		if (foundContent == null) {
 			try (Transaction tx = info.getGraphDb().beginTx()) {
 				restContent.setPerms(info.getUserService().getPerms(info.getRoutingContext(), content));

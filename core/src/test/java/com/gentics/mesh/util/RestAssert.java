@@ -11,21 +11,21 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.Content;
 import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.service.ContentService;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.rest.content.request.ContentCreateRequest;
-import com.gentics.mesh.core.rest.content.response.ContentResponse;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
+import com.gentics.mesh.core.rest.meshnode.request.MeshNodeCreateRequest;
+import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
@@ -48,7 +48,7 @@ public class RestAssert {
 	private GraphDatabaseService graphDb;
 
 	@Autowired
-	private ContentService contentService;
+	private MeshNodeService nodeService;
 
 	@Autowired
 	private LanguageService languageService;
@@ -98,56 +98,56 @@ public class RestAssert {
 	 * Compare the create request with a content response.
 	 * 
 	 * @param request
-	 * @param restContent
+	 * @param restNode
 	 */
-	public void assertContent(ContentCreateRequest request, ContentResponse restContent) {
+	public void assertMeshNode(MeshNodeCreateRequest request, MeshNodeResponse restNode) {
 
 		for (String languageTag : request.getProperties().keySet()) {
 			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
 				assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
-						restContent.getProperty(languageTag, entry.getKey()));
+						restNode.getProperty(languageTag, entry.getKey()));
 			}
 		}
 
 		String schemaName = request.getSchema().getSchemaName();
-		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restContent.getSchema().getSchemaName());
-		assertEquals(request.getOrder(), restContent.getOrder());
-		String tagUuid = request.getTagUuid();
+		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restNode.getSchema().getSchemaName());
+		assertEquals(request.getOrder(), restNode.getOrder());
+		String tagUuid = request.getParentNodeUuid();
 		// TODO how to match the parent tag?
 
-		assertNotNull(restContent.getUuid());
-		assertNotNull(restContent.getCreator());
-		assertNotNull(restContent.getPerms());
+		assertNotNull(restNode.getUuid());
+		assertNotNull(restNode.getCreator());
+		assertNotNull(restNode.getPerms());
 
 	}
 
 	@Transactional
-	public void assertContent(ContentCreateRequest request, Content content) {
+	public void assertMeshNode(MeshNodeCreateRequest request, MeshNode node) {
 		assertNotNull(request);
-		assertNotNull(content);
+		assertNotNull(node);
 
 		for (String languageTag : request.getProperties().keySet()) {
 			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
 				Language language = languageService.findByLanguageTag(languageTag);
-				String propValue = contentService.getProperty(content, language, entry.getKey());
+				String propValue = nodeService.getProperty(node, language, entry.getKey());
 				assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
 			}
 		}
 
-		assertNotNull(content.getUuid());
-		assertNotNull(content.getCreator());
+		assertNotNull(node.getUuid());
+		assertNotNull(node.getCreator());
 	}
 
 	@Transactional
-	public void assertContent(Content content, ContentResponse readValue) {
-		assertNotNull(content);
+	public void assertMeshNode(MeshNode node, MeshNodeResponse readValue) {
+		assertNotNull(node);
 		assertNotNull(readValue);
-		assertEquals(content.getUuid(), readValue.getUuid());
+		assertEquals(node.getUuid(), readValue.getUuid());
 
-		assertEquals(content.getOrder(), readValue.getOrder());
+		assertEquals(node.getOrder(), readValue.getOrder());
 		assertNotNull(readValue.getPerms());
 
-		ObjectSchema schema = content.getSchema();
+		ObjectSchema schema = node.getSchema();
 		schema = neo4jTemplate.fetch(schema);
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), readValue.getSchema().getSchemaName());

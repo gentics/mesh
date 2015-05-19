@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.tagcloud.model.TagCloudResult;
 
-public interface TagCloudRepository extends GraphRepository<Content> {
+public interface TagCloudRepository extends GraphRepository<MeshNode> {
 
 	/**
 	 * Return the count of relationships from all tags to pages

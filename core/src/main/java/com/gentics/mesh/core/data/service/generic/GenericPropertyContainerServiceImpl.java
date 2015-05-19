@@ -8,9 +8,10 @@ import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.relationship.Translated;
+import com.gentics.mesh.core.repository.action.PropertyContainerActions;
 
 @Transactional(readOnly = true)
-public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> {
+public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> implements PropertyContainerActions<T> {
 
 	public void setProperty(T node, Language language, String key, String value) {
 

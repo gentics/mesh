@@ -9,8 +9,8 @@ import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.RootTag;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.repository.ProjectRepository;
@@ -52,9 +52,9 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 		ProjectResponse projectResponse = new ProjectResponse();
 		projectResponse.setUuid(project.getUuid());
 		projectResponse.setName(project.getName());
-		RootTag rootTag = neo4jTemplate.fetch(project.getRootTag());
-		if (rootTag != null) {
-			projectResponse.setRootTagUuid(rootTag.getUuid());
+		MeshNode rootNode = neo4jTemplate.fetch(project.getRootNode());
+		if (rootNode != null) {
+			projectResponse.setRootTagUuid(rootNode.getUuid());
 		} else {
 			log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no rootTag.");
 		}

@@ -6,16 +6,16 @@ import java.util.function.Consumer;
 
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.common.response.AbstractTaggableModel;
+import com.gentics.mesh.core.rest.common.response.AbstractPropertyContainerModel;
 
 public class TagTraversalConsumer implements Consumer<Tag> {
 
 	private TransformationInfo info;
 	private int currentDepth;
-	private AbstractTaggableModel tagContainer;
+	private AbstractPropertyContainerModel tagContainer;
 	private Set<ForkJoinTask<Void>> tasks;
 
-	public TagTraversalConsumer(TransformationInfo info, int currentDepth, AbstractTaggableModel tagContainer, Set<ForkJoinTask<Void>> tasks) {
+	public TagTraversalConsumer(TransformationInfo info, int currentDepth, AbstractPropertyContainerModel tagContainer, Set<ForkJoinTask<Void>> tasks) {
 		this.info = info;
 		this.currentDepth = currentDepth;
 		this.tagContainer = tagContainer;

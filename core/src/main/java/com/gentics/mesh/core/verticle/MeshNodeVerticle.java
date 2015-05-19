@@ -24,7 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.I18NProperties;
 import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.ObjectSchema;
@@ -36,9 +36,9 @@ import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.relationship.Translated;
 import com.gentics.mesh.core.repository.ObjectSchemaRepository;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
-import com.gentics.mesh.core.rest.content.request.ContentCreateRequest;
-import com.gentics.mesh.core.rest.content.request.ContentUpdateRequest;
-import com.gentics.mesh.core.rest.content.response.ContentListResponse;
+import com.gentics.mesh.core.rest.meshnode.request.MeshNodeCreateRequest;
+import com.gentics.mesh.core.rest.meshnode.request.MeshNodeUpdateRequest;
+import com.gentics.mesh.core.rest.meshnode.response.NodeListResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -49,15 +49,15 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ContentVerticle extends AbstractProjectRestVerticle {
+public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(ContentVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
 
 	@Autowired
 	private ObjectSchemaRepository objectSchemaRepository;
 
-	public ContentVerticle() {
-		super("contents");
+	public MeshNodeVerticle() {
+		super("nodes");
 	}
 
 	@Override
@@ -77,19 +77,19 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/").method(POST);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			ContentCreateRequest requestModel = fromJson(rc, ContentCreateRequest.class);
+			MeshNodeCreateRequest requestModel = fromJson(rc, MeshNodeCreateRequest.class);
 
-			if (StringUtils.isEmpty(requestModel.getTagUuid())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "content_missing_parenttag_field")));
+			if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
 				return;
 			}
 
-			Future<Content> contentCreated = Future.future();
+			Future<MeshNode> contentCreated = Future.future();
 
-			rcs.loadObjectByUuid(rc, requestModel.getTagUuid(), projectName, PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, PermissionType.CREATE, (AsyncResult<MeshNode> rh) -> {
 
-				Tag rootTagForContent = rh.result();
-				Content content = new Content();
+				MeshNode rootNodeForContent = rh.result();
+				MeshNode node = new MeshNode();
 
 				if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
@@ -101,17 +101,17 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getSchemaName())));
 						return;
 					} else {
-						content.setSchema(schema);
+						node.setSchema(schema);
 					}
 				}
 
 				User user = userService.findUser(rc);
-				content.setCreator(user);
+				node.setCreator(user);
 
 				Project project = projectService.findByName(projectName);
-				content.addProject(project);
+				node.addProject(project);
 
-				content = contentService.save(content);
+				node = nodeService.save(node);
 
 				/* Add the i18n properties to the newly created tag */
 				for (String languageTag : requestModel.getProperties().keySet()) {
@@ -127,23 +127,23 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 					}
 					tagProps = neo4jTemplate.save(tagProps);
 					// Create the relationship to the i18n properties
-					Translated translated = new Translated(content, tagProps, language);
+					Translated translated = new Translated(node, tagProps, language);
 					translated = neo4jTemplate.save(translated);
-					content.getI18nTranslations().add(translated);
+					node.getI18nTranslations().add(translated);
 				}
 
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootTagForContent, PermissionType.CREATE), content);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, PermissionType.CREATE), node);
 
-				content = contentService.save(content);
+				node = nodeService.save(node);
 
 				/* Assign the content to the tag and save the tag */
 //				rootTagForContent.(content);
-				rootTagForContent = tagService.save(rootTagForContent);
+				rootNodeForContent = nodeService.save(rootNodeForContent);
 
-				contentCreated.complete(content);
+				contentCreated.complete(node);
 			}, trh -> {
-				Content content = contentCreated.result();
-				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
+				MeshNode content = contentCreated.result();
+				rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
 			});
 
 		});
@@ -155,10 +155,10 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
 			}, trh -> {
-				Content content = trh.result();
-				rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
+				MeshNode content = trh.result();
+				rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
 			});
 
 		});
@@ -169,20 +169,20 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-			vertx.executeBlocking((Future<ContentListResponse> bch) -> {
-				ContentListResponse listResponse = new ContentListResponse();
+			vertx.executeBlocking((Future<NodeListResponse> bch) -> {
+				NodeListResponse listResponse = new NodeListResponse();
 				try (Transaction tx = graphDb.beginTx()) {
 					User user = userService.findUser(rc);
-					Page<Content> contentPage = contentService.findAllVisible(user, projectName, languageTags, pagingInfo);
-					for (Content content : contentPage) {
-						listResponse.getData().add(contentService.transformToRest(rc, content));
+					Page<MeshNode> contentPage = nodeService.findAllVisible(user, projectName, languageTags, pagingInfo);
+					for (MeshNode content : contentPage) {
+						listResponse.getData().add(nodeService.transformToRest(rc, content));
 					}
 					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 					bch.complete(listResponse);
 					tx.success();
 				}
 			}, arh -> {
-				ContentListResponse listResponse = arh.result();
+				NodeListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 		});
@@ -193,9 +193,9 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Content> rh) -> {
-				Content content = rh.result();
-				contentService.delete(content);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<MeshNode> rh) -> {
+				MeshNode content = rh.result();
+				nodeService.delete(content);
 			}, trh -> {
 				String uuid = rc.request().params().get("uuid");
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "content_deleted", uuid))));
@@ -216,10 +216,10 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<Content> rh) -> {
-				Content content = rh.result();
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
+				MeshNode content = rh.result();
 
-				ContentUpdateRequest request = fromJson(rc, ContentUpdateRequest.class);
+				MeshNodeUpdateRequest request = fromJson(rc, MeshNodeUpdateRequest.class);
 				// Iterate through all properties and update the changed
 				// ones
 					for (String languageTag : request.getProperties().keySet()) {
@@ -228,7 +228,7 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 							languageTags.add(languageTag);
 							Map<String, String> properties = request.getProperties(languageTag);
 							if (properties != null) {
-								I18NProperties i18nProperties = contentService.getI18NProperties(content, language);
+								I18NProperties i18nProperties = nodeService.getI18NProperties(content, language);
 								for (Map.Entry<String, String> set : properties.entrySet()) {
 									String key = set.getKey();
 									String value = set.getValue();
@@ -257,8 +257,8 @@ public class ContentVerticle extends AbstractProjectRestVerticle {
 
 					}
 				}, trh -> {
-					Content content = trh.result();
-					rc.response().setStatusCode(200).end(toJson(contentService.transformToRest(rc, content)));
+					MeshNode content = trh.result();
+					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
 				});
 
 		});

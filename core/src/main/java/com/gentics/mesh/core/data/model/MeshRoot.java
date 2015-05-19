@@ -18,6 +18,12 @@ import com.gentics.mesh.core.data.model.auth.UserRoot;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 
+/**
+ * The root element of the whole mesh system. All projects, roles, users etc are connected to this single instance entity.
+ * 
+ * @author johannes2
+ *
+ */
 @NodeEntity
 public class MeshRoot extends AbstractPersistable {
 

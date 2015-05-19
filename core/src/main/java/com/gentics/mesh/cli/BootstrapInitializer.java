@@ -48,7 +48,7 @@ import com.gentics.mesh.core.repository.ProjectRepository;
 import com.gentics.mesh.core.repository.RoleRepository;
 import com.gentics.mesh.core.repository.UserRepository;
 import com.gentics.mesh.core.verticle.AdminVerticle;
-import com.gentics.mesh.core.verticle.ContentVerticle;
+import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.core.verticle.ObjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
@@ -115,7 +115,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(RoleVerticle.class);
 
 		addMandatoryVerticle(TagVerticle.class);
-		addMandatoryVerticle(ContentVerticle.class);
+		addMandatoryVerticle(MeshNodeVerticle.class);
 		addMandatoryVerticle(WebRootVerticle.class);
 
 		addMandatoryVerticle(ProjectVerticle.class);

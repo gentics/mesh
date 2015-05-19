@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.repository.action.TagActions;
 import com.gentics.mesh.neo4j.QueryService;
@@ -131,7 +131,7 @@ public class TagRepositoryImpl implements TagActions {
 	}
 
 	@Override
-	public Page<Content> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
 		String langFilter = getLanguageFilter("l");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
@@ -151,11 +151,11 @@ public class TagRepositoryImpl implements TagActions {
 		parameters.put("projectName", projectName);
 		parameters.put("userUuid", userUuid);
 		parameters.put("rootTagId", rootTag.getId());
-		return queryService.query(query, countQuery, parameters, pagingInfo, Content.class);
+		return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
 	}
 
 	@Override
-	public Page<Content> findTaggedContents(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> findTaggedContents(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
 		String langFilter = getLanguageFilter("l");
 		if (languageTags == null || languageTags.isEmpty()) {
 			langFilter = "";
@@ -175,7 +175,7 @@ public class TagRepositoryImpl implements TagActions {
 		parameters.put("projectName", projectName);
 		parameters.put("userUuid", userUuid);
 		parameters.put("rootTag", tag);
-		return queryService.query(query, countQuery, parameters, pagingInfo, Content.class);
+		return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
 	}
 
 }

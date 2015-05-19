@@ -228,7 +228,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		// created roles + test data role
 		// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
-		int totalRoles = nRoles + data().getTotalRoles() + 1;
+		int totalRoles = nRoles + data().getRoles().size() + 1;
 		int totalPages = (int) Math.ceil(totalRoles / (double) perPage) +1;
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());

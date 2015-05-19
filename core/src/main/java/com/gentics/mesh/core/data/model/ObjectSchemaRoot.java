@@ -11,6 +11,12 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 
+/**
+ * Aggregation node for a set of schemas
+ * 
+ * @author johannes2
+ *
+ */
 @NodeEntity
 public class ObjectSchemaRoot extends AbstractPersistable {
 

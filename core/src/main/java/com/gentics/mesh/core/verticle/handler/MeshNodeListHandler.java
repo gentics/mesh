@@ -9,32 +9,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.Content;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.service.ContentService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.rest.content.response.ContentListResponse;
+import com.gentics.mesh.core.rest.meshnode.response.NodeListResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.JsonUtils;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
-public class ContentListHandler {
+public class MeshNodeListHandler {
 
 	@Autowired
 	private TagService tagService;
 
 	@Autowired
-	private ContentService contentService;
+	private MeshNodeService contentService;
 
 	@Autowired
 	private RoutingContextService rcs;
 
-	public void handle(RoutingContext rc, ContentListCallable clc) {
+	public void handle(RoutingContext rc, MeshNodeListCallable clc) {
 		String projectName = rcs.getProjectName(rc);
-		ContentListResponse listResponse = new ContentListResponse();
+		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
@@ -42,8 +42,8 @@ public class ContentListHandler {
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-			Page<Content> contentPage = clc.findContents(projectName, rootTag, languageTags, pagingInfo);
-			for (Content content : contentPage) {
+			Page<MeshNode> contentPage = clc.findContents(projectName, rootTag, languageTags, pagingInfo);
+			for (MeshNode content : contentPage) {
 				listResponse.getData().add(contentService.transformToRest(rc, content));
 			}
 			RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
