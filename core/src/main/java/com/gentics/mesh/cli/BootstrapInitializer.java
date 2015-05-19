@@ -268,7 +268,9 @@ public class BootstrapInitializer {
 			log.info("Stored project root node");
 		}
 
-		// Save the default object schema
+		// Save the default object schemas
+
+		// Content
 		ObjectSchema contentSchema = objectSchemaRepository.findByName("content");
 		if (contentSchema == null) {
 			contentSchema = new ObjectSchema("content");
@@ -293,6 +295,21 @@ public class BootstrapInitializer {
 			objectSchemaService.save(contentSchema);
 		}
 
+		// Folder
+		ObjectSchema folderSchema = objectSchemaRepository.findByName("folder");
+		if (folderSchema == null) {
+			folderSchema = new ObjectSchema("folder");
+			folderSchema.setDescription("Default schema for folders");
+			folderSchema.setDisplayName("Folder");
+
+			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			nameProp.setDisplayName("Name");
+			nameProp.setDescription("The name of the folder.");
+			folderSchema.addPropertyTypeSchema(nameProp);
+			objectSchemaService.save(folderSchema);
+		}
+
+		// Binary content for images and other downloads
 		ObjectSchema binarySchema = objectSchemaRepository.findByName("binary-content");
 		if (binarySchema == null) {
 			binarySchema = new ObjectSchema("binary-content");
@@ -316,6 +333,7 @@ public class BootstrapInitializer {
 			objectSchemaService.save(contentSchema);
 		}
 
+		// Tag schema
 		ObjectSchema tagSchema = objectSchemaRepository.findByName("tag");
 		if (tagSchema == null) {
 			tagSchema = new ObjectSchema("tag");
