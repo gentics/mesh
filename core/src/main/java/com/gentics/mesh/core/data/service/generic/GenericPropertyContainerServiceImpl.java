@@ -5,9 +5,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.mesh.core.data.model.I18NProperties;
 import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.relationship.Translated;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.repository.action.PropertyContainerActions;
 
 @Transactional(readOnly = true)

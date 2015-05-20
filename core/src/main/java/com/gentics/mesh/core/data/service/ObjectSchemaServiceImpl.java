@@ -11,10 +11,10 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.PropertyTypeSchema;
 import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
 import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.repository.ObjectSchemaRepository;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
@@ -65,7 +65,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		// TODO creator
 
 		// TODO we need to add checks that prevents multiple schemas with the same key
-		for (PropertyTypeSchema propertyTypeSchema : schema.getPropertyTypeSchemas()) {
+		for (BasicPropertyTypeSchema propertyTypeSchema : schema.getPropertyTypeSchemas()) {
 			propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
 			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
 			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());

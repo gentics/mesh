@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.conversion.Result;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.mesh.paging.PagingInfo;

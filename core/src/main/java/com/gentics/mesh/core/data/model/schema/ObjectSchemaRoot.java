@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model;
+package com.gentics.mesh.core.data.model.schema;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,7 +22,7 @@ public class ObjectSchemaRoot extends AbstractPersistable {
 
 	private static final long serialVersionUID = 5160771115848405859L;
 
-	@RelatedTo(type = BasicRelationships.HAS_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
+	@RelatedTo(type = BasicRelationships.HAS_OBJECT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
 	private Set<ObjectSchema> schemas = new HashSet<>();
 
 	@Indexed(unique = true)

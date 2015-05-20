@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.content.MeshNodeTransformationTask;

@@ -3,8 +3,8 @@ package com.gentics.mesh.core.repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
-import com.gentics.mesh.core.data.model.ObjectSchemaRoot;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.ObjectSchemaRoot;
 import com.gentics.mesh.core.repository.action.ObjectSchemaActions;
 
 public class ObjectSchemaRepositoryImpl implements ObjectSchemaActions {

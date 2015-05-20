@@ -17,13 +17,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.PropertyType;
-import com.gentics.mesh.core.data.model.PropertyTypeSchema;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;
@@ -114,10 +114,10 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 
 				for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
 					// TODO validate field?
-					PropertyTypeSchema propSchema = new PropertyTypeSchema();
-					propSchema.setDescription(restPropSchema.getDesciption());
-					propSchema.setKey(restPropSchema.getKey());
 					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
+					String key = restPropSchema.getKey();
+					BasicPropertyTypeSchema propSchema = new BasicPropertyTypeSchema(key, type);
+					propSchema.setDescription(restPropSchema.getDesciption());
 					propSchema.setType(type);
 					schema.addPropertyTypeSchema(propSchema);
 				}

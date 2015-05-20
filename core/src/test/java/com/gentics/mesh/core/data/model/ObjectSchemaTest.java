@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.data.service.ObjectSchemaService;
 import com.gentics.mesh.core.repository.ObjectSchemaRepository;
 import com.gentics.mesh.demo.DemoDataProvider;

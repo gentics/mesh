@@ -10,9 +10,9 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.relationship.Translated;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 
 @NodeEntity
 public class GenericPropertyContainer extends GenericNode {
@@ -22,7 +22,7 @@ public class GenericPropertyContainer extends GenericNode {
 	@Autowired
 	private Neo4jTemplate neo4jTemplate;
 
-	@RelatedTo(type = BasicRelationships.HAS_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
+	@RelatedTo(type = BasicRelationships.HAS_OBJECT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
 	protected ObjectSchema schema;
 
 	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)

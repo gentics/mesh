@@ -9,9 +9,6 @@ import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 
 public class ObjectSchemaResponse extends AbstractRestModel {
 
-	@JsonProperty("$schema")
-	private final String schemaVersion = "http://json-schema.org/draft-04/schema#";
-
 	private final String type = "object";
 
 	@JsonProperty("title")
@@ -28,10 +25,6 @@ public class ObjectSchemaResponse extends AbstractRestModel {
 	private String[] perms = {};
 
 	public ObjectSchemaResponse() {
-	}
-
-	public String getSchemaVersion() {
-		return schemaVersion;
 	}
 
 	public ObjectSchemaResponse(String name) {

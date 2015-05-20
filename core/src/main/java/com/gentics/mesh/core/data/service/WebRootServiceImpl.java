@@ -15,9 +15,9 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -85,7 +85,7 @@ public class WebRootServiceImpl implements WebRootService {
 		RelationshipType targetRelationship = BasicRelationships.TYPES.HAS_TAG;
 		String keyword = ObjectSchema.NAME_KEYWORD;
 		if (isLastSegment) {
-			targetRelationship = BasicRelationships.TYPES.HAS_CONTENT;
+			targetRelationship = BasicRelationships.TYPES.HAS_NODE;
 			keyword = ObjectSchema.FILENAME_KEYWORD;
 		}
 

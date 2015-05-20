@@ -27,18 +27,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.model.MeshRoot;
 import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.LanguageRoot;
-import com.gentics.mesh.core.data.model.ObjectSchema;
-import com.gentics.mesh.core.data.model.ObjectSchemaRoot;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.ProjectRoot;
-import com.gentics.mesh.core.data.model.PropertyType;
-import com.gentics.mesh.core.data.model.PropertyTypeSchema;
 import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.GroupRoot;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.RoleRoot;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.auth.UserRoot;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.ObjectSchemaRoot;
+import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
 import com.gentics.mesh.core.data.service.ObjectSchemaService;
 import com.gentics.mesh.core.repository.MeshRootRepository;
 import com.gentics.mesh.core.repository.GroupRepository;
@@ -277,17 +277,17 @@ public class BootstrapInitializer {
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setDisplayName("Content");
 
-			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			contentSchema.addPropertyTypeSchema(nameProp);
 
-			PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema filenameProp = new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
 			filenameProp.setDisplayName("Filename");
 			filenameProp.setDescription("The filename property of the content.");
 			contentSchema.addPropertyTypeSchema(filenameProp);
 
-			PropertyTypeSchema contentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema contentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 			contentProp.setDisplayName("Content");
 			contentProp.setDescription("The main content html of the content.");
 			contentSchema.addPropertyTypeSchema(contentProp);
@@ -302,7 +302,7 @@ public class BootstrapInitializer {
 			folderSchema.setDescription("Default schema for folders");
 			folderSchema.setDisplayName("Folder");
 
-			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the folder.");
 			folderSchema.addPropertyTypeSchema(nameProp);
@@ -316,17 +316,17 @@ public class BootstrapInitializer {
 			binarySchema.setDescription("Default schema for binary contents");
 			binarySchema.setDisplayName("Binary Content");
 
-			PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			binarySchema.addPropertyTypeSchema(nameProp);
 
-			PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema filenameProp = new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
 			filenameProp.setDisplayName("Filename");
 			filenameProp.setDescription("The filename of the content.");
 			binarySchema.addPropertyTypeSchema(filenameProp);
 
-			PropertyTypeSchema binaryContentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.BINARY);
+			BasicPropertyTypeSchema binaryContentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.BINARY);
 			binaryContentProp.setDisplayName("Binary content");
 			binaryContentProp.setDescription("The binary content of the content");
 			binarySchema.addPropertyTypeSchema(binaryContentProp);
@@ -339,9 +339,9 @@ public class BootstrapInitializer {
 			tagSchema = new ObjectSchema("tag");
 			tagSchema.setDisplayName("Tag");
 			tagSchema.setDescription("Default schema for tags");
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			objectSchemaService.save(tagSchema);
 		}
 

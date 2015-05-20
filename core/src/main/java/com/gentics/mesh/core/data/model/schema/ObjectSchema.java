@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model;
+package com.gentics.mesh.core.data.model.schema;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,9 +8,12 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.relationship.Translated;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
 
 /**
  * The object schema is used for validating CRUD actions and to provide a JSON schema that can be used for client side validation.
@@ -29,6 +32,8 @@ public class ObjectSchema extends GenericNode {
 	public static final String TEASER_KEY = "teaser";
 	public static final String TITLE_KEY = "title";
 
+	private boolean isNestingAllowed = true;
+
 	@Indexed(unique = true)
 	private String name;
 
@@ -36,8 +41,11 @@ public class ObjectSchema extends GenericNode {
 	// TODO i18n?
 	private String description;
 
-	@RelatedTo(direction = Direction.OUTGOING, elementClass = PropertyTypeSchema.class, type = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA)
-	private Set<PropertyTypeSchema> propertyTypeSchemas = new HashSet<>();
+	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
+	protected Set<Translated> i18nTranslations = new HashSet<>();
+
+	@RelatedTo(direction = Direction.OUTGOING, type = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, elementClass = BasicPropertyTypeSchema.class)
+	private Set<BasicPropertyTypeSchema> propertyTypeSchemas = new HashSet<>();
 
 	@SuppressWarnings("unused")
 	private ObjectSchema() {
@@ -55,15 +63,15 @@ public class ObjectSchema extends GenericNode {
 		return description;
 	}
 
-	public Set<PropertyTypeSchema> getPropertyTypeSchemas() {
+	public Set<BasicPropertyTypeSchema> getPropertyTypeSchemas() {
 		return propertyTypeSchemas;
 	}
 
-	public PropertyTypeSchema getPropertyTypeSchema(String typeKey) {
+	public BasicPropertyTypeSchema getPropertyTypeSchema(String typeKey) {
 		if (StringUtils.isEmpty(typeKey)) {
 			return null;
 		}
-		for (PropertyTypeSchema propertyTypeSchema : propertyTypeSchemas) {
+		for (BasicPropertyTypeSchema propertyTypeSchema : propertyTypeSchemas) {
 			if (propertyTypeSchema.getKey().equals(typeKey)) {
 				return propertyTypeSchema;
 			}
@@ -71,11 +79,11 @@ public class ObjectSchema extends GenericNode {
 		return null;
 	}
 
-	public void setPropertyTypeSchemas(Set<PropertyTypeSchema> propertyTypeSchemas) {
+	public void setPropertyTypeSchemas(Set<BasicPropertyTypeSchema> propertyTypeSchemas) {
 		this.propertyTypeSchemas = propertyTypeSchemas;
 	}
 
-	public void addPropertyTypeSchema(PropertyTypeSchema typeSchema) {
+	public void addPropertyTypeSchema(BasicPropertyTypeSchema typeSchema) {
 		this.propertyTypeSchemas.add(typeSchema);
 	}
 
@@ -93,6 +101,14 @@ public class ObjectSchema extends GenericNode {
 
 	public String getDisplayName() {
 		return displayName;
+	}
+
+	public boolean isNestingAllowed() {
+		return isNestingAllowed;
+	}
+
+	public void setNestingAllowed(boolean isNestingAllowed) {
+		this.isNestingAllowed = isNestingAllowed;
 	}
 
 }

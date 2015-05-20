@@ -1,8 +1,9 @@
-package com.gentics.mesh.core.data.model;
+package com.gentics.mesh.core.data.model.schema.propertytypes;
 
 public enum PropertyType {
 
-	I18N_STRING("i18n-string"), STRING("string"), NUMBER("number"), DATE("date"), BOOLEAN("boolean"), NULL("null"), HTML("html"), BINARY("binary");
+	I18N_STRING("i18n-string"), STRING("string"), NUMBER("number"), DATE("date"), BOOLEAN("boolean"), HTML("html"), BINARY("binary"), REFERENCE(
+			"reference"), LIST("list"), MICROSCHEMA("microschema");
 
 	private String name;
 

@@ -1,13 +1,23 @@
-package com.gentics.mesh.core.data.model;
+package com.gentics.mesh.core.data.model.schema.propertytypes;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.relationship.Translated;
 
 @NodeEntity
-public class PropertyTypeSchema extends AbstractPersistable {
+public abstract class AbstractPropertyTypeSchema extends AbstractPersistable {
 
-	private static final long serialVersionUID = 6242394504946538888L;
+	private static final long serialVersionUID = -2824172202337789322L;
+
+	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
+	protected Set<Translated> i18nTranslations = new HashSet<>();
 
 	private PropertyType type;
 	private String key;
@@ -16,12 +26,12 @@ public class PropertyTypeSchema extends AbstractPersistable {
 	private String displayName;
 	private int order;
 
-	public PropertyTypeSchema(String key, PropertyType type) {
+	public AbstractPropertyTypeSchema(String key, PropertyType type) {
 		this.key = key;
 		this.type = type;
 	}
 
-	public PropertyTypeSchema() {
+	public AbstractPropertyTypeSchema() {
 	}
 
 	public String getDescription() {

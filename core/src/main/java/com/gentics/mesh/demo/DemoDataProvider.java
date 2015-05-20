@@ -22,16 +22,18 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.MeshRoot;
-import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.PropertyType;
-import com.gentics.mesh.core.data.model.PropertyTypeSchema;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.auth.GraphPermission;
 import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.ListPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -106,6 +108,7 @@ public class DemoDataProvider {
 	private MeshRoot root;
 
 	private Map<String, ObjectSchema> schemas = new HashMap<>();
+	private Map<String, MicroPropertyTypeSchema> microSchemas = new HashMap<>();
 	private Map<String, MeshNode> folders = new HashMap<>();
 	private Map<String, MeshNode> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
@@ -119,6 +122,8 @@ public class DemoDataProvider {
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
 		bootstrapInitializer.initMandatoryData();
 
+		schemas.clear();
+		microSchemas.clear();
 		contents.clear();
 		folders.clear();
 		tags.clear();
@@ -127,6 +132,7 @@ public class DemoDataProvider {
 		groups.clear();
 
 		addUserGroupRoleProject(multiplicator);
+		addMicoSchemas();
 		addSchemas();
 		addFolderStructure();
 		addTags();
@@ -139,7 +145,7 @@ public class DemoDataProvider {
 		ObjectSchema contentSchema = schemas.get("content");
 
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			addContent(folders.get("news2014"), "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
+			addContent(folders.get("2014"), "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 		}
 
 		addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
@@ -150,9 +156,9 @@ public class DemoDataProvider {
 					contentSchema);
 		}
 
-		addContent(folders.get("news2015"), "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
+		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			addContent(folders.get("news2015"), "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
+			addContent(folders.get("2015"), "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 		}
 
 		MeshNode porsche911 = addContent(
@@ -380,8 +386,26 @@ public class DemoDataProvider {
 		}
 	}
 
-	private void addSchemas() {
+	private void addMicoSchemas() {
+		MicroPropertyTypeSchema imageGallery = new MicroPropertyTypeSchema("gallery");
+		BasicPropertyTypeSchema descriptionSchema = new BasicPropertyTypeSchema("description", PropertyType.STRING);
+		imageGallery.getProperties().add(descriptionSchema);
 
+		BasicPropertyTypeSchema imagesSchemas = new ListPropertyTypeSchema("images");
+//		imagesSchemas.add(PropertyType.REFERENCE);
+		imageGallery.getProperties().add(imagesSchemas);
+		microSchemas.put("gallery", imageGallery);
+
+	}
+
+	private void addSchemas() {
+		addBootstrapSchemas();
+		addBlogPostSchema();
+		addColorsSchema();
+		addCategorySchema();
+	}
+
+	private void addBootstrapSchemas() {
 		// tag
 		ObjectSchema tagSchema = objectSchemaService.findByName("tag");
 		tagSchema.addProject(project);
@@ -400,34 +424,44 @@ public class DemoDataProvider {
 		contentSchema = objectSchemaService.save(contentSchema);
 		schemas.put("content", contentSchema);
 
-		// colors
+	}
+
+	private void addColorsSchema() {
 		ObjectSchema colorSchema = new ObjectSchema("colors");
 		colorSchema.setDescription("Colors");
 		colorSchema.setDescription("Colors");
-		PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		colorSchema.addPropertyTypeSchema(nameProp);
 		objectSchemaService.save(colorSchema);
 		schemas.put("color", colorSchema);
+	}
 
-		// category
+	private void addBlogPostSchema() {
+		ObjectSchema blogPostSchema = new ObjectSchema("blogpost");
+		BasicPropertyTypeSchema content = new BasicPropertyTypeSchema("content", PropertyType.LIST);
+		blogPostSchema.addPropertyTypeSchema(content);
+
+	}
+
+	private void addCategorySchema() {
 		ObjectSchema categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
 		categoriesSchema.addProject(project);
 		categoriesSchema.setDisplayName("Category");
 		categoriesSchema.setDescription("Custom schema for tag categories");
 		categoriesSchema.setCreator(userInfo.getUser());
-		nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		categoriesSchema.addPropertyTypeSchema(nameProp);
 
-		PropertyTypeSchema filenameProp = new PropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema filenameProp = new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
 		filenameProp.setDisplayName("Filename");
 		filenameProp.setDescription("The filename property of the category.");
 		categoriesSchema.addPropertyTypeSchema(filenameProp);
 
-		PropertyTypeSchema contentProp = new PropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema contentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 		contentProp.setDisplayName("Content");
 		contentProp.setDescription("The main content html of the category.");
 		categoriesSchema.addPropertyTypeSchema(contentProp);

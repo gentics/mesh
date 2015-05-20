@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.repository.action;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 
 public interface ObjectSchemaActions {
 

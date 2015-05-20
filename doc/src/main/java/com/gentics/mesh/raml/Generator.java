@@ -11,7 +11,7 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import com.gentics.mesh.core.data.model.PropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 import com.gentics.mesh.core.rest.common.response.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;

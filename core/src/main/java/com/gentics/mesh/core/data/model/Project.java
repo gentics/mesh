@@ -9,6 +9,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.schema.ObjectSchemaRoot;
 
 /**
  * A project is the root element for a tag hierarchy.
@@ -32,10 +33,10 @@ public class Project extends GenericNode {
 		this.name = name;
 	}
 
-	@RelatedTo(type = BasicRelationships.HAS_ROOT_TAG, direction = Direction.OUTGOING, elementClass = TagFamilyRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_TAG_ROOT, direction = Direction.OUTGOING, elementClass = TagFamilyRoot.class)
 	private Set<TagFamilyRoot> tagFamilies;
 
-	@RelatedTo(type = BasicRelationships.HAS_ROOT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchemaRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_SCHEMA_ROOT, direction = Direction.OUTGOING, elementClass = ObjectSchemaRoot.class)
 	private ObjectSchemaRoot rootSchema;
 	
 	@RelatedTo(type= BasicRelationships.HAS_ROOT_NODE, direction = Direction.OUTGOING, elementClass = MeshNode.class)

@@ -6,9 +6,9 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.repository.RepositoryDefinition;
 
-import com.gentics.mesh.core.data.model.ObjectSchema;
-import com.gentics.mesh.core.data.model.ObjectSchemaRoot;
 import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.ObjectSchemaRoot;
 import com.gentics.mesh.core.repository.action.ObjectSchemaActions;
 import com.gentics.mesh.core.repository.action.UUIDCRUDActions;
 

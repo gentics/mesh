@@ -17,6 +17,9 @@ import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.auth.UserRoot;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.schema.MicroSchemaRoot;
+import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.schema.ObjectSchemaRoot;
 
 /**
  * The root element of the whole mesh system. All projects, roles, users etc are connected to this single instance entity.
@@ -46,8 +49,12 @@ public class MeshRoot extends AbstractPersistable {
 	private LanguageRoot languageRoot;
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchemaRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_SCHEMA_ROOT, direction = Direction.OUTGOING, elementClass = ObjectSchemaRoot.class)
 	private ObjectSchemaRoot objectSchemaRoot;
+	
+	@Fetch
+	@RelatedTo(type = BasicRelationships.HAS_MICRO_SCHEMA_ROOT, direction = Direction.OUTGOING, elementClass = MicroSchemaRoot.class)
+	private MicroSchemaRoot microSchemaRoot;
 
 	@Fetch
 	@RelatedTo(type = BasicRelationships.HAS_ROOT_GROUP, direction = Direction.INCOMING, elementClass = GroupRoot.class)
@@ -150,5 +157,9 @@ public class MeshRoot extends AbstractPersistable {
 
 	public void setUserRoot(UserRoot userRoot) {
 		this.userRoot = userRoot;
+	}
+	
+	public MicroSchemaRoot getMicroSchemaRoot() {
+		return microSchemaRoot;
 	}
 }
