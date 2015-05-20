@@ -275,8 +275,8 @@ public class DemoDataProvider {
 
 	private void addTags() {
 
-		ObjectSchema colorSchema = schemas.get("colors");
-		ObjectSchema categoriesSchema = schemas.get("categories");
+		ObjectSchema colorSchema = schemas.get("color");
+		ObjectSchema categoriesSchema = schemas.get("category");
 
 		// Tags for categories
 		addTag("Vehicle", "Fahrzeug", categoriesSchema);
