@@ -549,7 +549,7 @@ public class DemoDataProvider {
 	public String getPathForNews2015Tag(Language language) {
 
 		String name = nodeService.getName(folders.get("news"), language);
-		String name2 = nodeService.getName(folders.get("news2015"), language);
+		String name2 = nodeService.getName(folders.get("2015"), language);
 		return name + "/" + name2;
 	}
 

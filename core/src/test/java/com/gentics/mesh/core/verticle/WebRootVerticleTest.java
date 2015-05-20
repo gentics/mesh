@@ -28,10 +28,10 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagByPath() throws Exception {
+	public void testReadFolderByPath() throws Exception {
 
 		String englishPath = data().getPathForNews2015Tag(data().getEnglish());
-		MeshNode folder = data().getFolder("news2015");
+		MeshNode folder = data().getFolder("2015");
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath;
 		String response = request(info, GET, path, 200, "OK");
 		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
@@ -55,16 +55,16 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagWithBogusPath() throws Exception {
+	public void testReadFolderWithBogusPath() throws Exception {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/blub", 404, "Not Found");
 		expectMessageResponse("tag_not_found_for_path", response, "blub");
 	}
 
 	@Test
-	public void testReadTagByPathWithoutPerm() throws Exception {
+	public void testReadFolderByPathWithoutPerm() throws Exception {
 		try (Transaction tx = graphDb.beginTx()) {
 			String englishPath = data().getPathForNews2015Tag(data().getEnglish());
-			MeshNode newsFolder = data().getFolder("News2015");
+			MeshNode newsFolder = data().getFolder("2015");
 			roleService.revokePermission(info.getRole(), newsFolder, PermissionType.READ);
 			String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
 			expectMessageResponse("error_missing_perm", response, newsFolder.getUuid());
@@ -76,7 +76,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	public void testReadContentByValidPath() throws Exception {
 		try (Transaction tx = graphDb.beginTx()) {
 			String englishPath = data().getPathForNews2015Tag(data().getEnglish());
-			MeshNode folder = data().getFolder("news2015");
+			MeshNode folder = data().getFolder("2015");
 			String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 200, "OK");
 			MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
 			test.assertMeshNode(folder, restNode);

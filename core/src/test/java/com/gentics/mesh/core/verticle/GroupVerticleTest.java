@@ -165,7 +165,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals(perPage, restResponse.getData().size());
 
 		// created groups + test data group
-		int totalPages = (int) Math.ceil(totalGroups / (double) perPage) + 1;
+		int totalPages = (int) Math.ceil(totalGroups / (double) perPage);
 		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		Assert.assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
@@ -179,7 +179,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			restResponse = JsonUtils.readValue(response, GroupListResponse.class);
 			allGroups.addAll(restResponse.getData());
 		}
-		Assert.assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups+1, allGroups.size());
+		Assert.assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups, allGroups.size());
 
 		// Verify that extra group is not part of the response
 		final String extraGroupName = extraGroupWithNoPerm.getName();
