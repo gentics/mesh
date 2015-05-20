@@ -61,7 +61,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermission() {
 		Role role = info.getRole();
-		MeshNode content = data().getContent("News2015");
+		MeshNode content = data().getContent("news overview");
 		MeshNode content2;
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(role, content, CREATE, READ, UPDATE, DELETE);
@@ -93,13 +93,13 @@ public class RoleTest extends AbstractDBTest {
 			userService.isPermitted(user.getId(), perm);
 		}
 		long dur = System.currentTimeMillis() - start;
-		System.out.println("Duration: " + dur/(double)nRuns);
+		System.out.println("Duration: " + dur / (double) nRuns);
 	}
 
 	@Test
 	public void testGrantPermissionTwice() {
 		Role role = info.getRole();
-		MeshNode content = data().getContent("News2015");
+		MeshNode content = data().getContent("news overview");
 
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(role, content, CREATE);
@@ -122,7 +122,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testRevokePermission() {
 		Role role = info.getRole();
-		MeshNode content = data().getContent("news2015");
+		MeshNode content = data().getContent("news overview");
 		try (Transaction tx = graphDb.beginTx()) {
 			GraphPermission permission = roleService.revokePermission(role, content, CREATE);
 			assertFalse(permission.isPermitted(CREATE));
