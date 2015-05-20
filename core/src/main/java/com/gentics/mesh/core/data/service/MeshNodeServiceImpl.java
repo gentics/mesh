@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.model.ObjectSchema;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.data.service.transformation.content.ContentTransformationTask;
+import com.gentics.mesh.core.data.service.transformation.content.MeshNodeTransformationTask;
 import com.gentics.mesh.core.repository.MeshNodeRepository;
 import com.gentics.mesh.core.repository.GroupRepository;
 import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
@@ -59,6 +59,9 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	@Autowired
 	private I18NService i18n;
 
+	@Autowired
+	private RoutingContextService rcs;
+
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	public void setTeaser(MeshNode content, Language language, String text) {
@@ -78,6 +81,9 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	public MeshNodeResponse transformToRest(RoutingContext rc, MeshNode content) {
 
 		TransformationInfo info = new TransformationInfo(rc);
+
+		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+		info.setLanguageTags(languageTags);
 		info.setUserService(userService);
 		info.setLanguageService(languageService);
 		info.setGraphDb(graphDb);
@@ -87,7 +93,7 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 		info.setNeo4jTemplate(neo4jTemplate);
 		info.setI18nService(i18n);
 		MeshNodeResponse restContent = new MeshNodeResponse();
-		ContentTransformationTask task = new ContentTransformationTask(content, info, restContent);
+		MeshNodeTransformationTask task = new MeshNodeTransformationTask(content, info, restContent);
 		pool.invoke(task);
 		return restContent;
 

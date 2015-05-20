@@ -72,12 +72,12 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 		info.setLanguageTags(languageTags);
 		// Future<Integer> depthFuture = rcs.getDepthParameter(rc);
-		Future<Boolean> tagsIncludeFuture = rcs.getTagsIncludeParameter(rc);
-		info.setIncludeTags(tagsIncludeFuture.result());
-		Future<Boolean> contentIncludeFuture = rcs.getContentsIncludeParameter(rc);
-		info.setIncludeContents(contentIncludeFuture.result());
-		Future<Boolean> childTagIncludeFuture = rcs.getChildTagIncludeParameter(rc);
-		info.setIncludeChildTags(childTagIncludeFuture.result());
+//		Future<Boolean> tagsIncludeFuture = rcs.getTagsIncludeParameter(rc);
+//		info.setIncludeTags(tagsIncludeFuture.result());
+//		Future<Boolean> contentIncludeFuture = rcs.getContentsIncludeParameter(rc);
+//		info.setIncludeContents(contentIncludeFuture.result());
+//		Future<Boolean> childTagIncludeFuture = rcs.getChildTagIncludeParameter(rc);
+//		info.setIncludeChildTags(childTagIncludeFuture.result());
 
 		TagResponse restTag = new TagResponse();
 		TagTransformationTask task = new TagTransformationTask(tag, info, restTag);

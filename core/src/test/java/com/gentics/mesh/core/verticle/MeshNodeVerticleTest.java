@@ -53,7 +53,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("node");
+		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		request.addProperty("english", "filename", "new-page.html");
 		request.addProperty("english", "name", "english node name");
@@ -73,11 +73,11 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("node");
+		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		request.addProperty("en", "filename", "new-page.html");
 		request.addProperty("en", "name", "english node name");
-		request.addProperty("en", "node", "Blessed mealtime again!");
+		request.addProperty("en", "content", "Blessed mealtime again!");
 		request.setParentNodeUuid(parentNode.getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK", JsonUtils.toJson(request));
@@ -89,11 +89,11 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateReadDeleteNode() throws Exception {
 		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("node");
+		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		request.addProperty("en", "filename", "new-page.html");
 		request.addProperty("en", "name", "english node name");
-		request.addProperty("en", "node", "Blessed mealtime again!");
+		request.addProperty("en", "content", "Blessed mealtime again!");
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		// Create node
@@ -247,29 +247,21 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUID() throws Exception {
 		MeshNode node = data().getFolder("2015");
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
+
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
 		test.assertMeshNode(node, JsonUtils.readValue(response, MeshNodeResponse.class));
 	}
-
-	@Test
-	public void testReadNodeByUUIDWithExceedingDepthParam() throws Exception {
-		MeshNode node = data().getFolder("2015");
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?depth=999", 400, "Bad Request");
-		expectMessageResponse("error_depth_max_exceeded", response, "999", "5");
-
-	}
-
-	@Test
-	public void testReadNodeByUUIDWithDepthParam() throws Exception {
-		MeshNode node = data().getFolder("2015");
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?depth=2", 200, "OK");
-		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
-		test.assertMeshNode(node, restNode);
-		//		assertNotNull(restNode.getTags());
-		//		assertEquals(2, restNode.getTags().size());
-	}
+//
+//	@Test
+//	public void testReadNodeByUUIDWithExceedingDepthParam() throws Exception {
+//		MeshNode node = data().getFolder("2015");
+//
+//		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?depth=999", 400, "Bad Request");
+//		expectMessageResponse("error_depth_max_exceeded", response, "999", "5");
+//
+//	}
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
@@ -287,6 +279,8 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 
 		MeshNode node = data().getFolder("2015");
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=blabla,edgsdg", 400, "Bad Request");
 		expectMessageResponse("error_language_not_found", response, "blabla");
@@ -323,21 +317,21 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
 		MeshNodeUpdateRequest request = new MeshNodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("node");
+		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
 		request.addProperty("en", "filename", newFilename);
 		final String newName = "english renamed name";
 		request.addProperty("en", "name", newName);
-		final String newNode = "english renamed node!";
-		request.addProperty("en", "node", newNode);
+		final String newContent = "english renamed content!";
+		request.addProperty("en", "content", newContent);
 
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de", 200, "OK",
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtils.toJson(request));
 		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
 		assertEquals(newFilename, restNode.getProperty("en", "filename"));
 		assertEquals(newName, restNode.getProperty("en", "name"));
-		assertEquals(newNode, restNode.getProperty("en", "node"));
+		assertEquals(newContent, restNode.getProperty("en", "content"));
 		// TODO verify that the node got updated
 
 	}
@@ -346,22 +340,22 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateNodeWithExtraJson() throws HttpStatusCodeErrorException, Exception {
 		MeshNodeUpdateRequest request = new MeshNodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("node");
+		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
 		request.addProperty("en", "filename", newFilename);
 		final String newName = "english renamed name";
 		request.addProperty("en", "name", newName);
-		final String newNode = "english renamed node!";
-		request.addProperty("en", "node", newNode);
+		final String newNode = "english renamed content!";
+		request.addProperty("en", "content", newNode);
 
 		MeshNode node = data().getFolder("2015");
 		String json = JsonUtils.toJson(request);
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de", 200, "OK", json);
+		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
 		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
 		assertEquals(newFilename, restNode.getProperty("en", "filename"));
 		assertEquals(newName, restNode.getProperty("en", "name"));
-		assertEquals(newNode, restNode.getProperty("en", "node"));
+		assertEquals(newNode, restNode.getProperty("en", "content"));
 
 		// Reload and update
 		try (Transaction tx = graphDb.beginTx()) {

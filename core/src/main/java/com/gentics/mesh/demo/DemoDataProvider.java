@@ -381,15 +381,27 @@ public class DemoDataProvider {
 	}
 
 	private void addSchemas() {
+
+		// tag
 		ObjectSchema tagSchema = objectSchemaService.findByName("tag");
 		tagSchema.addProject(project);
 		tagSchema = objectSchemaService.save(tagSchema);
+		schemas.put("tag", tagSchema);
 
+		// folder
+		ObjectSchema folderSchema = objectSchemaService.findByName("folder");
+		folderSchema.addProject(project);
+		folderSchema = objectSchemaService.save(folderSchema);
+		schemas.put("folder", folderSchema);
+
+		// content
 		ObjectSchema contentSchema = objectSchemaService.findByName("content");
 		contentSchema.addProject(project);
 		contentSchema = objectSchemaService.save(contentSchema);
+		schemas.put("content", contentSchema);
 
-		ObjectSchema colorSchema = new ObjectSchema("tagColors");
+		// colors
+		ObjectSchema colorSchema = new ObjectSchema("colors");
 		colorSchema.setDescription("Colors");
 		colorSchema.setDescription("Colors");
 		PropertyTypeSchema nameProp = new PropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
@@ -397,7 +409,9 @@ public class DemoDataProvider {
 		nameProp.setDescription("The name of the category.");
 		colorSchema.addPropertyTypeSchema(nameProp);
 		objectSchemaService.save(colorSchema);
+		schemas.put("color", colorSchema);
 
+		// category
 		ObjectSchema categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
 		categoriesSchema.addProject(project);
 		categoriesSchema.setDisplayName("Category");
@@ -418,6 +432,7 @@ public class DemoDataProvider {
 		contentProp.setDescription("The main content html of the category.");
 		categoriesSchema.addPropertyTypeSchema(contentProp);
 		objectSchemaService.save(categoriesSchema);
+		schemas.put("category", categoriesSchema);
 
 	}
 
@@ -472,6 +487,8 @@ public class DemoDataProvider {
 		if (englishName != null) {
 			nodeService.setName(folderNode, english, englishName);
 		}
+		folderNode.setCreator(userInfo.getUser());
+		folderNode.setSchema(schemas.get("folder"));
 		nodeService.save(folderNode);
 		folders.put(englishName.toLowerCase(), folderNode);
 		return folderNode;
@@ -498,29 +515,29 @@ public class DemoDataProvider {
 	}
 
 	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, ObjectSchema schema) {
-		MeshNode content = new MeshNode();
-		nodeService.setName(content, english, name + " english");
-		nodeService.setFilename(content, english, name + ".en.html");
-		nodeService.setContent(content, english, englishContent);
+		MeshNode node = new MeshNode();
+		nodeService.setName(node, english, name + " english");
+		nodeService.setFilename(node, english, name + ".en.html");
+		nodeService.setContent(node, english, englishContent);
 
 		if (germanContent != null) {
-			nodeService.setName(content, german, name + " german");
-			nodeService.setFilename(content, german, name + ".de.html");
-			nodeService.setContent(content, german, germanContent);
+			nodeService.setName(node, german, name + " german");
+			nodeService.setFilename(node, german, name + ".de.html");
+			nodeService.setContent(node, german, germanContent);
 		}
 		// TODO maybe set project should be done inside the save?
-		content.addProject(project);
-		content.setCreator(userInfo.getUser());
-		content.setSchema(schema);
-		content.setOrder(42);
-		content.setParent(parentNode);
-		content = nodeService.save(content);
+		node.addProject(project);
+		node.setCreator(userInfo.getUser());
+		node.setSchema(schema);
+		node.setOrder(42);
+		node.setParent(parentNode);
+		node = nodeService.save(node);
 		// Add the content to the given tag
 		//		parentTag.addContent(content);
 		//		parentTag = tagService.save(parentTag);
 
-		contents.put(name.toLowerCase(), content);
-		return content;
+		contents.put(name.toLowerCase(), node);
+		return node;
 	}
 
 	/**

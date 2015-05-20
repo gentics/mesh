@@ -157,8 +157,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
 			}, trh -> {
-				MeshNode content = trh.result();
-				rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
+				MeshNode node = trh.result();
+				rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
 			});
 
 		});
@@ -198,7 +198,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				nodeService.delete(content);
 			}, trh -> {
 				String uuid = rc.request().params().get("uuid");
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "content_deleted", uuid))));
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "node_deleted", uuid))));
 			});
 		});
 	}

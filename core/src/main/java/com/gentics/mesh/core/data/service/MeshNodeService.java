@@ -15,7 +15,7 @@ import com.gentics.mesh.paging.PagingInfo;
 public interface MeshNodeService extends GenericPropertyContainerService<MeshNode> {
 
 	/**
-	 * Transforms the given content into a rest response. Only the specified languages will be included.
+	 * Transforms the given node into a rest response. Only the specified languages will be included.
 	 * 
 	 * @param content
 	 * @param languageTags

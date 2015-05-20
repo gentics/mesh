@@ -22,29 +22,29 @@ import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 
-public class ContentTransformationTask extends RecursiveTask<Void> {
+public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 	private static final long serialVersionUID = -1480528776879617657L;
 
-	private static final Logger log = LoggerFactory.getLogger(ContentTransformationTask.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshNodeTransformationTask.class);
 
-	private MeshNode content;
+	private MeshNode node;
 	private TransformationInfo info;
-	private MeshNodeResponse restContent;
+	private MeshNodeResponse restNode;
 	private int depth;
 
-	public ContentTransformationTask(MeshNode content, TransformationInfo info, MeshNodeResponse restContent, int depth) {
-		this.content = content;
+	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, MeshNodeResponse restNode, int depth) {
+		this.node = node;
 		this.info = info;
-		this.restContent = restContent;
+		this.restNode = restNode;
 		this.depth = depth;
 	}
 
-	public ContentTransformationTask(MeshNode content, TransformationInfo info, MeshNodeResponse restContent) {
-		this(content, info, restContent, 0);
+	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, MeshNodeResponse restContent) {
+		this(node, info, restContent, 0);
 	}
 
-	private void resolveLinks(MeshNode content) throws InterruptedException, ExecutionException {
+	private void resolveLinks(MeshNode node) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a
 		// spring service
 		// TODO handle language
@@ -60,44 +60,44 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 	protected Void compute() {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
-		String uuid = content.getUuid();
-		// Check whether the content has already been transformed by another task
+		String uuid = node.getUuid();
+		// Check whether the node has already been transformed by another task
 		MeshNodeResponse foundContent = (MeshNodeResponse) info.getObjectReferences().get(uuid);
 		if (foundContent == null) {
 			try (Transaction tx = info.getGraphDb().beginTx()) {
-				restContent.setPerms(info.getUserService().getPerms(info.getRoutingContext(), content));
-				restContent.setUuid(content.getUuid());
+				restNode.setPerms(info.getUserService().getPerms(info.getRoutingContext(), node));
+				restNode.setUuid(node.getUuid());
 
 				/* Load the schema information */
-				if (content.getSchema() != null) {
-					ObjectSchema schema = info.getNeo4jTemplate().fetch(content.getSchema());
+				if (node.getSchema() != null) {
+					ObjectSchema schema = info.getNeo4jTemplate().fetch(node.getSchema());
 					SchemaReference schemaReference = new SchemaReference();
 					schemaReference.setSchemaName(schema.getName());
 					schemaReference.setSchemaUuid(schema.getUuid());
-					restContent.setSchema(schemaReference);
+					restNode.setSchema(schemaReference);
 				}
 				/* Load the creator information */
-				User creator = content.getCreator();
+				User creator = node.getCreator();
 				if (creator != null) {
 					creator = info.getNeo4jTemplate().fetch(creator);
-					restContent.setCreator(info.getUserService().transformToRest(creator, 0));
+					restNode.setCreator(info.getUserService().transformToRest(creator, 0));
 				}
 
 				/* Load the order */
-				restContent.setOrder(content.getOrder());
+				restNode.setOrder(node.getOrder());
 
 				/* Load the i18n properties */
 				boolean loadAllTags = info.getLanguageTags().size() == 0;
 				if (loadAllTags) {
-					for (Translated transalated : content.getI18nTranslations()) {
+					for (Translated transalated : node.getI18nTranslations()) {
 						String languageTag = transalated.getLanguageTag();
 						// TODO handle schema
 						I18NProperties properties = transalated.getI18nProperties();
 						properties = info.getNeo4jTemplate().fetch(properties);
-						restContent.addProperty(languageTag, "name", transalated.getI18nProperties().getProperty("name"));
-						restContent.addProperty(languageTag, "filename", transalated.getI18nProperties().getProperty("filename"));
-						restContent.addProperty(languageTag, "content", transalated.getI18nProperties().getProperty("content"));
-						restContent.addProperty(languageTag, "teaser", transalated.getI18nProperties().getProperty("teaser"));
+						restNode.addProperty(languageTag, "name", transalated.getI18nProperties().getProperty("name"));
+						restNode.addProperty(languageTag, "filename", transalated.getI18nProperties().getProperty("filename"));
+						restNode.addProperty(languageTag, "content", transalated.getI18nProperties().getProperty("content"));
+						restNode.addProperty(languageTag, "teaser", transalated.getI18nProperties().getProperty("teaser"));
 					}
 				} else {
 					for (String languageTag : info.getLanguageTags()) {
@@ -108,11 +108,11 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 						}
 
 						// Add all i18n properties for the selected language to the response
-						I18NProperties i18nProperties = info.getContentService().getI18NProperties(content, language);
+						I18NProperties i18nProperties = info.getContentService().getI18NProperties(node, language);
 						if (i18nProperties != null) {
 							i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
 							for (String key : i18nProperties.getProperties().getPropertyKeys()) {
-								restContent.addProperty(languageTag, key, i18nProperties.getProperty(key));
+								restNode.addProperty(languageTag, key, i18nProperties.getProperty(key));
 							}
 						} else {
 							log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
@@ -126,13 +126,13 @@ public class ContentTransformationTask extends RecursiveTask<Void> {
 			}
 
 			/* Add the object to the list of object references */
-			info.addObject(uuid, restContent);
+			info.addObject(uuid, restNode);
 
 		}
 
 		if (depth < info.getMaxDepth()) {
-			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restContent, tasks);
-			content.getTags().parallelStream().forEachOrdered(tagConsumer);
+			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restNode, tasks);
+			node.getTags().parallelStream().forEachOrdered(tagConsumer);
 		}
 
 		tasks.forEach(action -> action.join());
