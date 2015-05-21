@@ -80,7 +80,7 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testContents() throws NotSupportedException {
+	public void testNodes() throws NotSupportedException {
 
 		Tag tag = new Tag();
 
@@ -95,36 +95,38 @@ public class TagTest extends AbstractDBTest {
 		assertNotNull(tag);
 
 		final String GERMAN_TEST_FILENAME = "german.html";
-		MeshNode content = new MeshNode();
+		MeshNode node = new MeshNode();
 
 		Language german = languageService.findByLanguageTag("de");
 
 		try (Transaction tx = graphDb.beginTx()) {
-			nodeService.setFilename(content, german, GERMAN_TEST_FILENAME);
-			nodeService.setName(content, german, "german content name");
-			content = nodeService.save(content);
-			tag.addContent(content);
+			nodeService.setFilename(node, german, GERMAN_TEST_FILENAME);
+			nodeService.setName(node, german, "german node name");
 			tag = tagService.save(tag);
+
+			// Assign the tag to the node
+			node.getTags().add(tag);
+			node = nodeService.save(node);
 			tx.success();
 		}
 		// Reload the tag and check whether the content was set
 		try (Transaction tx = graphDb.beginTx()) {
 
 			tag = tagService.reload(tag);
-			assertEquals("The tag should have exactly one file.", 1, tag.getContents().size());
-			MeshNode contentFromTag = tag.getContents().iterator().next();
+			assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
+			MeshNode contentFromTag = tag.getNodes().iterator().next();
 			assertNotNull(contentFromTag);
-			assertEquals("We did not get the correct content.", content.getId(), contentFromTag.getId());
+			assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
 			String filename = nodeService.getFilename(contentFromTag, german);
 			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 			// Remove the file/content and check whether the content was really removed
-			assertTrue(tag.removeContent(contentFromTag));
+			assertTrue(tag.removeNode(contentFromTag));
 			tag = tagService.save(tag);
 			tx.success();
 		}
 		tag = tagService.reload(tag);
-		assertEquals("The tag should not have any file.", 0, tag.getContents().size());
+		assertEquals("The tag should not have any file.", 0, tag.getNodes().size());
 
 	}
 

@@ -43,7 +43,7 @@ public class NavigationTask extends RecursiveTask<Void> {
 	protected Void compute() {
 
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
-		tag.getContents().parallelStream().forEachOrdered(tagging -> {
+		tag.getNodes().parallelStream().forEachOrdered(tagging -> {
 		});
 
 //		tag.getContents().parallelStream().forEachOrdered(content -> {
