@@ -23,10 +23,10 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.service.MeshNodeService;
-import com.gentics.mesh.core.rest.meshnode.request.MeshNodeCreateRequest;
-import com.gentics.mesh.core.rest.meshnode.request.MeshNodeUpdateRequest;
-import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
-import com.gentics.mesh.core.rest.meshnode.response.NodeListResponse;
+import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.response.NodeListResponse;
+import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -51,7 +51,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNodeWithBogusLanguageCode() throws HttpStatusCodeErrorException, Exception {
 
-		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
+		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
@@ -71,7 +71,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(parentNode);
 		assertNotNull(parentNode.getUuid());
 
-		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
+		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
@@ -81,13 +81,13 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		request.setParentNodeUuid(parentNode.getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK", JsonUtils.toJson(request));
-		test.assertMeshNode(request, JsonUtils.readValue(response, MeshNodeResponse.class));
+		test.assertMeshNode(request, JsonUtils.readValue(response, NodeResponse.class));
 
 	}
 
 	@Test
 	public void testCreateReadDeleteNode() throws Exception {
-		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
+		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
@@ -98,7 +98,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// Create node
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK", JsonUtils.toJson(request));
-		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(request, restNode);
 
 		MeshNode node = nodeService.findByUUID(restNode.getUuid());
@@ -107,7 +107,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// Load the node again
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + restNode.getUuid(), 200, "OK");
-		restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(node, restNode);
 
 		// Delete the node
@@ -122,7 +122,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNodeWithMissingParentNodeUuid() throws Exception {
 
-		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
+		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("node");
 		request.setSchema(schemaReference);
@@ -144,7 +144,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		MeshNodeCreateRequest request = new MeshNodeCreateRequest();
+		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("node");
 		request.setSchema(schemaReference);
@@ -196,7 +196,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
 
-		List<MeshNodeResponse> allNodes = new ArrayList<>();
+		List<NodeResponse> allNodes = new ArrayList<>();
 		for (int page = 1; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, NodeListResponse.class);
@@ -206,7 +206,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// Verify that the no_perm_node is not part of the response
 		final String noPermNodeUUID = noPermNode.getUuid();
-		List<MeshNodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID))
+		List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID))
 				.collect(Collectors.toList());
 		assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
@@ -251,7 +251,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		test.assertMeshNode(node, JsonUtils.readValue(response, MeshNodeResponse.class));
+		test.assertMeshNode(node, JsonUtils.readValue(response, NodeResponse.class));
 	}
 //
 //	@Test
@@ -268,7 +268,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de", 200, "OK");
-		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(node, restNode);
 
 		assertNull(restNode.getProperties("en"));
@@ -315,7 +315,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
-		MeshNodeUpdateRequest request = new MeshNodeUpdateRequest();
+		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
@@ -328,7 +328,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtils.toJson(request));
-		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertEquals(newFilename, restNode.getProperty("en", "filename"));
 		assertEquals(newName, restNode.getProperty("en", "name"));
 		assertEquals(newContent, restNode.getProperty("en", "content"));
@@ -338,7 +338,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateNodeWithExtraJson() throws HttpStatusCodeErrorException, Exception {
-		MeshNodeUpdateRequest request = new MeshNodeUpdateRequest();
+		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
@@ -352,7 +352,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 		String json = JsonUtils.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
-		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertEquals(newFilename, restNode.getProperty("en", "filename"));
 		assertEquals(newName, restNode.getProperty("en", "name"));
 		assertEquals(newNode, restNode.getProperty("en", "content"));

@@ -1,12 +1,12 @@
-package com.gentics.mesh.core.rest.meshnode.response;
+package com.gentics.mesh.core.rest.node.response;
 
 import com.gentics.mesh.core.rest.common.response.AbstractPropertyContainerModel;
 
-public class MeshNodeResponse extends AbstractPropertyContainerModel {
+public class NodeResponse extends AbstractPropertyContainerModel {
 
 	private String parentNodeUuid;
 
-	public MeshNodeResponse() {
+	public NodeResponse() {
 	}
 
 	public String getParentNodeUuid() {

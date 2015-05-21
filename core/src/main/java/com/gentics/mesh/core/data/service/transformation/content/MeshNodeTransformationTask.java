@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.model.relationship.Translated;
 import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
-import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
+import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 
@@ -30,17 +30,17 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 	private MeshNode node;
 	private TransformationInfo info;
-	private MeshNodeResponse restNode;
+	private NodeResponse restNode;
 	private int depth;
 
-	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, MeshNodeResponse restNode, int depth) {
+	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, NodeResponse restNode, int depth) {
 		this.node = node;
 		this.info = info;
 		this.restNode = restNode;
 		this.depth = depth;
 	}
 
-	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, MeshNodeResponse restContent) {
+	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, NodeResponse restContent) {
 		this(node, info, restContent, 0);
 	}
 
@@ -62,7 +62,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		String uuid = node.getUuid();
 		// Check whether the node has already been transformed by another task
-		MeshNodeResponse foundContent = (MeshNodeResponse) info.getObjectReferences().get(uuid);
+		NodeResponse foundContent = (NodeResponse) info.getObjectReferences().get(uuid);
 		if (foundContent == null) {
 			try (Transaction tx = info.getGraphDb().beginTx()) {
 				restNode.setPerms(info.getUserService().getPerms(info.getRoutingContext(), node));

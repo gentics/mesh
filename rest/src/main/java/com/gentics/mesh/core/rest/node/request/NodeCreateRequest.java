@@ -1,8 +1,8 @@
-package com.gentics.mesh.core.rest.meshnode.request;
+package com.gentics.mesh.core.rest.node.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class MeshNodeCreateRequest extends MeshNodeUpdateRequest {
+public class NodeCreateRequest extends NodeUpdateRequest {
 
 	@JsonIgnore
 	private String uuid;
@@ -11,7 +11,7 @@ public class MeshNodeCreateRequest extends MeshNodeUpdateRequest {
 
 	// TODO maybe we want to set the tagPath as well (alternative to tagUuid)
 
-	public MeshNodeCreateRequest() {
+	public NodeCreateRequest() {
 	}
 
 	public String getParentNodeUuid() {

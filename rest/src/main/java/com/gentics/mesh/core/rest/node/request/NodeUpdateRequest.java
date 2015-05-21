@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.rest.meshnode.request;
+package com.gentics.mesh.core.rest.node.request;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,7 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 
-public class MeshNodeUpdateRequest extends AbstractRestModel {
+public class NodeUpdateRequest extends AbstractRestModel {
 
 	private Map<String, Map<String, String>> properties = new HashMap<>();
 
@@ -14,7 +14,7 @@ public class MeshNodeUpdateRequest extends AbstractRestModel {
 
 	private long order = 0;
 
-	public MeshNodeUpdateRequest() {
+	public NodeUpdateRequest() {
 	}
 
 	public Map<String, Map<String, String>> getProperties() {

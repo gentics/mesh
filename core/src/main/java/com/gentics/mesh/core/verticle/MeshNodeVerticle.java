@@ -36,9 +36,9 @@ import com.gentics.mesh.core.data.model.relationship.Translated;
 import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.repository.ObjectSchemaRepository;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
-import com.gentics.mesh.core.rest.meshnode.request.MeshNodeCreateRequest;
-import com.gentics.mesh.core.rest.meshnode.request.MeshNodeUpdateRequest;
-import com.gentics.mesh.core.rest.meshnode.response.NodeListResponse;
+import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -77,7 +77,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/").method(POST);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshNodeCreateRequest requestModel = fromJson(rc, MeshNodeCreateRequest.class);
+			NodeCreateRequest requestModel = fromJson(rc, NodeCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
@@ -219,7 +219,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
 				MeshNode content = rh.result();
 
-				MeshNodeUpdateRequest request = fromJson(rc, MeshNodeUpdateRequest.class);
+				NodeUpdateRequest request = fromJson(rc, NodeUpdateRequest.class);
 				// Iterate through all properties and update the changed
 				// ones
 					for (String languageTag : request.getProperties().keySet()) {

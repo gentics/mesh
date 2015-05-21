@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.content.MeshNodeTransformationTask;
 import com.gentics.mesh.core.repository.MeshNodeRepository;
 import com.gentics.mesh.core.repository.GroupRepository;
-import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
+import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
@@ -78,7 +78,7 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	}
 
 	@Override
-	public MeshNodeResponse transformToRest(RoutingContext rc, MeshNode content) {
+	public NodeResponse transformToRest(RoutingContext rc, MeshNode content) {
 
 		TransformationInfo info = new TransformationInfo(rc);
 
@@ -92,7 +92,7 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 		info.setContentService(this);
 		info.setNeo4jTemplate(neo4jTemplate);
 		info.setI18nService(i18n);
-		MeshNodeResponse restContent = new MeshNodeResponse();
+		NodeResponse restContent = new NodeResponse();
 		MeshNodeTransformationTask task = new MeshNodeTransformationTask(content, info, restContent);
 		pool.invoke(task);
 		return restContent;

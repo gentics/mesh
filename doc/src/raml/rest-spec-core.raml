@@ -47,22 +47,6 @@ traits:
       headers:
         Accept-Language:
           description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
-  - tagIncludes:
-     queryParameters:
-        tags:
-          description: Include tags for the tag. By default no tags are included.
-          type: boolean
-        childTags:
-          description: Include childTags for the tag. By default no tags are included.
-          type: boolean
-        contents:
-          description: Include content for the tag. By default no contents are included.
-          type: boolean
-  - contentIncludes:
-     queryParameters:
-        tags:
-          description: Include tags for content.
-          type: boolean
   - perm_listable:
       queryParameters:
         perms:
@@ -126,9 +110,9 @@ schemas:
   - TagUpdateRequest: !include json/TagUpdateRequest.schema.json
   - TagCreateRequest: !include json/TagCreateRequest.schema.json
 
-  - ContentResponse: !include json/ContentResponse.schema.json
-  - ContentUpdateRequest: !include json/ContentUpdateRequest.schema.json
-  - ContentCreateRequest: !include json/ContentCreateRequest.schema.json
+  - NodeResponse: !include json/NodeResponse.schema.json
+  - NodeUpdateRequest: !include json/NodeUpdateRequest.schema.json
+  - NodeCreateRequest: !include json/NodeCreateRequest.schema.json
 
   - ObjectSchemaResponse: !include json/ObjectSchemaResponse.schema.json
   - ObjectSchemaListResponse: !include json/ObjectSchemaListResponse.schema.json
@@ -533,68 +517,68 @@ schemas:
 
 
 #------------------------------------------------------------------------------
-# Content Verticle
+# Node Verticle
 #------------------------------------------------------------------------------
-/{project_name}/contents:
-  displayName: Contents
+/{project_name}/nodes:
+  displayName: Nodes
   /:
     get: 
       is: [ localized, sortable, nested, paged ]
-      description: Load all contents.
+      description: Load all nodes.
       responses:
         200:
           body:
             application/json:
-              schema: ContentListResponse
-              example: !include json/ContentListResponse.example.json
+              schema: NodeListResponse
+              example: !include json/NodeListResponse.example.json
     post:
-      description: Create content.
+      description: Create a new node.
       body:
         application/json:
-          schema: ContentCreateRequest
-          example: !include json/ContentCreateRequest.example.json
+          schema: NodeCreateRequest
+          example: !include json/NodeCreateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: ContentResponse
-              example: !include json/ContentResponse.example.json
+              schema: NodeResponse
+              example: !include json/NodeResponse.example.json
   /{uuid}:
     is: [ localized, sortable, nested, perm_listable ]
     uriParameters:
       uuid:
-        description: Uuid of a single content.
+        description: Uuid of a single node.
         type: string
     get:
-      description: Retrieves the content with the given uuid.
+      description: Retrieves the node with the given uuid.
       queryParameters:
         lang:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
-          example: /{project_name}/contents/?lang=de-DE,en-US
+          example: /{project_name}/nodes/?lang=de-DE,en-US
         update:
-          description: The content will be locked when the *update* parameter is set to true.
-          example: /{project_name}/contents/?update=true
+          description: The node will be locked when the *update* parameter is set to true.
+          example: /{project_name}/nodes/?update=true
       responses:
         200:
           body:
             application/json:
-              schema: ContentResponse
-              example: !include json/ContentResponse.example.json
+              schema: NodeResponse
+              example: !include json/NodeResponse.example.json
     put:
-      description: Updates the content with the given uuid.
+      description: Updates the node with the given uuid.
       body:
         application/json:
-          schema: ContentUpdateRequest
-          example: !include json/ContentUpdateRequest.example.json
+          schema: NodeUpdateRequest
+          example: !include json/NodeUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: ContentResponse
-              example: !include json/ContentResponse.example.json
+              schema: NodeResponse
+              example: !include json/NodeResponse.example.json
         423:
     delete:
-      description: Deletes the content with the given uuid.
+      description: Deletes the node with the given uuid.
       responses:
         200:
           body:
@@ -609,7 +593,7 @@ schemas:
         description: Update the binary property value.
     /tags:
       get:
-        description: Load the tags that tag the content.
+        description: Load the tags that tag the node.
 
 #------------------------------------------------------------------------------
 # Tag Verticle
@@ -623,7 +607,7 @@ schemas:
 
   /:
     get:
-      is: [ localized, sortable, nested, paged, tagIncludes ]
+      is: [ localized, sortable, nested, paged ]
       description: Load all tags of the project.
       responses:
         200:
@@ -651,7 +635,7 @@ schemas:
              The uuid of a single tag.
         type: string
     get:
-      is: [ localized, sortable, nested, tagIncludes ]
+      is: [ localized, sortable, nested ]
       description: Load the tag with the given uuid.
       queryParameters:
         depth: 
@@ -689,21 +673,9 @@ schemas:
         description: Tag the tag.
       delete:
         description: Untag the tag.
-    /childTags:
+    /children:
       get:
-        description: Load a list of child tags.
-    /childContents:
-      get:
-        description: Load a list of child contents.
-    /childTags/{uuid}:
-      uriParameters:
-        uuid:
-          description: Uuid of the parent tag tag for the elements.
-          type: string
-      post:
-        description: Assign the tag to the parent tag.
-      delete:
-        description: Remove the tag from the parent tag.
+        description: Load a list of children.
     /bin/{name}:
       get:
         description: Load the binary property value.
@@ -722,23 +694,23 @@ schemas:
     is: [ localized, sortable, nested, perm_listable ]
     uriParameters:
       path:
-        description: Path to a content or tag.
+        description: Path to a node.
         type: string
     get:
-      description: Retrieves the content with the given path.
+      description: Retrieves the node with the given path.
       queryParameters:
         lang:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
-          example: /{project_name}/contents/?lang=de-DE,en-US
+          example: /{project_name}/nodes/?lang=de-DE,en-US
         update:
-          description: The content will be locked when the *update* parameter is set to true.
-          example: /{project_name}/contents/?update=true
+          description: The node will be locked when the *update* parameter is set to true.
+          example: /{project_name}/nodes/?update=true
       responses:
         200:
           body:
             application/json:
-              schema: ContentResponse
-              example: !include json/ContentResponse.example.json
+              schema: NodeResponse
+              example: !include json/NodeResponse.example.json
 
 #------------------------------------------------------------------------------
 # Search Verticle

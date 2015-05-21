@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
+import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
 
@@ -34,7 +34,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		MeshNode folder = data().getFolder("2015");
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath;
 		String response = request(info, GET, path, 200, "OK");
-		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(folder, restNode);
 		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
 				restNode.getProperties("de"));
@@ -48,7 +48,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		MeshNode concordeNode = data().getContent("concorde");
 		String response = request(info, GET, path, 200, "OK");
 		System.out.println(response);
-		MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(concordeNode, restNode);
 		assertNotNull(restNode.getProperties("de"));
 		assertNotNull(restNode.getProperties("en"));
@@ -78,7 +78,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 			String englishPath = data().getPathForNews2015Tag(data().getEnglish());
 			MeshNode folder = data().getFolder("2015");
 			String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 200, "OK");
-			MeshNodeResponse restNode = JsonUtils.readValue(response, MeshNodeResponse.class);
+			NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 			test.assertMeshNode(folder, restNode);
 			tx.success();
 		}

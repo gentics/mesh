@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.rest.meshnode.response.NodeListResponse;
+import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.JsonUtils;
 import com.gentics.mesh.util.RestModelPagingHelper;

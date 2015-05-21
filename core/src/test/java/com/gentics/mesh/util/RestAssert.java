@@ -24,8 +24,8 @@ import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.meshnode.request.MeshNodeCreateRequest;
-import com.gentics.mesh.core.rest.meshnode.response.MeshNodeResponse;
+import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
@@ -100,7 +100,7 @@ public class RestAssert {
 	 * @param request
 	 * @param restNode
 	 */
-	public void assertMeshNode(MeshNodeCreateRequest request, MeshNodeResponse restNode) {
+	public void assertMeshNode(NodeCreateRequest request, NodeResponse restNode) {
 
 		for (String languageTag : request.getProperties().keySet()) {
 			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
@@ -122,7 +122,7 @@ public class RestAssert {
 	}
 
 	@Transactional
-	public void assertMeshNode(MeshNodeCreateRequest request, MeshNode node) {
+	public void assertMeshNode(NodeCreateRequest request, MeshNode node) {
 		assertNotNull(request);
 		assertNotNull(node);
 
@@ -139,7 +139,7 @@ public class RestAssert {
 	}
 
 	@Transactional
-	public void assertMeshNode(MeshNode node, MeshNodeResponse readValue) {
+	public void assertMeshNode(MeshNode node, NodeResponse readValue) {
 		assertNotNull(node);
 		assertNotNull(readValue);
 		assertEquals(node.getUuid(), readValue.getUuid());
