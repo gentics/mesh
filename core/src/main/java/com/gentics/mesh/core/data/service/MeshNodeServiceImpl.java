@@ -65,11 +65,11 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	public void setTeaser(MeshNode content, Language language, String text) {
-		setProperty(content, language, ObjectSchema.TEASER_KEY, text);
+		setProperty(content, language, ObjectSchema.TEASER_KEYWORD, text);
 	}
 
 	public void setTitle(MeshNode content, Language language, String text) {
-		setProperty(content, language, ObjectSchema.TITLE_KEY, text);
+		setProperty(content, language, ObjectSchema.TITLE_KEYWORD, text);
 	}
 
 	@Override

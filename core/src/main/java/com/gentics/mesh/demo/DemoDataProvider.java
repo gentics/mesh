@@ -461,10 +461,10 @@ public class DemoDataProvider {
 		nameProp.setDescription("The name of the category.");
 		categoriesSchema.addPropertyTypeSchema(nameProp);
 
-		BasicPropertyTypeSchema filenameProp = new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
-		filenameProp.setDisplayName("Filename");
-		filenameProp.setDescription("The filename property of the category.");
-		categoriesSchema.addPropertyTypeSchema(filenameProp);
+		BasicPropertyTypeSchema displayNameProp = new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+		displayNameProp.setDisplayName("Display Name");
+		displayNameProp.setDescription("The display name property of the category.");
+		categoriesSchema.addPropertyTypeSchema(displayNameProp);
 
 		BasicPropertyTypeSchema contentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 		contentProp.setDisplayName("Content");
@@ -522,9 +522,11 @@ public class DemoDataProvider {
 		folderNode.getProjects().add(project);
 
 		if (germanName != null) {
+			nodeService.setDisplayName(folderNode, german, germanName);
 			nodeService.setName(folderNode, german, germanName);
 		}
 		if (englishName != null) {
+			nodeService.setDisplayName(folderNode, english, englishName);
 			nodeService.setName(folderNode, english, englishName);
 		}
 		folderNode.setCreator(userInfo.getUser());
@@ -541,10 +543,10 @@ public class DemoDataProvider {
 	public Tag addTag(String englishName, String germanName, ObjectSchema schema) {
 		Tag tag = new Tag();
 		if (englishName != null) {
-			tagService.setName(tag, english, englishName);
+			tagService.setDisplayName(tag, english, englishName);
 		}
 		if (germanName != null) {
-			tagService.setName(tag, german, germanName);
+			tagService.setDisplayName(tag, german, germanName);
 		}
 		tag.addProject(project);
 		tag.setSchema(schema);
@@ -556,13 +558,13 @@ public class DemoDataProvider {
 
 	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, ObjectSchema schema) {
 		MeshNode node = new MeshNode();
-		nodeService.setName(node, english, name + " english");
-		nodeService.setFilename(node, english, name + ".en.html");
+		nodeService.setDisplayName(node, english, name + " english");
+		nodeService.setName(node, english, name + ".en.html");
 		nodeService.setContent(node, english, englishContent);
 
 		if (germanContent != null) {
-			nodeService.setName(node, german, name + " german");
-			nodeService.setFilename(node, german, name + ".de.html");
+			nodeService.setDisplayName(node, german, name + " german");
+			nodeService.setName(node, german, name + ".de.html");
 			nodeService.setContent(node, german, germanContent);
 		}
 		// TODO maybe set project should be done inside the save?

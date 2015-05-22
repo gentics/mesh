@@ -11,11 +11,16 @@ import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.repository.action.PropertyContainerActions;
 
 @Transactional(readOnly = true)
-public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> implements PropertyContainerActions<T> {
+public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> implements
+		PropertyContainerActions<T> {
 
 	public void setProperty(T node, Language language, String key, String value) {
 
-		if (node == null || StringUtils.isEmpty(key) || language == null) {
+		if (language == null) {
+			throw new NullPointerException("The language for the property can't be null");
+		}
+
+		if (node == null || StringUtils.isEmpty(key)) {
 			// TODO exception? boolean return?
 			return;
 		}
@@ -33,19 +38,12 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 
 	}
 
-	public void setName(T node, Language language, String name) {
-		if (language == null) {
-			throw new NullPointerException("The language for the name can't be null");
-		}
-		setProperty(node, language, ObjectSchema.NAME_KEYWORD, name);
-	}
-
 	public void setContent(T node, Language language, String text) {
 		setProperty(node, language, ObjectSchema.CONTENT_KEYWORD, text);
 	}
 
-	public void setFilename(T node, Language language, String filename) {
-		setProperty(node, language, ObjectSchema.FILENAME_KEYWORD, filename);
+	public void setName(T node, Language language, String name) {
+		setProperty(node, language, ObjectSchema.NAME_KEYWORD, name);
 	}
 
 	public String getName(T node, Language language) {
@@ -57,15 +55,19 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 	}
 
 	public String getTeaser(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.TEASER_KEY);
+		return getProperty(node, language, ObjectSchema.TEASER_KEYWORD);
 	}
 
 	public String getTitle(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.TITLE_KEY);
+		return getProperty(node, language, ObjectSchema.TITLE_KEYWORD);
 	}
 
-	public String getFilename(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.FILENAME_KEYWORD);
+	public String getDisplayName(T node, Language language) {
+		return getProperty(node, language, ObjectSchema.DISPLAY_NAME_KEYWORD);
+	}
+
+	public void setDisplayName(T node, Language language, String name) {
+		setProperty(node, language, ObjectSchema.NAME_KEYWORD, name);
 	}
 
 	public String getProperty(T node, Language language, String key) {

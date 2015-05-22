@@ -57,7 +57,7 @@ public class TagTest extends AbstractDBTest {
 		Language german = languageService.findByLanguageTag("de");
 
 		Tag tag = new Tag();
-		tagService.setName(tag, german, GERMAN_NAME);
+		tagService.setDisplayName(tag, german, GERMAN_NAME);
 		try (Transaction tx = graphDb.beginTx()) {
 			tag = tagService.save(tag);
 			tx.success();
@@ -86,7 +86,7 @@ public class TagTest extends AbstractDBTest {
 
 		Language english = languageService.findByLanguageTag("en");
 
-		tagService.setName(tag, english, ENGLISH_NAME);
+		tagService.setDisplayName(tag, english, ENGLISH_NAME);
 		try (Transaction tx = graphDb.beginTx()) {
 			tag = tagService.save(tag);
 			tx.success();
@@ -100,8 +100,8 @@ public class TagTest extends AbstractDBTest {
 		Language german = languageService.findByLanguageTag("de");
 
 		try (Transaction tx = graphDb.beginTx()) {
-			nodeService.setFilename(node, german, GERMAN_TEST_FILENAME);
-			nodeService.setName(node, german, "german node name");
+			nodeService.setName(node, german, GERMAN_TEST_FILENAME);
+			nodeService.setDisplayName(node, german, "german node name");
 			tag = tagService.save(tag);
 
 			// Assign the tag to the node
@@ -117,7 +117,7 @@ public class TagTest extends AbstractDBTest {
 			MeshNode contentFromTag = tag.getNodes().iterator().next();
 			assertNotNull(contentFromTag);
 			assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
-			String filename = nodeService.getFilename(contentFromTag, german);
+			String filename = nodeService.getDisplayName(contentFromTag, german);
 			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 			// Remove the file/content and check whether the content was really removed
@@ -149,10 +149,10 @@ public class TagTest extends AbstractDBTest {
 		final String TEST_TAG_NAME = "testTag";
 
 		Tag rootTag = new Tag();
-		tagService.setName(rootTag, german, "wurzelordner");
+		tagService.setDisplayName(rootTag, german, "wurzelordner");
 
 		Tag subFolderTag = new Tag();
-		tagService.setName(subFolderTag, german, TEST_TAG_NAME);
+		tagService.setDisplayName(subFolderTag, german, TEST_TAG_NAME);
 		subFolderTag = tagService.save(subFolderTag);
 
 		//		rootTag.addTag(subFolderTag);

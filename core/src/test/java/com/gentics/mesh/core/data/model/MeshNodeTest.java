@@ -43,11 +43,11 @@ public class MeshNodeTest extends AbstractDBTest {
 		try (Transaction tx = graphDb.beginTx()) {
 
 			nodeService.setContent(content, data().getEnglish(), "english content");
-			nodeService.setFilename(content, data().getEnglish(), "english.html");
+			nodeService.setName(content, data().getEnglish(), "english.html");
 			nodeService.save(content);
 
 			nodeService.setContent(content2, data().getEnglish(), "english2 content");
-			nodeService.setFilename(content2, data().getEnglish(), "english2.html");
+			nodeService.setName(content2, data().getEnglish(), "english2.html");
 			nodeService.save(content2);
 			tx.success();
 		}
@@ -108,7 +108,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode content = new MeshNode();
 		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setContent(content, data().getEnglish(), "english content");
-			nodeService.setFilename(content, data().getEnglish(), "english.html");
+			nodeService.setName(content, data().getEnglish(), "english.html");
 			content = nodeService.save(content);
 			tx.success();
 		}

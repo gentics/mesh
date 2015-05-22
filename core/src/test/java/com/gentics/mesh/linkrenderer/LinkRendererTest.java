@@ -45,16 +45,16 @@ public class LinkRendererTest extends AbstractDBTest {
 		// Create some dummy content
 		MeshNode content = new MeshNode();
 		try (Transaction tx = graphDb.beginTx()) {
-			contentService.setName(content, german, "german name");
-			contentService.setFilename(content, german, "german.html");
+			contentService.setDisplayName(content, german, "german name");
+			contentService.setName(content, german, "german.html");
 			contentService.save(content);
 			tx.success();
 		}
 
 		MeshNode content2 = new MeshNode();
 		try (Transaction tx = graphDb.beginTx()) {
-			contentService.setName(content2, english, "content 2 english");
-			contentService.setFilename(content2, english, "english.html");
+			contentService.setDisplayName(content2, english, "content 2 english");
+			contentService.setName(content2, english, "english.html");
 			contentService.save(content2);
 			tx.success();
 		}

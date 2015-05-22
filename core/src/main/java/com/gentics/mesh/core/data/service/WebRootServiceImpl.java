@@ -38,7 +38,7 @@ public class WebRootServiceImpl implements WebRootService {
 		String parts[] = path.split("/");
 		Project project = projectService.findByName(projectName);
 
-		Path tagPath = new Path();
+		Path nodePath = new Path();
 
 		// Traverse the graph and buildup the result path while doing so
 		Node currentNode = neo4jTemplate.getPersistentState(project.getRootNode());
@@ -50,7 +50,7 @@ public class WebRootServiceImpl implements WebRootService {
 			if (log.isDebugEnabled()) {
 				log.debug("Looking for path segment {" + part + "}");
 			}
-			Node nextNode = addPathSegment(tagPath, currentNode, part, isLastSegment);
+			Node nextNode = addPathSegment(nodePath, currentNode, part, isLastSegment);
 			if (nextNode != null) {
 				currentNode = nextNode;
 			} else {
@@ -59,7 +59,7 @@ public class WebRootServiceImpl implements WebRootService {
 			}
 		}
 
-		return tagPath;
+		return nodePath;
 
 	}
 
@@ -82,23 +82,16 @@ public class WebRootServiceImpl implements WebRootService {
 		AtomicReference<Node> foundNode = new AtomicReference<>();
 		// TODO i wonder whether streams are useful in this case. We need to benchmark this section
 
-		RelationshipType targetRelationship = BasicRelationships.TYPES.HAS_TAG;
-		String keyword = ObjectSchema.NAME_KEYWORD;
-		if (isLastSegment) {
-			targetRelationship = BasicRelationships.TYPES.HAS_NODE;
-			keyword = ObjectSchema.FILENAME_KEYWORD;
-		}
+		RelationshipType targetRelationship = BasicRelationships.TYPES.HAS_PARENT_NODE;
 
-		for (Relationship rel : node.getRelationships(targetRelationship, Direction.OUTGOING)) {
-			Node nextHop = rel.getEndNode();
-			// if (nextHop.hasLabel(Tag.getLabel())) {
-			String languageTag = getI18nPropertyLanguageTag(nextHop, keyword, i18nTagName);
+		for (Relationship rel : node.getRelationships(targetRelationship, Direction.INCOMING)) {
+			Node nextHop = rel.getStartNode();
+			String languageTag = getI18nPropertyLanguageTag(nextHop, ObjectSchema.NAME_KEYWORD, i18nTagName);
 			if (languageTag != null) {
 				foundNode.set(nextHop);
 				path.addSegment(new PathSegment(nextHop, languageTag));
 				break;
 			}
-			// }
 		}
 
 		return foundNode.get();

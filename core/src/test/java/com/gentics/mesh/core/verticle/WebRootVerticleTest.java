@@ -30,9 +30,8 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadFolderByPath() throws Exception {
 
-		String englishPath = data().getPathForNews2015Tag(data().getEnglish());
 		MeshNode folder = data().getFolder("2015");
-		String path = "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath;
+		String path = "/api/v1/" + PROJECT_NAME + "/webroot/News/2015";
 		String response = request(info, GET, path, 200, "OK");
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(folder, restNode);
@@ -44,10 +43,9 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByPath() throws Exception {
-		String path = "/api/v1/" + PROJECT_NAME + "/webroot/categories/Plane/Concorde.en.html?lang=en,de";
+		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
 		MeshNode concordeNode = data().getContent("concorde");
 		String response = request(info, GET, path, 200, "OK");
-		System.out.println(response);
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(concordeNode, restNode);
 		assertNotNull(restNode.getProperties("de"));
@@ -57,13 +55,13 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadFolderWithBogusPath() throws Exception {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/blub", 404, "Not Found");
-		expectMessageResponse("tag_not_found_for_path", response, "blub");
+		expectMessageResponse("node_not_found_for_path", response, "blub");
 	}
 
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		try (Transaction tx = graphDb.beginTx()) {
-			String englishPath = data().getPathForNews2015Tag(data().getEnglish());
+			String englishPath = "News/2015";
 			MeshNode newsFolder = data().getFolder("2015");
 			roleService.revokePermission(info.getRole(), newsFolder, PermissionType.READ);
 			String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
@@ -73,29 +71,17 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadContentByValidPath() throws Exception {
-		try (Transaction tx = graphDb.beginTx()) {
-			String englishPath = data().getPathForNews2015Tag(data().getEnglish());
-			MeshNode folder = data().getFolder("2015");
-			String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 200, "OK");
-			NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
-			test.assertMeshNode(folder, restNode);
-			tx.success();
-		}
-	}
-
-	@Test
 	public void testReadContentByInvalidPath() throws Exception {
-		String invalidPath = "subtag/subtag2/no-valid-page.html";
+		String invalidPath = "News/2015/no-valid-content.html";
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + invalidPath, 404, "Not Found");
-		expectMessageResponse("tag_not_found_for_path", response, invalidPath);
+		expectMessageResponse("node_not_found_for_path", response, invalidPath);
 	}
 
 	@Test
 	public void testReadContentByInvalidPath2() throws Exception {
-		String invalidPath = "subtag/subtag-no-valid-tag/no-valid-page.html";
+		String invalidPath = "News/no-valid-folder/no-valid-content.html";
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + invalidPath, 404, "Not Found");
-		expectMessageResponse("tag_not_found_for_path", response, invalidPath);
+		expectMessageResponse("node_not_found_for_path", response, invalidPath);
 	}
 
 }

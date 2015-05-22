@@ -351,7 +351,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		// Reload and update
 		try (Transaction tx = graphDb.beginTx()) {
 			node = nodeService.reload(node);
-			assertEquals(newFilename, nodeService.getFilename(node, data().getEnglish()));
+			assertEquals(newFilename, nodeService.getDisplayName(node, data().getEnglish()));
 			assertEquals(newName, nodeService.getName(node, data().getEnglish()));
 			assertEquals(newNode, nodeService.getContent(node, data().getEnglish()));
 			tx.success();

@@ -282,10 +282,10 @@ public class BootstrapInitializer {
 			nameProp.setDescription("The name of the content.");
 			contentSchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyTypeSchema filenameProp = new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
-			filenameProp.setDisplayName("Filename");
-			filenameProp.setDescription("The filename property of the content.");
-			contentSchema.addPropertyTypeSchema(filenameProp);
+			BasicPropertyTypeSchema displayNameProp = new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			displayNameProp.setDisplayName("Display Name");
+			displayNameProp.setDescription("The display name property of the content.");
+			contentSchema.addPropertyTypeSchema(displayNameProp);
 
 			BasicPropertyTypeSchema contentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 			contentProp.setDisplayName("Content");
@@ -321,10 +321,10 @@ public class BootstrapInitializer {
 			nameProp.setDescription("The name of the content.");
 			binarySchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyTypeSchema filenameProp = new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING);
-			filenameProp.setDisplayName("Filename");
-			filenameProp.setDescription("The filename of the content.");
-			binarySchema.addPropertyTypeSchema(filenameProp);
+			BasicPropertyTypeSchema displayNameProp = new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			displayNameProp.setDisplayName("Display Name");
+			displayNameProp.setDescription("The display name property of the content.");
+			binarySchema.addPropertyTypeSchema(displayNameProp);
 
 			BasicPropertyTypeSchema binaryContentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.BINARY);
 			binaryContentProp.setDisplayName("Binary content");
@@ -340,7 +340,7 @@ public class BootstrapInitializer {
 			tagSchema.setDisplayName("Tag");
 			tagSchema.setDescription("Default schema for tags");
 			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.FILENAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
 			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			objectSchemaService.save(tagSchema);
 		}
