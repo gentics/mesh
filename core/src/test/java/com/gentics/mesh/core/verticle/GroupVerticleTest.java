@@ -174,12 +174,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Assert.assertEquals(totalGroups + 1, restResponse.getMetainfo().getTotalCount());
 
 		List<GroupResponse> allGroups = new ArrayList<>();
-		for (int page = 1; page < totalPages; page++) {
+		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, GroupListResponse.class);
 			allGroups.addAll(restResponse.getData());
 		}
-		Assert.assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups, allGroups.size());
+		Assert.assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups + 1, allGroups.size());
 
 		// Verify that extra group is not part of the response
 		final String extraGroupName = extraGroupWithNoPerm.getName();
@@ -195,7 +195,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/groups/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":3,\"total_count\":36}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":36}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 

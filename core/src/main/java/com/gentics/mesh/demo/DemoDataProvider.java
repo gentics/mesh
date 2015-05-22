@@ -421,6 +421,12 @@ public class DemoDataProvider {
 		contentSchema = objectSchemaService.save(contentSchema);
 		schemas.put("content", contentSchema);
 
+		// binary-content
+		ObjectSchema binaryContentSchema = objectSchemaService.findByName("binary-content");
+		binaryContentSchema.addProject(project);
+		binaryContentSchema = objectSchemaService.save(binaryContentSchema);
+		schemas.put("binary-content", binaryContentSchema);
+
 	}
 
 	private void addColorsSchema() {
@@ -439,6 +445,8 @@ public class DemoDataProvider {
 		ObjectSchema blogPostSchema = new ObjectSchema("blogpost");
 		BasicPropertyTypeSchema content = new BasicPropertyTypeSchema("content", PropertyType.LIST);
 		blogPostSchema.addPropertyTypeSchema(content);
+		objectSchemaService.save(blogPostSchema);
+		schemas.put("blogpost", blogPostSchema);
 
 	}
 

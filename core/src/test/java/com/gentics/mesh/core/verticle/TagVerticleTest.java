@@ -46,22 +46,14 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		return tagVerticle;
 	}
 
-	//	@Test
-	//	public void testReadTagsForTag2() throws Exception {
-	//		Tag carTag = data().getTag("car");
-	//		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + carTag.getUuid() + "/tags", 200, "OK");
-	//		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
-	//		assertEquals(2, restResponse.getData().size());
-	//		// should list two colors
-	//	}
-
 	@Test
 	public void testReadAllTags() throws Exception {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		Tag noPermTag = new Tag();
 		try (Transaction tx = graphDb.beginTx()) {
-			noPermTag = data().addTag("NoPermEN", "NoPermDE");
+			//noPermTag = data().addTag("NoPermEN", "NoPermDE");
+			noPermTag.addProject(data().getProject());
 			noPermTag = tagService.save(noPermTag);
 			tx.success();
 		}
@@ -77,9 +69,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		int perPage = 4;
 		// Extra Tags + permitted tag
 		int totalTags = data().getTags().size();
-		int totalPages = (int) Math.ceil(totalTags / (double) perPage) + 1;
+		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
 		List<TagResponse> allTags = new ArrayList<>();
-		for (int page = 1; page < totalPages; page++) {
+		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, TagListResponse.class);
 			int expectedItemsCount = perPage;
@@ -115,86 +107,12 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		perPage = 25;
-		totalPages = (int) Math.ceil(totalTags / (double) perPage) + 1;
+		totalPages = (int) Math.ceil(totalTags / (double) perPage);
 		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + 4242, 200, "OK");
 		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":" + totalPages + ",\"total_count\":" + totalTags
 				+ "}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
-
-	//	@Test
-	//	public void testReadChildTagsForTag() throws Exception {
-	//		Tag rootTag = data().getTag(name)
-	//		int perPage = 6;
-	//		int page = 1;
-	//		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
-	//				+ "&page=" + page + "&lang=en", 200, "OK");
-	//		TagChildrenListResponse listResponse = JsonUtils.readValue(response, TagChildrenListResponse.class);
-	//		assertEquals("The response did not contain the correct amount of child tags. {" + response + "}", 2, listResponse.getData().size());
-	//		assertEquals(2, listResponse.getMetainfo().getTotalCount());
-	//		assertEquals(1, listResponse.getMetainfo().getPageCount());
-	//		assertEquals(page, listResponse.getMetainfo().getCurrentPage());
-	//
-	//		TagResponse foundTag = (TagResponse) listResponse.getData().get(0);
-	//		assertEquals("2015", foundTag.getProperty("en", "name"));
-	//
-	//		TagResponse foundTag2 = (TagResponse) listResponse.getData().get(1);
-	//		assertEquals("2014", foundTag2.getProperty("en", "name"));
-	//	}
-
-	//	@Test
-	//	public void testReadChildTagsnWithLanguageTags() throws Exception {
-	//		MEs rootTag = data().getFolder("news");
-	//
-	//		try (Transaction tx = graphDb.beginTx()) {
-	//			Tag tag = data().getNews2015();
-	//			tagService.setName(tag, data().getGerman(), "2015 - auf deutsch");
-	//			tagService.save(tag);
-	//			tx.success();
-	//		}
-	//
-	//		int perPage = 6;
-	//		int page = 1;
-	//		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childTags?per_page=" + perPage
-	//				+ "&page=" + page + "&lang=de", 200, "OK");
-	//		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
-	//		assertEquals(1, tagList.getData().size());
-	//		assertEquals(1, tagList.getMetainfo().getTotalCount());
-	//		assertEquals(2, tagList.getMetainfo().getPageCount());
-	//		assertEquals(page, tagList.getMetainfo().getCurrentPage());
-	//		// TODO assert two tags
-	//	}
-	//
-	//	@Test
-	//	public void testReadChildContentsWithLanguageTags() throws Exception {
-	//		Tag rootTag = data().getFolder("news");
-	//
-	//		int nContents = 42;
-	//		try (Transaction tx = graphDb.beginTx()) {
-	//			for (int i = 0; i < nContents; i++) {
-	//				MeshNode content = new MeshNode();
-	//				contentService.setContent(content, data().getGerman(), "some content " + i);
-	//				contentService.setFilename(content, data().getGerman(), "index" + i + ".de.html");
-	//				content.getProjects().add(data().getProject());
-	//				content.setParent(rootTag);
-	//				contentService.save(content);
-	//				roleService.addPermission(info.getRole(), content, PermissionType.READ);
-	//			}
-	//			tx.success();
-	//		}
-	//
-	//		int perPage = 6;
-	//		int page = 1;
-	//		int totalPages = (int) Math.ceil(nContents / (double) perPage) + 1;
-	//		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags/" + rootTag.getUuid() + "/childContents?per_page="
-	//				+ perPage + "&page=" + page + "&lang=de,en", 200, "OK");
-	//		NodeListResponse tagList = JsonUtils.readValue(response, NodeListResponse.class);
-	//		assertEquals(perPage, tagList.getData().size());
-	//		assertEquals(nContents + 1, tagList.getMetainfo().getTotalCount());
-	//		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
-	//		assertEquals(page, tagList.getMetainfo().getCurrentPage());
-	//		// TODO assert two contents
-	//	}
 
 	@Test
 	public void testReadTagByUUID() throws Exception {
@@ -206,31 +124,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
 	}
-
-	//	@Test
-	//	@Ignore("removed depth param")
-	//	public void testReadTagByUUIDWithDepthParam() throws Exception {
-	//
-	//		Tag tag = data().getNews();
-	//		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-	//
-	//		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?depth=3&lang=de,en", 200, "OK");
-	//		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-	//
-	//		//		assertEquals(2, restTag.getTags().size());
-	//		//		TagResponse childTag1 = restTag.getTags().get(0);
-	//		//		assertNotNull(childTag1.getUuid());
-	//		//		assertEquals("2014", childTag1.getProperty("en", "name"));
-	//		//
-	//		//		TagResponse childTag2 = restTag.getTags().get(1);
-	//		//		assertNotNull(childTag2.getUuid());
-	//		//		assertEquals("2015", childTag2.getProperty("en", "name"));
-	//		//
-	//		//		assertEquals(1, childTag1.getTags().size());
-	//		//		TagResponse childTagOfChildTag = childTag1.getTags().get(0);
-	//		//		assertNotNull(childTagOfChildTag.getUuid());
-	//		//		assertEquals("March", childTagOfChildTag.getProperty("en", "name"));
-	//	}
 
 	@Test
 	public void testReadTagByUUIDWithSingleLanguage() throws Exception {

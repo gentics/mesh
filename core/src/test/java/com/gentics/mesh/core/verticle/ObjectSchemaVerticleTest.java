@@ -140,8 +140,8 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra schemas + default schema
-		int totalSchemas = nSchemas + 4;
-		int totalPages = (int) Math.ceil(totalSchemas / (double) perPage) + 1;
+		int totalSchemas = nSchemas + data().getSchemas().size();
+		int totalPages = (int) Math.ceil(totalSchemas / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", 11, restResponse.getData().size());
 		assertEquals(2, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -149,7 +149,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(totalSchemas, restResponse.getMetainfo().getTotalCount());
 
 		List<ObjectSchemaResponse> allSchemas = new ArrayList<>();
-		for (int page = 1; page < totalPages; page++) {
+		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, ObjectSchemaListResponse.class);
 			allSchemas.addAll(restResponse.getData());
