@@ -138,6 +138,14 @@ public class DemoDataProvider {
 		addTags();
 		addContents(multiplicator);
 		updatePermissions();
+
+		log.info("Nodes:    " + getNodeCount());
+		log.info("Folders:  " + folders.size());
+		log.info("Contents: " + contents.size());
+		log.info("Tags:     " + tags.size());
+		log.info("Users:    " + users.size());
+		log.info("Groups:   " + groups.size());
+		log.info("Roles:    " + roles.size());
 	}
 
 	private void addContents(int multiplicator) {
@@ -168,7 +176,6 @@ public class DemoDataProvider {
 				"Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.", contentSchema);
 		porsche911.addTag(tags.get("vehicle"));
 		porsche911.addTag(tags.get("car"));
-		contents.put("Porsche 911", porsche911);
 
 		MeshNode nissanGTR = addContent(
 				folders.get("products"),
@@ -178,7 +185,6 @@ public class DemoDataProvider {
 				contentSchema);
 		nissanGTR.addTag(tags.get("vehicle"));
 		nissanGTR.addTag(tags.get("car"));
-		contents.put("Nissan GTR", nissanGTR);
 		nissanGTR.addTag(tags.get("green"));
 
 		MeshNode bmwM3 = addContent(
@@ -190,7 +196,6 @@ public class DemoDataProvider {
 		bmwM3.addTag(tags.get("vehicle"));
 		bmwM3.addTag(tags.get("car"));
 		bmwM3.addTag(tags.get("blue"));
-		contents.put("BMW M3", bmwM3);
 
 		MeshNode concorde = addContent(
 				folders.get("products"),
@@ -201,7 +206,6 @@ public class DemoDataProvider {
 		concorde.addTag(tags.get("plane"));
 		concorde.addTag(tags.get("twinjet"));
 		concorde.addTag(tags.get("red"));
-		contents.put("Concorde", concorde);
 
 		MeshNode boeing737 = addContent(
 				folders.get("products"),
@@ -211,7 +215,6 @@ public class DemoDataProvider {
 				contentSchema);
 		boeing737.addTag(tags.get("plane"));
 		boeing737.addTag(tags.get("twinjet"));
-		contents.put("Boeing 737", boeing737);
 
 		MeshNode a300 = addContent(
 				folders.get("products"),
@@ -223,8 +226,6 @@ public class DemoDataProvider {
 		a300.addTag(tags.get("twinjet"));
 		a300.addTag(tags.get("red"));
 
-		contents.put("Airbus A300", a300);
-
 		MeshNode wrangler = addContent(
 				folders.get("products"),
 				"Jeep Wrangler",
@@ -232,19 +233,16 @@ public class DemoDataProvider {
 				"Der Jeep Wrangler ist ein Geländewagen des US-amerikanischen Herstellers Jeep innerhalb des Chrysler-Konzerns.", contentSchema);
 		wrangler.addTag(tags.get("vehicle"));
 		wrangler.addTag(tags.get("jeep"));
-		contents.put("Jeep Wrangler", wrangler);
 
 		MeshNode volvo = addContent(folders.get("products"), "Volvo B10M",
 				"The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null, contentSchema);
 		volvo.addTag(tags.get("vehicle"));
 		volvo.addTag(tags.get("bus"));
-		contents.put("Volvo B10M", volvo);
 
 		MeshNode hondact90 = addContent(folders.get("products"), "Honda CT90",
 				"The Honda CT90 was a small step-through motorcycle manufactured by Honda from 1966 to 1979.", null, contentSchema);
 		hondact90.addTag(tags.get("vehicle"));
 		hondact90.addTag(tags.get("motorcycle"));
-		contents.put("Honda CT90", hondact90);
 
 		MeshNode hondaNR = addContent(
 				folders.get("products"),
@@ -255,7 +253,6 @@ public class DemoDataProvider {
 		hondaNR.addTag(tags.get("vehicle"));
 		hondaNR.addTag(tags.get("motorcycle"));
 		hondaNR.addTag(tags.get("green"));
-		contents.put("Honda NR", hondaNR);
 
 	}
 
@@ -274,7 +271,7 @@ public class DemoDataProvider {
 		MeshNode news2014 = addFolder(news, "2014", null);
 		addFolder(news2014, "March", null);
 
-		addFolder(rootNode, "products", "Produkte");
+		addFolder(rootNode, "Products", "Produkte");
 		addFolder(rootNode, "Deals", "Angebote");
 
 	}
@@ -392,7 +389,7 @@ public class DemoDataProvider {
 		imageGallery.getProperties().add(descriptionSchema);
 
 		BasicPropertyTypeSchema imagesSchemas = new ListPropertyTypeSchema("images");
-//		imagesSchemas.add(PropertyType.REFERENCE);
+		//		imagesSchemas.add(PropertyType.REFERENCE);
 		imageGallery.getProperties().add(imagesSchemas);
 		microSchemas.put("gallery", imageGallery);
 
@@ -515,6 +512,7 @@ public class DemoDataProvider {
 		MeshNode folderNode = new MeshNode();
 		folderNode.setParent(rootNode);
 		folderNode.getProjects().add(project);
+
 		if (germanName != null) {
 			nodeService.setName(folderNode, german, germanName);
 		}

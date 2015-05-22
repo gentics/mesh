@@ -35,8 +35,7 @@ public class QueryServiceTest extends AbstractDBTest {
 			System.out.println(t.getUuid());
 		}
 
-		// Exclude the root tag
-		assertEquals(data().getTags().size() - 1, tagPage.getTotalElements());
+		assertEquals(data().getTags().size(), tagPage.getTotalElements());
 
 	}
 }

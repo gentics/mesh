@@ -189,15 +189,15 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// Extra Nodes + permitted node
 		int totalNodes = data().getNodeCount();
-		int totalPages = (int) Math.ceil(totalNodes / (double) perPage) + 1;
+		int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
 
 		List<NodeResponse> allNodes = new ArrayList<>();
-		for (int page = 1; page < totalPages; page++) {
+		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, NodeListResponse.class);
 			allNodes.addAll(restResponse.getData());
@@ -239,7 +239,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 25, nElements);
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(2, restResponse.getMetainfo().getPageCount());
+		assertEquals(3, restResponse.getMetainfo().getPageCount());
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(data().getNodeCount(), restResponse.getMetainfo().getTotalCount());
 	}
@@ -253,19 +253,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
 		test.assertMeshNode(node, JsonUtils.readValue(response, NodeResponse.class));
 	}
-//
-//	@Test
-//	public void testReadNodeByUUIDWithExceedingDepthParam() throws Exception {
-//		MeshNode node = data().getFolder("2015");
-//
-//		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?depth=999", 400, "Bad Request");
-//		expectMessageResponse("error_depth_max_exceeded", response, "999", "5");
-//
-//	}
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		MeshNode node = data().getFolder("products");
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de", 200, "OK");
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);

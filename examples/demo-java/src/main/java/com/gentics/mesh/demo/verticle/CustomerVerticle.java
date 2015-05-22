@@ -40,7 +40,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	public void registerEndPoints() throws Exception {
 		addPermissionTestHandler();
 		try (Transaction tx = graphDb.beginTx()) {
-			demoDataProvider.setup(3);
+			demoDataProvider.setup(1);
 			tx.success();
 		}
 	}

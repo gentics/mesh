@@ -93,37 +93,41 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), data().getProject(), PermissionType.READ);
 
 		final int nProjects = 142;
-		for (int i = 0; i < nProjects; i++) {
-			Project extraProject = new Project("extra_project_" + i);
-			extraProject.setRootNode(data().getProject().getRootNode());
-			extraProject = projectService.save(extraProject);
-			roleService.addPermission(info.getRole(), extraProject, PermissionType.READ);
+		Project noPermProject;
+		try (Transaction tx = graphDb.beginTx()) {
+			for (int i = 0; i < nProjects; i++) {
+				Project extraProject = new Project("extra_project_" + i);
+				extraProject.setRootNode(data().getProject().getRootNode());
+				extraProject = projectService.save(extraProject);
+				roleService.addPermission(info.getRole(), extraProject, PermissionType.READ);
+			}
+			noPermProject = new Project("no_perm_project");
+			noPermProject = projectService.save(noPermProject);
+			tx.success();
 		}
-		Project noPermProject = new Project("no_perm_project");
-		noPermProject = projectService.save(noPermProject);
 
 		// Don't grant permissions to no perm project
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/", 200, "OK");
 		ProjectListResponse restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
-		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(25, restResponse.getData().size());
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
-		Assert.assertEquals(perPage, restResponse.getData().size());
+		assertEquals(perPage, restResponse.getData().size());
 
-		// Extra projects + aloha project
+		// Extra projects + dummy project
 		int totalProjects = nProjects + 1;
-		int totalPages = (int) Math.ceil(totalProjects / (double) perPage) +1;
-		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
+		int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
 
 		List<ProjectResponse> allProjects = new ArrayList<>();
 		for (int page = 1; page < totalPages; page++) {
@@ -131,7 +135,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 			restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
 			allProjects.addAll(restResponse.getData());
 		}
-		Assert.assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
+		assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
 
 		// Verify that the no perm project is not part of the response
 		final String noPermProjectName = noPermProject.getName();

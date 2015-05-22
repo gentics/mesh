@@ -124,13 +124,14 @@ public class MeshNodeTest extends AbstractDBTest {
 	@Test
 	public void testFindAll() {
 
+		
 		User user = data().getUserInfo().getUser();
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
 		Page<MeshNode> page = nodeService.findAllVisible(user, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are contents that are only available in english
-		assertEquals(data().getContents().size() - 2, page.getTotalElements());
+		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
