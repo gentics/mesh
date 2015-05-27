@@ -2,14 +2,19 @@ package com.gentics.mesh.core.data.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import io.vertx.ext.apex.RoutingContext;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 
+import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.repository.UserRepository;
+import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class UserTest extends AbstractDBTest {
@@ -17,9 +22,12 @@ public class UserTest extends AbstractDBTest {
 	@Autowired
 	UserRepository userRepository;
 
+	private UserInfo info;
+
 	@Before
 	public void setup() throws Exception {
 		setupData();
+		info = data().getUserInfo();
 	}
 
 	@Test
@@ -67,5 +75,22 @@ public class UserTest extends AbstractDBTest {
 		int nUserAfter = userRepository.findRoot().getUsers().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 
+	}
+
+	@Test
+	public void testFindUsersOfGroup() {
+
+		User extraUser = new User("extraUser");
+		try (Transaction tx = graphDb.beginTx()) {
+			extraUser = userService.save(extraUser);
+			info.getGroup().addUser(extraUser);
+			groupService.save(info.getGroup());
+			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
+			tx.success();
+		}
+
+		RoutingContext rc = getMockedRoutingContext();
+		Page<User> userPage = userService.findByGroup(rc, info.getGroup(), new PagingInfo(1, 10));
+		assertEquals(2, userPage.getTotalElements());
 	}
 }

@@ -34,7 +34,7 @@ public class GroupTest extends AbstractDBTest {
 
 		group = groupService.reload(group);
 		assertEquals("The group should contain one member.", 1, group.getUsers().size());
-		
+
 		try (Transaction tx = graphDb.beginTx()) {
 			User userOfGroup = group.getUsers().iterator().next();
 			neo4jTemplate.fetch(userOfGroup);
@@ -56,4 +56,5 @@ public class GroupTest extends AbstractDBTest {
 		int nGroupsAfter = groupRepository.findRoot().getGroups().size();
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);
 	}
+
 }

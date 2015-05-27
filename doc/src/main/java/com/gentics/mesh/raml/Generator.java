@@ -122,14 +122,14 @@ public class Generator {
 		project.setName("Dummy Project");
 		project.setUuid(getUUID());
 		project.setPerms("READ", "UPDATE", "DELETE", "CREATE");
-		project.setRootTagUuid(getUUID());
+		project.setRootNodeUuid(getUUID());
 		write(project);
 
 		ProjectResponse project2 = new ProjectResponse();
 		project2.setName("Dummy Project (Mobile)");
 		project2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
 		project2.setUuid(getUUID());
-		project2.setRootTagUuid(getUUID());
+		project2.setRootNodeUuid(getUUID());
 
 		ProjectListResponse projectList = new ProjectListResponse();
 		projectList.getData().add(project);

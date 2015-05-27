@@ -30,7 +30,7 @@ public interface UserService extends GenericNodeService<User> {
 	 */
 	Page<User> findAllVisible(RoutingContext rc, PagingInfo pagingInfo);
 
-	UserResponse transformToRest(User user, int depth);
+	UserResponse transformToRest(User user);
 
 	boolean removeUserFromGroup(User user, Group group);
 
@@ -41,5 +41,7 @@ public interface UserService extends GenericNodeService<User> {
 	String[] getPerms(RoutingContext rc, AbstractPersistable node);
 
 	User findUser(RoutingContext rc);
+
+	Page<User> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo);
 
 }

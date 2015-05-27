@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.apex.RoutingContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,9 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 
 	@Autowired
 	private ProjectRepository projectRepository;
+	
+	@Autowired
+	protected UserService userService;
 
 	@Override
 	public Project findByName(String projectName) {
@@ -48,15 +52,17 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	}
 
 	@Override
-	public ProjectResponse transformToRest(Project project) {
+	public ProjectResponse transformToRest(RoutingContext rc, Project project) {
 		ProjectResponse projectResponse = new ProjectResponse();
 		projectResponse.setUuid(project.getUuid());
 		projectResponse.setName(project.getName());
+		projectResponse.setPerms(userService.getPerms(rc, project));
+
 		MeshNode rootNode = neo4jTemplate.fetch(project.getRootNode());
 		if (rootNode != null) {
-			projectResponse.setRootTagUuid(rootNode.getUuid());
+			projectResponse.setRootNodeUuid(rootNode.getUuid());
 		} else {
-			log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no rootTag.");
+			log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
 		}
 		return projectResponse;
 	}

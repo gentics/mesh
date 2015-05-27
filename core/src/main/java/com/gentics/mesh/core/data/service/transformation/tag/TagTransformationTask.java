@@ -64,7 +64,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				User creator = tag.getCreator();
 				if (creator != null) {
 					creator = info.getNeo4jTemplate().fetch(creator);
-					restTag.setCreator(info.getUserService().transformToRest(creator, 0));
+					restTag.setCreator(info.getUserService().transformToRest(creator));
 				}
 
 				for (String languageTag : info.getLanguageTags()) {

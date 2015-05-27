@@ -134,8 +134,8 @@ public class DemoDataProvider {
 		addUserGroupRoleProject(multiplicator);
 		addMicoSchemas();
 		addSchemas();
-		addFolderStructure();
 		addTags();
+		addFolderStructure();
 		addContents(multiplicator);
 		updatePermissions();
 
@@ -266,7 +266,12 @@ public class DemoDataProvider {
 		project = projectService.save(project);
 
 		MeshNode news = addFolder(rootNode, "News", "Neuigkeiten");
-		addFolder(news, "2015", null);
+		MeshNode news2015 = addFolder(news, "2015", null);
+		news2015.addTag(tags.get("car"));
+		news2015.addTag(tags.get("bike"));
+		news2015.addTag(tags.get("plane"));
+		news2015.addTag(tags.get("jeep"));
+		nodeService.save(news2015);
 
 		MeshNode news2014 = addFolder(news, "2014", null);
 		addFolder(news2014, "March", null);
@@ -275,8 +280,8 @@ public class DemoDataProvider {
 		addFolder(rootNode, "Deals", "Angebote");
 
 	}
-
 	private void addTags() {
+
 
 		ObjectSchema colorSchema = schemas.get("color");
 		ObjectSchema categoriesSchema = schemas.get("category");
@@ -518,7 +523,7 @@ public class DemoDataProvider {
 
 	public MeshNode addFolder(MeshNode rootNode, String englishName, String germanName) {
 		MeshNode folderNode = new MeshNode();
-		folderNode.setParent(rootNode);
+		folderNode.setParentNode(rootNode);
 		folderNode.getProjects().add(project);
 
 		if (germanName != null) {
@@ -572,7 +577,7 @@ public class DemoDataProvider {
 		node.setCreator(userInfo.getUser());
 		node.setSchema(schema);
 		node.setOrder(42);
-		node.setParent(parentNode);
+		node.setParentNode(parentNode);
 		node = nodeService.save(node);
 		// Add the content to the given tag
 		//		parentTag.addContent(content);

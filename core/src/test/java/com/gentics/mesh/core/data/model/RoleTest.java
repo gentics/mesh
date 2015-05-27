@@ -13,10 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.GraphPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.repository.RoleRepository;
 import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class RoleTest extends AbstractDBTest {
@@ -160,5 +161,21 @@ public class RoleTest extends AbstractDBTest {
 		int nRolesAfter = roleRepository.findRoot().getRoles().size();
 		assertEquals(nRolesBefore + 1, nRolesAfter);
 
+	}
+
+	@Test
+	public void testRolesOfGroup() {
+
+		Role extraRole = new Role("extraRole");
+		try (Transaction tx = graphDb.beginTx()) {
+			extraRole = roleService.save(extraRole);
+			info.getGroup().addRole(extraRole);
+			groupService.save(info.getGroup());
+			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
+			tx.success();
+		}
+
+		Page<Role> roles = roleRepository.findByGroup(info.getUser().getUuid(), info.getGroup(), new MeshPageRequest(0, 10));
+		assertEquals(1, roles.getTotalElements());
 	}
 }

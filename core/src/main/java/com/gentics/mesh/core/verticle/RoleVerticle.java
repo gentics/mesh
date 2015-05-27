@@ -16,11 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.Group;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.request.RoleUpdateRequest;
@@ -99,8 +98,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 			vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 				RoleListResponse listResponse = new RoleListResponse();
-				User user = userService.findUser(rc);
-				Page<Role> rolePage = roleService.findAllVisible(user, pagingInfo);
+				Page<Role> rolePage = roleService.findAll(rc, pagingInfo);
 				for (Role role : rolePage) {
 					listResponse.getData().add(roleService.transformToRest(role));
 				}

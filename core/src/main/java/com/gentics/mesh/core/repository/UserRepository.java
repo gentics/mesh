@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.repository.RepositoryDefinition;
 
+import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.auth.UserRoot;
 import com.gentics.mesh.core.repository.action.UUIDCRUDActions;
@@ -34,5 +35,8 @@ public interface UserRepository extends UUIDCRUDActions<User>, UserActions {
 
 	@Query("MATCH (n:UserRoot) return n")
 	UserRoot findRoot();
+
+	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
+	Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
 
 }

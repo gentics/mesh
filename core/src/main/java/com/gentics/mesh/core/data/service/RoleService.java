@@ -5,11 +5,11 @@ import io.vertx.ext.apex.RoutingContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.conversion.Result;
 
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.GraphPermission;
+import com.gentics.mesh.core.data.model.auth.Group;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.service.generic.GenericNodeService;
@@ -41,6 +41,8 @@ public interface RoleService extends GenericNodeService<Role> {
 
 	void addCRUDPermissionOnRole(RoutingContext rc, MeshPermission meshPermission, GenericNode targetNode);
 
-	Page<Role> findAllVisible(User requestUser, PagingInfo pagingInfo);
+	Page<Role> findAll(RoutingContext rc, PagingInfo pagingInfo);
+
+	Page<Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo);
 
 }

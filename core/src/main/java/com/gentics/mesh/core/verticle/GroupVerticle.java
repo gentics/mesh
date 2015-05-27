@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.model.MeshRoot;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.Group;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
@@ -27,6 +27,8 @@ import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.group.response.GroupListResponse;
+import com.gentics.mesh.core.rest.role.response.RoleListResponse;
+import com.gentics.mesh.core.rest.user.response.UserListResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -43,7 +45,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
-		// addGroupChildGroupHandlers();
 		addGroupUserHandlers();
 		addGroupRoleHandlers();
 
@@ -54,6 +55,32 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addGroupRoleHandlers() {
+
+		route("/:groupUuid/roles").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			rcs.loadObject(rc, "groupUuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
+				vertx.executeBlocking((Future<RoleListResponse> bch) -> {
+					RoleListResponse listResponse = new RoleListResponse();
+					Group group = grh.result();
+					Page<Role> rolePage = roleService.findByGroup(rc, group, pagingInfo);
+					for (Role role : rolePage) {
+						listResponse.getData().add(roleService.transformToRest(role));
+					}
+					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+
+					bch.complete(listResponse);
+				}, rh -> {
+					if (rh.failed()) {
+						throw new RuntimeException(rh.cause());
+					}
+					RoleListResponse listResponse = rh.result();
+					rc.response().setStatusCode(200).end(toJson(listResponse));
+				});
+
+			});
+
+		});
+
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
 
 			rcs.loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
@@ -89,6 +116,28 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addGroupUserHandlers() {
+		route("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			rcs.loadObject(rc, "groupUuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
+				vertx.executeBlocking((Future<UserListResponse> bch) -> {
+					UserListResponse listResponse = new UserListResponse();
+					Group group = grh.result();
+					Page<User> userPage = userService.findByGroup(rc, group, pagingInfo);
+					for (User user : userPage) {
+						listResponse.getData().add(userService.transformToRest(user));
+					}
+					RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
+
+					bch.complete(listResponse);
+				}, rh -> {
+					UserListResponse listResponse = rh.result();
+					rc.response().setStatusCode(200).end(toJson(listResponse));
+				});
+
+			});
+
+		});
+
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
@@ -108,7 +157,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-
 			rcs.loadObject(rc, "groupUuid", PermissionType.UPDATE, (AsyncResult<Group> grh) -> {
 				rcs.loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
 					Group group = grh.result();

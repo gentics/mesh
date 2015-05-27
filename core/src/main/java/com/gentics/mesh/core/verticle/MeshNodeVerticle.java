@@ -24,9 +24,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.I18NProperties;
 import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
@@ -39,6 +39,8 @@ import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
+import com.gentics.mesh.core.verticle.handler.MeshNodeListHandler;
+import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -56,6 +58,12 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private ObjectSchemaRepository objectSchemaRepository;
 
+	@Autowired
+	private TagListHandler tagListHandler;
+	
+	@Autowired
+	private MeshNodeListHandler nodeListHandler;
+
 	public MeshNodeVerticle() {
 		super("nodes");
 	}
@@ -67,6 +75,98 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+		addChildrenHandler();
+		addTagsHandler();
+	}
+
+	private void addTagsHandler() {
+		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			nodeListHandler.handleNodeList(rc, (projectName, parentNode, languageTags, pagingInfo) -> {
+				return nodeService.findChildren(rc, projectName, parentNode, languageTags, pagingInfo);
+			});
+		});
+
+		Route postRoute = route("/:uuid/children/:nodeChildUuid").method(POST).produces(APPLICATION_JSON);
+		postRoute.handler(rc -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "nodeChildUuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> srh) -> {
+					MeshNode parentNode = rh.result();
+					MeshNode node = srh.result();
+					parentNode.getChildren().add(node);
+					node = nodeService.save(node);
+				}, trh -> {
+					MeshNode node = rh.result();
+					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
+				});
+
+			});
+		});
+
+		// TODO fix error handling. This does not fail when tagUuid could not be found
+		Route deleteRoute = route("/:uuid/children/:nodeChildUuid").method(DELETE).produces(APPLICATION_JSON);
+		deleteRoute.handler(rc -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "nodeChildUuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> srh) -> {
+					MeshNode parentNode = rh.result();
+					MeshNode node = srh.result();
+					parentNode.getChildren().remove(node);
+					node = nodeService.save(node);
+				}, trh -> {
+					MeshNode node = rh.result();
+					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
+				});
+			});
+
+		});
+
+	}
+
+	// TODO filtering, sorting
+	private void addChildrenHandler() {
+		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			tagListHandler.handle(rc, (projectName, node, languageTags, pagingInfo) -> {
+				return tagService.findTags(rc, projectName, node, languageTags, pagingInfo);
+			});
+		});
+
+		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
+		postRoute.handler(rc -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "tagUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+					MeshNode node = rh.result();
+					Tag tag = srh.result();
+					node.addTag(tag);
+					node = nodeService.save(node);
+				}, trh -> {
+					MeshNode node = rh.result();
+					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
+				});
+
+			});
+		});
+
+		// TODO fix error handling. This does not fail when tagUuid could not be found
+		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
+		deleteRoute.handler(rc -> {
+			String projectName = rcs.getProjectName(rc);
+			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "tagUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+					MeshNode node = rh.result();
+					Tag tag = srh.result();
+					node.removeTag(tag);
+					tag = tagService.save(tag);
+				}, trh -> {
+					MeshNode node = rh.result();
+					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
+				});
+			});
+
+		});
 	}
 
 	// TODO maybe projects should not be a set?
@@ -137,14 +237,14 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				node = nodeService.save(node);
 
 				/* Assign the content to the tag and save the tag */
-//				rootTagForContent.(content);
-				rootNodeForContent = nodeService.save(rootNodeForContent);
+				//				rootTagForContent.(content);
+					rootNodeForContent = nodeService.save(rootNodeForContent);
 
-				contentCreated.complete(node);
-			}, trh -> {
-				MeshNode content = contentCreated.result();
-				rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
-			});
+					contentCreated.complete(node);
+				}, trh -> {
+					MeshNode content = contentCreated.result();
+					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
+				});
 
 		});
 	}
@@ -172,8 +272,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			vertx.executeBlocking((Future<NodeListResponse> bch) -> {
 				NodeListResponse listResponse = new NodeListResponse();
 				try (Transaction tx = graphDb.beginTx()) {
-					User user = userService.findUser(rc);
-					Page<MeshNode> contentPage = nodeService.findAllVisible(user, projectName, languageTags, pagingInfo);
+					Page<MeshNode> contentPage = nodeService.findAll(rc, projectName, languageTags, pagingInfo);
 					for (MeshNode content : contentPage) {
 						listResponse.getData().add(nodeService.transformToRest(rc, content));
 					}
@@ -263,7 +362,5 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 		});
 	}
-
-
 
 }

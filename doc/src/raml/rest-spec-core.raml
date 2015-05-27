@@ -189,12 +189,6 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
-    /groups/{uuid}:
-      put:
-        description: Add the user with the given uuid to the group.
-      delete:
-        description: Remove the user with the given uuid from the group.
-
 
 
 #------------------------------------------------------------------------------
@@ -255,23 +249,6 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
-    /groups/{uuid}:
-      put:
-        description: Add the role to the group.
-        responses:
-          200:
-            body:
-              application/json:
-                schema: GenericMessageResponse
-                example: !include json/GenericMessageResponse.example.json
-      delete:
-        description: Remove the role from the group.
-        responses:
-          200:
-            body:
-              application/json:
-                schema: GenericMessageResponse
-                example: !include json/GenericMessageResponse.example.json
     /chmod/{uuid}:
       put:
         description: |
@@ -339,6 +316,14 @@ schemas:
             application/json:
               schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
+    /roles
+      get:
+        description: List all the roles for the given group.
+    /roles/{uuid}:
+      put:
+        description: Add the given role to the the group. 
+      delete:
+        description: Remove the given role from the group.
     /users/{uuid}:
       put:
         description: Add the user with the given uuid to the group.
@@ -356,9 +341,12 @@ schemas:
               application/json:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
-    /groups/{uuid}:
+    /roles:
+      get:
+        description: List all the roles for the given group.
+    /roles/{uuid}:
       put:
-        description: Add the group with the given uuid to the group.
+        description: Add the role with the given uuid to the group.
         responses:
           200:
             body:
@@ -366,7 +354,7 @@ schemas:
                 schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
-        description: Remove the group with the given uuid from the group.
+        description: Remove the role with the given uuid from the group.
         responses:
           200:
             body:

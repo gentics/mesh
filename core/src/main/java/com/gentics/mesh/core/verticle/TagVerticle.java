@@ -68,7 +68,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private TagListHandler tagListHandler;
 
 	@Autowired
-	private MeshNodeListHandler contentListHandler;
+	private MeshNodeListHandler nodeListHandler;
 
 	public TagVerticle() {
 		super("tags");
@@ -82,17 +82,14 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 
-		//		addChildTagsHandlers();
-		//		addChildContentsHandlers();
-
-		addTaggedContentsHandler();
+		addTaggedNodesHandler();
 	}
 
-	private void addTaggedContentsHandler() {
-		Route getRoute = route("/:uuid/taggedContent").method(GET).produces(APPLICATION_JSON);
+	private void addTaggedNodesHandler() {
+		Route getRoute = route("/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			contentListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
-				return tagService.findTaggedContents(rc, projectName, rootTag, languageTags, pagingInfo);
+			nodeListHandler.handleListByTag(rc, (projectName, tag, languageTags, pagingInfo) -> {
+				return tagService.findTaggedNodes(rc, projectName, tag, languageTags, pagingInfo);
 			});
 		});
 	}
@@ -248,55 +245,5 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			});
 		});
 	}
-
-	//	/**
-	//	 * Handler that allows handling of child elements (tags/contents)
-	//	 */
-	//	// TODO filtering, sorting
-	//	private void addChildTagsHandlers() {
-	//		Route getRoute = route("/:uuid/childTags").method(GET).produces(APPLICATION_JSON);
-	//		getRoute.handler(rc -> {
-	//			tagListHandler.handle(rc, (projectName, rootTag, languageTags, pagingInfo) -> {
-	//				return tagService.findChildTags(rc, projectName, rootTag, languageTags, pagingInfo);
-	//			});
-	//		});
-	//
-	//		Route postRoute = route("/:tagUuid/childTags/:tagChildUuid").method(POST).produces(APPLICATION_JSON);
-	//		postRoute.handler(rc -> {
-	//			String projectName = rcs.getProjectName(rc);
-	//			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-	//				rcs.loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
-	//					Tag tag = rh.result();
-	//					Tag subTag = srh.result();
-	//
-	//					tag.addTag(subTag);
-	//					tag = tagService.save(tag);
-	//				}, trh -> {
-	//					Tag tag = rh.result();
-	//					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag)));
-	//				});
-	//
-	//			});
-	//		});
-	//
-	//		// TODO fix error handling. This does not fail when tagUuid could not be found
-	//		Route deleteRoute = route("/:tagUuid/childTags/:tagChildUuid").method(DELETE).produces(APPLICATION_JSON);
-	//		deleteRoute.handler(rc -> {
-	//			String projectName = rcs.getProjectName(rc);
-	//			rcs.loadObject(rc, "tagUuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
-	//				rcs.loadObject(rc, "tagChildUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
-	//					Tag tag = rh.result();
-	//					Tag subTag = srh.result();
-	//					tag.removeTag(subTag);
-	//					tag = tagService.save(tag);
-	//				}, trh -> {
-	//					Tag tag = rh.result();
-	//					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag)));
-	//				});
-	//			});
-	//
-	//		});
-	//
-	//	}
 
 }

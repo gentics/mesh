@@ -80,7 +80,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 				User creator = node.getCreator();
 				if (creator != null) {
 					creator = info.getNeo4jTemplate().fetch(creator);
-					restNode.setCreator(info.getUserService().transformToRest(creator, 0));
+					restNode.setCreator(info.getUserService().transformToRest(creator));
 				}
 
 				/* Load the order */

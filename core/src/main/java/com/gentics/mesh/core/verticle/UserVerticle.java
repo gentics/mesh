@@ -50,11 +50,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
 			rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
 			}, trh -> {
 				User user = trh.result();
-				UserResponse restUser = userService.transformToRest(user, depthFuture.result());
+				UserResponse restUser = userService.transformToRest(user);
 				rc.response().setStatusCode(200).end(toJson(restUser));
 			});
 		});
@@ -64,14 +63,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-			Future<Integer> depthFuture = rcs.getDepthParameter(rc);
-
 			vertx.executeBlocking((Future<UserListResponse> bch) -> {
 				UserListResponse listResponse = new UserListResponse();
 
 				Page<User> userPage = userService.findAllVisible(rc, pagingInfo);
 				for (User currentUser : userPage) {
-					listResponse.getData().add(userService.transformToRest(currentUser, depthFuture.result()));
+					listResponse.getData().add(userService.transformToRest(currentUser));
 				}
 				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 				bch.complete(listResponse);
@@ -129,7 +126,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			}, trh -> {
 				User user = trh.result();
-				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user, 0)));
+				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
 			});
 
 		});
@@ -181,7 +178,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				userCreated.complete(user);
 			}, trh -> {
 				User user = userCreated.result();
-				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user, 0)));
+				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
 			});
 
 		});

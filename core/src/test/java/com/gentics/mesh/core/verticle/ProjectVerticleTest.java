@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpMethod;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -164,8 +165,15 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		roleService.addPermission(info.getRole(), project, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 200, "OK");
+		System.out.println(response);
 		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
 		test.assertProject(project, restProject);
+
+		List<String> permissions = Arrays.asList(restProject.getPerms());
+		assertTrue(permissions.contains("create"));
+		assertTrue(permissions.contains("read"));
+		assertTrue(permissions.contains("update"));
+		assertTrue(permissions.contains("delete"));
 	}
 
 	@Test

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.service.RoutingContextService;
@@ -32,12 +33,12 @@ public class TagListHandler {
 		TagListResponse listResponse = new TagListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
-			Tag rootTag = rh.result();
+		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
+			MeshNode node = rh.result();
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-			Page<Tag> tagPage = tlc.findTags(projectName, rootTag, languageTags, pagingInfo);
+			Page<Tag> tagPage = tlc.findTags(projectName, node, languageTags, pagingInfo);
 			for (Tag tag : tagPage) {
 				listResponse.getData().add(tagService.transformToRest(rc, tag));
 			}

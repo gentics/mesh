@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.ext.apex.RoutingContext;
 
-import java.util.Collections;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -42,14 +40,14 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 		restGroup.setUuid(group.getUuid());
 		restGroup.setName(group.getName());
 
-		for (User user : group.getUsers()) {
-			user = neo4jTemplate.fetch(user);
-			String name = user.getUsername();
-			if (name != null) {
-				restGroup.getUsers().add(name);
-			}
-		}
-		Collections.sort(restGroup.getUsers());
+//		for (User user : group.getUsers()) {
+//			user = neo4jTemplate.fetch(user);
+//			String name = user.getUsername();
+//			if (name != null) {
+//				restGroup.getUsers().add(name);
+//			}
+//		}
+//		Collections.sort(restGroup.getUsers());
 
 		for (Role role : group.getRoles()) {
 			role = neo4jTemplate.fetch(role);

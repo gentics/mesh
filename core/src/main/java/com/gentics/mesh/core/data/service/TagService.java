@@ -27,64 +27,28 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 	 */
 	Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
-//	/**
-//	 * Find all tags that are tagged by the given tag. (rootTag:Tag)<-[:HAS_TAG]-(tag:Tag)
-//	 * 
-//	 * @param rc
-//	 * @param projectName
-//	 * @param rootTag
-//	 * @param languageTags
-//	 * @param pagingInfo
-//	 * @return
-//	 */
-//	Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
-//
-//	/**
-//	 * Find all tags that tag the given root tag. (rootTag:Tag)-[:HAS_TAG]->(tag:Tag)
-//	 * 
-//	 * @param rc
-//	 * @param projectName
-//	 * @param rootTag
-//	 * @param languageTags
-//	 * @param pagingInfo
-//	 * @return
-//	 */
-//	Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
-//
-//	/**
-//	 * Find all child tags for the given tag.
-//	 * 
-//	 * @param rc
-//	 * @param projectName
-//	 * @param rootTag
-//	 * @param languageTags
-//	 * @param pagingInfo
-//	 * @return
-//	 */
-//	Page<Tag> findChildTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
-//
-//	/**
-//	 * Find all child contents for the given tag.
-//	 * 
-//	 * @param rc
-//	 * @param projectName
-//	 * @param rootTag
-//	 * @param languageTags
-//	 * @param pagingInfo
-//	 * @return
-//	 */
-//	Page<MeshNode> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
-
 	/**
-	 * Find all contents that are tagged by the given tag.
+	 * Find all tags for the given node.
 	 * 
 	 * @param rc
 	 * @param projectName
-	 * @param rootTag
+	 * @param node
 	 * @param languageTags
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<MeshNode> findTaggedContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Tag> findTags(RoutingContext rc, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo);
+
+	/**
+	 * Find all nodes that are tagged by the given tag.
+	 * 
+	 * @param rc
+	 * @param projectName
+	 * @param tag
+	 * @param languageTags
+	 * @param pagingInfo
+	 * @return
+	 */
+	Page<MeshNode> findTaggedNodes(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

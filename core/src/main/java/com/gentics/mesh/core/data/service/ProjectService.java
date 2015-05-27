@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
+import io.vertx.ext.apex.RoutingContext;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.conversion.Result;
 
@@ -19,7 +21,7 @@ public interface ProjectService extends GenericNodeService<Project> {
 
 	void deleteByName(String name);
 
-	ProjectResponse transformToRest(Project project);
+	ProjectResponse transformToRest(RoutingContext rc, Project project);
 
 	Page<Project> findAllVisible(User requestUser, PagingInfo pagingInfo);
 

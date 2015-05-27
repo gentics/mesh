@@ -70,7 +70,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public UserResponse transformToRest(User user, int depth) {
+	public UserResponse transformToRest(User user) {
 		if (user == null) {
 			throw new HttpStatusCodeErrorException(500, "User can't be null");
 		}
@@ -194,7 +194,13 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	@Override
 	public User findUser(RoutingContext rc) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return findByUUID(userUuid);
+		return nodeRepository.findByUUID(userUuid);
+	}
+
+	@Override
+	public Page<User> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return userRepository.findByGroup(userUuid, group,  new MeshPageRequest(pagingInfo));
 	}
 
 }

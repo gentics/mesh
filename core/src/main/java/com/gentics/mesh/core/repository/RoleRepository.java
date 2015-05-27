@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.repository;
 
+import static com.gentics.mesh.core.repository.CypherStatements.FILTER_USER_PERM;
+import static com.gentics.mesh.core.repository.CypherStatements.MATCH_PERMISSION_ON_ROLE;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.annotation.Query;
@@ -7,9 +10,9 @@ import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.repository.RepositoryDefinition;
 
 import com.gentics.mesh.core.data.model.auth.GraphPermission;
+import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.RoleRoot;
-import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.repository.action.RoleActions;
 import com.gentics.mesh.core.repository.action.UUIDCRUDActions;
 
@@ -25,10 +28,19 @@ public interface RoleRepository extends UUIDCRUDActions<Role>, RoleActions {
 	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
 	GraphPermission findPermission(Long roleId, Long nodeId);
 
-	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleRole:Role) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleRole ORDER BY visibleRole.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleRole:Role) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleRole)")
-	Page<Role> findAll(User requestUser, Pageable pageable);
+	@Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
+
+	countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
+	Page<Role> findAll(String userUuid, Pageable pageable);
 
 	@Query("MATCH (n:RoleRoot) return n")
 	RoleRoot findRoot();
+
+	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
+			+ " return role ORDER BY role.name desc",
+
+	countQuery = MATCH_PERMISSION_ON_ROLE + "MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
+			+ "return count(role)")
+	Page<Role> findByGroup(String userUuid, Group group, Pageable pageable);
 
 }

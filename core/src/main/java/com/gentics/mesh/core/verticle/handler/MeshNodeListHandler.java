@@ -32,17 +32,38 @@ public class MeshNodeListHandler {
 	@Autowired
 	private RoutingContextService rcs;
 
-	public void handle(RoutingContext rc, MeshNodeListCallable clc) {
+	public void handleListByTag(RoutingContext rc, MeshNodeListTagCallable clc) {
 		String projectName = rcs.getProjectName(rc);
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
-			Tag rootTag = rh.result();
+			Tag tag = rh.result();
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-			Page<MeshNode> contentPage = clc.findContents(projectName, rootTag, languageTags, pagingInfo);
+			Page<MeshNode> contentPage = clc.findNodes(projectName, tag, languageTags, pagingInfo);
+			for (MeshNode content : contentPage) {
+				listResponse.getData().add(contentService.transformToRest(rc, content));
+			}
+			RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
+
+		}, trh -> {
+			rc.response().setStatusCode(200).end(JsonUtils.toJson(listResponse));
+		});
+	}
+
+	public void handleNodeList(RoutingContext rc, MeshNodeListNodeCallable clc) {
+		String projectName = rcs.getProjectName(rc);
+		NodeListResponse listResponse = new NodeListResponse();
+		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+
+		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
+			MeshNode parentNode = rh.result();
+
+			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+
+			Page<MeshNode> contentPage = clc.findNodes(projectName, parentNode, languageTags, pagingInfo);
 			for (MeshNode content : contentPage) {
 				listResponse.getData().add(contentService.transformToRest(rc, content));
 			}

@@ -3,13 +3,9 @@ package com.gentics.mesh.core.data.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.RoutingContext;
-import io.vertx.ext.apex.Session;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.conversion.Result;
 
-import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
@@ -209,23 +204,5 @@ public class TagTest extends AbstractDBTest {
 		// assertEquals(4, response.getPerms().length);
 	}
 
-	private RoutingContext getMockedRoutingContext() {
 
-		User user = data().getUserInfo().getUser();
-
-		RoutingContext rc = mock(RoutingContext.class);
-		Session session = mock(Session.class);
-		when(rc.session()).thenReturn(session);
-		JsonObject principal = new JsonObject();
-		principal.put("uuid", user.getUuid());
-		when(session.getPrincipal()).thenReturn(principal);
-		// Create login session
-		// String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
-		// String loginSessionId = null;
-		// Session session = mock(Session.class);
-		// RoutingContext rc = mock(RoutingContext.class);
-		// when(rc.session()).thenReturn(session);
-		// when(session.id()).thenReturn(loginSessionId);
-		return rc;
-	}
 }

@@ -5,12 +5,11 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 
 import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.paging.PagingInfo;
 
 @FunctionalInterface
-public interface MeshNodeListCallable {
+public interface MeshNodeListNodeCallable {
 
-	Page<MeshNode> findContents(String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<MeshNode> findNodes(String projectName, MeshNode parentNode, List<String> languageTags, PagingInfo pagingInfo);
 
 }

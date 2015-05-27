@@ -79,11 +79,11 @@ public class MeshNode extends GenericPropertyContainer {
 		return false;
 	}
 
-	public MeshNode getParentTag() {
+	public MeshNode getParentNode() {
 		return parentNode;
 	}
 
-	public void setParent(MeshNode node) {
+	public void setParentNode(MeshNode node) {
 		this.parentNode = node;
 	}
 

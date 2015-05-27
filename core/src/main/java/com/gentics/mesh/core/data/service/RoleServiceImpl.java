@@ -157,8 +157,15 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public Page<Role> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		return roleRepository.findAll(requestUser, new MeshPageRequest(pagingInfo));
+	public Page<Role> findAll(RoutingContext rc, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return roleRepository.findAll(userUuid, new MeshPageRequest(pagingInfo));
+	}
+
+	@Override
+	public Page<Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return roleRepository.findByGroup(userUuid, group,  new MeshPageRequest(pagingInfo));
 	}
 
 }

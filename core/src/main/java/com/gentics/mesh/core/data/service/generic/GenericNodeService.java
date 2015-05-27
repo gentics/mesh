@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.service.generic;
 import java.util.List;
 
 import org.neo4j.graphdb.Node;
-import org.springframework.data.neo4j.conversion.Result;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 
@@ -19,10 +18,6 @@ public interface GenericNodeService<T extends GenericNode> {
 
 	public T findOne(Long id);
 
-	public Result<T> findAll();
-
-	public Iterable<T> findAll(String projectName);
-	
 	public T findByName(String projectName, String name);
 
 	public T findByUUID(String projectName, String uuid);

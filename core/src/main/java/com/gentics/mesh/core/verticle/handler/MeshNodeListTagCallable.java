@@ -9,8 +9,8 @@ import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.paging.PagingInfo;
 
 @FunctionalInterface
-public interface TagListCallable {
+public interface MeshNodeListTagCallable {
 
-	Page<Tag> findTags(String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo);
+	Page<MeshNode> findNodes(String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

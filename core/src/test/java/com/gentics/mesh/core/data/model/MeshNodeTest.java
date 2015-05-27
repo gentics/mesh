@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import io.vertx.ext.apex.RoutingContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +13,6 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.repository.TagRepository;
 import com.gentics.mesh.demo.DemoDataProvider;
@@ -64,7 +63,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode newSubNode;
 		try (Transaction tx = graphDb.beginTx()) {
 			newSubNode = new MeshNode();
-			newSubNode.setParent(newsNode);
+			newSubNode.setParentNode(newsNode);
 			nodeService.save(newSubNode);
 			tx.success();
 		}
@@ -124,18 +123,18 @@ public class MeshNodeTest extends AbstractDBTest {
 	@Test
 	public void testFindAll() {
 
-		
-		User user = data().getUserInfo().getUser();
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
-		Page<MeshNode> page = nodeService.findAllVisible(user, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(1, 10));
+		RoutingContext rc = getMockedRoutingContext();
+
+		Page<MeshNode> page = nodeService.findAll(rc, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are contents that are only available in english
 		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = nodeService.findAllVisible(user, "dummy", languageTags, new PagingInfo(1, 15));
+		page = nodeService.findAll(rc, "dummy", languageTags, new PagingInfo(1, 15));
 		assertEquals(data().getContents().size(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 

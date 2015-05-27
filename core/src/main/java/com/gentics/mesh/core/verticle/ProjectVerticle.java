@@ -10,7 +10,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
-
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.model.MeshNode;
@@ -76,7 +74,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					project = projectService.save(project);
 				}, trh -> {
 					Project project = trh.result();
-					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(project)));
+					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(rc, project)));
 				});
 		});
 	}
@@ -120,9 +118,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage")));
 					return;
 				}
-			}, trh-> {
+			}, trh -> {
 				Project project = projectCreated.result();
-				rc.response().end(toJson(projectService.transformToRest(project)));
+				rc.response().end(toJson(projectService.transformToRest(rc, project)));
 			});
 
 		});
@@ -137,7 +135,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			} else {
 				rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Project> rh) -> {
 					Project project = rh.result();
-					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(project)));
+					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(rc, project)));
 				});
 			}
 		});
@@ -151,7 +149,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				User requestUser = userService.findUser(rc);
 				Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
 				for (Project project : projectPage) {
-					listResponse.getData().add(projectService.transformToRest(project));
+					listResponse.getData().add(projectService.transformToRest(rc, project));
 				}
 				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
 				bcr.complete(listResponse);

@@ -11,15 +11,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.content.MeshNodeTransformationTask;
-import com.gentics.mesh.core.repository.MeshNodeRepository;
 import com.gentics.mesh.core.repository.GroupRepository;
+import com.gentics.mesh.core.repository.MeshNodeRepository;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.MeshPageRequest;
@@ -54,7 +53,7 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	private MeshNodeRepository contentRepository;
+	private MeshNodeRepository nodeRepository;
 
 	@Autowired
 	private I18NService i18n;
@@ -70,11 +69,6 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 
 	public void setTitle(MeshNode content, Language language, String text) {
 		setProperty(content, language, ObjectSchema.TITLE_KEYWORD, text);
-	}
-
-	@Override
-	public Iterable<MeshNode> findAll(String project) {
-		return contentRepository.findAll(project);
 	}
 
 	@Override
@@ -100,12 +94,27 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	}
 
 	@Override
-	public Page<MeshNode> findAllVisible(User requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> findChildren(RoutingContext rc, String projectName, MeshNode parentNode, List<String> languageTags, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+
 		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
 		if (languageTags == null || languageTags.size() == 0) {
-			return contentRepository.findAll(requestUser, projectName, pr);
+			return nodeRepository.findChildren(userUuid, projectName, parentNode, pr);
 		} else {
-			return contentRepository.findAll(requestUser, projectName, languageTags, pr);
+			return nodeRepository.findChildren(userUuid, projectName, parentNode, languageTags, pr);
+		}
+
+	}
+
+	@Override
+	public Page<MeshNode> findAll(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+
+		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+		if (languageTags == null || languageTags.size() == 0) {
+			return nodeRepository.findAll(userUuid, projectName, pr);
+		} else {
+			return nodeRepository.findAll(userUuid, projectName, languageTags, pr);
 		}
 	}
 

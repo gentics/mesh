@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.core.Future;
 import io.vertx.ext.apex.RoutingContext;
 
 import java.util.List;
@@ -71,13 +70,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		// Configuration
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 		info.setLanguageTags(languageTags);
-		// Future<Integer> depthFuture = rcs.getDepthParameter(rc);
-//		Future<Boolean> tagsIncludeFuture = rcs.getTagsIncludeParameter(rc);
-//		info.setIncludeTags(tagsIncludeFuture.result());
-//		Future<Boolean> contentIncludeFuture = rcs.getContentsIncludeParameter(rc);
-//		info.setIncludeContents(contentIncludeFuture.result());
-//		Future<Boolean> childTagIncludeFuture = rcs.getChildTagIncludeParameter(rc);
-//		info.setIncludeChildTags(childTagIncludeFuture.result());
 
 		TagResponse restTag = new TagResponse();
 		TagTransformationTask task = new TagTransformationTask(tag, info, restTag);
@@ -86,40 +78,22 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		return restTag;
 	}
 
-//	@Override
-//	public Page<Tag> findChildTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-//		String userUuid = rc.session().getPrincipal().getString("uuid");
-//		return tagRepository.findChildTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
-//	}
-//
-//	@Override
-//	public Page<MeshNode> findChildContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-//		String userUuid = rc.session().getPrincipal().getString("uuid");
-//		return tagRepository.findChildContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
-//	}
-
-	@Override
-	public Page<MeshNode> findTaggedContents(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findTaggedContents(userUuid, projectName, rootTag, languageTags, pagingInfo);
-	}
-
 	@Override
 	public Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 		return tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
 	}
 
-//	@Override
-//	public Page<Tag> findTaggedTags(RoutingContext rc, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo) {
-//		String userUuid = rc.session().getPrincipal().getString("uuid");
-//		return tagRepository.findTaggedTags(userUuid, projectName, rootTag, languageTags, pagingInfo);
-//	}
-//
-//	@Override
-//	public Page<Tag> findTaggingTags(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-//		String userUuid = rc.session().getPrincipal().getString("uuid");
-//		return tagRepository.findTaggingTags(userUuid, projectName, tag, languageTags, pagingInfo);
-//	}
+	@Override
+	public Page<Tag> findTags(RoutingContext rc, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return tagRepository.findTags(userUuid, projectName, node, languageTags, pagingInfo);
+	}
+
+	@Override
+	public Page<MeshNode> findTaggedNodes(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
+		String userUuid = rc.session().getPrincipal().getString("uuid");
+		return tagRepository.findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
+	}
 
 }

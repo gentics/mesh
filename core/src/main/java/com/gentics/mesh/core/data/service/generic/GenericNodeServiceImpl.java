@@ -6,7 +6,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +19,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 
 	@Autowired
 	protected I18NValueRepository i18nPropertyRepository;
-
+	
 	@Autowired
 	@Qualifier("genericNodeRepository")
 	protected GenericNodeRepository<T> nodeRepository;
@@ -54,15 +53,6 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 		this.nodeRepository.save(nodes);
 	}
 
-	@Override
-	public Result<T> findAll() {
-		return nodeRepository.findAll();
-	}
-
-	@Override
-	public Iterable<T> findAll(String project) {
-		return nodeRepository.findAll(project);
-	}
 
 	@Override
 	public T findByName(String project, String name) {

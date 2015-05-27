@@ -22,19 +22,19 @@ public interface TagActions {
 	public Page<Tag> findProjectTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
-	 * Find all visible tags that are tagging the given tag.
+	 * Find all tags that tag the given node. /nodes/:uuid/tags
 	 * 
 	 * @param userUuid
 	 * @param projectName
-	 * @param tag
+	 * @param node
 	 * @param languageTags
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Tag> findTaggingTags(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Tag> findTags(String userUuid, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo);
 
 	/**
-	 * Find all visible tags that are tagged using the given tag.
+	 * Find all visible nodes that use this tag for tagging. /tags/:uuid/nodes
 	 * 
 	 * @param userUuid
 	 * @param projectName
@@ -43,42 +43,6 @@ public interface TagActions {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<Tag> findTaggedTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
-
-	/**
-	 * Find all visible child tags for the given project and roottag. /tags/:uuid/childTags
-	 * 
-	 * @param userUuid
-	 * @param projectName
-	 * @param rootTag
-	 * @param languageTags
-	 * @param pagingInfo
-	 * @return
-	 */
-	public Page<Tag> findChildTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
-
-	/**
-	 * Find all visible child contents for a given root tag and project. /tags/:uuid/childContents
-	 * 
-	 * @param userUuid
-	 * @param projectName
-	 * @param rootTag
-	 * @param languageTags
-	 * @param pagingInfo
-	 * @return
-	 */
-	public Page<MeshNode> findChildContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
-
-	/**
-	 * Find all visible tags that use this tag for tagging. /tags/:uuid/tags
-	 * 
-	 * @param userUuid
-	 * @param projectName
-	 * @param rootTag
-	 * @param languageTags
-	 * @param pagingInfo
-	 * @return
-	 */
-	public Page<MeshNode> findTaggedContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<MeshNode> findTaggedNodes(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

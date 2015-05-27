@@ -11,7 +11,9 @@ Blog: [ {
 			}
 		}, {
 		"footer": {
-			"propertyTypes": []
+			"propertyTypes": [],
+			// How do we deal with a regex whitelist?
+			"whitelist": "blogpost\\..*"
 			}
 		}, {
 		"preview": {
@@ -62,7 +64,8 @@ Blog: [ {
 					"type": "nodes",
 					// Default values for nodes
 					"nodes": [ 
-						{ "uuid:": "12345"}, 
+						{ "path": "/news/2015/awesome.jpg"}
+						{ "uuid": "12345"}, 
 						{ "uuid": "abcd"}
 					],
 					// Dynamic list -  The user must add additional 3 images.

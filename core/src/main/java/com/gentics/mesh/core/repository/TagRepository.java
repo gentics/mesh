@@ -6,4 +6,6 @@ import com.gentics.mesh.core.repository.generic.GenericPropertyContainerReposito
 
 public interface TagRepository extends GenericPropertyContainerRepository<Tag>, TagActions {
 
+
+
 }

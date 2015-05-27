@@ -1,7 +1,6 @@
 package com.gentics.mesh.core;
 
 import io.vertx.ext.apex.Router;
-import io.vertx.ext.apex.RoutingContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
-import com.gentics.mesh.etc.RouterStorage;
 
 /**
  * A mesh project rest verticle is a verticle that provides rest endpoints for all registered projects. The router for this verticle will automatically be

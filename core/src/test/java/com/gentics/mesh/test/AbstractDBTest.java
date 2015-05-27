@@ -1,5 +1,11 @@
 package com.gentics.mesh.test;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.apex.Session;
+
 import java.io.IOException;
 
 import org.junit.runner.RunWith;
@@ -14,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
@@ -84,5 +91,25 @@ public abstract class AbstractDBTest {
 			tx.success();
 		}
 	}
-	
+
+	protected RoutingContext getMockedRoutingContext() {
+
+		User user = data().getUserInfo().getUser();
+
+		RoutingContext rc = mock(RoutingContext.class);
+		Session session = mock(Session.class);
+		when(rc.session()).thenReturn(session);
+		JsonObject principal = new JsonObject();
+		principal.put("uuid", user.getUuid());
+		when(session.getPrincipal()).thenReturn(principal);
+		// Create login session
+		// String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
+		// String loginSessionId = null;
+		// Session session = mock(Session.class);
+		// RoutingContext rc = mock(RoutingContext.class);
+		// when(rc.session()).thenReturn(session);
+		// when(session.id()).thenReturn(loginSessionId);
+		return rc;
+	}
+
 }
