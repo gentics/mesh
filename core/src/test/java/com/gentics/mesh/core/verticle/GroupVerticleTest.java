@@ -367,6 +367,48 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testAddRoleToGroup() throws Exception {
+		Role extraRole = new Role("extraRole");
+		try (Transaction tx = graphDb.beginTx()) {
+			extraRole = roleService.save(extraRole);
+			groupService.save(info.getGroup());
+			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
+			tx.success();
+		}
+
+		assertEquals(1, info.getGroup().getRoles().size());
+		String uuid = info.getGroup().getUuid();
+		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
+		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		assertTrue(restGroup.getRoles().contains("extraRole"));
+
+		Group group = groupService.reload(info.getGroup());
+		assertEquals(2, group.getRoles().size());
+
+	}
+
+	@Test
+	public void testRemoveRoleFromGroup() throws Exception {
+		Role extraRole = new Role("extraRole");
+		try (Transaction tx = graphDb.beginTx()) {
+			extraRole = roleService.save(extraRole);
+			info.getGroup().addRole(extraRole);
+			groupService.save(info.getGroup());
+			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
+			tx.success();
+		}
+		assertEquals(2, info.getGroup().getRoles().size());
+
+		String uuid = info.getGroup().getUuid();
+		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
+		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		assertFalse(restGroup.getRoles().contains("extraRole"));
+		Group group = groupService.reload(info.getGroup());
+		assertEquals(1, group.getRoles().size());
+
+	}
+
+	@Test
 	public void testAddRoleToGroupWithPerm() throws Exception {
 		Group group = info.getGroup();
 

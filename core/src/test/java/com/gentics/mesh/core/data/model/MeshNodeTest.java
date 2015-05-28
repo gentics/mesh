@@ -103,18 +103,18 @@ public class MeshNodeTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testCreateContent() {
-		MeshNode content = new MeshNode();
+	public void testCreateNode() {
+		MeshNode node = new MeshNode();
 		try (Transaction tx = graphDb.beginTx()) {
-			nodeService.setContent(content, data().getEnglish(), "english content");
-			nodeService.setName(content, data().getEnglish(), "english.html");
-			content = nodeService.save(content);
+			nodeService.setContent(node, data().getEnglish(), "english content");
+			nodeService.setName(node, data().getEnglish(), "english.html");
+			node = nodeService.save(node);
 			tx.success();
 		}
-		content = nodeService.reload(content);
-		assertNotNull(content.getUuid());
+		node = nodeService.reload(node);
+		assertNotNull(node.getUuid());
 		try (Transaction tx = graphDb.beginTx()) {
-			String text = nodeService.getContent(content, data().getEnglish());
+			String text = nodeService.getContent(node, data().getEnglish());
 			assertNotNull(text);
 			tx.success();
 		}

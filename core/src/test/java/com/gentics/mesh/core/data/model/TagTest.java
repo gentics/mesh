@@ -20,6 +20,7 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -137,33 +138,29 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
+	@Transactional
 	public void testNodeTagging() {
 		Language german = languageService.findByLanguageTag("de");
-
-		// Create root with subfolder
 		final String TEST_TAG_NAME = "testTag";
 
-		Tag rootTag = new Tag();
-		tagService.setDisplayName(rootTag, german, "wurzelordner");
+		MeshNode node = data().getFolder("news");
 
-		Tag subFolderTag = new Tag();
-		tagService.setDisplayName(subFolderTag, german, TEST_TAG_NAME);
-		subFolderTag = tagService.save(subFolderTag);
+		Tag tag = new Tag();
+		tagService.setDisplayName(tag, german, TEST_TAG_NAME);
+		tag = tagService.save(tag);
+		node.addTag(tag);
+		nodeService.save(node);
 
-		//		rootTag.addTag(subFolderTag);
-		//		tagService.save(rootTag);
+		MeshNode reloadedNode = nodeService.reload(node);
+		boolean found = false;
+		for (Tag currentTag : reloadedNode.getTags()) {
+			neo4jTemplate.fetch(currentTag);
+			if (currentTag.getUuid().equals(tag.getUuid())) {
+				found = true;
+			}
+		}
 
-		//		Tag reloadedNode = tagService.findOne(rootTag.getId());
-		//		assertNotNull("The node shoule be loaded", reloadedNode);
-		//		assertTrue("The test node should have a tag with the name {" + TEST_TAG_NAME + "}.", reloadedNode.hasTag(subFolderTag));
-		//
-		//		Tag extraTag = new Tag();
-		//		tagService.setName(extraTag, german, "extra ordner");
-		//		assertFalse("The test node should have the random created tag.", reloadedNode.hasTag(extraTag));
-		//
-		//		try (Transaction tx = graphDb.beginTx()) {
-		//			assertTrue("The tag should be removed.", reloadedNode.removeTag(subFolderTag));
-		//		}
+		assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
 	}
 
 	@Test
@@ -172,14 +169,14 @@ public class TagTest extends AbstractDBTest {
 		languageTags.add("de");
 		RoutingContext rc = getMockedRoutingContext();
 
-		Page<Tag> page = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 10));
-		assertEquals(11, page.getTotalElements());
-		assertEquals(10, page.getSize());
+		Page<Tag> tagPage = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 10));
+		assertEquals(11, tagPage.getTotalElements());
+		assertEquals(10, tagPage.getSize());
 
 		languageTags.add("en");
-		page = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 14));
-		assertEquals(20, page.getTotalElements());
-		assertEquals(14, page.getSize());
+		tagPage = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 14));
+		assertEquals(20, tagPage.getTotalElements());
+		assertEquals(14, tagPage.getSize());
 	}
 
 	@Test
@@ -203,6 +200,5 @@ public class TagTest extends AbstractDBTest {
 		// assertEquals(2, response.getChildTags().size());
 		// assertEquals(4, response.getPerms().length);
 	}
-
 
 }

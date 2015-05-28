@@ -28,6 +28,8 @@ Tags can be used to add nodes. Tags can not be hierarchically structured. Tags a
 
 Tags can have i18n properties which are specified by the schema. Tags can be manipulated using the /tags endpoint.
 
+It is not possible to create a tag using a schema that has the binary flag enabled because the binary content could not be located within the nodes tree since tags are not placed there.
+
 === Object Relationships
 
 **TBD**
@@ -48,29 +50,28 @@ Nodes have tags and children. Both can be filtered and paged individually within
 
 == Schemas 
 
-Schemas can be created using the schemas verticle. The schema defines the type and name of each property for a tag or a content. Those types are called property schema types. You can think of a schema as a blueprint for new tags and contents.
+Schemas can be created using the schemas verticle. The schema defines the type and name of each field for a tag or a content. Those types are called field schema types. You can think of a schema as a blueprint for new tags and contents.
 
-
-A schemas property type can be micoschema, reference to a node or tag, string, value or boolean. 
+A schemas field type can be micoschema, reference to a node or tag, string, value or boolean. 
 
 The root Tag of a project can not be deleted.
 Schemas can be manipulated using the ObjectSchemaVerticle class.
 Schema updates must directly be synchronized with all affected contents.
 
-Schema updates create an migration action log which contains all actions to schemas and property type schemas. Those actions can be used for data migrations. 
+Schema updates create an migration action log which contains all actions to schemas and field type schemas. Those actions can be used for data migrations. 
 
 Schemas are persisted in the neo4j database and can be exported. The exported schema contains a history of migration steps and should be versioned using git next to your frontend implementation.
 
 Schema properties have default values which are translatable.
 
+Schemas can be setup to represent a binary content by settings a binary enabled flag. This would enable a fileupload and filename field. It is possible to restrict fileuploads by extension (via "filetypes"), set fileupload limit ("maxSize").  
+
 == Microschemas
 
-A microschemas is a blueprint for a content element that can be added to a content property. In this way it is similar to a schemas.
+A microschemas is a blueprint for a content element that can be added to a content field. In this way it is similar to a schemas.
 Typical examples for microschemas are image galleries, vcard boxes, text segments.
-Microschemas can not be nested. Content elements that were created using microschemas can be sorted within the context of the parent content property.
-The schema for the content defines property types that can be used when creating a new content. It is possible to set a whitelist of microschemas for a property type. When whitelisting microschemas it is not possible to insert a content element of an microschema type that is not allowed by the whitelist. 
-A microschema can contain references to a binary contents. This is important if a microschemas is used to create a datastructure for an image gallery.
- 
+Microschemas can not be nested. Content elements that were created using microschemas can be sorted within the context of the parent content field.
+The schema for the content defines field types that can be used when creating a new content. It is possible to set a whitelist of microschemas for a field type. When whitelisting microschemas it is not possible to insert a content element of an microschema type that is not allowed by the whitelist. 
 
 == Permissions / ACL
 
@@ -88,26 +89,30 @@ Users can only assign permissions to roles to which they have access.
 
 A special permission or the update permission of a role (yet to be determined) enables users to create / update permissions on objects.
 
-=== Verticles
+== Verticles
 
  * UserVerticle
  * GroupVerticle
  * RoleVerticle
 
+=== Webroot
+
+The webroot verticle provides the the /webroot endpoint. This endpoint can be used to fetch objects by specifying the request path in which those objects are located. The binary data for objects which were created using a schema that was binary enabled will automatically be returned instead of the json metadata. 
+
 == Versioning
 
 There is NO locking of versions. Relationships are NOT versioned (tag to content etc). Versioning is done for: tag, content, file, image
-Versions are individual property nodes of a language linked.
+Versions are individual field nodes of a language linked.
 
-== Content Languages
+=== Content Languages
 
 A content node groups properties of a language together
 
-(de)—-(C)—-(en)
+(de)--(C)--(en)
 
 * (C) is the content node
-* (de) is a german property node
-* (en) is an english property node
+* (de) is a german field node
+* (en) is an english field node
 
 There are NO non-i18n-properties - all properties must be translated, except id and uuid
 
@@ -118,10 +123,10 @@ there are no meta-properties that have no translation
 there needs to be a way to update single properties across all languages at once
 eg. binaries for images (you want to use the same image for all language variants)
 
-Editor and revision information is part of the versioned property node
+Editor and revision information is part of the versioned field node
 
-the content node always refers to the most recent property node
-the system then traverses backwards until it finds the property node thats currently online based on its online_from and ondline_to date
+the content node always refers to the most recent field node
+the system then traverses backwards until it finds the field node thats currently online based on its online_from and ondline_to date
 
 (a)—->(b)—->(c)—->(X)—->(d)<—-(C)
 
