@@ -1,20 +1,16 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.verticle.group;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import io.vertx.core.http.HttpMethod;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +20,13 @@ import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.GroupRoot;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.group.response.GroupListResponse;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.role.response.RoleListResponse;
-import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.gentics.mesh.core.rest.user.response.UserListResponse;
-import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
@@ -337,328 +328,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());
 		assertNotNull("The group should not have been deleted", groupService.findByUUID(group.getUuid()));
-	}
-
-	// Group Role Testcases - PUT / Add
-
-	@Test
-	public void testReadRolesByGroup() throws Exception {
-
-		Role extraRole = new Role("extraRole");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
-			info.getGroup().addRole(extraRole);
-			groupService.save(info.getGroup());
-			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-			tx.success();
-		}
-
-		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + uuid + "/roles", 200, "OK");
-		RoleListResponse roleList = JsonUtils.readValue(response, RoleListResponse.class);
-		assertEquals(2, roleList.getMetainfo().getTotalCount());
-		assertEquals(2, roleList.getData().size());
-
-		Iterator<RoleResponse> roleIt = roleList.getData().iterator();
-		RoleResponse roleB = roleIt.next();
-		RoleResponse roleA = roleIt.next();
-		assertEquals(info.getRole().getUuid(), roleA.getUuid());
-		assertEquals(extraRole.getUuid(), roleB.getUuid());
-	}
-
-	@Test
-	public void testAddRoleToGroup() throws Exception {
-		Role extraRole = new Role("extraRole");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
-			groupService.save(info.getGroup());
-			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-			tx.success();
-		}
-
-		assertEquals(1, info.getGroup().getRoles().size());
-		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
-		assertTrue(restGroup.getRoles().contains("extraRole"));
-
-		Group group = groupService.reload(info.getGroup());
-		assertEquals(2, group.getRoles().size());
-
-	}
-
-	@Test
-	public void testRemoveRoleFromGroup() throws Exception {
-		Role extraRole = new Role("extraRole");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
-			info.getGroup().addRole(extraRole);
-			groupService.save(info.getGroup());
-			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-			tx.success();
-		}
-		assertEquals(2, info.getGroup().getRoles().size());
-
-		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
-		assertFalse(restGroup.getRoles().contains("extraRole"));
-		Group group = groupService.reload(info.getGroup());
-		assertEquals(1, group.getRoles().size());
-
-	}
-
-	@Test
-	public void testAddRoleToGroupWithPerm() throws Exception {
-		Group group = info.getGroup();
-
-		Role extraRole = new Role("extraRole");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
-			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		System.out.println(response);
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
-		test.assertGroup(group, restGroup);
-
-		group = groupService.reload(group);
-		assertTrue("Role should be assigned to group.", group.hasRole(extraRole));
-	}
-
-	@Test
-	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
-		Group group = info.getGroup();
-
-		Role extraRole = new Role("extraRole");
-		extraRole = roleService.save(extraRole);
-		extraRole = roleService.reload(extraRole);
-
-		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
-		group = groupService.reload(group);
-		assertFalse("Role should not be assigned to group.", group.hasRole(extraRole));
-	}
-
-	@Test
-	public void testAddRoleToGroupWithBogusRoleUUID() throws Exception {
-		Group group = info.getGroup();
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/bogus", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
-
-	}
-
-	// Group Role Testcases - DELETE / Remove
-
-	@Test
-	public void testRemoveRoleFromGroupWithPerm() throws Exception {
-		Group group = info.getGroup();
-
-		Role extraRole = new Role("extraRole");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
-			group.addRole(extraRole);
-			group = groupService.save(group);
-			tx.success();
-		}
-		extraRole = roleService.reload(extraRole);
-
-		assertNotNull(group.getUuid());
-		assertNotNull(extraRole.getUuid());
-
-		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
-		test.assertGroup(group, restGroup);
-		group = groupService.reload(group);
-		assertFalse("Role should now no longer be assigned to group.", group.hasRole(extraRole));
-	}
-
-	@Test
-	public void testRemoveRoleFromGroupWithoutPerm() throws Exception {
-		Group group = info.getGroup();
-
-		Role extraRole = new Role("extraRole");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
-			extraRole = roleService.reload(extraRole);
-			group.addRole(extraRole);
-			group = groupService.save(group);
-			roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
-		group = groupService.reload(group);
-		assertTrue("Role should be stil assigned to group.", group.hasRole(extraRole));
-	}
-
-	// Group User Testcases - PUT / Add
-
-	@Test
-	public void testGetUsersByGroup() throws Exception {
-		User extraUser = new User("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			info.getGroup().addUser(extraUser);
-			groupService.save(info.getGroup());
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			tx.success();
-		}
-
-		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + uuid + "/users", 200, "OK");
-		UserListResponse userList = JsonUtils.readValue(response, UserListResponse.class);
-		assertEquals(2, userList.getMetainfo().getTotalCount());
-		assertEquals(2, userList.getData().size());
-		Iterator<UserResponse> userIt = userList.getData().iterator();
-		UserResponse userB = userIt.next();
-		UserResponse userA = userIt.next();
-		assertEquals(info.getUser().getUuid(), userA.getUuid());
-		assertEquals(extraUser.getUuid(), userB.getUuid());
-	}
-
-	@Test
-	public void testAddUserToGroupWithBogusGroupId() throws Exception {
-
-		User extraUser = new User("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/bogus/users/" + extraUser.getUuid(), 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
-
-	}
-
-	@Test
-	public void testAddUserToGroupWithPerm() throws Exception {
-		Group group = info.getGroup();
-
-		User extraUser = new User("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
-		test.assertGroup(group, restGroup);
-
-		group = groupService.reload(group);
-		assertTrue("User should be member of the group.", group.hasUser(extraUser));
-	}
-
-	@Test
-	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
-		Group group = info.getGroup();
-
-		User extraUser = new User("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
-
-		group = groupService.reload(group);
-		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
-	}
-
-	@Test
-	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
-		Group group = info.getGroup();
-
-		User extraUser = new User("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, extraUser.getUuid());
-
-		group = groupService.reload(group);
-		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
-	}
-
-	// Group User Testcases - DELETE / Remove
-	@Test
-	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
-		User user = info.getUser();
-		Group group = info.getGroup();
-
-		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-			tx.success();
-		}
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
-
-		group = groupService.reload(group);
-		assertTrue("User should still be a member of the group.", group.hasUser(user));
-	}
-
-	@Test
-	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		User user = info.getUser();
-		Group group = info.getGroup();
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
-		test.assertGroup(group, restGroup);
-
-		group = groupService.reload(group);
-		assertFalse("User should not be member of the group.", group.hasUser(user));
-	}
-
-	@Test
-	@Ignore("Not yet implemented")
-	public void testRemoveSameUserFromGroupWithPerm() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
-		User user = info.getUser();
-		Group group = info.getGroup();
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 400, "Bad Request");
-		String json = "error-user-last-group";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		group = groupService.reload(group);
-		assertTrue("User should still be member of the group.", group.hasUser(user));
-	}
-
-	@Test
-	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
-		User user = info.getUser();
-		Group group = info.getGroup();
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/bogus", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
-
-		group = groupService.reload(group);
-		assertTrue("User should still be member of the group.", group.hasUser(user));
 	}
 
 }
