@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.repository.I18NValueRepository;
 import com.gentics.mesh.core.repository.generic.GenericNodeRepository;
 import com.gentics.mesh.etc.neo4j.UUIDTransactionEventHandler;
+import com.gentics.mesh.util.UUIDUtil;
 
 @Component
 public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNodeService<T> {
@@ -33,7 +34,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	@Override
 	public T save(T node) {
 		if (node.isNew() && node.getUuid() == null) {
-			node.setUuid(UUIDTransactionEventHandler.getUUID());
+			node.setUuid(UUIDUtil.getUUID());
 		}
 		return nodeRepository.save(node);
 	}
