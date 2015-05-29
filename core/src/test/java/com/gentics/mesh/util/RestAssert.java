@@ -68,7 +68,7 @@ public class RestAssert {
 		assertNotNull(request);
 		assertNotNull(restGroup);
 		assertEquals(request.getName(), restGroup.getName());
-//		assertNotNull(restGroup.getUsers());
+		//		assertNotNull(restGroup.getUsers());
 		assertNotNull(restGroup.getUuid());
 	}
 
@@ -263,4 +263,26 @@ public class RestAssert {
 
 	}
 
+	/**
+	 * Checks whether the given tag is listed within the node rest response.
+	 * 
+	 * @param restNode
+	 * @param tag
+	 * @return
+	 */
+	public boolean containsTag(NodeResponse restNode, Tag tag) {
+		assertNotNull(tag);
+		assertNotNull(tag.getUuid());
+		assertNotNull(restNode);
+		if (restNode.getTags() == null) {
+			return false;
+		}
+
+		for (TagResponse restTag : restNode.getTags()) {
+			if (tag.getUuid().equals(restTag.getUuid())) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

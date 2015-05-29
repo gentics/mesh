@@ -1,0 +1,437 @@
+	// @Test
+	// public void testReadProjectByName() throws Exception {
+	// String json = "{\"uuid\":\"uuid-value\",\"name\":\"dummy\"}";
+	// Project project = data().getProject();
+	// assertNotNull("The name of the project must not be null.", project.getName());
+	//
+	// String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getName(), 200, "OK");
+	// TestUtil.assertEqualsSanitizedJson(json, response, ProjectResponse.class);
+	// }
+	//
+	// @Test
+	// public void testReadProjectInvalidName() throws Exception {
+	// String json = "{\"message\":\"Project not found {bogusName}\"}";
+	// Project project = data().getProject();
+	// assertNotNull("The UUID of the project must not be null.", project.getUuid());
+	//
+	// String response = request(info, HttpMethod.GET, "/api/v1/projects/" + "bogusName", 404, "Not Found");
+	// assertEquals(json, response);
+	// }
+
+// private void addUserGroupHandlers() {
+	// Route putRoute = route("/:userUuid/groups/:groupUuid").method(PUT);
+	// putRoute.handler(rc -> {
+	// String userUuid = rc.request().params().get("userUuid");
+	// String groupUuid = rc.request().params().get("groupUuid");
+	// User user = userService.findByUUID(userUuid);
+	// if (user == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
+	// }
+	// Group group = groupService.findByUUID(groupUuid);
+	// if (group == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
+	// }
+	//
+	// throw new HttpStatusCodeErrorException(501, "Not implemented");
+	// });
+	//
+	// Route deleteRoute = route("/:userUuid/groups/:groupUuid").method(DELETE);
+	// deleteRoute.handler(rc -> {
+	// String userUuid = rc.request().params().get("userUuid");
+	// String groupUuid = rc.request().params().get("groupUuid");
+	// User user = userService.findByUUID(userUuid);
+	// if (user == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "user_not_found", userUuid));
+	// }
+	// failOnMissingPermission(rc, user, PermissionType.READ);
+	//
+	// Group group = groupService.findByUUID(groupUuid);
+	// if (group == null) {
+	// throw new EntityNotFoundException(i18n.get(rc, "group_not_found_for_uuid", groupUuid));
+	// }
+	// failOnMissingPermission(rc, group, PermissionType.UPDATE);
+	//
+	// if (!group.hasUser(user)) {
+	// throw new HttpStatusCodeErrorException(400, "User is not a member of the group.");
+	// }
+	//
+	// // TODO check whether this would be the last group of the user
+	// if (userService.removeUserFromGroup(user, group)) {
+	// rc.response().setStatusCode(200);
+	// rc.response().end(
+	// toJson(new GenericMessageResponse("Removed user {" + user.getUsername() + "} from group {" + group.getName() + "}")));
+	// } else {
+	// throw new HttpStatusCodeErrorException(501, "Error while removing user from group.");
+	// }
+	// });
+	// }
+
+	// @Test
+	// public void testUpdateUserAndAddGroup() throws Exception {
+	// User user = info.getUser();
+	//
+	// // 1. Create a new group
+	// Group newGroup = new Group("additional_group");
+	// groupService.save(newGroup);
+	// info.getGroup().addGroup(newGroup);
+	// groupService.save(info.getGroup());
+	//
+	// // 2. Add needed permissions
+	// roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
+	// roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
+	//
+	// // 3. Setup rest model
+	// UserResponse restUser = new UserResponse();
+	// restUser.setEmailAddress("t.stark@stark-industries.com");
+	// restUser.setFirstname("Tony Awesome");
+	// restUser.setLastname("Epic Stark");
+	// restUser.setUsername("dummy_user_changed");
+	//
+	// // 4. Add both groups to the list of groups
+	// restUser.addGroup(info.getGroup().getName());
+	// restUser.addGroup(newGroup.getName());
+	//
+	// String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
+	// String json = "{\"message\":\"OK\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	//
+	// // Reload the group and verify that the user was added to the group
+	// newGroup = groupService.reload(newGroup);
+	// Assert.assertEquals("The group should now list one user.", 1, newGroup.getUsers().size());
+	// User userInGroup = newGroup.getUsers().iterator().next();
+	// assertTrue("The user is not part of the group", user.getId() == userInGroup.getId());
+	//
+	// }
+
+
+	// @Test
+	// public void testUpdateUserAndRemoveGroup() throws JsonGenerationException, JsonMappingException, IOException, Exception {
+	// User user = info.getUser();
+	//
+	// Group newGroup = new Group("additional_group");
+	// newGroup.addUser(user);
+	// newGroup = groupService.save(newGroup);
+	// info.getGroup().addGroup(newGroup);
+	// groupService.save(info.getGroup());
+	// Assert.assertEquals("The group should have one member", 1, newGroup.getUsers().size());
+	//
+	// roleService.addPermission(info.getRole(), newGroup, PermissionType.UPDATE);
+	// roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
+	//
+	// UserResponse restUser = new UserResponse();
+	// restUser.setEmailAddress("t.stark@stark-industries.com");
+	// restUser.setFirstname("Tony Awesome");
+	// restUser.setLastname("Epic Stark");
+	// restUser.setUsername("dummy_user_changed");
+	// // Only add the first group to the rest request. Thus the second one should be removed when allowed.
+	// restUser.addGroup(info.getGroup().getName());
+	//
+	// String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restUser));
+	// String json = "{\"message\":\"OK\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	//
+	// newGroup = groupService.reload(newGroup);
+	// Assert.assertEquals("The group should no longer have members", 0, newGroup.getUsers().size());
+	//
+	// }
+
+
+	// @Test
+	// public void testDeleteProjectByName() throws Exception {
+	// Project project = data().getProject();
+	// assertNotNull(project.getUuid());
+	//
+	// roleService.addPermission(info.getRole(), project, PermissionType.DELETE);
+	//
+	// String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getName(), 200, "OK");
+	// String json = "{\"message\":\"Deleted project {dummy}\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// assertNull("The project should have been deleted", projectService.findByUUID(project.getUuid()));
+	// }
+	//
+	// @Test
+	// public void testDeleteProjectByNameWithNoPermission() throws Exception {
+	// Project project = data().getProject();
+	// assertNotNull(project.getUuid());
+	//
+	// String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getName(), 403, "Forbidden");
+	// String json = "{\"message\":\"Missing permission on object {" + project.getUuid() + "}\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// assertNotNull("The project should not have been deleted", projectService.findByUUID(project.getUuid()));
+	// }
+
+	// Create Tests
+
+	// @Test
+	// public void testCreateContentByPath() throws Exception {
+	// UserInfo info = data().getUserInfo();
+	// ContentCreateRequest request = new ContentCreateRequest();
+	// request.setSchema("content");
+	// request.addProperty("english", "filename", "new-page.html");
+	// request.addProperty("english", "name", "english content name");
+	// request.addProperty("english", "content", "Blessed mealtime again!");
+	//
+	// String response = request(info, HttpMethod.POST, "/api/v1/" + PROJECT_NAME + "/contents/subtag/newpage.html", 200, "OK",
+	// new ObjectMapper().writeValueAsString(request));
+	// String responseJson =
+	// "{\"uuid\":\"uuid-value\",\"author\":null,\"properties\":{\"filename\":\"new-page.html\",\"name\":\"english content name\",\"content\":\"blessed mealtime again!\"},\"type\":\"content\",\"language\":\"en_US\"}";
+	// assertEqualsSanitizedJson("The response json did not match the expected one", responseJson, response);
+	// }
+	//
+	//
+	// @Test
+	// public void testCreateTagInPath() throws Exception {
+	//
+	// // Add needed permission
+	// roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.CREATE);
+	//
+	// TagCreateRequest newTag = new TagCreateRequest();
+	// newTag.addProperty("english", "name", "new_subtag");
+	//
+	// String requestJson = new ObjectMapper().writeValueAsString(newTag);
+	// String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/tags/", 200, "OK", requestJson);
+	// String json = "OK";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// }
+	//
+	// @Test
+	// public void testCreateTagInPathWithoutPerm() throws Exception {
+	// // Add needed permission
+	// roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
+	// roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.UPDATE);
+	// roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.DELETE);
+	// // Omit create permission
+	//
+	// TagCreateRequest newTag = new TagCreateRequest();
+	// newTag.addProperty("english", "name", "new_subtag");
+	//
+	// String requestJson = new ObjectMapper().writeValueAsString(newTag);
+	// String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/tags/", 403, "Forbidden", requestJson);
+	// String json = "ERROR";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// }
+	//
+	// // Update Tests
+	// @Test
+	// public void testUpdateTagInPath() throws Exception {
+	//
+	// Tag tag = data().getLevel1a();
+	//
+	// roleService.addPermission(info.getRole(), tag, PermissionType.UPDATE);
+	// roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+	//
+	// // Create an tag update request
+	// TagUpdateRequest request = new TagUpdateRequest();
+	// request.setUuid(tag.getUuid());
+	// request.addProperty("en", "name", "new Name");
+	//
+	// TagResponse updateTagResponse = new TagResponse();
+	// updateTagResponse.addProperty("english", "name", "new Name");
+	//
+	// String requestJson = new ObjectMapper().writeValueAsString(request);
+	// String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 200, "OK", requestJson);
+	// String json =
+	// "{\"uuid\":\"uuid-value\",\"type\":null,\"order\":0,\"creator\":{\"uuid\":\"uuid-value\",\"lastname\":\"Stark\",\"firstname\":\"Tony\",\"username\":\"dummy_user\",\"emailAddress\":\"t.stark@spam.gentics.com\",\"groups\":[\"dummy_user_group\"]},\"properties\":{\"en\":{\"name\":\"level_1_a\"}}}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	//
+	// // read the tag again and verify that it was not changed
+	// response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 200, "OK", requestJson);
+	// TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
+	// Assert.assertEquals(request.getProperty("en", "name"), tagUpdateRequest.getProperty("en", "name"));
+	//
+	// }
+	//
+	// @Test
+	// public void testUpdateTagByPathWithoutPerm() throws Exception {
+	//
+	// Tag tag = data().getLevel1a();
+	//
+	// roleService.addPermission(info.getRole(), tag, PermissionType.READ);
+	//
+	// // Create an tag update request
+	// TagUpdateRequest request = new TagUpdateRequest();
+	// request.setUuid(tag.getUuid());
+	// request.addProperty("en", "name", "new Name");
+	//
+	// TagResponse updateTagResponse = new TagResponse();
+	// updateTagResponse.addProperty("en", "name", "new Name");
+	//
+	// String requestJson = new ObjectMapper().writeValueAsString(request);
+	// String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 403, "Forbidden", requestJson);
+	// String json = "{\"message\":\"Missing permission on object {" + tag.getUuid() + "}\"}";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	//
+	// // read the tag again and verify that it was not changed
+	// response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a", 200, "OK", requestJson);
+	// TagUpdateRequest tagUpdateRequest = JsonUtils.readValue(response, TagUpdateRequest.class);
+	// A
+	// }
+
+	// @Test
+	// public void testDeleteTagByPath() throws Exception {
+	//
+	// roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
+	// roleService.addPermission(info.getRole(), data().getLevel2a(), PermissionType.DELETE);
+	//
+	// String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a/level_2_a", 200, "OK");
+	//
+	// String json = "OK";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// assertNull("The tag should have been deleted", tagService.findByUUID(data().getLevel1a().getUuid()));
+	// }
+
+	// @Test
+	// public void testDeleteTagByPathWithoutPerm() throws Exception {
+	// roleService.addPermission(info.getRole(), data().getLevel1a(), PermissionType.READ);
+	//
+	// String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/level_1_a/level_2_a", 403, "Forbidden");
+	// String json = "Error";
+	// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+	// assertNotNull("The tag should not have been deleted", tagService.findByUUID(data().getLevel2a().getUuid()));
+	// }
+
+
+
+	MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)-[:HAS_TAG]->(subTag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+	// + "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "WITH p, subTag " + "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT subTag",
+
+	// countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)-[:HAS_TAG]->(subTag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+	// + "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "RETURN count(DISTINCT subTag)")
+	// public Page<Tag> findAllTags(String userUuid, String projectName, Tag rootTag, List<String> languageTags, Pageable pr);
+
+
+
+
+
+
+
+
+
+
+
+
+	// @Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "MATCH (rootTag)-[:HAS_TAG]->(subTag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  " + "WITH p, subTag "
+	// + "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT subTag",
+
+	// countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)-[:HAS_TAG]->(subTag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  "
+	// + "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "RETURN count(DISTINCT subTag)")
+	// public Page<Tag> findAllTags(String userUuid, String projectName, Tag rootTag, Pageable pr);
+	//
+	// @Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "MATCH (rootTag)-[:HAS_CONTENT]->(subContent:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  " + "WITH p, subContent "
+	// + "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT subContent",
+	//
+	// countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)-[:HAS_CONTENT]->(subContent:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  "
+	// + "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "RETURN count(DISTINCT subContent)")
+	// public Page<Content> findAllVisibleContents(String userUuid, String projectName, Tag rootTag, Pageable pr);
+	//
+	// @Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)-[:HAS_CONTENT]->(subContent:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+	// + "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "WITH p, subContent " + "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT subContent",
+	//
+	// countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)-[:HAS_CONTENT]->(subContent:Content)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+	// + "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "RETURN count(DISTINCT subContent)")
+	// public Page<Content> findAllVisibleContents(String userUuid, String projectName, Tag rootTag, List<String> languageTags, Pageable pr);
+	//
+	// @Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+	// + "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "WITH p, childNode " + "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT childNode",
+	//
+	// countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) "
+	// + "WHERE l.languageTag IN {3} AND id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "RETURN count(DISTINCT childNode)")
+	// public Page<GenericPropertyContainer> findAllVisibleChildNodes(String userUuid, String projectName, Tag rootTag, List<String> languageTags,
+	// Pageable pr);
+	//
+	// @Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rootTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) WITH p, childNode "
+	// + "ORDER BY p.`properties-name` desc " + "RETURN DISTINCT childNode",
+	//
+	// countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(rooTag:Tag)"
+	// + "MATCH (rootTag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) "
+	// + "MATCH (rootTag)<-[:HAS_PARENT_TAG]-(childNode:GenericPropertyContainer)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties)  "
+	// + "WHERE id(rootTag) = {2} AND requestUser.uuid = {0} AND perm.`permissions-read` = true AND pr.name = {1} "
+	// + "RETURN count(DISTINCT childNode)")
+	// public Page<GenericPropertyContainer> findAllVisibleChildNodes(String userUuid, String projectName, Tag rootTag, Pageable pr);
+
+
+
+
+
+
+
+	// @Override
+	// public Page<Tag> findAllVisibleProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	// String userUuid = rc.session().getPrincipal().getString("uuid");
+	// if (languageTags == null || languageTags.size() == 0) {
+	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, pr);
+	// } else {
+	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, languageTags, pr);
+	// }
+	// }
+
+
+
+
+
+	// @Override
+	// public Page<Tag> findAllVisibleProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	// String userUuid = rc.session().getPrincipal().getString("uuid");
+	//
+	// if (languageTags == null || languageTags.size() == 0) {
+	// return tagRepository.findAllVisibleProjectTags(userUuid, projectName, rootTag, pr);
+	// } else {
+	// return tagRepository.findAllVisibleTags(userUuid, projectName, rootTag, languageTags, pr);
+	// }
+	// }
+
+	// @Override
+	// public Page<GenericPropertyContainer> findAllVisibleChildNodes(RoutingContext rc, String projectName, Tag rootTag,
+	// List<String> languageTags, PagingInfo pagingInfo) {
+	// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+	// String userUuid = rc.session().getPrincipal().getString("uuid");
+	//
+	// if (languageTags == null || languageTags.size() == 0) {
+	// return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, pr);
+	// } else {
+	// return tagRepository.findAllVisibleChildNodes(userUuid, projectName, rootTag, languageTags, pr);
+	// }
+	// }
+
+
+
+
+	
+
+
+	

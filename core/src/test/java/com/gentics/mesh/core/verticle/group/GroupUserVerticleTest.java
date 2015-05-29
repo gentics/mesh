@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.user.response.UserListResponse;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.util.DataHelper;
 import com.gentics.mesh.util.JsonUtils;
 
 public class GroupUserVerticleTest
@@ -38,6 +39,9 @@ extends AbstractRestVerticleTest {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private DataHelper helper;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -72,13 +76,7 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 
-		User extraUser = new User("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			tx.success();
-		}
-
+		User extraUser = helper.addUser("extraUser", info.getRole(), PermissionType.READ);
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/bogus/users/" + extraUser.getUuid(), 404, "Not Found");
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
@@ -88,12 +86,8 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithPerm() throws Exception {
 		Group group = info.getGroup();
 
-		User extraUser = new User("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			tx.success();
-		}
+		User extraUser = helper.addUser("extraUser", info.getRole(), PermissionType.READ);
+
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 200, "OK");
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);

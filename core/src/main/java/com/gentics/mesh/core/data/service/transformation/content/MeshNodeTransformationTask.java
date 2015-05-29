@@ -37,7 +37,6 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 		this.node = node;
 		this.info = info;
 		this.restNode = restNode;
-		this.depth = depth;
 	}
 
 	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, NodeResponse restContent) {
@@ -130,7 +129,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 		}
 
-		if (depth < info.getMaxDepth()) {
+		if (depth < 2) {
 			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restNode, tasks);
 			node.getTags().parallelStream().forEachOrdered(tagConsumer);
 		}

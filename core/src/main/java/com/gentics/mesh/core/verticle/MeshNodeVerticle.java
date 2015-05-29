@@ -60,7 +60,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private TagListHandler tagListHandler;
-	
+
 	@Autowired
 	private MeshNodeListHandler nodeListHandler;
 
@@ -79,7 +79,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		addTagsHandler();
 	}
 
-	private void addTagsHandler() {
+	private void addChildrenHandler() {
 		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
 			nodeListHandler.handleNodeList(rc, (projectName, parentNode, languageTags, pagingInfo) -> {
@@ -87,45 +87,10 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			});
 		});
 
-		Route postRoute = route("/:uuid/children/:nodeChildUuid").method(POST).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
-				rcs.loadObject(rc, "nodeChildUuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> srh) -> {
-					MeshNode parentNode = rh.result();
-					MeshNode node = srh.result();
-					parentNode.getChildren().add(node);
-					node = nodeService.save(node);
-				}, trh -> {
-					MeshNode node = rh.result();
-					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
-				});
-
-			});
-		});
-
-		// TODO fix error handling. This does not fail when tagUuid could not be found
-		Route deleteRoute = route("/:uuid/children/:nodeChildUuid").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
-				rcs.loadObject(rc, "nodeChildUuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> srh) -> {
-					MeshNode parentNode = rh.result();
-					MeshNode node = srh.result();
-					parentNode.getChildren().remove(node);
-					node = nodeService.save(node);
-				}, trh -> {
-					MeshNode node = rh.result();
-					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
-				});
-			});
-
-		});
-
 	}
 
 	// TODO filtering, sorting
-	private void addChildrenHandler() {
+	private void addTagsHandler() {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
 			tagListHandler.handle(rc, (projectName, node, languageTags, pagingInfo) -> {
@@ -159,7 +124,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					MeshNode node = rh.result();
 					Tag tag = srh.result();
 					node.removeTag(tag);
-					tag = tagService.save(tag);
+					node = nodeService.save(node);
 				}, trh -> {
 					MeshNode node = rh.result();
 					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));

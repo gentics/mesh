@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
-import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -243,32 +242,6 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(3, restResponse.getMetainfo().getPageCount());
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(data().getNodeCount(), restResponse.getMetainfo().getTotalCount());
-	}
-
-	@Test
-	public void testReadNodeChildren() throws Exception {
-		MeshNode node = data().getFolder("news");
-		assertNotNull(node);
-		assertNotNull(node.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");
-		NodeListResponse nodeList = JsonUtils.readValue(response, NodeListResponse.class);
-		assertEquals(2, nodeList.getData().size());
-		assertEquals(2, nodeList.getMetainfo().getTotalCount());
-	}
-
-	@Test
-	public void testReadNodeTags() throws Exception {
-		MeshNode node = data().getFolder("2015");
-		assertNotNull(node);
-		assertNotNull(node.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags", 200, "OK");
-		System.out.println(response);
-		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
-		assertEquals(4, tagList.getData().size());
-		assertEquals(4, tagList.getMetainfo().getTotalCount());
-
 	}
 
 	@Test
