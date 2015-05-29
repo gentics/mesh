@@ -21,6 +21,7 @@ public class GeneratorTest {
 
 	@Test
 	public void testGenerator() throws IOException {
+		System.setProperty("baseDir", baseDir.getAbsolutePath());
 		File jsonDir = new File(baseDir, "json");
 		new Generator().start();
 		assertTrue(jsonDir.exists());

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.verticle.admin;
 import static org.junit.Assert.fail;
 
 import org.junit.Ignore;

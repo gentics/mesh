@@ -75,7 +75,11 @@ public class Generator {
 	}
 
 	public void start() throws IOException {
-		File baseDir = new File("target" + File.separator + "site" + File.separator + "docs" + File.separator + "raml");
+		String baseDirProp = System.getProperty("baseDir");
+		if (baseDirProp == null) {
+			baseDirProp = "target" + File.separator + "site" + File.separator + "docs" + File.separator + "raml";
+		}
+		File baseDir = new File(baseDirProp);
 		outputDir = new File(baseDir, "json");
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");
 		outputDir.mkdirs();
