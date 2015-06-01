@@ -64,8 +64,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Iterator<RoleResponse> roleIt = roleList.getData().iterator();
 		RoleResponse roleB = roleIt.next();
 		RoleResponse roleA = roleIt.next();
-		assertEquals(info.getRole().getUuid(), roleA.getUuid());
-		assertEquals(extraRole.getUuid(), roleB.getUuid());
+		assertEquals(info.getRole().getUuid(), roleB.getUuid());
+		assertEquals(extraRole.getUuid(), roleA.getUuid());
 	}
 
 	@Test
