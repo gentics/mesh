@@ -34,7 +34,7 @@ public class RestModelPagingHelperTest {
 
 		assertNotNull(response.getMetainfo());
 		assertEquals(nSDNCurrentPage + 1, response.getMetainfo().getCurrentPage());
-		assertEquals(nSDNPages + 1, response.getMetainfo().getPageCount());
+		assertEquals(nSDNPages, response.getMetainfo().getPageCount());
 		assertEquals(nSDNPageSize, response.getMetainfo().getTotalCount());
 		assertEquals(info.getPerPage(), response.getMetainfo().getPerPage());
 	}
