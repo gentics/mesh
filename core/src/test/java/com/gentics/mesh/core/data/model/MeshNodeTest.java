@@ -129,13 +129,13 @@ public class MeshNodeTest extends AbstractDBTest {
 		RoutingContext rc = getMockedRoutingContext("");
 
 		Page<MeshNode> page = nodeService.findAll(rc, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(1, 10));
-		// There are contents that are only available in english
-		assertEquals(data().getNodeCount(), page.getTotalElements());
+		// There are nodes that are only available in english
+		assertEquals(data().getNodeCount() - 5, page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
 		page = nodeService.findAll(rc, "dummy", languageTags, new PagingInfo(1, 15));
-		assertEquals(data().getContents().size(), page.getTotalElements());
+		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 
 	}

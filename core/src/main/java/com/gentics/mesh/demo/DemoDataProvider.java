@@ -539,6 +539,11 @@ public class DemoDataProvider {
 		folderNode.setCreator(userInfo.getUser());
 		folderNode.setSchema(schemas.get("folder"));
 		nodeService.save(folderNode);
+
+		if (folders.containsKey(englishName.toLowerCase())) {
+			throw new RuntimeException("Collsion of folders detected for key " + englishName.toLowerCase());
+		}
+
 		folders.put(englishName.toLowerCase(), folderNode);
 		return folderNode;
 	}
@@ -585,6 +590,9 @@ public class DemoDataProvider {
 		//		parentTag.addContent(content);
 		//		parentTag = tagService.save(parentTag);
 
+		if (contents.containsKey(name.toLowerCase())) {
+			throw new RuntimeException("Collsion of contents detected for key " + name.toLowerCase());
+		}
 		contents.put(name.toLowerCase(), node);
 		return node;
 	}
