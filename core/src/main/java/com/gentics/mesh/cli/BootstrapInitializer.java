@@ -274,6 +274,7 @@ public class BootstrapInitializer {
 		ObjectSchema contentSchema = objectSchemaRepository.findByName("content");
 		if (contentSchema == null) {
 			contentSchema = new ObjectSchema("content");
+			contentSchema.setNestingAllowed(false);
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setDisplayName("Content");
 
@@ -299,6 +300,7 @@ public class BootstrapInitializer {
 		ObjectSchema folderSchema = objectSchemaRepository.findByName("folder");
 		if (folderSchema == null) {
 			folderSchema = new ObjectSchema("folder");
+			folderSchema.setNestingAllowed(true);
 			folderSchema.setDescription("Default schema for folders");
 			folderSchema.setDisplayName("Folder");
 

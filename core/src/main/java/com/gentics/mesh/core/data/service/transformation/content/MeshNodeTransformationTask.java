@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.service.transformation.content;
 
 import io.vertx.core.impl.ConcurrentHashSet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinTask;
@@ -85,6 +87,19 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 				/* Load the order */
 				restNode.setOrder(node.getOrder());
+
+				/* Load the children */
+				if (node.getSchema().isNestingAllowed()) {
+					//TODO handle uuid
+					//TODO handle expand
+					List<String> children = new ArrayList<>();
+					//TODO check permissions
+					for (MeshNode child : node.getChildren()) {
+						children.add(child.getUuid());
+					}
+					restNode.setContainer(true);
+					restNode.setChildren(children);
+				}
 
 				/* Load the i18n properties */
 				boolean loadAllTags = info.getLanguageTags().size() == 0;

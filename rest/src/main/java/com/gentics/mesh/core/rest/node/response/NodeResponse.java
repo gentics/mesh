@@ -10,9 +10,11 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 
 	private String parentNodeUuid;
 
-	private List<TagResponse> tags =  new ArrayList<>();
+	private List<TagResponse> tags = new ArrayList<>();
 
-	private List<NodeResponse> children;
+	private List<String> children;
+
+	private boolean isContainer;
 
 	public NodeResponse() {
 	}
@@ -29,7 +31,19 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 		return tags;
 	}
 
-	public List<NodeResponse> getChildren() {
+	public List<String> getChildren() {
 		return children;
+	}
+
+	public void setChildren(List<String> children) {
+		this.children = children;
+	}
+
+	public boolean isContainer() {
+		return isContainer;
+	}
+
+	public void setContainer(boolean isContainer) {
+		this.isContainer = isContainer;
 	}
 }
