@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
@@ -68,11 +69,16 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("news");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
+		try (Transaction tx = graphDb.beginTx()) {
+			node = neo4jTemplate.fetch(node);
+			tx.success();
+		}
 
+		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");
 		NodeListResponse nodeList = JsonUtils.readValue(response, NodeListResponse.class);
-		assertEquals(2, nodeList.getData().size());
-		assertEquals(2, nodeList.getMetainfo().getTotalCount());
+		assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
+		assertEquals(expectedItemsInPage, nodeList.getData().size());
 	}
 
 }
