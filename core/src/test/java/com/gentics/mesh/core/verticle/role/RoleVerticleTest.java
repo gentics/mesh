@@ -54,8 +54,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 200, "OK", requestJson);
-		String json = "{\"uuid\":\"uuid-value\",\"name\":\"new_role\",\"perms\":[],\"groups\":[{\"uuid\":\"uuid-value\",\"name\":\"joe1_group\",\"roles\":[],\"users\":[],\"perms\":[]}]}";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		test.assertRole(request, restRole);
 	}
 
 	@Test
@@ -184,6 +184,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		UserInfo info = data().getUserInfo();
 		Role role = info.getRole();
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
+		roleService.revokePermission(role, role, PermissionType.READ);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + role.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, role.getUuid());
@@ -228,17 +229,20 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		// created roles + test data role
 		// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
-		int totalRoles = nRoles + data().getRoles().size() + 1;
-		int totalPages = (int) Math.ceil(totalRoles / (double) perPage) +1;
+		int totalRoles = nRoles + data().getRoles().size();
+		int totalPages = (int) Math.ceil(totalRoles / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
 				+ "} roles per page. Thus we expect {" + totalPages + "} pages", totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		for (RoleResponse role : restResponse.getData()) {
+			System.out.println(role.getName());
+		}
 		assertEquals(totalRoles, restResponse.getMetainfo().getTotalCount());
 
 		List<RoleResponse> allRoles = new ArrayList<>();
-		for (page = 0; page < totalPages; page++) {
+		for (page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, RoleListResponse.class);
 			allRoles.addAll(restResponse.getData());
@@ -259,7 +263,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/roles/?per_page=25&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":142}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":35}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 

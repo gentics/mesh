@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.auth.GraphPermission;
 import com.gentics.mesh.core.data.model.auth.Group;
+import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.schema.ObjectSchema;
@@ -130,6 +131,9 @@ public class DemoDataProvider {
 		users.clear();
 		roles.clear();
 		groups.clear();
+
+		english = languageService.findByLanguageTag("en");
+		german = languageService.findByLanguageTag("de");
 
 		addUserGroupRoleProject(multiplicator);
 		addMicoSchemas();
@@ -280,8 +284,8 @@ public class DemoDataProvider {
 		addFolder(rootNode, "Deals", "Angebote");
 
 	}
-	private void addTags() {
 
+	private void addTags() {
 
 		ObjectSchema colorSchema = schemas.get("color");
 		ObjectSchema categoriesSchema = schemas.get("category");
@@ -322,6 +326,7 @@ public class DemoDataProvider {
 		String roleName = username + "_role";
 		Role role = new Role(roleName);
 		roleService.save(role);
+		roleService.addPermission(role, role, PermissionType.READ);
 		roles.put(roleName, role);
 
 		String groupName = username + "_group";
@@ -347,9 +352,6 @@ public class DemoDataProvider {
 		root = rootService.findRoot();
 		root.addUser(userInfo.getUser());
 		rootService.save(root);
-
-		english = languageService.findByLanguageTag("en");
-		german = languageService.findByLanguageTag("de");
 
 		// Guest Group / Role
 		Role guestRole = new Role("guest_role");
