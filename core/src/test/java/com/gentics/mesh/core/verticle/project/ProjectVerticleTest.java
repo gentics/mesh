@@ -131,7 +131,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
 
 		List<ProjectResponse> allProjects = new ArrayList<>();
-		for (int page = 1; page < totalPages; page++) {
+		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + perPage + "&page=" + page, 200, "OK");
 			restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
 			allProjects.addAll(restResponse.getData());
@@ -152,7 +152,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":7,\"total_count\":143}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}
