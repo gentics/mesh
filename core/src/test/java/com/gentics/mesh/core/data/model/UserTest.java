@@ -89,7 +89,7 @@ public class UserTest extends AbstractDBTest {
 			tx.success();
 		}
 
-		RoutingContext rc = getMockedRoutingContext();
+		RoutingContext rc = getMockedRoutingContext("");
 		Page<User> userPage = userService.findByGroup(rc, info.getGroup(), new PagingInfo(1, 10));
 		assertEquals(2, userPage.getTotalElements());
 	}

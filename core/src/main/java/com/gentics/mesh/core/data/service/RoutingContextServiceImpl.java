@@ -71,6 +71,9 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 	 */
 	public List<String> getSelectedLanguageTags(RoutingContext rc) {
 		Map<String, String> queryPairs = splitQuery(rc);
+		if (queryPairs == null) {
+			return new ArrayList<>();
+		}
 		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
 		if (value == null) {
 			return new ArrayList<>();

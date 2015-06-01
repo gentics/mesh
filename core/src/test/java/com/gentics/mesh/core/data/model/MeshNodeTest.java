@@ -126,7 +126,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
-		RoutingContext rc = getMockedRoutingContext();
+		RoutingContext rc = getMockedRoutingContext("");
 
 		Page<MeshNode> page = nodeService.findAll(rc, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are contents that are only available in english

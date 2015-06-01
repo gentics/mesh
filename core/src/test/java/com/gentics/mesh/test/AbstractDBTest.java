@@ -2,6 +2,7 @@ package com.gentics.mesh.test;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.apex.RoutingContext;
 import io.vertx.ext.apex.Session;
@@ -92,12 +93,16 @@ public abstract class AbstractDBTest {
 		}
 	}
 
-	protected RoutingContext getMockedRoutingContext() {
+	protected RoutingContext getMockedRoutingContext(String query) {
 
 		User user = data().getUserInfo().getUser();
 
 		RoutingContext rc = mock(RoutingContext.class);
 		Session session = mock(Session.class);
+		HttpServerRequest request = mock(HttpServerRequest.class);
+		when(request.query()).thenReturn(query);
+
+		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);
 		JsonObject principal = new JsonObject();
 		principal.put("uuid", user.getUuid());

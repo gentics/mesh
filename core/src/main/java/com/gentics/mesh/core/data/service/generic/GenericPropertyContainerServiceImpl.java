@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.model.relationship.Translated;
 import com.gentics.mesh.core.data.model.schema.ObjectSchema;
 import com.gentics.mesh.core.repository.action.PropertyContainerActions;
 
-@Transactional(readOnly = true)
+//@Transactional(readOnly = true)
 public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> implements
 		PropertyContainerActions<T> {
 
@@ -67,7 +67,7 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 	}
 
 	public void setDisplayName(T node, Language language, String name) {
-		setProperty(node, language, ObjectSchema.NAME_KEYWORD, name);
+		setProperty(node, language, ObjectSchema.DISPLAY_NAME_KEYWORD, name);
 	}
 
 	public String getProperty(T node, Language language, String key) {
