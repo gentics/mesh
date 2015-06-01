@@ -81,7 +81,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						if (lastSegment.getNode().hasLabel(Tag.getLabel())) {
 							Tag tag = tagService.projectTo(lastSegment.getNode(), Tag.class);
 							if (tag == null) {
-								String message = i18n.get(rc, "object_not_found_for_path", path);
+								String message = i18n.get(rc, "node_not_found_for_path", path);
 								throw new EntityNotFoundException(message);
 							}
 
@@ -97,7 +97,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						} else if (lastSegment.getNode().hasLabel(MeshNode.getLabel())) {
 							MeshNode content = nodeService.projectTo(lastSegment.getNode(), MeshNode.class);
 							if (content == null) {
-								String message = i18n.get(rc, "object_not_found_for_path", path);
+								String message = i18n.get(rc, "node_not_found_for_path", path);
 								throw new EntityNotFoundException(message);
 							}
 
@@ -110,15 +110,18 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 								}
 							});
 						} else {
-							throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_path", path));
+							throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
 						}
 
 						tx.success();
 					}
 				} else {
-					throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_path", path));
+					throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
 				}
 			}, arh -> {
+				if (arh.failed()) {
+					rc.fail(arh.cause());
+				}
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
 					GenericPropertyContainer container = arh.result();
@@ -127,8 +130,6 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 					} else if (container instanceof Tag) {
 						rc.response().end(toJson(tagService.transformToRest(rc, (Tag) container)));
 					}
-				} else {
-					rc.fail(new HttpStatusCodeErrorException(500, "error", arh.cause()));
 				}
 			});
 
