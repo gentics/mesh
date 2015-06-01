@@ -222,6 +222,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				MeshNode node = trh.result();
 				rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
 			});
@@ -246,6 +249,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					tx.success();
 				}
 			}, arh -> {
+				if (arh.failed()) {
+					rc.fail(arh.cause());
+				}
 				NodeListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
@@ -261,6 +267,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				MeshNode content = rh.result();
 				nodeService.delete(content);
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				String uuid = rc.request().params().get("uuid");
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "node_deleted", uuid))));
 			});
@@ -321,6 +330,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 					}
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					MeshNode content = trh.result();
 					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
 				});

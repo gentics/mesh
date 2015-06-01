@@ -164,6 +164,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK");
 		NodeListResponse restResponse = JsonUtils.readValue(response, NodeListResponse.class);
+		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());

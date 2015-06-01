@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.service.transformation.content;
 
-import java.util.HashSet;
+import io.vertx.core.impl.ConcurrentHashSet;
+
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinTask;
@@ -10,9 +11,9 @@ import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.I18NProperties;
 import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.relationship.Translated;
 import com.gentics.mesh.core.data.model.schema.ObjectSchema;
@@ -58,7 +59,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 	@Override
 	protected Void compute() {
 
-		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
+		Set<ForkJoinTask<Void>> tasks = new ConcurrentHashSet<>();
 		String uuid = node.getUuid();
 		// Check whether the node has already been transformed by another task
 		NodeResponse foundContent = (NodeResponse) info.getObjectReferences().get(uuid);
