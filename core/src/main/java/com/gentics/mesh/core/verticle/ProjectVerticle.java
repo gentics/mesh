@@ -134,6 +134,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				rc.next();
 			} else {
 				rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Project> rh) -> {
+					if (rh.failed()) {
+						rc.fail(rh.cause());
+					}
 					Project project = rh.result();
 					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(rc, project)));
 				});
@@ -154,6 +157,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
 				bcr.complete(listResponse);
 			}, arh -> {
+				if (arh.failed()) {
+					rc.fail(arh.cause());
+				}
 				ProjectListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
@@ -169,6 +175,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				routerStorage.removeProjectRouter(name);
 				projectService.delete(project);
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				String name = trh.result().getName();
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", name))));
 			});

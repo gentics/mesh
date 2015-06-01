@@ -346,9 +346,9 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 
-		// Revoke read perms
+		// Revoke update perms on the project
 		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), project, PermissionType.READ);
+			roleService.revokePermission(info.getRole(), project, PermissionType.UPDATE);
 			tx.success();
 		}
 
