@@ -91,6 +91,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						group = groupService.save(group);
 					}
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					Group group = grh.result();
 					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
@@ -108,6 +111,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						group = groupService.save(group);
 					}
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					Group group = grh.result();
 					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
@@ -130,6 +136,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 					bch.complete(listResponse);
 				}, rh -> {
+					if (rh.failed()) {
+						rc.fail(rh.cause());
+					}
 					UserListResponse listResponse = rh.result();
 					rc.response().setStatusCode(200).end(toJson(listResponse));
 				});
@@ -149,6 +158,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						group = groupService.save(group);
 					}
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					Group group = grh.result();
 					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
@@ -165,6 +177,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						groupService.save(group);
 					}
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					Group group = grh.result();
 					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 				});
@@ -179,6 +194,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				Group group = grh.result();
 				groupService.delete(group);
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
 			});
 		});
@@ -208,6 +226,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 				group = groupService.save(group);
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				Group group = trh.result();
 				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 			});
@@ -221,6 +242,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				Group group = trh.result();
 				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
 			});
@@ -243,6 +267,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
 				glr.complete(listResponse);
 			}, ar -> {
+				if (ar.failed()) {
+					rc.fail(ar.cause());
+				}
 				rc.response().setStatusCode(200).end(toJson(ar.result()));
 			});
 		});
@@ -268,6 +295,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(root.getGroupRoot(), PermissionType.CREATE), group);
 				groupCreated.complete(group);
 			}, tch -> {
+				if (tch.failed()) {
+					rc.fail(tch.cause());
+				}
 				Group createdGroup = groupCreated.result();
 				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, createdGroup)));
 			});
