@@ -24,6 +24,8 @@ A proposal for the format of the JSON response for a requested Mesh node.
 * If user attempts to update a property which should be not updateable (e.g. a "creator" property) an exception is thrown.
 * DisplayName was changed to displayField to indicate that it holds the name of the field for the display name.
 * Add a flag / property to indicate whether the node is a container.
+* The segmentName was added as a mandatory field that is used to build the webroot path to the node.
+* Should we group the field that are updateable together or should the documentation list all those fields that can be modified?
 
 ## Example 1 - Product schema
 
@@ -96,7 +98,7 @@ This is what a response object could look like, specifying English and German fo
    "uuid": "e0c64ad00a9343cc864ad00a9373cc23",
    "language": "en",
    "availableLanguages": ["en", "de"],
-   "path": "/products/aeroplane",
+   "path": "/products/aeroplane.en.html",
    "creator":{
       "uuid": "UUIDOFUSER1",
       "lastname": "Doe",
@@ -126,6 +128,7 @@ This is what a response object could look like, specifying English and German fo
         { "uuid": "dgasdgasdgasdgasd", "version": "4.9.0" } ] 
    },
    "parentNodeUuid": "sdegasdgsadh",
+   "segmentName": "aeroplane.en.html",
    "project": { "uuid": "wegasdsdhdsfh" },
    "order": 10,
    "tags": {
