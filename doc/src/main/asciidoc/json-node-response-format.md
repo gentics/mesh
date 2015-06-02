@@ -102,7 +102,7 @@ This is what a response object could look like, specifying English and German fo
    "path": "/products/aeroplane.en.html",
    "breadcrumb": [ 
         { "uuid": "e0c64dsgasdgasdgdgasdgasdgasdg33", "segmentName": "products" }, 
-        { "uuid": "e0c64ad00a9343cc864ad00a9373cc23"  "segmentName": "aeroplane.en.html" }
+        { "uuid": "e0c64ad00a9343cc864ad00a9373cc23", "segmentName": "aeroplane.en.html" }
    ],
    "creator":{
       "uuid": "UUIDOFUSER1",
