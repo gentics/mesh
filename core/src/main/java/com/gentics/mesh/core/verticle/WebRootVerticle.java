@@ -72,46 +72,26 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			vertx.executeBlocking((Future<GenericPropertyContainer> bch) -> {
-				Path nodePath = webrootService.findByProjectPath(projectName, path);
+			vertx.executeBlocking((Future<MeshNode> bch) -> {
+				Path nodePath = webrootService.findByProjectPath(rc, projectName, path);
 				PathSegment lastSegment = nodePath.getLast();
 
 				if (lastSegment != null) {
 					try (Transaction tx = graphDb.beginTx()) {
-						if (lastSegment.getNode().hasLabel(Tag.getLabel())) {
-							Tag tag = tagService.projectTo(lastSegment.getNode(), Tag.class);
-							if (tag == null) {
-								String message = i18n.get(rc, "node_not_found_for_path", path);
-								throw new EntityNotFoundException(message);
-							}
-
-							rc.session().hasPermission(new MeshPermission(tag, PermissionType.READ).toString(), rh -> {
-								languageTags.add(lastSegment.getLanguageTag());
-								if (rh.result()) {
-									bch.complete(tag);
-								} else {
-									throw new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm"));
-								}
-							});
-
-						} else if (lastSegment.getNode().hasLabel(MeshNode.getLabel())) {
-							MeshNode content = nodeService.projectTo(lastSegment.getNode(), MeshNode.class);
-							if (content == null) {
-								String message = i18n.get(rc, "node_not_found_for_path", path);
-								throw new EntityNotFoundException(message);
-							}
-
-							rc.session().hasPermission(new MeshPermission(content, PermissionType.READ).toString(), rh -> {
-								languageTags.add(lastSegment.getLanguageTag());
-								if (rh.result()) {
-									bch.complete(content);
-								} else {
-									bch.fail(new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm")));
-								}
-							});
-						} else {
-							throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
+						MeshNode node = nodeService.projectTo(lastSegment.getNode(), MeshNode.class);
+						if (node == null) {
+							String message = i18n.get(rc, "node_not_found_for_path", path);
+							throw new EntityNotFoundException(message);
 						}
+
+						rc.session().hasPermission(new MeshPermission(node, PermissionType.READ).toString(), rh -> {
+							languageTags.add(lastSegment.getLanguageTag());
+							if (rh.result()) {
+								bch.complete(node);
+							} else {
+								bch.fail(new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm", node.getUuid())));
+							}
+						});
 
 						tx.success();
 					}
@@ -124,12 +104,9 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				}
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
-					GenericPropertyContainer container = arh.result();
-					if (container instanceof MeshNode) {
-						rc.response().end(toJson(nodeService.transformToRest(rc, (MeshNode) container)));
-					} else if (container instanceof Tag) {
-						rc.response().end(toJson(tagService.transformToRest(rc, (Tag) container)));
-					}
+					MeshNode node = arh.result();
+					rc.response().end(toJson(nodeService.transformToRest(rc, node)));
+
 				}
 			});
 

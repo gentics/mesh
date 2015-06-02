@@ -61,14 +61,16 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
+		String englishPath = "News/2015";
+		MeshNode newsFolder = data().getFolder("2015");
+		System.out.println(newsFolder.getUuid());
 		try (Transaction tx = graphDb.beginTx()) {
-			String englishPath = "News/2015";
-			MeshNode newsFolder = data().getFolder("2015");
 			roleService.revokePermission(info.getRole(), newsFolder, PermissionType.READ);
-			String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
-			expectMessageResponse("error_missing_perm", response, newsFolder.getUuid());
 			tx.success();
 		}
+
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
+		expectMessageResponse("error_missing_perm", response, newsFolder.getUuid());
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.apex.RoutingContext;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -33,8 +35,11 @@ public class WebRootServiceImpl implements WebRootService {
 	@Autowired
 	private Neo4jTemplate neo4jTemplate;
 
+	@Autowired
+	private I18NService i18nService;
+
 	@Override
-	public Path findByProjectPath(String projectName, String path) {
+	public Path findByProjectPath(RoutingContext rc, String projectName, String path) {
 		String parts[] = path.split("/");
 		Project project = projectService.findByName(projectName);
 
@@ -54,8 +59,8 @@ public class WebRootServiceImpl implements WebRootService {
 			if (nextNode != null) {
 				currentNode = nextNode;
 			} else {
-				currentNode = null;
-				break;
+				String message = i18nService.get(rc, "node_not_found_for_path", path);
+				throw new EntityNotFoundException(message);
 			}
 		}
 
