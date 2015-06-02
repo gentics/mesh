@@ -1,5 +1,9 @@
 = Functional specification
 
+== TODO 
+
+Check whether the requirement for custom relationships is obsolete when using the list node type. A user can setup custom relationships using that type. (eg. relatedProducts in response json format)
+
 == Intro
 
  * [Graph Model](http://gist.neo4j.org/?693a270722b01d647849)
