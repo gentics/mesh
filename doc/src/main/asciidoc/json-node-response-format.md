@@ -16,6 +16,7 @@ A proposal for the format of the JSON response for a requested Mesh node.
 * Review schema property name changes 
 * Review metadata additions
 * Review versioning information
+* Review breadcrumb json format
 * Review item list totalCount field addition
 * How should we deal with sort order and sorted by fields?
   * Use object as indicated in example below with the following changes: 
