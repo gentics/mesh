@@ -5,19 +5,36 @@ A proposal for the format of the JSON response for a requested Mesh node.
 ## TODO
 * Do we want to utilize the dedicated order field for manual sorting or should the user rely on a field (defined in a schema).
 * Do we want to utilize a dedicated field for the publish status or handle the status by custom tags?
-  * Dedicated Field: User does not have to think about the publish status field. 
+  * Dedicated Field: User does not have to think about the publish status field. (+2)
   * Custom Tags: The user would always need to customize the tag filter and it would be possible to break this system by deleting the tag.
+* Do we need a publisher field? The last editor of the last majorversion is the publisher.
+* Do we want to include the availableVersions field? The field may be seldom used by frontend users (website).
+* JSON Fields: hello_world vs. helloWorld? (currently it is mixed) (+2 for CC)
+
+## TO BE REVIEWED
+* Review project field
+* Review schema property name changes 
 * Review metadata additions
 * Review versioning information
+* Review item list totalCount field addition
 * How should we deal with sort order and sorted by fields?
   * Use object as indicated in example below with the following changes: 
     * For non-node types, the "orderBy" property does not apply.
     * Fields can be used for sorting by using the JSON path to those fields, e.g. `fields.name`. When a field cannot be utilized (allowed sorting properties to be defined) , an exception is thrown.
 * If user attempts to update a property which should be not updateable (e.g. a "creator" property) an exception is thrown.
+* DisplayName was changed to displayField to indicate that it holds the name of the field for the display name.
 * Add a flag / property to indicate whether the node is a container.
 
 ## Example 1 - Product schema
 
+### Expandable fields:
+
+* project
+* children
+* tags
+* creator
+* editor
+* availableVersions (? see TODO)
 
 ### Example Schema 1
 
@@ -72,13 +89,14 @@ This is what a response object could look like, specifying English and German fo
 
 ### Node Response 1
 
-#### `GET api/v1/products/aeroplane?lang=en,de&expand=image`
+#### `GET api/v1/nodes/e0c64ad00a9343cc864ad00a9373cc23?lang=en,de&expand=image`
 
 ```json
 {
    "uuid": "e0c64ad00a9343cc864ad00a9373cc23",
    "language": "en",
    "availableLanguages": ["en", "de"],
+   "path": "/products/aeroplane",
    "creator":{
       "uuid": "UUIDOFUSER1",
       "lastname": "Doe",
@@ -100,16 +118,23 @@ This is what a response object could look like, specifying English and German fo
    },
    "edited": 1333530472,
    "version": "5.2.0",
-   "availableVersions": [
-      { "uuid": "dgasdgasdgasdgasd", "version": "5.2.0" },
-      { "uuid": "dgasdgasdgasdgasd", "version": "5.1.0" },
-      { "uuid": "dgasdgasdgasdgasd", "version": "4.9.0" },
-   ],
+   "availableVersions": { 
+     "totalCount": 2000,
+     "items": [
+        { "uuid": "dgasdgasdgasdgasd", "version": "5.2.0" },
+        { "uuid": "dgasdgasdgasdgasd", "version": "5.1.0" },
+        { "uuid": "dgasdgasdgasdgasd", "version": "4.9.0" } ] 
+   },
    "parentNodeUuid": "sdegasdgsadh",
+   "project": { "uuid": "wegasdsdhdsfh" },
    "order": 10,
-   "tags": [ { "uuid": "235hr9283yr98239823410f" }, { "uuid": "dgasdgasdhasdh346234dsgf" } ],
+   "tags": {
+      "totalCount": 2000,
+      "items": [ { "uuid": "235hr9283yr98239823410f" }, { "uuid": "dgasdgasdhasdh346234dsgf" } ],
+   },
    "fields":{
       "name": "Aeroplane",
+      "displayField": "name",
       "description": "A good aeroplane.",
       "image": {
          "uuid": "a8u328u23u8r09j23o9r09",
@@ -140,6 +165,7 @@ This is what a response object could look like, specifying English and German fo
       "relatedProducts": {
          "order": "desc",
          "orderBy": "name",
+         "totalCount": 2000,
          "items": [
              { "uuid": "235hr9283yr98239823410f" },
              { "uuid": "38wq3jo39r20jr029j3h838" },
@@ -153,8 +179,8 @@ This is what a response object could look like, specifying English and German fo
       "delete"
    ],
    "schema":{
-      "schemaName": "product",
-      "schemaUuid": "4776dcfee87745f3b6dcfee87705f3ad"
+      "name": "product",
+      "uuid": "4776dcfee87745f3b6dcfee87705f3ad"
    }
 }
 ```
