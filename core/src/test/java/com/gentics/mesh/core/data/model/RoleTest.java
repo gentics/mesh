@@ -176,6 +176,6 @@ public class RoleTest extends AbstractDBTest {
 		}
 
 		Page<Role> roles = roleRepository.findByGroup(info.getUser().getUuid(), info.getGroup(), new MeshPageRequest(0, 10));
-		assertEquals(1, roles.getTotalElements());
+		assertEquals(2, roles.getTotalElements());
 	}
 }
