@@ -9,27 +9,14 @@
 * [Types](#types)
 * [Microschema Definition Format](#microschema-definition-format)
 
-Basic schema definition format
-```
-{
-  "name": "MySchema",
-  ["binary": boolean,]
-  ["container": boolean,]
-  ["displayField": boolean,]
-  "fields": [
-    { // field definition object },
-    // ...
-  ]
-}
-```
-
-
 ## Example Schema
 
 ```json
 {
   "name": "product",
   "displayField": "name",
+  "container": true,
+  "binary": false,
   "fields": [
     {
       "name": "name",
@@ -179,6 +166,7 @@ value, and "step" is the size of the permitted increment in value. For example:
 ### Date type
 
 TODO: decide on any special config properties for date type.
+TODO: Maybe a default timeframe would be useful.
 
 ### Boolean type 
 
@@ -197,6 +185,20 @@ and would be defined by an "options" property:
   "options": ["blue", "red", "green", "heliotrope"]
 }
 ```
+
+TODO: Think about usecases for the select type. Should the user be able to select a node from a predefinded subset of nodes? Should the user be able to select a tag? How to handle multiselect?
+
+### Tag type (idea)
+
+A tag type is a type that references a tag. The tag type can also be used within a list. By that it is possible to add multiple tags to different fields of a node.
+
+Problem: /nodes/:uuid/tags would no longer work when we decide to remove the tags field in favour of this type.
+
+Question: Is it possible to change the rest api that way that tags can be assigned to specific tag list fields for a node. 
+
+* /nodes/:uuid/fields.taglistA/:tagUuid
+* /nodes/:uuid/fields.taglistB/:tagUuid
+
 
 ### Node type
 
