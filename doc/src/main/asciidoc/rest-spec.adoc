@@ -1,0 +1,24 @@
+= RESTful API Endpoint specification
+
+== Nodes
+
+=== Idea for accessing fields directly
+
+* RUD: /nodes/:uuid/relatedProducts/:uuid -> Pageable list of nodes
+* R: /nodes/:uuid/name
+
+TODO: Do we want to restrict the primitiv types to read only? The user can update the node via PUT /nodes/:uuid anyway.
+
+== Webroot
+
+
+== Tags
+
+TODO: Define how tag familes are setup and tags are assigned to those families.
+
+== Users / Groups / Roles
+
+
+== Projects
+
+TODO: Define how languages are assigned to projects
