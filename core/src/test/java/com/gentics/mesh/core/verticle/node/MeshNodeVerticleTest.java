@@ -335,7 +335,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
-		request.addProperty("en", "filename", newFilename);
+		request.addProperty("en", "displayName", newFilename);
 		final String newName = "english renamed name";
 		request.addProperty("en", "name", newName);
 		final String newNode = "english renamed content!";
@@ -345,7 +345,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		String json = JsonUtils.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
-		assertEquals(newFilename, restNode.getProperty("en", "filename"));
+		assertEquals(newFilename, restNode.getProperty("en", "displayName"));
 		assertEquals(newName, restNode.getProperty("en", "name"));
 		assertEquals(newNode, restNode.getProperty("en", "content"));
 
