@@ -159,6 +159,7 @@ This is what a response object could look like, specifying English and German fo
          "binaryProperties": {
             "width": 400,
             "height": 800,
+            "sha512sum": "sdgasdgasdgasdgasdgasdgasdg",
             "fileSize": 1241324,
             "mimeType": "image/jpeg",
             "dpi": 72
