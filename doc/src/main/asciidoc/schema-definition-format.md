@@ -1,5 +1,9 @@
 # Schema Definition Format
 
+### Review:
+
+Maybe we could get rid of tags altogether. A node could have fields called `colorTags` and `vehicleTags`. The user could then assign nodes to those fields. The color Tags would be regular nodes with the schema `colorTag`. The color tags would be located within the project node hierarchy. (e.g.: /colorTags/red). The root folder colorTags and the tag red must be invisbile and not be accessiable though /webroot.
+
 ### Contents:
 
 * [Example Schema](#example-schema)
