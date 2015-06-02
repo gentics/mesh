@@ -261,6 +261,8 @@ a list of related content nodes would be defined thus:
 A microschema field must have a property "allow", which defines the microschemas which may be used in this field. If "allow" 
 is an empty array, any type of microschema may be used.
 
+Using a microschema in a list:
+
 ```json
 {
   "name": "about",
@@ -270,6 +272,35 @@ is an empty array, any type of microschema may be used.
   "allow": ["vcard", "gallery"]
 }
 ```
+
+Using a single microschema as a type in the schema:
+
+
+```json
+{
+  "name": "about",
+  "label": "About Me",
+  "type": "microschema",
+  "microschemaType": "gallery",
+}
+```
+
+Using a single microschema as a type in the schema (with default values):
+
+```json
+{
+  "name": "about",
+  "label": "About Me",
+  "type": "microschema",
+  "microschemaType": "gallery",
+  "defaultValue": {
+      "title": "Default Title",
+      "image": [....]
+    }
+}
+```
+
+TODO: Should the images be specified by uuid or by path? (both?)
 
 ## Microschema Definition Format
 
@@ -285,18 +316,22 @@ to microschema definitions, with the following exceptions:
   "fields": [
     {
       "name": "firstName",
+      "defaultValue": "Joe",
       "label": "First Name",
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     {
+      "defaultValue": "Doe",
       "name": "lastName",
       "label": "Last Name",
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     {
       "name": "address",
       "label": "Address",
-      "type": "string"
+      "type": "string",
     },
     {
       "name": "postcode",
