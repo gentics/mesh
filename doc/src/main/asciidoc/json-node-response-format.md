@@ -41,54 +41,7 @@ A proposal for the format of the JSON response for a requested Mesh node.
 
 ### Example Schema 1
 
-Consider the following "product" schema definition:
-
-```json
-{
-  "name": "product",
-  "fields": [
-    {
-      "name": "name",
-      "label": "Product Name",
-      "type": "string",
-      "required": true,
-    },
-    {
-      "name": "description",
-      "label": "Description",
-      "type": "html",
-      "required": true,
-    },
-    {
-      "name": "image",
-      "label": "Product Image",
-      "type": "node",
-      "allow": ["image"]
-    },
-    {
-      "name": "sku",
-      "label": "SKU",
-      "type": "string",
-      "required": true
-    },
-    {
-      "name": "price",
-      "label": "Price",
-      "type": "number",
-      "step": 0.01
-     },
-     {
-      "name": "relatedProducts",
-      "label": "Related Products",
-      "type": "list",
-      "listType": "node",
-      "allow": ["product"]
-      }
-  ]
-}
-```
-
-This is what a response object could look like, specifying English and German for any localized fields:
+See the [example product schema](schema-definition-format.md#example-schema) defined in the schema definition doc.
 
 ### Node Response 1
 
