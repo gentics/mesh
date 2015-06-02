@@ -18,6 +18,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 
 	@Test
 	public void testStartup() throws Exception {
+		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
 		MeshConfiguration config = new MeshConfiguration();
 		config.setHttpPort(TestUtil.getRandomPort());
 		config.getNeo4jConfiguration().setMode(Neo4jGraphVerticle.DEFAULT_MODE);
@@ -43,10 +44,10 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 				e.printStackTrace();
 			}
 		}).start();
-		if (latch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+		if (latch.await(timeout, TimeUnit.SECONDS)) {
 			assertTrue(meshStarted.get());
 		} else {
-			fail("Mesh did not startup on time. Timeout {" + DEFAULT_TIMEOUT_SECONDS + "} seconds reached.");
+			fail("Mesh did not startup on time. Timeout {" + timeout + "} seconds reached.");
 		}
 	}
 }
