@@ -335,7 +335,7 @@ The user then creates a new blog post and places in the "content" field:
    "tags":[],
    "creator":{},
    "fields": {
-     "title": "My First Blog Post"
+     "title": "My First Blog Post",
      "content": [
        {
          "microschema": {
