@@ -48,6 +48,20 @@ Links CAN include the target language.
 
 Nodes have tags and children. Both can be filtered and paged individually within the node response.
 
+== Filtering
+
+It should be possible to add custom filters for various requests. The user should be able to filter lists.
+
+Possible filter usecases:
+
+ * Filter nodes by tags (include certain tags and exclude tags)
+ * Filter nodes by the isContainer field
+ * Filter nodes by field value
+ * Filter by schema type
+ * Filter by editor / creator
+ * Filter by language 
+ * Filter by isBinary
+
 == Schemas 
 
 Schemas can be created using the schemas verticle. The schema defines the type and name of each field for a tag or a content. Those types are called field schema types. You can think of a schema as a blueprint for new tags and contents.
