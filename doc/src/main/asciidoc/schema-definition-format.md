@@ -200,9 +200,9 @@ Problem: /nodes/:uuid/tags would no longer work when we decide to remove the tag
 
 Question: Is it possible to change the rest api that way that tags can be assigned to specific tag list fields for a node. 
 
-* /nodes/:uuid/fields.taglistA/:tagUuid
-* /nodes/:uuid/fields.taglistB/:tagUuid
-
+* /nodes/:uuid/taglistA/:tagUuid
+* /nodes/:uuid/taglistB/:tagUuid
+* /nodes/:uuid/relatedProducts/:tagUuid
 
 ### Node type
 
