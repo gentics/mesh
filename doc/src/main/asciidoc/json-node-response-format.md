@@ -97,9 +97,9 @@ See the [example product schema](schema-definition-format.md#example-schema) def
       "totalCount": 2000,
       "items": [ { "uuid": "235hr9283yrwasdgasdgasg" }, { "uuid": "gasdgasdgasdgasdgasdgasg" }  ]
    },
+   "displayField": "name",
    "fields":{
       "name": "Aeroplane",
-      "displayField": "name",
       "description": "A good aeroplane.",
       "image": {
          "uuid": "a8u328u23u8r09j23o9r09",
