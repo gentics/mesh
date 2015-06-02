@@ -1,10 +1,11 @@
 # Schema Definition Format
 
-Contents:
+### Contents:
 
 * [Example Schema](#example-schema)
-* [Configuration properties](#configuration-properties)
-* [Default values](#default-values)
+* [Field Definition Object](#field-definition-object)
+* [Configuration Properties](#configuration-properties)
+* [Default Values](#default-values)
 * [Types](#types)
 * [Microschema Definition Format](#microschema-definition-format)
 
@@ -15,9 +16,13 @@ Basic schema definition format
   ["binary": boolean,]
   ["container": boolean,]
   ["displayField": boolean,]
-  "fields": []
+  "fields": [
+    { // field definition object },
+    // ...
+  ]
 }
 ```
+
 
 ## Example Schema
 
@@ -66,6 +71,32 @@ Basic schema definition format
   ]
 }
 ```
+
+## Field Definition Object
+
+A field is defined by an object which must have the following properties:
+
+* **`name`** A unique name to identify the field
+* **`type`** The type of data to be stored in this field (see [Types](#types))
+
+The following optional properties may be applied to any type of field:
+
+* **`required`** If `true`, this field may not be left empty.
+* **`label`** A human-readable label for the field to be used as a form label in the admin UI. If not defined, the "name" field would be used.
+* **`defaultValue`** A default value for the field. See [Default values](#default-values).
+
+```json
+{
+  "name": "title",
+  "type": "string",
+  "label": "Blog Post Title",
+  "required": true,
+  "defaultValue": "New Blog Post"
+}
+```
+
+In addition to the above, certain types expose additional properties with which to configure the field. Such additional
+properties are defined in the [Types](#types) section.
 
 ## Configuration properties
 
