@@ -1,4 +1,12 @@
-# Schema Definition JSON
+# Schema Definition Format
+
+Contents:
+
+* [Example Schema](#example-schema)
+* [Configuration properties](#configuration-properties)
+* [Default values](#default-values)
+* [Types](#types)
+* [Microschema Definition Format](#microschema-definition-format)
 
 Basic schema definition format
 ```
@@ -222,6 +230,65 @@ is an empty array, any type of microschema may be used.
   "label": "About Me",
   "type": "list",
   "listType": "microschema",
-  "allow": ["vcard", "mediaObject"]
+  "allow": ["vcard", "gallery"]
+}
+```
+
+## Microschema Definition Format
+
+A microschema is defined in much the same way as a schema. All the rules which apply to schema definitions also apply
+to microschema definitions, with the following exceptions:
+
+1. A microschema cannot contain a field of type "microschema".
+2. A microschema should not use the configuration properties "binary", "container", or "displayField".
+
+```json
+{
+  "name": "vcard",
+  "fields": [
+    {
+      "name": "firstName",
+      "label": "First Name",
+      "type": "string"
+    },
+    {
+      "name": "lastName",
+      "label": "Last Name",
+      "type": "string"
+    },
+    {
+      "name": "address",
+      "label": "Address",
+      "type": "string"
+    },
+    {
+      "name": "postcode",
+      "label": "Post Code",
+      "type": "string"
+    }
+  ]
+}
+```
+
+Just as with schemas, a microschema could contain list and node types:
+
+```json
+{
+  "name": "gallery",
+  "fields": [
+    {
+      "name": "title",
+      "label": "Gallery Title",
+      "type": "string"
+    },
+    {
+      "name": "image",
+      "type": "list",
+      "listType": "node",
+      "allow": ["image"],
+      "min": 1,
+      "max": 20
+    }
+  ]
 }
 ```
