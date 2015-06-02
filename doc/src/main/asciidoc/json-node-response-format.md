@@ -3,7 +3,12 @@
 A proposal for the format of the JSON response for a requested Mesh node.
 
 ## TODO
-
+* Do we want to utilize the dedicated order field for manual sorting or should the user rely on a field (defined in a schema).
+* Do we want to utilize a dedicated field for the publish status or handle the status by custom tags?
+  * Dedicated Field: User does not have to think about the publish status field. 
+  * Custom Tags: The user would always need to customize the tag filter and it would be possible to break this system by deleting the tag.
+* Review metadata additions
+* Review versioning information
 * How should we deal with sort order and sorted by fields?
   * Use object as indicated in example below with the following changes: 
     * For non-node types, the "orderBy" property does not apply.
@@ -65,7 +70,7 @@ Consider the following "product" schema definition:
 
 This is what a response object could look like, specifying English and German for any localized fields:
 
-### Response 1
+### Node Response 1
 
 #### `GET api/v1/products/aeroplane?lang=en,de&expand=image`
 
@@ -74,7 +79,6 @@ This is what a response object could look like, specifying English and German fo
    "uuid": "e0c64ad00a9343cc864ad00a9373cc23",
    "language": "en",
    "availableLanguages": ["en", "de"],
-   "tags": [],
    "creator":{
       "uuid": "UUIDOFUSER1",
       "lastname": "Doe",
@@ -82,8 +86,28 @@ This is what a response object could look like, specifying English and German fo
       "username": "joe1",
       "emailAddress": "j.doe@spam.gentics.com",
       "groups": [],
-      "perms": []
+      "perms": [ "read", "update" ]
    },
+   "created": 1333530472,
+   "editor":{
+      "uuid": "UUIDOFUSER1",
+      "lastname": "Doe",
+      "firstname": "Joe",
+      "username": "joe1",
+      "emailAddress": "j.doe@spam.gentics.com",
+      "groups": [],
+      "perms": [ "read" ]
+   },
+   "edited": 1333530472,
+   "version": "5.2.0",
+   "availableVersions": [
+      { "uuid": "dgasdgasdgasdgasd", "version": "5.2.0" },
+      { "uuid": "dgasdgasdgasdgasd", "version": "5.1.0" },
+      { "uuid": "dgasdgasdgasdgasd", "version": "4.9.0" },
+   ],
+   "parentNodeUuid": "sdegasdgsadh",
+   "order": 10,
+   "tags": [ { "uuid": "235hr9283yr98239823410f" }, { "uuid": "dgasdgasdhasdh346234dsgf" } ],
    "fields":{
       "name": "Aeroplane",
       "description": "A good aeroplane.",
