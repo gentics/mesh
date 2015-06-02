@@ -99,6 +99,10 @@ This is what a response object could look like, specifying English and German fo
    "language": "en",
    "availableLanguages": ["en", "de"],
    "path": "/products/aeroplane.en.html",
+   "breadcrumb": [ 
+        { "uuid": "e0c64dsgasdgasdgdgasdgasdgasdg33", "segmentName": "products" }, 
+        { "uuid": "e0c64ad00a9343cc864ad00a9373cc23"  "segmentName": "aeroplane.en.html" }
+   ],
    "creator":{
       "uuid": "UUIDOFUSER1",
       "lastname": "Doe",
@@ -134,6 +138,10 @@ This is what a response object could look like, specifying English and German fo
    "tags": {
       "totalCount": 2000,
       "items": [ { "uuid": "235hr9283yr98239823410f" }, { "uuid": "dgasdgasdhasdh346234dsgf" } ],
+   },
+   "children": {
+      "totalCount": 2000,
+      "items": [ { "uuid": "235hr9283yrwasdgasdgasg" }, { "uuid": "gasdgasdgasdgasdgasdgasg" }  ]
    },
    "fields":{
       "name": "Aeroplane",
