@@ -44,6 +44,23 @@ Two issues:
 1. Should we normalize the property name to "name", or retain the name of the field specified by "segmentField"?
 2. If the schema of a node in the breadcrumb path does not specify "segmentField", what do we do? Just display the uuid?
 
+== Microschemas
+
+TODO: When a schema has a field of type "microschema", the microschema is referenced by name rather than uuid:
+
+[source,json]
+----
+{
+  "name": "location",
+  "type": "microschema",
+  "allow": ["geolocation"]
+}
+----
+
+Therefore we should have an API endpoint where we can get the microschema by its name:
+
+`/microschemas/geolocation` -> Geolocation microschema object
+
 == Webroot
 
 
