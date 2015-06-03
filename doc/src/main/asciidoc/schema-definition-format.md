@@ -75,6 +75,7 @@ The following optional properties may be applied to any type of field:
 * **`required`** If `true`, this field may not be left empty.
 * **`label`** A human-readable label for the field to be used as a form label in the admin UI. If not defined, the "name" field would be used.
 * **`defaultValue`** A default value for the field. See [Default values](#default-values).
+* **`uniqueInThisFolder`** (name TBC) A boolean flag which indicates whether this field should be constrained so that Mesh will require the value to be unique amongst the other nodes which share the same parent node. E.g. let's say the "filename" field has this property set to "true". If there is a node in "cars" where filename is "porsche911.html", no other node in "cars" may have a filename of "porsche911.html". The intention of this option is to allow the webroot API to avoid collisions of segmentNames (see the [json response format doc](json-node-response-format.md) for example of how segmentName is used).
 
 ```json
 {
