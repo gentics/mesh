@@ -7,7 +7,23 @@
 * RUD: /nodes/:uuid/relatedProducts/:uuid -> Pageable list of nodes
 * R: /nodes/:uuid/name
 
-TODO: Do we want to restrict the primitiv types to read only? The user can update the node via PUT /nodes/:uuid anyway.
+TODO: Do we want to restrict the primitive types to read only? The user can update the node via PUT /nodes/:uuid anyway.
+
+=== Versions
+
+`/nodes/:uuid/versions` -> Pageable list of versions:
+
+[source,json]
+---
+{
+  "_metainfo": {},
+  "data": [
+    { "uuid": "dgasdgasdgasdgasd", "version": "5.2.0" },
+    { "uuid": "dgasdgasdgasdgasd", "version": "5.1.0" },
+    { "uuid": "dgasdgasdgasdgasd", "version": "4.9.0" } 
+  ]
+}
+---
 
 == Breadcrumbs
 
