@@ -2,32 +2,6 @@
 
 A proposal for the format of the JSON response for a requested Mesh node.
 
-## TODO
-* Do we want to utilize the dedicated order field for manual sorting or should the user rely on a field (defined in a schema).
-* Do we want to utilize a dedicated field for the publish status or handle the status by custom tags?
-  * Dedicated Field: User does not have to think about the publish status field. (+2)
-  * Custom Tags: The user would always need to customize the tag filter and it would be possible to break this system by deleting the tag.
-* Do we need a publisher field? The last editor of the last majorversion is the publisher.
-* Do we want to include the availableVersions field? The field may be seldom used by frontend users (website).
-* JSON Fields: hello_world vs. helloWorld? (currently it is mixed) (+2 for CC)
-
-## TO BE REVIEWED
-* Review project field
-* Review schema property name changes 
-* Review metadata additions
-* Review versioning information
-* Review breadcrumb json format
-* Review item list totalCount field addition
-* How should we deal with sort order and sorted by fields?
-  * Use object as indicated in example below with the following changes: 
-    * For non-node types, the "orderBy" property does not apply.
-    * Fields can be used for sorting by using the JSON path to those fields, e.g. `fields.name`. When a field cannot be utilized (allowed sorting properties to be defined) , an exception is thrown.
-* If user attempts to update a property which should be not updateable (e.g. a "creator" property) an exception is thrown.
-* DisplayName was changed to displayField to indicate that it holds the name of the field for the display name.
-* Add a flag / property to indicate whether the node is a container.
-* The segmentName was added as a mandatory field that is used to build the webroot path to the node.
-* Should we group the field that are updateable together or should the documentation list all those fields that can be modified?
-
 ## Example 1 - Product schema
 
 ### Expandable fields:
@@ -37,7 +11,6 @@ A proposal for the format of the JSON response for a requested Mesh node.
 * tags
 * creator
 * editor
-* availableVersions (? see TODO)
 
 ### Example Schema 1
 
@@ -52,11 +25,8 @@ See the [example product schema](schema-definition-format.md#example-schema) def
    "uuid": "e0c64ad00a9343cc864ad00a9373cc23",
    "language": "en",
    "availableLanguages": ["en", "de"],
+   "publish": true,
    "path": "/products/aeroplane.en.html",
-   "breadcrumb": [ 
-        { "uuid": "e0c64dsgasdgasdgdgasdgasdgasdg33", "segmentName": "products" }, 
-        { "uuid": "e0c64ad00a9343cc864ad00a9373cc23", "segmentName": "aeroplane.en.html" }
-   ],
    "creator":{
       "uuid": "UUIDOFUSER1",
       "lastname": "Doe",
@@ -78,17 +48,8 @@ See the [example product schema](schema-definition-format.md#example-schema) def
    },
    "edited": 1333530472,
    "version": "5.2.0",
-   "availableVersions": { 
-     "totalCount": 2000,
-     "items": [
-        { "uuid": "dgasdgasdgasdgasd", "version": "5.2.0" },
-        { "uuid": "dgasdgasdgasdgasd", "version": "5.1.0" },
-        { "uuid": "dgasdgasdgasdgasd", "version": "4.9.0" } ] 
-   },
    "parentNodeUuid": "sdegasdgsadh",
-   "segmentName": "aeroplane.en.html",
    "project": { "uuid": "wegasdsdhdsfh" },
-   "order": 10,
    "tags": {
       "totalCount": 2000,
       "items": [ { "uuid": "235hr9283yr98239823410f" }, { "uuid": "dgasdgasdhasdh346234dsgf" } ],
@@ -98,8 +59,10 @@ See the [example product schema](schema-definition-format.md#example-schema) def
       "items": [ { "uuid": "235hr9283yrwasdgasdgasg" }, { "uuid": "gasdgasdgasdgasdgasdgasg" }  ]
    },
    "displayField": "name",
+   "segmentField": "filename",
    "fields":{
       "name": "Aeroplane",
+      "filename": "aeroplane.en.html",
       "description": "A good aeroplane.",
       "image": {
          "uuid": "a8u328u23u8r09j23o9r09",
@@ -391,3 +354,35 @@ function blogPostController(post) {
 
 </div>
 ```
+
+# Meeting Notes
+
+## Wed 3rd June 2015
+
+### TODO
+
+* Do we want to utilize the dedicated order field for manual sorting or should the user rely on a field (defined in a schema). **No, use a field in the schema if this is needed**
+* Do we want to utilize a dedicated field for the publish status or handle the status by custom tags?
+  * Dedicated Field: User does not have to think about the publish status field. (+2)
+  * Custom Tags: The user would always need to customize the tag filter and it would be possible to break this system by deleting the tag.
+**Use a dedicated field. This will need to eventually take into account versioning, to allow work in progress.**
+* Do we need a publisher field? The last editor of the last majorversion is the publisher. **Use last editor of last major version as publisher**
+* Do we want to include the availableVersions field? The field may be seldom used by frontend users (website). **No, put this in its own endpoint**
+* JSON Fields: hello_world vs. helloWorld? (currently it is mixed) (+2 for CC) **camelCase all the way**
+
+### TO BE REVIEWED
+
+* Review project field **okay**
+* Review schema property name changes (schema.schemaName -> schema.name)  **okay**
+* Review metadata additions **okay**
+* Review versioning information **version number okay, remove list of availableVersions**
+* Review breadcrumb json format **format okay, but remove from response and make dedicated endpoint**
+* Review item list totalCount field addition **okay**
+* How should we deal with sort order and sorted by fields? Use object as indicated in example below with the following changes:
+  * For non-node types, the "orderBy" property does not apply. **okay**
+  * Fields can be used for sorting by using the JSON path to those fields, e.g. `fields.name`. When a field cannot be utilized (allowed sorting properties to be defined) , an exception is thrown. **okay**
+* If user attempts to update a property which should be not updateable (e.g. a "creator" property) an exception is thrown.
+* DisplayName was changed to displayField to indicate that it holds the name of the field for the display name. **okay**
+* Add a flag / property to indicate whether the node is a container. **No. Just check for presence of the "children" property.**
+* The segmentName was added as a mandatory field that is used to build the webroot path to the node. **Get rid of this in favour of a configurable "segmentField" that works just like "displayField".**
+* Should we group the field that are updateable together or should the documentation list all those fields that can be modified? **No. Only "fields" should be updateable. All top-level properties are not directly updateable.**
