@@ -9,6 +9,25 @@
 
 TODO: Do we want to restrict the primitiv types to read only? The user can update the node via PUT /nodes/:uuid anyway.
 
+== Breadcrumbs
+
+`/breadcrumb/:uuid` -> object containing breadcrumb to the node specified by uuid in the following format:
+
+[source,json]
+----
+[ 
+  { "uuid": "e0c64dsgasdgasdgdgasdgasdgasdg33", "name": "products" }, 
+  { "uuid": "e0c64ad00a9343cc864ad00a9373cc23", "name": "aeroplane.en.html" }
+]
+----
+
+TODO: Where does the "name" property come from? It should be the field specified by "segmentField" in the schema. 
+
+Two issues:
+
+1. Should we normalize the property name to "name", or retain the name of the field specified by "segmentField"?
+2. If the schema of a node in the breadcrumb path does not specify "segmentField", what do we do? Just display the uuid?
+
 == Webroot
 
 
