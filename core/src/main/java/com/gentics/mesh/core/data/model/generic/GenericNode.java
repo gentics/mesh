@@ -10,6 +10,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.tinkerpop.TPGenericNode;
 
 /**
  * This class represents a basic mesh node. All models that make use of this model will automatically be able to be handled by the permission system.

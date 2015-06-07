@@ -9,6 +9,7 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.tinkerpop.TPGroup;
 
 @NodeEntity
 public class Group extends GenericNode {

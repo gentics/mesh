@@ -8,7 +8,6 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.GroupRoot;
 import com.gentics.mesh.core.data.model.auth.Role;
@@ -33,19 +32,19 @@ public class MeshRoot extends AbstractPersistable {
 	private static final long serialVersionUID = -901251232180415110L;
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_PROJECT, direction = Direction.OUTGOING, elementClass = ProjectRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_PROJECT_ROOT, direction = Direction.OUTGOING, elementClass = ProjectRoot.class)
 	private ProjectRoot projectRoot;
 
 	@Fetch
-	@RelatedTo(type = AuthRelationships.HAS_USER, direction = Direction.OUTGOING, elementClass = UserRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_USER_ROOT, direction = Direction.OUTGOING, elementClass = UserRoot.class)
 	private UserRoot userRoot;
 
 	@Fetch
-	@RelatedTo(type = AuthRelationships.HAS_ROLE, direction = Direction.OUTGOING, elementClass = RoleRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_ROLE_ROOT, direction = Direction.OUTGOING, elementClass = RoleRoot.class)
 	private RoleRoot roleRoot;
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_LANGUAGE, direction = Direction.OUTGOING, elementClass = LanguageRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_LANGUAGE_ROOT, direction = Direction.OUTGOING, elementClass = LanguageRoot.class)
 	private LanguageRoot languageRoot;
 
 	@Fetch
@@ -57,7 +56,7 @@ public class MeshRoot extends AbstractPersistable {
 	private MicroSchemaRoot microSchemaRoot;
 
 	@Fetch
-	@RelatedTo(type = BasicRelationships.HAS_ROOT_GROUP, direction = Direction.INCOMING, elementClass = GroupRoot.class)
+	@RelatedTo(type = BasicRelationships.HAS_GROUP_ROOT, direction = Direction.OUTGOING, elementClass = GroupRoot.class)
 	private GroupRoot groupRoot;
 
 	@Indexed(unique = true)

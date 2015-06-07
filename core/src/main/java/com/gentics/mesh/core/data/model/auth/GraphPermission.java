@@ -8,6 +8,8 @@ import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.tinkerpop.TPAbstractPersistable;
+import com.tinkerpop.blueprints.Vertex;
 
 @RelationshipEntity(type = AuthRelationships.HAS_PERMISSION)
 public class GraphPermission extends AbstractPersistable implements org.apache.shiro.authz.Permission {
@@ -64,5 +66,6 @@ public class GraphPermission extends AbstractPersistable implements org.apache.s
 	public AbstractPersistable getTargetNode() {
 		return targetNode;
 	}
+
 
 }

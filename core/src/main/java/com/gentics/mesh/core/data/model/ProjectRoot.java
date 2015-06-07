@@ -10,6 +10,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.tinkerpop.blueprints.Vertex;
 
 @NodeEntity
 public class ProjectRoot extends AbstractPersistable {
@@ -28,5 +29,7 @@ public class ProjectRoot extends AbstractPersistable {
 	public Set<Project> getProjects() {
 		return projects;
 	}
+
+	
 
 }

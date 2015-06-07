@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 
-@RelationshipEntity(type=BasicRelationships.HAS_I18N_PROPERTIES)
+@RelationshipEntity(type = BasicRelationships.HAS_I18N_PROPERTIES)
 public class Translated extends AbstractPersistable {
 
 	private static final long serialVersionUID = -8955212917270622506L;

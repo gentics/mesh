@@ -34,7 +34,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	@Override
 	public T save(T node) {
 		if (node.isNew() && node.getUuid() == null) {
-			node.setUuid(UUIDUtil.getUUID());
+			node.setUuid(UUIDUtil.randomUUID());
 		}
 		return nodeRepository.save(node);
 	}

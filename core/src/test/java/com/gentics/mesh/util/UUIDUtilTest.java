@@ -17,7 +17,7 @@ public class UUIDUtilTest {
 	@Test
 	public void testIsUUID() {
 		String validUUID = "dd5e85cebb7311e49640316caf57479f";
-		assertTrue(UUIDUtil.isUUID(UUIDUtil.getUUID()));
+		assertTrue(UUIDUtil.isUUID(UUIDUtil.randomUUID()));
 		assertFalse(UUIDUtil.isUUID(""));
 		assertFalse(UUIDUtil.isUUID("123"));
 		assertFalse(UUIDUtil.isUUID("-1"));

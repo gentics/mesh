@@ -22,7 +22,7 @@ public final class UUIDUtil {
 
 	}
 
-	public static String getUUID() {
+	public static String randomUUID() {
 		final UUID uuid = UUID_GENERATOR.generate();
 		final StringBuilder sb = new StringBuilder();
 		sb.append(Long.toHexString(uuid.getMostSignificantBits())).append(Long.toHexString(uuid.getLeastSignificantBits()));

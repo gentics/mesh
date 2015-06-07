@@ -9,6 +9,10 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.tinkerpop.TPGroup;
+import com.gentics.mesh.core.data.model.tinkerpop.TPProject;
+import com.gentics.mesh.core.data.model.tinkerpop.TPUser;
+import com.tinkerpop.blueprints.Vertex;
 
 @NodeEntity
 public class User extends GenericNode {

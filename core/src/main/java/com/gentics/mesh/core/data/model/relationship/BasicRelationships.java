@@ -13,11 +13,10 @@ public class BasicRelationships {
 	public static final String HAS_PROJECT = "HAS_PROJECT";
 
 	//Groups/User/Role
-	public static final String HAS_ROOT_GROUP = "HAS_ROOT_GROUP";
+	public static final String HAS_GROUP_ROOT = "HAS_GROUP_ROOT";
 	public static final String HAS_USER = "HAS_USER";
 	public static final String HAS_GROUP = "HAS_GROUP";
 	public static final String HAS_ROLE = "HAS_ROLE";
-	//public static final String HAS_SUB_GROUP = "HAS_SUB_GROUP";
 
 	//Tags
 	public static final String HAS_TAG_ROOT = "HAS_TAG_ROOT";
@@ -40,5 +39,9 @@ public class BasicRelationships {
 	public static final String HAS_OBJECT_SCHEMA = "HAS_OBJECT_SCHEMA";
 	public static final String HAS_MICRO_SCHEMA_ROOT = "HAS_MICRO_SCHEMA_ROOT";
 	public static final String HAS_PROPERTY_TYPE_SCHEMA = "HAS_PROPERTY_TYPE_SCHEMA";
+	public static final String HAS_ROLE_ROOT = "HAS_ROLE_ROOT";
+	public static final String HAS_USER_ROOT = "HAS_USER_ROOT";
+	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";
+	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 
 }

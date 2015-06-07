@@ -2,7 +2,12 @@ package com.gentics.mesh.core.data.model.generic;
 
 import java.io.Serializable;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
+
+import com.gentics.mesh.core.data.model.tinkerpop.TPAbstractPersistable;
+import com.tinkerpop.blueprints.Vertex;
 
 /**
  * Abstract class for all node entities.
@@ -12,6 +17,9 @@ import org.springframework.data.neo4j.annotation.GraphId;
  */
 public abstract class AbstractPersistable implements Serializable {
 	private static final long serialVersionUID = -3244769429406745303L;
+
+	@Autowired
+	protected Neo4jTemplate neo4jTemplate;
 
 	/**
 	 * The mandatory neo4j graph id for this object.

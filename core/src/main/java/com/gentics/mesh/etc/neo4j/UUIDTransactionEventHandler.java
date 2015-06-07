@@ -73,7 +73,7 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 		for (PropertyContainer propertyContainer : propertyContainers) {
 			if (!propertyContainer.hasProperty(UUID_PROPERTY_NAME)) {
 
-				propertyContainer.setProperty(UUID_PROPERTY_NAME, UUIDUtil.getUUID());
+				propertyContainer.setProperty(UUID_PROPERTY_NAME, UUIDUtil.randomUUID());
 				// index.add(propertyContainer, UUID_PROPERTY_NAME, uuidAsString);
 			}
 		}

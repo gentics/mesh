@@ -98,8 +98,8 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 			// TODO handle path by config setting
 			// TODO check for admin role
 				File backupPath = new File("/tmp/backup");
-				OnlineBackup backup = OnlineBackup.from("127.0.0.1");
-				backup.backup(backupPath.getAbsolutePath());
+//				OnlineBackup backup = OnlineBackup.from("127.0.0.1");
+//				backup.backup(backupPath.getAbsolutePath());
 				log.info("Backup completed");
 			});
 

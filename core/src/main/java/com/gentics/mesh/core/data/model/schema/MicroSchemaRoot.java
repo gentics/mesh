@@ -10,6 +10,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.tinkerpop.TPObjectSchema;
 
 @NodeEntity
 public class MicroSchemaRoot extends AbstractPersistable {
@@ -17,7 +18,7 @@ public class MicroSchemaRoot extends AbstractPersistable {
 	private static final long serialVersionUID = 3219647773178647366L;
 
 	@RelatedTo(type = BasicRelationships.HAS_OBJECT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
-	private Set<ObjectSchema> schemas = new HashSet<>();
+	private Set<TPObjectSchema> schemas = new HashSet<>();
 
 	@Indexed(unique = true)
 	private String unique = MicroSchemaRoot.class.getSimpleName();
@@ -25,7 +26,8 @@ public class MicroSchemaRoot extends AbstractPersistable {
 	public MicroSchemaRoot() {
 	}
 
-	public Set<ObjectSchema> getSchemas() {
+	public Iterable<TPObjectSchema> getSchemas() {
 		return schemas;
 	}
+
 }

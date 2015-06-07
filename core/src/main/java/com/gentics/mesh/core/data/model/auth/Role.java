@@ -10,6 +10,8 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.tinkerpop.TPGroup;
+import com.gentics.mesh.core.data.model.tinkerpop.TPRole;
 
 @NodeEntity
 public class Role extends GenericNode {

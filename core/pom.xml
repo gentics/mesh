@@ -26,6 +26,29 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.tinkerpop.blueprints</groupId>
+			<artifactId>blueprints-neo4j2-graph</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>neo4j</artifactId>
+					<groupId>org.neo4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>neo4j-ha</artifactId>
+					<groupId>org.neo4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>neo4j-management</artifactId>
+					<groupId>org.neo4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.tinkerpop</groupId>
+			<artifactId>frames</artifactId>
+		</dependency>
+
 		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
