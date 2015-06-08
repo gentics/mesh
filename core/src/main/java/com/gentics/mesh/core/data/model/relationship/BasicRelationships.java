@@ -4,10 +4,6 @@ import org.neo4j.graphdb.RelationshipType;
 
 public class BasicRelationships {
 
-	public static enum TYPES implements RelationshipType {
-		LINKED, HAS_TAG, ASSIGNED_TO_PROJECT, HAS_USER, HAS_PROJECT, HAS_I18N_PROPERTIES, HAS_NODE, HAS_PARENT_NODE
-	}
-
 	// Project
 	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
 	public static final String HAS_PROJECT = "HAS_PROJECT";

@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
@@ -34,7 +33,7 @@ public class MeshNodeTest extends AbstractDBTest {
 	public void testPageLinks() {
 		MeshNode content = nodeService.create();
 		MeshNode content2 = nodeService.create();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 
 			nodeService.setContent(content, data().getEnglish(), "english content");
 			nodeService.setName(content, data().getEnglish(), "english.html");
@@ -43,8 +42,8 @@ public class MeshNodeTest extends AbstractDBTest {
 			nodeService.setContent(content2, data().getEnglish(), "english2 content");
 			nodeService.setName(content2, data().getEnglish(), "english2.html");
 			nodeService.save(content2);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		nodeService.createLink(content, content2);
 
 		// TODO verify that link relation has been created
@@ -56,21 +55,21 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode newsNode = data().getContent("news overview");
 		assertNotNull(newsNode);
 		MeshNode newSubNode;
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			newSubNode = nodeService.create();
 			newSubNode.setParentNode(newsNode);
 			nodeService.save(newSubNode);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			newsNode = nodeService.reload(newsNode);
 			assertEquals(1, count(newsNode.getChildren()));
 			MeshNode firstChild = newsNode.getChildren().iterator().next();
 //			neo4jTemplate.fetch(firstChild);
 			assertEquals(newSubNode.getUuid(), firstChild.getUuid());
-			tx.success();
-		}
+//			tx.success();
+//		}
 	}
 
 	@Test
@@ -81,7 +80,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		Tag carTag = data().getTag("car");
 		assertNotNull(carTag);
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 
 			newsNode.addTag(carTag);
 			nodeService.save(newsNode);
@@ -93,26 +92,26 @@ public class MeshNodeTest extends AbstractDBTest {
 			Tag firstTag = newsNode.getTags().iterator().next();
 //			neo4jTemplate.fetch(firstTag);
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
-			tx.success();
-		}
+//			tx.success();
+//		}
 	}
 
 	@Test
 	public void testCreateNode() {
 		MeshNode node = nodeService.create();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setContent(node, data().getEnglish(), "english content");
 			nodeService.setName(node, data().getEnglish(), "english.html");
 			node = nodeService.save(node);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		node = nodeService.reload(node);
 		assertNotNull(node.getUuid());
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			String text = nodeService.getContent(node, data().getEnglish());
 			assertNotNull(text);
-			tx.success();
-		}
+//			tx.success();
+//		}
 	}
 
 	@Test

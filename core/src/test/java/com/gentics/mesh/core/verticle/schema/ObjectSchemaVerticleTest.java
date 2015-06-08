@@ -113,7 +113,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllSchemaList() throws Exception {
 		final int nSchemas = 22;
 		ObjectSchema noPermSchema = objectSchemaService.create("no_perm_schema");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			for (int i = 0; i < nSchemas; i++) {
 				ObjectSchema extraSchema = objectSchemaService.create("extra_schema_" + i);
 				extraSchema = objectSchemaService.save(extraSchema);
@@ -121,8 +121,8 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 			}
 			// Don't grant permissions to no perm schema
 			noPermSchema = objectSchemaService.save(noPermSchema);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
@@ -184,13 +184,13 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testReadSchemaByUUIDWithNoPerm() throws Exception {
 		ObjectSchema schema = data().getSchema("content");
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(info.getRole(), schema, PermissionType.DELETE);
 			roleService.addPermission(info.getRole(), schema, PermissionType.UPDATE);
 			roleService.addPermission(info.getRole(), schema, PermissionType.CREATE);
 			roleService.revokePermission(info.getRole(), schema, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, schema.getUuid());
@@ -267,17 +267,17 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		ObjectSchema schema = data().getSchema("content");
 
 		Project extraProject = projectService.create("extraProject");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraProject = projectService.save(extraProject);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		// Add only read perms
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
 			roleService.addPermission(info.getRole(), extraProject, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
@@ -295,13 +295,13 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 
 		Project extraProject = projectService.create("extraProject");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraProject = projectService.save(extraProject);
 			// Add only read perms
 			roleService.addPermission(info.getRole(), schema, PermissionType.READ);
 			roleService.addPermission(info.getRole(), project, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 403,
 				"Forbidden");
@@ -318,11 +318,11 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
 		ObjectSchema schema = data().getSchema("content");
 		Project project = data().getProject();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			//project = neo4jTemplate.fetch(project);
 			assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 200, "OK");
 		ObjectSchemaResponse restSchema = JsonUtils.readValue(response, ObjectSchemaResponse.class);
@@ -344,10 +344,10 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 
 		// Revoke update perms on the project
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), project, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, project.getUuid());

@@ -40,10 +40,10 @@ public class UserTest extends AbstractDBTest {
 		user.setLastname(LASTNAME);
 		user.setPasswordHash(PASSWDHASH);
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			user = userService.save(user);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		User reloadedUser = userService.findOne(user.getId());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
@@ -62,11 +62,11 @@ public class UserTest extends AbstractDBTest {
 	public void testUserRoot() {
 		int nUserBefore = count(userService.findRoot().getUsers());
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			User user = userService.create("dummy12345");
 			user = userService.save(user);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		int nUserAfter = count(userService.findRoot().getUsers());
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
@@ -77,13 +77,13 @@ public class UserTest extends AbstractDBTest {
 	public void testFindUsersOfGroup() {
 
 		User extraUser = userService.create("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			info.getGroup().addUser(extraUser);
 			groupService.save(info.getGroup());
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		RoutingContext rc = getMockedRoutingContext("");
 		Page<User> userPage = userService.findByGroup(rc, info.getGroup(), new PagingInfo(1, 10));

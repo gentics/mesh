@@ -21,8 +21,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
-import com.gentics.mesh.auth.Neo4jAuthorizingRealm;
-import com.gentics.mesh.etc.neo4j.UUIDTransactionEventHandler;
+import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -48,7 +47,7 @@ public class SpringTestConfiguration {
 		builder.setConfig(OnlineBackupSettings.online_backup_enabled, "false");
 		GraphDatabaseService graphService = builder.newGraphDatabase();
 
-		graphService.registerTransactionEventHandler(new UUIDTransactionEventHandler(graphService));
+//		graphService.registerTransactionEventHandler(new UUIDTransactionEventHandler(graphService));
 
 		Neo4jGraphVerticle.setService(new GraphService() {
 
@@ -76,8 +75,8 @@ public class SpringTestConfiguration {
 	}
 
 	@Bean
-	public Neo4jAuthorizingRealm customSecurityRealm() {
-		Neo4jAuthorizingRealm realm = new Neo4jAuthorizingRealm();
+	public GraphBackedAuthorizingRealm customSecurityRealm() {
+		GraphBackedAuthorizingRealm realm = new GraphBackedAuthorizingRealm();
 		realm.setCacheManager(new MemoryConstrainedCacheManager());
 		// Disable caching for testing
 		realm.setAuthenticationCachingEnabled(false);

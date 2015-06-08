@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
@@ -27,21 +26,21 @@ public class GroupTest extends AbstractDBTest {
 	public void testUserGroup() {
 		User user = userService.create("testuser");
 		Group group = groupService.create("test group");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			group.addUser(user);
 			group = groupService.save(group);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		group = groupService.reload(group);
 		assertEquals("The group should contain one member.", 1, count(group.getUsers()));
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			User userOfGroup = group.getUsers().iterator().next();
 			//			neo4jTemplate.fetch(userOfGroup);
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
-			tx.success();
-		}
+//			tx.success();
+//		}
 	}
 
 	@Test
@@ -49,10 +48,10 @@ public class GroupTest extends AbstractDBTest {
 		int nGroupsBefore = count(groupService.findRoot().getGroups());
 
 		Group group = groupService.create("test group2");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			groupService.save(group);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		int nGroupsAfter = count(groupService.findRoot().getGroups());
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);

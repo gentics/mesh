@@ -54,18 +54,18 @@ public class TagTest extends AbstractDBTest {
 
 		Tag tag = tagService.create();
 		tagService.setDisplayName(tag, german, GERMAN_NAME);
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			tag = tagService.save(tag);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		assertNotNull(tag.getId());
 		tag = tagService.findOne(tag.getId());
 		assertNotNull("The folder could not be found.", tag);
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			String name = tagService.getDisplayName(tag, german);
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			tx.success();
-		}
+//			tx.success();
+//		}
 	}
 
 	@Test
@@ -83,10 +83,10 @@ public class TagTest extends AbstractDBTest {
 		Language english = languageService.findByLanguageTag("en");
 
 		tagService.setDisplayName(tag, english, ENGLISH_NAME);
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			tag = tagService.save(tag);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		tag = tagService.findOne(tag.getId());
 		assertNotNull(tag);
 
@@ -95,7 +95,7 @@ public class TagTest extends AbstractDBTest {
 
 		Language german = languageService.findByLanguageTag("de");
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setDisplayName(node, german, GERMAN_TEST_FILENAME);
 			nodeService.setName(node, german, "german node name");
 			tag = tagService.save(tag);
@@ -103,11 +103,11 @@ public class TagTest extends AbstractDBTest {
 			// Assign the tag to the node
 			node.addTag(tag);
 			node = nodeService.save(node);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		// Reload the tag and check whether the content was set
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 
 			tag = tagService.reload(tag);
 
@@ -122,8 +122,8 @@ public class TagTest extends AbstractDBTest {
 			tag.removeNode(contentFromTag);
 			//TODO verify for removed node
 			tag = tagService.save(tag);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		tag = tagService.reload(tag);
 		assertEquals("The tag should not have any file.", 0, count(tag.getNodes()));
 

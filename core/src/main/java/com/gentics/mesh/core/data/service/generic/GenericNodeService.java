@@ -26,6 +26,4 @@ public interface GenericNodeService<T extends GenericNode> {
 
 	public T reload(T node);
 
-	public T projectTo(Node node, Class<T> clazz);
-
 }

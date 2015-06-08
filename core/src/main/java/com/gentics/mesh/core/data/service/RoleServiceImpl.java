@@ -6,9 +6,6 @@ import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,7 +28,11 @@ import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.frames.FramedGraph;
 
 @Component
 public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements RoleService {
@@ -40,7 +41,8 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	private RoleService roleService;
 
 	@Autowired
-	private GraphDatabaseService graphDb;
+	protected FramedGraph<? extends TransactionalGraph> framedGraph;
+
 
 	@Autowired
 	PermissionService permissionService;
@@ -129,24 +131,26 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		//		Node userNode = neo4jTemplate.getPersistentState(user);
 		Vertex userNode = user.asVertex();
 		Set<Role> roles = new HashSet<>();
-		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-				.traverse(userNode).relationships()) {
-
-			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
-				// Check whether this relation in fact targets our object we want to check
-				boolean matchesTargetNode = rel.getEndNode().getId() == meshPermission.getTargetNode().getId();
-				if (matchesTargetNode) {
-					// Convert the api relationship to a SDN relationship
-					GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
-					if (meshPermission.implies(perm) == true) {
-						// This permission is permitting. Add it to the list of roles
-						roles.add(perm.getRole());
-					}
-				}
-			}
-		}
+		
+		//TODO use core blueprint api or gremlin traversal?
+//		for (Edge rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUT)
+//				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.IN)
+//				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUT).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+//				.traverse(userNode).relationships()) {
+//
+//			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getLabel())) {
+//				// Check whether this relation in fact targets our object we want to check
+//				boolean matchesTargetNode = rel.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == meshPermission.getTargetNode().getId();
+//				if (matchesTargetNode) {
+//					// Convert the api relationship to a framed edge
+//					GraphPermission perm = framedGraph.frame(rel, GraphPermission.class);
+//					if (meshPermission.implies(perm) == true) {
+//						// This permission is permitting. Add it to the list of roles
+//						roles.add(perm.getRole());
+//					}
+//				}
+//			}
+//		}
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : roles) {

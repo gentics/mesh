@@ -30,8 +30,6 @@ import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
@@ -123,7 +121,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 								 * collect those keys
 								 */
 								Set<String> keysToBeRemoved = new HashSet<>();
-								for (String i18nKey : i18nProperties.getProperties().getPropertyKeys()) {
+								for (String i18nKey : i18nProperties.getProperties().keySet()) {
 									if (!properties.containsKey(i18nKey)) {
 										keysToBeRemoved.add(i18nKey);
 									}

@@ -139,10 +139,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
 		// Revoke create perm
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), data().getFolder("news"), PermissionType.CREATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
@@ -175,11 +175,11 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 		MeshNode noPermNode = nodeService.create();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			noPermNode.setCreator(info.getUser());
 			noPermNode = nodeService.save(noPermNode);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		// noPermNode = nodeService.reload(noPermNode);
 		assertNotNull(noPermNode.getUuid());
 
@@ -282,10 +282,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
 		MeshNode node = data().getFolder("2015");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), node, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
 	}
@@ -350,13 +350,13 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(newNode, restNode.getProperty("en", "content"));
 
 		// Reload and update
-		try (Transaction tx = graphDb.beginTx()) {
-			node = nodeService.reload(node);
+//		try (Transaction tx = graphDb.beginTx()) {
+//			node = nodeService.reload(node);
 			assertEquals(newFilename, nodeService.getDisplayName(node, data().getEnglish()));
 			assertEquals(newName, nodeService.getName(node, data().getEnglish()));
 			assertEquals(newNode, nodeService.getContent(node, data().getEnglish()));
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 	}
 
@@ -375,10 +375,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteNodeWithNoPerm() throws Exception {
 
 		MeshNode node = data().getFolder("2015");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), node, PermissionType.DELETE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());

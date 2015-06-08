@@ -45,11 +45,11 @@ public class ProjectTest extends AbstractDBTest {
 	public void testProjectRootNode() {
 		int nProjectsBefore = count(projectService.findRoot().getProjects());
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			Project project = projectService.create("test1234556");
 			projectService.save(project);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		int nProjectsAfter = count(projectService.findRoot().getProjects());
 		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}

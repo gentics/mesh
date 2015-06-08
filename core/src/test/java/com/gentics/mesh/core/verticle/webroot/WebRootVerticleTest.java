@@ -64,10 +64,10 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		String englishPath = "News/2015";
 		MeshNode newsFolder = data().getFolder("2015");
 		System.out.println(newsFolder.getUuid());
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), newsFolder, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, newsFolder.getUuid());

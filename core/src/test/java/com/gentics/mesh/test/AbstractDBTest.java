@@ -10,10 +10,6 @@ import io.vertx.ext.apex.Session;
 import java.io.IOException;
 
 import org.junit.runner.RunWith;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -31,6 +27,10 @@ import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.RestAssert;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.frames.FramedGraph;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -49,7 +49,7 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected GraphDatabaseService graphDb;
+	protected FramedGraph<? extends TransactionalGraph> framedGraph;
 
 	@Autowired
 	protected UserVerticle userVerticle;
@@ -71,10 +71,10 @@ public abstract class AbstractDBTest {
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException {
 		purgeDatabase();
-		try (Transaction tx = graphDb.beginTx()) {
-			dataProvider.setup(1);
-			tx.success();
-		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		dataProvider.setup(1);
+		//			tx.success();
+		//		}
 	}
 
 	public DemoDataProvider data() {
@@ -82,15 +82,16 @@ public abstract class AbstractDBTest {
 	}
 
 	protected void purgeDatabase() {
-		try (Transaction tx = graphDb.beginTx()) {
-			for (Node node : graphDb.getAllNodes()) {
-				for (Relationship rel : node.getRelationships()) {
-					rel.delete();
-				}
-				node.delete();
-			}
-			tx.success();
+		//		try (Transaction tx = graphDb.beginTx()) {
+
+		for (Edge edge : framedGraph.getEdges()) {
+			edge.remove();
 		}
+		for (Vertex vertex : framedGraph.getVertices()) {
+			vertex.remove();
+		}
+		//			tx.success();
+		//		}
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {

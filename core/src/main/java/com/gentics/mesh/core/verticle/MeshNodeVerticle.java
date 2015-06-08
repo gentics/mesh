@@ -235,15 +235,15 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 			vertx.executeBlocking((Future<NodeListResponse> bch) -> {
 				NodeListResponse listResponse = new NodeListResponse();
-				try (Transaction tx = graphDb.beginTx()) {
+//				try (Transaction tx = graphDb.beginTx()) {
 					Page<MeshNode> contentPage = nodeService.findAll(rc, projectName, languageTags, pagingInfo);
 					for (MeshNode content : contentPage) {
 						listResponse.getData().add(nodeService.transformToRest(rc, content));
 					}
 					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 					bch.complete(listResponse);
-					tx.success();
-				}
+//					tx.success();
+//				}
 			}, arh -> {
 				if (arh.failed()) {
 					rc.fail(arh.cause());

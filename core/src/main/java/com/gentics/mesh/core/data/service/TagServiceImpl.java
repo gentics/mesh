@@ -5,7 +5,6 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +41,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	private GraphDatabaseService graphDb;
-
-	@Autowired
 	private UserService userService;
 	
 
@@ -59,7 +55,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		TransformationInfo info = new TransformationInfo(rc);
 		info.setUserService(userService);
 		info.setLanguageService(languageService);
-		info.setGraphDb(graphDb);
 		info.setContentService(nodeService);
 		info.setSpringConfiguration(springConfiguration);
 		info.setTagService(this);

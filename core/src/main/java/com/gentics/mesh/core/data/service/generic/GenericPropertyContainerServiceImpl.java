@@ -82,7 +82,7 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 			//			translation = neo4jTemplate.fetch(translation);
 			if (translation.getLanguageTag().equalsIgnoreCase(language.getLanguageTag())) {
 				//				I18NProperties i18nProperties = neo4jTemplate.fetch(translation.getI18NProperties());
-				return i18nProperties.getProperty(key);
+				return translation.getI18NProperties().getProperty(key);
 			}
 		}
 		return null;

@@ -7,10 +7,6 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.StringUtils;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +16,9 @@ import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 @Component
 public class WebRootServiceImpl implements WebRootService {
@@ -40,7 +39,8 @@ public class WebRootServiceImpl implements WebRootService {
 		Path nodePath = new Path();
 
 		// Traverse the graph and buildup the result path while doing so
-		Node currentNode = neo4jTemplate.getPersistentState(project.getRootNode());
+		Vertex currentVertex = project.getRootNode().asVertex();
+		//		Node currentNode = neo4jTemplate.getPersistentState(project.getRootNode());
 		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i];
 
@@ -49,9 +49,9 @@ public class WebRootServiceImpl implements WebRootService {
 			if (log.isDebugEnabled()) {
 				log.debug("Looking for path segment {" + part + "}");
 			}
-			Node nextNode = addPathSegment(nodePath, currentNode, part, isLastSegment);
+			Vertex nextNode = addPathSegment(nodePath, currentVertex, part, isLastSegment);
 			if (nextNode != null) {
-				currentNode = nextNode;
+				currentVertex = nextNode;
 			} else {
 				String message = i18nService.get(rc, "node_not_found_for_path", path);
 				throw new EntityNotFoundException(message);
@@ -74,17 +74,15 @@ public class WebRootServiceImpl implements WebRootService {
 	 * @param isLastSegment
 	 * @return Found node or null if no node could be found
 	 */
-	private Node addPathSegment(Path path, Node node, String i18nTagName, boolean isLastSegment) {
+	private Vertex addPathSegment(Path path, Vertex node, String i18nTagName, boolean isLastSegment) {
 		if (node == null) {
 			return null;
 		}
-		AtomicReference<Node> foundNode = new AtomicReference<>();
+		AtomicReference<Vertex> foundNode = new AtomicReference<>();
 		// TODO i wonder whether streams are useful in this case. We need to benchmark this section
 
-		RelationshipType targetRelationship = BasicRelationships.TYPES.HAS_PARENT_NODE;
-
-		for (Relationship rel : node.getRelationships(targetRelationship, Direction.INCOMING)) {
-			Node nextHop = rel.getStartNode();
+		for (Edge rel : node.getEdges(Direction.IN, BasicRelationships.HAS_PARENT_NODE)) {
+			Vertex nextHop = rel.getVertex(Direction.IN);
 			String languageTag = getI18nPropertyLanguageTag(nextHop, ObjectSchema.NAME_KEYWORD, i18nTagName);
 			if (languageTag != null) {
 				foundNode.set(nextHop);
@@ -104,16 +102,16 @@ public class WebRootServiceImpl implements WebRootService {
 	 * @param value
 	 * @return The found language tag, otherwise null
 	 */
-	private String getI18nPropertyLanguageTag(Node node, String key, String value) {
+	private String getI18nPropertyLanguageTag(Vertex node, String key, String value) {
 		if (StringUtils.isEmpty(key)) {
 			return null;
 		}
 		key = "properties-" + key;
-		for (Relationship rel : node.getRelationships(BasicRelationships.TYPES.HAS_I18N_PROPERTIES, Direction.OUTGOING)) {
+		for (Edge rel : node.getEdges(Direction.OUT, BasicRelationships.HAS_I18N_PROPERTIES)) {
 			String languageTag = (String) rel.getProperty("languageTag");
-			Node i18nPropertiesNode = rel.getEndNode();
-			if (i18nPropertiesNode.hasProperty(key)) {
-				String i18nValue = (String) i18nPropertiesNode.getProperty(key);
+			Vertex i18nPropertiesNode = rel.getVertex(Direction.OUT);
+			String i18nValue  = i18nPropertiesNode.getProperty(key);
+			if (i18nValue !=null) {
 				if (i18nValue.equals(value)) {
 					return languageTag;
 				}
@@ -273,9 +271,9 @@ public class WebRootServiceImpl implements WebRootService {
 	 * @param name
 	 * @return
 	 */
-	private Node findSubTagWithName(Node rootTag, String name) {
-		for (Relationship rel : rootTag.getRelationships(BasicRelationships.TYPES.HAS_TAG, Direction.OUTGOING)) {
-			Node endNode = rel.getEndNode();
+	private Vertex findSubTagWithName(Vertex rootTag, String name) {
+		for (Edge edge : rootTag.getEdges(Direction.OUT, BasicRelationships.HAS_TAG)) {
+			Vertex endNode = edge.getVertex(Direction.OUT);
 			if (endNode != null && hasNodeI18NProperty(endNode, "name", name)) {
 				return endNode;
 			}
@@ -295,9 +293,9 @@ public class WebRootServiceImpl implements WebRootService {
 	 *            property value
 	 * @return true when the property could be found. Otherwise false.
 	 */
-	private boolean hasNodeI18NProperty(Node node, String key, String value) {
-		for (Relationship rel : node.getRelationships(BasicRelationships.TYPES.HAS_I18N_PROPERTIES, Direction.OUTGOING)) {
-			if (rel.getEndNode() != null && value.equals(rel.getEndNode().getProperty("properties-" + key))) {
+	private boolean hasNodeI18NProperty(Vertex node, String key, String value) {
+		for (Edge rel : node.getEdges(Direction.OUT, BasicRelationships.HAS_I18N_PROPERTIES)) {
+			if (rel.getVertex(Direction.OUT) != null && value.equals(rel.getVertex(Direction.OUT).getProperty("properties-" + key))) {
 				return true;
 			}
 		}

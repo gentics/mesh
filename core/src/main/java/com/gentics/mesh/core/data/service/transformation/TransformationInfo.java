@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -23,7 +21,6 @@ public class TransformationInfo {
 
 	private UserService userService;
 	private LanguageService languageService;
-	private GraphDatabaseService graphDb;
 	private TagService tagService;
 	private MeshSpringConfiguration springConfiguration;
 	private MeshNodeService contentService;
@@ -89,14 +86,6 @@ public class TransformationInfo {
 
 	public void setUserService(UserService userService) {
 		this.userService = userService;
-	}
-
-	public GraphDatabaseService getGraphDb() {
-		return graphDb;
-	}
-
-	public void setGraphDb(GraphDatabaseService graphDb) {
-		this.graphDb = graphDb;
 	}
 
 	public MeshNodeService getContentService() {

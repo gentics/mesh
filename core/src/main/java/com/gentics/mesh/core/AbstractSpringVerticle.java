@@ -2,7 +2,6 @@ package com.gentics.mesh.core;
 
 import io.vertx.core.AbstractVerticle;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.service.GroupService;
@@ -19,10 +18,15 @@ import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
+import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.frames.FramedGraph;
 
 public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	public abstract void start() throws Exception;
+
+	@Autowired
+	protected FramedGraph<? extends TransactionalGraph> framedGraph;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfiguration;
@@ -38,9 +42,6 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	@Autowired
 	protected I18NService i18n;
-
-	@Autowired
-	protected GraphDatabaseService graphDb;
 
 	@Autowired
 	protected UserService userService;
@@ -68,7 +69,6 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	@Autowired
 	protected I18NPropertyService i18nPropertyService;
-
 
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;

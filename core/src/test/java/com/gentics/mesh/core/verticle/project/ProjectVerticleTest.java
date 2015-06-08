@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -95,7 +94,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		final int nProjects = 142;
 		Project noPermProject;
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			for (int i = 0; i < nProjects; i++) {
 				Project extraProject = projectService.create("extra_project_" + i);
 				extraProject.setRootNode(data().getProject().getRootNode());
@@ -104,8 +103,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 			}
 			noPermProject = projectService.create("no_perm_project");
 			noPermProject = projectService.save(noPermProject);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		// Don't grant permissions to no perm project
 
@@ -181,10 +180,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), project, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
@@ -214,11 +213,11 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateProjectWithNoPerm() throws JsonProcessingException, Exception {
 		Project project = data().getProject();
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(info.getRole(), project, PermissionType.READ);
 			roleService.revokePermission(info.getRole(), project, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
@@ -250,10 +249,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteProjectByUUIDWithNoPermission() throws Exception {
 		Project project = data().getProject();
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), project, PermissionType.DELETE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, project.getUuid());

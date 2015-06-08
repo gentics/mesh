@@ -23,6 +23,7 @@ import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 import com.gentics.mesh.util.JsonUtils;
+import com.tinkerpop.frames.structures.FramedVertexSet;
 
 public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
@@ -143,6 +144,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
 
 		node = nodeService.reload(node);
+		FramedVertexSet<Tag> tagSet = new FramedVertexSet<>(framedGraph, node.getTags(), Tag.class);
 		assertTrue("The tag should not have been removed from the node", node.getTags().contains(tag));
 	}
 

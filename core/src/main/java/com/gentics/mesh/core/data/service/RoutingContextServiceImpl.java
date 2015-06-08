@@ -19,8 +19,6 @@ import java.util.Map;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,9 +42,6 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 
 	@Autowired
 	private MeshSpringConfiguration configuration;
-
-	@Autowired
-	private GraphDatabaseService graphDb;
 
 	@Autowired
 	private GenericNodeService<GenericNode> genericNodeService;
@@ -218,10 +213,10 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 			} else {
 				try {
 					if (resultHandler != null) {
-						try (Transaction tx = graphDb.beginTx()) {
+//						try (Transaction tx = graphDb.beginTx()) {
 							resultHandler.handle(res);
-							tx.success();
-						}
+//							tx.success();
+//						}
 					}
 					if (transactionCompletedHandler != null) {
 						AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
@@ -288,10 +283,10 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 				AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
 				transactionCompletedHandler.handle(transactionCompletedFuture);
 			} else {
-				try (Transaction tx = graphDb.beginTx()) {
+//				try (Transaction tx = graphDb.beginTx()) {
 					resultHandler.handle(Future.succeededFuture(handler.result()));
-					tx.success();
-				}
+//					tx.success();
+//				}
 				if (transactionCompletedHandler != null) {
 					AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
 					transactionCompletedHandler.handle(transactionCompletedFuture);

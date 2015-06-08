@@ -26,7 +26,7 @@ public class NodeTraversalConsumer implements Consumer<MeshNode> {
 
 	@Override
 	public void accept(MeshNode content) {
-		try (Transaction tx = info.getGraphDb().beginTx()) {
+//		try (Transaction tx = info.getGraphDb().beginTx()) {
 //			String currentUuid = content.getUuid();
 //			info.getRoutingContext()
 //					.session()
@@ -51,7 +51,7 @@ public class NodeTraversalConsumer implements Consumer<MeshNode> {
 //								}
 //							});
 //			tx.success();
-		}
+//		}
 
 	}
 }

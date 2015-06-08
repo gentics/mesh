@@ -1,15 +1,15 @@
 package com.gentics.mesh.path;
 
-import org.neo4j.graphdb.Node;
+import com.tinkerpop.blueprints.Vertex;
 
 public class PathSegment {
 
-	private Node node;
+	private Vertex vertex;
 
 	private String languageTag;
 
-	public PathSegment(Node node, String languageTag) {
-		this.node = node;
+	public PathSegment(Vertex vertex, String languageTag) {
+		this.vertex = vertex;
 		this.languageTag = languageTag;
 	}
 
@@ -17,8 +17,8 @@ public class PathSegment {
 		return languageTag;
 	}
 
-	public Node getNode() {
-		return node;
+	public Vertex getVertex() {
+		return vertex;
 	}
 
 }

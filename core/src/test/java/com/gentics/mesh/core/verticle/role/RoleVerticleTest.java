@@ -81,11 +81,11 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setGroupUuid(info.getGroup().getUuid());
 
 		// Add needed permission to group
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
 			// roleService.revokePermission(info.getRole(), data().getMeshRoot().getRoleRoot(), PermissionType.CREATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String requestJson = JsonUtils.toJson(request);
 		String response = request(info, HttpMethod.POST, "/api/v1/roles/", 403, "Forbidden", requestJson);
@@ -138,18 +138,18 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		UserInfo info = data().getUserInfo();
 
 		Role extraRole = roleService.create("extra role");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraRole = roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
 			groupService.save(info.getGroup());
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
 		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
@@ -162,7 +162,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		UserInfo info = data().getUserInfo();
 
 		Role extraRole = roleService.create("extra role");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraRole = roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
 			groupService.save(info.getGroup());
@@ -170,8 +170,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 			// Revoke read permission from the role
 			roleService.revokePermission(info.getRole(), extraRole, PermissionType.READ);
 
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 
@@ -196,7 +196,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		Role noPermRole = roleService.create("no_perm_role");
 		final int nRoles = 21;
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 
 			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.READ);
 
@@ -212,8 +212,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 			// Role with no permission
 			noPermRole = roleService.save(noPermRole);
 			info.getGroup().addRole(noPermRole);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/roles/", 200, "OK");
 		RoleListResponse restResponse = JsonUtils.readValue(response, RoleListResponse.class);
@@ -272,12 +272,12 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		Role extraRole = roleService.create("extra role");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
 			roleService.addPermission(info.getRole(), extraRole, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 		request.setUuid(extraRole.getUuid());
@@ -314,12 +314,12 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteRoleByUUID() throws Exception {
 		Role extraRole = roleService.create("extra role");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
 			roleService.addPermission(info.getRole(), extraRole, PermissionType.DELETE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
 		expectMessageResponse("role_deleted", response, extraRole.getUuid());

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
@@ -56,10 +55,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 		String requestJson = JsonUtils.toJson(request);
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.addPermission(info.getRole(), data().getMeshRoot().getGroupRoot(), PermissionType.CREATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 200, "OK", requestJson);
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
@@ -111,12 +110,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String requestJson = JsonUtils.toJson(request);
 
 		GroupRoot root;
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			root = data().getMeshRoot().getGroupRoot();
 //			root = neo4jTemplate.fetch(root);
 			roleService.revokePermission(info.getRole(), root, PermissionType.CREATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
 				userService.isPermitted(info.getUser().getId(), new TPMeshPermission(root, PermissionType.CREATE)));
@@ -135,7 +134,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		// Create and save some groups
 		final int nGroups = 21;
 		Group extraGroupWithNoPerm = groupService.create("no_perm_group");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 
 			for (int i = 0; i < nGroups; i++) {
 				Group group = groupService.create("group_" + i);
@@ -144,8 +143,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			}
 			// Don't grant permissions to extra group
 			extraGroupWithNoPerm = groupService.save(extraGroupWithNoPerm);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		int totalGroups = nGroups + data().getGroups().size();
 
@@ -209,10 +208,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testReadGroupByUUIDWithNoPermission() throws Exception {
 		Group group = info.getGroup();
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), group, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
@@ -320,10 +319,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(group.getUuid());
 
 		// Don't allow delete
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), group, PermissionType.DELETE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());

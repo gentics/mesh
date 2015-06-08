@@ -71,24 +71,25 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				PathSegment lastSegment = nodePath.getLast();
 
 				if (lastSegment != null) {
-					try (Transaction tx = graphDb.beginTx()) {
-						MeshNode node = nodeService.projectTo(lastSegment.getNode(), MeshNode.class);
-						if (node == null) {
-							String message = i18n.get(rc, "node_not_found_for_path", path);
-							throw new EntityNotFoundException(message);
-						}
+					//					try (Transaction tx = graphDb.beginTx()) {
 
-						rc.session().hasPermission(new TPMeshPermission(node, PermissionType.READ).toString(), rh -> {
-							languageTags.add(lastSegment.getLanguageTag());
-							if (rh.result()) {
-								bch.complete(node);
-							} else {
-								bch.fail(new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm", node.getUuid())));
-							}
-						});
-
-						tx.success();
+					MeshNode node = framedGraph.frame(lastSegment.getVertex(), MeshNode.class);
+					if (node == null) {
+						String message = i18n.get(rc, "node_not_found_for_path", path);
+						throw new EntityNotFoundException(message);
 					}
+
+					rc.session().hasPermission(new TPMeshPermission(node, PermissionType.READ).toString(), rh -> {
+						languageTags.add(lastSegment.getLanguageTag());
+						if (rh.result()) {
+							bch.complete(node);
+						} else {
+							bch.fail(new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm", node.getUuid())));
+						}
+					});
+
+					//						tx.success();
+					//					}
 				} else {
 					throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
 				}

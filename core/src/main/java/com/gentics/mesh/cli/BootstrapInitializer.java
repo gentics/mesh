@@ -15,7 +15,6 @@ import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -94,9 +93,6 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
-
-	@Autowired
-	private GraphDatabaseService graphDb;
 
 	@Autowired
 	private RouterStorage routerStorage;
@@ -179,18 +175,18 @@ public class BootstrapInitializer {
 			joinCluster();
 		}
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			initMandatoryData();
-			tx.success();
-		}
+//			tx.success();
+//		}
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(springConfiguration.vertx());
 		}
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			initProjects();
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 	}
 

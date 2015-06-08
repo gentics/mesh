@@ -15,9 +15,6 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.auth.PermissionType;
@@ -27,10 +24,13 @@ import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.frames.FramedGraph;
 
-public class Neo4jAuthorizingRealm extends AuthorizingRealm {
+public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 
-	private static final Logger log = LoggerFactory.getLogger(Neo4jAuthorizingRealm.class);
+	private static final Logger log = LoggerFactory.getLogger(GraphBackedAuthorizingRealm.class);
 
 	@Autowired
 	private MeshSpringConfiguration securityConfig;
@@ -38,9 +38,8 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	@Autowired
 	private UserService userService;
 
-
 	@Autowired
-	private GraphDatabaseService graphDb;
+	private FramedGraph<? extends TransactionalGraph> framedGraph;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -57,18 +56,18 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 				String permName = perm.substring(mid + 1, perm.length() - 1);
 				Long userId = (Long) principals.getPrimaryPrincipal();
 				boolean permitted = false;
-				try (Transaction tx = graphDb.beginTx()) {
+//				try (Transaction tx = graphDb.beginTx()) {
 					try {
-						Node node = neo4jTemplate.getNode(Long.valueOf(targetId));
-						GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
+						Vertex node = framedGraph.getVertex(Long.valueOf(targetId));
+						GenericNode framedNode = framedGraph.frame(node, GenericNode.class);
 						PermissionType type = PermissionType.fromString(permName);
-						permitted = userService.isPermitted(userId, new TPMeshPermission(sdnNode, type));
+						permitted = userService.isPermitted(userId, new TPMeshPermission(framedNode, type));
 					} catch (Exception e) {
-						tx.failure();
+//						tx.failure();
 						throw new HttpStatusCodeErrorException(500, "Error while checking permission for user {" + userId + "}", e);
 					}
-					tx.success();
-				}
+//					tx.success();
+//				}
 				return permitted;
 			} else {
 				throw new HttpStatusCodeErrorException(500, "Permission format does not match expected values");

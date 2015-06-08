@@ -1,25 +1,17 @@
 package com.gentics.mesh.core.data.service;
 
-import static com.gentics.mesh.core.repository.CypherStatements.FILTER_USER_PERM_AND_PROJECT;
-import static com.gentics.mesh.core.repository.CypherStatements.MATCH_NODE_OF_PROJECT;
-import static com.gentics.mesh.core.repository.CypherStatements.MATCH_PERMISSION_ON_NODE;
-import static com.gentics.mesh.core.repository.CypherStatements.ORDER_BY_NAME_DESC;
 import io.vertx.ext.apex.RoutingContext;
 
-import java.awt.print.Pageable;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
-import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
@@ -48,9 +40,6 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 
 	@Autowired
 	private TagService tagService;
-
-	@Autowired
-	private GraphDatabaseService graphDb;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
@@ -83,7 +72,6 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 		info.setLanguageTags(languageTags);
 		info.setUserService(userService);
 		info.setLanguageService(languageService);
-		info.setGraphDb(graphDb);
 		info.setTagService(tagService);
 		info.setSpringConfiguration(springConfiguration);
 		info.setContentService(this);

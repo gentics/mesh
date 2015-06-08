@@ -10,7 +10,6 @@ import java.util.Iterator;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
@@ -53,13 +52,13 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testGetUsersByGroup() throws Exception {
 		User extraUser = userService.create("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			info.getGroup().addUser(extraUser);
 			groupService.save(info.getGroup());
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + uuid + "/users", 200, "OK");
@@ -102,12 +101,12 @@ extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 
 		User extraUser =  userService.create("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
 			roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());
@@ -121,11 +120,11 @@ extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 
 		User extraUser = userService.create("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, extraUser.getUuid());
@@ -140,10 +139,10 @@ extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		Group group = info.getGroup();
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());

@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,10 +54,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), user, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
@@ -68,7 +67,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllUsers() throws Exception {
 
 		User user3 = userService.create("testuser_3");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			user3.setLastname("should_not_be_listed");
 			user3.setFirstname("should_not_be_listed");
 			user3.setEmailAddress("should_not_be_listed");
@@ -76,8 +75,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			info.getGroup().addUser(user3);
 			groupService.save(info.getGroup());
 			// Don't grant permissions to user3
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
@@ -174,10 +173,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
 
@@ -193,10 +192,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateUserWithNoPermission() throws Exception {
 		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		UserResponse updatedUser = new UserResponse();
 		updatedUser.setEmailAddress("n.user@spam.gentics.com");
@@ -221,11 +220,11 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an user with a conflicting username
 		User conflictingUser =  userService.create("existing_username");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			conflictingUser = userService.save(conflictingUser);
 			info.getGroup().addUser(conflictingUser);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		UserUpdateRequest newUser = new UserUpdateRequest();
 		newUser.setUsername("existing_username");
@@ -244,13 +243,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an user with a conflicting username
 		User conflictingUser =  userService.create("existing_username");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			conflictingUser = userService.save(conflictingUser);
 			info.getGroup().addUser(conflictingUser);
 			// Add update permission to group in order to create the user in that group
 			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
@@ -386,13 +385,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		User user =  userService.create("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			user = userService.save(user);
 			roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
 			roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
 			roleService.addPermission(info.getRole(), user, PermissionType.READ);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		user = userService.reload(user);
 		assertNotNull(user.getUuid());
 
@@ -410,11 +409,11 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteByUUID() throws Exception {
 		User extraUser =  userService.create("extraUser");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);
-			tx.success();
-		}
+//			tx.success();
+//		}
 		assertNotNull(extraUser.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + extraUser.getUuid(), 200, "OK");

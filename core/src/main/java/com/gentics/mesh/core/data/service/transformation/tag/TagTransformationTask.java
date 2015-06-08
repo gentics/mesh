@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +47,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 		// Check whether the tag has already been transformed by another task
 		TagResponse foundTag = (TagResponse) info.getObjectReferences().get(uuid);
 		if (foundTag == null) {
-			try (Transaction tx = info.getGraphDb().beginTx()) {
+//			try (Transaction tx = info.getGraphDb().beginTx()) {
 
 				restTag.setPerms(info.getUserService().getPerms(info.getRoutingContext(), tag));
 				restTag.setUuid(tag.getUuid());
@@ -82,15 +81,15 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					I18NProperties i18nProperties = info.getTagService().getI18NProperties(tag, language);
 					if (i18nProperties != null) {
 //						i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
-						for (String key : i18nProperties.getProperties().getPropertyKeys()) {
+						for (String key : i18nProperties.getProperties().keySet()) {
 							restTag.addProperty(languageTag, key, i18nProperties.getProperty(key));
 						}
 					} else {
 						log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
 						continue;
 					}
-				}
-				tx.success();
+//				}
+//				tx.success();
 			}
 
 			info.addObject(uuid, restTag);

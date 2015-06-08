@@ -41,11 +41,11 @@ public class ObjectSchemaTest extends AbstractDBTest {
 	@Test
 	public void testDeleteByUUID() {
 		ObjectSchema schema = data().getSchema("content");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 
 			objectSchemaService.deleteByUUID(schema.getUuid());
-			tx.success();
-		}
+//			tx.success();
+//		}
 		assertNull(objectSchemaService.findOne(schema.getId()));
 	}
 
@@ -66,10 +66,10 @@ public class ObjectSchemaTest extends AbstractDBTest {
 		int nSchemasBefore = count(objectSchemaService.findRoot().getSchemas());
 
 		ObjectSchema schema = objectSchemaService.create("test1235");
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			objectSchemaService.save(schema);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		int nSchemasAfter = count(objectSchemaService.findRoot().getSchemas());
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);

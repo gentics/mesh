@@ -9,10 +9,6 @@ import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,9 +26,12 @@ import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.frames.FramedGraph;
 
 @Component
 public class UserServiceImpl extends GenericNodeServiceImpl<User> implements UserService {
@@ -43,7 +42,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	private GraphDatabaseService graphDb;
+	protected FramedGraph<? extends TransactionalGraph> framedGraph;
 
 	@Override
 	public void setPassword(User user, String password) {
@@ -53,14 +52,14 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	@Override
 	public Page<User> findAllVisible(RoutingContext rc, PagingInfo pagingInfo) {
 		Session session = rc.session();
-//		String userUuid = session.getPrincipal().getString("uuid");
-//		return findAll(userUuid, new MeshPageRequest(pagingInfo));
+		//		String userUuid = session.getPrincipal().getString("uuid");
+		//		return findAll(userUuid, new MeshPageRequest(pagingInfo));
 		return null;
 	}
 
 	@Override
 	public User findByUsername(String username) {
-		return findByUsername(username);
+		return null;
 	}
 
 	@Override
@@ -94,19 +93,18 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		//		Node userNode = neo4jTemplate.getPersistentState(user);
 
 		// Traverse the graph from user to the page. Collect all permission relations and check them individually
-		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-				.traverse(userNode).relationships()) {
+		for (Edge edge : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUT)
+				.relationships(AuthRelationships.HAS_ROLE, Direction.IN).relationships(AuthRelationships.HAS_PERMISSION, Direction.OUT)
+				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
 			// log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
 			// + rel.getStartNode().getId() + rel.getStartNode().getLabels());
 
-			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
+			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(edge.getLabel())) {
 				// Check whether this relation in fact targets our object we want to check
-				boolean matchesTargetNode = rel.getEndNode().getId() == node.getId();
+				boolean matchesTargetNode = edge.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == node.getId();
 				if (matchesTargetNode) {
 					// Convert the api relationship to a SDN relationship
-					GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
+					GraphPermission perm = framedGraph.frame(edge, GraphPermission.class);
 					permissions.add(perm);
 				}
 			}
@@ -119,20 +117,20 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
-		Node userNode = graphDb.getNodeById(userNodeId);
-		for (Relationship groupRel : userNode.getRelationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)) {
-			Node group = groupRel.getEndNode();
+		Vertex userNode = framedGraph.getVertex(userNodeId);
+		for (Edge groupRel : userNode.getEdges(com.tinkerpop.blueprints.Direction.OUT, AuthRelationships.MEMBER_OF)) {
+			Vertex group = groupRel.getVertex(com.tinkerpop.blueprints.Direction.OUT);
 			log.debug("Found group: " + group.getProperty("name"));
-			for (Relationship roleRel : group.getRelationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)) {
-				Node role = roleRel.getStartNode();
+			for (Edge roleRel : group.getEdges(Direction.IN, AuthRelationships.HAS_ROLE)) {
+				Vertex role = roleRel.getVertex(Direction.IN);
 				log.debug("Found role: " + role.getProperty("name"));
-				for (Relationship authRel : role.getRelationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING)) {
-					log.debug("Permission from {" + authRel.getStartNode().getId() + " to " + authRel.getEndNode().getId());
-					boolean matchesTargetNode = authRel.getEndNode().getId() == genericPermission.getTargetNode().getId();
+				for (Edge authRel : role.getEdges(Direction.OUT, AuthRelationships.HAS_PERMISSION)) {
+					log.debug("Permission from {" + authRel.getVertex(Direction.IN).getId() + " to " + authRel.getVertex(Direction.OUT).getId());
+					boolean matchesTargetNode = authRel.getVertex(Direction.OUT).getId() == genericPermission.getTargetNode().getId();
 					if (matchesTargetNode) {
 						log.debug("Found permission");
-						// Convert the api relationship to a SDN relationship
-						GraphPermission perm = neo4jTemplate.load(authRel, GraphPermission.class);
+						// Convert the api relationship to a framed edge
+						GraphPermission perm = framedGraph.frame(authRel, GraphPermission.class);
 						if (genericPermission.implies(perm) == true) {
 							return true;
 						}

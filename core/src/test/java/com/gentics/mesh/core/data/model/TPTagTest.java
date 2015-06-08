@@ -5,18 +5,17 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.test.AbstractDBTest;
-import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.frames.FramedGraph;
-import com.tinkerpop.frames.FramedGraphConfiguration;
-import com.tinkerpop.frames.FramedGraphFactory;
-import com.tinkerpop.frames.modules.AbstractModule;
-import com.tinkerpop.frames.modules.gremlingroovy.GremlinGroovyModule;
 
 public class TPTagTest extends AbstractDBTest {
+
+
 
 	@Before
 	public void setup() throws Exception {
@@ -25,18 +24,6 @@ public class TPTagTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleTag() {
-
-		Neo4j2Graph graph = new Neo4j2Graph(springConfig.getGraphDatabaseService());
-		// FramedGraphFactory factory = new FramedGraphFactory(new GremlinGroovyModule());
-
-		GremlinGroovyModule groovyModule = new GremlinGroovyModule();
-		AbstractModule customModule = new AbstractModule() {
-			public void doConfigure(FramedGraphConfiguration config) {
-				config.addFrameInitializer(new UUIDFrameInitializer());
-			}
-		};
-
-		FramedGraph<Neo4j2Graph> framedGraph = new FramedGraphFactory(groovyModule, customModule).create(graph);
 
 		// TPTag tag = framedGraph.addVertex(UUIDUtil.randomUUID(), TPTag.class);
 		// System.out.println(tag.getUuid());

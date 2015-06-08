@@ -70,10 +70,10 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("news");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			//			node = neo4jTemplate.fetch(node);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		int expectedItemsInPage = count(node.getChildren()) > 25 ? 25 : count(node.getChildren());
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");

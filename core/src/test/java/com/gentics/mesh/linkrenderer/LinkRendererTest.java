@@ -44,24 +44,23 @@ public class LinkRendererTest extends AbstractDBTest {
 
 		// Create some dummy content
 		MeshNode content = nodeService.create();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setDisplayName(content, german, "german name");
 			nodeService.setName(content, german, "german.html");
 			nodeService.save(content);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		MeshNode content2 = nodeService.create();
-		try (Transaction tx = graphDb.beginTx()) {
+//		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setDisplayName(content2, english, "content 2 english");
 			nodeService.setName(content2, english, "english.html");
 			nodeService.save(content2);
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 		LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
 		String out = replacer.replace("dgasd");
-		System.out.println(out);
 	}
 
 	@Ignore("Disabled for now")
