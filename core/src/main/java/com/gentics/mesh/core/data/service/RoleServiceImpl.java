@@ -2,51 +2,48 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.ext.apex.RoutingContext;
 
+import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.neo4j.conversion.Result;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.Result;
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
-import com.gentics.mesh.core.data.model.auth.GraphPermission;
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
-import com.gentics.mesh.core.repository.RoleRepository;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
+import com.tinkerpop.blueprints.Vertex;
 
 @Component
-@Transactional(readOnly = true)
 public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements RoleService {
 
 	@Autowired
-	private RoleRepository roleRepository;
+	private RoleService roleService;
 
 	@Autowired
 	private GraphDatabaseService graphDb;
 
 	@Autowired
-	private Neo4jTemplate neo4jTemplate;
+	PermissionService permissionService;
 
 	@Autowired
 	private UserService userService;
@@ -56,17 +53,17 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public Role findByUUID(String uuid) {
-		return roleRepository.findByUUID(uuid);
+		return null;
 	}
 
 	@Override
 	public Role findByName(String name) {
-		return roleRepository.findByName(name);
+		return null;
 	}
 
 	@Override
 	public Result<Role> findAll() {
-		return roleRepository.findAll();
+		return null;
 	}
 
 	@Override
@@ -74,17 +71,18 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		GraphPermission permission = getGraphPermission(role, node);
 		// Create a new permission relation when no existing one could be found
 		if (permission == null) {
-			permission = new GraphPermission(role, node);
+			permission = permissionService.create(role, node);
 		}
 		for (int i = 0; i < permissionTypes.length; i++) {
 			permission.grant(permissionTypes[i]);
 		}
-		neo4jTemplate.save(permission);
+		//		neo4jTemplate.save(permission);
 	}
 
 	@Override
 	public GraphPermission getGraphPermission(Role role, AbstractPersistable node) {
-		return roleRepository.findPermission(role.getId(), node.getId());
+		//		return roleRepository.findPermission(role.getId(), node.getId());
+		return null;
 	}
 
 	@Override
@@ -98,7 +96,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 			permission.revoke(permissionTypes[i]);
 		}
 		role.addPermission(permission);
-		permission = neo4jTemplate.save(permission);
+		//		permission = neo4jTemplate.save(permission);
 		return permission;
 	}
 
@@ -112,7 +110,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		restRole.setName(role.getName());
 
 		for (Group group : role.getGroups()) {
-			group = neo4jTemplate.fetch(group);
+			//			group = neo4jTemplate.fetch(group);
 			GroupResponse restGroup = new GroupResponse();
 			restGroup.setName(group.getName());
 			restGroup.setUuid(group.getUuid());
@@ -123,12 +121,13 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public void addCRUDPermissionOnRole(RoutingContext rc, MeshPermission meshPermission, GenericNode targetNode) {
+	public void addCRUDPermissionOnRole(RoutingContext rc, TPMeshPermission meshPermission, GenericNode targetNode) {
 
 		User user = userService.findByUUID(rc.session().getPrincipal().getString("uuid"));
 
 		// 1. Determine all roles that grant given permission
-		Node userNode = neo4jTemplate.getPersistentState(user);
+		//		Node userNode = neo4jTemplate.getPersistentState(user);
+		Vertex userNode = user.asVertex();
 		Set<Role> roles = new HashSet<>();
 		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
 				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
@@ -151,7 +150,6 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : roles) {
-			neo4jTemplate.fetch(role);
 			addPermission(role, targetNode, PermissionType.CREATE, PermissionType.READ, PermissionType.UPDATE, PermissionType.DELETE);
 		}
 	}
@@ -159,13 +157,66 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	@Override
 	public Page<Role> findAll(RoutingContext rc, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return roleRepository.findAll(userUuid, new MeshPageRequest(pagingInfo));
+		//		return findAll(userUuid, new MeshPageRequest(pagingInfo));
+		return null;
 	}
 
 	@Override
 	public Page<Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return roleRepository.findByGroup(userUuid, group,  new MeshPageRequest(pagingInfo));
+		//		return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
+		return null;
+	}
+
+	public GraphPermission findPermission(Long roleId, Long nodeId) {
+		//	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
+		return null;
+	}
+
+	public Page<Role> findAll(String userUuid, Pageable pageable) {
+		//		@Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
+
+		//		countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
+		return null;
+	}
+
+	public RoleRoot findRoot() {
+		//	@Query("MATCH (n:RoleRoot) return n")
+		return null;
+	}
+
+	//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
+	//			+ " return role ORDER BY role.name desc",
+
+	//	countQuery = MATCH_PERMISSION_ON_ROLE + "MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
+	//			+ "return count(role)")
+	Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
+		return null;
+	}
+
+	@Override
+	public Role save(Role role) {
+		//		RoleRoot root = roleService.findRoot();
+		//		if (root == null) {
+		//			throw new NullPointerException("The role root node could not be found.");
+		//		}
+		//		role = neo4jTemplate.save(role);
+		//		root.getRoles().add(role);
+		//		neo4jTemplate.save(root);
+		//		return role;
+		return null;
+	}
+
+	@Override
+	public Role create(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RoleRoot createRoot() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

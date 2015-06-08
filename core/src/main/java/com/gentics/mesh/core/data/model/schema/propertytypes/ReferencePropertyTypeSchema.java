@@ -1,19 +1,18 @@
 package com.gentics.mesh.core.data.model.schema.propertytypes;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.gentics.mesh.core.data.model.tinkerpop.DynamicProperties;
 
-public class ReferencePropertyTypeSchema extends BasicPropertyTypeSchema {
+public interface ReferencePropertyTypeSchema extends BasicPropertyTypeSchema {
 
-	private static final long serialVersionUID = -965692160322365637L;
 
-	private Set<String> objectTypeSchemaWhitelist = new HashSet<>();
+	@DynamicProperties
+	public Iterable<String> getObjectTypeSchemaWhitelist();
 
-	public ReferencePropertyTypeSchema(String name) {
-		super(name, PropertyType.REFERENCE);
-	}
-
-	public Set<String> getObjectTypeSchemaWhitelist() {
-		return objectTypeSchemaWhitelist;
-	}
+//	public ReferencePropertyTypeSchema(String name) {
+//		super(name, PropertyType.REFERENCE);
+//	}
+//
+//	public Set<String> getObjectTypeSchemaWhitelist() {
+//		return objectTypeSchemaWhitelist;
+//	}
 }

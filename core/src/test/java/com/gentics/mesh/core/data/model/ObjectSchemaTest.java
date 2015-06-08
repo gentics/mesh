@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -9,9 +10,8 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
 import com.gentics.mesh.core.data.service.ObjectSchemaService;
-import com.gentics.mesh.core.repository.ObjectSchemaRepository;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -19,9 +19,6 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Autowired
 	private ObjectSchemaService objectSchemaService;
-
-	@Autowired
-	private ObjectSchemaRepository objectSchemaRepository;
 
 	@Before
 	public void setup() throws Exception {
@@ -66,15 +63,15 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testObjectSchemaRootNode() {
-		int nSchemasBefore = objectSchemaRepository.findRoot().getSchemas().size();
+		int nSchemasBefore = count(objectSchemaService.findRoot().getSchemas());
 
-		ObjectSchema schema = new ObjectSchema("test1235");
+		ObjectSchema schema = objectSchemaService.create("test1235");
 		try (Transaction tx = graphDb.beginTx()) {
-			objectSchemaRepository.save(schema);
+			objectSchemaService.save(schema);
 			tx.success();
 		}
 
-		int nSchemasAfter = objectSchemaRepository.findRoot().getSchemas().size();
+		int nSchemasAfter = count(objectSchemaService.findRoot().getSchemas());
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);
 	}
 }

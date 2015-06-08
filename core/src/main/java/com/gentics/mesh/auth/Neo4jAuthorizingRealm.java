@@ -19,12 +19,11 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -39,8 +38,6 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 	@Autowired
 	private UserService userService;
 
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	private GraphDatabaseService graphDb;
@@ -65,7 +62,7 @@ public class Neo4jAuthorizingRealm extends AuthorizingRealm {
 						Node node = neo4jTemplate.getNode(Long.valueOf(targetId));
 						GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
 						PermissionType type = PermissionType.fromString(permName);
-						permitted = userService.isPermitted(userId, new MeshPermission(sdnNode, type));
+						permitted = userService.isPermitted(userId, new TPMeshPermission(sdnNode, type));
 					} catch (Exception e) {
 						tx.failure();
 						throw new HttpStatusCodeErrorException(500, "Error while checking permission for user {" + userId + "}", e);

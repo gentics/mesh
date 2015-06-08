@@ -8,7 +8,6 @@ import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
 import java.io.File;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.backup.OnlineBackup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

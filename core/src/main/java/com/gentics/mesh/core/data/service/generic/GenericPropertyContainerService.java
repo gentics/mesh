@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.data.service.generic;
 
-import com.gentics.mesh.core.data.model.I18NProperties;
-import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.repository.action.PropertyContainerActions;
 
 public interface GenericPropertyContainerService<T extends GenericPropertyContainer> extends GenericNodeService<T>, PropertyContainerActions<T> {
@@ -30,5 +32,7 @@ public interface GenericPropertyContainerService<T extends GenericPropertyContai
 	public String getProperty(T node, Language language, String key);
 
 	public I18NProperties getI18NProperties(T node, Language language);
+
+	public Translated create(MeshNode node, I18NProperties props, Language language);
 
 }

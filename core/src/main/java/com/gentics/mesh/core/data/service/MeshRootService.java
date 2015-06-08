@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
-import com.gentics.mesh.core.data.model.MeshRoot;
+import com.gentics.mesh.core.data.model.root.MeshRoot;
 
 public interface MeshRootService {
 
@@ -9,5 +9,7 @@ public interface MeshRootService {
 	void save(MeshRoot rootNode);
 	
 	MeshRoot reload(MeshRoot rootNode);
+
+	MeshRoot create();
 
 }

@@ -14,9 +14,9 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
@@ -52,7 +52,7 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testGetUsersByGroup() throws Exception {
-		User extraUser = new User("extraUser");
+		User extraUser = userService.create("extraUser");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			info.getGroup().addUser(extraUser);
@@ -101,7 +101,7 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
 		Group group = info.getGroup();
 
-		User extraUser = new User("extraUser");
+		User extraUser =  userService.create("extraUser");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
@@ -120,7 +120,7 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
 		Group group = info.getGroup();
 
-		User extraUser = new User("extraUser");
+		User extraUser = userService.create("extraUser");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);

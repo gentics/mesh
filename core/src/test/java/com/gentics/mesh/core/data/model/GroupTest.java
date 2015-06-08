@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
@@ -7,15 +8,15 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.repository.GroupRepository;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class GroupTest extends AbstractDBTest {
 
 	@Autowired
-	GroupRepository groupRepository;
+	private GroupService groupService;
 
 	@Before
 	public void setup() throws Exception {
@@ -24,20 +25,20 @@ public class GroupTest extends AbstractDBTest {
 
 	@Test
 	public void testUserGroup() {
-		User user = new User("testuser");
-		Group group = new Group("test group");
+		User user = userService.create("testuser");
+		Group group = groupService.create("test group");
 		try (Transaction tx = graphDb.beginTx()) {
 			group.addUser(user);
-			group = groupRepository.save(group);
+			group = groupService.save(group);
 			tx.success();
 		}
 
 		group = groupService.reload(group);
-		assertEquals("The group should contain one member.", 1, group.getUsers().size());
+		assertEquals("The group should contain one member.", 1, count(group.getUsers()));
 
 		try (Transaction tx = graphDb.beginTx()) {
 			User userOfGroup = group.getUsers().iterator().next();
-			neo4jTemplate.fetch(userOfGroup);
+			//			neo4jTemplate.fetch(userOfGroup);
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 			tx.success();
 		}
@@ -45,15 +46,15 @@ public class GroupTest extends AbstractDBTest {
 
 	@Test
 	public void testRootGroupNode() {
-		int nGroupsBefore = groupRepository.findRoot().getGroups().size();
+		int nGroupsBefore = count(groupService.findRoot().getGroups());
 
-		Group group = new Group("test group2");
+		Group group = groupService.create("test group2");
 		try (Transaction tx = graphDb.beginTx()) {
-			groupRepository.save(group);
+			groupService.save(group);
 			tx.success();
 		}
 
-		int nGroupsAfter = groupRepository.findRoot().getGroups().size();
+		int nGroupsAfter = count(groupService.findRoot().getGroups());
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);
 	}
 

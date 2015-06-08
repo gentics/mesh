@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
 import com.gentics.mesh.core.rest.user.response.UserListResponse;
@@ -67,7 +67,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllUsers() throws Exception {
 
-		User user3 = new User("testuser_3");
+		User user3 = userService.create("testuser_3");
 		try (Transaction tx = graphDb.beginTx()) {
 			user3.setLastname("should_not_be_listed");
 			user3.setFirstname("should_not_be_listed");
@@ -220,7 +220,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 
 		// Create an user with a conflicting username
-		User conflictingUser = new User("existing_username");
+		User conflictingUser =  userService.create("existing_username");
 		try (Transaction tx = graphDb.beginTx()) {
 			conflictingUser = userService.save(conflictingUser);
 			info.getGroup().addUser(conflictingUser);
@@ -243,7 +243,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		User conflictingUser = new User("existing_username");
+		User conflictingUser =  userService.create("existing_username");
 		try (Transaction tx = graphDb.beginTx()) {
 			conflictingUser = userService.save(conflictingUser);
 			info.getGroup().addUser(conflictingUser);
@@ -385,7 +385,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		User user = new User("extraUser");
+		User user =  userService.create("extraUser");
 		try (Transaction tx = graphDb.beginTx()) {
 			user = userService.save(user);
 			roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
@@ -409,7 +409,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUID() throws Exception {
-		User extraUser = new User("extraUser");
+		User extraUser =  userService.create("extraUser");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);

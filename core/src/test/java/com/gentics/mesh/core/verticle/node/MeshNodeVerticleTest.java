@@ -20,8 +20,8 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.MeshNode;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
@@ -174,7 +174,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNodes() throws Exception {
 
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		MeshNode noPermNode = new MeshNode();
+		MeshNode noPermNode = nodeService.create();
 		try (Transaction tx = graphDb.beginTx()) {
 			noPermNode.setCreator(info.getUser());
 			noPermNode = nodeService.save(noPermNode);

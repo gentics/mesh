@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,7 +14,7 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
@@ -70,14 +71,14 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 		try (Transaction tx = graphDb.beginTx()) {
-			node = neo4jTemplate.fetch(node);
+			//			node = neo4jTemplate.fetch(node);
 			tx.success();
 		}
 
-		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
+		int expectedItemsInPage = count(node.getChildren()) > 25 ? 25 : count(node.getChildren());
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");
 		NodeListResponse nodeList = JsonUtils.readValue(response, NodeListResponse.class);
-		assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
+		assertEquals(count(node.getChildren()), nodeList.getMetainfo().getTotalCount());
 		assertEquals(expectedItemsInPage, nodeList.getData().size());
 	}
 

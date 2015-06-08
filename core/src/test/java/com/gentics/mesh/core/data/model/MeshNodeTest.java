@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.vertx.ext.apex.RoutingContext;
@@ -10,22 +11,16 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 
-import com.gentics.mesh.core.data.service.MeshNodeService;
-import com.gentics.mesh.core.repository.TagRepository;
+import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
-
 public class MeshNodeTest extends AbstractDBTest {
 
-	@Autowired
-	MeshNodeService nodeService;
 
-	@Autowired
-	TagRepository folderRepository;
 
 	@Before
 	public void setup() throws Exception {
@@ -37,8 +32,8 @@ public class MeshNodeTest extends AbstractDBTest {
 	 */
 	@Test
 	public void testPageLinks() {
-		MeshNode content = new MeshNode();
-		MeshNode content2 = new MeshNode();
+		MeshNode content = nodeService.create();
+		MeshNode content2 = nodeService.create();
 		try (Transaction tx = graphDb.beginTx()) {
 
 			nodeService.setContent(content, data().getEnglish(), "english content");
@@ -62,7 +57,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		assertNotNull(newsNode);
 		MeshNode newSubNode;
 		try (Transaction tx = graphDb.beginTx()) {
-			newSubNode = new MeshNode();
+			newSubNode = nodeService.create();
 			newSubNode.setParentNode(newsNode);
 			nodeService.save(newSubNode);
 			tx.success();
@@ -70,9 +65,9 @@ public class MeshNodeTest extends AbstractDBTest {
 
 		try (Transaction tx = graphDb.beginTx()) {
 			newsNode = nodeService.reload(newsNode);
-			assertEquals(1, newsNode.getChildren().size());
+			assertEquals(1, count(newsNode.getChildren()));
 			MeshNode firstChild = newsNode.getChildren().iterator().next();
-			neo4jTemplate.fetch(firstChild);
+//			neo4jTemplate.fetch(firstChild);
 			assertEquals(newSubNode.getUuid(), firstChild.getUuid());
 			tx.success();
 		}
@@ -94,9 +89,9 @@ public class MeshNodeTest extends AbstractDBTest {
 			// Reload node 
 			newsNode = nodeService.reload(newsNode);
 
-			assertEquals(1, newsNode.getTags().size());
+			assertEquals(1, count(newsNode.getTags()));
 			Tag firstTag = newsNode.getTags().iterator().next();
-			neo4jTemplate.fetch(firstTag);
+//			neo4jTemplate.fetch(firstTag);
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
 			tx.success();
 		}
@@ -104,7 +99,7 @@ public class MeshNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testCreateNode() {
-		MeshNode node = new MeshNode();
+		MeshNode node = nodeService.create();
 		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setContent(node, data().getEnglish(), "english content");
 			nodeService.setName(node, data().getEnglish(), "english.html");

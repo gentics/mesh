@@ -4,6 +4,9 @@ import io.vertx.ext.apex.RoutingContext;
 
 import java.util.Locale;
 
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+
 /**
  * The I18NService is responsible for handling internal internationalization and localization related tasks. The service is _not_ responsible for translating
  * neo4j data entities. Supported locales are currently en_US and de_DE. The default locale is en_US.
@@ -59,5 +62,8 @@ public interface I18NService {
 	 * @return best matching locale for the accept-language header or default locale when non is matching
 	 */
 	public Locale getLocale(RoutingContext rc);
+
+	//TODO move this to a different service class?
+	public I18NProperties create(Language language);
 
 }

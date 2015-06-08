@@ -9,10 +9,11 @@ import java.util.ResourceBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 
 @Component
-@Transactional(readOnly = true)
 public class I18NServiceImpl implements I18NService {
 
 	private static final Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
@@ -113,6 +114,12 @@ public class I18NServiceImpl implements I18NService {
 	@Override
 	public String get(RoutingContext rc, String key, String... parameters) {
 		return get((Locale) rc.get("locale"), key, parameters);
+	}
+
+	@Override
+	public I18NProperties create(Language language) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

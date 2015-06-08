@@ -5,35 +5,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ListPropertyTypeSchema extends BasicPropertyTypeSchema {
+import com.gentics.mesh.core.data.model.tinkerpop.AbstractPropertyTypeSchema;
 
-	private static final long serialVersionUID = 1347967922556984653L;
+public interface ListPropertyTypeSchema extends BasicPropertyTypeSchema {
 
-	private Set<PropertyType> propertyTypeWhiteList = new HashSet<>();
 
-	private List<AbstractPropertyTypeSchema> list = new ArrayList<>();
+//	private Set<PropertyType> propertyTypeWhiteList = new HashSet<>();
 
-	private boolean isDynamicList;
+//	private List<AbstractPropertyTypeSchema> list = new ArrayList<>();
 
-	public ListPropertyTypeSchema(String name) {
-		super(name, PropertyType.LIST);
-	}
+//	private boolean isDynamicList;
 
-	/**
-	 * Returns the whitelist for the allowed property types inside this list. All types are allowed when the list is empty.
-	 * 
-	 * @return
-	 */
-	public Set<PropertyType> getWhiteList() {
-		return propertyTypeWhiteList;
-	}
-
-	public boolean isDynamicList() {
-		return isDynamicList;
-	}
-
-	public void setDynamicList(boolean isDynamicList) {
-		this.isDynamicList = isDynamicList;
-	}
+//	public ListPropertyTypeSchema(String name) {
+//		super(name, PropertyType.LIST);
+//	}
+//
+//	/**
+//	 * Returns the whitelist for the allowed property types inside this list. All types are allowed when the list is empty.
+//	 * 
+//	 * @return
+//	 */
+//	public Set<PropertyType> getWhiteList() {
+//		return propertyTypeWhiteList;
+//	}
+//
+//	public boolean isDynamicList() {
+//		return isDynamicList;
+//	}
+//
+//	public void setDynamicList(boolean isDynamicList) {
+//		this.isDynamicList = isDynamicList;
+//	}
 
 }

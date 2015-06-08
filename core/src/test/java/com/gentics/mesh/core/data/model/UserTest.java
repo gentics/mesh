@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.vertx.ext.apex.RoutingContext;
@@ -7,20 +8,15 @@ import io.vertx.ext.apex.RoutingContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.repository.UserRepository;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class UserTest extends AbstractDBTest {
-
-	@Autowired
-	UserRepository userRepository;
 
 	private UserInfo info;
 
@@ -38,18 +34,18 @@ public class UserTest extends AbstractDBTest {
 		final String LASTNAME = "doe";
 		final String PASSWDHASH = "RANDOM";
 
-		User user = new User(USERNAME);
+		User user = userService.create(USERNAME);
 		user.setEmailAddress(EMAIL);
 		user.setFirstname(FIRSTNAME);
 		user.setLastname(LASTNAME);
 		user.setPasswordHash(PASSWDHASH);
 
 		try (Transaction tx = graphDb.beginTx()) {
-			user = userRepository.save(user);
+			user = userService.save(user);
 			tx.success();
 		}
 
-		User reloadedUser = userRepository.findOne(user.getId());
+		User reloadedUser = userService.findOne(user.getId());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 		assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -64,15 +60,15 @@ public class UserTest extends AbstractDBTest {
 
 	@Test
 	public void testUserRoot() {
-		int nUserBefore = userRepository.findRoot().getUsers().size();
+		int nUserBefore = count(userService.findRoot().getUsers());
 
 		try (Transaction tx = graphDb.beginTx()) {
-			User user = new User("dummy12345");
-			user = userRepository.save(user);
+			User user = userService.create("dummy12345");
+			user = userService.save(user);
 			tx.success();
 		}
 
-		int nUserAfter = userRepository.findRoot().getUsers().size();
+		int nUserAfter = count(userService.findRoot().getUsers());
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 
 	}
@@ -80,7 +76,7 @@ public class UserTest extends AbstractDBTest {
 	@Test
 	public void testFindUsersOfGroup() {
 
-		User extraUser = new User("extraUser");
+		User extraUser = userService.create("extraUser");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraUser = userService.save(extraUser);
 			info.getGroup().addUser(extraUser);

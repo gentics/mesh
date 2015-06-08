@@ -5,6 +5,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.RoutingContext;
 import io.vertx.ext.apex.Session;
 
+import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,40 +15,32 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
-import com.gentics.mesh.core.data.model.auth.GraphPermission;
-import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.root.UserRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
-import com.gentics.mesh.core.repository.GroupRepository;
-import com.gentics.mesh.core.repository.UserRepository;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
+import com.tinkerpop.blueprints.Vertex;
 
 @Component
-@Transactional(readOnly = true)
 public class UserServiceImpl extends GenericNodeServiceImpl<User> implements UserService {
 
 	private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
-
-	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
-	private GroupRepository groupRepository;
 
 	@Autowired
 	private GraphDatabaseService graphDb;
@@ -60,13 +53,14 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	@Override
 	public Page<User> findAllVisible(RoutingContext rc, PagingInfo pagingInfo) {
 		Session session = rc.session();
-		String userUuid = session.getPrincipal().getString("uuid");
-		return userRepository.findAll(userUuid, new MeshPageRequest(pagingInfo));
+//		String userUuid = session.getPrincipal().getString("uuid");
+//		return findAll(userUuid, new MeshPageRequest(pagingInfo));
+		return null;
 	}
 
 	@Override
 	public User findByUsername(String username) {
-		return userRepository.findByUsername(username);
+		return findByUsername(username);
 	}
 
 	@Override
@@ -88,15 +82,16 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public boolean removeUserFromGroup(User user, Group group) {
-		return group.removeUser(user);
+	public void removeUserFromGroup(User user, Group group) {
+		group.removeUser(user);
 	}
 
 	@Override
 	public Set<GraphPermission> findGraphPermissions(User user, AbstractPersistable node) {
 
 		Set<GraphPermission> permissions = new HashSet<>();
-		Node userNode = neo4jTemplate.getPersistentState(user);
+		Vertex userNode = user.asVertex();
+		//		Node userNode = neo4jTemplate.getPersistentState(user);
 
 		// Traverse the graph from user to the page. Collect all permission relations and check them individually
 		for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
@@ -120,7 +115,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	}
 
-	public boolean isPermitted(long userNodeId, MeshPermission genericPermission) throws Exception {
+	public boolean isPermitted(long userNodeId, TPMeshPermission genericPermission) throws Exception {
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
@@ -194,13 +189,66 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	@Override
 	public User findUser(RoutingContext rc) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return nodeRepository.findByUUID(userUuid);
+		return findByUUID(userUuid);
 	}
 
 	@Override
 	public Page<User> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return userRepository.findByGroup(userUuid, group,  new MeshPageRequest(pagingInfo));
+
+		//		@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
+		//		Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
+		//		return findByGroup(userUuid, group,  new MeshPageRequest(pagingInfo));
+		return null;
+	}
+
+	User findByPrincipalId(String principalId) {
+		//		@Query("MATCH (u:_User) WHERE u.username + '%' + u.emailAddress + '%' +  u.passwordHash = {0} return u")
+		return null;
+	}
+
+	/**
+	 * Returns a Page of users meeting the paging restriction provided in the Pageable object.
+	 * 
+	 * @param requestUser
+	 * @param pageable
+	 * @return
+	 */
+	public Page<User> findAll(String userUuid, Pageable pageable) {
+		//		@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
+		return null;
+
+	}
+
+	public UserRoot findRoot() {
+
+		//		@Query("MATCH (n:UserRoot) return n")
+		return null;
+	}
+
+	@Override
+	public User save(User user) {
+		//		UserRoot root = userRepository.findRoot();
+		//		if (root == null) {
+		//			throw new NullPointerException("The user root node could not be found.");
+		//		}
+		//		user = neo4jTemplate.save(user);
+		//		root.getUsers().add(user);
+		//		neo4jTemplate.save(root);
+		//		return user;
+		return null;
+	}
+
+	@Override
+	public User create(String username) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public UserRoot createRoot() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

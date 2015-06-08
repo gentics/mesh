@@ -13,16 +13,16 @@ import io.vertx.ext.apex.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.model.MeshRoot;
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
@@ -46,7 +46,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
 		addGroupUserHandlers();
-		addGroupRoleHandlers();
+		addGroupTPRoleHandlers();
 
 		addCreateHandler();
 		addReadHandler();
@@ -54,7 +54,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addDeleteHandler();
 	}
 
-	private void addGroupRoleHandlers() {
+	private void addGroupTPRoleHandlers() {
 
 		route("/:groupUuid/roles").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
@@ -87,16 +87,16 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				rcs.loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
 					Group group = grh.result();
 					Role role = rrh.result();
-					if (group.addRole(role)) {
-						group = groupService.save(group);
-					}
-				}, trh -> {
-					if (trh.failed()) {
-						rc.fail(trh.cause());
-					}
-					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
-				});
+					group.addRole(role);
+					//	group = groupService.save(group);
+
+					}, trh -> {
+						if (trh.failed()) {
+							rc.fail(trh.cause());
+						}
+						Group group = grh.result();
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+					});
 			});
 
 		});
@@ -107,16 +107,15 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				rcs.loadObject(rc, "roleUuid", PermissionType.READ, (AsyncResult<Role> rrh) -> {
 					Group group = grh.result();
 					Role role = rrh.result();
-					if (group.removeRole(role)) {
-						group = groupService.save(group);
-					}
-				}, trh -> {
-					if (trh.failed()) {
-						rc.fail(trh.cause());
-					}
-					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
-				});
+					group.removeRole(role);
+					//group = groupService.save(group);
+					}, trh -> {
+						if (trh.failed()) {
+							rc.fail(trh.cause());
+						}
+						Group group = grh.result();
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+					});
 			});
 		});
 	}
@@ -154,9 +153,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				rcs.loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
 					Group group = grh.result();
 					User user = urh.result();
-					if (group.addUser(user)) {
-						group = groupService.save(group);
-					}
+					group.addUser(user);
+						//group = groupService.save(group);
 				}, trh -> {
 					if (trh.failed()) {
 						rc.fail(trh.cause());
@@ -173,9 +171,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				rcs.loadObject(rc, "userUuid", PermissionType.READ, (AsyncResult<User> urh) -> {
 					Group group = grh.result();
 					User user = urh.result();
-					if (group.removeUser(user)) {
-						groupService.save(group);
-					}
+					group.removeUser(user);
+						//groupService.save(group);
+					
 				}, trh -> {
 					if (trh.failed()) {
 						rc.fail(trh.cause());
@@ -290,9 +288,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 			MeshRoot root = meshRootService.findRoot();
 			rcs.hasPermission(rc, root.getGroupRoot(), PermissionType.CREATE, rh -> {
-				Group group = new Group(requestModel.getName());
+				Group group = groupService.create(requestModel.getName());
 				group = groupService.save(group);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(root.getGroupRoot(), PermissionType.CREATE), group);
+				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(root.getGroupRoot(), PermissionType.CREATE), group);
 				groupCreated.complete(group);
 			}, tch -> {
 				if (tch.failed()) {

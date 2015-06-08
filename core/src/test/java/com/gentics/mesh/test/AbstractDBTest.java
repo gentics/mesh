@@ -15,16 +15,16 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.verticle.UserVerticle;
@@ -49,9 +49,6 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected Neo4jTemplate neo4jTemplate;
-
-	@Autowired
 	protected GraphDatabaseService graphDb;
 
 	@Autowired
@@ -62,6 +59,9 @@ public abstract class AbstractDBTest {
 
 	@Autowired
 	protected GroupService groupService;
+
+	@Autowired
+	protected MeshNodeService nodeService;
 
 	@Autowired
 	protected RestAssert test;

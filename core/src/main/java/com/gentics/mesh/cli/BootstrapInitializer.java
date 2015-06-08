@@ -18,49 +18,47 @@ import javax.naming.InvalidNameException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.data.model.MeshRoot;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.LanguageRoot;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.ProjectRoot;
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.GroupRoot;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.RoleRoot;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.model.auth.UserRoot;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
-import com.gentics.mesh.core.data.model.schema.ObjectSchemaRoot;
-import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.root.GroupRoot;
+import com.gentics.mesh.core.data.model.root.LanguageRoot;
+import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.gentics.mesh.core.data.model.root.ObjectSchemaRoot;
+import com.gentics.mesh.core.data.model.root.ProjectRoot;
+import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.service.GroupService;
+import com.gentics.mesh.core.data.service.LanguageService;
+import com.gentics.mesh.core.data.service.MeshRootService;
 import com.gentics.mesh.core.data.service.ObjectSchemaService;
-import com.gentics.mesh.core.repository.MeshRootRepository;
-import com.gentics.mesh.core.repository.GroupRepository;
-import com.gentics.mesh.core.repository.LanguageRepository;
-import com.gentics.mesh.core.repository.ObjectSchemaRepository;
-import com.gentics.mesh.core.repository.ProjectRepository;
-import com.gentics.mesh.core.repository.RoleRepository;
-import com.gentics.mesh.core.repository.UserRepository;
+import com.gentics.mesh.core.data.service.ProjectService;
+import com.gentics.mesh.core.data.service.RoleService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.verticle.AdminVerticle;
-import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
+import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.core.verticle.ObjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.core.verticle.RoleVerticle;
 import com.gentics.mesh.core.verticle.TagVerticle;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
+import com.gentics.mesh.etc.LanguageEntry;
+import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
-import com.gentics.mesh.etc.LanguageEntry;
-import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshConfiguration;
 
@@ -74,34 +72,28 @@ public class BootstrapInitializer {
 	private MeshConfiguration configuration;
 
 	@Autowired
-	private MeshRootRepository rootRepository;
+	private MeshRootService rootService;
 
 	@Autowired
-	private ObjectSchemaRepository objectSchemaRepository;
+	private UserService userService;
 
 	@Autowired
-	private UserRepository userRepository;
+	private GroupService groupService;
 
 	@Autowired
-	private GroupRepository groupRepository;
+	private RoleService roleService;
 
 	@Autowired
-	private RoleRepository roleRepository;
+	private ProjectService projectService;
 
 	@Autowired
-	private ProjectRepository projectRepository;
-
-	@Autowired
-	private LanguageRepository languageRepository;
+	private LanguageService languageService;
 
 	@Autowired
 	private ObjectSchemaService objectSchemaService;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
-
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	private GraphDatabaseService graphDb;
@@ -208,7 +200,7 @@ public class BootstrapInitializer {
 	 * @throws InvalidNameException
 	 */
 	private void initProjects() throws InvalidNameException {
-		for (Project project : projectRepository.findAll()) {
+		for (Project project : projectService.findAll()) {
 			routerStorage.addProjectRouter(project.getName());
 			log.info("Initalized project {" + project.getName() + "}");
 		}
@@ -236,59 +228,59 @@ public class BootstrapInitializer {
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
 
-		LanguageRoot languageRoot = languageRepository.findRoot();
+		LanguageRoot languageRoot = languageService.findRoot();
 		if (languageRoot == null) {
-			languageRoot = new LanguageRoot();
-			languageRoot = neo4jTemplate.save(languageRoot);
+			languageRoot = languageService.createRoot();
+			//			languageRoot = neo4jTemplate.save(languageRoot);
 			log.info("Stored language root node");
 		}
 
-		GroupRoot groupRoot = groupRepository.findRoot();
+		GroupRoot groupRoot = groupService.findRoot();
 		if (groupRoot == null) {
-			groupRoot = new GroupRoot();
-			groupRoot = neo4jTemplate.save(groupRoot);
+			groupRoot = groupService.createRoot();
+			//			groupRoot = neo4jTemplate.save(groupRoot);
 			log.info("Stored group root node");
 		}
-		UserRoot userRoot = userRepository.findRoot();
+		UserRoot userRoot = userService.findRoot();
 		if (userRoot == null) {
-			userRoot = new UserRoot();
-			userRoot = neo4jTemplate.save(userRoot);
+			userRoot = userService.createRoot();
+			//			userRoot = neo4jTemplate.save(userRoot);
 			log.info("Stored user root node");
 		}
-		RoleRoot roleRoot = roleRepository.findRoot();
+		RoleRoot roleRoot = roleService.findRoot();
 		if (roleRoot == null) {
-			roleRoot = new RoleRoot();
-			roleRoot = neo4jTemplate.save(roleRoot);
+			roleRoot = roleService.createRoot();
+			//			roleRoot = neo4jTemplate.save(roleRoot);
 			log.info("Stored role root node");
 		}
-		ProjectRoot projectRoot = projectRepository.findRoot();
+		ProjectRoot projectRoot = projectService.findRoot();
 		if (projectRoot == null) {
-			projectRoot = new ProjectRoot();
-			projectRoot = neo4jTemplate.save(projectRoot);
+			projectRoot = projectService.createRoot();
+			//			projectRoot = neo4jTemplate.save(projectRoot);
 			log.info("Stored project root node");
 		}
 
 		// Save the default object schemas
 
 		// Content
-		ObjectSchema contentSchema = objectSchemaRepository.findByName("content");
+		ObjectSchema contentSchema = objectSchemaService.findByName("content");
 		if (contentSchema == null) {
-			contentSchema = new ObjectSchema("content");
+			contentSchema = objectSchemaService.create("content");
 			contentSchema.setNestingAllowed(false);
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setDisplayName("Content");
 
-			BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema nameProp = objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			contentSchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyTypeSchema displayNameProp = new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema displayNameProp = objectSchemaService.create(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 			displayNameProp.setDisplayName("Display Name");
 			displayNameProp.setDescription("The display name property of the content.");
 			contentSchema.addPropertyTypeSchema(displayNameProp);
 
-			BasicPropertyTypeSchema contentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema contentProp = objectSchemaService.create(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 			contentProp.setDisplayName("Content");
 			contentProp.setDescription("The main content html of the content.");
 			contentSchema.addPropertyTypeSchema(contentProp);
@@ -297,14 +289,14 @@ public class BootstrapInitializer {
 		}
 
 		// Folder
-		ObjectSchema folderSchema = objectSchemaRepository.findByName("folder");
+		ObjectSchema folderSchema = objectSchemaService.findByName("folder");
 		if (folderSchema == null) {
-			folderSchema = new ObjectSchema("folder");
+			folderSchema = objectSchemaService.create("folder");
 			folderSchema.setNestingAllowed(true);
 			folderSchema.setDescription("Default schema for folders");
 			folderSchema.setDisplayName("Folder");
 
-			BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema nameProp = objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the folder.");
 			folderSchema.addPropertyTypeSchema(nameProp);
@@ -312,23 +304,23 @@ public class BootstrapInitializer {
 		}
 
 		// Binary content for images and other downloads
-		ObjectSchema binarySchema = objectSchemaRepository.findByName("binary-content");
+		ObjectSchema binarySchema = objectSchemaService.findByName("binary-content");
 		if (binarySchema == null) {
-			binarySchema = new ObjectSchema("binary-content");
+			binarySchema = objectSchemaService.create("binary-content");
 			binarySchema.setDescription("Default schema for binary contents");
 			binarySchema.setDisplayName("Binary Content");
 
-			BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema nameProp = objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			binarySchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyTypeSchema displayNameProp = new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyTypeSchema displayNameProp = objectSchemaService.create(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 			displayNameProp.setDisplayName("Display Name");
 			displayNameProp.setDescription("The display name property of the content.");
 			binarySchema.addPropertyTypeSchema(displayNameProp);
 
-			BasicPropertyTypeSchema binaryContentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.BINARY);
+			BasicPropertyTypeSchema binaryContentProp = objectSchemaService.create(ObjectSchema.CONTENT_KEYWORD, PropertyType.BINARY);
 			binaryContentProp.setDisplayName("Binary content");
 			binaryContentProp.setDescription("The binary content of the content");
 			binarySchema.addPropertyTypeSchema(binaryContentProp);
@@ -336,50 +328,50 @@ public class BootstrapInitializer {
 		}
 
 		// Tag schema
-		ObjectSchema tagSchema = objectSchemaRepository.findByName("tag");
+		ObjectSchema tagSchema = objectSchemaService.findByName("tag");
 		if (tagSchema == null) {
-			tagSchema = new ObjectSchema("tag");
+			tagSchema = objectSchemaService.create("tag");
 			tagSchema.setDisplayName("Tag");
 			tagSchema.setDescription("Default schema for tags");
-			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(objectSchemaService.create(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(objectSchemaService.create(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			objectSchemaService.save(tagSchema);
 		}
 
-		ObjectSchemaRoot objectSchemaRoot = objectSchemaRepository.findRoot();
+		ObjectSchemaRoot objectSchemaRoot = objectSchemaService.findRoot();
 		if (objectSchemaRoot == null) {
-			objectSchemaRoot = new ObjectSchemaRoot();
-			objectSchemaRoot.getSchemas().add(tagSchema);
-			objectSchemaRoot.getSchemas().add(contentSchema);
-			objectSchemaRoot.getSchemas().add(binarySchema);
-			objectSchemaRoot = neo4jTemplate.save(objectSchemaRoot);
+			objectSchemaRoot = objectSchemaService.createRoot();
+			objectSchemaRoot.addSchema(tagSchema);
+			objectSchemaRoot.addSchema(contentSchema);
+			objectSchemaRoot.addSchema(binarySchema);
+			//			objectSchemaRoot = neo4jTemplate.save(objectSchemaRoot);
 			log.info("Stored schema root node");
 		}
 
 		// Verify that the root node is existing
-		MeshRoot rootNode = rootRepository.findRoot();
+		MeshRoot rootNode = rootService.findRoot();
 		if (rootNode == null) {
-			rootNode = new MeshRoot();
+			rootNode = rootService.create();
 			rootNode.setProjectRoot(projectRoot);
 			rootNode.setGroupRoot(groupRoot);
 			rootNode.setRoleRoot(roleRoot);
 			rootNode.setLanguageRoot(languageRoot);
 			rootNode.setObjectSchemaRoot(objectSchemaRoot);
 			rootNode.setUserRoot(userRoot);
-			rootRepository.save(rootNode);
+			rootService.save(rootNode);
 			log.info("Stored mesh root node");
 		}
 		// Reload the node to get one with a valid uuid
 		// TODO check whether this really works. I assume i would have to commit first.
-		rootNode = rootRepository.findRoot();
+		rootNode = rootService.findRoot();
 
 		initLanguages(rootNode);
 
 		// Verify that an admin user exists
-		User adminUser = userRepository.findByUsername("admin");
+		User adminUser = userService.findByUsername("admin");
 		if (adminUser == null) {
-			adminUser = new User("admin");
+			adminUser = userService.create("admin");
 			System.out.println("Enter admin password:");
 			// Scanner scanIn = new Scanner(System.in);
 			// String pw = scanIn.nextLine();
@@ -387,25 +379,25 @@ public class BootstrapInitializer {
 			String pw = "finger";
 			// scanIn.close();
 			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
-			userRepository.save(adminUser);
+			userService.save(adminUser);
 			log.info("Stored admin user");
 		}
-		rootNode.getUsers().add(adminUser);
-		rootRepository.save(rootNode);
+		rootNode.getUserRoot().addUser(adminUser);
+		rootService.save(rootNode);
 
-		Group adminGroup = groupRepository.findByName("admin");
+		Group adminGroup = groupService.findByName("admin");
 		if (adminGroup == null) {
-			adminGroup = new Group("admin");
-			adminGroup.getUsers().add(adminUser);
-			groupRepository.save(adminGroup);
+			adminGroup = groupService.create("admin");
+			adminGroup.addUser(adminUser);
+			groupService.save(adminGroup);
 			log.info("Stored admin group");
 		}
-		rootNode.addGroup(adminGroup);
-		rootRepository.save(rootNode);
+		rootNode.getGroupRoot().addGroup(adminGroup);
+		rootService.save(rootNode);
 
-		Role adminRole = roleRepository.findByName("admin");
+		Role adminRole = roleService.findByName("admin");
 		if (adminRole == null) {
-			adminRole = new Role("admin");
+			adminRole = roleService.create("admin");
 			adminGroup.addRole(adminRole);
 		}
 
@@ -424,13 +416,13 @@ public class BootstrapInitializer {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = languageRepository.findByName(languageName);
+			Language language = languageService.findByName(languageName);
 			if (language == null) {
-				language = new Language(languageName, languageTag);
+				language = languageService.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
-				rootNode.addLanguage(languageRepository.save(language));
+				rootNode.getLanguageRoot().addLanguage(languageService.save(language));
 				log.debug("Saved language {" + languageTag + " / " + languageName + "}");
-				rootRepository.save(rootNode);
+				rootService.save(rootNode);
 			}
 		}
 		long diff = System.currentTimeMillis() - start;

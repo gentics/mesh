@@ -1,5 +1,6 @@
 package com.gentics.mesh.util;
 
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -7,18 +8,16 @@ import java.util.Map.Entry;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
@@ -40,9 +39,6 @@ import com.gentics.mesh.core.rest.user.response.UserResponse;
 
 @Component
 public class RestAssert {
-
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	private GraphDatabaseService graphDb;
@@ -72,23 +68,21 @@ public class RestAssert {
 		assertNotNull(restGroup.getUuid());
 	}
 
-	@Transactional
 	public void assertUser(User user, UserResponse restUser) {
 		assertNotNull("The user must not be null.", user);
 		assertNotNull("The restuser must not be null", restUser);
-		user = neo4jTemplate.fetch(user);
+		//		user = neo4jTemplate.fetch(user);
 		assertEquals(user.getUsername(), restUser.getUsername());
 		assertEquals(user.getEmailAddress(), restUser.getEmailAddress());
 		assertEquals(user.getFirstname(), restUser.getFirstname());
 		assertEquals(user.getLastname(), restUser.getLastname());
 		assertEquals(user.getUuid(), restUser.getUuid());
-		assertEquals(user.getGroups().size(), restUser.getGroups().size());
+		assertEquals(count(user.getGroups()), restUser.getGroups().size());
 		// TODO groups
 	}
 
-	@Transactional
 	public void assertTag(Tag tag, TagResponse restTag) {
-		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
+		//		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
 		assertEquals(tag.getUuid(), restTag.getUuid());
 		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getSchemaUuid());
 		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
@@ -121,7 +115,6 @@ public class RestAssert {
 
 	}
 
-	@Transactional
 	public void assertMeshNode(NodeCreateRequest request, MeshNode node) {
 		assertNotNull(request);
 		assertNotNull(node);
@@ -138,17 +131,16 @@ public class RestAssert {
 		assertNotNull(node.getCreator());
 	}
 
-	@Transactional
 	public void assertMeshNode(MeshNode node, NodeResponse readValue) {
 		assertNotNull(node);
 		assertNotNull(readValue);
 		assertEquals(node.getUuid(), readValue.getUuid());
 
-		assertEquals(node.getOrder(), readValue.getOrder());
+		//		assertEquals(node.getOrder(), readValue.getOrder());
 		assertNotNull(readValue.getPerms());
 
 		ObjectSchema schema = node.getSchema();
-		schema = neo4jTemplate.fetch(schema);
+		//		schema = neo4jTemplate.fetch(schema);
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), readValue.getSchema().getSchemaName());
 		assertEquals(schema.getUuid(), readValue.getSchema().getSchemaUuid());

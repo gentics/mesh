@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.request.RoleUpdateRequest;
@@ -137,7 +137,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testReadExtraRoleByUUID() throws Exception {
 		UserInfo info = data().getUserInfo();
 
-		Role extraRole = new Role("extra role");
+		Role extraRole = roleService.create("extra role");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraRole = roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
@@ -161,7 +161,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testReadExtraRoleByUUIDWithMissingPermission() throws Exception {
 		UserInfo info = data().getUserInfo();
 
-		Role extraRole = new Role("extra role");
+		Role extraRole = roleService.create("extra role");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraRole = roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
@@ -194,7 +194,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadRoles() throws Exception {
 
-		Role noPermRole = new Role("no_perm_role");
+		Role noPermRole = roleService.create("no_perm_role");
 		final int nRoles = 21;
 		try (Transaction tx = graphDb.beginTx()) {
 
@@ -202,7 +202,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 			// Create and save some roles
 			for (int i = 0; i < nRoles; i++) {
-				Role extraRole = new Role("extra role " + i);
+				Role extraRole = roleService.create("extra role " + i);
 				extraRole = roleService.save(extraRole);
 				info.getGroup().addRole(extraRole);
 				groupService.save(info.getGroup());
@@ -271,7 +271,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		Role extraRole = new Role("extra role");
+		Role extraRole = roleService.create("extra role");
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
@@ -313,7 +313,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteRoleByUUID() throws Exception {
-		Role extraRole = new Role("extra role");
+		Role extraRole = roleService.create("extra role");
 		try (Transaction tx = graphDb.beginTx()) {
 			roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);

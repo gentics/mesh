@@ -89,13 +89,6 @@
 				<version>${log4j.version}</version>
 			</dependency>
 
-			<!-- Neo4j -->
-			<dependency>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j-cypher-dsl</artifactId>
-				<version>${neo4j.cypher.version}</version>
-			</dependency>
-
 			<!-- neo4vertx -->
 			<dependency>
 				<groupId>org.openpcf</groupId>
@@ -115,11 +108,6 @@
 				<artifactId>spring-test</artifactId>
 				<version>3.1.1.RELEASE</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.data</groupId>
-				<artifactId>spring-data-neo4j</artifactId>
-				<version>${spring.data.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>

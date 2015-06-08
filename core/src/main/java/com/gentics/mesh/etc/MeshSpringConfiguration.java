@@ -31,10 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
-import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.gentics.mesh.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.mesh.auth.Neo4jAuthorizingRealm;
@@ -42,21 +39,15 @@ import com.gentics.mesh.etc.config.MeshConfiguration;
 import com.gentics.mesh.etc.neo4j.UUIDTransactionEventHandler;
 
 @Configuration
-@EnableNeo4jRepositories("com.gentics.mesh")
-@EnableTransactionManagement
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 @EnableAspectJAutoProxy
-public class MeshSpringConfiguration extends Neo4jConfiguration {
+public class MeshSpringConfiguration {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
 	private static MeshConfiguration configuration = null;
-
-	public MeshSpringConfiguration() {
-		setBasePackage("com.gentics.mesh");
-	}
 
 	private void deployNeo4Vertx() throws IOException, InterruptedException {
 		log.info("Deploying neo4vertx...");

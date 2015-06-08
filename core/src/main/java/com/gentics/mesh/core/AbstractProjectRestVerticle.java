@@ -4,9 +4,7 @@ import io.vertx.ext.apex.Router;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 
 /**
@@ -19,9 +17,7 @@ import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
-
-	@Autowired
-	protected ProjectService projectService;
+	
 
 	protected AbstractProjectRestVerticle(String basePath) {
 		super(basePath);

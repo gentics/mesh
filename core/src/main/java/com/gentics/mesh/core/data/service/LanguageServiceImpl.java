@@ -1,37 +1,60 @@
 package com.gentics.mesh.core.data.service;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.root.LanguageRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
-import com.gentics.mesh.core.repository.LanguageRepository;
 
 @Component
-@Transactional(readOnly = true)
 public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implements LanguageService {
-
-	@Autowired
-	private LanguageRepository languageRepository;
-
-	@Override
-	public Language save(Language language) {
-		if (StringUtils.isEmpty(language.getLanguageTag()) || StringUtils.isEmpty(language.getName())) {
-			// TODO throw exception?
-		}
-		return languageRepository.save(language);
-	}
 
 	@Override
 	public Language findByName(String name) {
-		return languageRepository.findByName(name);
+		return null;
+	}
+
+	/**
+	 * Find the language with the specified http://en.wikipedia.org/wiki/IETF_language_tag[IETF language tag].
+	 * 
+	 * @param languageTag
+	 * @return Found language or null if none could be found
+	 */
+	@Override
+	public Language findByLanguageTag(String languageTag) {
+		return null;
 	}
 
 	@Override
-	public Language findByLanguageTag(String languageTag) {
-		return languageRepository.findByLanguageTag(languageTag);
+	public Language save(Language language) {
+//		if (StringUtils.isEmpty(language.getLanguageTag()) || StringUtils.isEmpty(language.getName())) {
+//			// TODO throw exception?
+//		}
+//		LanguageRoot root = findRoot();
+//		if (root == null) {
+//			throw new NullPointerException("The language root node could not be found.");
+//		}
+//		language = neo4jTemplate.save(language);
+//		root.getLanguages().add(language);
+//		neo4jTemplate.save(root);
+//		return language;
+		return null;
 	}
 
+	public LanguageRoot findRoot() {
+		//		@Query("MATCH (n:LanguageRoot) return n")
+		return null;
+	}
+
+	@Override
+	public LanguageRoot createRoot() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Language create(String languageName, String languageTag) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

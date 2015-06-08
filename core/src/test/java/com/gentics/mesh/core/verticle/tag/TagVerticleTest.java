@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
@@ -51,7 +51,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllTags() throws Exception {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-		Tag noPermTag = new Tag();
+		Tag noPermTag = tagService.create();
 		try (Transaction tx = graphDb.beginTx()) {
 			//noPermTag = data().addTag("NoPermEN", "NoPermDE");
 			noPermTag.addProject(data().getProject());

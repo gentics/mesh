@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 
 /**
  * Custom auth* service implementation that adds support for object based permission checks

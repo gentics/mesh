@@ -1,7 +1,6 @@
 package com.gentics.mesh.util;
 
-import org.springframework.data.domain.Page;
-
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.rest.common.response.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.response.PagingMetaInfo;

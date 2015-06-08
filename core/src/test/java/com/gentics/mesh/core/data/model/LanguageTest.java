@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -8,14 +9,14 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.repository.LanguageRepository;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class LanguageTest extends AbstractDBTest {
 
 	@Autowired
-	LanguageRepository languageRepository;
+	private LanguageService languageService;
 
 	@Before
 	public void setup() throws Exception {
@@ -26,32 +27,32 @@ public class LanguageTest extends AbstractDBTest {
 	public void testCreation() {
 		final String languageTag = "tlh";
 		final String languageName = "klingon";
-		Language lang = new Language(languageName, languageTag);
+		Language lang = languageService.create(languageName, languageTag);
 		try (Transaction tx = graphDb.beginTx()) {
-			lang = languageRepository.save(lang);
+			lang = languageService.save(lang);
 			tx.success();
 		}
-		lang = languageRepository.findOne(lang.getId());
+		lang = languageService.findOne(lang.getId());
 		assertNotNull(lang);
 		assertEquals(languageName, lang.getName());
 
-		assertNotNull(languageRepository.findByLanguageTag(languageTag));
+		assertNotNull(languageService.findByLanguageTag(languageTag));
 	}
 
 	@Test
 	public void testLanguageRoot() {
-		int nLanguagesBefore = languageRepository.findRoot().getLanguages().size();
+		int nLanguagesBefore = count(languageService.findRoot().getLanguages());
 
 		try (Transaction tx = graphDb.beginTx()) {
 			final String languageName = "klingon";
 			final String languageTag = "tlh";
-			Language lang = new Language(languageName, languageTag);
-			languageRepository.save(lang);
+			Language lang = languageService.create(languageName, languageTag);
+			languageService.save(lang);
 			tx.success();
 
 		}
 
-		int nLanguagesAfter = languageRepository.findRoot().getLanguages().size();
+		int nLanguagesAfter = count(languageService.findRoot().getLanguages());
 		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 
 	}

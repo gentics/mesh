@@ -2,18 +2,20 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.ext.apex.RoutingContext;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.neo4j.conversion.Result;
-
-import com.gentics.mesh.core.data.model.auth.GraphPermission;
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.Result;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
+import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
 
 public interface RoleService extends GenericNodeService<Role> {
@@ -39,10 +41,17 @@ public interface RoleService extends GenericNodeService<Role> {
 
 	RoleResponse transformToRest(Role role);
 
-	void addCRUDPermissionOnRole(RoutingContext rc, MeshPermission meshPermission, GenericNode targetNode);
+	void addCRUDPermissionOnRole(RoutingContext rc, TPMeshPermission meshPermission, GenericNode targetNode);
 
 	Page<Role> findAll(RoutingContext rc, PagingInfo pagingInfo);
 
 	Page<Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo);
+
+	Role create(String name);
+
+	RoleRoot createRoot();
+
+	RoleRoot  findRoot();
+
 
 }

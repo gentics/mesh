@@ -1,14 +1,16 @@
 package com.gentics.mesh.paging;
 
-import org.springframework.data.domain.PageRequest;
+public class MeshPageRequest {
 
-public class MeshPageRequest extends PageRequest {
+	int page;
+	int size;
 
 	public MeshPageRequest(int page, int size) {
-		super(page, size);
+		this.page = page;
+		this.size = size;
 	}
 
 	public MeshPageRequest(PagingInfo pagingInfo) {
-		super(pagingInfo.getPage() - 1, pagingInfo.getPerPage());
+		this(pagingInfo.getPage() - 1, pagingInfo.getPerPage());
 	}
 }

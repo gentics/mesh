@@ -1,5 +1,5 @@
 package com.gentics.mesh.core.verticle.schema;
-
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -15,12 +15,11 @@ import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.service.ObjectSchemaService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
@@ -33,6 +32,7 @@ import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
 
+
 public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -43,9 +43,6 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectService projectService;
-
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	private GraphDatabaseService databaseService;
@@ -79,7 +76,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		ObjectSchema schema = objectSchemaService.findByUUID(responseObject.getUuid());
 		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
-		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
+		assertEquals("There should be exactly one property schema.", 1, count(schema.getPropertyTypeSchemas()));
 
 	}
 
@@ -103,7 +100,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		// Verify that the object was created
 		ObjectSchema schema = objectSchemaService.findByUUID(restSchema.getUuid());
 		test.assertSchema(schema, restSchema);
-		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
+		assertEquals("There should be exactly one property schema.", 1, count(schema.getPropertyTypeSchemas()));
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + restSchema.getUuid(), 200, "OK");
 		expectMessageResponse("schema_deleted", response, restSchema.getName());
@@ -115,10 +112,10 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllSchemaList() throws Exception {
 		final int nSchemas = 22;
-		ObjectSchema noPermSchema = new ObjectSchema("no_perm_schema");
+		ObjectSchema noPermSchema = objectSchemaService.create("no_perm_schema");
 		try (Transaction tx = graphDb.beginTx()) {
 			for (int i = 0; i < nSchemas; i++) {
-				ObjectSchema extraSchema = new ObjectSchema("extra_schema_" + i);
+				ObjectSchema extraSchema = objectSchemaService.create("extra_schema_" + i);
 				extraSchema = objectSchemaService.save(extraSchema);
 				roleService.addPermission(info.getRole(), extraSchema, PermissionType.READ);
 			}
@@ -269,7 +266,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testAddSchemaToProjectWithPerm() throws Exception {
 		ObjectSchema schema = data().getSchema("content");
 
-		Project extraProject = new Project("extraProject");
+		Project extraProject = projectService.create("extraProject");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraProject = projectService.save(extraProject);
 			tx.success();
@@ -297,7 +294,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		ObjectSchema schema = data().getSchema("content");
 		Project project = data().getProject();
 
-		Project extraProject = new Project("extraProject");
+		Project extraProject = projectService.create("extraProject");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraProject = projectService.save(extraProject);
 			// Add only read perms
@@ -322,7 +319,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		ObjectSchema schema = data().getSchema("content");
 		Project project = data().getProject();
 		try (Transaction tx = graphDb.beginTx()) {
-			project = neo4jTemplate.fetch(project);
+			//project = neo4jTemplate.fetch(project);
 			assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 			tx.success();
 		}

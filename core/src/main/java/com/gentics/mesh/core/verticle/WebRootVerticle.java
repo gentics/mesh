@@ -13,15 +13,12 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.WebRootService;
@@ -39,9 +36,6 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private TagService tagService;
-
-	@Autowired
-	private Neo4jTemplate template;
 
 	@Autowired
 	private LanguageService languageService;
@@ -84,7 +78,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 							throw new EntityNotFoundException(message);
 						}
 
-						rc.session().hasPermission(new MeshPermission(node, PermissionType.READ).toString(), rh -> {
+						rc.session().hasPermission(new TPMeshPermission(node, PermissionType.READ).toString(), rh -> {
 							languageTags.add(lastSegment.getLanguageTag());
 							if (rh.result()) {
 								bch.complete(node);

@@ -35,6 +35,7 @@ public class BasicRelationships {
 	public static final String HAS_ROOT_NODE = "HAS_ROOT_NODE";
 
 	// Schemas
+	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_OBJECT_SCHEMA = "HAS_OBJECT_SCHEMA";
 	public static final String HAS_MICRO_SCHEMA_ROOT = "HAS_MICRO_SCHEMA_ROOT";

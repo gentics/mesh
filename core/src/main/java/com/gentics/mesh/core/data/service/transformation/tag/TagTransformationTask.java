@@ -9,11 +9,11 @@ import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.I18NProperties;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
@@ -51,10 +51,11 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 			try (Transaction tx = info.getGraphDb().beginTx()) {
 
 				restTag.setPerms(info.getUserService().getPerms(info.getRoutingContext(), tag));
-
 				restTag.setUuid(tag.getUuid());
-				if (tag.getSchema() != null) {
-					ObjectSchema schema = info.getNeo4jTemplate().fetch(tag.getSchema());
+				
+				ObjectSchema schema = tag.getSchema();
+				if (schema != null) {
+//					ObjectSchema schema = info.getNeo4jTemplate().fetch(tag.getSchema());
 					SchemaReference schemaReference = new SchemaReference();
 					schemaReference.setSchemaName(schema.getName());
 					schemaReference.setSchemaUuid(schema.getUuid());
@@ -63,7 +64,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 
 				User creator = tag.getCreator();
 				if (creator != null) {
-					creator = info.getNeo4jTemplate().fetch(creator);
+//					creator = info.getNeo4jTemplate().fetch(creator);
 					restTag.setCreator(info.getUserService().transformToRest(creator));
 				}
 
@@ -80,7 +81,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					// Add all i18n properties for the selected language to the response
 					I18NProperties i18nProperties = info.getTagService().getI18NProperties(tag, language);
 					if (i18nProperties != null) {
-						i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
+//						i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
 						for (String key : i18nProperties.getProperties().getPropertyKeys()) {
 							restTag.addProperty(languageTag, key, i18nProperties.getProperty(key));
 						}

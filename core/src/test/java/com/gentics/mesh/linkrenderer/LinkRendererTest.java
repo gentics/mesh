@@ -13,12 +13,12 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;
 import com.gentics.mesh.core.link.LinkResolverFactoryImpl;
-import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class LinkRendererTest extends AbstractDBTest {
@@ -29,7 +29,7 @@ public class LinkRendererTest extends AbstractDBTest {
 	private LinkResolverFactoryImpl<LinkResolver> resolverFactory;
 
 	@Autowired
-	private MeshNodeService contentService;
+	private MeshNodeService nodeService;
 
 	@Before
 	public void setup() throws Exception {
@@ -43,19 +43,19 @@ public class LinkRendererTest extends AbstractDBTest {
 		Language english = data().getEnglish();
 
 		// Create some dummy content
-		MeshNode content = new MeshNode();
+		MeshNode content = nodeService.create();
 		try (Transaction tx = graphDb.beginTx()) {
-			contentService.setDisplayName(content, german, "german name");
-			contentService.setName(content, german, "german.html");
-			contentService.save(content);
+			nodeService.setDisplayName(content, german, "german name");
+			nodeService.setName(content, german, "german.html");
+			nodeService.save(content);
 			tx.success();
 		}
 
-		MeshNode content2 = new MeshNode();
+		MeshNode content2 = nodeService.create();
 		try (Transaction tx = graphDb.beginTx()) {
-			contentService.setDisplayName(content2, english, "content 2 english");
-			contentService.setName(content2, english, "english.html");
-			contentService.save(content2);
+			nodeService.setDisplayName(content2, english, "content 2 english");
+			nodeService.setName(content2, english, "english.html");
+			nodeService.save(content2);
 			tx.success();
 		}
 

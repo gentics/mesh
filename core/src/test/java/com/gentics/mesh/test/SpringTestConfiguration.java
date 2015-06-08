@@ -20,23 +20,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
-import org.springframework.data.neo4j.config.Neo4jConfiguration;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.gentics.mesh.auth.Neo4jAuthorizingRealm;
 import com.gentics.mesh.etc.neo4j.UUIDTransactionEventHandler;
 
 @Configuration
-@EnableNeo4jRepositories("com.gentics.mesh")
-@EnableTransactionManagement
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 @EnableAspectJAutoProxy
-public class SpringTestConfiguration extends Neo4jConfiguration {
-
-	public SpringTestConfiguration() {
-		setBasePackage("com.gentics.mesh");
-	}
+public class SpringTestConfiguration {
 
 	@Bean
 	public GraphDatabaseService graphDatabaseService() {

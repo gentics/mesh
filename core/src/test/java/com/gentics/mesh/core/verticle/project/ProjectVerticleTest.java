@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
@@ -97,12 +97,12 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project noPermProject;
 		try (Transaction tx = graphDb.beginTx()) {
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = new Project("extra_project_" + i);
+				Project extraProject = projectService.create("extra_project_" + i);
 				extraProject.setRootNode(data().getProject().getRootNode());
 				extraProject = projectService.save(extraProject);
 				roleService.addPermission(info.getRole(), extraProject, PermissionType.READ);
 			}
-			noPermProject = new Project("no_perm_project");
+			noPermProject = projectService.create("no_perm_project");
 			noPermProject = projectService.save(noPermProject);
 			tx.success();
 		}

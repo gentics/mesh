@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -16,9 +17,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
@@ -49,7 +52,7 @@ public class TagTest extends AbstractDBTest {
 	public void testLocalizedFolder() {
 		Language german = languageService.findByLanguageTag("de");
 
-		Tag tag = new Tag();
+		Tag tag = tagService.create();
 		tagService.setDisplayName(tag, german, GERMAN_NAME);
 		try (Transaction tx = graphDb.beginTx()) {
 			tag = tagService.save(tag);
@@ -67,7 +70,7 @@ public class TagTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleTag() {
-		Tag tag = new Tag();
+		Tag tag = tagService.create();
 		tagService.setProperty(tag, data().getEnglish(), "name", "test");
 		tagService.save(tag);
 	}
@@ -75,7 +78,7 @@ public class TagTest extends AbstractDBTest {
 	@Test
 	public void testNodes() throws NotSupportedException {
 
-		Tag tag = new Tag();
+		Tag tag = tagService.create();
 
 		Language english = languageService.findByLanguageTag("en");
 
@@ -88,7 +91,7 @@ public class TagTest extends AbstractDBTest {
 		assertNotNull(tag);
 
 		final String GERMAN_TEST_FILENAME = "german.html";
-		MeshNode node = new MeshNode();
+		MeshNode node = nodeService.create();
 
 		Language german = languageService.findByLanguageTag("de");
 
@@ -98,7 +101,7 @@ public class TagTest extends AbstractDBTest {
 			tag = tagService.save(tag);
 
 			// Assign the tag to the node
-			node.getTags().add(tag);
+			node.addTag(tag);
 			node = nodeService.save(node);
 			tx.success();
 		}
@@ -108,7 +111,7 @@ public class TagTest extends AbstractDBTest {
 
 			tag = tagService.reload(tag);
 
-			assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
+			assertEquals("The tag should have exactly one node.", 1, count(tag.getNodes()));
 			MeshNode contentFromTag = tag.getNodes().iterator().next();
 			assertNotNull(contentFromTag);
 			assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
@@ -116,12 +119,13 @@ public class TagTest extends AbstractDBTest {
 			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 			// Remove the file/content and check whether the content was really removed
-			assertTrue(tag.removeNode(contentFromTag));
+			tag.removeNode(contentFromTag);
+			//TODO verify for removed node
 			tag = tagService.save(tag);
 			tx.success();
 		}
 		tag = tagService.reload(tag);
-		assertEquals("The tag should not have any file.", 0, tag.getNodes().size());
+		assertEquals("The tag should not have any file.", 0, count(tag.getNodes()));
 
 	}
 
@@ -137,14 +141,13 @@ public class TagTest extends AbstractDBTest {
 	//	}
 
 	@Test
-	@Transactional
 	public void testNodeTagging() {
 		Language german = languageService.findByLanguageTag("de");
 		final String TEST_TAG_NAME = "testTag";
 
 		MeshNode node = data().getFolder("news");
 
-		Tag tag = new Tag();
+		Tag tag = tagService.create();
 		tagService.setDisplayName(tag, german, TEST_TAG_NAME);
 		tag = tagService.save(tag);
 		node.addTag(tag);
@@ -153,7 +156,7 @@ public class TagTest extends AbstractDBTest {
 		MeshNode reloadedNode = nodeService.reload(node);
 		boolean found = false;
 		for (Tag currentTag : reloadedNode.getTags()) {
-			neo4jTemplate.fetch(currentTag);
+//			neo4jTemplate.fetch(currentTag);
 			if (currentTag.getUuid().equals(tag.getUuid())) {
 				found = true;
 			}

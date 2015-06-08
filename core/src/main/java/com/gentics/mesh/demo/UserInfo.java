@@ -1,8 +1,8 @@
 package com.gentics.mesh.demo;
 
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 
 public class UserInfo {
 

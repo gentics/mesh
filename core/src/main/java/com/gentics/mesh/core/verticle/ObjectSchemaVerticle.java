@@ -13,17 +13,17 @@ import io.vertx.ext.apex.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
-import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;
@@ -60,9 +60,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
 					Project project = rh.result();
 					ObjectSchema schema = srh.result();
-					if (schema.addProject(project)) {
-						schema = schemaService.save(schema);
-					}
+					schema.addProject(project);
+//						schema = schemaService.save(schema);
 				}, trh -> {
 					ObjectSchema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
@@ -108,7 +107,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
 
-				ObjectSchema schema = new ObjectSchema(requestModel.getName());
+				ObjectSchema schema =  schemaService.create(requestModel.getName());
 				schema.setDescription(requestModel.getDescription());
 				schema.setDisplayName(requestModel.getDisplayName());
 
@@ -116,14 +115,14 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					// TODO validate field?
 					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
 					String key = restPropSchema.getKey();
-					BasicPropertyTypeSchema propSchema = new BasicPropertyTypeSchema(key, type);
+					BasicPropertyTypeSchema propSchema = schemaService.createBasicPropertyTypeSchema(key, type);
 					propSchema.setDescription(restPropSchema.getDesciption());
 					propSchema.setType(type);
 					schema.addPropertyTypeSchema(propSchema);
 				}
 				schema.addProject(project);
 				schema = schemaService.save(schema);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(project, PermissionType.CREATE), schema);
+				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(project, PermissionType.CREATE), schema);
 				schemaCreated.complete(schema);
 			}, trh -> {
 				ObjectSchema schema = schemaCreated.result();

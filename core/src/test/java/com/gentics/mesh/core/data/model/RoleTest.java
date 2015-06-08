@@ -4,39 +4,29 @@ import static com.gentics.mesh.core.data.model.auth.PermissionType.CREATE;
 import static com.gentics.mesh.core.data.model.auth.PermissionType.DELETE;
 import static com.gentics.mesh.core.data.model.auth.PermissionType.READ;
 import static com.gentics.mesh.core.data.model.auth.PermissionType.UPDATE;
+import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.ext.apex.RoutingContext;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 
-import com.gentics.mesh.core.data.model.auth.GraphPermission;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.service.MeshNodeService;
-import com.gentics.mesh.core.data.service.UserService;
-import com.gentics.mesh.core.repository.RoleRepository;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.paging.MeshPageRequest;
+import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class RoleTest extends AbstractDBTest {
-
-	@Autowired
-	private RoleRepository roleRepository;
-
-	@Autowired
-	private MeshNodeService contentService;
-
-	@Autowired
-	private UserService userService;
 
 	private UserInfo info;
 
@@ -49,12 +39,12 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testCreation() {
 		final String roleName = "test";
-		Role role = new Role(roleName);
+		Role role = roleService.create(roleName);
 		try (Transaction tx = graphDb.beginTx()) {
-			roleRepository.save(role);
+			roleService.save(role);
 			tx.success();
 		}
-		role = roleRepository.findOne(role.getId());
+		role = roleService.findOne(role.getId());
 		assertNotNull(role);
 		assertEquals(roleName, role.getName());
 	}
@@ -68,9 +58,9 @@ public class RoleTest extends AbstractDBTest {
 			roleService.addPermission(role, content, CREATE, READ, UPDATE, DELETE);
 
 			// content2
-			content2 = new MeshNode();
-			contentService.setContent(content2, data().getEnglish(), "Test");
-			content2 = contentService.save(content2);
+			content2 = nodeService.create();
+			nodeService.setContent(content2, data().getEnglish(), "Test");
+			content2 = nodeService.save(content2);
 			roleService.addPermission(role, content2, READ, DELETE);
 			roleService.addPermission(role, content2, CREATE);
 			tx.success();
@@ -87,7 +77,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testIsPermitted() throws Exception {
 		User user = info.getUser();
-		MeshPermission perm = new MeshPermission(data().getFolder("news"), PermissionType.READ);
+		TPMeshPermission perm = new TPMeshPermission(data().getFolder("news"), PermissionType.READ);
 		long start = System.currentTimeMillis();
 		int nRuns = 200000;
 		for (int i = 0; i < nRuns; i++) {
@@ -143,22 +133,22 @@ public class RoleTest extends AbstractDBTest {
 		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				userService.isPermitted(info.getUser().getId(), new MeshPermission(data().getMeshRoot().getGroupRoot(), PermissionType.CREATE)));
+				userService.isPermitted(info.getUser().getId(), new TPMeshPermission(data().getMeshRoot().getGroupRoot(), PermissionType.CREATE)));
 
 	}
 
 	@Test
 	public void testRoleRoot() {
-		int nRolesBefore = roleRepository.findRoot().getRoles().size();
+		int nRolesBefore = count(roleService.findRoot().getRoles());
 
 		final String roleName = "test2";
 		try (Transaction tx = graphDb.beginTx()) {
-			Role role = new Role(roleName);
-			roleRepository.save(role);
+			Role role = roleService.create(roleName);
+			roleService.save(role);
 			tx.success();
 		}
 
-		int nRolesAfter = roleRepository.findRoot().getRoles().size();
+		int nRolesAfter = count(roleService.findRoot().getRoles());
 		assertEquals(nRolesBefore + 1, nRolesAfter);
 
 	}
@@ -166,7 +156,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testRolesOfGroup() {
 
-		Role extraRole = new Role("extraRole");
+		Role extraRole = roleService.create("extraRole");
 		try (Transaction tx = graphDb.beginTx()) {
 			extraRole = roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
@@ -175,7 +165,8 @@ public class RoleTest extends AbstractDBTest {
 			tx.success();
 		}
 
-		Page<Role> roles = roleRepository.findByGroup(info.getUser().getUuid(), info.getGroup(), new MeshPageRequest(0, 10));
+		RoutingContext rc = getMockedRoutingContext("");
+		Page<Role> roles = roleService.findByGroup(rc, info.getGroup(), new PagingInfo(0, 10));
 		assertEquals(2, roles.getTotalElements());
 	}
 }

@@ -1,15 +1,11 @@
 package com.gentics.mesh.core.data.model.schema.propertytypes;
 
-public class BasicPropertyTypeSchema extends AbstractPropertyTypeSchema {
+import com.gentics.mesh.core.data.model.tinkerpop.AbstractPropertyTypeSchema;
 
-	private static final long serialVersionUID = 5711437561677711051L;
+public interface BasicPropertyTypeSchema extends AbstractPropertyTypeSchema {
 
-	public BasicPropertyTypeSchema() {
-		// TODO Auto-generated constructor stub
-	}
 	
-	public BasicPropertyTypeSchema(String name, PropertyType type) {
-		super(name, type);
-	}
+
+	
 
 }

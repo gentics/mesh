@@ -4,9 +4,11 @@ import io.vertx.ext.apex.RoutingContext;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-
-import com.gentics.mesh.core.data.model.MeshNode;
+import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerService;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
@@ -28,5 +30,10 @@ public interface MeshNodeService extends GenericPropertyContainerService<MeshNod
 	public Page<MeshNode> findChildren(RoutingContext rc, String projectName, MeshNode parentNode, List<String> languageTags, PagingInfo pagingInfo);
 
 	public void createLink(MeshNode from, MeshNode to);
+
+	public MeshNode create();
+
+
+
 
 }

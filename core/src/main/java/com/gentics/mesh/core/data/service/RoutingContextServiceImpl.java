@@ -23,10 +23,9 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.service.generic.GenericNodeService;
@@ -38,7 +37,6 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
-@Transactional(readOnly = true)
 public class RoutingContextServiceImpl implements RoutingContextService {
 
 	@Autowired
@@ -205,7 +203,7 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 				return;
 			}
 			final T foundNode = node;
-			rc.session().hasPermission(new MeshPermission(node, permType).toString(), handler -> {
+			rc.session().hasPermission(new TPMeshPermission(node, permType).toString(), handler -> {
 				if (!handler.result()) {
 					fut.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", foundNode.getUuid())));
 					return;
@@ -284,7 +282,7 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 	@Override
 	public void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
-		rc.session().hasPermission(new MeshPermission(node, type).toString(), handler -> {
+		rc.session().hasPermission(new TPMeshPermission(node, type).toString(), handler -> {
 			if (!handler.result()) {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));
 				AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);

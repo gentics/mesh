@@ -1,16 +1,15 @@
 package com.gentics.mesh.core.data.service.generic;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.I18NProperties;
-import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
-import com.gentics.mesh.core.data.model.relationship.Translated;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.repository.action.PropertyContainerActions;
 
-//@Transactional(readOnly = true)
 public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContainer> extends GenericNodeServiceImpl<T> implements
 		PropertyContainerActions<T> {
 
@@ -27,15 +26,19 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 
 		I18NProperties i18nProperties = getI18NProperties(node, language);
 		if (i18nProperties == null) {
-			i18nProperties = new I18NProperties(language);
+			i18nProperties = create(language);
 			i18nProperties.setProperty(key, value);
-			i18nProperties = i18nPropertyRepository.save(i18nProperties);
-			node.getI18nTranslations().add(new Translated(node, i18nProperties, language));
+//			i18nProperties = i18nPropertyService.save(i18nProperties);
+			node.addI18nTranslation(create(node, i18nProperties, language));
 		} else {
 			i18nProperties.setProperty(key, value);
-			i18nProperties = i18nPropertyRepository.save(i18nProperties);
+//			i18nProperties = i18nPropertyService.save(i18nProperties);
 		}
 
+	}
+
+	private I18NProperties create(Language language) {
+		return null;
 	}
 
 	public void setContent(T node, Language language, String text) {
@@ -71,14 +74,14 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 	}
 
 	public String getProperty(T node, Language language, String key) {
-		node = neo4jTemplate.fetch(node);
+		//		node = neo4jTemplate.fetch(node);
 		if (language == null || StringUtils.isEmpty(key)) {
 			return null;
 		}
 		for (Translated translation : node.getI18nTranslations()) {
-			translation = neo4jTemplate.fetch(translation);
+			//			translation = neo4jTemplate.fetch(translation);
 			if (translation.getLanguageTag().equalsIgnoreCase(language.getLanguageTag())) {
-				I18NProperties i18nProperties = neo4jTemplate.fetch(translation.getI18nProperties());
+				//				I18NProperties i18nProperties = neo4jTemplate.fetch(translation.getI18NProperties());
 				return i18nProperties.getProperty(key);
 			}
 		}
@@ -94,11 +97,17 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 				continue;
 			}
 			if (translation.getLanguageTag().equals(language.getLanguageTag())) {
-				I18NProperties i18nProperties = translation.getI18nProperties();
-				i18nProperties = neo4jTemplate.fetch(i18nProperties);
+				I18NProperties i18nProperties = translation.getI18NProperties();
+				//				i18nProperties = neo4jTemplate.fetch(i18nProperties);
 				return i18nProperties;
 			}
 		}
 		return null;
 	}
+
+	public Translated create(T node, I18NProperties props, Language language) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

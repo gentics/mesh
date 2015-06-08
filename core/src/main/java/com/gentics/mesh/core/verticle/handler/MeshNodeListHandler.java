@@ -6,12 +6,12 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;

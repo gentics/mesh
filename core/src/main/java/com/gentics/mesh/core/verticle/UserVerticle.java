@@ -13,14 +13,14 @@ import io.vertx.ext.apex.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
-import com.gentics.mesh.core.data.model.auth.Group;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
@@ -167,14 +167,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				User user = new User(requestModel.getUsername());
+				User user = userService.create(requestModel.getUsername());
 				user.setFirstname(requestModel.getFirstname());
 				user.setLastname(requestModel.getLastname());
 				user.setEmailAddress(requestModel.getEmailAddress());
 				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
-				user.getGroups().add(parentGroup);
+				user.addGroup(parentGroup);
 				user = userService.save(user);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), user);
+				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(parentGroup, PermissionType.CREATE), user);
 				userCreated.complete(user);
 			}, trh -> {
 				User user = userCreated.result();

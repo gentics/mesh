@@ -16,10 +16,10 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.GroupRoot;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.root.GroupRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
@@ -113,13 +113,13 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupRoot root;
 		try (Transaction tx = graphDb.beginTx()) {
 			root = data().getMeshRoot().getGroupRoot();
-			root = neo4jTemplate.fetch(root);
+//			root = neo4jTemplate.fetch(root);
 			roleService.revokePermission(info.getRole(), root, PermissionType.CREATE);
 			tx.success();
 		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				userService.isPermitted(info.getUser().getId(), new MeshPermission(root, PermissionType.CREATE)));
+				userService.isPermitted(info.getUser().getId(), new TPMeshPermission(root, PermissionType.CREATE)));
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
 		expectMessageResponse("error_missing_perm", response, root.getUuid());
@@ -134,11 +134,11 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		// Create and save some groups
 		final int nGroups = 21;
-		Group extraGroupWithNoPerm = new Group("no_perm_group");
+		Group extraGroupWithNoPerm = groupService.create("no_perm_group");
 		try (Transaction tx = graphDb.beginTx()) {
 
 			for (int i = 0; i < nGroups; i++) {
-				Group group = new Group("group_" + i);
+				Group group = groupService.create("group_" + i);
 				group = groupService.save(group);
 				roleService.addPermission(info.getRole(), group, PermissionType.READ);
 			}
@@ -269,7 +269,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String alreadyUsedName = "extraGroup";
 
 		// Create a group which occupies the name
-		Group extraGroup = new Group(alreadyUsedName);
+		Group extraGroup = groupService.create(alreadyUsedName);
 		extraGroup = groupService.save(extraGroup);
 		extraGroup = groupService.reload(extraGroup);
 

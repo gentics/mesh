@@ -9,15 +9,15 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Vertex;
 
 @Component
 @Scope("singleton")
@@ -26,8 +26,6 @@ public class Neo4jGenericContentUtils {
 	@Autowired
 	MeshSpringConfiguration configuration;
 
-	@Autowired
-	Neo4jTemplate template;
 
 	/**
 	 * Returns the path between the given tag and the target node.
@@ -41,7 +39,8 @@ public class Neo4jGenericContentUtils {
 	public String getPath(Tag to, GenericNode from) {
 		GraphDatabaseService graphDB = configuration.getGraphDatabaseService();
 		List<String> segments = new ArrayList<>();
-		Node fromNode = template.getPersistentState(from);
+//		Node fromNode = template.getPersistentState(from);
+		Vertex fromNode = from.asVertex();
 		for (Node node : graphDB.traversalDescription().depthFirst().relationships(BasicRelationships.TYPES.HAS_TAG)
 				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(fromNode).nodes()) {
 			System.out.println(node.getId() + " " + node.getLabels());

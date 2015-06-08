@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.repository.action;
 
-import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 
 public interface PropertyContainerActions<T extends GenericPropertyContainer> {
 

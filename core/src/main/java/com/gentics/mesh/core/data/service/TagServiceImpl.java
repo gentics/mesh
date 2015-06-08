@@ -9,28 +9,25 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
-import com.gentics.mesh.core.repository.TagRepository;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
-@Transactional(readOnly = true)
 public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> implements TagService {
 
 	private static final Logger log = LoggerFactory.getLogger(TagServiceImpl.class);
-
-	@Autowired
-	private TagRepository tagRepository;
 
 	@Autowired
 	private LanguageService languageService;
@@ -49,6 +46,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	@Autowired
 	private UserService userService;
+	
 
 	@Autowired
 	private RoutingContextService rcs;
@@ -65,7 +63,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		info.setContentService(nodeService);
 		info.setSpringConfiguration(springConfiguration);
 		info.setTagService(this);
-		info.setNeo4jTemplate(neo4jTemplate);
 
 		// Configuration
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
@@ -81,19 +78,122 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	@Override
 	public Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
+		//tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
+		return null;
 	}
 
 	@Override
 	public Page<Tag> findTags(RoutingContext rc, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findTags(userUuid, projectName, node, languageTags, pagingInfo);
+		//tagRepository.findTags(userUuid, projectName, node, languageTags, pagingInfo);
+		return null;
 	}
 
 	@Override
 	public Page<MeshNode> findTaggedNodes(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
-		return tagRepository.findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
+		//findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
+		return null;
+	}
+
+	
+
+	static String PERMISSION_PATTERN_ON_TAG = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
+	static String PERMISSION_PATTERN_ON_NODE = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(node:MeshNode)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
+	static String TAG_PROJECT_PATTERN = "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
+	static String USER_PERMISSION_FILTER = " requestUser.uuid = {userUuid} AND perm.`permissions-read` = true ";
+	static String PROJECT_FILTER = "pr.name = {projectName} ";
+	static String ROOT_TAG_FILTER = "id(rootTag) = {rootTagId} ";
+	static String ORDER_BY_NAME = "ORDER BY p.`properties-name` desc";
+
+
+	public static String getLanguageFilter(String field) {
+		String filter = " " + field + ".languageTag IN {languageTags} ";
+		return filter;
+	}
+
+	public Page<Tag> findProjectTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+
+//		String langFilter = getLanguageFilter("l");
+//		if (languageTags == null || languageTags.isEmpty()) {
+//			langFilter = "";
+//		} else {
+//			langFilter += " AND ";
+//		}
+//		String baseQuery = PERMISSION_PATTERN_ON_TAG;
+//		baseQuery += TAG_PROJECT_PATTERN;
+//		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + "AND " + PROJECT_FILTER;
+//
+//		String query = baseQuery + " WITH p, tag " + ORDER_BY_NAME + " RETURN DISTINCT tag as n";
+//		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
+//
+//		Map<String, Object> parameters = new HashMap<>();
+//		parameters.put("languageTags", languageTags);
+//		parameters.put("projectName", projectName);
+//		parameters.put("userUuid", userUuid);
+//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
+		return null;
+	}
+
+	public Page<Tag> findTags(String userUuid, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
+//		String langFilter = getLanguageFilter("l");
+//		if (languageTags == null || languageTags.isEmpty()) {
+//			langFilter = "";
+//		} else {
+//			langFilter += " AND ";
+//		}
+//
+//		String baseQuery = PERMISSION_PATTERN_ON_TAG;
+//		baseQuery += TAG_PROJECT_PATTERN;
+//		baseQuery += "MATCH (node:MeshNode)-[:HAS_TAG]->(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
+//		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
+//
+//		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
+//		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
+//
+//		Map<String, Object> parameters = new HashMap<>();
+//		parameters.put("languageTags", languageTags);
+//		parameters.put("projectName", projectName);
+//		parameters.put("userUuid", userUuid);
+//		parameters.put("node", node);
+//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
+		return null;
+	}
+
+	public Page<MeshNode> findTaggedNodes(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
+//		String langFilter = getLanguageFilter("l");
+//		if (languageTags == null || languageTags.isEmpty()) {
+//			langFilter = "";
+//		} else {
+//			langFilter += " AND ";
+//		}
+//		String baseQuery = PERMISSION_PATTERN_ON_NODE;
+//		baseQuery += "MATCH (node)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
+//		baseQuery += "MATCH (tag:Tag)-[:HAS_TAG]->(node)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
+//		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
+//
+//		String query = baseQuery + " WITH sp, node " + ORDER_BY_NAME + " RETURN DISTINCT node as n";
+//		String countQuery = baseQuery + " RETURN count(DISTINCT node) as count";
+//
+//		Map<String, Object> parameters = new HashMap<>();
+//		parameters.put("languageTags", languageTags);
+//		parameters.put("projectName", projectName);
+//		parameters.put("userUuid", userUuid);
+//		parameters.put("tag", tag);
+//		return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
+		return null;
+	}
+
+	@Override
+	public Translated create(MeshNode node, I18NProperties props, Language language) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Tag create() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

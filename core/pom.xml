@@ -172,18 +172,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Spring data -->
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-neo4j</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>neo4j</artifactId>
-					<groupId>org.neo4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<dependency>
 			<groupId>org.eclipse.jgit</groupId>
 			<artifactId>org.eclipse.jgit</artifactId>
@@ -191,10 +179,6 @@
 		</dependency>
 
 		<!-- Neo4J -->
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-cypher-dsl</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.openpcf</groupId>
 			<artifactId>neo4vertx-core</artifactId>

@@ -1,5 +1,6 @@
 package com.gentics.mesh.demo;
 
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
@@ -13,28 +14,26 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.tooling.GlobalGraphOperations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.MeshRoot;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
-import com.gentics.mesh.core.data.model.auth.GraphPermission;
-import com.gentics.mesh.core.data.model.auth.Group;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
-import com.gentics.mesh.core.data.model.schema.propertytypes.ListPropertyTypeSchema;
 import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyTypeSchema;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -45,6 +44,7 @@ import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.tinkerpop.blueprints.Vertex;
 
 @Component
 public class DemoDataProvider {
@@ -87,8 +87,6 @@ public class DemoDataProvider {
 	@Autowired
 	private GraphDatabaseService graphDb;
 
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;
@@ -262,7 +260,7 @@ public class DemoDataProvider {
 
 	private void addFolderStructure() {
 
-		MeshNode rootNode = new MeshNode();
+		MeshNode rootNode = nodeService.create();
 		rootNode = nodeService.save(rootNode);
 		rootNode.setCreator(userInfo.getUser());
 		rootNode.addProject(project);
@@ -313,7 +311,7 @@ public class DemoDataProvider {
 		String password = "test123";
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 
-		User user = new User(username);
+		User user = userService.create(username);
 		user.setUuid("UUIDOFUSER1");
 		userService.setPassword(user, password);
 		log.info("Creating user with username: " + username + " and password: " + password);
@@ -324,13 +322,13 @@ public class DemoDataProvider {
 		users.put(username, user);
 
 		String roleName = username + "_role";
-		Role role = new Role(roleName);
+		Role role = roleService.create(roleName);
 		roleService.save(role);
 		roleService.addPermission(role, role, PermissionType.READ);
 		roles.put(roleName, role);
 
 		String groupName = username + "_group";
-		Group group = new Group(groupName);
+		Group group = groupService.create(groupName);
 		group.addUser(user);
 		group.addRole(role);
 		group = groupService.save(group);
@@ -345,7 +343,7 @@ public class DemoDataProvider {
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 
-		project = new Project(PROJECT_NAME);
+		project = projectService.create(PROJECT_NAME);
 		project.setCreator(userInfo.getUser());
 		project = projectService.save(project);
 
@@ -354,18 +352,18 @@ public class DemoDataProvider {
 		rootService.save(root);
 
 		// Guest Group / Role
-		Role guestRole = new Role("guest_role");
+		Role guestRole = roleService.create("guest_role");
 		roleService.save(guestRole);
 		roles.put(guestRole.getName(), guestRole);
 
-		Group guests = new Group("guests");
+		Group guests = groupService.create("guests");
 		guests.addRole(guestRole);
 		guests = groupService.save(guests);
 		groups.put("guests", guests);
 
 		// Extra User
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			User user = new User("guest_" + i);
+			User user = userService.create("guest_" + i);
 			// userService.setPassword(user, "guestpw" + i);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
@@ -377,27 +375,27 @@ public class DemoDataProvider {
 		}
 		// Extra Groups
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			Group group = new Group("extra_group_" + i);
+			Group group = groupService.create("extra_group_" + i);
 			group = groupService.save(group);
 			groups.put(group.getName(), group);
 		}
 
 		// Extra Roles
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			Role role = new Role("extra_role_" + i);
+			Role role =roleService.create("extra_role_" + i);
 			roleService.save(role);
 			roles.put(role.getName(), role);
 		}
 	}
 
 	private void addMicoSchemas() {
-		MicroPropertyTypeSchema imageGallery = new MicroPropertyTypeSchema("gallery");
-		BasicPropertyTypeSchema descriptionSchema = new BasicPropertyTypeSchema("description", PropertyType.STRING);
-		imageGallery.getProperties().add(descriptionSchema);
+		MicroPropertyTypeSchema imageGallery =  objectSchemaService.createMicroPropertyTypeSchema("gallery");
+		BasicPropertyTypeSchema descriptionSchema = objectSchemaService.createBasicPropertyTypeSchema("description", PropertyType.STRING);
+		imageGallery.addProperty(descriptionSchema);
 
-		BasicPropertyTypeSchema imagesSchemas = new ListPropertyTypeSchema("images");
+		BasicPropertyTypeSchema imagesSchemas = objectSchemaService.createListPropertyTypeSchema("images");
 		//		imagesSchemas.add(PropertyType.REFERENCE);
-		imageGallery.getProperties().add(imagesSchemas);
+		imageGallery.addProperty(imagesSchemas);
 		microSchemas.put("gallery", imageGallery);
 
 	}
@@ -437,10 +435,11 @@ public class DemoDataProvider {
 	}
 
 	private void addColorsSchema() {
-		ObjectSchema colorSchema = new ObjectSchema("colors");
+		
+		ObjectSchema colorSchema = objectSchemaService.create("colors");
 		colorSchema.setDescription("Colors");
 		colorSchema.setDescription("Colors");
-		BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema nameProp =  objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		colorSchema.addPropertyTypeSchema(nameProp);
@@ -449,8 +448,8 @@ public class DemoDataProvider {
 	}
 
 	private void addBlogPostSchema() {
-		ObjectSchema blogPostSchema = new ObjectSchema("blogpost");
-		BasicPropertyTypeSchema content = new BasicPropertyTypeSchema("content", PropertyType.LIST);
+		ObjectSchema blogPostSchema = objectSchemaService.create("blogpost");
+		BasicPropertyTypeSchema content =  objectSchemaService.createBasicPropertyTypeSchema("content", PropertyType.LIST);
 		blogPostSchema.addPropertyTypeSchema(content);
 		objectSchemaService.save(blogPostSchema);
 		schemas.put("blogpost", blogPostSchema);
@@ -458,22 +457,22 @@ public class DemoDataProvider {
 	}
 
 	private void addCategorySchema() {
-		ObjectSchema categoriesSchema = new ObjectSchema(TAG_CATEGORIES_SCHEMA_NAME);
+		ObjectSchema categoriesSchema = objectSchemaService.create(TAG_CATEGORIES_SCHEMA_NAME);
 		categoriesSchema.addProject(project);
 		categoriesSchema.setDisplayName("Category");
 		categoriesSchema.setDescription("Custom schema for tag categories");
 		categoriesSchema.setCreator(userInfo.getUser());
-		BasicPropertyTypeSchema nameProp = new BasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema nameProp = objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		categoriesSchema.addPropertyTypeSchema(nameProp);
 
-		BasicPropertyTypeSchema displayNameProp = new BasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema displayNameProp = objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 		displayNameProp.setDisplayName("Display Name");
 		displayNameProp.setDescription("The display name property of the category.");
 		categoriesSchema.addPropertyTypeSchema(displayNameProp);
 
-		BasicPropertyTypeSchema contentProp = new BasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyTypeSchema contentProp =  objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 		contentProp.setDisplayName("Content");
 		contentProp.setDescription("The main content html of the category.");
 		categoriesSchema.addPropertyTypeSchema(contentProp);
@@ -501,7 +500,8 @@ public class DemoDataProvider {
 
 		// TODO determine why this is not working when using sdn
 		// Add Permissions
-		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
+//		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
+		Vertex roleNode = userInfo.getRole().asVertex();
 		for (Node node : GlobalGraphOperations.at(graphDb).getAllNodes()) {
 
 			if (roleNode.getId() == node.getId()) {
@@ -524,9 +524,9 @@ public class DemoDataProvider {
 	}
 
 	public MeshNode addFolder(MeshNode rootNode, String englishName, String germanName) {
-		MeshNode folderNode = new MeshNode();
+		MeshNode folderNode = nodeService.create();
 		folderNode.setParentNode(rootNode);
-		folderNode.getProjects().add(project);
+		folderNode.addProject(project);
 
 		if (germanName != null) {
 			nodeService.setDisplayName(folderNode, german, germanName);
@@ -553,7 +553,7 @@ public class DemoDataProvider {
 	}
 
 	public Tag addTag(String englishName, String germanName, ObjectSchema schema) {
-		Tag tag = new Tag();
+		Tag tag = tagService.create();
 		if (englishName != null) {
 			tagService.setDisplayName(tag, english, englishName);
 		}
@@ -569,7 +569,7 @@ public class DemoDataProvider {
 	}
 
 	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, ObjectSchema schema) {
-		MeshNode node = new MeshNode();
+		MeshNode node = nodeService.create();
 		nodeService.setDisplayName(node, english, name + " english");
 		nodeService.setName(node, english, name + ".en.html");
 		nodeService.setContent(node, english, englishContent);
@@ -583,7 +583,7 @@ public class DemoDataProvider {
 		node.addProject(project);
 		node.setCreator(userInfo.getUser());
 		node.setSchema(schema);
-		node.setOrder(42);
+//		node.setOrder(42);
 		node.setParentNode(parentNode);
 		node = nodeService.save(node);
 		// Add the content to the given tag

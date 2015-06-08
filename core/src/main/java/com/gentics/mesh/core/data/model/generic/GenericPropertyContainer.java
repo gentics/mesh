@@ -1,43 +1,24 @@
 package com.gentics.mesh.core.data.model.generic;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.neo4j.graphdb.Direction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
-
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.relationship.Translated;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Translated;
+import com.tinkerpop.frames.Adjacency;
 
-@NodeEntity
-public class GenericPropertyContainer extends GenericNode {
+public interface GenericPropertyContainer extends GenericNode {
 
-	private static final long serialVersionUID = 7551202734708358487L;
+	@Adjacency(label = BasicRelationships.HAS_OBJECT_SCHEMA, direction = com.tinkerpop.blueprints.Direction.OUT)
+	public Iterable<Translated> getI18nTranslations();
+	
+	//TODO may be better to use I18nProperties directly
+	@Adjacency(label = BasicRelationships.HAS_OBJECT_SCHEMA, direction = com.tinkerpop.blueprints.Direction.OUT)
+	public void addI18nTranslation(Translated translation);
+	
 
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
+	@Adjacency(label = BasicRelationships.HAS_OBJECT_SCHEMA, direction = com.tinkerpop.blueprints.Direction.OUT)
+	public void setSchema(ObjectSchema schema);
 
-	@RelatedTo(type = BasicRelationships.HAS_OBJECT_SCHEMA, direction = Direction.OUTGOING, elementClass = ObjectSchema.class)
-	protected ObjectSchema schema;
-
-	@RelatedToVia(type = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUTGOING, elementClass = Translated.class)
-	protected Set<Translated> i18nTranslations = new HashSet<>();
-
-	public Set<Translated> getI18nTranslations() {
-		return i18nTranslations;
-	}
-
-	public void setSchema(ObjectSchema schema) {
-		this.schema = schema;
-	}
-
-	public ObjectSchema getSchema() {
-		return schema;
-	}
+	@Adjacency(label = BasicRelationships.HAS_OBJECT_SCHEMA, direction = com.tinkerpop.blueprints.Direction.OUT)
+	public ObjectSchema getSchema();
 
 }

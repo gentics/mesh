@@ -1,63 +1,26 @@
 package com.gentics.mesh.core.data.model.generic;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
-
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.auth.User;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.tinkerpop.TPGenericNode;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.frames.Adjacency;
 
-/**
- * This class represents a basic mesh node. All models that make use of this model will automatically be able to be handled by the permission system.
- * 
- * @author johannes2
- *
- */
-@NodeEntity
-public class GenericNode extends AbstractPersistable {
+public interface GenericNode extends AbstractPersistable {
 
-	private static final long serialVersionUID = -7525642021064006664L;
+	@Adjacency(label = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUT)
+	public Iterable<Project> getProjects();
 
-	@RelatedTo(type = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUTGOING, elementClass = Project.class)
-	protected Set<Project> projects = new HashSet<>();
+	@Adjacency(label = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUT)
+	public void addProject(Project project);
 
-	@RelatedTo(type = BasicRelationships.HAS_CREATOR, direction = Direction.OUTGOING, elementClass = User.class)
-	protected User creator;
+	@Adjacency(label = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUT)
+	public boolean removeProject(Project project);
 
-//	@RelatedToVia(type = BasicRelationships.IS_LOCKED, direction = Direction.OUTGOING, elementClass = Locked.class)
-//	protected Locked locked;
+	@Adjacency(label = BasicRelationships.HAS_CREATOR, direction = Direction.OUT)
+	public User getCreator();
 
-	public User getCreator() {
-		return creator;
-	}
-
-	public void setCreator(User creator) {
-		this.creator = creator;
-	}
-
-	public Set<Project> getProjects() {
-		return projects;
-	}
-
-	public boolean addProject(Project project) {
-		return this.projects.add(project);
-	}
-
-	public boolean removeProject(Project project) {
-		return this.projects.remove(project);
-	}
-
-//	public boolean isLocked() {
-//		if (locked == null) {
-//			return false;
-//		} else {
-//			return locked.isValidLock();
-//		}
-//	}
+	@Adjacency(label = BasicRelationships.HAS_CREATOR, direction = Direction.OUT)
+	public void setCreator(User user);
 
 }

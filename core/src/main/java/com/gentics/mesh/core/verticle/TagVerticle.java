@@ -20,17 +20,16 @@ import java.util.Set;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.I18NProperties;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.relationship.Translated;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -55,14 +54,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(TagVerticle.class);
 
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private Neo4jTemplate template;
-
-	@Autowired
-	private LanguageService languageService;
 
 	@Autowired
 	private TagListHandler tagListHandler;
@@ -170,7 +161,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			rcs.loadObjectByUuid(rc, request.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
 				Tag rootTag = rh.result();
 
-				Tag newTag = new Tag();
+				Tag newTag = tagService.create();
 
 				Project project = projectService.findByName(projectName);
 				newTag.addProject(project);
@@ -178,13 +169,13 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				for (String languageTag : request.getProperties().keySet()) {
 					Map<String, String> i18nProperties = request.getProperties(languageTag);
 					Language language = languageService.findByLanguageTag(languageTag);
-					I18NProperties tagProps = new I18NProperties(language);
+					I18NProperties tagProps = i18nPropertyService.create(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
 						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
 					// Create the relationship to the i18n properties
-					Translated translated = new Translated(newTag, tagProps, language);
-					newTag.getI18nTranslations().add(translated);
+					Translated translated = i18nPropertyService.create(newTag, tagProps, language);
+					newTag.addI18nTranslation(translated);
 				}
 				newTag = tagService.save(newTag);
 				tagCreated.complete(newTag);

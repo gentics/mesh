@@ -15,16 +15,15 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.MeshRoot;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
@@ -101,9 +100,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				Project project = new Project(requestModel.getName());
+				Project project = projectService.create(requestModel.getName());
 				User user = userService.findUser(rc);
-				project.setRootNode(new MeshNode());
+				project.setRootNode(nodeService.create());
 				project.setCreator(user);
 				project = projectService.save(project);
 
@@ -111,7 +110,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					roleService.addCRUDPermissionOnRole(rc, new MeshPermission(meshRoot, PermissionType.CREATE), project);
+					roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(meshRoot, PermissionType.CREATE), project);
 					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?

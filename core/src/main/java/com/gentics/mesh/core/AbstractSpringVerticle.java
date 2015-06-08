@@ -4,21 +4,19 @@ import io.vertx.core.AbstractVerticle;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.GroupService;
+import com.gentics.mesh.core.data.service.I18NPropertyService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
+import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.MeshRootService;
 import com.gentics.mesh.core.data.service.ObjectSchemaService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.UserService;
-import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 
@@ -54,12 +52,6 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected RoleService roleService;
 
 	@Autowired
-	protected GenericNodeService<GenericNode> genericNodeService;
-
-	@Autowired
-	protected Neo4jTemplate neo4jTemplate;
-
-	@Autowired
 	protected ObjectSchemaService schemaService;
 
 	@Autowired
@@ -74,10 +66,14 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	@Autowired
 	protected TagService tagService;
 
+	@Autowired
+	protected I18NPropertyService i18nPropertyService;
+
+
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;
 	}
-	
+
 	public RoutingContextService getRcs() {
 		return rcs;
 	}

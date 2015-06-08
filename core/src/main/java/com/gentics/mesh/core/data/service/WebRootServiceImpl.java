@@ -12,28 +12,22 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
 @Component
-@Transactional(readOnly = true)
 public class WebRootServiceImpl implements WebRootService {
 
 	private static Logger log = LoggerFactory.getLogger(WebRootServiceImpl.class);
 
 	@Autowired
 	private ProjectService projectService;
-
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
 
 	@Autowired
 	private I18NService i18nService;

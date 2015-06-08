@@ -12,14 +12,14 @@ import io.vertx.core.Future;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.model.auth.Group;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.Role;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.request.RoleUpdateRequest;
@@ -133,11 +133,11 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			}
 			Future<Role> roleCreated = Future.future();
 			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), PermissionType.CREATE, (AsyncResult<Group> rh) -> {
-				Role role = new Role(requestModel.getName());
+				Role role = roleService.create(requestModel.getName());
 				Group parentGroup = rh.result();
-				role.getGroups().add(parentGroup);
+				role.addGroup(parentGroup);
 				role = roleService.save(role);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), role);
+				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(parentGroup, PermissionType.CREATE), role);
 				roleCreated.complete(role);
 			}, trh -> {
 				Role role = roleCreated.result();

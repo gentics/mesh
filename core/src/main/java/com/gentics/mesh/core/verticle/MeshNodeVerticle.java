@@ -20,21 +20,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.I18NProperties;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.User;
-import com.gentics.mesh.core.data.model.relationship.Translated;
-import com.gentics.mesh.core.data.model.schema.ObjectSchema;
-import com.gentics.mesh.core.repository.ObjectSchemaRepository;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.tinkerpop.Translated;
+import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
@@ -54,9 +53,6 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
-
-	@Autowired
-	private ObjectSchemaRepository objectSchemaRepository;
 
 	@Autowired
 	private TagListHandler tagListHandler;
@@ -154,14 +150,14 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, PermissionType.CREATE, (AsyncResult<MeshNode> rh) -> {
 
 				MeshNode rootNodeForContent = rh.result();
-				MeshNode node = new MeshNode();
+				MeshNode node = nodeService.create();
 
 				if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
 					return;
 				} else {
 
-					ObjectSchema schema = objectSchemaRepository.findByName(requestModel.getSchema().getSchemaName());
+					ObjectSchema schema = schemaService.findByName(requestModel.getSchema().getSchemaName());
 					if (schema == null) {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getSchemaName())));
 						return;
@@ -186,18 +182,18 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
 						return;
 					}
-					I18NProperties tagProps = new I18NProperties(language);
+					I18NProperties tagProps = i18n.create(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
 						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
-					tagProps = neo4jTemplate.save(tagProps);
+//					tagProps = neo4jTemplate.save(tagProps);
 					// Create the relationship to the i18n properties
-					Translated translated = new Translated(node, tagProps, language);
-					translated = neo4jTemplate.save(translated);
-					node.getI18nTranslations().add(translated);
+					Translated translated = nodeService.create(node, tagProps, language);
+//					translated = neo4jTemplate.save(translated);
+					node.addI18nTranslation(translated);
 				}
 
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, PermissionType.CREATE), node);
+				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(rootNodeForContent, PermissionType.CREATE), node);
 
 				node = nodeService.save(node);
 
@@ -320,7 +316,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 										}
 									}
 								}
-								neo4jTemplate.save(i18nProperties);
+//								neo4jTemplate.save(i18nProperties);
 
 							}
 						} else {

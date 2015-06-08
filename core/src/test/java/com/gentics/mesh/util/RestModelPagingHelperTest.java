@@ -2,14 +2,14 @@ package com.gentics.mesh.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.springframework.data.domain.Page;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.rest.common.response.AbstractListResponse;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.util.RestModelPagingHelper;
 
 public class RestModelPagingHelperTest {
 

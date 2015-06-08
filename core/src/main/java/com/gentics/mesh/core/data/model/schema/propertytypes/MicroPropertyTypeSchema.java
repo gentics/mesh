@@ -1,22 +1,16 @@
 package com.gentics.mesh.core.data.model.schema.propertytypes;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.tinkerpop.AbstractPropertyTypeSchema;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.frames.Adjacency;
 
+public interface MicroPropertyTypeSchema extends AbstractPropertyTypeSchema {
 
-public class MicroPropertyTypeSchema extends AbstractPropertyTypeSchema {
+	@Adjacency(label = BasicRelationships.HAS_SCHEMA_TYPE, direction = Direction.OUT)
+	public Iterable<BasicPropertyTypeSchema> getProperties();
 
-	private static final long serialVersionUID = 1838466275169369495L;
-
-	private Set<BasicPropertyTypeSchema> parts  = new HashSet<>();
-	
-	public MicroPropertyTypeSchema(String name) {
-		super(name, PropertyType.MICROSCHEMA);
-	}
-	
-	public Set<BasicPropertyTypeSchema> getProperties() {
-		return parts;
-	}
-	
+	@Adjacency(label = BasicRelationships.HAS_SCHEMA_TYPE, direction = Direction.OUT)
+	public void addProperty(AbstractPropertyTypeSchema type);
 
 }
