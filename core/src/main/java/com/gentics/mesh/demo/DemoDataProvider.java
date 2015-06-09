@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,9 +42,7 @@ import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.frames.FramedGraph;
 
 @Component
 public class DemoDataProvider {
@@ -57,7 +56,7 @@ public class DemoDataProvider {
 	private static SecureRandom random = new SecureRandom();
 
 	@Autowired
-	private FramedGraph<? extends TransactionalGraph> framedGraph;
+	private FramedGraph framedGraph;
 
 	@Autowired
 	private UserService userService;

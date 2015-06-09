@@ -9,6 +9,7 @@ import io.vertx.ext.apex.Session;
 
 import java.io.IOException;
 
+import org.jglue.totorom.FramedGraph;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,9 +29,7 @@ import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.RestAssert;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.frames.FramedGraph;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -49,7 +48,7 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected FramedGraph<? extends TransactionalGraph> framedGraph;
+	protected FramedGraph framedGraph;
 
 	@Autowired
 	protected UserVerticle userVerticle;

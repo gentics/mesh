@@ -12,10 +12,9 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.repository.generic.GenericNodeRepository;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.Neo4jGenericContentUtils;
@@ -23,9 +22,6 @@ import com.gentics.mesh.util.Neo4jGenericContentUtils;
 @Component
 @Scope("singleton")
 public class NavigationRequestHandler implements Handler<RoutingContext> {
-
-	@Autowired
-	private GenericNodeRepository<Tag> tagRepository;
 
 	@Autowired
 	private MeshSpringConfiguration config;

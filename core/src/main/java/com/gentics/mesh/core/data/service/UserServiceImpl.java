@@ -9,7 +9,7 @@ import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.neo4j.graphdb.traversal.Uniqueness;
+import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +29,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.frames.FramedGraph;
 
 @Component
 public class UserServiceImpl extends GenericNodeServiceImpl<User> implements UserService {
@@ -42,7 +40,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	protected FramedGraph<? extends TransactionalGraph> framedGraph;
+	protected FramedGraph framedGraph;
 
 	@Override
 	public void setPassword(User user, String password) {
@@ -52,8 +50,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	@Override
 	public Page<User> findAllVisible(RoutingContext rc, PagingInfo pagingInfo) {
 		Session session = rc.session();
-		//		String userUuid = session.getPrincipal().getString("uuid");
-		//		return findAll(userUuid, new MeshPageRequest(pagingInfo));
+		// String userUuid = session.getPrincipal().getString("uuid");
+		// return findAll(userUuid, new MeshPageRequest(pagingInfo));
 		return null;
 	}
 
@@ -90,25 +88,25 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 		Set<GraphPermission> permissions = new HashSet<>();
 		Vertex userNode = user.asVertex();
-		//		Node userNode = neo4jTemplate.getPersistentState(user);
+		// Node userNode = neo4jTemplate.getPersistentState(user);
 
 		// Traverse the graph from user to the page. Collect all permission relations and check them individually
-		//		for (Edge edge : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUT)
-		//				.relationships(AuthRelationships.HAS_ROLE, Direction.IN).relationships(AuthRelationships.HAS_PERMISSION, Direction.OUT)
-		//				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
-		//			// log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-		//			// + rel.getStartNode().getId() + rel.getStartNode().getLabels());
+		// for (Edge edge : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUT)
+		// .relationships(AuthRelationships.HAS_ROLE, Direction.IN).relationships(AuthRelationships.HAS_PERMISSION, Direction.OUT)
+		// .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
+		// // log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+		// // + rel.getStartNode().getId() + rel.getStartNode().getLabels());
 		//
-		//			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(edge.getLabel())) {
-		//				// Check whether this relation in fact targets our object we want to check
-		//				boolean matchesTargetNode = edge.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == node.getId();
-		//				if (matchesTargetNode) {
-		//					// Convert the api relationship to a SDN relationship
-		//					GraphPermission perm = framedGraph.frame(edge, GraphPermission.class);
-		//					permissions.add(perm);
-		//				}
-		//			}
-		//		}
+		// if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(edge.getLabel())) {
+		// // Check whether this relation in fact targets our object we want to check
+		// boolean matchesTargetNode = edge.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == node.getId();
+		// if (matchesTargetNode) {
+		// // Convert the api relationship to a SDN relationship
+		// GraphPermission perm = framedGraph.frame(edge, GraphPermission.class);
+		// permissions.add(perm);
+		// }
+		// }
+		// }
 		return permissions;
 
 	}
@@ -194,14 +192,17 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	public Page<User> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 
-		//		@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
-		//		Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
-		//		return findByGroup(userUuid, group,  new MeshPageRequest(pagingInfo));
+		// @Query(value =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username",
+		// countQuery =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
+		// Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
+		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 		return null;
 	}
 
 	User findByPrincipalId(String principalId) {
-		//		@Query("MATCH (u:_User) WHERE u.username + '%' + u.emailAddress + '%' +  u.passwordHash = {0} return u")
+		// @Query("MATCH (u:_User) WHERE u.username + '%' + u.emailAddress + '%' +  u.passwordHash = {0} return u")
 		return null;
 	}
 
@@ -213,27 +214,30 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	 * @return
 	 */
 	public Page<User> findAll(String userUuid, Pageable pageable) {
-		//		@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
+		// @Query(value =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username",
+		// countQuery =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) where requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
 		return null;
 
 	}
 
 	public UserRoot findRoot() {
 
-		//		@Query("MATCH (n:UserRoot) return n")
+		// @Query("MATCH (n:UserRoot) return n")
 		return null;
 	}
 
 	@Override
 	public User save(User user) {
-		//		UserRoot root = userRepository.findRoot();
-		//		if (root == null) {
-		//			throw new NullPointerException("The user root node could not be found.");
-		//		}
-		//		user = neo4jTemplate.save(user);
-		//		root.getUsers().add(user);
-		//		neo4jTemplate.save(root);
-		//		return user;
+		// UserRoot root = userRepository.findRoot();
+		// if (root == null) {
+		// throw new NullPointerException("The user root node could not be found.");
+		// }
+		// user = neo4jTemplate.save(user);
+		// root.getUsers().add(user);
+		// neo4jTemplate.save(root);
+		// return user;
 		return null;
 	}
 

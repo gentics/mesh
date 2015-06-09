@@ -1,44 +1,60 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.frames.Adjacency;
-import com.tinkerpop.frames.Property;
 
-public interface AbstractPropertyTypeSchema extends AbstractPersistable {
+public class AbstractPropertyTypeSchema extends AbstractPersistable {
 
-	@Adjacency(label = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUT)
-	public Iterable<Translated> getI18nTranslations();
+	private static final String TYPE_KEY = "type";
+	private static final String DESCRIPTION_KEY = "description";
+	private static final String KEY_KEY = "key";
+	private static final String DISPLAY_NAME = "displayName";
+	private static final String ORDER_KEY = "order";
 
-	@Property("type")
-	public String getType();
+	public List<Translated> getI18nTranslations() {
+		return outE(BasicRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
+	}
 
-	@Property("type")
-	public void setType(String type);
+	public String getType() {
+		return getProperty(TYPE_KEY);
+	}
 
-	@Property("key")
-	public String getKey();
+	public void setType(String type) {
+		setProperty(DESCRIPTION_KEY, type);
+	}
 
-	@Property("key")
-	public void setKey(String key);
+	public String getKey() {
+		return getProperty(KEY_KEY);
+	}
 
-	@Property("description")
-	public String getDescription();
+	public void setKey(String key) {
+		setProperty(KEY_KEY, key);
+	}
 
-	@Property("description")
-	public void setDescription(String description);
+	public String getDescription() {
+		return getProperty(DESCRIPTION_KEY);
+	}
 
-	@Property("displayName")
-	public String getDisplayName();
+	public void setDescription(String description) {
+		setProperty(DESCRIPTION_KEY, description);
+	}
 
-	@Property("displayName")
-	public void setDisplayName(String displayName);
+	public String getDisplayName() {
+		return getProperty(DISPLAY_NAME);
+	}
 
-	@Property("order")
-	public int getOrder();
+	public void setDisplayName(String displayName) {
+		setProperty(DISPLAY_NAME, displayName);
+	}
 
-	@Property("order")
-	public void setOrder(int order);
+	public int getOrder() {
+		return getProperty(ORDER_KEY);
+	}
+
+	public void setOrder(int order) {
+		setProperty(ORDER_KEY, order);
+	}
 
 }

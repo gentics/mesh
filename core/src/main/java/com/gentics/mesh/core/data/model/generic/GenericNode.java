@@ -10,20 +10,25 @@ import com.tinkerpop.blueprints.Direction;
 public class GenericNode extends AbstractPersistable {
 
 	public List<Project> getProjects() {
-		return out(BasicRelationships.ASSIGNED_TO_PROJECT).except(this).toList();
+		return out(BasicRelationships.ASSIGNED_TO_PROJECT).toList(Project.class);
 	}
 
 	public void addProject(Project project) {
 		addEdge(BasicRelationships.ASSIGNED_TO_PROJECT, project);
 	}
 
-	@Adjacency(label = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUT)
-	public boolean removeProject(Project project);
+	public void removeProject(Project project) {
+		unlinkOut(project, BasicRelationships.ASSIGNED_TO_PROJECT);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_CREATOR, direction = Direction.OUT)
-	public User getCreator();
+	// @Adjacency(label = BasicRelationships.HAS_CREATOR, direction = Direction.OUT)
+	public User getCreator() {
+		return out(BasicRelationships.HAS_CREATOR).next(User.class);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_CREATOR, direction = Direction.OUT)
-	public void setCreator(User user);
+	// @Adjacency(label = BasicRelationships.HAS_CREATOR, direction = Direction.OUT)
+	public void setCreator(User user) {
+
+	}
 
 }

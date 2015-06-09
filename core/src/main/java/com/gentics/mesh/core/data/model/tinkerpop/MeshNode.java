@@ -1,27 +1,34 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.tinkerpop.blueprints.Direction;
 
 public class MeshNode extends GenericPropertyContainer {
 
-	@Adjacency(label = BasicRelationships.HAS_TAG, direction = Direction.OUT)
-	public Iterable<Tag> getTags();
+	public List<Tag> getTags() {
+		return out(BasicRelationships.HAS_TAG).toList(Tag.class);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_TAG, direction = Direction.OUT)
-	public void addTag(Tag tag);
+	public void addTag(Tag tag) {
+		linkOut(tag, BasicRelationships.HAS_TAG);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_TAG, direction = Direction.OUT)
-	public void removeTag(Tag tag);
+	public void removeTag(Tag tag) {
+		unlinkOut(tag, BasicRelationships.HAS_TAG);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_PARENT_NODE, direction = Direction.IN)
-	public Iterable<MeshNode> getChildren();
+	public List<MeshNode> getChildren() {
+		return in(BasicRelationships.HAS_PARENT_NODE).toList(MeshNode.class);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_PARENT_NODE, direction = Direction.OUT)
-	public MeshNode getParentNode();
+	public MeshNode getParentNode() {
+		return out(BasicRelationships.HAS_PARENT_NODE).next(MeshNode.class);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_PARENT_NODE, direction = Direction.OUT)
-	public void setParentNode(MeshNode parent);
+	public void setParentNode(MeshNode parent) {
+		linkOut(parent, BasicRelationships.HAS_PARENT_NODE);
+	}
 
 }

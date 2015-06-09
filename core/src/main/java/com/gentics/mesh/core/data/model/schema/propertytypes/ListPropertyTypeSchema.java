@@ -1,13 +1,7 @@
 package com.gentics.mesh.core.data.model.schema.propertytypes;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-import com.gentics.mesh.core.data.model.tinkerpop.AbstractPropertyTypeSchema;
-
-public interface ListPropertyTypeSchema extends BasicPropertyTypeSchema {
+public class ListPropertyTypeSchema extends BasicPropertyTypeSchema {
 
 
 //	private Set<PropertyType> propertyTypeWhiteList = new HashSet<>();

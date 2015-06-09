@@ -4,11 +4,13 @@ import org.jglue.totorom.FramedEdge;
 
 public class Linked  extends FramedEdge {
 	
-	@InVertex
-	public MeshNode getStartNode();
+	public MeshNode getStartNode() {
+		return inV().frame(MeshNode.class);
+	}
 
-	@OutVertex
-	public MeshNode getEndNode();
+	public MeshNode getEndNode() {
+		return outV().frame(MeshNode.class);
+	}
 
 
 }

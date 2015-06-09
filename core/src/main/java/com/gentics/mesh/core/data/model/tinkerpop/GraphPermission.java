@@ -1,17 +1,22 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import org.jglue.totorom.FramedEdge;
+
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
-import com.tinkerpop.frames.InVertex;
-import com.tinkerpop.frames.OutVertex;
 
-public interface GraphPermission extends AbstractPersistable, org.apache.shiro.authz.Permission {
+public class GraphPermission extends FramedEdge {
 
-	@InVertex
-	public Role getRole();
+	//, org.apache.shiro.authz.Permission
+	
+	
+	public Role getRole() {
+		return inV().frame(Role.class);
+	}
 
-	@OutVertex
-	public AbstractPersistable getTargetNode();
+	public AbstractPersistable getTargetNode() {
+		return outV().frame(AbstractPersistable.class);
+	}
 
 	// TODO add permissions
 	
@@ -63,7 +68,7 @@ public interface GraphPermission extends AbstractPersistable, org.apache.shiro.a
 //		return targetNode;
 //	}
 
-	public void revoke(PermissionType permissionType);
+//	public void revoke(PermissionType permissionType);
 
-	public boolean isPermitted(PermissionType read);
+//	public boolean isPermitted(PermissionType read);
 }

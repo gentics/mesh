@@ -1,59 +1,78 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.frames.Adjacency;
-import com.tinkerpop.frames.Property;
-import com.tinkerpop.frames.annotations.gremlin.GremlinGroovy;
 
-public interface User extends GenericNode {
+public class User extends GenericNode {
 
-	@Property("firstname")
-	public String getFirstname();
+	public static String FIRSTNAME_KEY = "firstname";
 
-	@Property("firstname")
-	public void setFirstname(String name);
+	public static String LASTNAME_KEY = "lastname";
 
-	@Property("lastname")
-	public String getLastname();
+	public static String USERNAME_KEY = "username";
 
-	@Property("lastname")
-	public void setLastname(String name);
+	public static String EMAIL_KEY = "emailAddress";
 
-	//TODO add unique index
-	@Property("username")
-	public String getUsername();
+	public static String PASSWORD_HASH_KEY = "passwordHash";
 
-	@Property("username")
-	public void setUsername(String name);
+	public String getFirstname() {
+		return getProperty(FIRSTNAME_KEY);
+	}
 
-	@Property("emailAddress")
-	public String getEmailAddress();
+	public void setFirstname(String name) {
+		setProperty(FIRSTNAME_KEY, name);
+	}
 
-	@Property("emailAddress")
-	public void setEmailAddress(String emailAddress);
+	public String getLastname() {
+		return getProperty(LASTNAME_KEY);
+	}
 
-	@Adjacency(label = AuthRelationships.HAS_USER, direction = Direction.OUT)
-	public Iterable<Group> getGroups();
+	public void setLastname(String name) {
+		setProperty(LASTNAME_KEY, name);
+	}
 
-	@Adjacency(label = AuthRelationships.HAS_USER, direction = Direction.OUT)
-	public void addGroup(Group group);
+	// TODO add unique index
+	public String getUsername() {
+		return getProperty(USERNAME_KEY);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_USER)
-	@GremlinGroovy(value = "it.out('HAS_USER').count()", frame = false)
-	public Long getGroupCount();
+	public void setUsername(String name) {
+		setProperty(USERNAME_KEY, name);
+	}
 
-	//TODO customize and add java handler?
-	@Property("passwordHash")
-	public void setPasswordHash(String hash);
+	public String getEmailAddress() {
+		return getProperty(EMAIL_KEY);
+	}
 
-	@Property("passwordHash")
-	public String getPasswordHash();
-	
-//	public String getPrincipalId() {
-//		return username + "%" + emailAddress + "%" + passwordHash + "#" + getId();
-//	}
+	public void setEmailAddress(String emailAddress) {
+		setProperty(EMAIL_KEY, emailAddress);
+	}
+
+	public List<Group> getGroups() {
+		return out(AuthRelationships.HAS_USER).toList(Group.class);
+	}
+
+	public void addGroup(Group group) {
+		linkOut(group, AuthRelationships.HAS_USER);
+	}
+
+	public Long getGroupCount() {
+		return out(BasicRelationships.HAS_USER).count();
+	}
+
+	public String getPasswordHash() {
+		return getProperty(PASSWORD_HASH_KEY);
+	}
+
+	public void setPasswordHash(String hash) {
+		setProperty(PASSWORD_HASH_KEY, hash);
+	}
+
+	public String getPrincipalId() {
+		return getUsername() + "%" + getEmailAddress() + "%" + getPasswordHash() + "#" + getId();
+	}
 
 }

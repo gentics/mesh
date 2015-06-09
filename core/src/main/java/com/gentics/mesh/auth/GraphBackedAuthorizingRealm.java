@@ -15,6 +15,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.auth.PermissionType;
@@ -24,9 +25,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.frames.FramedGraph;
 
 public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 
@@ -39,7 +38,7 @@ public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 	private UserService userService;
 
 	@Autowired
-	private FramedGraph<? extends TransactionalGraph> framedGraph;
+	private FramedGraph framedGraph;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {

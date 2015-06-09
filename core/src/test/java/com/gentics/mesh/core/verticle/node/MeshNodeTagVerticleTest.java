@@ -24,7 +24,6 @@ import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 import com.gentics.mesh.util.JsonUtils;
-import com.tinkerpop.frames.structures.FramedVertexSet;
 
 public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 

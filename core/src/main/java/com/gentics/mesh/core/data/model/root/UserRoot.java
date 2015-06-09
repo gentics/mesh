@@ -1,21 +1,25 @@
 package com.gentics.mesh.core.data.model.root;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.frames.Adjacency;
 
-public interface UserRoot extends AbstractPersistable {
+public class UserRoot extends AbstractPersistable {
 
-	@Adjacency(label = BasicRelationships.HAS_USER, direction = Direction.OUT)
-	public Iterable<User> getUsers();
+	public List<User> getUsers() {
+		return out(BasicRelationships.HAS_USER).toList(User.class);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_USER, direction = Direction.OUT)
-	public void addUser(User user);
+	public void addUser(User user) {
+		linkOut(user, BasicRelationships.HAS_USER);
 
-	@Adjacency(label = BasicRelationships.HAS_USER, direction = Direction.OUT)
-	public void removeUser(User user);
+	}
+
+	public void removeUser(User user) {
+		unlinkOut(user, BasicRelationships.HAS_USER);
+	}
 
 	// TODO unique index
 

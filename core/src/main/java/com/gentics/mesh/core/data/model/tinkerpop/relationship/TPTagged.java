@@ -5,11 +5,13 @@ import org.jglue.totorom.FramedEdge;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 
-public class TPTagged extends FramedEdge{
+public class TPTagged extends FramedEdge {
 
-	@InVertex
-	public Tag getStartTag();
+	public Tag getStartTag() {
+		return inV().frame(Tag.class);
+	}
 
-	@OutVertex
-	public MeshNode getEndNode();
+	public MeshNode getEndNode() {
+		return outV().frame(MeshNode.class);
+	}
 }

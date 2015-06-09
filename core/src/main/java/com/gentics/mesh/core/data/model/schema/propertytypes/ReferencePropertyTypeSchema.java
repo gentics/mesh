@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.data.model.schema.propertytypes;
 
-import com.gentics.mesh.core.data.model.tinkerpop.DynamicProperties;
+import java.util.List;
 
-public interface ReferencePropertyTypeSchema extends BasicPropertyTypeSchema {
+public class ReferencePropertyTypeSchema extends BasicPropertyTypeSchema {
 
 
-	@DynamicProperties
-	public Iterable<String> getObjectTypeSchemaWhitelist();
+	public List<String> getObjectTypeSchemaWhitelist() {
+//		@DynamicProperties
+		
+	}
 
 //	public ReferencePropertyTypeSchema(String name) {
 //		super(name, PropertyType.REFERENCE);

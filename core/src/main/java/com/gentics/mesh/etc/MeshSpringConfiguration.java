@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.annotation.PostConstruct;
 
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
+import org.jglue.totorom.FramedGraph;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,11 +40,6 @@ import com.gentics.mesh.core.data.model.UUIDFrameInitializer;
 import com.gentics.mesh.etc.config.MeshConfiguration;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
-import com.tinkerpop.frames.FramedGraph;
-import com.tinkerpop.frames.FramedGraphConfiguration;
-import com.tinkerpop.frames.FramedGraphFactory;
-import com.tinkerpop.frames.modules.AbstractModule;
-import com.tinkerpop.frames.modules.gremlingroovy.GremlinGroovyModule;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })

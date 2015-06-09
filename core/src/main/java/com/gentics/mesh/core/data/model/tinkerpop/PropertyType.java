@@ -1,13 +1,15 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
-import com.tinkerpop.frames.Property;
+public class PropertyType {
 
-public interface PropertyType {
+	private static final String NAME_KEY = "name";
 
-	@Property("name")
-	public String getName();
+	public String getName() {
+		return getProperty(NAME_KEY);
+	}
 
-	@Property("name")
-	public void setName(String name);
+	public void setName(String name) {
+		setProperty(NAME_KEY, name);
+	}
 
 }
