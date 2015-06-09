@@ -93,22 +93,22 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		//		Node userNode = neo4jTemplate.getPersistentState(user);
 
 		// Traverse the graph from user to the page. Collect all permission relations and check them individually
-		for (Edge edge : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUT)
-				.relationships(AuthRelationships.HAS_ROLE, Direction.IN).relationships(AuthRelationships.HAS_PERMISSION, Direction.OUT)
-				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
-			// log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-			// + rel.getStartNode().getId() + rel.getStartNode().getLabels());
-
-			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(edge.getLabel())) {
-				// Check whether this relation in fact targets our object we want to check
-				boolean matchesTargetNode = edge.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == node.getId();
-				if (matchesTargetNode) {
-					// Convert the api relationship to a SDN relationship
-					GraphPermission perm = framedGraph.frame(edge, GraphPermission.class);
-					permissions.add(perm);
-				}
-			}
-		}
+		//		for (Edge edge : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUT)
+		//				.relationships(AuthRelationships.HAS_ROLE, Direction.IN).relationships(AuthRelationships.HAS_PERMISSION, Direction.OUT)
+		//				.uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
+		//			// log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+		//			// + rel.getStartNode().getId() + rel.getStartNode().getLabels());
+		//
+		//			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(edge.getLabel())) {
+		//				// Check whether this relation in fact targets our object we want to check
+		//				boolean matchesTargetNode = edge.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == node.getId();
+		//				if (matchesTargetNode) {
+		//					// Convert the api relationship to a SDN relationship
+		//					GraphPermission perm = framedGraph.frame(edge, GraphPermission.class);
+		//					permissions.add(perm);
+		//				}
+		//			}
+		//		}
 		return permissions;
 
 	}
@@ -239,14 +239,15 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	@Override
 	public User create(String username) {
-		// TODO Auto-generated method stub
-		return null;
+		User user = framedGraph.addVertex(null, User.class);
+		user.setUsername(username);
+		return user;
 	}
 
 	@Override
 	public UserRoot createRoot() {
-		// TODO Auto-generated method stub
-		return null;
+		UserRoot root = framedGraph.addVertex(null, UserRoot.class);
+		return root;
 	}
 
 }

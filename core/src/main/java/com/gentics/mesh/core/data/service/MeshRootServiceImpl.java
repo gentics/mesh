@@ -1,11 +1,17 @@
 package com.gentics.mesh.core.data.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.frames.FramedGraph;
 
 @Component
 public class MeshRootServiceImpl implements MeshRootService {
+
+	@Autowired
+	private FramedGraph<? extends TransactionalGraph> framedGraph;
 
 	@Override
 	public MeshRoot findRoot() {
@@ -25,8 +31,8 @@ public class MeshRootServiceImpl implements MeshRootService {
 
 	@Override
 	public MeshRoot create() {
-		// TODO Auto-generated method stub
-		return null;
+		MeshRoot root = framedGraph.addVertex(null, MeshRoot.class);
+		return root;
 	}
 
 }

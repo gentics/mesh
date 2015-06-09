@@ -39,7 +39,7 @@ public interface GraphPermission extends AbstractPersistable, org.apache.shiro.a
 //		return (boolean) permissions.getProperty(type.getPropertyName(), false);
 //	}
 
-	public void grant(PermissionType permissionType);
+//	public void grant(PermissionType permissionType);
 //
 //	/**
 //	 * Returns the permission properties for this relationship.

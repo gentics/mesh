@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.frames.Adjacency;
 import com.tinkerpop.frames.Property;
@@ -12,11 +11,11 @@ public interface AbstractPropertyTypeSchema extends AbstractPersistable {
 	@Adjacency(label = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUT)
 	public Iterable<Translated> getI18nTranslations();
 
-	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
-	public PropertyType getType();
+	@Property("type")
+	public String getType();
 
-	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
-	public void setType(PropertyType type);
+	@Property("type")
+	public void setType(String type);
 
 	@Property("key")
 	public String getKey();

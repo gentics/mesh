@@ -45,9 +45,6 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	private MeshNodeService nodeService;
-
-	@Autowired
 	private I18NService i18n;
 
 	@Autowired

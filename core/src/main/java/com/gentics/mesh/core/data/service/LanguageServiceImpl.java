@@ -27,17 +27,17 @@ public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implem
 
 	@Override
 	public Language save(Language language) {
-//		if (StringUtils.isEmpty(language.getLanguageTag()) || StringUtils.isEmpty(language.getName())) {
-//			// TODO throw exception?
-//		}
-//		LanguageRoot root = findRoot();
-//		if (root == null) {
-//			throw new NullPointerException("The language root node could not be found.");
-//		}
-//		language = neo4jTemplate.save(language);
-//		root.getLanguages().add(language);
-//		neo4jTemplate.save(root);
-//		return language;
+		//		if (StringUtils.isEmpty(language.getLanguageTag()) || StringUtils.isEmpty(language.getName())) {
+		//			// TODO throw exception?
+		//		}
+		//		LanguageRoot root = findRoot();
+		//		if (root == null) {
+		//			throw new NullPointerException("The language root node could not be found.");
+		//		}
+		//		language = neo4jTemplate.save(language);
+		//		root.getLanguages().add(language);
+		//		neo4jTemplate.save(root);
+		//		return language;
 		return null;
 	}
 
@@ -48,13 +48,15 @@ public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implem
 
 	@Override
 	public LanguageRoot createRoot() {
-		// TODO Auto-generated method stub
-		return null;
+		LanguageRoot root = framedGraph.addVertex(null, LanguageRoot.class);
+		return root;
 	}
 
 	@Override
 	public Language create(String languageName, String languageTag) {
-		// TODO Auto-generated method stub
-		return null;
+		Language language = framedGraph.addVertex(null, Language.class);
+		language.setName(languageTag);
+		language.setNativeName(languageName);
+		return language;
 	}
 }

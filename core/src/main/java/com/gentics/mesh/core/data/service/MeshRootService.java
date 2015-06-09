@@ -7,7 +7,7 @@ public interface MeshRootService {
 	MeshRoot findRoot();
 
 	void save(MeshRoot rootNode);
-	
+
 	MeshRoot reload(MeshRoot rootNode);
 
 	MeshRoot create();

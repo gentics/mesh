@@ -53,12 +53,12 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 		projectResponse.setPerms(userService.getPerms(rc, project));
 
 		//		MeshNode rootNode = neo4jTemplate.fetch(project.getRootNode());
-//		if (rootNode != null) {
-//			projectResponse.setRootNodeUuid(rootNode.getUuid());
-//		} else {
-//			log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
-//		}
-//		return projectResponse;
+		//		if (rootNode != null) {
+		//			projectResponse.setRootNodeUuid(rootNode.getUuid());
+		//		} else {
+		//			log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
+		//		}
+		//		return projectResponse;
 		return null;
 	}
 
@@ -95,14 +95,14 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 
 	@Override
 	public Project create(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		Project project = framedGraph.addVertex(null, Project.class);
+		project.setName(name);
+		return project;
 	}
 
 	@Override
 	public ProjectRoot createRoot() {
-		// TODO Auto-generated method stub
-		return null;
+		return framedGraph.addVertex(null, ProjectRoot.class);
 	}
 
 }

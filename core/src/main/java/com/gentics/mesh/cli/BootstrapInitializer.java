@@ -15,7 +15,6 @@ import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -355,12 +354,8 @@ public class BootstrapInitializer {
 			rootNode.setLanguageRoot(languageRoot);
 			rootNode.setObjectSchemaRoot(objectSchemaRoot);
 			rootNode.setUserRoot(userRoot);
-			rootService.save(rootNode);
 			log.info("Stored mesh root node");
 		}
-		// Reload the node to get one with a valid uuid
-		// TODO check whether this really works. I assume i would have to commit first.
-		rootNode = rootService.findRoot();
 
 		initLanguages(rootNode);
 
@@ -401,6 +396,7 @@ public class BootstrapInitializer {
 
 	protected void initLanguages(MeshRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
 
+		
 		long start = System.currentTimeMillis();
 		final String filename = "languages.json";
 		final InputStream ins = getClass().getResourceAsStream("/" + filename);
@@ -416,9 +412,9 @@ public class BootstrapInitializer {
 			if (language == null) {
 				language = languageService.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
-				rootNode.getLanguageRoot().addLanguage(languageService.save(language));
-				log.debug("Saved language {" + languageTag + " / " + languageName + "}");
-				rootService.save(rootNode);
+				rootNode.getLanguageRoot().addLanguage(language);
+				log.debug("Added language {" + languageTag + " / " + languageName + "}");
+//				rootService.save(rootNode);
 			}
 		}
 		long diff = System.currentTimeMillis() - start;

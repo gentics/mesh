@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.repository.action.PropertyContainerActions;

@@ -117,7 +117,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					String key = restPropSchema.getKey();
 					BasicPropertyTypeSchema propSchema = schemaService.createBasicPropertyTypeSchema(key, type);
 					propSchema.setDescription(restPropSchema.getDesciption());
-					propSchema.setType(type);
+					propSchema.setType(type.getName());
 					schema.addPropertyTypeSchema(propSchema);
 				}
 				schema.addProject(project);

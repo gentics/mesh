@@ -109,13 +109,14 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 
 	@Override
 	public Group create(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		Group group = framedGraph.addVertex(null, Group.class);
+		group.setName(name);
+		return group;
 	}
 
 	@Override
 	public GroupRoot createRoot() {
-		// TODO Auto-generated method stub
-		return null;
+		GroupRoot root = framedGraph.addVertex(null, GroupRoot.class);
+		return root;
 	}
 }

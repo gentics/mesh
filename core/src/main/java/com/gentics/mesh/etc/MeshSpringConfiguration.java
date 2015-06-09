@@ -94,8 +94,8 @@ public class MeshSpringConfiguration {
 		});
 	}
 
-//	@Bean
-	private GraphDatabaseService graphDatabaseService() {
+	@Bean
+	public GraphDatabaseService graphDatabaseService() {
 		try {
 			deployNeo4Vertx();
 			GraphDatabaseService service = Neo4jGraphVerticle.getService().getGraphDatabaseService();

@@ -5,17 +5,12 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.test.AbstractDBTest;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.frames.FramedGraph;
 
 public class TPTagTest extends AbstractDBTest {
-
-
 
 	@Before
 	public void setup() throws Exception {

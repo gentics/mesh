@@ -21,7 +21,6 @@ import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
@@ -62,12 +61,12 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 		// TODO we need to add checks that prevents multiple schemas with the same key
 		for (BasicPropertyTypeSchema propertyTypeSchema : schema.getPropertyTypeSchemas()) {
-//			propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
+			//			propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
 			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
 			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
 			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
 			propertyTypeSchemaForRest.setDescription(propertyTypeSchema.getDescription());
-			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType().getName());
+			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType());
 			propertyTypeSchemaForRest.setDisplayName(propertyTypeSchema.getDisplayName());
 			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
 		}
@@ -75,7 +74,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		// Sort the property types schema. Otherwise rest response is erratic
 
 		for (Project project : schema.getProjects()) {
-//			project = neo4jTemplate.fetch(project);
+			//			project = neo4jTemplate.fetch(project);
 			ProjectResponse restProject = new ProjectResponse();
 			restProject.setUuid(project.getUuid());
 			restProject.setName(project.getName());
@@ -102,15 +101,15 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	public BasicPropertyTypeSchema getPropertyTypeSchema(String typeKey) {
-//		if (StringUtils.isEmpty(typeKey)) {
-//			return null;
-//		}
-//		for (BasicPropertyTypeSchema propertyTypeSchema : propertyTypeSchemas) {
-//			if (propertyTypeSchema.getKey().equals(typeKey)) {
-//				return propertyTypeSchema;
-//			}
-//		}
-//		return null;
+		//		if (StringUtils.isEmpty(typeKey)) {
+		//			return null;
+		//		}
+		//		for (BasicPropertyTypeSchema propertyTypeSchema : propertyTypeSchemas) {
+		//			if (propertyTypeSchema.getKey().equals(typeKey)) {
+		//				return propertyTypeSchema;
+		//			}
+		//		}
+		//		return null;
 		return null;
 	}
 
@@ -164,28 +163,31 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 	@Override
 	public ObjectSchema create(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		ObjectSchema schema = framedGraph.addVertex(null, ObjectSchema.class);
+		schema.setName(name);
+		return schema;
 	}
 
 	@Override
 	public ObjectSchemaRoot createRoot() {
-		// TODO Auto-generated method stub
-		return null;
+		ObjectSchemaRoot root = framedGraph.addVertex(null, ObjectSchemaRoot.class);
+		return root;
 	}
 
 	@Override
-	public BasicPropertyTypeSchema create(String nameKeyword, PropertyType i18nString) {
-		// TODO Auto-generated method stub
-		return null;
+	public BasicPropertyTypeSchema create(String key, PropertyType type) {
+		BasicPropertyTypeSchema schemaType = framedGraph.addVertex(null, BasicPropertyTypeSchema.class);
+		schemaType.setKey(key);
+		schemaType.setType(type.getName());
+		return schemaType;
 	}
 
 	@Override
 	public MicroPropertyTypeSchema createMicroPropertyTypeSchema(String key) {
 
-//		public MicroPropertyTypeSchema(String name) {
-//			//		super(name, PropertyType.MICROSCHEMA);
-//			//	}
+		//		public MicroPropertyTypeSchema(String name) {
+		//			//		super(name, PropertyType.MICROSCHEMA);
+		//			//	}
 		// TODO Auto-generated method stub
 		return null;
 	}

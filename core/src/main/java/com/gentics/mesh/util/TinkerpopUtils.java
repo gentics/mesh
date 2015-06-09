@@ -22,4 +22,16 @@ public final class TinkerpopUtils {
 	public static int count(final CloseableIterable iterable) {
 		return count(iterable.iterator());
 	}
+
+	public static boolean contains(Iterable objects, Object object) {
+		boolean found = false;
+		for (Object obj : objects) {
+			if (obj.equals(object)) {
+				found = true;
+				break;
+			}
+		}
+		return found;
+	}
+
 }

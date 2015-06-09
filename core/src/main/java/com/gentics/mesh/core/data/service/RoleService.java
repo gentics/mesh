@@ -4,8 +4,8 @@ import io.vertx.ext.apex.RoutingContext;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.Result;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
@@ -14,8 +14,6 @@ import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
 
 public interface RoleService extends GenericNodeService<Role> {
