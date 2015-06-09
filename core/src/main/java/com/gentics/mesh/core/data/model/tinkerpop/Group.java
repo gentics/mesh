@@ -8,7 +8,7 @@ import com.tinkerpop.frames.Property;
 import com.tinkerpop.frames.annotations.gremlin.GremlinGroovy;
 import com.tinkerpop.frames.annotations.gremlin.GremlinParam;
 
-public interface Group extends GenericNode {
+public class Group extends GenericNode {
 
 	@Property("name")
 	public String getName();

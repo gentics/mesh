@@ -1,16 +1,18 @@
 package com.gentics.mesh.core.data.model.root;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.frames.Adjacency;
 
-public interface ProjectRoot extends AbstractPersistable {
+public class ProjectRoot extends AbstractPersistable {
 
-	@Adjacency(label = BasicRelationships.HAS_PROJECT, direction = Direction.OUT)
-	public Iterable<Project> getProjects();
+	//	@Adjacency(label = BasicRelationships.HAS_PROJECT, direction = Direction.OUT)
+	public List<Project> getProjects() {
+		return out(BasicRelationships.HAS_PROJECT).toList(Project.class);
+	}
 
 	//TODO unique
-	
+
 }

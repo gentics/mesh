@@ -1,13 +1,12 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.frames.Adjacency;
-import com.tinkerpop.frames.Property;
 
-public interface ObjectSchema extends GenericNode {
+public class ObjectSchema extends GenericNode {
 
 	public static final String CONTENT_KEYWORD = "content";
 	public static final String DISPLAY_NAME_KEYWORD = "displayName";
@@ -15,40 +14,51 @@ public interface ObjectSchema extends GenericNode {
 	public static final String TEASER_KEYWORD = "teaser";
 	public static final String TITLE_KEYWORD = "title";
 
-	@Property("isNestingAllowed")
-	public boolean isNestingAllowed();
+	public boolean isNestingAllowed() {
+		return getProperty("isNestingAllowed");
+	}
 
-	@Property("isNestingAllowed")
-	public void setNestingAllowed(boolean flag);
+	public void setNestingAllowed(boolean flag) {
+		setProperty("isNestingAllowed", flag);
+	}
 
 	//TODO add unique index
-	@Property("name")
-	public String getName();
+	public String getName() {
+		return getProperty("name");
+	}
 
-	@Property("name")
-	public void setName(String name);
+	public void setName(String name) {
+		setProperty("name", name);
+	}
 
-	@Property("displayName")
-	public String getDisplayName();
+	public String getDisplayName() {
+		return getProperty("displayName");
+	}
 
-	@Property("displayName")
-	public void setDisplayName(String name);
+	public void setDisplayName(String name) {
+		setProperty("displayName", name);
+	}
 
 	//TODO i18n?
-	@Property("description")
-	public String getDescription();
+	public String getDescription() {
+		return getProperty("description");
+	}
 
-	@Property("description")
-	public void setDescription(String description);
+	public void setDescription(String description) {
+		setProperty("description", description);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_I18N_PROPERTIES, direction = Direction.OUT)
-	public Iterable<Translated> getI18nTranslations();
+	public List<Translated> getI18nTranslations() {
+		return outE(BasicRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
-	public Iterable<BasicPropertyTypeSchema> getPropertyTypeSchemas();
+	public List<BasicPropertyTypeSchema> getPropertyTypeSchemas() {
+		return out(BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyTypeSchema.class);
+	}
 
-	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
-	public void addPropertyTypeSchema(BasicPropertyTypeSchema content);
-
+//	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
+	public void addPropertyTypeSchema(BasicPropertyTypeSchema content) {
+		
+	}
 
 }

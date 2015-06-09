@@ -1,19 +1,22 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import org.jglue.totorom.FramedEdge;
+
 import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.tinkerpop.frames.EdgeFrame;
-import com.tinkerpop.frames.InVertex;
-import com.tinkerpop.frames.OutVertex;
-import com.tinkerpop.frames.Property;
 
-public interface Translated extends EdgeFrame {
+public class Translated extends FramedEdge {
 
-	@Property("languageTag")
-	public String getLanguageTag();
+	public String getLanguageTag() {
+		return getProperty("languageTag");
+	}
 
-	@InVertex
-	public GenericNode getStartNode();
-
-	@OutVertex
-	public I18NProperties getI18NProperties();
+//	@InVertex
+	public GenericNode getStartNode() {
+		return inV().frame(GenericNode.class);
+	}
+//
+//	@OutVertex
+	public I18NProperties getI18NProperties() {
+		return outV().frame(I18NProperties.class);
+	}
 }

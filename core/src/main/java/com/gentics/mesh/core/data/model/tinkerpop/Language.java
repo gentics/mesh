@@ -1,24 +1,28 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.tinkerpop.frames.Property;
 
-public interface Language extends GenericNode {
+public class Language extends GenericNode {
 
 	//TODO add index
-	@Property("name")
-	public String getName();
+	public String getName() {
+		return getProperty("name");
+	}
 
-	@Property("name")
-	public void setName(String name);
+	public void setName(String name) {
+		setProperty("name", name);
+	}
 
-	@Property("nativeName")
-	public String getNativeName();
+	public String getNativeName() {
+		return getProperty("nativeName");
+	}
 
-	@Property("nativeName")
-	public void setNativeName(String name);
+	public void setNativeName(String name) {
+		setProperty("nativeName", name);
+	}
 
-	@Property("languageTag")
-	public String getLanguageTag();
+	public String getLanguageTag() {
+		return getProperty("languageTag");
+	}
 
 }

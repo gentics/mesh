@@ -45,8 +45,9 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.tinkerpop</groupId>
-			<artifactId>frames</artifactId>
+			<groupId>org.jglue.totorom</groupId>
+			<artifactId>totorom-tinkerpop2</artifactId>
+			<version>0.5.5-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Logging -->

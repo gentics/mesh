@@ -6,6 +6,7 @@ import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,13 +29,12 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.frames.FramedGraph;
 
 @Component
 public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements RoleService {
 
 	@Autowired
-	protected FramedGraph<? extends TransactionalGraph> framedGraph;
+	protected FramedGraph framedGraph;
 
 	@Autowired
 	private PermissionService permissionService;

@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
-import com.tinkerpop.frames.EdgeFrame;
-import com.tinkerpop.frames.InVertex;
-import com.tinkerpop.frames.OutVertex;
+import org.jglue.totorom.FramedEdge;
 
-public interface Linked  extends EdgeFrame {
+public class Linked  extends FramedEdge {
 	
 	@InVertex
 	public MeshNode getStartNode();

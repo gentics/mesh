@@ -1,21 +1,19 @@
 package com.gentics.mesh.core.data.model.generic;
 
-import com.tinkerpop.frames.Property;
-import com.tinkerpop.frames.VertexFrame;
-import com.tinkerpop.frames.modules.javahandler.JavaHandler;
-import com.tinkerpop.frames.modules.typedgraph.TypeValue;
+import org.jglue.totorom.FramedVertex;
 
-@TypeValue("type")
-public interface AbstractPersistable extends VertexFrame {
+public class AbstractPersistable extends FramedVertex {
 
-	@Property("id")
-	@JavaHandler
-	public Long getId();
+	public Long getId() {
+		return getProperty("id");
+	}
 
-	@Property("uuid")
-	public String getUuid();
+	public String getUuid() {
+		return getProperty("uuid");
+	}
 
-	@Property("uuid")
-	public void setUuid(String uuid);
+	public void setUuid(String uuid) {
+		setProperty("uuid", uuid);
+	}
 
 }

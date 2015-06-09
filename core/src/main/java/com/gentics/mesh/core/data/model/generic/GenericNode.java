@@ -1,18 +1,21 @@
 package com.gentics.mesh.core.data.model.generic;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.frames.Adjacency;
 
-public interface GenericNode extends AbstractPersistable {
+public class GenericNode extends AbstractPersistable {
 
-	@Adjacency(label = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUT)
-	public Iterable<Project> getProjects();
+	public List<Project> getProjects() {
+		return out(BasicRelationships.ASSIGNED_TO_PROJECT).except(this).toList();
+	}
 
-	@Adjacency(label = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUT)
-	public void addProject(Project project);
+	public void addProject(Project project) {
+		addEdge(BasicRelationships.ASSIGNED_TO_PROJECT, project);
+	}
 
 	@Adjacency(label = BasicRelationships.ASSIGNED_TO_PROJECT, direction = Direction.OUT)
 	public boolean removeProject(Project project);
