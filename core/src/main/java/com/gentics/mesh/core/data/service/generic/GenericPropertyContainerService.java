@@ -33,6 +33,4 @@ public interface GenericPropertyContainerService<T extends GenericPropertyContai
 
 	public I18NProperties getI18NProperties(T node, Language language);
 
-	public Translated create(MeshNode node, I18NProperties props, Language language);
-
 }

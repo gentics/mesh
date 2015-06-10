@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.model.root;
 
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 
-public class MeshRoot extends AbstractPersistable {
+public class MeshRoot extends MeshVertex {
 
 	// @Adjacency(label = BasicRelationships.HAS_USER_ROOT, direction = Direction.OUT)
 	public UserRoot getUserRoot() {

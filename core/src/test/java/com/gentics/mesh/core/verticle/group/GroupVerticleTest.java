@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.service.GroupService;
@@ -118,7 +118,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 //		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				userService.isPermitted(info.getUser().getId(), new TPMeshPermission(root, PermissionType.CREATE)));
+				userService.isPermitted(info.getUser().getId(), new MeshPermission(root, PermissionType.CREATE)));
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
 		expectMessageResponse("error_missing_perm", response, root.getUuid());

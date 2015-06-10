@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 
-public class AbstractPropertyTypeSchema extends AbstractPersistable {
+public class AbstractPropertyTypeSchema extends MeshVertex {
 
 	private static final String TYPE_KEY = "type";
 	private static final String DESCRIPTION_KEY = "description";

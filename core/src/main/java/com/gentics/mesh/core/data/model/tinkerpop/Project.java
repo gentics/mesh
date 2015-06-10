@@ -23,30 +23,25 @@ public class Project extends GenericNode {
 		return out(BasicRelationships.HAS_TAG_ROOT).toList(TagFamilyRoot.class);
 	}
 
-	// @Adjacency(label = BasicRelationships.HAS_SCHEMA_ROOT, direction = Direction.OUT)
 	public ObjectSchemaRoot getSchemaRoot() {
 		return out(BasicRelationships.HAS_SCHEMA_ROOT).next(ObjectSchemaRoot.class);
 	}
 
-	// @Adjacency(label = BasicRelationships.HAS_SCHEMA_ROOT, direction = Direction.OUT)
-	//??? params?
-	public ObjectSchemaRoot setSchemaRoot(ObjectSchema schemaRoot) {
+	public void setSchemaRoot(ObjectSchemaRoot schemaRoot) {
 		linkOut(schemaRoot, BasicRelationships.HAS_SCHEMA_ROOT);
 	}
 
-	// @Adjacency(label = BasicRelationships.HAS_ROOT_NODE, direction = Direction.OUT)
-	public MeshRoot getRootNode() {
-		return out(BasicRelationships.HAS_ROOT_NODE).next(MeshRoot.class);
+	public MeshNode getRootNode() {
+		return out(BasicRelationships.HAS_ROOT_NODE).next(MeshNode.class);
 	}
 
-	// @Adjacency(label = BasicRelationships.HAS_ROOT_NODE, direction = Direction.OUT)
 	public void setRootNode(MeshNode rootNode) {
-
+		linkOut(rootNode, BasicRelationships.HAS_ROOT_NODE);
 	}
 
 	// @Adjacency(label = BasicRelationships.HAS_ROOT_NODE, direction = Direction.OUT)
-	public void setRootNode(MeshRoot root) {
-
-	}
+//	public void setRootNode(MeshRoot root) {
+//		
+//	}
 
 }

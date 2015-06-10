@@ -9,15 +9,14 @@ import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
@@ -39,8 +38,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
 
-	@Autowired
-	protected FramedGraph framedGraph;
+//	@Autowired
+//	protected ExposingFramedGraph framedGraph;
 
 	@Override
 	public void setPassword(User user, String password) {
@@ -84,10 +83,10 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	@Override
-	public Set<GraphPermission> findGraphPermissions(User user, AbstractPersistable node) {
+	public Set<GraphPermission> findGraphPermissions(User user, MeshVertex node) {
 
 		Set<GraphPermission> permissions = new HashSet<>();
-		Vertex userNode = user.asVertex();
+		Vertex userNode = user.getVertex();
 		// Node userNode = neo4jTemplate.getPersistentState(user);
 
 		// Traverse the graph from user to the page. Collect all permission relations and check them individually
@@ -111,11 +110,11 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	}
 
-	public boolean isPermitted(long userNodeId, TPMeshPermission genericPermission) throws Exception {
+	public boolean isPermitted(long userNodeId, MeshPermission genericPermission) throws Exception {
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
-		Vertex userNode = framedGraph.getVertex(userNodeId);
+		Vertex userNode = framedGraph.getGraph().getVertex(userNodeId);
 		for (Edge groupRel : userNode.getEdges(com.tinkerpop.blueprints.Direction.OUT, AuthRelationships.MEMBER_OF)) {
 			Vertex group = groupRel.getVertex(com.tinkerpop.blueprints.Direction.OUT);
 			log.debug("Found group: " + group.getProperty("name"));
@@ -128,7 +127,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 					if (matchesTargetNode) {
 						log.debug("Found permission");
 						// Convert the api relationship to a framed edge
-						GraphPermission perm = framedGraph.frame(authRel, GraphPermission.class);
+						GraphPermission perm = framedGraph.frameElement(authRel, GraphPermission.class);
 						if (genericPermission.implies(perm) == true) {
 							return true;
 						}
@@ -160,7 +159,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		return false;
 	}
 
-	public String[] getPerms(RoutingContext rc, AbstractPersistable node) {
+	public String[] getPerms(RoutingContext rc, MeshVertex node) {
 		String uuid = rc.session().getPrincipal().getString("uuid");
 		User user = findByUUID(uuid);
 		Set<GraphPermission> permissions = findGraphPermissions(user, node);
@@ -243,14 +242,14 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	@Override
 	public User create(String username) {
-		User user = framedGraph.addVertex(null, User.class);
+		User user = framedGraph.addVertex(User.class);
 		user.setUsername(username);
 		return user;
 	}
 
 	@Override
 	public UserRoot createRoot() {
-		UserRoot root = framedGraph.addVertex(null, UserRoot.class);
+		UserRoot root = framedGraph.addVertex(UserRoot.class);
 		return root;
 	}
 

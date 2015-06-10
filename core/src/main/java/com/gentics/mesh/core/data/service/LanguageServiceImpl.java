@@ -48,13 +48,13 @@ public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implem
 
 	@Override
 	public LanguageRoot createRoot() {
-		LanguageRoot root = framedGraph.addVertex(null, LanguageRoot.class);
+		LanguageRoot root = framedGraph.addVertex(LanguageRoot.class);
 		return root;
 	}
 
 	@Override
 	public Language create(String languageName, String languageTag) {
-		Language language = framedGraph.addVertex(null, Language.class);
+		Language language = framedGraph.addVertex(Language.class);
 		language.setName(languageTag);
 		language.setNativeName(languageName);
 		return language;

@@ -8,10 +8,10 @@ import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 public class TPTagged extends FramedEdge {
 
 	public Tag getStartTag() {
-		return inV().frame(Tag.class);
+		return inV().next(Tag.class);
 	}
 
 	public MeshNode getEndNode() {
-		return outV().frame(MeshNode.class);
+		return outV().next(MeshNode.class);
 	}
 }

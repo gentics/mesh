@@ -172,8 +172,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
 					// Create the relationship to the i18n properties
-					Translated translated = i18nPropertyService.create(newTag, tagProps, language);
-					newTag.addI18nTranslation(translated);
+					newTag.addI18nTranslation(newTag, tagProps, language);
 				}
 				newTag = tagService.save(newTag);
 				tagCreated.complete(newTag);

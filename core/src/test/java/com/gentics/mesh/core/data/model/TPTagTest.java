@@ -30,11 +30,11 @@ public class TPTagTest extends AbstractDBTest {
 		names.add("Anna");
 		names.add("Clemens");
 
-		Group group = framedGraph.addVertex(null, Group.class);
+		Group group = framedGraph.addVertex(Group.class);
 		group.setName("testgroup");
 
 		for (String name : names) {
-			User user = framedGraph.addVertex(null, User.class);
+			User user = framedGraph.addVertex(User.class);
 			user.setFirstname("firstname value");
 			user.setLastname("lastname value");
 			user.setUsername(name);
@@ -46,10 +46,10 @@ public class TPTagTest extends AbstractDBTest {
 
 		// --- test ---
 
-		Iterable<User> users = group.getUsersInOrder("username", 1, 2);
-		for (User currentUser : users) {
-			System.out.println(currentUser.getUsername());
-		}
+//		Iterable<User> users = group.getUsersInOrder("username", 1, 2);
+//		for (User currentUser : users) {
+//			System.out.println(currentUser.getUsername());
+//		}
 
 		//		for (TPGroup currentGroup : user.getGroups()) {
 		//			System.out.println("Found group: " + currentGroup.getName());

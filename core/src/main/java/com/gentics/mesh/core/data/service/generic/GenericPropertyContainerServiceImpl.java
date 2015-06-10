@@ -28,7 +28,7 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 			i18nProperties = create(language);
 			i18nProperties.setProperty(key, value);
 //			i18nProperties = i18nPropertyService.save(i18nProperties);
-			node.addI18nTranslation(create(node, i18nProperties, language));
+			node.addI18nTranslation(node, i18nProperties, language);
 		} else {
 			i18nProperties.setProperty(key, value);
 //			i18nProperties = i18nPropertyService.save(i18nProperties);

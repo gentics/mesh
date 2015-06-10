@@ -36,9 +36,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
-import com.gentics.mesh.core.data.model.UUIDFrameInitializer;
 import com.gentics.mesh.etc.config.MeshConfiguration;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 @Configuration
@@ -96,7 +94,7 @@ public class MeshSpringConfiguration {
 			deployNeo4Vertx();
 			GraphDatabaseService service = Neo4jGraphVerticle.getService().getGraphDatabaseService();
 			// Add UUID transaction handler that injects uuid in new neo4j nodes and relationships
-//			service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
+			//			service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
 			return service;
 		} catch (Exception e) {
 			log.error("Could not get Neo4J Database from neo4vertx", e);
@@ -105,19 +103,9 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
-	public FramedGraph<? extends TransactionalGraph> getFramedGraph() {
-
+	public FramedGraph getFramedGraph() {
 		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
-		// FramedGraphFactory factory = new FramedGraphFactory(new GremlinGroovyModule());
-
-		GremlinGroovyModule groovyModule = new GremlinGroovyModule();
-		AbstractModule customModule = new AbstractModule() {
-			public void doConfigure(FramedGraphConfiguration config) {
-				config.addFrameInitializer(new UUIDFrameInitializer());
-			}
-		};
-
-		FramedGraph<Neo4j2Graph> framedGraph = new FramedGraphFactory(groovyModule, customModule).create(graph);
+		FramedGraph framedGraph = new FramedGraph(graph);
 		return framedGraph;
 	}
 

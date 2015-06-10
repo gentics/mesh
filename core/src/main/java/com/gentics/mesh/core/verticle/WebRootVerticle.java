@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -73,13 +73,13 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				if (lastSegment != null) {
 					//					try (Transaction tx = graphDb.beginTx()) {
 
-					MeshNode node = framedGraph.frame(lastSegment.getVertex(), MeshNode.class);
+					MeshNode node = framedGraph.frameElement(lastSegment.getVertex(), MeshNode.class);
 					if (node == null) {
 						String message = i18n.get(rc, "node_not_found_for_path", path);
 						throw new EntityNotFoundException(message);
 					}
 
-					rc.session().hasPermission(new TPMeshPermission(node, PermissionType.READ).toString(), rh -> {
+					rc.session().hasPermission(new MeshPermission(node, PermissionType.READ).toString(), rh -> {
 						languageTags.add(lastSegment.getLanguageTag());
 						if (rh.result()) {
 							bch.complete(node);

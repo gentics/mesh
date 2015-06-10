@@ -22,10 +22,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -167,19 +167,19 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 	}
 
 	@Override
-	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler) {
 		loadObjectByUuid(rc, uuid, null, permType, resultHandler, null);
 	}
 
 	@Override
-	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		loadObjectByUuid(rc, uuid, null, permType, resultHandler, transactionCompletedHandler);
 	}
 
 	@Override
-	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, PermissionType permType,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		if (StringUtils.isEmpty(uuid)) {
 			// TODO i18n, add info about uuid source?
@@ -198,7 +198,7 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 				return;
 			}
 			final T foundNode = node;
-			rc.session().hasPermission(new TPMeshPermission(node, permType).toString(), handler -> {
+			rc.session().hasPermission(new MeshPermission(node, permType).toString(), handler -> {
 				if (!handler.result()) {
 					fut.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", foundNode.getUuid())));
 					return;
@@ -231,7 +231,7 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 	}
 
 	@Override
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
 		String uuid = rc.request().params().get(uuidParamName);
 		if (StringUtils.isEmpty(uuid)) {
@@ -244,25 +244,25 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 	}
 
 	@Override
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler) {
 		loadObject(rc, uuidParamName, permType, resultHandler, null);
 	}
 
 	@Override
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler) {
 		loadObject(rc, uuidParamName, projectName, permType, resultHandler, null);
 	}
 
 	@Override
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
 		loadObject(rc, uuidParamName, null, permType, resultHandler, transactionCompleteHandler);
 	}
 
 	@Override
-	public void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler) {
+	public void hasPermission(RoutingContext rc, MeshVertex node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler) {
 		hasPermission(rc, node, type, resultHandler, null);
 	}
 
@@ -275,9 +275,9 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 	 * @return
 	 */
 	@Override
-	public void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler,
+	public void hasPermission(RoutingContext rc, MeshVertex node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
-		rc.session().hasPermission(new TPMeshPermission(node, type).toString(), handler -> {
+		rc.session().hasPermission(new MeshPermission(node, type).toString(), handler -> {
 			if (!handler.result()) {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));
 				AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);

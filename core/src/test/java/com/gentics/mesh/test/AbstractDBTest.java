@@ -82,13 +82,8 @@ public abstract class AbstractDBTest {
 
 	protected void purgeDatabase() {
 		//		try (Transaction tx = graphDb.beginTx()) {
-
-		for (Edge edge : framedGraph.getEdges()) {
-			edge.remove();
-		}
-		for (Vertex vertex : framedGraph.getVertices()) {
-			vertex.remove();
-		}
+		framedGraph.E().removeAll();
+		framedGraph.V().removeAll();
 		//			tx.success();
 		//		}
 	}

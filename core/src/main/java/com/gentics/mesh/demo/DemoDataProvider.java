@@ -258,7 +258,7 @@ public class DemoDataProvider {
 	private void addFolderStructure() {
 
 		MeshNode rootNode = nodeService.create();
-		rootNode = nodeService.save(rootNode);
+//		rootNode = nodeService.save(rootNode);
 		rootNode.setCreator(userInfo.getUser());
 		rootNode.addProject(project);
 		project.setRootNode(rootNode);
@@ -500,9 +500,9 @@ public class DemoDataProvider {
 		// TODO determine why this is not working when using sdn
 		// Add Permissions
 		//		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
-		Vertex roleNode = userInfo.getRole().asVertex();
+		Vertex roleNode = userInfo.getRole().getVertex();
 
-		for (Vertex vertex : framedGraph.getVertices()) {
+		for (Vertex vertex : framedGraph.getGraph().getVertices()) {
 			//TODO typecheck? and verify how orient will behave
 			if (roleNode.getId() == vertex.getId()) {
 				log.info("Skipping own role");

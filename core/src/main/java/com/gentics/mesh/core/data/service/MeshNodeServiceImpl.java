@@ -85,31 +85,30 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 
 		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-//		if (languageTags == null || languageTags.size() == 0) {
-//			return findChildren(userUuid, projectName, parentNode, pr);
-//		} else {
-//			return findChildren(userUuid, projectName, parentNode, languageTags, pr);
-//		}
+		//		if (languageTags == null || languageTags.size() == 0) {
+		//			return findChildren(userUuid, projectName, parentNode, pr);
+		//		} else {
+		//			return findChildren(userUuid, projectName, parentNode, languageTags, pr);
+		//		}
 
-//		Page<MeshNode> findChildren(String userUuid, String projectName, MeshNode parentNode, List<String> languageTags, Pageable pr) {
-//			@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)-[:HAS_PARENT_NODE]->(node) " + "WHERE "
-//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT childNode",
-	//
-//			countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)-[:HAS_PARENT_NODE]->(node) " + "WHERE "
-//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "RETURN count(DISTINCT node)"
-	//
-//			)		
-//		}
+		//		Page<MeshNode> findChildren(String userUuid, String projectName, MeshNode parentNode, List<String> languageTags, Pageable pr) {
+		//			@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)-[:HAS_PARENT_NODE]->(node) " + "WHERE "
+		//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT childNode",
+		//
+		//			countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)-[:HAS_PARENT_NODE]->(node) " + "WHERE "
+		//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "RETURN count(DISTINCT node)"
+		//
+		//			)		
+		//		}
 
-
-//		Page<MeshNode> findChildren(String userUuid, String projectName, MeshNode parentNode, Pageable pr) {
-//			@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)<-[:HAS_PARENT_NODE]-(node) " + "WHERE "
-//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "WITH p, node " + "ORDER by p.`properties-name` desc "
-//					+ "RETURN DISTINCT node",
-	//
-//			countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)<-[:HAS_PARENT_NODE]-(node) " + "WHERE "
-//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "RETURN count(DISTINCT node)")
-//		}
+		//		Page<MeshNode> findChildren(String userUuid, String projectName, MeshNode parentNode, Pageable pr) {
+		//			@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)<-[:HAS_PARENT_NODE]-(node) " + "WHERE "
+		//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "WITH p, node " + "ORDER by p.`properties-name` desc "
+		//					+ "RETURN DISTINCT node",
+		//
+		//			countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)<-[:HAS_PARENT_NODE]-(node) " + "WHERE "
+		//					+ FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "RETURN count(DISTINCT node)")
+		//		}
 		return null;
 
 	}
@@ -118,28 +117,28 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	public Page<MeshNode> findAll(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 
-//		@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
-//				+ "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT node",
-//
-//		countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
-//				+ "RETURN count(DISTINCT node)"
-//
-//		)
-//		Page<MeshNode> findAll(String userUuid, String projectName, List<String> languageTags, Pageable pageable);
-//
-//		@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "WITH p, node " + ORDER_BY_NAME_DESC
-//				+ "RETURN DISTINCT node",
-//
-//		countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "RETURN count(DISTINCT node)")
-//		Page<MeshNode> findAll(String userUuid, String projectName, Pageable pageable);
+		//		@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
+		//				+ "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT node",
+		//
+		//		countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
+		//				+ "RETURN count(DISTINCT node)"
+		//
+		//		)
+		//		Page<MeshNode> findAll(String userUuid, String projectName, List<String> languageTags, Pageable pageable);
+		//
+		//		@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "WITH p, node " + ORDER_BY_NAME_DESC
+		//				+ "RETURN DISTINCT node",
+		//
+		//		countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "RETURN count(DISTINCT node)")
+		//		Page<MeshNode> findAll(String userUuid, String projectName, Pageable pageable);
 
-//		
-//		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-//		if (languageTags == null || languageTags.size() == 0) {
-//			return findAll(userUuid, projectName, pr);
-//		} else {
-//			return findAll(userUuid, projectName, languageTags, pr);
-//		}
+		//		
+		//		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+		//		if (languageTags == null || languageTags.size() == 0) {
+		//			return findAll(userUuid, projectName, pr);
+		//		} else {
+		//			return findAll(userUuid, projectName, languageTags, pr);
+		//		}
 		return null;
 	}
 
@@ -149,21 +148,16 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 		// this.links.add(link);
 	}
 
-	
-
 	public List<MeshNode> findAllNodes() {
-//		@Query("MATCH (node:MeshNode) RETURN node")
+		//		@Query("MATCH (node:MeshNode) RETURN node")
 		return null;
 	}
 
 	@Override
 	public MeshNode create() {
-		// TODO Auto-generated method stub
-		return null;
+		return framedGraph.addVertex(MeshNode.class);
 	}
 
-
 	// node children
-
 
 }

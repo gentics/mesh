@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import org.neo4j.graphdb.Transaction;
 
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
@@ -35,7 +35,7 @@ public class TagTraversalConsumer implements Consumer<Tag> {
 	public void accept(Tag tag) {
 		String currentUuid = tag.getUuid();
 		Session session = info.getRoutingContext().session();
-		session.hasPermission(new TPMeshPermission(tag, PermissionType.READ).toString(), handler -> {
+		session.hasPermission(new MeshPermission(tag, PermissionType.READ).toString(), handler -> {
 			if (handler.result()) {
 //				try (Transaction tx = info.getGraphDb().beginTx()) {
 //					Tag loadedTag = info.getNeo4jTemplate().fetch(tag);

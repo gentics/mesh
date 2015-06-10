@@ -28,7 +28,10 @@ public class MeshNode extends GenericPropertyContainer {
 	}
 
 	public void setParentNode(MeshNode parent) {
+		outE(BasicRelationships.HAS_PARENT_NODE).remove();
 		linkOut(parent, BasicRelationships.HAS_PARENT_NODE);
 	}
+
+
 
 }

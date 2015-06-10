@@ -18,8 +18,8 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.UserService;
@@ -57,10 +57,10 @@ public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 				boolean permitted = false;
 //				try (Transaction tx = graphDb.beginTx()) {
 					try {
-						Vertex node = framedGraph.getVertex(Long.valueOf(targetId));
-						GenericNode framedNode = framedGraph.frame(node, GenericNode.class);
+						Vertex node = framedGraph.getGraph().getVertex(Long.valueOf(targetId));
+						GenericNode framedNode = framedGraph.frameElement(node, GenericNode.class);
 						PermissionType type = PermissionType.fromString(permName);
-						permitted = userService.isPermitted(userId, new TPMeshPermission(framedNode, type));
+						permitted = userService.isPermitted(userId, new MeshPermission(framedNode, type));
 					} catch (Exception e) {
 //						tx.failure();
 						throw new HttpStatusCodeErrorException(500, "Error while checking permission for user {" + userId + "}", e);

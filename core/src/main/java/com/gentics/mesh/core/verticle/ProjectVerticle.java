@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
@@ -110,7 +110,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(meshRoot, PermissionType.CREATE), project);
+					roleService.addCRUDPermissionOnRole(rc, new MeshPermission(meshRoot, PermissionType.CREATE), project);
 					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?

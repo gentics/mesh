@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
@@ -76,9 +76,9 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
 					ObjectSchema schema = srh.result();
 					Project project = rh.result();
-					if (schema.removeProject(project)) {
-						schema = schemaService.save(schema);
-					}
+					schema.removeProject(project);
+//						schema = schemaService.save(schema);
+//					}
 				}, trh -> {
 					ObjectSchema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
@@ -122,7 +122,7 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				}
 				schema.addProject(project);
 				schema = schemaService.save(schema);
-				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(project, PermissionType.CREATE), schema);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(project, PermissionType.CREATE), schema);
 				schemaCreated.complete(schema);
 			}, trh -> {
 				ObjectSchema schema = schemaCreated.result();

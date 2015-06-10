@@ -17,7 +17,7 @@ import org.neo4j.graphdb.Transaction;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
@@ -77,7 +77,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testIsPermitted() throws Exception {
 		User user = info.getUser();
-		TPMeshPermission perm = new TPMeshPermission(data().getFolder("news"), PermissionType.READ);
+		MeshPermission perm = new MeshPermission(data().getFolder("news"), PermissionType.READ);
 		long start = System.currentTimeMillis();
 		int nRuns = 200000;
 		for (int i = 0; i < nRuns; i++) {
@@ -133,7 +133,7 @@ public class RoleTest extends AbstractDBTest {
 //		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				userService.isPermitted(info.getUser().getId(), new TPMeshPermission(data().getMeshRoot().getGroupRoot(), PermissionType.CREATE)));
+				userService.isPermitted(info.getUser().getId(), new MeshPermission(data().getMeshRoot().getGroupRoot(), PermissionType.CREATE)));
 
 	}
 

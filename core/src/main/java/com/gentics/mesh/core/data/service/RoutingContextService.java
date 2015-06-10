@@ -8,7 +8,7 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.paging.PagingInfo;
 
@@ -34,30 +34,30 @@ public interface RoutingContextService {
 	 */
 	public String getProjectName(RoutingContext rc);
 
-	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler);
 
-	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler);
 
-	public <T extends AbstractPersistable> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, PermissionType permType,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler);
 
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler);
 
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler);
 
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler);
 
-	public <T extends AbstractPersistable> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, PermissionType permType,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler);
 
-	void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler,
+	void hasPermission(RoutingContext rc, MeshVertex node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException;
 
-	void hasPermission(RoutingContext rc, AbstractPersistable node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler);
+	void hasPermission(RoutingContext rc, MeshVertex node, PermissionType type, Handler<AsyncResult<Boolean>> resultHandler);
 
 }

@@ -95,14 +95,14 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 
 	@Override
 	public Project create(String name) {
-		Project project = framedGraph.addVertex(null, Project.class);
+		Project project = framedGraph.addVertex(Project.class);
 		project.setName(name);
 		return project;
 	}
 
 	@Override
 	public ProjectRoot createRoot() {
-		return framedGraph.addVertex(null, ProjectRoot.class);
+		return framedGraph.addVertex(ProjectRoot.class);
 	}
 
 }

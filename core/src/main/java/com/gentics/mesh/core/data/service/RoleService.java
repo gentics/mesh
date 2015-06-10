@@ -4,10 +4,10 @@ import io.vertx.ext.apex.RoutingContext;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.Result;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
@@ -24,7 +24,7 @@ public interface RoleService extends GenericNodeService<Role> {
 
 	Result<Role> findAll();
 
-	void addPermission(Role role, AbstractPersistable node, PermissionType... permissionTypes);
+	void addPermission(Role role, MeshVertex node, PermissionType... permissionTypes);
 
 	/**
 	 * Return the graph permission between the role and the given node.
@@ -33,13 +33,13 @@ public interface RoleService extends GenericNodeService<Role> {
 	 * @param node
 	 * @return found permission or null when no permission could be found
 	 */
-	GraphPermission getGraphPermission(Role role, AbstractPersistable node);
+	GraphPermission getGraphPermission(Role role, MeshVertex node);
 
-	GraphPermission revokePermission(Role role, AbstractPersistable node, PermissionType... permissionTypes);
+	GraphPermission revokePermission(Role role, MeshVertex node, PermissionType... permissionTypes);
 
 	RoleResponse transformToRest(Role role);
 
-	void addCRUDPermissionOnRole(RoutingContext rc, TPMeshPermission meshPermission, GenericNode targetNode);
+	void addCRUDPermissionOnRole(RoutingContext rc, MeshPermission meshPermission, GenericNode targetNode);
 
 	Page<Role> findAll(RoutingContext rc, PagingInfo pagingInfo);
 

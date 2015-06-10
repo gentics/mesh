@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.model.root;
 
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 
-public class RoleRoot extends AbstractPersistable {
+public class RoleRoot extends MeshVertex {
 
 	public Iterable<Role> getRoles() {
 		return out(BasicRelationships.HAS_ROLE).toList(Role.class);

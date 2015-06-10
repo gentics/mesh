@@ -163,20 +163,20 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 
 	@Override
 	public ObjectSchema create(String name) {
-		ObjectSchema schema = framedGraph.addVertex(null, ObjectSchema.class);
+		ObjectSchema schema = framedGraph.addVertex(ObjectSchema.class);
 		schema.setName(name);
 		return schema;
 	}
 
 	@Override
 	public ObjectSchemaRoot createRoot() {
-		ObjectSchemaRoot root = framedGraph.addVertex(null, ObjectSchemaRoot.class);
+		ObjectSchemaRoot root = framedGraph.addVertex(ObjectSchemaRoot.class);
 		return root;
 	}
 
 	@Override
 	public BasicPropertyTypeSchema create(String key, PropertyType type) {
-		BasicPropertyTypeSchema schemaType = framedGraph.addVertex(null, BasicPropertyTypeSchema.class);
+		BasicPropertyTypeSchema schemaType = framedGraph.addVertex(BasicPropertyTypeSchema.class);
 		schemaType.setKey(key);
 		schemaType.setType(type.getName());
 		return schemaType;
@@ -188,7 +188,6 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		//		public MicroPropertyTypeSchema(String name) {
 		//			//		super(name, PropertyType.MICROSCHEMA);
 		//			//	}
-		// TODO Auto-generated method stub
 		return null;
 	}
 

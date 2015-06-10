@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 
 public class Role extends GenericNode {
 
@@ -16,13 +17,9 @@ public class Role extends GenericNode {
 		setProperty("name", name);
 	}
 
-	//	@Adjacency(label = AuthRelationships.HAS_PERMISSION, direction = Direction.OUT)
 	public List<GraphPermission> getPermissions() {
-		return out(AuthRelationships.HAS_PERMISSION).toList(GraphPermission.class);
+		return outE(AuthRelationships.HAS_PERMISSION).toList(GraphPermission.class);
 	}
-
-	//	@Adjacency(label = AuthRelationships.HAS_PERMISSION, direction = Direction.OUT)
-	public void addPermission(GraphPermission permission);
 
 	//	@Adjacency(label = AuthRelationships.HAS_ROLE, direction = Direction.OUT)
 	public List<Group> getGroups() {
@@ -30,7 +27,11 @@ public class Role extends GenericNode {
 	}
 
 	public void addGroup(Group group) {
-		addEdge(AuthRelationships.HAS_ROLE, group, Group.class);
+		linkOut(group, AuthRelationships.HAS_ROLE);
+	}
+
+	public GraphPermission addPermission(MeshVertex node) {
+		return addEdge(AuthRelationships.HAS_PERMISSION, node, GraphPermission.class);
 	}
 
 }

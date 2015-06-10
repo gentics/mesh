@@ -2,11 +2,11 @@ package com.gentics.mesh.core.data.model.root;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 
-public class GroupRoot extends AbstractPersistable {
+public class GroupRoot extends MeshVertex {
 
 	// TODO unique node
 

@@ -2,15 +2,15 @@ package com.gentics.mesh.core.data.model.auth;
 
 import org.apache.shiro.authz.Permission;
 
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 
-public class TPMeshPermission implements Permission {
+public class MeshPermission implements Permission {
 
 	private PermissionType type;
-	private AbstractPersistable targetNode;
+	private MeshVertex targetNode;
 
-	public TPMeshPermission(AbstractPersistable targetNode, PermissionType type) {
+	public MeshPermission(MeshVertex targetNode, PermissionType type) {
 		this.type = type;
 		this.targetNode = targetNode;
 	}
@@ -25,7 +25,7 @@ public class TPMeshPermission implements Permission {
 		return perm.isPermitted(type);
 	}
 
-	public AbstractPersistable getTargetNode() {
+	public MeshVertex getTargetNode() {
 		return targetNode;
 	}
 	

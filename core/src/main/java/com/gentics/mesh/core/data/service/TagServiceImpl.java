@@ -42,7 +42,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	@Autowired
 	private UserService userService;
-	
 
 	@Autowired
 	private RoutingContextService rcs;
@@ -91,8 +90,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		return null;
 	}
 
-	
-
 	static String PERMISSION_PATTERN_ON_TAG = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
 	static String PERMISSION_PATTERN_ON_NODE = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(node:MeshNode)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
 	static String TAG_PROJECT_PATTERN = "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
@@ -101,7 +98,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	static String ROOT_TAG_FILTER = "id(rootTag) = {rootTagId} ";
 	static String ORDER_BY_NAME = "ORDER BY p.`properties-name` desc";
 
-
 	public static String getLanguageFilter(String field) {
 		String filter = " " + field + ".languageTag IN {languageTags} ";
 		return filter;
@@ -109,86 +105,79 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	public Page<Tag> findProjectTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 
-//		String langFilter = getLanguageFilter("l");
-//		if (languageTags == null || languageTags.isEmpty()) {
-//			langFilter = "";
-//		} else {
-//			langFilter += " AND ";
-//		}
-//		String baseQuery = PERMISSION_PATTERN_ON_TAG;
-//		baseQuery += TAG_PROJECT_PATTERN;
-//		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + "AND " + PROJECT_FILTER;
-//
-//		String query = baseQuery + " WITH p, tag " + ORDER_BY_NAME + " RETURN DISTINCT tag as n";
-//		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
-//
-//		Map<String, Object> parameters = new HashMap<>();
-//		parameters.put("languageTags", languageTags);
-//		parameters.put("projectName", projectName);
-//		parameters.put("userUuid", userUuid);
-//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
+		//		String langFilter = getLanguageFilter("l");
+		//		if (languageTags == null || languageTags.isEmpty()) {
+		//			langFilter = "";
+		//		} else {
+		//			langFilter += " AND ";
+		//		}
+		//		String baseQuery = PERMISSION_PATTERN_ON_TAG;
+		//		baseQuery += TAG_PROJECT_PATTERN;
+		//		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + "AND " + PROJECT_FILTER;
+		//
+		//		String query = baseQuery + " WITH p, tag " + ORDER_BY_NAME + " RETURN DISTINCT tag as n";
+		//		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
+		//
+		//		Map<String, Object> parameters = new HashMap<>();
+		//		parameters.put("languageTags", languageTags);
+		//		parameters.put("projectName", projectName);
+		//		parameters.put("userUuid", userUuid);
+		//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
 		return null;
 	}
 
 	public Page<Tag> findTags(String userUuid, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
-//		String langFilter = getLanguageFilter("l");
-//		if (languageTags == null || languageTags.isEmpty()) {
-//			langFilter = "";
-//		} else {
-//			langFilter += " AND ";
-//		}
-//
-//		String baseQuery = PERMISSION_PATTERN_ON_TAG;
-//		baseQuery += TAG_PROJECT_PATTERN;
-//		baseQuery += "MATCH (node:MeshNode)-[:HAS_TAG]->(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
-//		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
-//
-//		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
-//		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
-//
-//		Map<String, Object> parameters = new HashMap<>();
-//		parameters.put("languageTags", languageTags);
-//		parameters.put("projectName", projectName);
-//		parameters.put("userUuid", userUuid);
-//		parameters.put("node", node);
-//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
+		//		String langFilter = getLanguageFilter("l");
+		//		if (languageTags == null || languageTags.isEmpty()) {
+		//			langFilter = "";
+		//		} else {
+		//			langFilter += " AND ";
+		//		}
+		//
+		//		String baseQuery = PERMISSION_PATTERN_ON_TAG;
+		//		baseQuery += TAG_PROJECT_PATTERN;
+		//		baseQuery += "MATCH (node:MeshNode)-[:HAS_TAG]->(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
+		//		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
+		//
+		//		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
+		//		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
+		//
+		//		Map<String, Object> parameters = new HashMap<>();
+		//		parameters.put("languageTags", languageTags);
+		//		parameters.put("projectName", projectName);
+		//		parameters.put("userUuid", userUuid);
+		//		parameters.put("node", node);
+		//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
 		return null;
 	}
 
 	public Page<MeshNode> findTaggedNodes(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-//		String langFilter = getLanguageFilter("l");
-//		if (languageTags == null || languageTags.isEmpty()) {
-//			langFilter = "";
-//		} else {
-//			langFilter += " AND ";
-//		}
-//		String baseQuery = PERMISSION_PATTERN_ON_NODE;
-//		baseQuery += "MATCH (node)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
-//		baseQuery += "MATCH (tag:Tag)-[:HAS_TAG]->(node)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
-//		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
-//
-//		String query = baseQuery + " WITH sp, node " + ORDER_BY_NAME + " RETURN DISTINCT node as n";
-//		String countQuery = baseQuery + " RETURN count(DISTINCT node) as count";
-//
-//		Map<String, Object> parameters = new HashMap<>();
-//		parameters.put("languageTags", languageTags);
-//		parameters.put("projectName", projectName);
-//		parameters.put("userUuid", userUuid);
-//		parameters.put("tag", tag);
-//		return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
-		return null;
-	}
-
-	@Override
-	public Translated create(MeshNode node, I18NProperties props, Language language) {
-		// TODO Auto-generated method stub
+		//		String langFilter = getLanguageFilter("l");
+		//		if (languageTags == null || languageTags.isEmpty()) {
+		//			langFilter = "";
+		//		} else {
+		//			langFilter += " AND ";
+		//		}
+		//		String baseQuery = PERMISSION_PATTERN_ON_NODE;
+		//		baseQuery += "MATCH (node)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
+		//		baseQuery += "MATCH (tag:Tag)-[:HAS_TAG]->(node)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
+		//		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
+		//
+		//		String query = baseQuery + " WITH sp, node " + ORDER_BY_NAME + " RETURN DISTINCT node as n";
+		//		String countQuery = baseQuery + " RETURN count(DISTINCT node) as count";
+		//
+		//		Map<String, Object> parameters = new HashMap<>();
+		//		parameters.put("languageTags", languageTags);
+		//		parameters.put("projectName", projectName);
+		//		parameters.put("userUuid", userUuid);
+		//		parameters.put("tag", tag);
+		//		return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
 		return null;
 	}
 
 	@Override
 	public Tag create() {
-		// TODO Auto-generated method stub
-		return null;
+		return framedGraph.addVertex(Tag.class);
 	}
 
 }

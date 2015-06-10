@@ -2,32 +2,30 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 
-public class I18NProperties extends AbstractPersistable {
+public class I18NProperties extends MeshVertex {
 
-//	@Adjacency(label = BasicRelationships.HAS_LANGUAGE, direction = Direction.OUT)
 	public Language getLanguage() {
-		
+		return out(BasicRelationships.HAS_LANGUAGE).next(Language.class);
 	}
 
-	@DynamicProperties
 	public Map<String, String> getProperties() {
-		
+		return getProperties("i18n-");
 	}
 
-	@DynamicProperties
 	public String getProperty(String key) {
-		getP
+		//TODO typecheck?
+		return super.getProperty("i18n-" + key);
 	}
 
-	@DynamicProperties
 	public void setProperty(String key, String value) {
-		
+		super.setProperty("i18n-" + key, value);
 	}
 
-	@DynamicProperties
+	//TODO Check whether this is the correct way of dealing with property deletions
 	public void removeProperty(String key) {
-		
+		super.setProperty("i18n-" + key, null);
 	}
 }

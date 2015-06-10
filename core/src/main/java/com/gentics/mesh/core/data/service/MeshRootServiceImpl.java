@@ -30,7 +30,7 @@ public class MeshRootServiceImpl implements MeshRootService {
 
 	@Override
 	public MeshRoot create() {
-		MeshRoot root = framedGraph.addVertex(null, MeshRoot.class);
+		MeshRoot root = framedGraph.addVertex(MeshRoot.class);
 		return root;
 	}
 

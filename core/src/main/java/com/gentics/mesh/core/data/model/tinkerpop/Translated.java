@@ -6,17 +6,21 @@ import com.gentics.mesh.core.data.model.generic.GenericNode;
 
 public class Translated extends FramedEdge {
 
+	public static final String LANGUAGE_KEY = "languageTag";
+
 	public String getLanguageTag() {
-		return getProperty("languageTag");
+		return getProperty(LANGUAGE_KEY);
 	}
 
-//	@InVertex
-	public GenericNode getStartNode() {
-		return inV().frame(GenericNode.class);
+	public void setLanguageTag(String languageTag) {
+		setProperty(LANGUAGE_KEY, languageTag);
 	}
-//
-//	@OutVertex
+
+	public GenericNode getStartNode() {
+		return inV().next(GenericNode.class);
+	}
+
 	public I18NProperties getI18NProperties() {
-		return outV().frame(I18NProperties.class);
+		return outV().next(I18NProperties.class);
 	}
 }

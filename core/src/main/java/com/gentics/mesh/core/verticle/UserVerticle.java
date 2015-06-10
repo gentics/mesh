@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -174,7 +174,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				user.addGroup(parentGroup);
 				user = userService.save(user);
-				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(parentGroup, PermissionType.CREATE), user);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), user);
 				userCreated.complete(user);
 			}, trh -> {
 				User user = userCreated.result();

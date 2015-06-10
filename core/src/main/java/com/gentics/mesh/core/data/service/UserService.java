@@ -5,8 +5,8 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.Set;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
@@ -34,11 +34,11 @@ public interface UserService extends GenericNodeService<User> {
 
 	void removeUserFromGroup(User user, Group group);
 
-	Set<GraphPermission> findGraphPermissions(User user, AbstractPersistable node);
+	Set<GraphPermission> findGraphPermissions(User user, MeshVertex node);
 
-	boolean isPermitted(long userNodeId, TPMeshPermission genericPermission) throws Exception;
+	boolean isPermitted(long userNodeId, MeshPermission genericPermission) throws Exception;
 
-	String[] getPerms(RoutingContext rc, AbstractPersistable node);
+	String[] getPerms(RoutingContext rc, MeshVertex node);
 
 	User findUser(RoutingContext rc);
 

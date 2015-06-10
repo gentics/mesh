@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.Result;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
-import com.gentics.mesh.core.data.model.generic.AbstractPersistable;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -61,7 +60,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public void addPermission(Role role, AbstractPersistable node, PermissionType... permissionTypes) {
+	public void addPermission(Role role, MeshVertex node, PermissionType... permissionTypes) {
 		GraphPermission permission = getGraphPermission(role, node);
 		// Create a new permission relation when no existing one could be found
 		if (permission == null) {
@@ -69,18 +68,18 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		}
 		for (int i = 0; i < permissionTypes.length; i++) {
 			//TODO tinkerpop - handle grant call. Javahandler?
-//			permission.grant(permissionTypes[i]);
+			//			permission.grant(permissionTypes[i]);
 		}
 	}
 
 	@Override
-	public GraphPermission getGraphPermission(Role role, AbstractPersistable node) {
+	public GraphPermission getGraphPermission(Role role, MeshVertex node) {
 		//		return roleRepository.findPermission(role.getId(), node.getId());
 		return null;
 	}
 
 	@Override
-	public GraphPermission revokePermission(Role role, AbstractPersistable node, PermissionType... permissionTypes) {
+	public GraphPermission revokePermission(Role role, MeshVertex node, PermissionType... permissionTypes) {
 		GraphPermission permission = getGraphPermission(role, node);
 		// Create a new permission relation when no existing one could be found
 		if (permission == null) {
@@ -89,7 +88,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		for (int i = 0; i < permissionTypes.length; i++) {
 			permission.revoke(permissionTypes[i]);
 		}
-		role.addPermission(permission);
+		role.addPermission(node);
 		//		permission = neo4jTemplate.save(permission);
 		return permission;
 	}
@@ -115,13 +114,13 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	@Override
-	public void addCRUDPermissionOnRole(RoutingContext rc, TPMeshPermission meshPermission, GenericNode targetNode) {
+	public void addCRUDPermissionOnRole(RoutingContext rc, MeshPermission meshPermission, GenericNode targetNode) {
 
 		User user = userService.findByUUID(rc.session().getPrincipal().getString("uuid"));
 
 		// 1. Determine all roles that grant given permission
 		//		Node userNode = neo4jTemplate.getPersistentState(user);
-		Vertex userNode = user.asVertex();
+		Vertex userNode = user.getVertex();
 		Set<Role> roles = new HashSet<>();
 
 		//TODO use core blueprint api or gremlin traversal?
@@ -205,14 +204,14 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 
 	@Override
 	public Role create(String name) {
-		Role role = framedGraph.addVertex(null, Role.class);
+		Role role = framedGraph.addVertex(Role.class);
 		role.setName(name);
 		return role;
 	}
 
 	@Override
 	public RoleRoot createRoot() {
-		RoleRoot root = framedGraph.addVertex(null, RoleRoot.class);
+		RoleRoot root = framedGraph.addVertex(RoleRoot.class);
 		return root;
 	}
 

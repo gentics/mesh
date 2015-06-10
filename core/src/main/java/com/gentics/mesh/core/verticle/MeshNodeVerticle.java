@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
@@ -188,12 +188,10 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					}
 //					tagProps = neo4jTemplate.save(tagProps);
 					// Create the relationship to the i18n properties
-					Translated translated = nodeService.create(node, tagProps, language);
-//					translated = neo4jTemplate.save(translated);
-					node.addI18nTranslation(translated);
+					node.addI18nTranslation(node, tagProps, language);
 				}
 
-				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(rootNodeForContent, PermissionType.CREATE), node);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, PermissionType.CREATE), node);
 
 				node = nodeService.save(node);
 

@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.TPMeshPermission;
+import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -137,7 +137,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				Group parentGroup = rh.result();
 				role.addGroup(parentGroup);
 				role = roleService.save(role);
-				roleService.addCRUDPermissionOnRole(rc, new TPMeshPermission(parentGroup, PermissionType.CREATE), role);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), role);
 				roleCreated.complete(role);
 			}, trh -> {
 				Role role = roleCreated.result();
