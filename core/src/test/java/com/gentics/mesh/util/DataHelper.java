@@ -35,8 +35,6 @@ public class DataHelper {
 		MeshNode node = nodeService.create();
 //		try (Transaction tx = graphDb.beginTx()) {
 
-			node = nodeService.save(node);
-
 			for (PermissionType perm : perms) {
 				roleService.addPermission(role, node, perm);
 			}
@@ -48,7 +46,6 @@ public class DataHelper {
 	public User addUser(String name, Role role, PermissionType... perms) {
 		User user = userService.create("extraUser");
 //		try (Transaction tx = graphDb.beginTx()) {
-			user = userService.save(user);
 			for (PermissionType perm : perms) {
 				roleService.addPermission(role, user, perm);
 			}

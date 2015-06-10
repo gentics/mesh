@@ -9,7 +9,7 @@ public interface PropertyContainerActions<T extends GenericPropertyContainer> {
 
 	public void setContent(T node, Language language, String text);
 
-	public void setName(T node, Language language, String filename);
+	public void setName(T node, Language language, String name);
 
 	public String getName(T node, Language language);
 

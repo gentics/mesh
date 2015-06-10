@@ -29,7 +29,6 @@ public class LanguageTest extends AbstractDBTest {
 		final String languageName = "klingon";
 		Language lang = languageService.create(languageName, languageTag);
 //		try (Transaction tx = graphDb.beginTx()) {
-			lang = languageService.save(lang);
 //			tx.success();
 //		}
 		lang = languageService.findOne(lang.getId());
@@ -47,7 +46,6 @@ public class LanguageTest extends AbstractDBTest {
 			final String languageName = "klingon";
 			final String languageTag = "tlh";
 			Language lang = languageService.create(languageName, languageTag);
-			languageService.save(lang);
 //			tx.success();
 //		}
 

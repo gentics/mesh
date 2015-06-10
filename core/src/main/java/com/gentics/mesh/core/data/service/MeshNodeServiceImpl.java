@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
@@ -36,7 +36,7 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	private GroupService groupService;
 
 	@Autowired
-	private ObjectSchemaService objectSchemaService;
+	private SchemaService objectSchemaService;
 
 	@Autowired
 	private TagService tagService;
@@ -53,11 +53,11 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	public void setTeaser(MeshNode content, Language language, String text) {
-		setProperty(content, language, ObjectSchema.TEASER_KEYWORD, text);
+		setProperty(content, language, Schema.TEASER_KEYWORD, text);
 	}
 
 	public void setTitle(MeshNode content, Language language, String text) {
-		setProperty(content, language, ObjectSchema.TITLE_KEYWORD, text);
+		setProperty(content, language, Schema.TITLE_KEYWORD, text);
 	}
 
 	@Override

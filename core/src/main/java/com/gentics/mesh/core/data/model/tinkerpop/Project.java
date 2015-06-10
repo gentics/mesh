@@ -5,7 +5,7 @@ import java.util.List;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.root.ObjectSchemaRoot;
+import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
 
 public class Project extends GenericNode {
@@ -23,11 +23,11 @@ public class Project extends GenericNode {
 		return out(BasicRelationships.HAS_TAG_ROOT).toList(TagFamilyRoot.class);
 	}
 
-	public ObjectSchemaRoot getSchemaRoot() {
-		return out(BasicRelationships.HAS_SCHEMA_ROOT).next(ObjectSchemaRoot.class);
+	public SchemaRoot getSchemaRoot() {
+		return out(BasicRelationships.HAS_SCHEMA_ROOT).next(SchemaRoot.class);
 	}
 
-	public void setSchemaRoot(ObjectSchemaRoot schemaRoot) {
+	public void setSchemaRoot(SchemaRoot schemaRoot) {
 		linkOut(schemaRoot, BasicRelationships.HAS_SCHEMA_ROOT);
 	}
 

@@ -7,7 +7,6 @@ import io.vertx.ext.apex.RoutingContext;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
@@ -41,7 +40,6 @@ public class UserTest extends AbstractDBTest {
 		user.setPasswordHash(PASSWDHASH);
 
 //		try (Transaction tx = graphDb.beginTx()) {
-			user = userService.save(user);
 //			tx.success();
 //		}
 
@@ -64,7 +62,6 @@ public class UserTest extends AbstractDBTest {
 
 //		try (Transaction tx = graphDb.beginTx()) {
 			User user = userService.create("dummy12345");
-			user = userService.save(user);
 //			tx.success();
 //		}
 
@@ -78,9 +75,7 @@ public class UserTest extends AbstractDBTest {
 
 		User extraUser = userService.create("extraUser");
 //		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
 			info.getGroup().addUser(extraUser);
-			groupService.save(info.getGroup());
 			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
 //			tx.success();
 //		}

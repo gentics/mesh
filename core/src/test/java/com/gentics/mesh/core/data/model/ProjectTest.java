@@ -27,7 +27,6 @@ public class ProjectTest extends AbstractDBTest {
 	@Test
 	public void testCreation() {
 		Project project = projectService.create("test");
-		projectService.save(project);
 		project = projectService.findOne(project.getId());
 		assertNotNull(project);
 		assertEquals("test", project.getName());
@@ -47,7 +46,6 @@ public class ProjectTest extends AbstractDBTest {
 
 //		try (Transaction tx = graphDb.beginTx()) {
 			Project project = projectService.create("test1234556");
-			projectService.save(project);
 //			tx.success();
 //		}
 		int nProjectsAfter = count(projectService.findRoot().getProjects());

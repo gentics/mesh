@@ -47,7 +47,6 @@ public class LinkRendererTest extends AbstractDBTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setDisplayName(content, german, "german name");
 			nodeService.setName(content, german, "german.html");
-			nodeService.save(content);
 //			tx.success();
 //		}
 
@@ -55,7 +54,6 @@ public class LinkRendererTest extends AbstractDBTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setDisplayName(content2, english, "content 2 english");
 			nodeService.setName(content2, english, "english.html");
-			nodeService.save(content2);
 //			tx.success();
 //		}
 

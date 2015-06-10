@@ -222,7 +222,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					group.setName(requestModel.getName());
 				}
 
-				group = groupService.save(group);
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
@@ -289,7 +288,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshRoot root = meshRootService.findRoot();
 			rcs.hasPermission(rc, root.getGroupRoot(), PermissionType.CREATE, rh -> {
 				Group group = groupService.create(requestModel.getName());
-				group = groupService.save(group);
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(root.getGroupRoot(), PermissionType.CREATE), group);
 				groupCreated.complete(group);
 			}, tch -> {

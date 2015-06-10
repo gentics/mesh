@@ -37,11 +37,9 @@ public class MeshNodeTest extends AbstractDBTest {
 
 			nodeService.setContent(content, data().getEnglish(), "english content");
 			nodeService.setName(content, data().getEnglish(), "english.html");
-			nodeService.save(content);
 
 			nodeService.setContent(content2, data().getEnglish(), "english2 content");
 			nodeService.setName(content2, data().getEnglish(), "english2.html");
-			nodeService.save(content2);
 //			tx.success();
 //		}
 		nodeService.createLink(content, content2);
@@ -58,12 +56,10 @@ public class MeshNodeTest extends AbstractDBTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 			newSubNode = nodeService.create();
 			newSubNode.setParentNode(newsNode);
-			nodeService.save(newSubNode);
 //			tx.success();
 //		}
 
 //		try (Transaction tx = graphDb.beginTx()) {
-			newsNode = nodeService.reload(newsNode);
 			assertEquals(1, count(newsNode.getChildren()));
 			MeshNode firstChild = newsNode.getChildren().iterator().next();
 //			neo4jTemplate.fetch(firstChild);
@@ -83,10 +79,6 @@ public class MeshNodeTest extends AbstractDBTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 
 			newsNode.addTag(carTag);
-			nodeService.save(newsNode);
-
-			// Reload node 
-			newsNode = nodeService.reload(newsNode);
 
 			assertEquals(1, count(newsNode.getTags()));
 			Tag firstTag = newsNode.getTags().iterator().next();
@@ -102,10 +94,8 @@ public class MeshNodeTest extends AbstractDBTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setContent(node, data().getEnglish(), "english content");
 			nodeService.setName(node, data().getEnglish(), "english.html");
-			node = nodeService.save(node);
 //			tx.success();
 //		}
-		node = nodeService.reload(node);
 		assertNotNull(node.getUuid());
 //		try (Transaction tx = graphDb.beginTx()) {
 			String text = nodeService.getContent(node, data().getEnglish());

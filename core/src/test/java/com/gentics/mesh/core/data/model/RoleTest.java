@@ -40,10 +40,9 @@ public class RoleTest extends AbstractDBTest {
 	public void testCreation() {
 		final String roleName = "test";
 		Role role = roleService.create(roleName);
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.save(role);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		//			tx.success();
+		//		}
 		role = roleService.findOne(role.getId());
 		assertNotNull(role);
 		assertEquals(roleName, role.getName());
@@ -54,17 +53,16 @@ public class RoleTest extends AbstractDBTest {
 		Role role = info.getRole();
 		MeshNode content = data().getContent("news overview");
 		MeshNode content2;
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.addPermission(role, content, CREATE, READ, UPDATE, DELETE);
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.addPermission(role, content, CREATE, READ, UPDATE, DELETE);
 
-			// content2
-			content2 = nodeService.create();
-			nodeService.setContent(content2, data().getEnglish(), "Test");
-			content2 = nodeService.save(content2);
-			roleService.addPermission(role, content2, READ, DELETE);
-			roleService.addPermission(role, content2, CREATE);
-//			tx.success();
-//		}
+		// content2
+		content2 = nodeService.create();
+		nodeService.setContent(content2, data().getEnglish(), "Test");
+		roleService.addPermission(role, content2, READ, DELETE);
+		roleService.addPermission(role, content2, CREATE);
+		//			tx.success();
+		//		}
 		GraphPermission permission = roleService.getGraphPermission(role, content2);
 		assertNotNull(permission);
 		assertTrue(permission.isPermitted(CREATE));
@@ -92,15 +90,15 @@ public class RoleTest extends AbstractDBTest {
 		Role role = info.getRole();
 		MeshNode content = data().getContent("news overview");
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.addPermission(role, content, CREATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.addPermission(role, content, CREATE);
+		//			tx.success();
+		//		}
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.addPermission(role, content, CREATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.addPermission(role, content, CREATE);
+		//			tx.success();
+		//		}
 
 		GraphPermission permission = roleService.getGraphPermission(role, content);
 		assertNotNull(permission);
@@ -114,23 +112,23 @@ public class RoleTest extends AbstractDBTest {
 	public void testRevokePermission() {
 		Role role = info.getRole();
 		MeshNode content = data().getContent("news overview");
-//		try (Transaction tx = graphDb.beginTx()) {
-			GraphPermission permission = roleService.revokePermission(role, content, CREATE);
-			assertFalse(permission.isPermitted(CREATE));
-			assertTrue(permission.isPermitted(DELETE));
-			assertTrue(permission.isPermitted(UPDATE));
-			assertTrue(permission.isPermitted(READ));
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		GraphPermission permission = roleService.revokePermission(role, content, CREATE);
+		assertFalse(permission.isPermitted(CREATE));
+		assertTrue(permission.isPermitted(DELETE));
+		assertTrue(permission.isPermitted(UPDATE));
+		assertTrue(permission.isPermitted(READ));
+		//			tx.success();
+		//		}
 	}
 
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), data().getMeshRoot().getGroupRoot(), PermissionType.CREATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), data().getMeshRoot().getGroupRoot(), PermissionType.CREATE);
+		//			tx.success();
+		//		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
 				userService.isPermitted(info.getUser().getId(), new MeshPermission(data().getMeshRoot().getGroupRoot(), PermissionType.CREATE)));
@@ -142,11 +140,10 @@ public class RoleTest extends AbstractDBTest {
 		int nRolesBefore = count(roleService.findRoot().getRoles());
 
 		final String roleName = "test2";
-//		try (Transaction tx = graphDb.beginTx()) {
-			Role role = roleService.create(roleName);
-			roleService.save(role);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		Role role = roleService.create(roleName);
+		//			tx.success();
+		//		}
 
 		int nRolesAfter = count(roleService.findRoot().getRoles());
 		assertEquals(nRolesBefore + 1, nRolesAfter);
@@ -157,13 +154,11 @@ public class RoleTest extends AbstractDBTest {
 	public void testRolesOfGroup() {
 
 		Role extraRole = roleService.create("extraRole");
-//		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
-			info.getGroup().addRole(extraRole);
-			groupService.save(info.getGroup());
-			roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		info.getGroup().addRole(extraRole);
+		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
+		//			tx.success();
+		//		}
 
 		RoutingContext rc = getMockedRoutingContext("");
 		Page<Role> roles = roleService.findByGroup(rc, info.getGroup(), new PagingInfo(0, 10));

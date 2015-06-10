@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.repository.action.PropertyContainerActions;
 
@@ -41,35 +41,35 @@ public class GenericPropertyContainerServiceImpl<T extends GenericPropertyContai
 	}
 
 	public void setContent(T node, Language language, String text) {
-		setProperty(node, language, ObjectSchema.CONTENT_KEYWORD, text);
+		setProperty(node, language, Schema.CONTENT_KEYWORD, text);
 	}
 
 	public void setName(T node, Language language, String name) {
-		setProperty(node, language, ObjectSchema.NAME_KEYWORD, name);
+		setProperty(node, language, Schema.NAME_KEYWORD, name);
 	}
 
 	public String getName(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.NAME_KEYWORD);
+		return getProperty(node, language, Schema.NAME_KEYWORD);
 	}
 
 	public String getContent(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.CONTENT_KEYWORD);
+		return getProperty(node, language, Schema.CONTENT_KEYWORD);
 	}
 
 	public String getTeaser(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.TEASER_KEYWORD);
+		return getProperty(node, language, Schema.TEASER_KEYWORD);
 	}
 
 	public String getTitle(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.TITLE_KEYWORD);
+		return getProperty(node, language, Schema.TITLE_KEYWORD);
 	}
 
 	public String getDisplayName(T node, Language language) {
-		return getProperty(node, language, ObjectSchema.DISPLAY_NAME_KEYWORD);
+		return getProperty(node, language, Schema.DISPLAY_NAME_KEYWORD);
 	}
 
 	public void setDisplayName(T node, Language language, String name) {
-		setProperty(node, language, ObjectSchema.DISPLAY_NAME_KEYWORD, name);
+		setProperty(node, language, Schema.DISPLAY_NAME_KEYWORD, name);
 	}
 
 	public String getProperty(T node, Language language, String key) {

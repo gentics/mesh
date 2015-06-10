@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.response.ObjectSchemaResponse;
+import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
@@ -139,7 +139,7 @@ public class RestAssert {
 		//		assertEquals(node.getOrder(), readValue.getOrder());
 		assertNotNull(readValue.getPerms());
 
-		ObjectSchema schema = node.getSchema();
+		Schema schema = node.getSchema();
 		//		schema = neo4jTemplate.fetch(schema);
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), readValue.getSchema().getSchemaName());
@@ -193,7 +193,7 @@ public class RestAssert {
 		assertEquals(request.getName(), restProject.getName());
 	}
 
-	public void assertSchema(ObjectSchema schema, ObjectSchemaResponse restSchema) {
+	public void assertSchema(Schema schema, SchemaResponse restSchema) {
 		assertNotNull(schema);
 		assertNotNull(restSchema);
 		assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
@@ -202,7 +202,7 @@ public class RestAssert {
 		// TODO verify other fields
 	}
 
-	public void assertSchema(ObjectSchemaCreateRequest request, ObjectSchemaResponse restSchema) {
+	public void assertSchema(ObjectSchemaCreateRequest request, SchemaResponse restSchema) {
 		assertNotNull(request);
 		assertNotNull(restSchema);
 		assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());

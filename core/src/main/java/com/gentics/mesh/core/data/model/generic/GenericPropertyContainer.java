@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 
 public class GenericPropertyContainer extends GenericNode {
@@ -26,12 +26,12 @@ public class GenericPropertyContainer extends GenericNode {
 		return translated;
 	}
 
-	public void setSchema(ObjectSchema schema) {
+	public void setSchema(Schema schema) {
 		linkOut(schema, BasicRelationships.HAS_OBJECT_SCHEMA);
 	}
 
-	public ObjectSchema getSchema() {
-		return out(BasicRelationships.HAS_OBJECT_SCHEMA).next(ObjectSchema.class);
+	public Schema getSchema() {
+		return out(BasicRelationships.HAS_OBJECT_SCHEMA).next(Schema.class);
 	}
 
 }

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.model.schema.propertytypes;
 
 import java.util.List;
 
-public class ReferencePropertyTypeSchema extends BasicPropertyTypeSchema {
+public class ReferencePropertyTypeSchema extends BasicPropertyType {
 
 
 //	public List<String> getObjectTypeSchemaWhitelist() {

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 
-public class ObjectSchemaResponse extends AbstractRestModel {
+public class SchemaResponse extends AbstractRestModel {
 
 	private final String type = "object";
 
@@ -24,10 +24,10 @@ public class ObjectSchemaResponse extends AbstractRestModel {
 
 	private String[] perms = {};
 
-	public ObjectSchemaResponse() {
+	public SchemaResponse() {
 	}
 
-	public ObjectSchemaResponse(String name) {
+	public SchemaResponse(String name) {
 		this.name = name;
 	}
 

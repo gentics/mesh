@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.model.schema.propertytypes;
 
 
-public class ListPropertyTypeSchema extends BasicPropertyTypeSchema {
+public class ListPropertyTypeSchema extends BasicPropertyType {
 
 
 //	private Set<PropertyType> propertyTypeWhiteList = new HashSet<>();

@@ -15,7 +15,6 @@ import javax.transaction.NotSupportedException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
@@ -55,7 +54,6 @@ public class TagTest extends AbstractDBTest {
 		Tag tag = tagService.create();
 		tagService.setDisplayName(tag, german, GERMAN_NAME);
 //		try (Transaction tx = graphDb.beginTx()) {
-			tag = tagService.save(tag);
 //			tx.success();
 //		}
 		assertNotNull(tag.getId());
@@ -72,7 +70,6 @@ public class TagTest extends AbstractDBTest {
 	public void testSimpleTag() {
 		Tag tag = tagService.create();
 		tagService.setProperty(tag, data().getEnglish(), "name", "test");
-		tagService.save(tag);
 	}
 
 	@Test
@@ -84,7 +81,6 @@ public class TagTest extends AbstractDBTest {
 
 		tagService.setDisplayName(tag, english, ENGLISH_NAME);
 //		try (Transaction tx = graphDb.beginTx()) {
-			tag = tagService.save(tag);
 //			tx.success();
 //		}
 		tag = tagService.findOne(tag.getId());
@@ -98,18 +94,15 @@ public class TagTest extends AbstractDBTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 			nodeService.setDisplayName(node, german, GERMAN_TEST_FILENAME);
 			nodeService.setName(node, german, "german node name");
-			tag = tagService.save(tag);
 
 			// Assign the tag to the node
 			node.addTag(tag);
-			node = nodeService.save(node);
 //			tx.success();
 //		}
 
 		// Reload the tag and check whether the content was set
 //		try (Transaction tx = graphDb.beginTx()) {
 
-			tag = tagService.reload(tag);
 
 			assertEquals("The tag should have exactly one node.", 1, count(tag.getNodes()));
 			MeshNode contentFromTag = tag.getNodes().iterator().next();
@@ -121,10 +114,8 @@ public class TagTest extends AbstractDBTest {
 			// Remove the file/content and check whether the content was really removed
 			tag.removeNode(contentFromTag);
 			//TODO verify for removed node
-			tag = tagService.save(tag);
 //			tx.success();
 //		}
-		tag = tagService.reload(tag);
 		assertEquals("The tag should not have any file.", 0, count(tag.getNodes()));
 
 	}
@@ -149,11 +140,10 @@ public class TagTest extends AbstractDBTest {
 
 		Tag tag = tagService.create();
 		tagService.setDisplayName(tag, german, TEST_TAG_NAME);
-		tag = tagService.save(tag);
 		node.addTag(tag);
-		nodeService.save(node);
 
-		MeshNode reloadedNode = nodeService.reload(node);
+		//TODO load node ?
+		MeshNode reloadedNode = null;
 		boolean found = false;
 		for (Tag currentTag : reloadedNode.getTags()) {
 //			neo4jTemplate.fetch(currentTag);

@@ -55,10 +55,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 		String requestJson = JsonUtils.toJson(request);
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.addPermission(info.getRole(), data().getMeshRoot().getGroupRoot(), PermissionType.CREATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.addPermission(info.getRole(), data().getMeshRoot().getGroupRoot(), PermissionType.CREATE);
+		//			tx.success();
+		//		}
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/", 200, "OK", requestJson);
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
@@ -110,12 +110,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String requestJson = JsonUtils.toJson(request);
 
 		GroupRoot root;
-//		try (Transaction tx = graphDb.beginTx()) {
-			root = data().getMeshRoot().getGroupRoot();
-//			root = neo4jTemplate.fetch(root);
-			roleService.revokePermission(info.getRole(), root, PermissionType.CREATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		root = data().getMeshRoot().getGroupRoot();
+		//			root = neo4jTemplate.fetch(root);
+		roleService.revokePermission(info.getRole(), root, PermissionType.CREATE);
+		//			tx.success();
+		//		}
 
 		assertFalse("The create permission to the groups root node should have been revoked.",
 				userService.isPermitted(info.getUser().getId(), new MeshPermission(root, PermissionType.CREATE)));
@@ -134,17 +134,15 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		// Create and save some groups
 		final int nGroups = 21;
 		Group extraGroupWithNoPerm = groupService.create("no_perm_group");
-//		try (Transaction tx = graphDb.beginTx()) {
+		//		try (Transaction tx = graphDb.beginTx()) {
 
-			for (int i = 0; i < nGroups; i++) {
-				Group group = groupService.create("group_" + i);
-				group = groupService.save(group);
-				roleService.addPermission(info.getRole(), group, PermissionType.READ);
-			}
-			// Don't grant permissions to extra group
-			extraGroupWithNoPerm = groupService.save(extraGroupWithNoPerm);
-//			tx.success();
-//		}
+		for (int i = 0; i < nGroups; i++) {
+			Group group = groupService.create("group_" + i);
+			roleService.addPermission(info.getRole(), group, PermissionType.READ);
+		}
+		// Don't grant permissions to extra group
+		//			tx.success();
+		//		}
 
 		int totalGroups = nGroups + data().getGroups().size();
 
@@ -208,10 +206,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testReadGroupByUUIDWithNoPermission() throws Exception {
 		Group group = info.getGroup();
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), group, PermissionType.READ);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), group, PermissionType.READ);
+		//			tx.success();
+		//		}
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
@@ -240,7 +238,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		Group reloadedGroup = groupService.reload(group);
+		//TODO TP load node
+		Group reloadedGroup = null;
 		Assert.assertEquals("The group should have been updated", name, reloadedGroup.getName());
 	}
 
@@ -257,7 +256,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtils.toJson(request));
 		expectMessageResponse("error_name_must_be_set", response);
 
-		Group reloadedGroup = groupService.reload(group);
+		//TODO TP load node
+		Group reloadedGroup = null;
 		Assert.assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -269,8 +269,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		// Create a group which occupies the name
 		Group extraGroup = groupService.create(alreadyUsedName);
-		extraGroup = groupService.save(extraGroup);
-		extraGroup = groupService.reload(extraGroup);
 
 		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
 		GroupUpdateRequest request = new GroupUpdateRequest();
@@ -280,7 +278,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtils.toJson(request));
 		expectMessageResponse("group_conflicting_name", response);
 
-		Group reloadedGroup = groupService.reload(group);
+		//TODO TP load node
+		Group reloadedGroup = null;
 		Assert.assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -297,7 +296,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/groups/bogus", 404, "Not Found", JsonUtils.toJson(request));
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
-		Group reloadedGroup = groupService.reload(group);
+		//TODO TP load node
+		Group reloadedGroup = null;
 		Assert.assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -319,10 +319,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(group.getUuid());
 
 		// Don't allow delete
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), group, PermissionType.DELETE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), group, PermissionType.DELETE);
+		//			tx.success();
+		//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());

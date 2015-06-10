@@ -189,8 +189,8 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		return null;
 	}
 
-	@Override
-	public Role save(Role role) {
+//	@Override
+//	public Role save(Role role) {
 		//		RoleRoot root = roleService.findRoot();
 		//		if (root == null) {
 		//			throw new NullPointerException("The role root node could not be found.");
@@ -199,8 +199,8 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		//		root.getRoles().add(role);
 		//		neo4jTemplate.save(root);
 		//		return role;
-		return null;
-	}
+//		return null;
+//	}
 
 	@Override
 	public Role create(String name) {

@@ -28,11 +28,9 @@ public class GroupTest extends AbstractDBTest {
 		Group group = groupService.create("test group");
 //		try (Transaction tx = graphDb.beginTx()) {
 			group.addUser(user);
-			group = groupService.save(group);
 //			tx.success();
 //		}
 
-		group = groupService.reload(group);
 		assertEquals("The group should contain one member.", 1, count(group.getUsers()));
 
 //		try (Transaction tx = graphDb.beginTx()) {
@@ -49,7 +47,6 @@ public class GroupTest extends AbstractDBTest {
 
 		Group group = groupService.create("test group2");
 //		try (Transaction tx = graphDb.beginTx()) {
-			groupService.save(group);
 //			tx.success();
 //		}
 

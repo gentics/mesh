@@ -25,8 +25,8 @@ public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implem
 		return null;
 	}
 
-	@Override
-	public Language save(Language language) {
+//	@Override
+//	public Language save(Language language) {
 		//		if (StringUtils.isEmpty(language.getLanguageTag()) || StringUtils.isEmpty(language.getName())) {
 		//			// TODO throw exception?
 		//		}
@@ -38,8 +38,8 @@ public class LanguageServiceImpl extends GenericNodeServiceImpl<Language> implem
 		//		root.getLanguages().add(language);
 		//		neo4jTemplate.save(root);
 		//		return language;
-		return null;
-	}
+//		return null;
+//	}
 
 	public LanguageRoot findRoot() {
 		//		@Query("MATCH (n:LanguageRoot) return n")

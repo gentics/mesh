@@ -72,7 +72,6 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					}
 					role.setName(requestModel.getName());
 				}
-				role = roleService.save(role);
 			}, trh -> {
 				Role role = trh.result();
 				rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
@@ -136,7 +135,6 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				Role role = roleService.create(requestModel.getName());
 				Group parentGroup = rh.result();
 				role.addGroup(parentGroup);
-				role = roleService.save(role);
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), role);
 				roleCreated.complete(role);
 			}, trh -> {

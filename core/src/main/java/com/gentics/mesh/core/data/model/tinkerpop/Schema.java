@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
 
-public class ObjectSchema extends GenericNode {
+public class Schema extends GenericNode {
 
 	public static final String CONTENT_KEYWORD = "content";
 	public static final String DISPLAY_NAME_KEYWORD = "displayName";
@@ -52,12 +52,12 @@ public class ObjectSchema extends GenericNode {
 		return outE(BasicRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
 	}
 
-	public List<BasicPropertyTypeSchema> getPropertyTypeSchemas() {
-		return out(BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyTypeSchema.class);
+	public List<BasicPropertyType> getPropertyTypeSchemas() {
+		return out(BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyType.class);
 	}
 
 //	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
-	public void addPropertyTypeSchema(BasicPropertyTypeSchema content) {
+	public void addPropertyTypeSchema(BasicPropertyType content) {
 		
 	}
 

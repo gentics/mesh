@@ -135,7 +135,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 							}
 						}
 					}
-					tag = tagService.save(tag);
 					rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag)));
 				});
 
@@ -174,7 +173,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					// Create the relationship to the i18n properties
 					newTag.addI18nTranslation(newTag, tagProps, language);
 				}
-				newTag = tagService.save(newTag);
 				tagCreated.complete(newTag);
 			}, trh -> {
 				Tag newTag = tagCreated.result();

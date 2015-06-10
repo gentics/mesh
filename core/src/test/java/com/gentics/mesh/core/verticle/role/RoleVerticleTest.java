@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -139,9 +138,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		Role extraRole = roleService.create("extra role");
 //		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
-			groupService.save(info.getGroup());
 //			tx.success();
 //		}
 
@@ -163,9 +160,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		Role extraRole = roleService.create("extra role");
 //		try (Transaction tx = graphDb.beginTx()) {
-			extraRole = roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
-			groupService.save(info.getGroup());
 
 			// Revoke read permission from the role
 			roleService.revokePermission(info.getRole(), extraRole, PermissionType.READ);
@@ -203,14 +198,11 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 			// Create and save some roles
 			for (int i = 0; i < nRoles; i++) {
 				Role extraRole = roleService.create("extra role " + i);
-				extraRole = roleService.save(extraRole);
 				info.getGroup().addRole(extraRole);
-				groupService.save(info.getGroup());
 				roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
 			}
 
 			// Role with no permission
-			noPermRole = roleService.save(noPermRole);
 			info.getGroup().addRole(noPermRole);
 //			tx.success();
 //		}
@@ -273,7 +265,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		Role extraRole = roleService.create("extra role");
 //		try (Transaction tx = graphDb.beginTx()) {
-			roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
 			roleService.addPermission(info.getRole(), extraRole, PermissionType.UPDATE);
 //			tx.success();
@@ -315,7 +306,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteRoleByUUID() throws Exception {
 		Role extraRole = roleService.create("extra role");
 //		try (Transaction tx = graphDb.beginTx()) {
-			roleService.save(extraRole);
 			info.getGroup().addRole(extraRole);
 			roleService.addPermission(info.getRole(), extraRole, PermissionType.DELETE);
 //			tx.success();

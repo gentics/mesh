@@ -114,7 +114,6 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + restNode.getUuid(), 200, "OK");
 		expectMessageResponse("node_deleted", response, restNode.getUuid());
 
-		node = nodeService.reload(node);
 		assertNull("The node should have been deleted.", node);
 
 	}
@@ -177,7 +176,6 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		MeshNode noPermNode = nodeService.create();
 //		try (Transaction tx = graphDb.beginTx()) {
 			noPermNode.setCreator(info.getUser());
-			noPermNode = nodeService.save(noPermNode);
 //			tx.success();
 //		}
 		// noPermNode = nodeService.reload(noPermNode);

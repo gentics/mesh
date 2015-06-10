@@ -15,7 +15,6 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +23,14 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.Translated;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
@@ -102,7 +100,6 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					MeshNode node = rh.result();
 					Tag tag = srh.result();
 					node.addTag(tag);
-					node = nodeService.save(node);
 				}, trh -> {
 					MeshNode node = rh.result();
 					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
@@ -120,7 +117,6 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					MeshNode node = rh.result();
 					Tag tag = srh.result();
 					node.removeTag(tag);
-					node = nodeService.save(node);
 				}, trh -> {
 					MeshNode node = rh.result();
 					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
@@ -157,7 +153,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					return;
 				} else {
 
-					ObjectSchema schema = schemaService.findByName(requestModel.getSchema().getSchemaName());
+					Schema schema = schemaService.findByName(requestModel.getSchema().getSchemaName());
 					if (schema == null) {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getSchemaName())));
 						return;
@@ -172,7 +168,6 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				Project project = projectService.findByName(projectName);
 				node.addProject(project);
 
-				node = nodeService.save(node);
 
 				/* Add the i18n properties to the newly created tag */
 				for (String languageTag : requestModel.getProperties().keySet()) {
@@ -193,11 +188,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, PermissionType.CREATE), node);
 
-				node = nodeService.save(node);
 
 				/* Assign the content to the tag and save the tag */
 				//				rootTagForContent.(content);
-					rootNodeForContent = nodeService.save(rootNodeForContent);
 
 					contentCreated.complete(node);
 				}, trh -> {

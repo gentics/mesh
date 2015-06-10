@@ -59,12 +59,11 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
-		assertFalse(contains(node.getTags(),tag));
+		assertFalse(contains(node.getTags(), tag));
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertTrue(test.containsTag(restNode, tag));
-		node = nodeService.reload(node);
-		assertTrue(contains(node.getTags(),tag));
+		assertTrue(contains(node.getTags(), tag));
 		//TODO check for properties of the nested tag
 	}
 
@@ -72,28 +71,26 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testAddTagToNoPermNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
-		assertFalse(contains(node.getTags(),tag));
+		assertFalse(contains(node.getTags(), tag));
 		roleService.revokePermission(info.getRole(), node, PermissionType.UPDATE);
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
 
-		node = nodeService.reload(node);
-		assertFalse(contains(node.getTags(),tag));
+		assertFalse(contains(node.getTags(), tag));
 	}
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
-		assertFalse(contains(node.getTags(),tag));
+		assertFalse(contains(node.getTags(), tag));
 		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
 
-		node = nodeService.reload(node);
-		assertFalse(contains(node.getTags(),tag));
+		assertFalse(contains(node.getTags(), tag));
 	}
 
 	@Test
@@ -101,12 +98,11 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
 
-		assertTrue(contains(node.getTags(),tag));
+		assertTrue(contains(node.getTags(), tag));
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertFalse(test.containsTag(restNode, tag));
-		node = nodeService.reload(node);
-		assertFalse(contains(node.getTags(),tag));
+		assertFalse(contains(node.getTags(), tag));
 		//TODO check for properties of the nested tag
 
 	}
@@ -123,29 +119,27 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveTagFromNoPermNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
-		assertTrue(contains(node.getTags(),tag));
+		assertTrue(contains(node.getTags(), tag));
 		roleService.revokePermission(info.getRole(), node, PermissionType.UPDATE);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
 
-		node = nodeService.reload(node);
-		assertTrue("The tag should not be removed from the node", contains(node.getTags(),tag));
+		assertTrue("The tag should not be removed from the node", contains(node.getTags(), tag));
 	}
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
-		assertTrue(contains(node.getTags(),tag));
+		assertTrue(contains(node.getTags(), tag));
 		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
 
-		node = nodeService.reload(node);
 		//FramedVertexSet<Tag> tagSet = new FramedVertexSet<>(framedGraph, node.getTags(), Tag.class);
-		assertTrue("The tag should not have been removed from the node", contains(node.getTags(),tag));
+		assertTrue("The tag should not have been removed from the node", contains(node.getTags(), tag));
 	}
 
 }

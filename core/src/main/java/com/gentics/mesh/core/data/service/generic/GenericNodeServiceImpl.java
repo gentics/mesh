@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.service.generic;
 
-import java.util.List;
-
 import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,11 +13,6 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	protected FramedGraph framedGraph;
 
 	@Override
-	public T save(T node) {
-		return null;
-	}
-
-	@Override
 	public void delete(T node) {
 	}
 
@@ -27,12 +20,6 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	public T findOne(Long id) {
 		//		return nodeRepository.findOne(id);
 		return null;
-	}
-
-	@Override
-	public void save(List<T> nodes) {
-		//		this.nodeRepository.save(nodes);
-		return;
 	}
 
 	@Override
@@ -48,12 +35,6 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 	}
 
 	@Override
-	public T reload(T node) {
-		//		return nodeRepository.findOne(node.getId());
-		return null;
-	}
-
-	@Override
 	public T findByUUID(String uuid) {
 		//		return nodeRepository.findByUUID(uuid);
 		return null;
@@ -64,7 +45,7 @@ public class GenericNodeServiceImpl<T extends GenericNode> implements GenericNod
 		//		nodeRepository.deleteByUuid(uuid);
 	}
 
-//	@Query("MATCH (n:GenericNode)-[:ASSIGNED_TO_PROJECT]-(p:Project) WHERE p.name = {0} return n")
+	//	@Query("MATCH (n:GenericNode)-[:ASSIGNED_TO_PROJECT]-(p:Project) WHERE p.name = {0} return n")
 	Iterable<T> findAll(String projectName) {
 		return null;
 	}

@@ -227,8 +227,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		return null;
 	}
 
-	@Override
-	public User save(User user) {
+//	@Override
+//	public User save(User user) {
 		// UserRoot root = userRepository.findRoot();
 		// if (root == null) {
 		// throw new NullPointerException("The user root node could not be found.");
@@ -237,8 +237,8 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 		// root.getUsers().add(user);
 		// neo4jTemplate.save(root);
 		// return user;
-		return null;
-	}
+//		return null;
+//	}
 
 	@Override
 	public User create(String username) {

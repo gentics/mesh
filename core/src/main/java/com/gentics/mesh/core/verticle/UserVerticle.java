@@ -122,7 +122,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				if (!StringUtils.isEmpty(requestModel.getPassword())) {
 					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				}
-				user = userService.save(user);
 
 			}, trh -> {
 				User user = trh.result();
@@ -173,7 +172,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				user.setEmailAddress(requestModel.getEmailAddress());
 				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				user.addGroup(parentGroup);
-				user = userService.save(user);
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), user);
 				userCreated.complete(user);
 			}, trh -> {

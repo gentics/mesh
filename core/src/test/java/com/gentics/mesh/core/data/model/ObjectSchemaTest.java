@@ -10,15 +10,15 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
-import com.gentics.mesh.core.data.service.ObjectSchemaService;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
+import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Autowired
-	private ObjectSchemaService objectSchemaService;
+	private SchemaService objectSchemaService;
 
 	@Before
 	public void setup() throws Exception {
@@ -33,14 +33,14 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testDeleteByObject() {
-		ObjectSchema schema = data().getSchema("content");
+		Schema schema = data().getSchema("content");
 		objectSchemaService.delete(schema);
 		assertNull(objectSchemaService.findOne(schema.getId()));
 	}
 
 	@Test
 	public void testDeleteByUUID() {
-		ObjectSchema schema = data().getSchema("content");
+		Schema schema = data().getSchema("content");
 //		try (Transaction tx = graphDb.beginTx()) {
 
 			objectSchemaService.deleteByUUID(schema.getUuid());
@@ -65,9 +65,8 @@ public class ObjectSchemaTest extends AbstractDBTest {
 	public void testObjectSchemaRootNode() {
 		int nSchemasBefore = count(objectSchemaService.findRoot().getSchemas());
 
-		ObjectSchema schema = objectSchemaService.create("test1235");
+		Schema schema = objectSchemaService.create("test1235");
 //		try (Transaction tx = graphDb.beginTx()) {
-			objectSchemaService.save(schema);
 //			tx.success();
 //		}
 

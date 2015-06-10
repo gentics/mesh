@@ -19,14 +19,14 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
-import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.ObjectSchemaService;
+import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -83,7 +83,7 @@ public class DemoDataProvider {
 	private ProjectService projectService;
 
 	@Autowired
-	private ObjectSchemaService objectSchemaService;
+	private SchemaService objectSchemaService;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;
@@ -103,8 +103,8 @@ public class DemoDataProvider {
 
 	private MeshRoot root;
 
-	private Map<String, ObjectSchema> schemas = new HashMap<>();
-	private Map<String, MicroPropertyTypeSchema> microSchemas = new HashMap<>();
+	private Map<String, Schema> schemas = new HashMap<>();
+	private Map<String, MicroPropertyType> microSchemas = new HashMap<>();
 	private Map<String, MeshNode> folders = new HashMap<>();
 	private Map<String, MeshNode> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
@@ -130,13 +130,13 @@ public class DemoDataProvider {
 		english = languageService.findByLanguageTag("en");
 		german = languageService.findByLanguageTag("de");
 
-		addUserGroupRoleProject(multiplicator);
-		addMicoSchemas();
-		addSchemas();
-		addTags();
-		addFolderStructure();
-		addContents(multiplicator);
-		updatePermissions();
+		//		addUserGroupRoleProject(multiplicator);
+		//		addMicoSchemas();
+		//		addSchemas();
+		//		addTags();
+		//		addFolderStructure();
+		//		addContents(multiplicator);
+		//		updatePermissions();
 
 		log.info("Nodes:    " + getNodeCount());
 		log.info("Folders:  " + folders.size());
@@ -149,7 +149,7 @@ public class DemoDataProvider {
 
 	private void addContents(int multiplicator) {
 
-		ObjectSchema contentSchema = schemas.get("content");
+		Schema contentSchema = schemas.get("content");
 
 		for (int i = 0; i < 12 * multiplicator; i++) {
 			addContent(folders.get("2014"), "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
@@ -258,11 +258,10 @@ public class DemoDataProvider {
 	private void addFolderStructure() {
 
 		MeshNode rootNode = nodeService.create();
-//		rootNode = nodeService.save(rootNode);
+		//		rootNode = nodeService.save(rootNode);
 		rootNode.setCreator(userInfo.getUser());
 		rootNode.addProject(project);
 		project.setRootNode(rootNode);
-		project = projectService.save(project);
 
 		MeshNode news = addFolder(rootNode, "News", "Neuigkeiten");
 		MeshNode news2015 = addFolder(news, "2015", null);
@@ -270,7 +269,6 @@ public class DemoDataProvider {
 		news2015.addTag(tags.get("bike"));
 		news2015.addTag(tags.get("plane"));
 		news2015.addTag(tags.get("jeep"));
-		nodeService.save(news2015);
 
 		MeshNode news2014 = addFolder(news, "2014", null);
 		addFolder(news2014, "March", null);
@@ -282,8 +280,8 @@ public class DemoDataProvider {
 
 	private void addTags() {
 
-		ObjectSchema colorSchema = schemas.get("color");
-		ObjectSchema categoriesSchema = schemas.get("category");
+		Schema colorSchema = schemas.get("color");
+		Schema categoriesSchema = schemas.get("category");
 
 		// Tags for categories
 		addTag("Vehicle", "Fahrzeug", categoriesSchema);
@@ -315,12 +313,10 @@ public class DemoDataProvider {
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEmailAddress(email);
-		userService.save(user);
 		users.put(username, user);
 
 		String roleName = username + "_role";
 		Role role = roleService.create(roleName);
-		roleService.save(role);
 		roleService.addPermission(role, role, PermissionType.READ);
 		roles.put(roleName, role);
 
@@ -328,7 +324,6 @@ public class DemoDataProvider {
 		Group group = groupService.create(groupName);
 		group.addUser(user);
 		group.addRole(role);
-		group = groupService.save(group);
 		groups.put(groupName, group);
 
 		UserInfo userInfo = new UserInfo(user, group, role, password);
@@ -342,20 +337,17 @@ public class DemoDataProvider {
 
 		project = projectService.create(PROJECT_NAME);
 		project.setCreator(userInfo.getUser());
-		project = projectService.save(project);
 
 		root = rootService.findRoot();
-		root.addUser(userInfo.getUser());
+		root.getUserRoot().addUser(userInfo.getUser());
 		rootService.save(root);
 
 		// Guest Group / Role
 		Role guestRole = roleService.create("guest_role");
-		roleService.save(guestRole);
 		roles.put(guestRole.getName(), guestRole);
 
 		Group guests = groupService.create("guests");
 		guests.addRole(guestRole);
-		guests = groupService.save(guests);
 		groups.put("guests", guests);
 
 		// Extra User
@@ -365,32 +357,28 @@ public class DemoDataProvider {
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
 			user.setEmailAddress("guest_" + i + "@spam.gentics.com");
-			user = userService.save(user);
 			guests.addUser(user);
-			guests = groupService.save(guests);
 			users.put(user.getUsername(), user);
 		}
 		// Extra Groups
 		for (int i = 0; i < 12 * multiplicator; i++) {
 			Group group = groupService.create("extra_group_" + i);
-			group = groupService.save(group);
 			groups.put(group.getName(), group);
 		}
 
 		// Extra Roles
 		for (int i = 0; i < 12 * multiplicator; i++) {
 			Role role = roleService.create("extra_role_" + i);
-			roleService.save(role);
 			roles.put(role.getName(), role);
 		}
 	}
 
 	private void addMicoSchemas() {
-		MicroPropertyTypeSchema imageGallery = objectSchemaService.createMicroPropertyTypeSchema("gallery");
-		BasicPropertyTypeSchema descriptionSchema = objectSchemaService.createBasicPropertyTypeSchema("description", PropertyType.STRING);
+		MicroPropertyType imageGallery = objectSchemaService.createMicroPropertyTypeSchema("gallery");
+		BasicPropertyType descriptionSchema = objectSchemaService.createBasicPropertyTypeSchema("description", PropertyType.STRING);
 		imageGallery.addProperty(descriptionSchema);
 
-		BasicPropertyTypeSchema imagesSchemas = objectSchemaService.createListPropertyTypeSchema("images");
+		BasicPropertyType imagesSchemas = objectSchemaService.createListPropertyTypeSchema("images");
 		//		imagesSchemas.add(PropertyType.REFERENCE);
 		imageGallery.addProperty(imagesSchemas);
 		microSchemas.put("gallery", imageGallery);
@@ -406,76 +394,67 @@ public class DemoDataProvider {
 
 	private void addBootstrapSchemas() {
 		// tag
-		ObjectSchema tagSchema = objectSchemaService.findByName("tag");
+		Schema tagSchema = objectSchemaService.findByName("tag");
 		tagSchema.addProject(project);
-		tagSchema = objectSchemaService.save(tagSchema);
 		schemas.put("tag", tagSchema);
 
 		// folder
-		ObjectSchema folderSchema = objectSchemaService.findByName("folder");
+		Schema folderSchema = objectSchemaService.findByName("folder");
 		folderSchema.addProject(project);
-		folderSchema = objectSchemaService.save(folderSchema);
 		schemas.put("folder", folderSchema);
 
 		// content
-		ObjectSchema contentSchema = objectSchemaService.findByName("content");
+		Schema contentSchema = objectSchemaService.findByName("content");
 		contentSchema.addProject(project);
-		contentSchema = objectSchemaService.save(contentSchema);
 		schemas.put("content", contentSchema);
 
 		// binary-content
-		ObjectSchema binaryContentSchema = objectSchemaService.findByName("binary-content");
+		Schema binaryContentSchema = objectSchemaService.findByName("binary-content");
 		binaryContentSchema.addProject(project);
-		binaryContentSchema = objectSchemaService.save(binaryContentSchema);
 		schemas.put("binary-content", binaryContentSchema);
 
 	}
 
 	private void addColorsSchema() {
 
-		ObjectSchema colorSchema = objectSchemaService.create("colors");
+		Schema colorSchema = objectSchemaService.create("colors");
 		colorSchema.setDescription("Colors");
 		colorSchema.setDescription("Colors");
-		BasicPropertyTypeSchema nameProp = objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType nameProp = objectSchemaService.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		colorSchema.addPropertyTypeSchema(nameProp);
-		objectSchemaService.save(colorSchema);
 		schemas.put("color", colorSchema);
 	}
 
 	private void addBlogPostSchema() {
-		ObjectSchema blogPostSchema = objectSchemaService.create("blogpost");
-		BasicPropertyTypeSchema content = objectSchemaService.createBasicPropertyTypeSchema("content", PropertyType.LIST);
+		Schema blogPostSchema = objectSchemaService.create("blogpost");
+		BasicPropertyType content = objectSchemaService.createBasicPropertyTypeSchema("content", PropertyType.LIST);
 		blogPostSchema.addPropertyTypeSchema(content);
-		objectSchemaService.save(blogPostSchema);
 		schemas.put("blogpost", blogPostSchema);
 
 	}
 
 	private void addCategorySchema() {
-		ObjectSchema categoriesSchema = objectSchemaService.create(TAG_CATEGORIES_SCHEMA_NAME);
+		Schema categoriesSchema = objectSchemaService.create(TAG_CATEGORIES_SCHEMA_NAME);
 		categoriesSchema.addProject(project);
 		categoriesSchema.setDisplayName("Category");
 		categoriesSchema.setDescription("Custom schema for tag categories");
 		categoriesSchema.setCreator(userInfo.getUser());
-		BasicPropertyTypeSchema nameProp = objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType nameProp = objectSchemaService.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		categoriesSchema.addPropertyTypeSchema(nameProp);
 
-		BasicPropertyTypeSchema displayNameProp = objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.DISPLAY_NAME_KEYWORD,
-				PropertyType.I18N_STRING);
+		BasicPropertyType displayNameProp = objectSchemaService.createBasicPropertyTypeSchema(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 		displayNameProp.setDisplayName("Display Name");
 		displayNameProp.setDescription("The display name property of the category.");
 		categoriesSchema.addPropertyTypeSchema(displayNameProp);
 
-		BasicPropertyTypeSchema contentProp = objectSchemaService.createBasicPropertyTypeSchema(ObjectSchema.CONTENT_KEYWORD,
-				PropertyType.I18N_STRING);
+		BasicPropertyType contentProp = objectSchemaService.createBasicPropertyTypeSchema(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 		contentProp.setDisplayName("Content");
 		contentProp.setDescription("The main content html of the category.");
 		categoriesSchema.addPropertyTypeSchema(contentProp);
-		objectSchemaService.save(categoriesSchema);
 		schemas.put("category", categoriesSchema);
 
 	}
@@ -539,7 +518,6 @@ public class DemoDataProvider {
 		}
 		folderNode.setCreator(userInfo.getUser());
 		folderNode.setSchema(schemas.get("folder"));
-		nodeService.save(folderNode);
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
 			throw new RuntimeException("Key for folder empty");
 		}
@@ -555,7 +533,7 @@ public class DemoDataProvider {
 		return addTag(englishName, germanName, schemas.get("tag"));
 	}
 
-	public Tag addTag(String englishName, String germanName, ObjectSchema schema) {
+	public Tag addTag(String englishName, String germanName, Schema schema) {
 		Tag tag = tagService.create();
 		if (englishName != null) {
 			tagService.setDisplayName(tag, english, englishName);
@@ -566,7 +544,6 @@ public class DemoDataProvider {
 		tag.addProject(project);
 		tag.setSchema(schema);
 		tag.setCreator(userInfo.getUser());
-		tag = tagService.save(tag);
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
 			throw new RuntimeException("Key for tag empty");
 		}
@@ -574,7 +551,7 @@ public class DemoDataProvider {
 		return tag;
 	}
 
-	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, ObjectSchema schema) {
+	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, Schema schema) {
 		MeshNode node = nodeService.create();
 		nodeService.setDisplayName(node, english, name + " english");
 		nodeService.setName(node, english, name + ".en.html");
@@ -591,7 +568,6 @@ public class DemoDataProvider {
 		node.setSchema(schema);
 		//		node.setOrder(42);
 		node.setParentNode(parentNode);
-		node = nodeService.save(node);
 		// Add the content to the given tag
 		//		parentTag.addContent(content);
 		//		parentTag = tagService.save(parentTag);
@@ -644,7 +620,7 @@ public class DemoDataProvider {
 		return tags.get(name);
 	}
 
-	public ObjectSchema getSchema(String name) {
+	public Schema getSchema(String name) {
 		return schemas.get(name);
 	}
 
@@ -672,7 +648,7 @@ public class DemoDataProvider {
 		return roles;
 	}
 
-	public Map<String, ObjectSchema> getSchemas() {
+	public Map<String, Schema> getSchemas() {
 		return schemas;
 	}
 

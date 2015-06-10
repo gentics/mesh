@@ -63,8 +63,8 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 
 	}
 
-	@Override
-	public Group save(Group group) {
+//	@Override
+//	public Group save(Group group) {
 		//		GroupRoot root = findRoot();
 		//		if (root == null) {
 		//			throw new NullPointerException("The group root node could not be found.");
@@ -73,8 +73,8 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 		//		root.getGroups().add(group);
 		//		neo4jTemplate.save(root);
 		//		return group;
-		return null;
-	}
+//		return null;
+//	}
 
 	public Group findOne(Long id) {
 		return null;

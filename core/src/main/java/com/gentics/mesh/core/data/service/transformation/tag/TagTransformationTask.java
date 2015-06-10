@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -52,7 +52,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				restTag.setPerms(info.getUserService().getPerms(info.getRoutingContext(), tag));
 				restTag.setUuid(tag.getUuid());
 				
-				ObjectSchema schema = tag.getSchema();
+				Schema schema = tag.getSchema();
 				if (schema != null) {
 //					ObjectSchema schema = info.getNeo4jTemplate().fetch(tag.getSchema());
 					SchemaReference schemaReference = new SchemaReference();

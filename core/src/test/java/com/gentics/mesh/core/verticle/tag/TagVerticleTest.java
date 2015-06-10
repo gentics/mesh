@@ -55,7 +55,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 			//noPermTag = data().addTag("NoPermEN", "NoPermDE");
 			noPermTag.addProject(data().getProject());
-			noPermTag = tagService.save(noPermTag);
 //			tx.success();
 //		}
 		assertNotNull(noPermTag.getUuid());

@@ -80,8 +80,8 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 		return null;
 	}
 
-	@Override
-	public Project save(Project project) {
+//	@Override
+//	public Project save(Project project) {
 		//		ProjectRoot root = projectRepository.findRoot();
 		//		if (root == null) {
 		//			throw new NullPointerException("The project root node could not be found.");
@@ -90,8 +90,8 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 		//		root.getProjects().add(project);
 		//		neo4jTemplate.save(root);
 		//		return project;
-		return null;
-	}
+//		return null;
+//	}
 
 	@Override
 	public Project create(String name) {

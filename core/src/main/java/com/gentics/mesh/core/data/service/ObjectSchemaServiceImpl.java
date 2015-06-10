@@ -9,35 +9,35 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.Result;
-import com.gentics.mesh.core.data.model.root.ObjectSchemaRoot;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
-import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.root.SchemaRoot;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.response.ObjectSchemaResponse;
+import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
-public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema> implements ObjectSchemaService {
+public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<Schema> implements SchemaService {
 
 	@Override
-	public Result<ObjectSchema> findAll() {
+	public Result<Schema> findAll() {
 		return null;
 	}
 
 	@Override
-	public ObjectSchema findByUUID(String projectName, String uuid) {
+	public Schema findByUUID(String projectName, String uuid) {
 		return null;
 	}
 
 	@Override
-	public ObjectSchema findByName(String projectName, String name) {
+	public Schema findByName(String projectName, String name) {
 		if (StringUtils.isEmpty(projectName) || StringUtils.isEmpty(name)) {
 			throw new NullPointerException("name or project name null");
 		}
@@ -48,11 +48,11 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public ObjectSchemaResponse transformToRest(ObjectSchema schema) {
+	public SchemaResponse transformToRest(Schema schema) {
 		if (schema == null) {
 			throw new HttpStatusCodeErrorException(500, "Schema can't be null");
 		}
-		ObjectSchemaResponse schemaForRest = new ObjectSchemaResponse();
+		SchemaResponse schemaForRest = new SchemaResponse();
 		schemaForRest.setDescription(schema.getDescription());
 		schemaForRest.setDisplayName(schema.getDisplayName());
 		schemaForRest.setName(schema.getName());
@@ -60,7 +60,7 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		// TODO creator
 
 		// TODO we need to add checks that prevents multiple schemas with the same key
-		for (BasicPropertyTypeSchema propertyTypeSchema : schema.getPropertyTypeSchemas()) {
+		for (BasicPropertyType propertyTypeSchema : schema.getPropertyTypeSchemas()) {
 			//			propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
 			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
 			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
@@ -95,12 +95,12 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public Page<ObjectSchema> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+	public Page<Schema> findAllVisible(User requestUser, PagingInfo pagingInfo) {
 		//		return findAll(requestUser, new MeshPageRequest(pagingInfo));
 		return null;
 	}
 
-	public BasicPropertyTypeSchema getPropertyTypeSchema(String typeKey) {
+	public BasicPropertyType getPropertyTypeSchema(String typeKey) {
 		//		if (StringUtils.isEmpty(typeKey)) {
 		//			return null;
 		//		}
@@ -127,23 +127,23 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		//		@Query("MATCH (n:ObjectSchema {uuid: {0}}) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema)-[rp]-() OPTIONAL MATCH (n)-[r2]-() DELETE n,r,p,r2,rp")
 	}
 
-	public Iterable<ObjectSchema> findAll(String projectName) {
+	public Iterable<Schema> findAll(String projectName) {
 		//		@Query("MATCH (n:ObjectSchema)-[:ASSIGNED_TO_PROJECT]-(p:Project) WHERE p.name = {0} return n")
 		return null;
 	}
 
-	public Page<ObjectSchema> findAll(User requestUser, Pageable pageable) {
+	public Page<Schema> findAll(User requestUser, Pageable pageable) {
 		//		@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return schema ORDER BY schema.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return count(schema)")
 		return null;
 	}
 
-	public ObjectSchemaRoot findRoot() {
+	public SchemaRoot findRoot() {
 		//	@Query("MATCH (n:ObjectSchemaRoot) return n")
 		return null;
 	}
 
-	@Override
-	public ObjectSchema save(ObjectSchema schema) {
+//	@Override
+//	public Schema save(Schema schema) {
 		//		ObjectSchemaRoot root = schemaService.findRoot();
 		//		if (root == null) {
 		//			throw new NullPointerException("The schema root node could not be found.");
@@ -152,38 +152,38 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 		//		root.getSchemas().add(schema);
 		//		neo4jTemplate.save(root);
 		//		return schema;
-		return null;
-	}
+//		return null;
+//	}
 
 	@Override
-	public ObjectSchema findByName(String name) {
+	public Schema findByName(String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ObjectSchema create(String name) {
-		ObjectSchema schema = framedGraph.addVertex(ObjectSchema.class);
+	public Schema create(String name) {
+		Schema schema = framedGraph.addVertex(Schema.class);
 		schema.setName(name);
 		return schema;
 	}
 
 	@Override
-	public ObjectSchemaRoot createRoot() {
-		ObjectSchemaRoot root = framedGraph.addVertex(ObjectSchemaRoot.class);
+	public SchemaRoot createRoot() {
+		SchemaRoot root = framedGraph.addVertex(SchemaRoot.class);
 		return root;
 	}
 
 	@Override
-	public BasicPropertyTypeSchema create(String key, PropertyType type) {
-		BasicPropertyTypeSchema schemaType = framedGraph.addVertex(BasicPropertyTypeSchema.class);
+	public BasicPropertyType create(String key, PropertyType type) {
+		BasicPropertyType schemaType = framedGraph.addVertex(BasicPropertyType.class);
 		schemaType.setKey(key);
 		schemaType.setType(type.getName());
 		return schemaType;
 	}
 
 	@Override
-	public MicroPropertyTypeSchema createMicroPropertyTypeSchema(String key) {
+	public MicroPropertyType createMicroPropertyTypeSchema(String key) {
 
 		//		public MicroPropertyTypeSchema(String name) {
 		//			//		super(name, PropertyType.MICROSCHEMA);
@@ -192,13 +192,13 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<ObjectSchema
 	}
 
 	@Override
-	public BasicPropertyTypeSchema createBasicPropertyTypeSchema(String key, PropertyType type) {
+	public BasicPropertyType createBasicPropertyTypeSchema(String key, PropertyType type) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public BasicPropertyTypeSchema createListPropertyTypeSchema(String key) {
+	public BasicPropertyType createListPropertyTypeSchema(String key) {
 		// TODO Auto-generated method stub
 		return null;
 	}

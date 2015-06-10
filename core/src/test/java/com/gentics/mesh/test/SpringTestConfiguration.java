@@ -47,8 +47,6 @@ public class SpringTestConfiguration {
 		builder.setConfig(OnlineBackupSettings.online_backup_enabled, "false");
 		GraphDatabaseService graphService = builder.newGraphDatabase();
 
-//		graphService.registerTransactionEventHandler(new UUIDTransactionEventHandler(graphService));
-
 		Neo4jGraphVerticle.setService(new GraphService() {
 
 			@Override

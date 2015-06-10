@@ -24,24 +24,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.root.ObjectSchemaRoot;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.ObjectSchemaService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
+import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.verticle.AdminVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
@@ -88,7 +88,7 @@ public class BootstrapInitializer {
 	private LanguageService languageService;
 
 	@Autowired
-	private ObjectSchemaService objectSchemaService;
+	private SchemaService schemaService;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
@@ -174,18 +174,18 @@ public class BootstrapInitializer {
 			joinCluster();
 		}
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			initMandatoryData();
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		initMandatoryData();
+		//			tx.success();
+		//		}
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(springConfiguration.vertx());
 		}
-//		try (Transaction tx = graphDb.beginTx()) {
-			initProjects();
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		initProjects();
+		//			tx.success();
+		//		}
 
 	}
 
@@ -226,124 +226,120 @@ public class BootstrapInitializer {
 		LanguageRoot languageRoot = languageService.findRoot();
 		if (languageRoot == null) {
 			languageRoot = languageService.createRoot();
-			//			languageRoot = neo4jTemplate.save(languageRoot);
-			log.info("Stored language root node");
+			log.info("Stored language root {" + languageRoot.getUuid() + "}");
 		}
 
 		GroupRoot groupRoot = groupService.findRoot();
 		if (groupRoot == null) {
 			groupRoot = groupService.createRoot();
-			//			groupRoot = neo4jTemplate.save(groupRoot);
-			log.info("Stored group root node");
+			log.info("Stored group root {" + groupRoot.getUuid() + "}");
 		}
+
 		UserRoot userRoot = userService.findRoot();
 		if (userRoot == null) {
 			userRoot = userService.createRoot();
-			//			userRoot = neo4jTemplate.save(userRoot);
-			log.info("Stored user root node");
+			log.info("Stored user root {" + userRoot.getUuid() + "}");
 		}
+
 		RoleRoot roleRoot = roleService.findRoot();
 		if (roleRoot == null) {
 			roleRoot = roleService.createRoot();
-			//			roleRoot = neo4jTemplate.save(roleRoot);
-			log.info("Stored role root node");
+			log.info("Stored role root {" + roleRoot.getUuid() + "}");
 		}
+
 		ProjectRoot projectRoot = projectService.findRoot();
 		if (projectRoot == null) {
 			projectRoot = projectService.createRoot();
-			//			projectRoot = neo4jTemplate.save(projectRoot);
-			log.info("Stored project root node");
+			log.info("Stored project root {" + projectRoot.getUuid() + "}");
 		}
 
 		// Save the default object schemas
 
 		// Content
-		ObjectSchema contentSchema = objectSchemaService.findByName("content");
+		Schema contentSchema = schemaService.findByName("content");
 		if (contentSchema == null) {
-			contentSchema = objectSchemaService.create("content");
+			contentSchema = schemaService.create("content");
 			contentSchema.setNestingAllowed(false);
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setDisplayName("Content");
 
-			BasicPropertyTypeSchema nameProp = objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType nameProp = schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			contentSchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyTypeSchema displayNameProp = objectSchemaService.create(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType displayNameProp = schemaService.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 			displayNameProp.setDisplayName("Display Name");
 			displayNameProp.setDescription("The display name property of the content.");
 			contentSchema.addPropertyTypeSchema(displayNameProp);
 
-			BasicPropertyTypeSchema contentProp = objectSchemaService.create(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType contentProp = schemaService.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 			contentProp.setDisplayName("Content");
 			contentProp.setDescription("The main content html of the content.");
 			contentSchema.addPropertyTypeSchema(contentProp);
-
-			objectSchemaService.save(contentSchema);
+			log.info("Stored content schema {" + contentSchema.getUuid() + "}");
 		}
 
 		// Folder
-		ObjectSchema folderSchema = objectSchemaService.findByName("folder");
+		Schema folderSchema = schemaService.findByName("folder");
 		if (folderSchema == null) {
-			folderSchema = objectSchemaService.create("folder");
+			folderSchema = schemaService.create("folder");
 			folderSchema.setNestingAllowed(true);
 			folderSchema.setDescription("Default schema for folders");
 			folderSchema.setDisplayName("Folder");
 
-			BasicPropertyTypeSchema nameProp = objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType nameProp = schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the folder.");
 			folderSchema.addPropertyTypeSchema(nameProp);
-			objectSchemaService.save(folderSchema);
+			log.info("Stored folder schema  {" + folderSchema.getUuid() + "}");
 		}
 
 		// Binary content for images and other downloads
-		ObjectSchema binarySchema = objectSchemaService.findByName("binary-content");
+		Schema binarySchema = schemaService.findByName("binary-content");
 		if (binarySchema == null) {
-			binarySchema = objectSchemaService.create("binary-content");
+			binarySchema = schemaService.create("binary-content");
 			binarySchema.setDescription("Default schema for binary contents");
 			binarySchema.setDisplayName("Binary Content");
 
-			BasicPropertyTypeSchema nameProp = objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType nameProp = schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			binarySchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyTypeSchema displayNameProp = objectSchemaService.create(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType displayNameProp = schemaService.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 			displayNameProp.setDisplayName("Display Name");
 			displayNameProp.setDescription("The display name property of the content.");
 			binarySchema.addPropertyTypeSchema(displayNameProp);
 
-			BasicPropertyTypeSchema binaryContentProp = objectSchemaService.create(ObjectSchema.CONTENT_KEYWORD, PropertyType.BINARY);
+			BasicPropertyType binaryContentProp = schemaService.create(Schema.CONTENT_KEYWORD, PropertyType.BINARY);
 			binaryContentProp.setDisplayName("Binary content");
 			binaryContentProp.setDescription("The binary content of the content");
 			binarySchema.addPropertyTypeSchema(binaryContentProp);
-			objectSchemaService.save(contentSchema);
+			log.info("Stored binary-content schema { " + binarySchema.getUuid() + "}");
 		}
 
 		// Tag schema
-		ObjectSchema tagSchema = objectSchemaService.findByName("tag");
+		Schema tagSchema = schemaService.findByName("tag");
 		if (tagSchema == null) {
-			tagSchema = objectSchemaService.create("tag");
+			tagSchema = schemaService.create("tag");
 			tagSchema.setDisplayName("Tag");
 			tagSchema.setDescription("Default schema for tags");
-			tagSchema.addPropertyTypeSchema(objectSchemaService.create(ObjectSchema.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(objectSchemaService.create(ObjectSchema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(objectSchemaService.create(ObjectSchema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
-			objectSchemaService.save(tagSchema);
+			tagSchema.addPropertyTypeSchema(schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(schemaService.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(schemaService.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			log.info("Stored tag schema {" + tagSchema.getUuid() + "}");
 		}
-
-		ObjectSchemaRoot objectSchemaRoot = objectSchemaService.findRoot();
-		if (objectSchemaRoot == null) {
-			objectSchemaRoot = objectSchemaService.createRoot();
-			objectSchemaRoot.addSchema(tagSchema);
-			objectSchemaRoot.addSchema(contentSchema);
-			objectSchemaRoot.addSchema(binarySchema);
-			//			objectSchemaRoot = neo4jTemplate.save(objectSchemaRoot);
+		//
+		SchemaRoot schemaRoot = schemaService.findRoot();
+		if (schemaRoot == null) {
+			schemaRoot = schemaService.createRoot();
+			schemaRoot.addSchema(tagSchema);
+			schemaRoot.addSchema(contentSchema);
+			schemaRoot.addSchema(binarySchema);
 			log.info("Stored schema root node");
 		}
-
+		//
 		// Verify that the root node is existing
 		MeshRoot rootNode = rootService.findRoot();
 		if (rootNode == null) {
@@ -352,7 +348,7 @@ public class BootstrapInitializer {
 			rootNode.setGroupRoot(groupRoot);
 			rootNode.setRoleRoot(roleRoot);
 			rootNode.setLanguageRoot(languageRoot);
-			rootNode.setObjectSchemaRoot(objectSchemaRoot);
+			rootNode.setSchemaRoot(schemaRoot);
 			rootNode.setUserRoot(userRoot);
 			log.info("Stored mesh root node");
 		}
@@ -370,22 +366,18 @@ public class BootstrapInitializer {
 			String pw = "finger";
 			// scanIn.close();
 			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
-			userService.save(adminUser);
 			log.info("Stored admin user");
 		}
 		rootNode.getUserRoot().addUser(adminUser);
-		rootService.save(rootNode);
 
 		Group adminGroup = groupService.findByName("admin");
 		if (adminGroup == null) {
 			adminGroup = groupService.create("admin");
 			adminGroup.addUser(adminUser);
-			groupService.save(adminGroup);
 			log.info("Stored admin group");
 		}
 		rootNode.getGroupRoot().addGroup(adminGroup);
-		rootService.save(rootNode);
-
+		//
 		Role adminRole = roleService.findByName("admin");
 		if (adminRole == null) {
 			adminRole = roleService.create("admin");
@@ -396,7 +388,6 @@ public class BootstrapInitializer {
 
 	protected void initLanguages(MeshRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
 
-		
 		long start = System.currentTimeMillis();
 		final String filename = "languages.json";
 		final InputStream ins = getClass().getResourceAsStream("/" + filename);
@@ -414,7 +405,7 @@ public class BootstrapInitializer {
 				language.setNativeName(languageNativeName);
 				rootNode.getLanguageRoot().addLanguage(language);
 				log.debug("Added language {" + languageTag + " / " + languageName + "}");
-//				rootService.save(rootNode);
+				//				rootService.save(rootNode);
 			}
 		}
 		long diff = System.currentTimeMillis() - start;

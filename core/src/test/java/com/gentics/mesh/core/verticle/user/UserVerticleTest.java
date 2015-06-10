@@ -54,10 +54,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), user, PermissionType.READ);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), user, PermissionType.READ);
+		//			tx.success();
+		//		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
@@ -67,16 +67,14 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllUsers() throws Exception {
 
 		User user3 = userService.create("testuser_3");
-//		try (Transaction tx = graphDb.beginTx()) {
-			user3.setLastname("should_not_be_listed");
-			user3.setFirstname("should_not_be_listed");
-			user3.setEmailAddress("should_not_be_listed");
-			user3 = userService.save(user3);
-			info.getGroup().addUser(user3);
-			groupService.save(info.getGroup());
-			// Don't grant permissions to user3
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		user3.setLastname("should_not_be_listed");
+		user3.setFirstname("should_not_be_listed");
+		user3.setEmailAddress("should_not_be_listed");
+		info.getGroup().addUser(user3);
+		// Don't grant permissions to user3
+		//			tx.success();
+		//		}
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
@@ -86,7 +84,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(14, restResponse.getData().size());
 
 		int perPage = 2;
-		int totalUsers = data().getUsers().size() +1;
+		int totalUsers = data().getUsers().size() + 1;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, UserListResponse.class);
@@ -142,7 +140,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 		test.assertUser(updateRequest, restUser);
 
-		User reloadedUser = userService.reload(user);
+		//TODO TP load user again
+		User reloadedUser = null;
 		assertEquals("Epic Stark", reloadedUser.getLastname());
 		assertEquals("Tony Awesome", reloadedUser.getFirstname());
 		assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
@@ -161,7 +160,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 		test.assertUser(updateRequest, restUser);
 
-		User reloadedUser = userService.reload(user);
+		//TODO TP load user again
+		User reloadedUser = null;
+
 		assertTrue("The hash should be different and thus the password updated.", oldHash != reloadedUser.getPasswordHash());
 		assertEquals(user.getUsername(), reloadedUser.getUsername());
 		assertEquals(user.getFirstname(), reloadedUser.getFirstname());
@@ -173,10 +174,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
+		//			tx.success();
+		//		}
 		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
 
@@ -192,10 +193,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateUserWithNoPermission() throws Exception {
 		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
+		//			tx.success();
+		//		}
 
 		UserResponse updatedUser = new UserResponse();
 		updatedUser.setEmailAddress("n.user@spam.gentics.com");
@@ -219,12 +220,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 
 		// Create an user with a conflicting username
-		User conflictingUser =  userService.create("existing_username");
-//		try (Transaction tx = graphDb.beginTx()) {
-			conflictingUser = userService.save(conflictingUser);
-			info.getGroup().addUser(conflictingUser);
-//			tx.success();
-//		}
+		User conflictingUser = userService.create("existing_username");
+		//		try (Transaction tx = graphDb.beginTx()) {
+
+		info.getGroup().addUser(conflictingUser);
+		//			tx.success();
+		//		}
 
 		UserUpdateRequest newUser = new UserUpdateRequest();
 		newUser.setUsername("existing_username");
@@ -242,14 +243,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		User conflictingUser =  userService.create("existing_username");
-//		try (Transaction tx = graphDb.beginTx()) {
-			conflictingUser = userService.save(conflictingUser);
-			info.getGroup().addUser(conflictingUser);
-			// Add update permission to group in order to create the user in that group
-			roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
-//			tx.success();
-//		}
+		User conflictingUser = userService.create("existing_username");
+		//		try (Transaction tx = graphDb.beginTx()) {
+		info.getGroup().addUser(conflictingUser);
+		// Add update permission to group in order to create the user in that group
+		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
+		//			tx.success();
+		//		}
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
@@ -384,15 +384,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		User user =  userService.create("extraUser");
-//		try (Transaction tx = graphDb.beginTx()) {
-			user = userService.save(user);
-			roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
-			roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
-			roleService.addPermission(info.getRole(), user, PermissionType.READ);
-//			tx.success();
-//		}
-		user = userService.reload(user);
+		User user = userService.create("extraUser");
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
+		roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
+		roleService.addPermission(info.getRole(), user, PermissionType.READ);
+		//			tx.success();
+		//		}
 		assertNotNull(user.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
@@ -408,17 +406,18 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUID() throws Exception {
-		User extraUser =  userService.create("extraUser");
-//		try (Transaction tx = graphDb.beginTx()) {
-			extraUser = userService.save(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);
-//			tx.success();
-//		}
+		User extraUser = userService.create("extraUser");
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);
+		//			tx.success();
+		//		}
 		assertNotNull(extraUser.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + extraUser.getUuid(), 200, "OK");
 		expectMessageResponse("user_deleted", response, extraUser.getUuid());
-		assertNull("The user should have been deleted", userService.reload(extraUser));
+		//TODO  TP load user and verify for null?
+		User loadedUser = new User();
+		assertNull("The user should have been deleted", loadedUser);
 	}
 
 	@Test

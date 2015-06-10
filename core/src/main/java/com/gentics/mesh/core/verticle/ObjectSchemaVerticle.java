@@ -19,9 +19,9 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyTypeSchema;
+import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -57,13 +57,13 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			rcs.loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
-				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<Schema> srh) -> {
 					Project project = rh.result();
-					ObjectSchema schema = srh.result();
+					Schema schema = srh.result();
 					schema.addProject(project);
 //						schema = schemaService.save(schema);
 				}, trh -> {
-					ObjectSchema schema = trh.result();
+					Schema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
 			});
@@ -73,14 +73,14 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			rcs.loadObject(rc, "projectUuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
-				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
-					ObjectSchema schema = srh.result();
+				rcs.loadObject(rc, "schemaUuid", PermissionType.READ, (AsyncResult<Schema> srh) -> {
+					Schema schema = srh.result();
 					Project project = rh.result();
 					schema.removeProject(project);
 //						schema = schemaService.save(schema);
 //					}
 				}, trh -> {
-					ObjectSchema schema = trh.result();
+					Schema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
 			});
@@ -103,11 +103,11 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
-			Future<ObjectSchema> schemaCreated = Future.future();
+			Future<Schema> schemaCreated = Future.future();
 			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), PermissionType.CREATE, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
 
-				ObjectSchema schema =  schemaService.create(requestModel.getName());
+				Schema schema =  schemaService.create(requestModel.getName());
 				schema.setDescription(requestModel.getDescription());
 				schema.setDisplayName(requestModel.getDisplayName());
 
@@ -115,17 +115,16 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 					// TODO validate field?
 					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
 					String key = restPropSchema.getKey();
-					BasicPropertyTypeSchema propSchema = schemaService.createBasicPropertyTypeSchema(key, type);
+					BasicPropertyType propSchema = schemaService.createBasicPropertyTypeSchema(key, type);
 					propSchema.setDescription(restPropSchema.getDesciption());
 					propSchema.setType(type.getName());
 					schema.addPropertyTypeSchema(propSchema);
 				}
 				schema.addProject(project);
-				schema = schemaService.save(schema);
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(project, PermissionType.CREATE), schema);
 				schemaCreated.complete(schema);
 			}, trh -> {
-				ObjectSchema schema = schemaCreated.result();
+				Schema schema = schemaCreated.result();
 				rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 			});
 		});
@@ -137,8 +136,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<ObjectSchema> srh) -> {
-				ObjectSchema schema = srh.result();
+			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Schema> srh) -> {
+				Schema schema = srh.result();
 				ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
@@ -152,9 +151,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 				if (schema.getDescription() != null && (!schema.getDescription().equals(requestModel.getDescription()))) {
 					schema.setDescription(requestModel.getDescription());
 				}
-				schema = schemaService.save(schema);
 			}, trh -> {
-				ObjectSchema schema = trh.result();
+				Schema schema = trh.result();
 				rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 			});
 
@@ -164,11 +162,11 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<ObjectSchema> srh) -> {
-				ObjectSchema schema = srh.result();
+			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Schema> srh) -> {
+				Schema schema = srh.result();
 				schemaService.delete(schema);
 			}, trh -> {
-				ObjectSchema schema = trh.result();
+				Schema schema = trh.result();
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", schema.getName()))));
 			});
 		});
@@ -181,9 +179,9 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<ObjectSchema> srh) -> {
+				rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Schema> srh) -> {
 				}, trh -> {
-					ObjectSchema schema = trh.result();
+					Schema schema = trh.result();
 					rc.response().setStatusCode(200).end(toJson(schemaService.transformToRest(schema)));
 				});
 			}
@@ -194,8 +192,8 @@ public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
 			vertx.executeBlocking((Future<ObjectSchemaListResponse> bch) -> {
 				ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
 				User user = userService.findUser(rc);
-				Page<ObjectSchema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
-				for (ObjectSchema schema : schemaPage) {
+				Page<Schema> schemaPage = schemaService.findAllVisible(user, pagingInfo);
+				for (Schema schema : schemaPage) {
 					listResponse.getData().add(schemaService.transformToRest(schema));
 				}
 				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);

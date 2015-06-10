@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.tinkerpop.ObjectSchema;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
@@ -83,7 +83,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 		for (Edge rel : node.getEdges(Direction.IN, BasicRelationships.HAS_PARENT_NODE)) {
 			Vertex nextHop = rel.getVertex(Direction.IN);
-			String languageTag = getI18nPropertyLanguageTag(nextHop, ObjectSchema.NAME_KEYWORD, i18nTagName);
+			String languageTag = getI18nPropertyLanguageTag(nextHop, Schema.NAME_KEYWORD, i18nTagName);
 			if (languageTag != null) {
 				foundNode.set(nextHop);
 				path.addSegment(new PathSegment(nextHop, languageTag));

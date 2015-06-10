@@ -70,7 +70,6 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 						project.setName(requestModel.getName());
 					}
 
-					project = projectService.save(project);
 				}, trh -> {
 					Project project = trh.result();
 					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(rc, project)));
@@ -104,7 +103,6 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				User user = userService.findUser(rc);
 				project.setRootNode(nodeService.create());
 				project.setCreator(user);
-				project = projectService.save(project);
 
 				try {
 					routerStorage.addProjectRouter(project.getName());
