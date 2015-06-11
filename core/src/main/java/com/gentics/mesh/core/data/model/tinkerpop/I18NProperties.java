@@ -11,6 +11,10 @@ public class I18NProperties extends MeshVertex {
 		return out(BasicRelationships.HAS_LANGUAGE).next(Language.class);
 	}
 
+	public void setLanguage(Language language) {
+		setLinkOut(language, BasicRelationships.HAS_LANGUAGE);
+	}
+
 	public Map<String, String> getProperties() {
 		return getProperties("i18n-");
 	}

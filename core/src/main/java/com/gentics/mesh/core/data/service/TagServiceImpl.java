@@ -11,20 +11,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.Translated;
-import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
+import com.tinkerpop.blueprints.Vertex;
 
 @Component
-public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> implements TagService {
+public class TagServiceImpl extends AbstractMeshService implements TagService {
 
 	private static final Logger log = LoggerFactory.getLogger(TagServiceImpl.class);
 
@@ -37,8 +33,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	@Autowired
 	private ProjectService projectService;
 
-	@Autowired
-	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
 	private UserService userService;
@@ -48,7 +42,6 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
-	@Override
 	public TagResponse transformToRest(RoutingContext rc, Tag tag) {
 
 		TransformationInfo info = new TransformationInfo(rc);
@@ -56,7 +49,7 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		info.setLanguageService(languageService);
 		info.setContentService(nodeService);
 		info.setSpringConfiguration(springConfiguration);
-		info.setTagService(this);
+//		info.setTagService(this);
 
 		// Configuration
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
@@ -69,21 +62,18 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 		return restTag;
 	}
 
-	@Override
 	public Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 		//tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
 		return null;
 	}
 
-	@Override
 	public Page<Tag> findTags(RoutingContext rc, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 		//tagRepository.findTags(userUuid, projectName, node, languageTags, pagingInfo);
 		return null;
 	}
 
-	@Override
 	public Page<MeshNode> findTaggedNodes(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 		//findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
@@ -178,6 +168,32 @@ public class TagServiceImpl extends GenericPropertyContainerServiceImpl<Tag> imp
 	@Override
 	public Tag create() {
 		return framedGraph.addVertex(Tag.class);
+	}
+
+	@Override
+	public Tag findOne(Long id) {
+		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		if (vertex != null) {
+			return framedGraph.frameElement(vertex, Tag.class);
+		}
+		return null;
+	}
+
+	@Override
+	public void delete(Tag tag) {
+		tag.getVertex().remove();
+	}
+
+	@Override
+	public Tag findByName(String projectName, String name) {
+		//TODO filter by i18n properties
+		return framedGraph.V().has("name", name).next(Tag.class);
+	}
+
+	@Override
+	public Object findByUUID(String uuid) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

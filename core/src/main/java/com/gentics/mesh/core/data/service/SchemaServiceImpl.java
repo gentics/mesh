@@ -3,8 +3,10 @@ package com.gentics.mesh.core.data.service;
 import java.awt.print.Pageable;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.neo4j.graphdb.NotFoundException;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
@@ -13,30 +15,24 @@ import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
+import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
+import com.tinkerpop.blueprints.Vertex;
 
 @Component
-public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<Schema> implements SchemaService {
+public class SchemaServiceImpl extends AbstractMeshService implements SchemaService {
 
-	@Override
-	public Result<Schema> findAll() {
-		return null;
-	}
-
-	@Override
 	public Schema findByUUID(String projectName, String uuid) {
-		return null;
+		//TODO check for projectName
+		return framedGraph.V().has("uuid", uuid).has("java_class", Schema.class.getName()).next(Schema.class);
 	}
 
-	@Override
 	public Schema findByName(String projectName, String name) {
 		if (StringUtils.isEmpty(projectName) || StringUtils.isEmpty(name)) {
 			throw new NullPointerException("name or project name null");
@@ -47,7 +43,6 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<Schema> impl
 		return null;
 	}
 
-	@Override
 	public SchemaResponse transformToRest(Schema schema) {
 		if (schema == null) {
 			throw new HttpStatusCodeErrorException(500, "Schema can't be null");
@@ -124,6 +119,8 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<Schema> impl
 	 * Delete the object schema and all assigned relationships like permissions and creator information. Also delete the connected PropertyTypeSchemas.
 	 */
 	public void deleteByUuid(String uuid) {
+		//TODO check for schema class
+		framedGraph.V().has("uuid", uuid).remove();
 		//		@Query("MATCH (n:ObjectSchema {uuid: {0}}) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema)-[rp]-() OPTIONAL MATCH (n)-[r2]-() DELETE n,r,p,r2,rp")
 	}
 
@@ -138,27 +135,31 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<Schema> impl
 	}
 
 	public SchemaRoot findRoot() {
-		//	@Query("MATCH (n:ObjectSchemaRoot) return n")
-		return null;
+		return framedGraph.V().has("java_class", SchemaRoot.class.getName()).next(SchemaRoot.class);
 	}
 
-//	@Override
-//	public Schema save(Schema schema) {
-		//		ObjectSchemaRoot root = schemaService.findRoot();
-		//		if (root == null) {
-		//			throw new NullPointerException("The schema root node could not be found.");
-		//		}
-		//		schema = neo4jTemplate.save(schema);
-		//		root.getSchemas().add(schema);
-		//		neo4jTemplate.save(root);
-		//		return schema;
-//		return null;
-//	}
+	//	@Override
+	//	public Schema save(Schema schema) {
+	//		ObjectSchemaRoot root = schemaService.findRoot();
+	//		if (root == null) {
+	//			throw new NullPointerException("The schema root node could not be found.");
+	//		}
+	//		schema = neo4jTemplate.save(schema);
+	//		root.getSchemas().add(schema);
+	//		neo4jTemplate.save(root);
+	//		return schema;
+	//		return null;
+	//	}
 
 	@Override
 	public Schema findByName(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		Schema schema = null;
+		try {
+			schema = framedGraph.V().has("name", name).has("java_class", Schema.class.getName()).next(Schema.class);
+		} catch (NoSuchElementException e) {
+			// ignored - handled by null reference
+		}
+		return schema;
 	}
 
 	@Override
@@ -178,29 +179,56 @@ public class ObjectSchemaServiceImpl extends GenericNodeServiceImpl<Schema> impl
 	public BasicPropertyType create(String key, PropertyType type) {
 		BasicPropertyType schemaType = framedGraph.addVertex(BasicPropertyType.class);
 		schemaType.setKey(key);
-		schemaType.setType(type.getName());
+		schemaType.setType(type);
 		return schemaType;
 	}
 
 	@Override
 	public MicroPropertyType createMicroPropertyTypeSchema(String key) {
-
-		//		public MicroPropertyTypeSchema(String name) {
-		//			//		super(name, PropertyType.MICROSCHEMA);
-		//			//	}
-		return null;
+		MicroPropertyType type = framedGraph.addVertex(MicroPropertyType.class);
+		type.setKey(key);
+		type.setType(PropertyType.MICROSCHEMA);
+		return type;
 	}
 
 	@Override
 	public BasicPropertyType createBasicPropertyTypeSchema(String key, PropertyType type) {
+		BasicPropertyType propertType = framedGraph.addVertex(BasicPropertyType.class);
+		propertType.setKey(key);
+		propertType.setType(type);
+		return propertType;
+	}
+
+	@Override
+	public BasicPropertyType createListPropertyTypeSchema(String key) {
+		BasicPropertyType type = framedGraph.addVertex(BasicPropertyType.class);
+		type.setKey(key);
+		return type;
+	}
+
+	@Override
+	public Schema findOne(Long id) {
+		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		if (vertex != null) {
+			framedGraph.frameElement(vertex, Schema.class);
+		}
+		return null;
+	}
+
+	@Override
+	public Schema findByUUID(String uuid) {
+		return framedGraph.V().has("uuid", uuid).has("java_class", Schema.class.getName()).next(Schema.class);
+	}
+
+	@Override
+	public Result<Schema> findAll() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public BasicPropertyType createListPropertyTypeSchema(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public void delete(Schema schema) {
+		schema.getVertex().remove();
 	}
 
 }

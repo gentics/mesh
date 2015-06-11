@@ -116,10 +116,4 @@ public class I18NServiceImpl implements I18NService {
 		return get((Locale) rc.get("locale"), key, parameters);
 	}
 
-	@Override
-	public I18NProperties create(Language language) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

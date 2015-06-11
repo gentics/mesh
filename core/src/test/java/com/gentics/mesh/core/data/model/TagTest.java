@@ -52,24 +52,24 @@ public class TagTest extends AbstractDBTest {
 		Language german = languageService.findByLanguageTag("de");
 
 		Tag tag = tagService.create();
-		tagService.setDisplayName(tag, german, GERMAN_NAME);
-//		try (Transaction tx = graphDb.beginTx()) {
-//			tx.success();
-//		}
+		tag.setDisplayName(german, GERMAN_NAME);
+		//		try (Transaction tx = graphDb.beginTx()) {
+		//			tx.success();
+		//		}
 		assertNotNull(tag.getId());
 		tag = tagService.findOne(tag.getId());
 		assertNotNull("The folder could not be found.", tag);
-//		try (Transaction tx = graphDb.beginTx()) {
-			String name = tagService.getDisplayName(tag, german);
-			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		String name = tag.getDisplayName(german);
+		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
+		//			tx.success();
+		//		}
 	}
 
 	@Test
 	public void testSimpleTag() {
 		Tag tag = tagService.create();
-		tagService.setProperty(tag, data().getEnglish(), "name", "test");
+		tag.setProperty(data().getEnglish(), "name", "test");
 	}
 
 	@Test
@@ -79,10 +79,10 @@ public class TagTest extends AbstractDBTest {
 
 		Language english = languageService.findByLanguageTag("en");
 
-		tagService.setDisplayName(tag, english, ENGLISH_NAME);
-//		try (Transaction tx = graphDb.beginTx()) {
-//			tx.success();
-//		}
+		tag.setDisplayName(english, ENGLISH_NAME);
+		//		try (Transaction tx = graphDb.beginTx()) {
+		//			tx.success();
+		//		}
 		tag = tagService.findOne(tag.getId());
 		assertNotNull(tag);
 
@@ -91,31 +91,30 @@ public class TagTest extends AbstractDBTest {
 
 		Language german = languageService.findByLanguageTag("de");
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			nodeService.setDisplayName(node, german, GERMAN_TEST_FILENAME);
-			nodeService.setName(node, german, "german node name");
+		//		try (Transaction tx = graphDb.beginTx()) {
+		node.setDisplayName(german, GERMAN_TEST_FILENAME);
+		node.setName(german, "german node name");
 
-			// Assign the tag to the node
-			node.addTag(tag);
-//			tx.success();
-//		}
+		// Assign the tag to the node
+		node.addTag(tag);
+		//			tx.success();
+		//		}
 
 		// Reload the tag and check whether the content was set
-//		try (Transaction tx = graphDb.beginTx()) {
+		//		try (Transaction tx = graphDb.beginTx()) {
 
+		assertEquals("The tag should have exactly one node.", 1, count(tag.getNodes()));
+		MeshNode contentFromTag = tag.getNodes().iterator().next();
+		assertNotNull(contentFromTag);
+		assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
+		String filename = contentFromTag.getDisplayName(german);
+		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
-			assertEquals("The tag should have exactly one node.", 1, count(tag.getNodes()));
-			MeshNode contentFromTag = tag.getNodes().iterator().next();
-			assertNotNull(contentFromTag);
-			assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
-			String filename = nodeService.getDisplayName(contentFromTag, german);
-			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
-
-			// Remove the file/content and check whether the content was really removed
-			tag.removeNode(contentFromTag);
-			//TODO verify for removed node
-//			tx.success();
-//		}
+		// Remove the file/content and check whether the content was really removed
+		tag.removeNode(contentFromTag);
+		//TODO verify for removed node
+		//			tx.success();
+		//		}
 		assertEquals("The tag should not have any file.", 0, count(tag.getNodes()));
 
 	}
@@ -139,14 +138,12 @@ public class TagTest extends AbstractDBTest {
 		MeshNode node = data().getFolder("news");
 
 		Tag tag = tagService.create();
-		tagService.setDisplayName(tag, german, TEST_TAG_NAME);
+		tag.setDisplayName(german, TEST_TAG_NAME);
 		node.addTag(tag);
 
-		//TODO load node ?
-		MeshNode reloadedNode = null;
+		MeshNode reloadedNode = nodeService.findByUUID(node.getUuid());
 		boolean found = false;
 		for (Tag currentTag : reloadedNode.getTags()) {
-//			neo4jTemplate.fetch(currentTag);
 			if (currentTag.getUuid().equals(tag.getUuid())) {
 				found = true;
 			}

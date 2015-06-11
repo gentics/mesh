@@ -78,7 +78,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					// found i18n properties for the language.
 
 					// Add all i18n properties for the selected language to the response
-					I18NProperties i18nProperties = info.getTagService().getI18NProperties(tag, language);
+					I18NProperties i18nProperties = tag.getI18nProperties(language);
 					if (i18nProperties != null) {
 //						i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
 						for (String key : i18nProperties.getProperties().keySet()) {

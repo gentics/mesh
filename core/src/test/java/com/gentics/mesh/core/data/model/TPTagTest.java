@@ -27,7 +27,7 @@ public class TPTagTest extends AbstractDBTest {
 
 		Tag tag = tagService.create();
 
-		tagService.setName(tag, data().getGerman(), "blub");
+		tag.setName(data().getGerman(), "blub");
 		tagService.findByName("dummy", "blub");
 
 		List<String> names = new ArrayList<>();

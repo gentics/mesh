@@ -12,7 +12,6 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
-import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerServiceImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
@@ -21,7 +20,7 @@ import com.gentics.mesh.paging.MeshPageRequest;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
-public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<MeshNode> implements MeshNodeService {
+public class MeshNodeServiceImpl extends AbstractMeshService implements MeshNodeService {
 
 	@Autowired
 	private LanguageService languageService;
@@ -51,14 +50,6 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	private RoutingContextService rcs;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
-
-	public void setTeaser(MeshNode content, Language language, String text) {
-		setProperty(content, language, Schema.TEASER_KEYWORD, text);
-	}
-
-	public void setTitle(MeshNode content, Language language, String text) {
-		setProperty(content, language, Schema.TITLE_KEYWORD, text);
-	}
 
 	@Override
 	public NodeResponse transformToRest(RoutingContext rc, MeshNode content) {
@@ -156,6 +147,16 @@ public class MeshNodeServiceImpl extends GenericPropertyContainerServiceImpl<Mes
 	@Override
 	public MeshNode create() {
 		return framedGraph.addVertex(MeshNode.class);
+	}
+
+	@Override
+	public MeshNode findByUUID(String uuid) {
+		return framedGraph.V().has("uuid", uuid).has("java_class", MeshNode.class.getName()).next(MeshNode.class);
+	}
+
+	@Override
+	public void delete(MeshNode node) {
+		node.getVertex().remove();
 	}
 
 	// node children

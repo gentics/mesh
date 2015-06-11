@@ -168,7 +168,6 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				Project project = projectService.findByName(projectName);
 				node.addProject(project);
 
-
 				/* Add the i18n properties to the newly created tag */
 				for (String languageTag : requestModel.getProperties().keySet()) {
 					Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
@@ -177,17 +176,14 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
 						return;
 					}
-					I18NProperties tagProps = i18n.create(language);
+
+					I18NProperties tagProps = node.createI18nProperties(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
 						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
-//					tagProps = neo4jTemplate.save(tagProps);
-					// Create the relationship to the i18n properties
-					node.addI18nTranslation(node, tagProps, language);
 				}
 
 				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, PermissionType.CREATE), node);
-
 
 				/* Assign the content to the tag and save the tag */
 				//				rootTagForContent.(content);
@@ -226,22 +222,22 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 			vertx.executeBlocking((Future<NodeListResponse> bch) -> {
 				NodeListResponse listResponse = new NodeListResponse();
-//				try (Transaction tx = graphDb.beginTx()) {
+				//				try (Transaction tx = graphDb.beginTx()) {
 					Page<MeshNode> contentPage = nodeService.findAll(rc, projectName, languageTags, pagingInfo);
 					for (MeshNode content : contentPage) {
 						listResponse.getData().add(nodeService.transformToRest(rc, content));
 					}
 					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
 					bch.complete(listResponse);
-//					tx.success();
-//				}
-			}, arh -> {
-				if (arh.failed()) {
-					rc.fail(arh.cause());
-				}
-				NodeListResponse listResponse = arh.result();
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
+					//					tx.success();
+					//				}
+				}, arh -> {
+					if (arh.failed()) {
+						rc.fail(arh.cause());
+					}
+					NodeListResponse listResponse = arh.result();
+					rc.response().setStatusCode(200).end(toJson(listResponse));
+				});
 		});
 	}
 
@@ -251,8 +247,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<MeshNode> rh) -> {
-				MeshNode content = rh.result();
-				nodeService.delete(content);
+				MeshNode node = rh.result();
+				nodeService.delete(node);
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
@@ -288,7 +284,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 							languageTags.add(languageTag);
 							Map<String, String> properties = request.getProperties(languageTag);
 							if (properties != null) {
-								I18NProperties i18nProperties = nodeService.getI18NProperties(content, language);
+								I18NProperties i18nProperties = content.getI18nProperties(language);
 								for (Map.Entry<String, String> set : properties.entrySet()) {
 									String key = set.getKey();
 									String value = set.getValue();
@@ -307,22 +303,22 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 										}
 									}
 								}
-//								neo4jTemplate.save(i18nProperties);
+								//								neo4jTemplate.save(i18nProperties);
 
-							}
-						} else {
-							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-							return;
-						}
+				}
+			} else {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+				return;
+			}
 
-					}
-				}, trh -> {
-					if (trh.failed()) {
-						rc.fail(trh.cause());
-					}
-					MeshNode content = trh.result();
-					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
-				});
+		}
+	}, trh -> {
+		if (trh.failed()) {
+			rc.fail(trh.cause());
+		}
+		MeshNode content = trh.result();
+		rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
+	}		);
 
 		});
 	}

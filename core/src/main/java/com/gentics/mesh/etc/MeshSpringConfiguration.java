@@ -26,7 +26,9 @@ import java.util.concurrent.CountDownLatch;
 import javax.annotation.PostConstruct;
 
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
+import org.jglue.totorom.FrameFactory;
 import org.jglue.totorom.FramedGraph;
+import org.jglue.totorom.TypeResolver;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,6 +39,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
 import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 @Configuration
@@ -93,8 +97,6 @@ public class MeshSpringConfiguration {
 		try {
 			deployNeo4Vertx();
 			GraphDatabaseService service = Neo4jGraphVerticle.getService().getGraphDatabaseService();
-			// Add UUID transaction handler that injects uuid in new neo4j nodes and relationships
-			//			service.registerTransactionEventHandler(new UUIDTransactionEventHandler(service));
 			return service;
 		} catch (Exception e) {
 			log.error("Could not get Neo4J Database from neo4vertx", e);
@@ -105,7 +107,15 @@ public class MeshSpringConfiguration {
 	@Bean
 	public FramedGraph getFramedGraph() {
 		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
-		FramedGraph framedGraph = new FramedGraph(graph);
+		graph.createKeyIndex("java_class", Vertex.class);
+		graph.createKeyIndex("uuid", Vertex.class);
+		graph.createKeyIndex("java_class", Edge.class);
+		graph.createKeyIndex("uuid", Edge.class);
+		graph.createKeyIndex("languageTag", Edge.class);
+		graph.createKeyIndex("languageTag", Vertex.class);
+		graph.createKeyIndex("name", Vertex.class);
+		graph.createKeyIndex("key", Vertex.class);
+		FramedGraph framedGraph = new FramedGraph(graph, FrameFactory.Default, TypeResolver.Java);
 		return framedGraph;
 	}
 

@@ -25,4 +25,8 @@ public class Language extends GenericNode {
 		return getProperty("languageTag");
 	}
 
+	public void setLanguageTag(String languageTag) {
+		setProperty("languageTag", languageTag);
+	}
+
 }

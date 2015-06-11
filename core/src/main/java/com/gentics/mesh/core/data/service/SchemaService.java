@@ -8,13 +8,14 @@ import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public interface SchemaService extends GenericNodeService<Schema> {
+public interface SchemaService {
 
 	SchemaResponse transformToRest(Schema schema);
+
+	Schema findByUUID(String uuid);
 
 	void deleteByUUID(String uuid);
 
@@ -37,5 +38,12 @@ public interface SchemaService extends GenericNodeService<Schema> {
 	BasicPropertyType createBasicPropertyTypeSchema(String key, PropertyType type);
 
 	BasicPropertyType createListPropertyTypeSchema(String key);
+
+	Schema findOne(Long id);
+
+	Schema findByName(String projectName, String name);
+
+	void delete(Schema schema);
+
 
 }

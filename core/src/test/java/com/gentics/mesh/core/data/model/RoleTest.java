@@ -58,7 +58,7 @@ public class RoleTest extends AbstractDBTest {
 
 		// content2
 		content2 = nodeService.create();
-		nodeService.setContent(content2, data().getEnglish(), "Test");
+		content2.setContent( data().getEnglish(), "Test");
 		roleService.addPermission(role, content2, READ, DELETE);
 		roleService.addPermission(role, content2, CREATE);
 		//			tx.success();

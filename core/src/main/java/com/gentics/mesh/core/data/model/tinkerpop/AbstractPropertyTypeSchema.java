@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
 
 public class AbstractPropertyTypeSchema extends MeshVertex {
 
@@ -21,8 +22,8 @@ public class AbstractPropertyTypeSchema extends MeshVertex {
 		return getProperty(TYPE_KEY);
 	}
 
-	public void setType(String type) {
-		setProperty(DESCRIPTION_KEY, type);
+	public void setType(PropertyType type) {
+		setProperty(DESCRIPTION_KEY, type.getName());
 	}
 
 	public String getKey() {

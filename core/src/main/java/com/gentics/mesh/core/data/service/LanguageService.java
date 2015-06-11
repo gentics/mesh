@@ -2,9 +2,8 @@ package com.gentics.mesh.core.data.service;
 
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 
-public interface LanguageService extends GenericNodeService<Language> {
+public interface LanguageService {
 
 	Language findByName(String string);
 

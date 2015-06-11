@@ -78,6 +78,4 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 		return route;
 	}
 
-
-
 }

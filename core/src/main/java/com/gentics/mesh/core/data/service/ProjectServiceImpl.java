@@ -14,12 +14,11 @@ import com.gentics.mesh.core.Result;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
-public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implements ProjectService {
+public class ProjectServiceImpl extends AbstractMeshService implements ProjectService {
 
 	private static Logger log = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
@@ -28,12 +27,12 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 
 	@Override
 	public Project findByName(String projectName) {
-		return null;
+		return framedGraph.V().has("name", projectName).next(Project.class);
 	}
 
 	@Override
 	public Project findByUUID(String uuid) {
-		return null;
+		return framedGraph.V().has("uuid", uuid).next(Project.class);
 	}
 
 	@Override
@@ -76,22 +75,21 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	}
 
 	public ProjectRoot findRoot() {
-		//		@Query("MATCH (n:ProjectRoot) return n")
-		return null;
+		return framedGraph.V().has("java_class", ProjectRoot.class.getName()).next(ProjectRoot.class);
 	}
 
-//	@Override
-//	public Project save(Project project) {
-		//		ProjectRoot root = projectRepository.findRoot();
-		//		if (root == null) {
-		//			throw new NullPointerException("The project root node could not be found.");
-		//		}
-		//		project = neo4jTemplate.save(project);
-		//		root.getProjects().add(project);
-		//		neo4jTemplate.save(root);
-		//		return project;
-//		return null;
-//	}
+	//	@Override
+	//	public Project save(Project project) {
+	//		ProjectRoot root = projectRepository.findRoot();
+	//		if (root == null) {
+	//			throw new NullPointerException("The project root node could not be found.");
+	//		}
+	//		project = neo4jTemplate.save(project);
+	//		root.getProjects().add(project);
+	//		neo4jTemplate.save(root);
+	//		return project;
+	//		return null;
+	//	}
 
 	@Override
 	public Project create(String name) {
@@ -103,6 +101,11 @@ public class ProjectServiceImpl extends GenericNodeServiceImpl<Project> implemen
 	@Override
 	public ProjectRoot createRoot() {
 		return framedGraph.addVertex(ProjectRoot.class);
+	}
+
+	@Override
+	public void delete(Project project) {
+		project.getVertex().remove();
 	}
 
 }

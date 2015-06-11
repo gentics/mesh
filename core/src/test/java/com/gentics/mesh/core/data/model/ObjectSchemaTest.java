@@ -18,7 +18,7 @@ import com.gentics.mesh.test.AbstractDBTest;
 public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Autowired
-	private SchemaService objectSchemaService;
+	private SchemaService schemaService;
 
 	@Before
 	public void setup() throws Exception {
@@ -27,15 +27,15 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testFindByName() {
-		assertNotNull(objectSchemaService.findByName(DemoDataProvider.PROJECT_NAME, "content"));
-		assertNull(objectSchemaService.findByName(DemoDataProvider.PROJECT_NAME, "content1235"));
+		assertNotNull(schemaService.findByName(DemoDataProvider.PROJECT_NAME, "content"));
+		assertNull(schemaService.findByName(DemoDataProvider.PROJECT_NAME, "content1235"));
 	}
 
 	@Test
 	public void testDeleteByObject() {
 		Schema schema = data().getSchema("content");
-		objectSchemaService.delete(schema);
-		assertNull(objectSchemaService.findOne(schema.getId()));
+		schemaService.delete(schema);
+		assertNull(schemaService.findOne(schema.getId()));
 	}
 
 	@Test
@@ -43,10 +43,10 @@ public class ObjectSchemaTest extends AbstractDBTest {
 		Schema schema = data().getSchema("content");
 //		try (Transaction tx = graphDb.beginTx()) {
 
-			objectSchemaService.deleteByUUID(schema.getUuid());
+			schemaService.deleteByUUID(schema.getUuid());
 //			tx.success();
 //		}
-		assertNull(objectSchemaService.findOne(schema.getId()));
+		assertNull(schemaService.findOne(schema.getId()));
 	}
 
 	// @Test
@@ -63,14 +63,14 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testObjectSchemaRootNode() {
-		int nSchemasBefore = count(objectSchemaService.findRoot().getSchemas());
+		int nSchemasBefore = count(schemaService.findRoot().getSchemas());
 
-		Schema schema = objectSchemaService.create("test1235");
+		Schema schema = schemaService.create("test1235");
 //		try (Transaction tx = graphDb.beginTx()) {
 //			tx.success();
 //		}
 
-		int nSchemasAfter = count(objectSchemaService.findRoot().getSchemas());
+		int nSchemasAfter = count(schemaService.findRoot().getSchemas());
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);
 	}
 }

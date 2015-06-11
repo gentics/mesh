@@ -39,7 +39,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	private ObjectSchemaVerticle objectSchemaVerticle;
 
 	@Autowired
-	private SchemaService objectSchemaService;
+	private SchemaService schemaService;
 
 	@Autowired
 	private ProjectService projectService;
@@ -73,7 +73,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(request, restSchema);
 
 		SchemaResponse responseObject = JsonUtils.readValue(response, SchemaResponse.class);
-		Schema schema = objectSchemaService.findByUUID(responseObject.getUuid());
+		Schema schema = schemaService.findByUUID(responseObject.getUuid());
 		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 		assertEquals("There should be exactly one property schema.", 1, count(schema.getPropertyTypeSchemas()));
@@ -98,7 +98,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(request, restSchema);
 
 		// Verify that the object was created
-		Schema schema = objectSchemaService.findByUUID(restSchema.getUuid());
+		Schema schema = schemaService.findByUUID(restSchema.getUuid());
 		test.assertSchema(schema, restSchema);
 		assertEquals("There should be exactly one property schema.", 1, count(schema.getPropertyTypeSchemas()));
 
@@ -112,10 +112,10 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllSchemaList() throws Exception {
 		final int nSchemas = 22;
-		Schema noPermSchema = objectSchemaService.create("no_perm_schema");
+		Schema noPermSchema = schemaService.create("no_perm_schema");
 		//		try (Transaction tx = graphDb.beginTx()) {
 		for (int i = 0; i < nSchemas; i++) {
-			Schema extraSchema = objectSchemaService.create("extra_schema_" + i);
+			Schema extraSchema = schemaService.create("extra_schema_" + i);
 			roleService.addPermission(info.getRole(), extraSchema, PermissionType.READ);
 		}
 		// Don't grant permissions to no perm schema
@@ -213,7 +213,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
 		assertEquals(request.getName(), restSchema.getName());
 
-		Schema reloaded = objectSchemaService.findByUUID(schema.getUuid());
+		Schema reloaded = schemaService.findByUUID(schema.getUuid());
 		assertEquals("The name should have been updated", "new-name", reloaded.getName());
 
 	}
@@ -229,7 +229,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + "bogus", 404, "Not Found", JsonUtils.toJson(request));
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
-		Schema reloaded = objectSchemaService.findByUUID(schema.getUuid());
+		Schema reloaded = schemaService.findByUUID(schema.getUuid());
 		assertEquals("The name should not have been changed.", schema.getName(), reloaded.getName());
 
 	}
@@ -243,7 +243,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		System.out.println(response);
 		expectMessageResponse("schema_deleted", response, schema.getName());
 
-		Schema reloaded = objectSchemaService.findByUUID(schema.getUuid());
+		Schema reloaded = schemaService.findByUUID(schema.getUuid());
 		assertNull("The schema should have been deleted.", reloaded);
 	}
 
@@ -253,7 +253,7 @@ public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
 		String json = "error";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
-		Schema reloaded = objectSchemaService.findByUUID(schema.getUuid());
+		Schema reloaded = schemaService.findByUUID(schema.getUuid());
 		assertNotNull("The schema should not have been deleted.", reloaded);
 
 	}

@@ -17,7 +17,6 @@ import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
-	
 
 	protected AbstractProjectRestVerticle(String basePath) {
 		super(basePath);

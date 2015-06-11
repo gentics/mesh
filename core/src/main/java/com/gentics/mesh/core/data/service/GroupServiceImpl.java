@@ -11,22 +11,20 @@ import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
-public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements GroupService {
+public class GroupServiceImpl extends AbstractMeshService implements GroupService {
 
 	@Override
 	public Group findByName(String name) {
-		return null;
-
+		return framedGraph.V().has("name", name).has("java_class", Group.class.getName()).next(Group.class);
 	}
 
 	@Override
 	public Group findByUUID(String uuid) {
-		return null;
+		return framedGraph.V().has("uuid", uuid).has("java_class", Group.class.getName()).next(Group.class);
 	}
 
 	// TODO handle depth
@@ -63,18 +61,18 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 
 	}
 
-//	@Override
-//	public Group save(Group group) {
-		//		GroupRoot root = findRoot();
-		//		if (root == null) {
-		//			throw new NullPointerException("The group root node could not be found.");
-		//		}
-		//		group = neo4jTemplate.save(group);
-		//		root.getGroups().add(group);
-		//		neo4jTemplate.save(root);
-		//		return group;
-//		return null;
-//	}
+	//	@Override
+	//	public Group save(Group group) {
+	//		GroupRoot root = findRoot();
+	//		if (root == null) {
+	//			throw new NullPointerException("The group root node could not be found.");
+	//		}
+	//		group = neo4jTemplate.save(group);
+	//		root.getGroups().add(group);
+	//		neo4jTemplate.save(root);
+	//		return group;
+	//		return null;
+	//	}
 
 	public Group findOne(Long id) {
 		return null;
@@ -93,9 +91,7 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 	}
 
 	public GroupRoot findRoot() {
-
-		//		@Query("MATCH (n:GroupRoot) return n")
-		return null;
+		return framedGraph.V().has("java_class", GroupRoot.class.getName()).next(GroupRoot.class);
 	}
 
 	@Override
@@ -118,5 +114,11 @@ public class GroupServiceImpl extends GenericNodeServiceImpl<Group> implements G
 	public GroupRoot createRoot() {
 		GroupRoot root = framedGraph.addVertex(GroupRoot.class);
 		return root;
+	}
+
+	@Override
+	public void delete(Group group) {
+		group.getVertex().remove();
+		
 	}
 }

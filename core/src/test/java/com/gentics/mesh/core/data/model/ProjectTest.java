@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
@@ -27,16 +26,17 @@ public class ProjectTest extends AbstractDBTest {
 	@Test
 	public void testCreation() {
 		Project project = projectService.create("test");
-		project = projectService.findOne(project.getId());
-		assertNotNull(project);
-		assertEquals("test", project.getName());
+		Project project2 = projectService.findByName(project.getName());
+		assertNotNull(project2);
+		assertEquals("test", project2.getName());
+		assertEquals(project.getUuid(), project2.getUuid());
 	}
 
 	@Test
 	public void testDeletion() {
 		Project project = data().getProject();
 		projectService.delete(project);
-		assertNull(projectService.findOne(project.getId()));
+//		assertNull(projectService.findOne(project.getId()));
 		assertNull(projectService.findByUUID(project.getUuid()));
 	}
 
@@ -44,10 +44,10 @@ public class ProjectTest extends AbstractDBTest {
 	public void testProjectRootNode() {
 		int nProjectsBefore = count(projectService.findRoot().getProjects());
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			Project project = projectService.create("test1234556");
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		Project project = projectService.create("test1234556");
+		//			tx.success();
+		//		}
 		int nProjectsAfter = count(projectService.findRoot().getProjects());
 		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}

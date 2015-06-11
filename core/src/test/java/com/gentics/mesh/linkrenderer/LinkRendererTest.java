@@ -10,7 +10,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
@@ -44,18 +43,18 @@ public class LinkRendererTest extends AbstractDBTest {
 
 		// Create some dummy content
 		MeshNode content = nodeService.create();
-//		try (Transaction tx = graphDb.beginTx()) {
-			nodeService.setDisplayName(content, german, "german name");
-			nodeService.setName(content, german, "german.html");
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		content.setDisplayName(german, "german name");
+		content.setName(german, "german.html");
+		//			tx.success();
+		//		}
 
 		MeshNode content2 = nodeService.create();
-//		try (Transaction tx = graphDb.beginTx()) {
-			nodeService.setDisplayName(content2, english, "content 2 english");
-			nodeService.setName(content2, english, "english.html");
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		content2.setDisplayName(english, "content 2 english");
+		content2.setName(english, "english.html");
+		//			tx.success();
+		//		}
 
 		LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
 		String out = replacer.replace("dgasd");

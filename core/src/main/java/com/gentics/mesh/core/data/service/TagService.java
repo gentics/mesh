@@ -7,11 +7,10 @@ import java.util.List;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.service.generic.GenericPropertyContainerService;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public interface TagService extends GenericPropertyContainerService<Tag> {
+public interface TagService {
 
 	TagResponse transformToRest(RoutingContext rc, Tag tag);
 
@@ -51,5 +50,13 @@ public interface TagService extends GenericPropertyContainerService<Tag> {
 	Page<MeshNode> findTaggedNodes(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
 
 	Tag create();
+
+	Tag findOne(Long id);
+
+	void delete(Tag tag);
+
+	Tag findByName(String projectName, String name);
+
+	Object findByUUID(String uuid);
 
 }

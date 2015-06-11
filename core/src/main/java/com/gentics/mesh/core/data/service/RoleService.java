@@ -12,11 +12,10 @@ import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
-import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public interface RoleService extends GenericNodeService<Role> {
+public interface RoleService {
 
 	Role findByUUID(String uuid);
 
@@ -49,7 +48,10 @@ public interface RoleService extends GenericNodeService<Role> {
 
 	RoleRoot createRoot();
 
-	RoleRoot  findRoot();
+	RoleRoot findRoot();
 
+	Role findOne(Long id);
+
+	void delete(Role role);
 
 }

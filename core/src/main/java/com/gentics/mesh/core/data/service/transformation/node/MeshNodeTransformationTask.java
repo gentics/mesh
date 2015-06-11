@@ -102,15 +102,14 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 			/* Load the i18n properties */
 			boolean loadAllTags = info.getLanguageTags().size() == 0;
 			if (loadAllTags) {
-				for (Translated transalated : node.getI18nTranslations()) {
-					String languageTag = transalated.getLanguageTag();
+				for (I18NProperties properties : node.getI18nProperties()) {
+					String languageTag = properties.getLanguage().getLanguageTag();
 					// TODO handle schema
-					I18NProperties properties = transalated.getI18NProperties();
 					//						properties = info.getNeo4jTemplate().fetch(properties);
-					restNode.addProperty(languageTag, "name", transalated.getI18NProperties().getProperty("name"));
-					restNode.addProperty(languageTag, "filename", transalated.getI18NProperties().getProperty("filename"));
-					restNode.addProperty(languageTag, "content", transalated.getI18NProperties().getProperty("content"));
-					restNode.addProperty(languageTag, "teaser", transalated.getI18NProperties().getProperty("teaser"));
+					restNode.addProperty(languageTag, "name", properties.getProperty("name"));
+					restNode.addProperty(languageTag, "filename", properties.getProperty("filename"));
+					restNode.addProperty(languageTag, "content", properties.getProperty("content"));
+					restNode.addProperty(languageTag, "teaser", properties.getProperty("teaser"));
 				}
 			} else {
 				for (String languageTag : info.getLanguageTags()) {
@@ -121,7 +120,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 					}
 
 					// Add all i18n properties for the selected language to the response
-					I18NProperties i18nProperties = info.getContentService().getI18NProperties(node, language);
+					I18NProperties i18nProperties = node.getI18nProperties(language);
 					if (i18nProperties != null) {
 						//							i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
 						for (String key : i18nProperties.getProperties().keySet()) {

@@ -14,18 +14,7 @@ public class MeshRootServiceImpl implements MeshRootService {
 
 	@Override
 	public MeshRoot findRoot() {
-		//@Query("MATCH (n:MeshRoot) return n")
-		return null;
-	}
-
-	@Override
-	public void save(MeshRoot rootNode) {
-
-	}
-
-	@Override
-	public MeshRoot reload(MeshRoot rootNode) {
-		return null;
+		return framedGraph.V().has("java_class", MeshRoot.class.getName()).next(MeshRoot.class);
 	}
 
 	@Override

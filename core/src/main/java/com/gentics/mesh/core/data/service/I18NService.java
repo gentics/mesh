@@ -63,7 +63,4 @@ public interface I18NService {
 	 */
 	public Locale getLocale(RoutingContext rc);
 
-	//TODO move this to a different service class?
-	public I18NProperties create(Language language);
-
 }

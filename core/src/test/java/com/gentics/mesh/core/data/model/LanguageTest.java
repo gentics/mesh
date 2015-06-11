@@ -31,7 +31,8 @@ public class LanguageTest extends AbstractDBTest {
 //		try (Transaction tx = graphDb.beginTx()) {
 //			tx.success();
 //		}
-		lang = languageService.findOne(lang.getId());
+		//TODO reload?
+		lang = null;
 		assertNotNull(lang);
 		assertEquals(languageName, lang.getName());
 

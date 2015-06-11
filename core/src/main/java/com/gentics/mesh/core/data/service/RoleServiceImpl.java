@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -30,10 +29,7 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
-public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements RoleService {
-
-	@Autowired
-	protected FramedGraph framedGraph;
+public class RoleServiceImpl extends AbstractMeshService implements RoleService {
 
 	@Autowired
 	private PermissionService permissionService;
@@ -41,17 +37,14 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	@Autowired
 	private UserService userService;
 
-	@Autowired
-	private MeshSpringConfiguration springConfiguration;
-
 	@Override
 	public Role findByUUID(String uuid) {
-		return null;
+		return framedGraph.V().has("uuid", uuid).has("java_class", Role.class.getName()).next(Role.class);
 	}
 
 	@Override
 	public Role findByName(String name) {
-		return null;
+		return framedGraph.V().has("name", name).has("java_class", Role.class.getName()).next(Role.class);
 	}
 
 	@Override
@@ -176,8 +169,7 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	}
 
 	public RoleRoot findRoot() {
-		//	@Query("MATCH (n:RoleRoot) return n")
-		return null;
+		return framedGraph.V().has("java_class", RoleRoot.class.getName()).next(RoleRoot.class);
 	}
 
 	//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
@@ -189,18 +181,18 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 		return null;
 	}
 
-//	@Override
-//	public Role save(Role role) {
-		//		RoleRoot root = roleService.findRoot();
-		//		if (root == null) {
-		//			throw new NullPointerException("The role root node could not be found.");
-		//		}
-		//		role = neo4jTemplate.save(role);
-		//		root.getRoles().add(role);
-		//		neo4jTemplate.save(root);
-		//		return role;
-//		return null;
-//	}
+	//	@Override
+	//	public Role save(Role role) {
+	//		RoleRoot root = roleService.findRoot();
+	//		if (root == null) {
+	//			throw new NullPointerException("The role root node could not be found.");
+	//		}
+	//		role = neo4jTemplate.save(role);
+	//		root.getRoles().add(role);
+	//		neo4jTemplate.save(root);
+	//		return role;
+	//		return null;
+	//	}
 
 	@Override
 	public Role create(String name) {
@@ -213,6 +205,20 @@ public class RoleServiceImpl extends GenericNodeServiceImpl<Role> implements Rol
 	public RoleRoot createRoot() {
 		RoleRoot root = framedGraph.addVertex(RoleRoot.class);
 		return root;
+	}
+
+	@Override
+	public Role findOne(Long id) {
+		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		if (vertex != null) {
+			return framedGraph.frameElement(vertex, Role.class);
+		}
+		return null;
+	}
+
+	@Override
+	public void delete(Role role) {
+		role.getVertex().remove();
 	}
 
 }

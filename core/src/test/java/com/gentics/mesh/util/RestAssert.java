@@ -122,7 +122,7 @@ public class RestAssert {
 		for (String languageTag : request.getProperties().keySet()) {
 			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
 				Language language = languageService.findByLanguageTag(languageTag);
-				String propValue = nodeService.getProperty(node, language, entry.getKey());
+				String propValue = node.getI18nProperties(language).getProperty(entry.getKey());
 				assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
 			}
 		}

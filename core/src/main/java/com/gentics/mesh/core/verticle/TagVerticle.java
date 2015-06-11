@@ -52,7 +52,6 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(TagVerticle.class);
 
-
 	@Autowired
 	private TagListHandler tagListHandler;
 
@@ -102,7 +101,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 						if (language != null) {
 							Map<String, String> properties = requestModel.getProperties(languageTag);
 							if (properties != null) {
-								I18NProperties i18nProperties = tagService.getI18NProperties(tag, language);
+								I18NProperties i18nProperties = tag.getI18nProperties(language);
 								for (Map.Entry<String, String> set : properties.entrySet()) {
 									String key = set.getKey();
 									String value = set.getValue();
@@ -166,12 +165,13 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				for (String languageTag : request.getProperties().keySet()) {
 					Map<String, String> i18nProperties = request.getProperties(languageTag);
 					Language language = languageService.findByLanguageTag(languageTag);
-					I18NProperties tagProps = i18nPropertyService.create(language);
+					//TODO check whether language could be found?
+					I18NProperties tagProps = newTag.createI18nProperties(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
 						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
 					// Create the relationship to the i18n properties
-					newTag.addI18nTranslation(newTag, tagProps, language);
+					newTag.addI18nProperties(tagProps);
 				}
 				tagCreated.complete(newTag);
 			}, trh -> {

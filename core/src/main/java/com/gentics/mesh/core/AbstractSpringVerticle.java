@@ -6,15 +6,14 @@ import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.I18NPropertyService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
+import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -65,9 +64,6 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	@Autowired
 	protected TagService tagService;
-
-	@Autowired
-	protected I18NPropertyService i18nPropertyService;
 
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;

@@ -9,7 +9,6 @@ import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
@@ -21,25 +20,20 @@ import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeServiceImpl;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
-public class UserServiceImpl extends GenericNodeServiceImpl<User> implements UserService {
+public class UserServiceImpl extends AbstractMeshService implements UserService {
 
 	private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
-	@Autowired
-	private MeshSpringConfiguration springConfiguration;
-
-//	@Autowired
-//	protected ExposingFramedGraph framedGraph;
+	//	@Autowired
+	//	protected ExposingFramedGraph framedGraph;
 
 	@Override
 	public void setPassword(User user, String password) {
@@ -56,7 +50,7 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 
 	@Override
 	public User findByUsername(String username) {
-		return null;
+		return framedGraph.V().has("username", username).has("java_class", User.class.getName()).next(User.class);
 	}
 
 	@Override
@@ -222,23 +216,21 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	}
 
 	public UserRoot findRoot() {
-
-		// @Query("MATCH (n:UserRoot) return n")
-		return null;
+		return framedGraph.V().has("java_class", UserRoot.class.getName()).next(UserRoot.class);
 	}
 
-//	@Override
-//	public User save(User user) {
-		// UserRoot root = userRepository.findRoot();
-		// if (root == null) {
-		// throw new NullPointerException("The user root node could not be found.");
-		// }
-		// user = neo4jTemplate.save(user);
-		// root.getUsers().add(user);
-		// neo4jTemplate.save(root);
-		// return user;
-//		return null;
-//	}
+	//	@Override
+	//	public User save(User user) {
+	// UserRoot root = userRepository.findRoot();
+	// if (root == null) {
+	// throw new NullPointerException("The user root node could not be found.");
+	// }
+	// user = neo4jTemplate.save(user);
+	// root.getUsers().add(user);
+	// neo4jTemplate.save(root);
+	// return user;
+	//		return null;
+	//	}
 
 	@Override
 	public User create(String username) {
@@ -251,6 +243,25 @@ public class UserServiceImpl extends GenericNodeServiceImpl<User> implements Use
 	public UserRoot createRoot() {
 		UserRoot root = framedGraph.addVertex(UserRoot.class);
 		return root;
+	}
+
+	@Override
+	public User findOne(Long id) {
+		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		if (vertex != null) {
+			return framedGraph.frameElement(vertex, User.class);
+		}
+		return null;
+	}
+
+	@Override
+	public User findByUUID(String uuid) {
+		return framedGraph.V().has("uuid", uuid).has("java_class", User.class.getName()).next(User.class);
+	}
+
+	@Override
+	public void delete(User user) {
+		user.getVertex().remove();
 	}
 
 }

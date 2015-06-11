@@ -11,15 +11,16 @@ import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public interface UserService extends GenericNodeService<User> {
+public interface UserService {
 
-	void setPassword(User user, String password);
+	User findByUUID(String uuid);
 
 	User findByUsername(String username);
+
+	void setPassword(User user, String password);
 
 	/**
 	 * Find all users that are readable. Utilize the paging info when returning paged user data.
@@ -49,5 +50,9 @@ public interface UserService extends GenericNodeService<User> {
 	UserRoot createRoot();
 
 	UserRoot findRoot();
+
+	User findOne(Long id);
+
+	void delete(User user);
 
 }

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import javax.naming.InvalidNameException;
 
@@ -167,7 +168,6 @@ public class BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	// @Transactional
 	public void init(MeshConfiguration configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.configuration = configuration;
 		if (configuration.isClusterMode()) {
@@ -222,33 +222,51 @@ public class BootstrapInitializer {
 	 * @throws JsonParseException
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
+		MeshRoot rootNode = null;
+		try {
+			rootNode = rootService.findRoot();
+		} catch (NoSuchElementException e) {
+			rootNode = rootService.create();
+			log.info("Stored mesh root {" + rootNode.getUuid() + "}");
+		}
 
-		LanguageRoot languageRoot = languageService.findRoot();
-		if (languageRoot == null) {
+		LanguageRoot languageRoot;
+		try {
+			languageRoot = languageService.findRoot();
+		} catch (NoSuchElementException e) {
+
 			languageRoot = languageService.createRoot();
 			log.info("Stored language root {" + languageRoot.getUuid() + "}");
 		}
 
-		GroupRoot groupRoot = groupService.findRoot();
-		if (groupRoot == null) {
+		GroupRoot groupRoot;
+		try {
+			groupRoot = groupService.findRoot();
+		} catch (NoSuchElementException e) {
 			groupRoot = groupService.createRoot();
 			log.info("Stored group root {" + groupRoot.getUuid() + "}");
 		}
 
-		UserRoot userRoot = userService.findRoot();
-		if (userRoot == null) {
+		UserRoot userRoot;
+		try {
+			userRoot = userService.findRoot();
+		} catch (NoSuchElementException e) {
 			userRoot = userService.createRoot();
 			log.info("Stored user root {" + userRoot.getUuid() + "}");
 		}
 
-		RoleRoot roleRoot = roleService.findRoot();
-		if (roleRoot == null) {
+		RoleRoot roleRoot;
+		try {
+			roleRoot = roleService.findRoot();
+		} catch (NoSuchElementException e) {
 			roleRoot = roleService.createRoot();
 			log.info("Stored role root {" + roleRoot.getUuid() + "}");
 		}
 
-		ProjectRoot projectRoot = projectService.findRoot();
-		if (projectRoot == null) {
+		ProjectRoot projectRoot;
+		try {
+			projectRoot = projectService.findRoot();
+		} catch (NoSuchElementException e) {
 			projectRoot = projectService.createRoot();
 			log.info("Stored project root {" + projectRoot.getUuid() + "}");
 		}
@@ -330,34 +348,34 @@ public class BootstrapInitializer {
 			tagSchema.addPropertyTypeSchema(schemaService.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			log.info("Stored tag schema {" + tagSchema.getUuid() + "}");
 		}
-		//
-		SchemaRoot schemaRoot = schemaService.findRoot();
-		if (schemaRoot == null) {
+
+		SchemaRoot schemaRoot;
+		try {
+			schemaRoot = schemaService.findRoot();
+		} catch (NoSuchElementException e) {
 			schemaRoot = schemaService.createRoot();
 			schemaRoot.addSchema(tagSchema);
 			schemaRoot.addSchema(contentSchema);
 			schemaRoot.addSchema(binarySchema);
 			log.info("Stored schema root node");
 		}
-		//
-		// Verify that the root node is existing
-		MeshRoot rootNode = rootService.findRoot();
-		if (rootNode == null) {
-			rootNode = rootService.create();
-			rootNode.setProjectRoot(projectRoot);
-			rootNode.setGroupRoot(groupRoot);
-			rootNode.setRoleRoot(roleRoot);
-			rootNode.setLanguageRoot(languageRoot);
-			rootNode.setSchemaRoot(schemaRoot);
-			rootNode.setUserRoot(userRoot);
-			log.info("Stored mesh root node");
-		}
 
-		initLanguages(rootNode);
+		// Verify that the root node is existing
+		rootNode.setProjectRoot(projectRoot);
+		rootNode.setGroupRoot(groupRoot);
+		rootNode.setRoleRoot(roleRoot);
+		rootNode.setLanguageRoot(languageRoot);
+		rootNode.setSchemaRoot(schemaRoot);
+		rootNode.setUserRoot(userRoot);
+		log.info("Stored mesh root node");
+
+		initLanguages(languageRoot);
 
 		// Verify that an admin user exists
-		User adminUser = userService.findByUsername("admin");
-		if (adminUser == null) {
+		User adminUser;
+		try {
+			adminUser = userService.findByUsername("admin");
+		} catch (NoSuchElementException e) {
 			adminUser = userService.create("admin");
 			System.out.println("Enter admin password:");
 			// Scanner scanIn = new Scanner(System.in);
@@ -370,23 +388,27 @@ public class BootstrapInitializer {
 		}
 		rootNode.getUserRoot().addUser(adminUser);
 
-		Group adminGroup = groupService.findByName("admin");
-		if (adminGroup == null) {
+		Group adminGroup;
+		try {
+			adminGroup = groupService.findByName("admin");
+		} catch (NoSuchElementException e) {
 			adminGroup = groupService.create("admin");
 			adminGroup.addUser(adminUser);
 			log.info("Stored admin group");
 		}
 		rootNode.getGroupRoot().addGroup(adminGroup);
-		//
-		Role adminRole = roleService.findByName("admin");
-		if (adminRole == null) {
+
+		Role adminRole;
+		try {
+			adminRole = roleService.findByName("admin");
+		} catch (NoSuchElementException e) {
 			adminRole = roleService.create("admin");
 			adminGroup.addRole(adminRole);
 		}
 
 	}
 
-	protected void initLanguages(MeshRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
+	protected void initLanguages(LanguageRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
 
 		long start = System.currentTimeMillis();
 		final String filename = "languages.json";
@@ -399,13 +421,14 @@ public class BootstrapInitializer {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = languageService.findByName(languageName);
-			if (language == null) {
+			Language language;
+			try {
+				language = languageService.findByName(languageName);
+			} catch (NoSuchElementException e) {
 				language = languageService.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
-				rootNode.getLanguageRoot().addLanguage(language);
+				rootNode.addLanguage(language);
 				log.debug("Added language {" + languageTag + " / " + languageName + "}");
-				//				rootService.save(rootNode);
 			}
 		}
 		long diff = System.currentTimeMillis() - start;

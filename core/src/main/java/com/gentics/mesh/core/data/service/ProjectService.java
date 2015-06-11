@@ -7,11 +7,10 @@ import com.gentics.mesh.core.Result;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public interface ProjectService extends GenericNodeService<Project> {
+public interface ProjectService {
 
 	Project findByName(String projectName);
 
@@ -30,5 +29,7 @@ public interface ProjectService extends GenericNodeService<Project> {
 	ProjectRoot createRoot();
 
 	ProjectRoot findRoot();
+
+	void delete(Project project);
 
 }

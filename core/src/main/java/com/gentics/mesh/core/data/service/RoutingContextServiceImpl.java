@@ -24,9 +24,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
-import com.gentics.mesh.core.data.service.generic.GenericNodeService;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -35,16 +33,12 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component
-public class RoutingContextServiceImpl implements RoutingContextService {
+public class RoutingContextServiceImpl extends AbstractMeshService implements RoutingContextService {
 
-	@Autowired
-	private I18NService i18n;
+
 
 	@Autowired
 	private MeshSpringConfiguration configuration;
-
-	@Autowired
-	private GenericNodeService<GenericNode> genericNodeService;
 
 	private static final Logger log = LoggerFactory.getLogger(RoutingContextServiceImpl.class);
 
@@ -189,9 +183,9 @@ public class RoutingContextServiceImpl implements RoutingContextService {
 		configuration.vertx().executeBlocking((Future<T> fut) -> {
 			T node = null;
 			if (projectName != null) {
-				node = (T) genericNodeService.findByUUID(projectName, uuid);
+//				node = (T) genericNodeService.findByUUID(projectName, uuid);
 			} else {
-				node = (T) genericNodeService.findByUUID(uuid);
+//				node = (T) genericNodeService.findByUUID(uuid);
 			}
 			if (node == null) {
 				fut.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid)));
