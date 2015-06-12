@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Language;
 
 public class LanguageRoot extends MeshVertex {
 
-	public List<Language> getLanguages() {
+	public List<? extends Language> getLanguages() {
 		return out(BasicRelationships.HAS_LANGUAGE).toList(Language.class);
 	}
 
@@ -16,5 +16,5 @@ public class LanguageRoot extends MeshVertex {
 		linkOut(language, BasicRelationships.HAS_LANGUAGE);
 	}
 
-	//TODO add unique index
+	// TODO add unique index
 }

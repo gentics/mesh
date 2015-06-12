@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Role;
 
 public class RoleRoot extends MeshVertex {
 
-	public Iterable<Role> getRoles() {
+	public Iterable<? extends Role> getRoles() {
 		return out(BasicRelationships.HAS_ROLE).toList(Role.class);
 	}
 

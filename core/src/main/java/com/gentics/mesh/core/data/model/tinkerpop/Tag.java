@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 
 public class Tag extends GenericPropertyContainer {
 
-	public List<MeshNode> getNodes() {
+	public List<? extends MeshNode> getNodes() {
 		return in(BasicRelationships.HAS_TAG).toList(MeshNode.class);
 	}
 

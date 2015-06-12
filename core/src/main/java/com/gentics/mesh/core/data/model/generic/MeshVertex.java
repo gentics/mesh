@@ -3,12 +3,11 @@ package com.gentics.mesh.core.data.model.generic;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jglue.totorom.FramedVertex;
-
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.AbstractVertexFrame;
 import com.tinkerpop.blueprints.Vertex;
 
-public class MeshVertex extends FramedVertex {
+public class MeshVertex extends AbstractVertexFrame {
 
 	@Override
 	protected void init() {
@@ -28,7 +27,7 @@ public class MeshVertex extends FramedVertex {
 	}
 
 	public Long getId() {
-		return (Long) element().getId();
+		return (Long) getElement().getId();
 	}
 
 	public String getUuid() {
@@ -40,6 +39,6 @@ public class MeshVertex extends FramedVertex {
 	}
 
 	public Vertex getVertex() {
-		return element();
+		return getElement();
 	}
 }

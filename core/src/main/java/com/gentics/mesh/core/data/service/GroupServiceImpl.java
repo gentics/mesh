@@ -19,12 +19,12 @@ public class GroupServiceImpl extends AbstractMeshService implements GroupServic
 
 	@Override
 	public Group findByName(String name) {
-		return framedGraph.V().has("name", name).has("java_class", Group.class.getName()).next(Group.class);
+		return framedGraph.v().has("name", name).has("ferma_type", Group.class.getName()).next(Group.class);
 	}
 
 	@Override
 	public Group findByUUID(String uuid) {
-		return framedGraph.V().has("uuid", uuid).has("java_class", Group.class.getName()).next(Group.class);
+		return framedGraph.v().has("uuid", uuid).has("ferma_type", Group.class.getName()).next(Group.class);
 	}
 
 	// TODO handle depth
@@ -34,17 +34,17 @@ public class GroupServiceImpl extends AbstractMeshService implements GroupServic
 		restGroup.setUuid(group.getUuid());
 		restGroup.setName(group.getName());
 
-		//		for (User user : group.getUsers()) {
-		//			user = neo4jTemplate.fetch(user);
-		//			String name = user.getUsername();
-		//			if (name != null) {
-		//				restGroup.getUsers().add(name);
-		//			}
-		//		}
-		//		Collections.sort(restGroup.getUsers());
+		// for (User user : group.getUsers()) {
+		// user = neo4jTemplate.fetch(user);
+		// String name = user.getUsername();
+		// if (name != null) {
+		// restGroup.getUsers().add(name);
+		// }
+		// }
+		// Collections.sort(restGroup.getUsers());
 
 		for (Role role : group.getRoles()) {
-			//			role = neo4jTemplate.fetch(role);
+			// role = neo4jTemplate.fetch(role);
 			String name = role.getName();
 			if (name != null) {
 				restGroup.getRoles().add(name);
@@ -61,18 +61,18 @@ public class GroupServiceImpl extends AbstractMeshService implements GroupServic
 
 	}
 
-	//	@Override
-	//	public Group save(Group group) {
-	//		GroupRoot root = findRoot();
-	//		if (root == null) {
-	//			throw new NullPointerException("The group root node could not be found.");
-	//		}
-	//		group = neo4jTemplate.save(group);
-	//		root.getGroups().add(group);
-	//		neo4jTemplate.save(root);
-	//		return group;
-	//		return null;
-	//	}
+	// @Override
+	// public Group save(Group group) {
+	// GroupRoot root = findRoot();
+	// if (root == null) {
+	// throw new NullPointerException("The group root node could not be found.");
+	// }
+	// group = neo4jTemplate.save(group);
+	// root.getGroups().add(group);
+	// neo4jTemplate.save(root);
+	// return group;
+	// return null;
+	// }
 
 	public Group findOne(Long id) {
 		return null;
@@ -86,39 +86,42 @@ public class GroupServiceImpl extends AbstractMeshService implements GroupServic
 	 * @return
 	 */
 	public List<Group> listAllGroups(User user) {
-		//		@Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
+		// @Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
 		return null;
 	}
 
 	public GroupRoot findRoot() {
-		return framedGraph.V().has("java_class", GroupRoot.class.getName()).next(GroupRoot.class);
+		return framedGraph.v().has("ferma_type", GroupRoot.class.getName()).next(GroupRoot.class);
 	}
 
 	@Override
 	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		//		return groupRepository.findAll(requestUser, new MeshPageRequest(pagingInfo));
-		//		@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup ORDER BY visibleGroup.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
-		//		Page<Group> findAll(User requestUser, Pageable pageable);
+		// return groupRepository.findAll(requestUser, new MeshPageRequest(pagingInfo));
+		// @Query(value =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup ORDER BY visibleGroup.name",
+		// countQuery =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
+		// Page<Group> findAll(User requestUser, Pageable pageable);
 
 		return null;
 	}
 
 	@Override
 	public Group create(String name) {
-		Group group = framedGraph.addVertex(Group.class);
+		Group group = framedGraph.addFramedVertex(Group.class);
 		group.setName(name);
 		return group;
 	}
 
 	@Override
 	public GroupRoot createRoot() {
-		GroupRoot root = framedGraph.addVertex(GroupRoot.class);
+		GroupRoot root = framedGraph.addFramedVertex(GroupRoot.class);
 		return root;
 	}
 
 	@Override
 	public void delete(Group group) {
 		group.getVertex().remove();
-		
+
 	}
 }

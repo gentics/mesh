@@ -17,7 +17,7 @@ public class Group extends GenericNode {
 		setProperty(NAME_KEY, name);
 	}
 
-	public Iterable<User> getUsers() {
+	public Iterable<? extends User> getUsers() {
 		return in(AuthRelationships.HAS_USER).toList(User.class);
 	}
 
@@ -36,7 +36,7 @@ public class Group extends GenericNode {
 		unlinkIn(user, AuthRelationships.HAS_USER);
 	}
 
-	public List<Role> getRoles() {
+	public List<? extends Role> getRoles() {
 		return in(AuthRelationships.HAS_ROLE).toList(Role.class);
 	}
 

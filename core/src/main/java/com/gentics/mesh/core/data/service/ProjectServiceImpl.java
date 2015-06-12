@@ -27,12 +27,12 @@ public class ProjectServiceImpl extends AbstractMeshService implements ProjectSe
 
 	@Override
 	public Project findByName(String projectName) {
-		return framedGraph.V().has("name", projectName).next(Project.class);
+		return framedGraph.v().has("name", projectName).next(Project.class);
 	}
 
 	@Override
 	public Project findByUUID(String uuid) {
-		return framedGraph.V().has("uuid", uuid).next(Project.class);
+		return framedGraph.v().has("uuid", uuid).next(Project.class);
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class ProjectServiceImpl extends AbstractMeshService implements ProjectSe
 	}
 
 	public ProjectRoot findRoot() {
-		return framedGraph.V().has("java_class", ProjectRoot.class.getName()).next(ProjectRoot.class);
+		return framedGraph.v().has("ferma_type", ProjectRoot.class.getName()).next(ProjectRoot.class);
 	}
 
 	//	@Override
@@ -93,14 +93,14 @@ public class ProjectServiceImpl extends AbstractMeshService implements ProjectSe
 
 	@Override
 	public Project create(String name) {
-		Project project = framedGraph.addVertex(Project.class);
+		Project project = framedGraph.addFramedVertex(Project.class);
 		project.setName(name);
 		return project;
 	}
 
 	@Override
 	public ProjectRoot createRoot() {
-		return framedGraph.addVertex(ProjectRoot.class);
+		return framedGraph.addFramedVertex(ProjectRoot.class);
 	}
 
 	@Override

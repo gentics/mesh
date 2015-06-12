@@ -45,9 +45,8 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.jglue.totorom</groupId>
-			<artifactId>totorom-tinkerpop2</artifactId>
-			<version>0.5.4</version>
+			<groupId>com.syncleus.ferma</groupId>
+			<artifactId>ferma</artifactId>
 		</dependency>
 
 		<!-- Logging -->

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
-import org.jglue.totorom.FramedEdge;
+import com.syncleus.ferma.AbstractEdgeFrame;
 
-public class Linked extends FramedEdge {
+public class Linked extends AbstractEdgeFrame {
 
 	public MeshNode getStartNode() {
 		return inV().next(MeshNode.class);

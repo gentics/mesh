@@ -50,7 +50,7 @@ public class UserServiceImpl extends AbstractMeshService implements UserService 
 
 	@Override
 	public User findByUsername(String username) {
-		return framedGraph.V().has("username", username).has("java_class", User.class.getName()).next(User.class);
+		return framedGraph.v().has("username", username).has("ferma_type", User.class.getName()).next(User.class);
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class UserServiceImpl extends AbstractMeshService implements UserService 
 		if (genericPermission.getTargetNode() == null) {
 			return false;
 		}
-		Vertex userNode = framedGraph.getGraph().getVertex(userNodeId);
+		Vertex userNode = framedGraph.getVertex(userNodeId);
 		for (Edge groupRel : userNode.getEdges(com.tinkerpop.blueprints.Direction.OUT, AuthRelationships.MEMBER_OF)) {
 			Vertex group = groupRel.getVertex(com.tinkerpop.blueprints.Direction.OUT);
 			log.debug("Found group: " + group.getProperty("name"));
@@ -216,7 +216,7 @@ public class UserServiceImpl extends AbstractMeshService implements UserService 
 	}
 
 	public UserRoot findRoot() {
-		return framedGraph.V().has("java_class", UserRoot.class.getName()).next(UserRoot.class);
+		return framedGraph.v().has("ferma_type", UserRoot.class.getName()).next(UserRoot.class);
 	}
 
 	//	@Override
@@ -234,20 +234,20 @@ public class UserServiceImpl extends AbstractMeshService implements UserService 
 
 	@Override
 	public User create(String username) {
-		User user = framedGraph.addVertex(User.class);
+		User user = framedGraph.addFramedVertex(User.class);
 		user.setUsername(username);
 		return user;
 	}
 
 	@Override
 	public UserRoot createRoot() {
-		UserRoot root = framedGraph.addVertex(UserRoot.class);
+		UserRoot root = framedGraph.addFramedVertex(UserRoot.class);
 		return root;
 	}
 
 	@Override
 	public User findOne(Long id) {
-		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		Vertex vertex = framedGraph.getVertex(id);
 		if (vertex != null) {
 			return framedGraph.frameElement(vertex, User.class);
 		}
@@ -256,7 +256,7 @@ public class UserServiceImpl extends AbstractMeshService implements UserService 
 
 	@Override
 	public User findByUUID(String uuid) {
-		return framedGraph.V().has("uuid", uuid).has("java_class", User.class.getName()).next(User.class);
+		return framedGraph.v().has("uuid", uuid).has("ferma_type", User.class.getName()).next(User.class);
 	}
 
 	@Override

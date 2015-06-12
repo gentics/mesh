@@ -51,7 +51,7 @@ public class User extends GenericNode {
 		setProperty(EMAIL_KEY, emailAddress);
 	}
 
-	public List<Group> getGroups() {
+	public List<? extends Group> getGroups() {
 		return out(AuthRelationships.HAS_USER).toList(Group.class);
 	}
 

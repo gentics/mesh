@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.neo4j.graphdb.NotFoundException;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
@@ -30,7 +29,7 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 
 	public Schema findByUUID(String projectName, String uuid) {
 		//TODO check for projectName
-		return framedGraph.V().has("uuid", uuid).has("java_class", Schema.class.getName()).next(Schema.class);
+		return framedGraph.v().has("uuid", uuid).has("ferma_type", Schema.class.getName()).next(Schema.class);
 	}
 
 	public Schema findByName(String projectName, String name) {
@@ -120,7 +119,7 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 	 */
 	public void deleteByUuid(String uuid) {
 		//TODO check for schema class
-		framedGraph.V().has("uuid", uuid).remove();
+		framedGraph.v().has("uuid", uuid).remove();
 		//		@Query("MATCH (n:ObjectSchema {uuid: {0}}) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema)-[rp]-() OPTIONAL MATCH (n)-[r2]-() DELETE n,r,p,r2,rp")
 	}
 
@@ -135,7 +134,7 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 	}
 
 	public SchemaRoot findRoot() {
-		return framedGraph.V().has("java_class", SchemaRoot.class.getName()).next(SchemaRoot.class);
+		return framedGraph.v().has("ferma_type", SchemaRoot.class.getName()).next(SchemaRoot.class);
 	}
 
 	//	@Override
@@ -155,7 +154,7 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 	public Schema findByName(String name) {
 		Schema schema = null;
 		try {
-			schema = framedGraph.V().has("name", name).has("java_class", Schema.class.getName()).next(Schema.class);
+			schema = framedGraph.v().has("name", name).has("ferma_type", Schema.class.getName()).next(Schema.class);
 		} catch (NoSuchElementException e) {
 			// ignored - handled by null reference
 		}
@@ -164,20 +163,20 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 
 	@Override
 	public Schema create(String name) {
-		Schema schema = framedGraph.addVertex(Schema.class);
+		Schema schema = framedGraph.addFramedVertex(Schema.class);
 		schema.setName(name);
 		return schema;
 	}
 
 	@Override
 	public SchemaRoot createRoot() {
-		SchemaRoot root = framedGraph.addVertex(SchemaRoot.class);
+		SchemaRoot root = framedGraph.addFramedVertex(SchemaRoot.class);
 		return root;
 	}
 
 	@Override
 	public BasicPropertyType create(String key, PropertyType type) {
-		BasicPropertyType schemaType = framedGraph.addVertex(BasicPropertyType.class);
+		BasicPropertyType schemaType = framedGraph.addFramedVertex(BasicPropertyType.class);
 		schemaType.setKey(key);
 		schemaType.setType(type);
 		return schemaType;
@@ -185,7 +184,7 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 
 	@Override
 	public MicroPropertyType createMicroPropertyTypeSchema(String key) {
-		MicroPropertyType type = framedGraph.addVertex(MicroPropertyType.class);
+		MicroPropertyType type = framedGraph.addFramedVertex(MicroPropertyType.class);
 		type.setKey(key);
 		type.setType(PropertyType.MICROSCHEMA);
 		return type;
@@ -193,7 +192,7 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 
 	@Override
 	public BasicPropertyType createBasicPropertyTypeSchema(String key, PropertyType type) {
-		BasicPropertyType propertType = framedGraph.addVertex(BasicPropertyType.class);
+		BasicPropertyType propertType = framedGraph.addFramedVertex(BasicPropertyType.class);
 		propertType.setKey(key);
 		propertType.setType(type);
 		return propertType;
@@ -201,14 +200,14 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 
 	@Override
 	public BasicPropertyType createListPropertyTypeSchema(String key) {
-		BasicPropertyType type = framedGraph.addVertex(BasicPropertyType.class);
+		BasicPropertyType type = framedGraph.addFramedVertex(BasicPropertyType.class);
 		type.setKey(key);
 		return type;
 	}
 
 	@Override
 	public Schema findOne(Long id) {
-		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		Vertex vertex = framedGraph.getVertex(id);
 		if (vertex != null) {
 			framedGraph.frameElement(vertex, Schema.class);
 		}
@@ -217,7 +216,7 @@ public class SchemaServiceImpl extends AbstractMeshService implements SchemaServ
 
 	@Override
 	public Schema findByUUID(String uuid) {
-		return framedGraph.V().has("uuid", uuid).has("java_class", Schema.class.getName()).next(Schema.class);
+		return framedGraph.v().has("uuid", uuid).has("ferma_type", Schema.class.getName()).next(Schema.class);
 	}
 
 	@Override

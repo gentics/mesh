@@ -10,7 +10,7 @@ public class GroupRoot extends MeshVertex {
 
 	// TODO unique node
 
-	public List<Group> getGroups() {
+	public List<? extends Group> getGroups() {
 		return out(BasicRelationships.HAS_GROUP).toList(Group.class);
 	}
 

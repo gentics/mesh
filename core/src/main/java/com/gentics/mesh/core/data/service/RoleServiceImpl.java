@@ -6,7 +6,6 @@ import java.awt.print.Pageable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,6 @@ import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -39,12 +37,12 @@ public class RoleServiceImpl extends AbstractMeshService implements RoleService 
 
 	@Override
 	public Role findByUUID(String uuid) {
-		return framedGraph.V().has("uuid", uuid).has("java_class", Role.class.getName()).next(Role.class);
+		return framedGraph.v().has("uuid", uuid).has("ferma_type", Role.class.getName()).next(Role.class);
 	}
 
 	@Override
 	public Role findByName(String name) {
-		return framedGraph.V().has("name", name).has("java_class", Role.class.getName()).next(Role.class);
+		return framedGraph.v().has("name", name).has("ferma_type", Role.class.getName()).next(Role.class);
 	}
 
 	@Override
@@ -169,7 +167,7 @@ public class RoleServiceImpl extends AbstractMeshService implements RoleService 
 	}
 
 	public RoleRoot findRoot() {
-		return framedGraph.V().has("java_class", RoleRoot.class.getName()).next(RoleRoot.class);
+		return framedGraph.v().has("ferma_type", RoleRoot.class.getName()).next(RoleRoot.class);
 	}
 
 	//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
@@ -196,20 +194,20 @@ public class RoleServiceImpl extends AbstractMeshService implements RoleService 
 
 	@Override
 	public Role create(String name) {
-		Role role = framedGraph.addVertex(Role.class);
+		Role role = framedGraph.addFramedVertex(Role.class);
 		role.setName(name);
 		return role;
 	}
 
 	@Override
 	public RoleRoot createRoot() {
-		RoleRoot root = framedGraph.addVertex(RoleRoot.class);
+		RoleRoot root = framedGraph.addFramedVertex(RoleRoot.class);
 		return root;
 	}
 
 	@Override
 	public Role findOne(Long id) {
-		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		Vertex vertex = framedGraph.getVertex(id);
 		if (vertex != null) {
 			return framedGraph.frameElement(vertex, Role.class);
 		}

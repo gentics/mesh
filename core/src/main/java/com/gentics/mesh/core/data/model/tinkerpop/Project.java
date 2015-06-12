@@ -19,7 +19,7 @@ public class Project extends GenericNode {
 		setProperty("name", name);
 	}
 
-	public List<TagFamilyRoot> getTagFamilies() {
+	public List<? extends TagFamilyRoot> getTagFamilies() {
 		return out(BasicRelationships.HAS_TAG_ROOT).toList(TagFamilyRoot.class);
 	}
 

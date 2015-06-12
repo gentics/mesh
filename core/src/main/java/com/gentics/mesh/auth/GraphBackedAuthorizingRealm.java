@@ -15,7 +15,6 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
@@ -57,7 +57,7 @@ public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 				boolean permitted = false;
 //				try (Transaction tx = graphDb.beginTx()) {
 					try {
-						Vertex node = framedGraph.getGraph().getVertex(Long.valueOf(targetId));
+						Vertex node = framedGraph.getVertex(Long.valueOf(targetId));
 						GenericNode framedNode = framedGraph.frameElement(node, GenericNode.class);
 						PermissionType type = PermissionType.fromString(permName);
 						permitted = userService.isPermitted(userId, new MeshPermission(framedNode, type));

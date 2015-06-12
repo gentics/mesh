@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Language;
 public class LanguageServiceImpl extends AbstractMeshService implements LanguageService {
 
 	public Language findByName(String name) {
-		return framedGraph.V().has("name", name).has("java_class", Language.class).next(Language.class);
+		return framedGraph.v().has("name", name).has("ferma_type", Language.class).next(Language.class);
 	}
 
 	/**
@@ -19,7 +19,7 @@ public class LanguageServiceImpl extends AbstractMeshService implements Language
 	 * @return Found language or null if none could be found
 	 */
 	public Language findByLanguageTag(String languageTag) {
-		return framedGraph.V().has("languageTag", languageTag).next(Language.class);
+		return framedGraph.v().has("languageTag", languageTag).next(Language.class);
 	}
 
 	//	@Override
@@ -39,18 +39,18 @@ public class LanguageServiceImpl extends AbstractMeshService implements Language
 	//	}
 
 	public LanguageRoot findRoot() {
-		return framedGraph.V().has("java_class", LanguageRoot.class.getName()).next(LanguageRoot.class);
+		return framedGraph.v().has("ferma_type", LanguageRoot.class.getName()).next(LanguageRoot.class);
 	}
 
 	@Override
 	public LanguageRoot createRoot() {
-		LanguageRoot root = framedGraph.addVertex(LanguageRoot.class);
+		LanguageRoot root = framedGraph.addFramedVertex(LanguageRoot.class);
 		return root;
 	}
 
 	@Override
 	public Language create(String languageName, String languageTag) {
-		Language language = framedGraph.addVertex(Language.class);
+		Language language = framedGraph.addFramedVertex(Language.class);
 		language.setName(languageName);
 		language.setLanguageTag(languageTag);
 		return language;

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.AbstractPropertyTypeSchema;
 public class MicroPropertyType extends AbstractPropertyTypeSchema {
 
 //	@Adjacency(label = BasicRelationships.HAS_SCHEMA_TYPE, direction = Direction.OUT)
-	public List<BasicPropertyType> getProperties() {
+	public List<? extends BasicPropertyType> getProperties() {
 		return out(BasicRelationships.HAS_SCHEMA_TYPE).toList(BasicPropertyType.class);
 	}
 

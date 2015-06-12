@@ -1,11 +1,10 @@
 package com.gentics.mesh.core.data.model.tinkerpop.relationship;
 
-import org.jglue.totorom.FramedEdge;
-
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.syncleus.ferma.AbstractEdgeFrame;
 
-public class TPTagged extends FramedEdge {
+public class TPTagged extends AbstractEdgeFrame{
 
 	public Tag getStartTag() {
 		return inV().next(Tag.class);

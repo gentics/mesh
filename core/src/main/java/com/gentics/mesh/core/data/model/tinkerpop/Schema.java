@@ -48,11 +48,11 @@ public class Schema extends GenericNode {
 		setProperty("description", description);
 	}
 
-	public List<Translated> getI18nTranslations() {
+	public List<? extends Translated> getI18nTranslations() {
 		return outE(BasicRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
 	}
 
-	public List<BasicPropertyType> getPropertyTypeSchemas() {
+	public List<? extends BasicPropertyType> getPropertyTypeSchemas() {
 		return out(BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyType.class);
 	}
 

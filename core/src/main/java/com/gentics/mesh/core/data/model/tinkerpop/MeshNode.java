@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
 
 public class MeshNode extends GenericPropertyContainer {
 
-	public List<Tag> getTags() {
+	public List<? extends Tag> getTags() {
 		return out(BasicRelationships.HAS_TAG).toList(Tag.class);
 	}
 
@@ -19,7 +19,7 @@ public class MeshNode extends GenericPropertyContainer {
 		unlinkOut(tag, BasicRelationships.HAS_TAG);
 	}
 
-	public List<MeshNode> getChildren() {
+	public List<? extends MeshNode> getChildren() {
 		return in(BasicRelationships.HAS_PARENT_NODE).toList(MeshNode.class);
 	}
 

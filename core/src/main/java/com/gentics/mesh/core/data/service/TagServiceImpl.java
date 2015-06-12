@@ -167,12 +167,12 @@ public class TagServiceImpl extends AbstractMeshService implements TagService {
 
 	@Override
 	public Tag create() {
-		return framedGraph.addVertex(Tag.class);
+		return framedGraph.addFramedVertex(Tag.class);
 	}
 
 	@Override
 	public Tag findOne(Long id) {
-		Vertex vertex = framedGraph.getGraph().getVertex(id);
+		Vertex vertex = framedGraph.getVertex(id);
 		if (vertex != null) {
 			return framedGraph.frameElement(vertex, Tag.class);
 		}
@@ -187,7 +187,7 @@ public class TagServiceImpl extends AbstractMeshService implements TagService {
 	@Override
 	public Tag findByName(String projectName, String name) {
 		//TODO filter by i18n properties
-		return framedGraph.V().has("name", name).next(Tag.class);
+		return framedGraph.v().has("name", name).next(Tag.class);
 	}
 
 	@Override

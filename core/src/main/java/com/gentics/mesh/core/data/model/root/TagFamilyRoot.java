@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 
 public class TagFamilyRoot extends MeshVertex {
 
-	public List<Tag> getTags() {
+	public List<? extends Tag> getTags() {
 		return out(BasicRelationships.HAS_TAG).toList(Tag.class);
 	}
 

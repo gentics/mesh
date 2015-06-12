@@ -17,12 +17,12 @@ public class Role extends GenericNode {
 		setProperty("name", name);
 	}
 
-	public List<GraphPermission> getPermissions() {
+	public List<? extends GraphPermission> getPermissions() {
 		return outE(AuthRelationships.HAS_PERMISSION).toList(GraphPermission.class);
 	}
 
 	//	@Adjacency(label = AuthRelationships.HAS_ROLE, direction = Direction.OUT)
-	public List<Group> getGroups() {
+	public List<? extends Group> getGroups() {
 		return out(AuthRelationships.HAS_ROLE).toList(Group.class);
 	}
 
@@ -31,7 +31,7 @@ public class Role extends GenericNode {
 	}
 
 	public GraphPermission addPermission(MeshVertex node) {
-		return addEdge(AuthRelationships.HAS_PERMISSION, node, GraphPermission.class);
+		return addFramedEdge(AuthRelationships.HAS_PERMISSION, node, GraphPermission.class);
 	}
 
 }

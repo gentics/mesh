@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
@@ -146,12 +144,12 @@ public class MeshNodeServiceImpl extends AbstractMeshService implements MeshNode
 
 	@Override
 	public MeshNode create() {
-		return framedGraph.addVertex(MeshNode.class);
+		return framedGraph.addFramedVertex(MeshNode.class);
 	}
 
 	@Override
 	public MeshNode findByUUID(String uuid) {
-		return framedGraph.V().has("uuid", uuid).has("java_class", MeshNode.class.getName()).next(MeshNode.class);
+		return framedGraph.v().has("uuid", uuid).has("ferma_type", MeshNode.class.getName()).next(MeshNode.class);
 	}
 
 	@Override

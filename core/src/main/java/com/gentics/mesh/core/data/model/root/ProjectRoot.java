@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Project;
 
 public class ProjectRoot extends MeshVertex {
 
-	public List<Project> getProjects() {
+	public List<? extends Project> getProjects() {
 		return out(BasicRelationships.HAS_PROJECT).toList(Project.class);
 	}
 

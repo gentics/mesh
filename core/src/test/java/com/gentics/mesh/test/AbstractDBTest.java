@@ -9,7 +9,6 @@ import io.vertx.ext.apex.Session;
 
 import java.io.IOException;
 
-import org.jglue.totorom.FramedGraph;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,6 +27,7 @@ import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.RestAssert;
+import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -82,10 +82,10 @@ public abstract class AbstractDBTest {
 
 	protected void purgeDatabase() {
 		//		try (Transaction tx = graphDb.beginTx()) {
-		for (Edge edge : framedGraph.getGraph().getEdges()) {
+		for (Edge edge : framedGraph.getEdges()) {
 			edge.remove();
 		}
-		for (Vertex vertex : framedGraph.getGraph().getVertices()) {
+		for (Vertex vertex : framedGraph.getVertices()) {
 			vertex.remove();
 		}
 		//			tx.success();

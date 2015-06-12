@@ -2,7 +2,6 @@ package com.gentics.mesh.core;
 
 import io.vertx.core.AbstractVerticle;
 
-import org.jglue.totorom.FramedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.service.GroupService;
@@ -18,6 +17,7 @@ import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
+import com.syncleus.ferma.FramedGraph;
 
 public abstract class AbstractSpringVerticle extends AbstractVerticle {
 

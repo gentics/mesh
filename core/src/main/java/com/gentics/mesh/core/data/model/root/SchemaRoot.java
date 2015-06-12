@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 
 public class SchemaRoot extends MeshVertex {
 
-	public List<Schema> getSchemas() {
+	public List<? extends Schema> getSchemas() {
 		return out(BasicRelationships.HAS_OBJECT_SCHEMA).toList(Schema.class);
 	}
 

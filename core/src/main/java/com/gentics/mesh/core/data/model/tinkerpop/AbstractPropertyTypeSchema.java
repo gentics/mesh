@@ -14,7 +14,7 @@ public class AbstractPropertyTypeSchema extends MeshVertex {
 	private static final String DISPLAY_NAME = "displayName";
 	private static final String ORDER_KEY = "order";
 
-	public List<Translated> getI18nTranslations() {
+	public List<? extends Translated> getI18nTranslations() {
 		return outE(BasicRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
 	}
 

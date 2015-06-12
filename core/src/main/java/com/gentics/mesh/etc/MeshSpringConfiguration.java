@@ -26,9 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import javax.annotation.PostConstruct;
 
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
-import org.jglue.totorom.FrameFactory;
-import org.jglue.totorom.FramedGraph;
-import org.jglue.totorom.TypeResolver;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,6 +36,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
 import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.syncleus.ferma.DelegatingFramedGraph;
+import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
@@ -115,7 +114,7 @@ public class MeshSpringConfiguration {
 		graph.createKeyIndex("languageTag", Vertex.class);
 		graph.createKeyIndex("name", Vertex.class);
 		graph.createKeyIndex("key", Vertex.class);
-		FramedGraph framedGraph = new FramedGraph(graph, FrameFactory.Default, TypeResolver.Java);
+		FramedGraph framedGraph = new DelegatingFramedGraph(graph, true, false);
 		return framedGraph;
 	}
 

@@ -8,12 +8,12 @@ import com.gentics.mesh.core.data.model.tinkerpop.User;
 
 public class GenericNode extends MeshVertex {
 
-	public List<Project> getProjects() {
+	public List<? extends Project> getProjects() {
 		return out(BasicRelationships.ASSIGNED_TO_PROJECT).toList(Project.class);
 	}
 
 	public void addProject(Project project) {
-		addEdge(BasicRelationships.ASSIGNED_TO_PROJECT, project);
+		addFramedEdge(BasicRelationships.ASSIGNED_TO_PROJECT, project);
 	}
 
 	public void removeProject(Project project) {

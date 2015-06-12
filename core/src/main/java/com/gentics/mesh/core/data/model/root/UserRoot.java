@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.User;
 
 public class UserRoot extends MeshVertex {
 
-	public List<User> getUsers() {
+	public List<? extends User> getUsers() {
 		return out(BasicRelationships.HAS_USER).toList(User.class);
 	}
 

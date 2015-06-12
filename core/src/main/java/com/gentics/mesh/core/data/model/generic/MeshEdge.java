@@ -1,10 +1,9 @@
 package com.gentics.mesh.core.data.model.generic;
 
-import org.jglue.totorom.FramedEdge;
-
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.AbstractEdgeFrame;
 
-public class MeshEdge extends FramedEdge {
+public class MeshEdge extends AbstractEdgeFrame {
 
 	@Override
 	protected void init() {

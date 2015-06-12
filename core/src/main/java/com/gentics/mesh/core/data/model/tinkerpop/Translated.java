@@ -1,10 +1,9 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
-import org.jglue.totorom.FramedEdge;
-
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.syncleus.ferma.AbstractEdgeFrame;
 
-public class Translated extends FramedEdge {
+public class Translated extends AbstractEdgeFrame {
 
 	public static final String LANGUAGE_TAG_KEY = "languageTag";
 

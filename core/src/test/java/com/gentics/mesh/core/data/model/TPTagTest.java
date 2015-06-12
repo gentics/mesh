@@ -37,7 +37,7 @@ public class TPTagTest extends AbstractDBTest {
 		names.add("Anna");
 		names.add("Clemens");
 
-		Group group = framedGraph.addVertex(Group.class);
+		Group group = framedGraph.addFramedVertex(Group.class);
 		group.setName("testgroup");
 
 		System.out.println(group.getUuid());
