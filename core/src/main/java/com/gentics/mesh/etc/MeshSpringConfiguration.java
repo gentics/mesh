@@ -106,9 +106,9 @@ public class MeshSpringConfiguration {
 	@Bean
 	public FramedGraph getFramedGraph() {
 		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
-		graph.createKeyIndex("java_class", Vertex.class);
+		graph.createKeyIndex("ferma_type", Vertex.class);
 		graph.createKeyIndex("uuid", Vertex.class);
-		graph.createKeyIndex("java_class", Edge.class);
+		graph.createKeyIndex("ferma_type", Edge.class);
 		graph.createKeyIndex("uuid", Edge.class);
 		graph.createKeyIndex("languageTag", Edge.class);
 		graph.createKeyIndex("languageTag", Vertex.class);
