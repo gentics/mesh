@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 
 public class AbstractPropertyTypeSchema extends MeshVertex {
 

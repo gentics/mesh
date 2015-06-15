@@ -16,7 +16,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,9 +35,7 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.MeshConfiguration;
 import com.gentics.mesh.util.JsonUtils;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
@@ -84,7 +85,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		verticle.init(vertx, context);
 		verticle.start();
 		verticle.registerEndPoints();
-		MeshSpringConfiguration.setConfiguration(new MeshConfiguration());
 
 	}
 
@@ -105,8 +105,19 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return request(info, method, path, statusCode, statusMessage, null);
 	}
 
-	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, String requestBody)
-			throws Exception {
+	public String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, String requestBody) throws Exception {
+
+		Map<String, String> extraHeaders = new HashMap<>();
+
+		Buffer buffer = Buffer.buffer();
+		buffer.appendString(requestBody);
+		extraHeaders.put("content-length", String.valueOf(buffer.length()));
+		extraHeaders.put("content-type", "application/json");
+		return request(info, method, path, statusCode, statusMessage, buffer, extraHeaders);
+	}
+
+	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, Buffer requestBuffer,
+			Map<String, String> extraHeaders) throws Exception {
 		// Reset the latch etc.
 		latch = new CountDownLatch(1);
 		throwable.set(null);
@@ -118,12 +129,13 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
 			request.headers().add("Authorization", "Basic " + new String(authEncBytes));
 			request.headers().add("Accept", "application/json");
-			if (requestBody != null) {
-				Buffer buffer = Buffer.buffer();
-				buffer.appendString(requestBody);
-				request.headers().set("content-length", String.valueOf(buffer.length()));
-				request.headers().set("content-type", "application/json");
-				request.write(buffer);
+			if (extraHeaders != null) {
+				for (Entry<String, String> entry : extraHeaders.entrySet()) {
+					request.headers().set(entry.getKey(), entry.getValue());
+				}
+			}
+			if (requestBuffer != null) {
+				request.write(requestBuffer);
 			}
 		};
 		return request(method, path, requestAction, null, statusCode, statusMessage);

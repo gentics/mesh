@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
@@ -55,9 +54,9 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
-		request.addProperty("english", "filename", "new-page.html");
-		request.addProperty("english", "name", "english node name");
-		request.addProperty("english", "node", "Blessed mealtime again!");
+		request.addProperty("filename", "new-page.html");
+		request.addProperty("name", "english node name");
+		request.addProperty("node", "Blessed mealtime again!");
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtils.toJson(request));
@@ -75,9 +74,9 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
-		request.addProperty("en", "filename", "new-page.html");
-		request.addProperty("en", "name", "english node name");
-		request.addProperty("en", "content", "Blessed mealtime again!");
+		request.addProperty("filename", "new-page.html");
+		request.addProperty("name", "english node name");
+		request.addProperty("content", "Blessed mealtime again!");
 		request.setParentNodeUuid(parentNode.getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK", JsonUtils.toJson(request));
@@ -91,9 +90,9 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
-		request.addProperty("en", "filename", "new-page.html");
-		request.addProperty("en", "name", "english node name");
-		request.addProperty("en", "content", "Blessed mealtime again!");
+		request.addProperty("filename", "new-page.html");
+		request.addProperty("name", "english node name");
+		request.addProperty("content", "Blessed mealtime again!");
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		// Create node
@@ -125,9 +124,9 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("node");
 		request.setSchema(schemaReference);
-		request.addProperty("en", "filename", "new-page.html");
-		request.addProperty("en", "name", "english node name");
-		request.addProperty("en", "node", "Blessed mealtime again!");
+		request.addProperty("filename", "new-page.html");
+		request.addProperty("name", "english node name");
+		request.addProperty("node", "Blessed mealtime again!");
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtils.toJson(request));
 		expectMessageResponse("node_missing_parentnode_field", response);
@@ -138,18 +137,18 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
 		// Revoke create perm
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), data().getFolder("news"), PermissionType.CREATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), data().getFolder("news"), PermissionType.CREATE);
+		//			tx.success();
+		//		}
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("node");
 		request.setSchema(schemaReference);
-		request.addProperty("english", "filename", "new-page.html");
-		request.addProperty("english", "name", "english node name");
-		request.addProperty("english", "node", "Blessed mealtime again!");
+		request.addProperty("filename", "new-page.html");
+		request.addProperty("name", "english node name");
+		request.addProperty("node", "Blessed mealtime again!");
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 403, "Forbidden", JsonUtils.toJson(request));
@@ -174,10 +173,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 		MeshNode noPermNode = nodeService.create();
-//		try (Transaction tx = graphDb.beginTx()) {
-			noPermNode.setCreator(info.getUser());
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		noPermNode.setCreator(info.getUser());
+		//			tx.success();
+		//		}
 		// noPermNode = nodeService.reload(noPermNode);
 		assertNotNull(noPermNode.getUuid());
 
@@ -261,8 +260,8 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(node, restNode);
 
-		assertNull(restNode.getProperties("en"));
-		assertNotNull(restNode.getProperties("de"));
+		assertNull(restNode.getProperties());
+		assertEquals("Produkte", restNode.getProperty("name"));
 	}
 
 	@Test
@@ -280,10 +279,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
 		MeshNode node = data().getFolder("2015");
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), node, PermissionType.READ);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), node, PermissionType.READ);
+		//			tx.success();
+		//		}
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
 	}
@@ -310,18 +309,18 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
-		request.addProperty("en", "filename", newFilename);
+		request.addProperty("filename", newFilename);
 		final String newName = "english renamed name";
-		request.addProperty("en", "name", newName);
+		request.addProperty("name", newName);
 		final String newContent = "english renamed content!";
-		request.addProperty("en", "content", newContent);
+		request.addProperty("content", newContent);
 
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtils.toJson(request));
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
-		assertEquals(newFilename, restNode.getProperty("en", "filename"));
-		assertEquals(newName, restNode.getProperty("en", "name"));
-		assertEquals(newContent, restNode.getProperty("en", "content"));
+		assertEquals(newFilename, restNode.getProperty("filename"));
+		assertEquals(newName, restNode.getProperty("name"));
+		assertEquals(newContent, restNode.getProperty("content"));
 		// TODO verify that the node got updated
 
 	}
@@ -333,28 +332,28 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setSchemaName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
-		request.addProperty("en", "displayName", newFilename);
+		request.addProperty("displayName", newFilename);
 		final String newName = "english renamed name";
-		request.addProperty("en", "name", newName);
+		request.addProperty("name", newName);
 		final String newNode = "english renamed content!";
-		request.addProperty("en", "content", newNode);
+		request.addProperty("content", newNode);
 
 		MeshNode node = data().getFolder("2015");
 		String json = JsonUtils.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
-		assertEquals(newFilename, restNode.getProperty("en", "displayName"));
-		assertEquals(newName, restNode.getProperty("en", "name"));
-		assertEquals(newNode, restNode.getProperty("en", "content"));
+		assertEquals(newFilename, restNode.getProperty("displayName"));
+		assertEquals(newName, restNode.getProperty("name"));
+		assertEquals(newNode, restNode.getProperty("content"));
 
 		// Reload and update
-//		try (Transaction tx = graphDb.beginTx()) {
-//			node = nodeService.reload(node);
-			assertEquals(newFilename, node.getDisplayName( data().getEnglish()));
-			assertEquals(newName, node.getName( data().getEnglish()));
-			assertEquals(newNode, node.getContent( data().getEnglish()));
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		//			node = nodeService.reload(node);
+		assertEquals(newFilename, node.getDisplayName(data().getEnglish()));
+		assertEquals(newName, node.getName(data().getEnglish()));
+		assertEquals(newNode, node.getContent(data().getEnglish()));
+		//			tx.success();
+		//		}
 
 	}
 
@@ -373,10 +372,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteNodeWithNoPerm() throws Exception {
 
 		MeshNode node = data().getFolder("2015");
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), node, PermissionType.DELETE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), node, PermissionType.DELETE);
+		//			tx.success();
+		//		}
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());

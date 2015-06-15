@@ -159,12 +159,12 @@ public class RoleServiceImpl extends AbstractMeshService implements RoleService 
 		return null;
 	}
 
-	public Page<Role> findAll(String userUuid, Pageable pageable) {
-		//		@Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
-
-		//		countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
-		return null;
-	}
+//	public Page<Role> findAll(String userUuid, Pageable pageable) {
+//		//		@Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
+//
+//		//		countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
+//		return null;
+//	}
 
 	public RoleRoot findRoot() {
 		return framedGraph.v().has("ferma_type", RoleRoot.class.getName()).next(RoleRoot.class);
@@ -178,19 +178,6 @@ public class RoleServiceImpl extends AbstractMeshService implements RoleService 
 	Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
 		return null;
 	}
-
-	//	@Override
-	//	public Role save(Role role) {
-	//		RoleRoot root = roleService.findRoot();
-	//		if (root == null) {
-	//			throw new NullPointerException("The role root node could not be found.");
-	//		}
-	//		role = neo4jTemplate.save(role);
-	//		root.getRoles().add(role);
-	//		neo4jTemplate.save(root);
-	//		return role;
-	//		return null;
-	//	}
 
 	@Override
 	public Role create(String name) {

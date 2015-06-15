@@ -170,7 +170,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 				/* Add the i18n properties to the newly created tag */
 				for (String languageTag : requestModel.getProperties().keySet()) {
-					Map<String, String> i18nProperties = requestModel.getProperties(languageTag);
+					Map<String, String> i18nProperties = requestModel.getProperties();
 					Language language = languageService.findByLanguageTag(languageTag);
 					if (language == null) {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
@@ -214,7 +214,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 		});
 
-		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
+		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
@@ -282,7 +282,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 						Language language = languageService.findByLanguageTag(languageTag);
 						if (language != null) {
 							languageTags.add(languageTag);
-							Map<String, String> properties = request.getProperties(languageTag);
+							Map<String, String> properties = request.getProperties();
 							if (properties != null) {
 								I18NProperties i18nProperties = content.getI18nProperties(language);
 								for (Map.Entry<String, String> set : properties.entrySet()) {
@@ -303,7 +303,6 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 										}
 									}
 								}
-								//								neo4jTemplate.save(i18nProperties);
 
 				}
 			} else {

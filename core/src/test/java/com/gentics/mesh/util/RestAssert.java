@@ -4,18 +4,17 @@ import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Map.Entry;
+import java.util.Map;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.data.service.LanguageService;
@@ -96,11 +95,11 @@ public class RestAssert {
 	 */
 	public void assertMeshNode(NodeCreateRequest request, NodeResponse restNode) {
 
-		for (String languageTag : request.getProperties().keySet()) {
-			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
-				assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
-						restNode.getProperty(languageTag, entry.getKey()));
-			}
+		for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {
+			String value = request.getParentNodeUuid();
+			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
+					restNode.getProperty(entry.getKey()));
+
 		}
 
 		String schemaName = request.getSchema().getSchemaName();
@@ -119,13 +118,11 @@ public class RestAssert {
 		assertNotNull(request);
 		assertNotNull(node);
 
-		for (String languageTag : request.getProperties().keySet()) {
-			for (Entry<String, String> entry : request.getProperties(languageTag).entrySet()) {
-				Language language = languageService.findByLanguageTag(languageTag);
-				String propValue = node.getI18nProperties(language).getProperty(entry.getKey());
-				assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
-			}
-		}
+//		for (Entry<String, String> entry : request.getProperties().entrySet()) {
+////			Language language = languageService.findByLanguageTag(languageTag);
+//			String propValue = node.getI18nProperties(language).getProperty(entry.getKey());
+//			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
+//		}
 
 		assertNotNull(node.getUuid());
 		assertNotNull(node.getCreator());

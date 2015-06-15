@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model.schema.propertytypes;
+package com.gentics.mesh.core.data.model.schema.propertytype;
 
 import com.gentics.mesh.core.data.model.tinkerpop.AbstractPropertyTypeSchema;
 

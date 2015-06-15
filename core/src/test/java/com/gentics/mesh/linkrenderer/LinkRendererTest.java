@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
-import javax.transaction.NotSupportedException;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -36,7 +34,7 @@ public class LinkRendererTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException, NotSupportedException {
+	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 
 		Language german = data().getGerman();
 		Language english = data().getEnglish();

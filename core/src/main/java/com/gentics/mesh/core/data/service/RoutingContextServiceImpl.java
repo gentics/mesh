@@ -35,8 +35,6 @@ import com.gentics.mesh.paging.PagingInfo;
 @Component
 public class RoutingContextServiceImpl extends AbstractMeshService implements RoutingContextService {
 
-
-
 	@Autowired
 	private MeshSpringConfiguration configuration;
 
@@ -57,15 +55,17 @@ public class RoutingContextServiceImpl extends AbstractMeshService implements Ro
 	 * @return List of languages. List can be empty.
 	 */
 	public List<String> getSelectedLanguageTags(RoutingContext rc) {
+		List<String> languageTags = new ArrayList<>();
 		Map<String, String> queryPairs = splitQuery(rc);
 		if (queryPairs == null) {
 			return new ArrayList<>();
 		}
 		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
-		if (value == null) {
-			return new ArrayList<>();
+		if (value != null) {
+			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
 		}
-		return new ArrayList<>(Arrays.asList(value.split(",")));
+		languageTags.add(MeshSpringConfiguration.getConfiguration().getDefaultLanguage());
+		return languageTags;
 
 	}
 
@@ -161,8 +161,7 @@ public class RoutingContextServiceImpl extends AbstractMeshService implements Ro
 	}
 
 	@Override
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType,
-			Handler<AsyncResult<T>> resultHandler) {
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, PermissionType permType, Handler<AsyncResult<T>> resultHandler) {
 		loadObjectByUuid(rc, uuid, null, permType, resultHandler, null);
 	}
 
@@ -183,9 +182,9 @@ public class RoutingContextServiceImpl extends AbstractMeshService implements Ro
 		configuration.vertx().executeBlocking((Future<T> fut) -> {
 			T node = null;
 			if (projectName != null) {
-//				node = (T) genericNodeService.findByUUID(projectName, uuid);
+				//				node = (T) genericNodeService.findByUUID(projectName, uuid);
 			} else {
-//				node = (T) genericNodeService.findByUUID(uuid);
+				//				node = (T) genericNodeService.findByUUID(uuid);
 			}
 			if (node == null) {
 				fut.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid)));
@@ -207,20 +206,20 @@ public class RoutingContextServiceImpl extends AbstractMeshService implements Ro
 			} else {
 				try {
 					if (resultHandler != null) {
-//						try (Transaction tx = graphDb.beginTx()) {
-							resultHandler.handle(res);
-//							tx.success();
-//						}
-					}
-					if (transactionCompletedHandler != null) {
-						AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
-						transactionCompletedHandler.handle(transactionCompletedFuture);
-					}
-				} catch (Exception e) {
-					rc.fail(e);
-				}
+						//						try (Transaction tx = graphDb.beginTx()) {
+				resultHandler.handle(res);
+				//							tx.success();
+				//						}
 			}
-		});
+			if (transactionCompletedHandler != null) {
+				AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
+				transactionCompletedHandler.handle(transactionCompletedFuture);
+			}
+		} catch (Exception e) {
+			rc.fail(e);
+		}
+	}
+}		);
 
 	}
 
@@ -277,10 +276,10 @@ public class RoutingContextServiceImpl extends AbstractMeshService implements Ro
 				AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
 				transactionCompletedHandler.handle(transactionCompletedFuture);
 			} else {
-//				try (Transaction tx = graphDb.beginTx()) {
-					resultHandler.handle(Future.succeededFuture(handler.result()));
-//					tx.success();
-//				}
+				//				try (Transaction tx = graphDb.beginTx()) {
+				resultHandler.handle(Future.succeededFuture(handler.result()));
+				//					tx.success();
+				//				}
 				if (transactionCompletedHandler != null) {
 					AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
 					transactionCompletedHandler.handle(transactionCompletedFuture);

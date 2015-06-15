@@ -100,38 +100,22 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 			}
 
 			/* Load the i18n properties */
-			boolean loadAllTags = info.getLanguageTags().size() == 0;
-			if (loadAllTags) {
-				for (I18NProperties properties : node.getI18nProperties()) {
-					String languageTag = properties.getLanguage().getLanguageTag();
-					// TODO handle schema
-					//						properties = info.getNeo4jTemplate().fetch(properties);
-					restNode.addProperty(languageTag, "name", properties.getProperty("name"));
-					restNode.addProperty(languageTag, "filename", properties.getProperty("filename"));
-					restNode.addProperty(languageTag, "content", properties.getProperty("content"));
-					restNode.addProperty(languageTag, "teaser", properties.getProperty("teaser"));
-				}
-			} else {
-				for (String languageTag : info.getLanguageTags()) {
-					Language language = info.getLanguageService().findByLanguageTag(languageTag);
-					if (language == null) {
-						throw new HttpStatusCodeErrorException(400, info.getI18n().get(info.getRoutingContext(), "error_language_not_found",
-								languageTag));
-					}
-
-					// Add all i18n properties for the selected language to the response
-					I18NProperties i18nProperties = node.getI18nProperties(language);
-					if (i18nProperties != null) {
-						//							i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
-						for (String key : i18nProperties.getProperties().keySet()) {
-							restNode.addProperty(languageTag, key, i18nProperties.getProperty(key));
-						}
-					} else {
-						log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
-						continue;
-					}
+			for (String languageTag : info.getLanguageTags()) {
+				Language language = info.getLanguageService().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw new HttpStatusCodeErrorException(400, info.getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
 				}
 
+				// Add all i18n properties for the selected language to the response
+				I18NProperties i18nProperties = node.getI18nProperties(language);
+				if (i18nProperties != null) {
+					for (String key : i18nProperties.getProperties().keySet()) {
+						restNode.addProperty(key, i18nProperties.getProperty(key));
+					}
+				} else {
+					log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
+					continue;
+				}
 			}
 
 			//				tx.success();

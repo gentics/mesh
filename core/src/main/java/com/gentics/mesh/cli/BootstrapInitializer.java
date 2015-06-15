@@ -29,8 +29,8 @@ import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
@@ -330,11 +330,6 @@ public class BootstrapInitializer {
 			displayNameProp.setDescription("The display name property of the content.");
 			binarySchema.addPropertyTypeSchema(displayNameProp);
 
-			BasicPropertyType binaryContentProp = schemaService.create(Schema.CONTENT_KEYWORD, PropertyType.BINARY);
-			binaryContentProp.setDisplayName("Binary content");
-			binaryContentProp.setDescription("The binary content of the content");
-			binarySchema.addPropertyTypeSchema(binaryContentProp);
-			log.info("Stored binary-content schema { " + binarySchema.getUuid() + "}");
 		}
 
 		// Tag schema

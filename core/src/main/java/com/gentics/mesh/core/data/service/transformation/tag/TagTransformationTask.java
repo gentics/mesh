@@ -82,10 +82,10 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					if (i18nProperties != null) {
 //						i18nProperties = info.getNeo4jTemplate().fetch(i18nProperties);
 						for (String key : i18nProperties.getProperties().keySet()) {
-							restTag.addProperty(languageTag, key, i18nProperties.getProperty(key));
+							restTag.addProperty(key, i18nProperties.getProperty(key));
 						}
 					} else {
-						log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
+						log.error("Could not find any i18n properties for language {" + languageTag + "}.");
 						continue;
 					}
 //				}

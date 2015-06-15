@@ -9,6 +9,8 @@ import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 import java.io.File;
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.neo4j.backup.OnlineBackupSettings;
@@ -22,6 +24,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.config.MeshConfiguration;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -87,6 +91,11 @@ public class SpringTestConfiguration {
 		VertxOptions options = new VertxOptions();
 		options.setBlockedThreadCheckPeriod(1000 * 60 * 60);
 		return Vertx.vertx(options);
+	}
+
+	@PostConstruct
+	public void setup() {
+		MeshSpringConfiguration.setConfiguration(new MeshConfiguration());
 	}
 
 }

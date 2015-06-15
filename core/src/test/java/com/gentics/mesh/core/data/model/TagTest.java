@@ -11,8 +11,6 @@ import io.vertx.ext.apex.RoutingContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.NotSupportedException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +71,7 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodes() throws NotSupportedException {
+	public void testNodes() {
 
 		Tag tag = tagService.create();
 

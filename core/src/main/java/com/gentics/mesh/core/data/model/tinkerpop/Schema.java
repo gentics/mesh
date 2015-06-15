@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 
 public class Schema extends GenericNode {
 
@@ -13,6 +13,7 @@ public class Schema extends GenericNode {
 	public static final String NAME_KEYWORD = "name";
 	public static final String TEASER_KEYWORD = "teaser";
 	public static final String TITLE_KEYWORD = "title";
+	private boolean hasBinary = false;
 
 	public boolean isNestingAllowed() {
 		return getProperty("isNestingAllowed");
@@ -20,6 +21,10 @@ public class Schema extends GenericNode {
 
 	public void setNestingAllowed(boolean flag) {
 		setProperty("isNestingAllowed", flag);
+	}
+
+	public boolean hasBinary() {
+		return hasBinary;
 	}
 
 	//TODO add unique index
@@ -56,9 +61,9 @@ public class Schema extends GenericNode {
 		return out(BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyType.class);
 	}
 
-//	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
+	//	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
 	public void addPropertyTypeSchema(BasicPropertyType content) {
-		
+
 	}
 
 }

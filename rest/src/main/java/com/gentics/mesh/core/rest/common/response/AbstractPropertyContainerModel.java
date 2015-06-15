@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.user.response.UserResponse;
 
 public class AbstractPropertyContainerModel extends AbstractRestModel {
 
-	private Map<String, Map<String, String>> properties = new HashMap<>();
+	private Map<String, String> properties = new HashMap<>();
 
 	private SchemaReference schema;
 
@@ -57,33 +57,19 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 	 * 
 	 * @return
 	 */
-	public Map<String, Map<String, String>> getProperties() {
+	public Map<String, String> getProperties() {
 		return properties;
 	}
 
 	/**
-	 * Return the properties for the language with the given language key.
+	 * Return the property for the given key.
 	 * 
-	 * @param languageKey
-	 * @return
-	 */
-	public Map<String, String> getProperties(String languageKey) {
-		return properties.get(languageKey);
-	}
-
-	/**
-	 * Return the language specific property for the given language and the given key.
-	 * 
-	 * @param languageKey
 	 * @param key
 	 * @return
 	 */
-	public String getProperty(String languageKey, String key) {
-		Map<String, String> languageProperties = properties.get(languageKey);
-		if (languageProperties == null) {
-			return null;
-		}
-		return languageProperties.get(key);
+	public String getProperty(String key) {
+		return properties.get(key);
+
 	}
 
 	/**
@@ -93,15 +79,8 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 	 * @param key
 	 * @param value
 	 */
-	public void addProperty(String languageKey, String key, String value) {
-		Map<String, String> map = properties.get(languageKey);
-		if (map == null) {
-			map = new HashMap<>();
-			properties.put(languageKey, map);
-		}
-		if (value != null) {
-			map.put(key, value);
-		}
+	public void addProperty(String key, String value) {
+		properties.put(key, value);
 	}
 
 }

@@ -19,10 +19,15 @@ public class MeshConfiguration {
 	public static final int DEFAULT_HTTP_PORT = 8080;
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final int DEFAULT_MAX_DEPTH = 5;
+	public static final int DEFAULT_PAGE_SIZE = 25;
+	public static final String DEFAULT_LANGUAGE = "en";
+	public static final int DEFAULT_NESTED_TAGS_LIMIT = 25;
+	public static final int DEFAULT_NESTED_NODES_LIMIT = 25;
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final String DEFAULT_NEO4VERTX_BASE_ADDRESS = "graph";
 	public static final String DEFAULT_NEO4VERTX_MODE = "default";
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
+	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
 
 	@JsonProperty("neo4j_config")
 	private Neo4VertxConfiguration neo4jConfiguration;
@@ -35,6 +40,22 @@ public class MeshConfiguration {
 
 	@JsonProperty("cluster_mode")
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
+
+	// TODO fileupload limit per project?
+	@JsonProperty("fileupload_byte_limit")
+	private long fileUploadByteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
+
+	@JsonProperty("default_nested_tags_limit")
+	private int defaultNestedTagsLimit = DEFAULT_NESTED_TAGS_LIMIT;
+
+	@JsonProperty("default_nested_nodes_limit")
+	private int defaultNestedNodesLimit = DEFAULT_NESTED_NODES_LIMIT;
+
+	@JsonProperty("default_page_size")
+	private int defaultPageSize = DEFAULT_PAGE_SIZE;
+
+	@JsonProperty("default_language")
+	private String defaultLanguage = DEFAULT_LANGUAGE;
 
 	@JsonProperty("verticles")
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
@@ -82,6 +103,26 @@ public class MeshConfiguration {
 
 	public void setMaxDepth(int maxDepth) {
 		this.maxDepth = maxDepth;
+	}
+
+	public long getFileUploadByteLimit() {
+		return fileUploadByteLimit;
+	}
+
+	public String getDefaultLanguage() {
+		return defaultLanguage;
+	}
+
+	public int getDefaultPageSize() {
+		return defaultPageSize;
+	}
+
+	public int getDefaultNestedNodesLimit() {
+		return defaultNestedNodesLimit;
+	}
+
+	public int getDefaultNestedTagsLimit() {
+		return defaultNestedTagsLimit;
 	}
 
 }

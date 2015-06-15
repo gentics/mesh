@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import io.vertx.core.http.HttpMethod;
 
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
@@ -37,9 +36,9 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(folder, restNode);
 		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
-				restNode.getProperties("de"));
+				restNode.getProperties());
 		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
-				restNode.getProperties("en"));
+				restNode.getProperties());
 	}
 
 	@Test
@@ -49,8 +48,8 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, path, 200, "OK");
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		test.assertMeshNode(concordeNode, restNode);
-		assertNotNull(restNode.getProperties("de"));
-		assertNotNull(restNode.getProperties("en"));
+		assertNotNull(restNode.getProperties());
+
 	}
 
 	@Test

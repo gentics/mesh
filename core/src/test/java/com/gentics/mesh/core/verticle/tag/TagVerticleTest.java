@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,11 +51,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		Tag noPermTag = tagService.create();
-//		try (Transaction tx = graphDb.beginTx()) {
-			//noPermTag = data().addTag("NoPermEN", "NoPermDE");
-			noPermTag.addProject(data().getProject());
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		//noPermTag = data().addTag("NoPermEN", "NoPermDE");
+		noPermTag.addProject(data().getProject());
+		//			tx.success();
+		//		}
 		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters
@@ -131,8 +130,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getTag("vehicle");
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-		assertNull("The returned tag should not have an german name property.", restTag.getProperty("de", "displayName"));
-		assertNotNull("The returned tag should have an english name property.", restTag.getProperty("en", "displayName"));
+		assertNull("The returned tag should not have an german name property.", restTag.getProperty("displayName"));
+		assertNotNull("The returned tag should have an english name property.", restTag.getProperty("displayName"));
 		test.assertTag(tag, restTag);
 	}
 
@@ -145,8 +144,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
-		assertNotNull(restTag.getProperty("de", "displayName"));
-		assertNotNull(restTag.getProperty("en", "displayName"));
+		assertNotNull(restTag.getProperty("displayName"));
+		//TODO verify that name is english
 	}
 
 	@Test
@@ -154,10 +153,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		Tag tag = data().getTag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
+		//			tx.success();
+		//		}
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
@@ -171,26 +170,26 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setUuid(tag.getUuid());
-		request.addProperty("en", "displayName", "new Name");
+		request.addProperty("displayName", "new Name");
 
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		System.out.println(response);
 		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
-//		try (Transaction tx = graphDb.beginTx()) {
-			String name = tag.getDisplayName(data().getEnglish());
-			assertNotNull("The name of the tag should be loaded.", name);
-			String restName = tagResponse.getProperty("en", "displayName");
-			assertNotNull("The english displayName should be listed in the rest response since we requested the english tag", restName);
-			assertEquals(name, restName);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		String name = tag.getDisplayName(data().getEnglish());
+		assertNotNull("The name of the tag should be loaded.", name);
+		String restName = tagResponse.getProperty("displayName");
+		assertNotNull("The english displayName should be listed in the rest response since we requested the english tag", restName);
+		assertEquals(name, restName);
+		//			tx.success();
+		//		}
 
 		// 2. Setup the request object
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		final String newName = "new Name";
-		tagUpdateRequest.addProperty("en", "displayName", newName);
-		assertEquals(newName, tagUpdateRequest.getProperty("en", "displayName"));
+		tagUpdateRequest.addProperty("displayName", newName);
+		assertEquals(newName, tagUpdateRequest.getProperty("displayName"));
 
 		// 3. Send the request to the server
 		// TODO test with no ?lang query parameter
@@ -201,7 +200,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		assertEquals(request.getProperty("en", "displayName"), tagResponse.getProperty("en", "displayName"));
+		assertEquals(request.getProperty("displayName"), tagResponse.getProperty("displayName"));
 		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 	}
 
@@ -209,15 +208,15 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = data().getTag("vehicle");
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
+		//			tx.success();
+		//		}
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setUuid(tag.getUuid());
-		request.addProperty("en", "name", "new Name");
+		request.addProperty("name", "new Name");
 
 		String requestJson = new ObjectMapper().writeValueAsString(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden", requestJson);
@@ -227,11 +226,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			String name = tag.getName(data().getEnglish());
-			assertEquals(name, tagUpdateRequest.getProperty("en", "name"));
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		String name = tag.getName(data().getEnglish());
+		assertEquals(name, tagUpdateRequest.getProperty("name"));
+		//			tx.success();
+		//		}
 	}
 
 	// Delete Tests
@@ -248,10 +247,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 
 		Tag tag = data().getTag("vehicle");
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), tag, PermissionType.DELETE);
-//			tx.success();
-//		}
+		//		try (Transaction tx = graphDb.beginTx()) {
+		roleService.revokePermission(info.getRole(), tag, PermissionType.DELETE);
+		//			tx.success();
+		//		}
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());

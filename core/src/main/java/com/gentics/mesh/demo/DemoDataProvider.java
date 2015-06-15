@@ -15,12 +15,12 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.schema.propertytypes.BasicPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytypes.MicroPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
@@ -41,8 +41,8 @@ import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 @Component
 public class DemoDataProvider {
@@ -478,21 +478,22 @@ public class DemoDataProvider {
 		// TODO determine why this is not working when using sdn
 		// Add Permissions
 		//		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
-		Vertex roleNode = userInfo.getRole().getVertex();
+		Role role= userInfo.getRole();
 
 		for (Vertex vertex : framedGraph.getVertices()) {
+			WrappedVertex wrappedVertex = (WrappedVertex)vertex;
+			
 			//TODO typecheck? and verify how orient will behave
-			if (roleNode.getId() == vertex.getId()) {
+			if (role.getVertex().getId() == vertex.getId()) {
 				log.info("Skipping own role");
 				continue;
 			}
-			Edge edge = roleNode.addEdge(AuthRelationships.HAS_PERMISSION, vertex);
+			GraphPermission  perm = role.addPermission(framedGraph.frameElement(wrappedVertex.getBaseElement(), MeshVertex.class));
 
-			edge.setProperty("__type__", GraphPermission.class.getSimpleName());
-			edge.setProperty("permissions-read", true);
-			edge.setProperty("permissions-delete", true);
-			edge.setProperty("permissions-create", true);
-			edge.setProperty("permissions-update", true);
+			perm.setProperty("permissions-read", true);
+			perm.setProperty("permissions-delete", true);
+			perm.setProperty("permissions-create", true);
+			perm.setProperty("permissions-update", true);
 			// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
 			// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
 			// genericNodeService.save(node);

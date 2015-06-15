@@ -185,9 +185,11 @@ public class MeshSpringConfiguration {
 		return corsHandler;
 	}
 
+	//TODO maybe uploads should use a dedicated bodyhandler?
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
 		BodyHandler handler = BodyHandler.create();
+		handler.setBodyLimit(MeshSpringConfiguration.getConfiguration().getFileUploadByteLimit());
 		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
 		return handler;
 	}
