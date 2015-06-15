@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.data.service.I18NServiceImpl;
+import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 
 @Component
@@ -55,7 +55,7 @@ public final class JsonUtils {
 			String body = rc.getBodyAsString();
 			return (T) mapper.readValue(body, classOfT);
 		} catch (Exception e) {
-			throw new HttpStatusCodeErrorException(400, new I18NServiceImpl().get(rc, "error_parse_request_json_error"), e);
+			throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
 		}
 
 	}

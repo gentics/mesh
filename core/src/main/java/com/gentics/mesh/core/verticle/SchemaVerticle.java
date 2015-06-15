@@ -36,9 +36,9 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ObjectSchemaVerticle extends AbstractCoreApiVerticle {
+public class SchemaVerticle extends AbstractCoreApiVerticle {
 
-	protected ObjectSchemaVerticle() {
+	protected SchemaVerticle() {
 		super("schemas");
 	}
 

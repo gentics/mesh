@@ -2,29 +2,119 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.ext.apex.RoutingContext;
 
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public interface GroupService {
+@Component
+public class GroupService extends AbstractMeshService {
 
-	public Group findByUUID(String uuid);
+	public Group findByName(String name) {
+		return framedGraph.v().has("name", name).has("ferma_type", Group.class.getName()).next(Group.class);
+	}
 
-	public Group findByName(String name);
+	public Group findByUUID(String uuid) {
+		return framedGraph.v().has("uuid", uuid).has("ferma_type", Group.class.getName()).next(Group.class);
+	}
 
-	public GroupResponse transformToRest(RoutingContext rc, Group group);
+	// TODO handle depth
+	public GroupResponse transformToRest(RoutingContext rc, Group group) {
+		GroupResponse restGroup = new GroupResponse();
+		restGroup.setUuid(group.getUuid());
+		restGroup.setName(group.getName());
 
-	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo);
+		// for (User user : group.getUsers()) {
+		// user = neo4jTemplate.fetch(user);
+		// String name = user.getUsername();
+		// if (name != null) {
+		// restGroup.getUsers().add(name);
+		// }
+		// }
+		// Collections.sort(restGroup.getUsers());
 
-	public Group create(String name);
+		for (Role role : group.getRoles()) {
+			// role = neo4jTemplate.fetch(role);
+			String name = role.getName();
+			if (name != null) {
+				restGroup.getRoles().add(name);
+			}
+		}
 
-	public GroupRoot findRoot();
+		// // Set<Group> children = groupRepository.findChildren(group);
+		// Set<Group> children = group.getGroups();
+		// for (Group childGroup : children) {
+		// restGroup.getGroups().add(childGroup.getName());
+		// }
 
-	public GroupRoot createRoot();
+		return restGroup;
 
-	public void delete(Group group);
+	}
 
+	// @Override
+	// public Group save(Group group) {
+	// GroupRoot root = findRoot();
+	// if (root == null) {
+	// throw new NullPointerException("The group root node could not be found.");
+	// }
+	// group = neo4jTemplate.save(group);
+	// root.getGroups().add(group);
+	// neo4jTemplate.save(root);
+	// return group;
+	// return null;
+	// }
+
+	public Group findOne(Long id) {
+		return null;
+
+	}
+
+	/**
+	 * Return all groups that are assigned to the user
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public List<Group> listAllGroups(User user) {
+		// @Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
+		return null;
+	}
+
+	public GroupRoot findRoot() {
+		return framedGraph.v().has("ferma_type", GroupRoot.class.getName()).next(GroupRoot.class);
+	}
+
+	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+		// return groupRepository.findAll(requestUser, new MeshPageRequest(pagingInfo));
+		// @Query(value =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup ORDER BY visibleGroup.name",
+		// countQuery =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
+		// Page<Group> findAll(User requestUser, Pageable pageable);
+
+		return null;
+	}
+
+	public Group create(String name) {
+		Group group = framedGraph.addFramedVertex(Group.class);
+		group.setName(name);
+		return group;
+	}
+
+	public GroupRoot createRoot() {
+		GroupRoot root = framedGraph.addFramedVertex(GroupRoot.class);
+		return root;
+	}
+
+	public void delete(Group group) {
+		group.getVertex().remove();
+
+	}
 }

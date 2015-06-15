@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import com.gentics.mesh.core.verticle.ObjectSchemaVerticle;
+import com.gentics.mesh.core.verticle.SchemaVerticle;
 
 public final class UUIDUtil {
 
 	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
-	private static final Logger log = LoggerFactory.getLogger(ObjectSchemaVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(SchemaVerticle.class);
 
 	private static Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
 

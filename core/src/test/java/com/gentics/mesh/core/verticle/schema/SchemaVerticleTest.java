@@ -28,15 +28,15 @@ import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.response.ObjectSchemaListResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
-import com.gentics.mesh.core.verticle.ObjectSchemaVerticle;
+import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
 
-public class ObjectSchemaVerticleTest extends AbstractRestVerticleTest {
+public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ObjectSchemaVerticle objectSchemaVerticle;
+	private SchemaVerticle objectSchemaVerticle;
 
 	@Autowired
 	private SchemaService schemaService;

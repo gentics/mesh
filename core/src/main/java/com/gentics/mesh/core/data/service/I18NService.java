@@ -2,65 +2,111 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.ext.apex.RoutingContext;
 
+import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-/**
- * The I18NService is responsible for handling internal internationalization and localization related tasks. The service is _not_ responsible for translating
- * neo4j data entities. Supported locales are currently en_US and de_DE. The default locale is en_US.
- * 
- * @author johannes2
- *
- */
-public interface I18NService {
+@Component
+public class I18NService {
 
-	/**
-	 * * Return the i18n string for the given locale and key.
-	 * 
-	 * @param locale
-	 *            The selected locale. The default locale en_US will be selected when the parameter is null
-	 * @param key
-	 *            Key of the i18n property
-	 * @return locale specific i18n string
-	 */
-	public String get(Locale locale, String key);
+	private static final Logger log = LoggerFactory.getLogger(I18NService.class);
 
-	/**
-	 * Return the i18n string for the given locale and key. The parameters will be used to replace variables inside the i18n string.
-	 * 
-	 * @param locale
-	 *            The selected locale. The default locale en_US will be selected when the parameter is null
-	 * @param key
-	 *            Key for the i18n property
-	 * @param parameters
-	 *            Parameters for the i18n string variables
-	 * @return locale specific i18n string
-	 */
-	public String get(Locale locale, String key, String... parameters);
+	private static final Locale DEFAULT_LOCALE = new Locale("en", "US");
 
-	/**
-	 * Return the i18n string key. The locale will be determined by examining the routing context locale data parameter. The parameters will be used to replace
-	 * variables inside the i18n string.
-	 * 
-	 * @param rc
-	 *            Context from which to extract the locale field
-	 * @param key
-	 *            Key of the i18n property
-	 * @param parameters
-	 *            Parameters for the i18n string variables
-	 * @return locale specific i18n string
-	 */
-	public String get(RoutingContext rc, String key, String... parameters);
+	public String get(Locale locale, String key) {
+		if (locale == null) {
+			locale = DEFAULT_LOCALE;
+		}
+		ResourceBundle labels = ResourceBundle.getBundle("i18n.translations", locale);
+		return labels.getString(key);
+	}
 
-	/**
-	 * Return the locale from the routing context by parsing the Accept-Language header.
-	 * 
-	 * @param rc
-	 *            Context from which to extract the header
-	 * @return best matching locale for the accept-language header or default locale when non is matching
-	 */
-	public Locale getLocale(RoutingContext rc);
+	public String get(Locale locale, String key, String... parameters) {
+		if (locale == null) {
+			locale = DEFAULT_LOCALE;
+		}
+		String i18nMessage = "";
+		try {
+			ResourceBundle labels = ResourceBundle.getBundle("i18n.translations", locale);
+			MessageFormat formatter = new MessageFormat("");
+			formatter.setLocale(locale);
+			formatter.applyPattern(labels.getString(key));
+			i18nMessage = formatter.format(parameters);
+		} catch (Exception e) {
+			log.error("Could not format i18n message for key {" + key + "}", e);
+			i18nMessage = key;
+		}
+		return i18nMessage;
+	}
+
+	public Locale getLocale(RoutingContext rc) {
+		String header = rc.request().headers().get("Accept-Language");
+		return getLocale(header);
+	}
+
+	protected Locale getLocale(String header) {
+		Locale bestMatchingLocale = DEFAULT_LOCALE;
+		Double highesQ = 0.;
+		if (header == null) {
+			return DEFAULT_LOCALE;
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Parsing accept language header value {" + header + "}");
+			}
+			for (String str : header.split(",")) {
+				String[] arr = str.trim().replace("-", "_").split(";");
+
+				// Parse the locale
+				String[] l = arr[0].split("_");
+				// We only care for german and english
+				if ((!l[0].startsWith("de")) && (!l[0].startsWith("en"))) {
+					if (log.isDebugEnabled()) {
+						log.debug("Skipping language {" + l[0] + "}. We only support german or english.");
+					}
+					continue;
+				}
+
+				// Parse the q-value
+				Double q = 1.0D;
+				for (String s : arr) {
+					s = s.trim();
+					if (s.startsWith("q=")) {
+						q = Double.parseDouble(s.substring(2).trim());
+						break;
+					}
+				}
+				if (q > highesQ) {
+					highesQ = q;
+				} else {
+					continue;
+				}
+
+				switch (l.length) {
+				case 2:
+					bestMatchingLocale = new Locale(l[0], l[1]);
+					break;
+				case 3:
+					bestMatchingLocale = new Locale(l[0], l[1], l[2]);
+					break;
+				default:
+					bestMatchingLocale = new Locale(l[0]);
+					break;
+				}
+
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Found best matching locale {" + bestMatchingLocale + "} with q value {" + highesQ + "}");
+			}
+		}
+		return bestMatchingLocale;
+	}
+
+	public String get(RoutingContext rc, String key, String... parameters) {
+		return get((Locale) rc.get("locale"), key, parameters);
+	}
 
 }
