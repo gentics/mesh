@@ -5,12 +5,12 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.RoutingContext;
 
 import java.awt.print.Pageable;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.Result;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
@@ -33,8 +33,8 @@ public class ProjectService extends AbstractMeshService {
 		return framedGraph.v().has("uuid", uuid).next(Project.class);
 	}
 
-	public Result<Project> findAll() {
-		return null;
+	public List<? extends Project> findAll() {
+		return framedGraph.v().has("ferma_type", Project.class.getName()).toList(Project.class);
 	}
 
 	public void deleteByName(String name) {

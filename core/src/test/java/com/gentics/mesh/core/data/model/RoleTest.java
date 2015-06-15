@@ -11,10 +11,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.ext.apex.RoutingContext;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
@@ -139,11 +140,8 @@ public class RoleTest extends AbstractDBTest {
 		int nRolesBefore = count(roleService.findRoot().getRoles());
 
 		final String roleName = "test2";
-		//		try (Transaction tx = graphDb.beginTx()) {
 		Role role = roleService.create(roleName);
-		//			tx.success();
-		//		}
-
+		assertNotNull(role);
 		int nRolesAfter = count(roleService.findRoot().getRoles());
 		assertEquals(nRolesBefore + 1, nRolesAfter);
 
@@ -160,7 +158,8 @@ public class RoleTest extends AbstractDBTest {
 		//		}
 
 		RoutingContext rc = getMockedRoutingContext("");
-		Page<Role> roles = roleService.findByGroup(rc, info.getGroup(), new PagingInfo(0, 10));
-		assertEquals(2, roles.getTotalElements());
+		List<? extends Role> roles = roleService.findByGroup(rc, info.getGroup(), new PagingInfo(0, 10));
+		assertEquals(2, roles.size());
+		//assertEquals(2, roles.getTotalElements());
 	}
 }

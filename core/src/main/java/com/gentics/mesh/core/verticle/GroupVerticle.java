@@ -10,6 +10,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
@@ -17,8 +19,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
@@ -62,20 +64,21 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 					RoleListResponse listResponse = new RoleListResponse();
 					Group group = grh.result();
-					Page<Role> rolePage = roleService.findByGroup(rc, group, pagingInfo);
+					List<? extends Role> rolePage = roleService.findByGroup(rc, group, pagingInfo);
 					for (Role role : rolePage) {
 						listResponse.getData().add(roleService.transformToRest(role));
 					}
-					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+					//TODO  fix paging 
+					//					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
 
-					bch.complete(listResponse);
-				}, rh -> {
-					if (rh.failed()) {
-						throw new RuntimeException(rh.cause());
-					}
-					RoleListResponse listResponse = rh.result();
-					rc.response().setStatusCode(200).end(toJson(listResponse));
-				});
+						bch.complete(listResponse);
+					}, rh -> {
+						if (rh.failed()) {
+							throw new RuntimeException(rh.cause());
+						}
+						RoleListResponse listResponse = rh.result();
+						rc.response().setStatusCode(200).end(toJson(listResponse));
+					});
 
 			});
 
@@ -154,14 +157,14 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					Group group = grh.result();
 					User user = urh.result();
 					group.addUser(user);
-						//group = groupService.save(group);
-				}, trh -> {
-					if (trh.failed()) {
-						rc.fail(trh.cause());
-					}
-					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
-				});
+					//group = groupService.save(group);
+					}, trh -> {
+						if (trh.failed()) {
+							rc.fail(trh.cause());
+						}
+						Group group = grh.result();
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+					});
 			});
 		});
 
@@ -172,15 +175,15 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					Group group = grh.result();
 					User user = urh.result();
 					group.removeUser(user);
-						//groupService.save(group);
-					
-				}, trh -> {
-					if (trh.failed()) {
-						rc.fail(trh.cause());
-					}
-					Group group = grh.result();
-					rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
-				});
+					//groupService.save(group);
+
+					}, trh -> {
+						if (trh.failed()) {
+							rc.fail(trh.cause());
+						}
+						Group group = grh.result();
+						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+					});
 			});
 		});
 	}

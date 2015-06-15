@@ -9,6 +9,10 @@ public class RoleRoot extends MeshVertex {
 	public Iterable<? extends Role> getRoles() {
 		return out(BasicRelationships.HAS_ROLE).toList(Role.class);
 	}
+	
+	public void addRole(Role role) {
+		addFramedEdge(BasicRelationships.HAS_ROLE, role);
+	}
 
 	// TODO unique index
 

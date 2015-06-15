@@ -3,13 +3,13 @@ package com.gentics.mesh.core.data.service;
 import java.awt.print.Pageable;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.Result;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
@@ -208,7 +208,7 @@ public class SchemaService extends AbstractMeshService {
 		return framedGraph.v().has("uuid", uuid).has("ferma_type", Schema.class.getName()).next(Schema.class);
 	}
 
-	public Result<Schema> findAll() {
+	public List<Schema> findAll() {
 		// TODO Auto-generated method stub
 		return null;
 	}
