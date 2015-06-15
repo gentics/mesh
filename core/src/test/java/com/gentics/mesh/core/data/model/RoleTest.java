@@ -11,11 +11,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.ext.apex.RoutingContext;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.InvalidArgumentException;
 
 public class RoleTest extends AbstractDBTest {
 
@@ -148,7 +148,7 @@ public class RoleTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testRolesOfGroup() {
+	public void testRolesOfGroup() throws InvalidArgumentException {
 
 		Role extraRole = roleService.create("extraRole");
 		//		try (Transaction tx = graphDb.beginTx()) {
@@ -158,8 +158,8 @@ public class RoleTest extends AbstractDBTest {
 		//		}
 
 		RoutingContext rc = getMockedRoutingContext("");
-		List<? extends Role> roles = roleService.findByGroup(rc, info.getGroup(), new PagingInfo(0, 10));
-		assertEquals(2, roles.size());
+		Page<? extends Role> roles = roleService.findByGroup(rc, info.getGroup(), new PagingInfo(1, 10));
+		assertEquals(2, roles.getSize());
 		//assertEquals(2, roles.getTotalElements());
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.syncleus.ferma.Knows;
 
 public class Group extends GenericNode {
 
@@ -21,15 +22,15 @@ public class Group extends GenericNode {
 		return in(AuthRelationships.HAS_USER).toList(User.class);
 	}
 
-//	@GremlinGroovy(value = "it.in('HAS_USER').order({ it.b.getProperty(fieldName) <=> it.a.getProperty(fieldName) })[skip..limit]")
-//	public Iterable<User> getUsersInOrder(@GremlinParam("fieldName") String fieldName, @GremlinParam("skip") int skip,
-//			@GremlinParam("limit") int limit) {
-//		in(AuthRelationships.HAS_USER).order()
-//	}
+	//	@GremlinGroovy(value = "it.in('HAS_USER').order({ it.b.getProperty(fieldName) <=> it.a.getProperty(fieldName) })[skip..limit]")
+	//	public Iterable<User> getUsersInOrder(@GremlinParam("fieldName") String fieldName, @GremlinParam("skip") int skip,
+	//			@GremlinParam("limit") int limit) {
+	//		in(AuthRelationships.HAS_USER).order()
+	//	}
 
 	// @Adjacency(label = AuthRelationships.HAS_USER, direction = Direction.IN)
 	public void addUser(User user) {
-
+		user.addFramedEdge(AuthRelationships.HAS_USER, this, User.class);
 	}
 
 	public void removeUser(User user) {

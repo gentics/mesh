@@ -5,15 +5,14 @@ import static com.gentics.mesh.util.SortOrder.UNSORTED;
 
 import java.util.List;
 
-import com.gentics.mesh.util.SortOrder;
-
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.paging.PagingInfo;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class PagingHelper {
+public final class PagingHelper {
 
-	public <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy, SortOrder order, int page, int pageSize,
+	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy, SortOrder order, int page, int pageSize,
 			Class<T> classOfT) throws InvalidArgumentException {
 
 		if (page < 1) {
@@ -33,24 +32,31 @@ public class PagingHelper {
 
 		int count = (int) traversal.count();
 		//		System.out.println("Found: " + count);
-		List<? extends T> list = traversal.order((VertexFrame f1, VertexFrame f2) -> {
-			if (order == DESCENDING) {
-				VertexFrame tmp = f1;
-				f1 = f2;
-				f2 = tmp;
-			} else if (order == UNSORTED) {
-				return 0;
-			}
 
-			return f2.getProperty(sortBy).equals(f1.getProperty(sortBy)) ? 1 : 0;
+		// Only add the filter to the pipeline when the needed parameters were correctly specified.
+		if (order != UNSORTED && sortBy != null) {
+			traversal = traversal.order((VertexFrame f1, VertexFrame f2) -> {
+				if (order == DESCENDING) {
+					VertexFrame tmp = f1;
+					f1 = f2;
+					f2 = tmp;
+				}
+				return f2.getProperty(sortBy).equals(f1.getProperty(sortBy)) ? 1 : 0;
+			});
+		}
 
-		}).range(low, upper).toList(classOfT);
+		List<? extends T> list = traversal.range(low, upper).toList(classOfT);
 
 		int totalPages = count / pageSize;
 
 		// Internally the page size was reduced. We need to increment it now that we are finished.
 		return new Page<T>(list, count, ++page, totalPages, list.size());
 
+	}
+
+	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, PagingInfo pagingInfo, Class<T> classOfT)
+			throws InvalidArgumentException {
+		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(), classOfT);
 	}
 
 }

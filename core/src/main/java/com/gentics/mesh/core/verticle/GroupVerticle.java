@@ -10,8 +10,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.ext.apex.Route;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
@@ -64,21 +62,26 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 					RoleListResponse listResponse = new RoleListResponse();
 					Group group = grh.result();
-					List<? extends Role> rolePage = roleService.findByGroup(rc, group, pagingInfo);
-					for (Role role : rolePage) {
-						listResponse.getData().add(roleService.transformToRest(role));
-					}
-					//TODO  fix paging 
-					//					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
-
-						bch.complete(listResponse);
-					}, rh -> {
-						if (rh.failed()) {
-							throw new RuntimeException(rh.cause());
+					Page<? extends Role> rolePage;
+					try {
+						rolePage = roleService.findByGroup(rc, group, pagingInfo);
+						for (Role role : rolePage) {
+							listResponse.getData().add(roleService.transformToRest(role));
 						}
-						RoleListResponse listResponse = rh.result();
-						rc.response().setStatusCode(200).end(toJson(listResponse));
-					});
+						//TODO  fix paging 
+						//					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+						bch.complete(listResponse);
+					} catch (Exception e) {
+						bch.fail(e);
+					}
+
+				}, rh -> {
+					if (rh.failed()) {
+						throw new RuntimeException(rh.cause());
+					}
+					RoleListResponse listResponse = rh.result();
+					rc.response().setStatusCode(200).end(toJson(listResponse));
+				});
 
 			});
 

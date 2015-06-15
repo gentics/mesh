@@ -105,6 +105,8 @@ public class GroupService extends AbstractMeshService {
 	public Group create(String name) {
 		Group group = framedGraph.addFramedVertex(Group.class);
 		group.setName(name);
+		GroupRoot root = findRoot();
+		root.addGroup(group);
 		return group;
 	}
 

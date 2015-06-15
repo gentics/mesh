@@ -24,7 +24,10 @@ import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.PagingHelper;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -46,12 +49,12 @@ public class RoleService extends AbstractMeshService {
 
 	public List<? extends Role> findAll() {
 
-//		public Page<Role> findAll(String userUuid, Pageable pageable) {
-//			//		@Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
-	//
-//			//		countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
-//			return null;
-//		}
+		//		public Page<Role> findAll(String userUuid, Pageable pageable) {
+		//			//		@Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
+		//
+		//			//		countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
+		//			return null;
+		//		}
 		//TODO filter for permissions?
 		return framedGraph.v().has("ferma_type", Role.class.getName()).toList(Role.class);
 	}
@@ -147,7 +150,7 @@ public class RoleService extends AbstractMeshService {
 		return null;
 	}
 
-	public List<? extends Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) {
+	public Page<? extends Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) throws InvalidArgumentException {
 		String userUuid = rc.session().getPrincipal().getString("uuid");
 		//		return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 		//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
@@ -155,12 +158,16 @@ public class RoleService extends AbstractMeshService {
 
 		//	countQuery = MATCH_PERMISSION_ON_ROLE + "MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
 		//			+ "return count(role)")
-//		Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
-//			return null;
-//		}
-		return framedGraph.v().has("ferma_type" ,  Role.class.getName()).mark().out(AuthRelationships.HAS_ROLE).filter((VertexFrame vertex) -> {
-			return group.getId() == vertex.getId();
-		}).back().toList(Role.class);
+		//		Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
+		//			return null;
+		//		}
+		VertexTraversal<?, ?, ?> traversal = framedGraph.v().has("ferma_type", Role.class.getName()).mark().out(AuthRelationships.HAS_ROLE)
+				.filter((VertexFrame vertex) -> {
+					return group.getId() == vertex.getId();
+				}).back();
+
+		Page<? extends Role> page = PagingHelper.getPagedResult(traversal, pagingInfo, Role.class);
+		return page;
 
 	}
 
@@ -168,7 +175,6 @@ public class RoleService extends AbstractMeshService {
 		//	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
 		return null;
 	}
-
 
 	public RoleRoot findRoot() {
 		return framedGraph.v().has("ferma_type", RoleRoot.class.getName()).next(RoleRoot.class);
