@@ -7,22 +7,26 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.PagingHelper;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
 public class GroupService extends AbstractMeshService {
 
 	public Group findByName(String name) {
-		return framedGraph.v().has("name", name).has("ferma_type", Group.class.getName()).next(Group.class);
+		return framedGraph.v().has("name", name).has(Group.class).nextExplicit(Group.class);
 	}
 
 	public Group findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has("ferma_type", Group.class.getName()).next(Group.class);
+		return framedGraph.v().has("uuid", uuid).has(Group.class).nextExplicit(Group.class);
 	}
 
 	// TODO handle depth
@@ -72,8 +76,8 @@ public class GroupService extends AbstractMeshService {
 	// }
 
 	public Group findOne(Long id) {
-		return null;
-
+		// TODO move this in a dedicated utility class or ferma?
+		return framedGraph.frameElement(framedGraph.getVertex(id), Group.class);
 	}
 
 	/**
@@ -82,24 +86,28 @@ public class GroupService extends AbstractMeshService {
 	 * @param user
 	 * @return
 	 */
-	public List<Group> listAllGroups(User user) {
+	public List<? extends Group> listAllGroups(User user) {
 		// @Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
-		return null;
+		//
+		return framedGraph.v().has(Group.class).mark().in(AuthRelationships.MEMBER_OF).has(User.class).has("uuid", user.getUuid()).back()
+				.toListExplicit(Group.class);
+
 	}
 
 	public GroupRoot findRoot() {
-		return framedGraph.v().has("ferma_type", GroupRoot.class.getName()).next(GroupRoot.class);
+		return framedGraph.v().has(GroupRoot.class).nextExplicit(GroupRoot.class);
 	}
 
-	public Page<Group> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+	public Page<? extends Group> findAllVisible(User requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		// return groupRepository.findAll(requestUser, new MeshPageRequest(pagingInfo));
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup ORDER BY visibleGroup.name",
 		// countQuery =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
 		// Page<Group> findAll(User requestUser, Pageable pageable);
-
-		return null;
+		VertexTraversal traversal = framedGraph.v().has(User.class);
+		Page<? extends Group> groups = PagingHelper.getPagedResult(traversal, pagingInfo, Group.class);
+		return groups;
 	}
 
 	public Group create(String name) {

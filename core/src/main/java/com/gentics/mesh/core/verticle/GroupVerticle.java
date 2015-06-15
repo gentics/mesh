@@ -263,12 +263,18 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			vertx.executeBlocking((Future<GroupListResponse> glr) -> {
 				GroupListResponse listResponse = new GroupListResponse();
 				User user = userService.findUser(rc);
-				Page<Group> groupPage = groupService.findAllVisible(user, pagingInfo);
-				for (Group group : groupPage) {
-					listResponse.getData().add(groupService.transformToRest(rc, group));
+				Page<? extends Group> groupPage;
+				try {
+					groupPage = groupService.findAllVisible(user, pagingInfo);
+					for (Group group : groupPage) {
+						listResponse.getData().add(groupService.transformToRest(rc, group));
+					}
+					RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
+					glr.complete(listResponse);
+
+				} catch (Exception e) {
+					glr.fail(e);
 				}
-				RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
-				glr.complete(listResponse);
 			}, ar -> {
 				if (ar.failed()) {
 					rc.fail(ar.cause());

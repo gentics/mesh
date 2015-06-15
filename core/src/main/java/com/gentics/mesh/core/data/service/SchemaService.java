@@ -29,7 +29,7 @@ public class SchemaService extends AbstractMeshService {
 
 	public Schema findByUUID(String projectName, String uuid) {
 		//TODO check for projectName
-		return framedGraph.v().has("uuid", uuid).has("ferma_type", Schema.class.getName()).next(Schema.class);
+		return framedGraph.v().has("uuid", uuid).has(Schema.class).next(Schema.class);
 	}
 
 	public Schema findByName(String projectName, String name) {
@@ -132,7 +132,7 @@ public class SchemaService extends AbstractMeshService {
 	}
 
 	public SchemaRoot findRoot() {
-		return framedGraph.v().has("ferma_type", SchemaRoot.class.getName()).next(SchemaRoot.class);
+		return framedGraph.v().has(SchemaRoot.class).next(SchemaRoot.class);
 	}
 
 	//	@Override
@@ -151,7 +151,7 @@ public class SchemaService extends AbstractMeshService {
 	public Schema findByName(String name) {
 		Schema schema = null;
 		try {
-			schema = framedGraph.v().has("name", name).has("ferma_type", Schema.class.getName()).next(Schema.class);
+			schema = framedGraph.v().has("name", name).has(Schema.class).nextExplicit(Schema.class);
 		} catch (NoSuchElementException e) {
 			// ignored - handled by null reference
 		}
@@ -205,12 +205,11 @@ public class SchemaService extends AbstractMeshService {
 	}
 
 	public Schema findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has("ferma_type", Schema.class.getName()).next(Schema.class);
+		return framedGraph.v().has("uuid", uuid).has(Schema.class).nextExplicit(Schema.class);
 	}
 
-	public List<Schema> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<? extends Schema> findAll() {
+		return framedGraph.v().has(Schema.class).toListExplicit(Schema.class);
 	}
 
 	public void delete(Schema schema) {

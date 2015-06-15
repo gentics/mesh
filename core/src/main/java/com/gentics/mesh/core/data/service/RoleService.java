@@ -40,11 +40,11 @@ public class RoleService extends AbstractMeshService {
 	private UserService userService;
 
 	public Role findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has("ferma_type", Role.class.getName()).next(Role.class);
+		return framedGraph.v().has("uuid", uuid).has(Role.class).nextExplicit(Role.class);
 	}
 
 	public Role findByName(String name) {
-		return framedGraph.v().has("name", name).has("ferma_type", Role.class.getName()).next(Role.class);
+		return framedGraph.v().has("name", name).has(Role.class).nextExplicit(Role.class);
 	}
 
 	public List<? extends Role> findAll() {
@@ -56,7 +56,7 @@ public class RoleService extends AbstractMeshService {
 		//			return null;
 		//		}
 		//TODO filter for permissions?
-		return framedGraph.v().has("ferma_type", Role.class.getName()).toList(Role.class);
+		return framedGraph.v().has(Role.class).toListExplicit(Role.class);
 	}
 
 	public void addPermission(Role role, MeshVertex node, PermissionType... permissionTypes) {
@@ -161,7 +161,7 @@ public class RoleService extends AbstractMeshService {
 		//		Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
 		//			return null;
 		//		}
-		VertexTraversal<?, ?, ?> traversal = framedGraph.v().has("ferma_type", Role.class.getName()).mark().out(AuthRelationships.HAS_ROLE)
+		VertexTraversal<?, ?, ?> traversal = framedGraph.v().has(Role.class).mark().out(AuthRelationships.HAS_ROLE)
 				.filter((VertexFrame vertex) -> {
 					return group.getId() == vertex.getId();
 				}).back();
@@ -177,7 +177,7 @@ public class RoleService extends AbstractMeshService {
 	}
 
 	public RoleRoot findRoot() {
-		return framedGraph.v().has("ferma_type", RoleRoot.class.getName()).next(RoleRoot.class);
+		return framedGraph.v().has(RoleRoot.class).next(RoleRoot.class);
 	}
 
 	public Role create(String name) {

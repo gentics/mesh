@@ -47,7 +47,7 @@ public class UserService extends AbstractMeshService {
 	}
 
 	public User findByUsername(String username) {
-		return framedGraph.v().has("username", username).has("ferma_type", User.class.getName()).next(User.class);
+		return framedGraph.v().has("username", username).has(User.class).nextExplicit(User.class);
 	}
 
 	public UserResponse transformToRest(User user) {
@@ -208,7 +208,7 @@ public class UserService extends AbstractMeshService {
 	}
 
 	public UserRoot findRoot() {
-		return framedGraph.v().has("ferma_type", UserRoot.class.getName()).next(UserRoot.class);
+		return framedGraph.v().has(UserRoot.class).nextExplicit(UserRoot.class);
 	}
 
 	//	@Override
@@ -244,7 +244,7 @@ public class UserService extends AbstractMeshService {
 	}
 
 	public User findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has("ferma_type", User.class.getName()).next(User.class);
+		return framedGraph.v().has("uuid", uuid).has(User.class).nextExplicit(User.class);
 	}
 
 	public void delete(User user) {

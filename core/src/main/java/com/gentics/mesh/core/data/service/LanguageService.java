@@ -39,7 +39,7 @@ public class LanguageService extends AbstractMeshService {
 	//	}
 
 	public LanguageRoot findRoot() {
-		return framedGraph.v().has("ferma_type", LanguageRoot.class.getName()).next(LanguageRoot.class);
+		return framedGraph.v().has(LanguageRoot.class).nextExplicit(LanguageRoot.class);
 	}
 
 	public LanguageRoot createRoot() {

@@ -147,12 +147,18 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			vertx.executeBlocking((Future<ProjectListResponse> bcr) -> {
 				ProjectListResponse listResponse = new ProjectListResponse();
 				User requestUser = userService.findUser(rc);
-				Page<Project> projectPage = projectService.findAllVisible(requestUser, pagingInfo);
-				for (Project project : projectPage) {
-					listResponse.getData().add(projectService.transformToRest(rc, project));
+				Page<? extends Project> projectPage;
+				try {
+					projectPage = projectService.findAllVisible(requestUser, pagingInfo);
+					for (Project project : projectPage) {
+						listResponse.getData().add(projectService.transformToRest(rc, project));
+					}
+					RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
+					bcr.complete(listResponse);
+
+				} catch (Exception e) {
+					bcr.fail(e);
 				}
-				RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
-				bcr.complete(listResponse);
 			}, arh -> {
 				if (arh.failed()) {
 					rc.fail(arh.cause());

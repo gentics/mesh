@@ -134,9 +134,8 @@ public class MeshNodeService extends AbstractMeshService {
 		// this.links.add(link);
 	}
 
-	public List<MeshNode> findAllNodes() {
-		//		@Query("MATCH (node:MeshNode) RETURN node")
-		return null;
+	public List<? extends MeshNode> findAllNodes() {
+		return framedGraph.v().has(MeshNode.class).toListExplicit(MeshNode.class);
 	}
 
 	public MeshNode create() {
@@ -144,7 +143,7 @@ public class MeshNodeService extends AbstractMeshService {
 	}
 
 	public MeshNode findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has("ferma_type", MeshNode.class.getName()).next(MeshNode.class);
+		return framedGraph.v().has("uuid", uuid).has(MeshNode.class).nextExplicit(MeshNode.class);
 	}
 
 	public void delete(MeshNode node) {

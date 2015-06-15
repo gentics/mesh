@@ -13,7 +13,7 @@ public class MeshRootService  {
 	private FramedGraph framedGraph;
 
 	public MeshRoot findRoot() {
-		return framedGraph.v().has("ferma_type", MeshRoot.class.getName()).next(MeshRoot.class);
+		return framedGraph.v().has(MeshRoot.class).nextExplicit(MeshRoot.class);
 	}
 
 	public MeshRoot create() {

@@ -4,7 +4,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.apex.RoutingContext;
 
-import java.awt.print.Pageable;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,9 @@ import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.PagingHelper;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
 public class ProjectService extends AbstractMeshService {
@@ -26,15 +28,15 @@ public class ProjectService extends AbstractMeshService {
 	protected UserService userService;
 
 	public Project findByName(String projectName) {
-		return framedGraph.v().has("name", projectName).next(Project.class);
+		return framedGraph.v().has("name", projectName).nextExplicit(Project.class);
 	}
 
 	public Project findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).next(Project.class);
+		return framedGraph.v().has("uuid", uuid).nextExplicit(Project.class);
 	}
 
 	public List<? extends Project> findAll() {
-		return framedGraph.v().has("ferma_type", Project.class.getName()).toList(Project.class);
+		return framedGraph.v().has(Project.class).toListExplicit(Project.class);
 	}
 
 	public void deleteByName(String name) {
@@ -56,20 +58,16 @@ public class ProjectService extends AbstractMeshService {
 		return null;
 	}
 
-	public Page<Project> findAllVisible(User requestUser, PagingInfo pagingInfo) {
-		//		return projectRepository.findAll(requestUser, new MeshPageRequest(pagingInfo));
-		return null;
-	}
-
-	public Page<Project> findAll(User requestUser, Pageable pageable) {
-
+	public Page<? extends Project> findAllVisible(User requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		//	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return project ORDER BY project.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return count(project)")
-		return null;
+		//TODO check whether it is faster to use meshroot for starting the traversal
+		VertexTraversal traversal = framedGraph.v().has(ProjectRoot.class);
+		return PagingHelper.getPagedResult(traversal, pagingInfo, Project.class);
 
 	}
 
 	public ProjectRoot findRoot() {
-		return framedGraph.v().has("ferma_type", ProjectRoot.class.getName()).next(ProjectRoot.class);
+		return framedGraph.v().has(ProjectRoot.class).nextExplicit(ProjectRoot.class);
 	}
 
 	//	@Override
