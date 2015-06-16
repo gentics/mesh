@@ -1,13 +1,10 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.ext.apex.RoutingContext;
-
-import java.util.List;
+import io.vertx.ext.web.RoutingContext;
 
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.AuthRelationships;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
@@ -45,7 +42,6 @@ public class GroupService extends AbstractMeshService {
 		// Collections.sort(restGroup.getUsers());
 
 		for (Role role : group.getRoles()) {
-			// role = neo4jTemplate.fetch(role);
 			String name = role.getName();
 			if (name != null) {
 				restGroup.getRoles().add(name);
@@ -80,20 +76,6 @@ public class GroupService extends AbstractMeshService {
 		return framedGraph.frameElement(framedGraph.getVertex(id), Group.class);
 	}
 
-	/**
-	 * Return all groups that are assigned to the user
-	 * 
-	 * @param user
-	 * @return
-	 */
-	public List<? extends Group> listAllGroups(User user) {
-		// @Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
-		//
-		return framedGraph.v().has(Group.class).mark().in(AuthRelationships.MEMBER_OF).has(User.class).has("uuid", user.getUuid()).back()
-				.toListExplicit(Group.class);
-
-	}
-
 	public GroupRoot findRoot() {
 		return framedGraph.v().has(GroupRoot.class).nextExplicit(GroupRoot.class);
 	}
@@ -125,6 +107,5 @@ public class GroupService extends AbstractMeshService {
 
 	public void delete(Group group) {
 		group.getVertex().remove();
-
 	}
 }

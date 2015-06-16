@@ -1,5 +1,9 @@
 package com.gentics.mesh.demo;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
@@ -15,13 +19,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
@@ -317,7 +319,7 @@ public class DemoDataProvider {
 
 		String roleName = username + "_role";
 		Role role = roleService.create(roleName);
-		roleService.addPermission(role, role, PermissionType.READ);
+		role.addPermissions(role, READ_PERM);
 		roles.put(roleName, role);
 
 		String groupName = username + "_group";
@@ -478,22 +480,25 @@ public class DemoDataProvider {
 		// TODO determine why this is not working when using sdn
 		// Add Permissions
 		//		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
-		Role role= userInfo.getRole();
+		Role role = userInfo.getRole();
 
 		for (Vertex vertex : framedGraph.getVertices()) {
-			WrappedVertex wrappedVertex = (WrappedVertex)vertex;
-			
+			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+
 			//TODO typecheck? and verify how orient will behave
 			if (role.getVertex().getId() == vertex.getId()) {
 				log.info("Skipping own role");
 				continue;
 			}
-			GraphPermission  perm = role.addPermission(framedGraph.frameElement(wrappedVertex.getBaseElement(), MeshVertex.class));
 
-			perm.setProperty("permissions-read", true);
-			perm.setProperty("permissions-delete", true);
-			perm.setProperty("permissions-create", true);
-			perm.setProperty("permissions-update", true);
+			MeshVertex meshVertex = framedGraph.frameElement(wrappedVertex.getBaseElement(), MeshVertex.class);
+			role.addPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+
+			//			GraphPermission perm = role.addPermissions();
+			//			perm.setProperty("permissions-read", true);
+			//			perm.setProperty("permissions-delete", true);
+			//			perm.setProperty("permissions-create", true);
+			//			perm.setProperty("permissions-update", true);
 			// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
 			// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
 			// genericNodeService.save(node);

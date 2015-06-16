@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.http;
 
 import io.vertx.core.Handler;
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

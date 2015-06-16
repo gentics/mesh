@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -8,7 +12,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.ext.apex.Route;
+import io.vertx.ext.web.Route;
 
 import java.util.List;
 import java.util.Map;
@@ -21,10 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
@@ -95,8 +98,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
-				rcs.loadObject(rc, "tagUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, (AsyncResult<Tag> srh) -> {
 					MeshNode node = rh.result();
 					Tag tag = srh.result();
 					node.addTag(tag);
@@ -112,8 +115,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
-				rcs.loadObject(rc, "tagUuid", projectName, PermissionType.READ, (AsyncResult<Tag> srh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, (AsyncResult<Tag> srh) -> {
 					MeshNode node = rh.result();
 					Tag tag = srh.result();
 					node.removeTag(tag);
@@ -143,7 +146,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 			Future<MeshNode> contentCreated = Future.future();
 
-			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, PermissionType.CREATE, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, CREATE_PERM, (AsyncResult<MeshNode> rh) -> {
 
 				MeshNode rootNodeForContent = rh.result();
 				MeshNode node = nodeService.create();
@@ -183,7 +186,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					}
 				}
 
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, PermissionType.CREATE), node);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, CREATE_PERM), node);
 
 				/* Assign the content to the tag and save the tag */
 				//				rootTagForContent.(content);
@@ -203,7 +206,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, READ_PERM, (AsyncResult<MeshNode> rh) -> {
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
@@ -246,7 +249,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, (AsyncResult<MeshNode> rh) -> {
 				MeshNode node = rh.result();
 				nodeService.delete(node);
 			}, trh -> {
@@ -272,7 +275,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, READ_PERM, (AsyncResult<MeshNode> rh) -> {
 				MeshNode content = rh.result();
 
 				NodeUpdateRequest request = fromJson(rc, NodeUpdateRequest.class);
@@ -304,20 +307,20 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 									}
 								}
 
-				}
-			} else {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-				return;
-			}
+							}
+						} else {
+							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+							return;
+						}
 
-		}
-	}, trh -> {
-		if (trh.failed()) {
-			rc.fail(trh.cause());
-		}
-		MeshNode content = trh.result();
-		rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
-	}		);
+					}
+				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
+					MeshNode content = trh.result();
+					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
+				});
 
 		});
 	}

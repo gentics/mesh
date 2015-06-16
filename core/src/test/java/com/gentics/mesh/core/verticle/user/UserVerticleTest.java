@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle.user;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -18,7 +22,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
@@ -54,10 +57,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), user, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(user, READ_PERM);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
@@ -174,10 +174,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(user, UPDATE_PERM);
 		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
 
@@ -193,10 +190,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateUserWithNoPermission() throws Exception {
 		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), user, PermissionType.UPDATE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(user, UPDATE_PERM);
 
 		UserResponse updatedUser = new UserResponse();
 		updatedUser.setEmailAddress("n.user@spam.gentics.com");
@@ -247,7 +241,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		//		try (Transaction tx = graphDb.beginTx()) {
 		info.getGroup().addUser(conflictingUser);
 		// Add update permission to group in order to create the user in that group
-		roleService.addPermission(info.getRole(), info.getGroup(), PermissionType.CREATE);
+		info.getRole().addPermissions(info.getGroup(), CREATE_PERM);
 		//			tx.success();
 		//		}
 
@@ -386,9 +380,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		User user = userService.create("extraUser");
 		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.addPermission(info.getRole(), user, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), user, PermissionType.CREATE);
-		roleService.addPermission(info.getRole(), user, PermissionType.READ);
+		info.getRole().addPermissions(user, UPDATE_PERM);
+		info.getRole().addPermissions(user, CREATE_PERM);
+		info.getRole().addPermissions(user, READ_PERM);
 		//			tx.success();
 		//		}
 		assertNotNull(user.getUuid());
@@ -407,10 +401,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteByUUID() throws Exception {
 		User extraUser = userService.create("extraUser");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.addPermission(info.getRole(), extraUser, PermissionType.DELETE);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(extraUser, DELETE_PERM);
 		assertNotNull(extraUser.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + extraUser.getUuid(), 200, "OK");

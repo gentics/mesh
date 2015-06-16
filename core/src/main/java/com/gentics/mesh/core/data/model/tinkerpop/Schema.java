@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 
 public class Schema extends GenericNode {
@@ -54,11 +54,11 @@ public class Schema extends GenericNode {
 	}
 
 	public List<? extends Translated> getI18nTranslations() {
-		return outE(BasicRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
+		return outE(MeshRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
 	}
 
 	public List<? extends BasicPropertyType> getPropertyTypeSchemas() {
-		return out(BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyType.class);
+		return out(MeshRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyType.class);
 	}
 
 	//	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)

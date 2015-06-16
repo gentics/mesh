@@ -115,7 +115,12 @@
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-auth-service</artifactId>
+			<artifactId>vertx-auth-common</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-auth-shiro</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
 
@@ -253,7 +258,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-apex</artifactId>
+			<artifactId>vertx-web</artifactId>
 			<version>${vertx.version}</version>
 			<exclusions>
 				<exclusion>

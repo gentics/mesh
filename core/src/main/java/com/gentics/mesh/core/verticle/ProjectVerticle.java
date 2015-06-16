@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -8,7 +12,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.ext.apex.Route;
+import io.vertx.ext.web.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -17,10 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
@@ -56,7 +59,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
-			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 
 				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
@@ -93,7 +96,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			Future<Project> projectCreated = Future.future();
 			MeshRoot meshRoot = meshRootService.findRoot();
-			rcs.hasPermission(rc, meshRoot, PermissionType.CREATE, rh -> {
+			rcs.hasPermission(rc, meshRoot, CREATE_PERM, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
 					return;
@@ -108,7 +111,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					roleService.addCRUDPermissionOnRole(rc, new MeshPermission(meshRoot, PermissionType.CREATE), project);
+					roleService.addCRUDPermissionOnRole(rc, new MeshPermission(meshRoot, CREATE_PERM), project);
 					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?
@@ -130,7 +133,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Project> rh) -> {
 					if (rh.failed()) {
 						rc.fail(rh.cause());
 					}
@@ -172,7 +175,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);

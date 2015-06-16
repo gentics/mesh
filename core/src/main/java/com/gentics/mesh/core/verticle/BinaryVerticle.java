@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.apex.FileUpload;
+import io.vertx.ext.web.FileUpload;
 
 import java.util.Set;
 
@@ -14,7 +15,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 
@@ -44,7 +44,7 @@ public class BinaryVerticle extends AbstractProjectRestVerticle {
 	private void addFileuploadHandler() {
 		route("/:uuid").method(HttpMethod.POST).handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
 				MeshNode node = rh.result();
 				Set<FileUpload> fileUploads = rc.fileUploads();
 				for (FileUpload ul : fileUploads) {

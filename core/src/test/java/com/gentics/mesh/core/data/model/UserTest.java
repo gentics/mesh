@@ -1,15 +1,15 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
@@ -39,10 +39,6 @@ public class UserTest extends AbstractDBTest {
 		user.setLastname(LASTNAME);
 		user.setPasswordHash(PASSWDHASH);
 
-//		try (Transaction tx = graphDb.beginTx()) {
-//			tx.success();
-//		}
-
 		User reloadedUser = userService.findOne(user.getId());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
@@ -60,10 +56,7 @@ public class UserTest extends AbstractDBTest {
 	public void testUserRoot() {
 		int nUserBefore = count(userService.findRoot().getUsers());
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			User user = userService.create("dummy12345");
-//			tx.success();
-//		}
+		User user = userService.create("dummy12345");
 
 		int nUserAfter = count(userService.findRoot().getUsers());
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
@@ -74,14 +67,11 @@ public class UserTest extends AbstractDBTest {
 	public void testFindUsersOfGroup() {
 
 		User extraUser = userService.create("extraUser");
-//		try (Transaction tx = graphDb.beginTx()) {
-			info.getGroup().addUser(extraUser);
-			roleService.addPermission(info.getRole(), extraUser, PermissionType.READ);
-//			tx.success();
-//		}
+		info.getGroup().addUser(extraUser);
+		info.getRole().addPermissions(extraUser, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		Page<User> userPage = userService.findByGroup(rc, info.getGroup(), new PagingInfo(1, 10));
+		Page<User> userPage = info.getGroup().getUsers().findByGroup(rc, info.getGroup(), new PagingInfo(1, 10));
 		assertEquals(2, userPage.getTotalElements());
 	}
 }

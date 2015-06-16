@@ -4,8 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.apex.RoutingContext;
-import io.vertx.ext.apex.Session;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 import java.io.IOException;
 
@@ -101,11 +101,12 @@ public abstract class AbstractDBTest {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 
+		io.vertx.ext.auth.User vertxUser = mock(io.vertx.ext.auth.User.class);
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);
 		JsonObject principal = new JsonObject();
 		principal.put("uuid", user.getUuid());
-		when(session.getPrincipal()).thenReturn(principal);
+		when(vertxUser.principal()).thenReturn(principal);
 		// Create login session
 		// String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
 		// String loginSessionId = null;

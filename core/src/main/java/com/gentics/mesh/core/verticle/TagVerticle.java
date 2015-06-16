@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -10,7 +14,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.Route;
+import io.vertx.ext.web.Route;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +28,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
@@ -90,7 +93,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.UPDATE, (AsyncResult<Tag> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
@@ -155,7 +158,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
-			rcs.loadObjectByUuid(rc, request.getTagUuid(), PermissionType.CREATE, (AsyncResult<Tag> rh) -> {
+			rcs.loadObjectByUuid(rc, request.getTagUuid(), CREATE_PERM, (AsyncResult<Tag> rh) -> {
 				Tag rootTag = rh.result();
 
 				Tag newTag = tagService.create();
@@ -186,7 +189,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.READ, null, (AsyncResult<Tag> trh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, null, (AsyncResult<Tag> trh) -> {
 				Tag tag = trh.result();
 				rc.response().setStatusCode(200).end(toJson(tagService.transformToRest(rc, tag)));
 			});
@@ -222,7 +225,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, PermissionType.DELETE, (AsyncResult<Tag> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 				tagService.delete(tag);
 			}, trh -> {

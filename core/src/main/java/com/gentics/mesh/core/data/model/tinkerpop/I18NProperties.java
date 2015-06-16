@@ -3,16 +3,16 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
-import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 
 public class I18NProperties extends MeshVertex {
 
 	public Language getLanguage() {
-		return out(BasicRelationships.HAS_LANGUAGE).next(Language.class);
+		return out(MeshRelationships.HAS_LANGUAGE).next(Language.class);
 	}
 
 	public void setLanguage(Language language) {
-		setLinkOut(language, BasicRelationships.HAS_LANGUAGE);
+		setLinkOut(language, MeshRelationships.HAS_LANGUAGE);
 	}
 
 	public Map<String, String> getProperties() {

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -7,15 +8,13 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.SchemaService;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.test.AbstractDBTest;
 
-public class ObjectSchemaTest extends AbstractDBTest {
+public class SchemaTest extends AbstractDBTest {
 
 	@Autowired
 	private SchemaService schemaService;
@@ -27,8 +26,8 @@ public class ObjectSchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testFindByName() {
-		assertNotNull(schemaService.findByName(DemoDataProvider.PROJECT_NAME, "content"));
-		assertNull(schemaService.findByName(DemoDataProvider.PROJECT_NAME, "content1235"));
+		assertNotNull(schemaService.findByName(PROJECT_NAME, "content"));
+		assertNull(schemaService.findByName(PROJECT_NAME, "content1235"));
 	}
 
 	@Test

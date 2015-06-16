@@ -7,18 +7,17 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.RoutingContext;
-import io.vertx.ext.apex.handler.AuthHandler;
-import io.vertx.ext.apex.handler.BasicAuthHandler;
-import io.vertx.ext.apex.handler.BodyHandler;
-import io.vertx.ext.apex.handler.CorsHandler;
-import io.vertx.ext.apex.handler.SessionHandler;
-import io.vertx.ext.apex.handler.impl.SessionHandlerImpl;
-import io.vertx.ext.apex.sstore.LocalSessionStore;
-import io.vertx.ext.apex.sstore.SessionStore;
 import io.vertx.ext.auth.AuthProvider;
-import io.vertx.ext.auth.shiro.impl.ShiroAuthProviderImpl;
 import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.AuthHandler;
+import io.vertx.ext.web.handler.BasicAuthHandler;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
+import io.vertx.ext.web.sstore.LocalSessionStore;
+import io.vertx.ext.web.sstore.SessionStore;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -33,10 +32,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.auth.EnhancedShiroAuthRealmImpl;
 import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
+import com.gentics.mesh.auth.MeshShiroAuthProvider;
 import com.gentics.mesh.etc.config.MeshConfiguration;
-import com.syncleus.ferma.DelegatingFramedGraph;
+import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -114,7 +113,7 @@ public class MeshSpringConfiguration {
 		graph.createKeyIndex("languageTag", Vertex.class);
 		graph.createKeyIndex("name", Vertex.class);
 		graph.createKeyIndex("key", Vertex.class);
-		FramedGraph framedGraph = new DelegatingFramedGraph(graph, true, false);
+		FramedGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
 		return framedGraph;
 	}
 
@@ -140,15 +139,6 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
-	public GraphBackedAuthorizingRealm customSecurityRealm() {
-		GraphBackedAuthorizingRealm realm = new GraphBackedAuthorizingRealm();
-		realm.setCacheManager(new MemoryConstrainedCacheManager());
-		realm.setAuthenticationCachingEnabled(true);
-		realm.setCachingEnabled(true);
-		return realm;
-	}
-
-	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
 	}
@@ -166,11 +156,13 @@ public class MeshSpringConfiguration {
 
 	@Bean
 	public AuthProvider authProvider() {
-		EnhancedShiroAuthRealmImpl realm = new EnhancedShiroAuthRealmImpl(customSecurityRealm());
-		// ExposingShiroAuthProvider provider = new ExposingShiroAuthProvider(vertx(), realm);
-		// MeshAuthServiceImpl authService = new MeshAuthServiceImpl(vertx(), new JsonObject(), provider);
-		// SecurityUtils.setSecurityManager(realm.getSecurityManager());
-		return new ShiroAuthProviderImpl(vertx(), realm);
+
+		GraphBackedAuthorizingRealm realm = new GraphBackedAuthorizingRealm();
+		realm.setCacheManager(new MemoryConstrainedCacheManager());
+		realm.setAuthenticationCachingEnabled(true);
+		realm.setCachingEnabled(true);
+
+		return new MeshShiroAuthProvider(vertx(), realm);
 	}
 
 	public CorsHandler corsHandler() {

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.verticle.group;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,7 +15,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.service.GroupService;
@@ -47,11 +48,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testReadRolesByGroup() throws Exception {
 
 		Role extraRole = roleService.create("extraRole");
-		//		try (Transaction tx = graphDb.beginTx()) {
 		info.getGroup().addRole(extraRole);
-		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + uuid + "/roles", 200, "OK");
@@ -69,10 +67,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroup() throws Exception {
 		Role extraRole = roleService.create("extraRole");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		assertEquals(1, count(info.getGroup().getRoles()));
 		String uuid = info.getGroup().getUuid();
@@ -113,11 +108,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveRoleFromGroup() throws Exception {
 		Role extraRole = roleService.create("extraRole");
-		//		try (Transaction tx = graphDb.beginTx()) {
 		info.getGroup().addRole(extraRole);
-		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(extraRole, READ_PERM);
 		assertEquals(2, count(info.getGroup().getRoles()));
 
 		String uuid = info.getGroup().getUuid();
@@ -134,10 +126,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 
 		Role extraRole = roleService.create("extraRole");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
 		System.out.println(response);
@@ -153,10 +142,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 		Role extraRole = roleService.create("extraRole");
 
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(group, UPDATE_PERM);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());
@@ -187,8 +173,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(group.getUuid());
 		assertNotNull(extraRole.getUuid());
 
-		roleService.addPermission(info.getRole(), extraRole, PermissionType.READ);
-		roleService.addPermission(info.getRole(), group, PermissionType.UPDATE);
+		info.getRole().addPermissions(extraRole, READ_PERM);
+		info.getRole().addPermissions(group, UPDATE_PERM);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
@@ -201,11 +187,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 
 		Role extraRole = roleService.create("extraRole");
-		//		try (Transaction tx = graphDb.beginTx()) {
 		group.addRole(extraRole);
-		roleService.revokePermission(info.getRole(), group, PermissionType.UPDATE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(group, UPDATE_PERM);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());

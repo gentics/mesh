@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -33,7 +33,6 @@ public class TagService extends AbstractMeshService {
 	@Autowired
 	private ProjectService projectService;
 
-
 	@Autowired
 	private UserService userService;
 
@@ -49,7 +48,7 @@ public class TagService extends AbstractMeshService {
 		info.setLanguageService(languageService);
 		info.setContentService(nodeService);
 		info.setSpringConfiguration(springConfiguration);
-//		info.setTagService(this);
+		//		info.setTagService(this);
 
 		// Configuration
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
@@ -63,19 +62,20 @@ public class TagService extends AbstractMeshService {
 	}
 
 	public Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
+		String userUuid = rc.user().principal().getString("uuid");
+
 		//tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
 		return null;
 	}
 
 	public Page<Tag> findTags(RoutingContext rc, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
+		String userUuid = rc.user().principal().getString("uuid");
 		//tagRepository.findTags(userUuid, projectName, node, languageTags, pagingInfo);
 		return null;
 	}
 
 	public Page<MeshNode> findTaggedNodes(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
+		String userUuid = rc.user().principal().getString("uuid");
 		//findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
 		return null;
 	}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.webroot;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertNotNull;
@@ -10,7 +11,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
@@ -63,10 +63,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		String englishPath = "News/2015";
 		MeshNode newsFolder = data().getFolder("2015");
 		System.out.println(newsFolder.getUuid());
-//		try (Transaction tx = graphDb.beginTx()) {
-			roleService.revokePermission(info.getRole(), newsFolder, PermissionType.READ);
-//			tx.success();
-//		}
+		info.getRole().revokePermissions(newsFolder, READ_PERM);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, newsFolder.getUuid());

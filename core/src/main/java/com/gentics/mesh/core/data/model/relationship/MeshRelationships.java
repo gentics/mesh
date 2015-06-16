@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.data.model.relationship;
 
-import org.neo4j.graphdb.RelationshipType;
+public class MeshRelationships {
 
-public class BasicRelationships {
+	//Auth Relationships
+	public static final String MEMBER_OF = "MEMBER_OF";
 
 	// Project
 	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
@@ -17,6 +18,7 @@ public class BasicRelationships {
 	//Tags
 	public static final String HAS_TAG_ROOT = "HAS_TAG_ROOT";
 	public static final String HAS_TAG = "HAS_TAG";
+
 	//Misc
 	public static final String LINKED = "LINKED";
 	public static final String HAS_CREATOR = "HAS_CREATOR";

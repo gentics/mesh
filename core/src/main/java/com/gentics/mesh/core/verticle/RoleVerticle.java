@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -14,10 +18,9 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -50,7 +53,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				roleService.delete(role);
 			}, trh -> {
@@ -61,7 +64,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 
@@ -81,7 +84,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleResponse restRole = roleService.transformToRest(role);
 				rc.response().setStatusCode(200).end(toJson(restRole));
@@ -131,11 +134,11 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 			Future<Role> roleCreated = Future.future();
-			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), PermissionType.CREATE, (AsyncResult<Group> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, (AsyncResult<Group> rh) -> {
 				Role role = roleService.create(requestModel.getName());
 				Group parentGroup = rh.result();
 				role.addGroup(parentGroup);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), role);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, CREATE_PERM), role);
 				roleCreated.complete(role);
 			}, trh -> {
 				Role role = roleCreated.result();

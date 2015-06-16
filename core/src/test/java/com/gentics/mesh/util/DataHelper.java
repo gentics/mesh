@@ -1,10 +1,9 @@
 package com.gentics.mesh.util;
 
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.auth.PermissionType;
+import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
@@ -19,7 +18,6 @@ import com.gentics.mesh.core.data.service.UserService;
  *
  */
 @Component
-//@Transactional(readOnly = true)
 public class DataHelper {
 
 	@Autowired
@@ -31,26 +29,19 @@ public class DataHelper {
 	@Autowired
 	private UserService userService;
 
-	public MeshNode addNode(MeshNode parentNode, String name, Role role, PermissionType... perms) {
+	public MeshNode addNode(MeshNode parentNode, String name, Role role, Permission... perms) {
 		MeshNode node = nodeService.create();
-//		try (Transaction tx = graphDb.beginTx()) {
-
-			for (PermissionType perm : perms) {
-				roleService.addPermission(role, node, perm);
-			}
-//			tx.success();
-//		}
+		for (Permission perm : perms) {
+			role.addPermissions(node, perm);
+		}
 		return node;
 	}
 
-	public User addUser(String name, Role role, PermissionType... perms) {
+	public User addUser(String name, Role role, Permission... perms) {
 		User user = userService.create("extraUser");
-//		try (Transaction tx = graphDb.beginTx()) {
-			for (PermissionType perm : perms) {
-				roleService.addPermission(role, user, perm);
-			}
-//			tx.success();
-//		}
+		for (Permission perm : perms) {
+			role.addPermissions(user, perm);
+		}
 		return user;
 	}
 }

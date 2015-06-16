@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 

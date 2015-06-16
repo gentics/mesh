@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.model;
 import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.ArrayList;
 import java.util.List;

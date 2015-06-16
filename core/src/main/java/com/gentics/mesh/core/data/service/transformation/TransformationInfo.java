@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.service.transformation;
 
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;

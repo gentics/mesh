@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -69,7 +69,7 @@ public class MeshNodeService extends AbstractMeshService {
 	}
 
 	public Page<MeshNode> findChildren(RoutingContext rc, String projectName, MeshNode parentNode, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
+		String userUuid = rc.user().principal().getString("uuid");
 
 		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
 		//		if (languageTags == null || languageTags.size() == 0) {
@@ -101,7 +101,7 @@ public class MeshNodeService extends AbstractMeshService {
 	}
 
 	public Page<MeshNode> findAll(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
+		String userUuid = rc.user().principal().getString("uuid");
 
 		//		@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
 		//				+ "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT node",

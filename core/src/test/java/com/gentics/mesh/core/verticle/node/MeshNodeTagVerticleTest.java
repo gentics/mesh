@@ -14,10 +14,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
+import static com.gentics.mesh.core.data.model.relationship.Permission.*;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
@@ -72,7 +72,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
 		assertFalse(contains(node.getTags(), tag));
-		roleService.revokePermission(info.getRole(), node, PermissionType.UPDATE);
+		info.getRole().revokePermissions( node, UPDATE_PERM);
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
@@ -85,7 +85,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
 		assertFalse(contains(node.getTags(), tag));
-		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
+		info.getRole().revokePermissions( tag, READ_PERM);
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
@@ -120,7 +120,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
 		assertTrue(contains(node.getTags(), tag));
-		roleService.revokePermission(info.getRole(), node, PermissionType.UPDATE);
+		info.getRole().revokePermissions( node, UPDATE_PERM);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
@@ -133,7 +133,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
 		assertTrue(contains(node.getTags(), tag));
-		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
+		info.getRole().revokePermissions( tag, READ_PERM);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());

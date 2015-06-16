@@ -1,23 +1,22 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.Route;
+import io.vertx.ext.web.Route;
 
 import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -26,6 +25,7 @@ import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+
 
 @Component
 @Scope("singleton")
@@ -79,7 +79,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						throw new EntityNotFoundException(message);
 					}
 
-					rc.session().hasPermission(new MeshPermission(node, PermissionType.READ).toString(), rh -> {
+					rc.user().isAuthorised(new MeshPermission(node, READ_PERM).toString(), rh -> {
 						languageTags.add(lastSegment.getLanguageTag());
 						if (rh.result()) {
 							bch.complete(node);

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.text.MessageFormat;
 import java.util.Locale;

@@ -1,6 +1,11 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.ext.apex.RoutingContext;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.HashSet;
 import java.util.List;
@@ -9,14 +14,10 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.AuthRelationships;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.GraphPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
@@ -26,15 +27,11 @@ import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.PagingHelper;
-import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
 public class RoleService extends AbstractMeshService {
-
-	@Autowired
-	private PermissionService permissionService;
 
 	@Autowired
 	private UserService userService;
@@ -59,37 +56,6 @@ public class RoleService extends AbstractMeshService {
 		return framedGraph.v().has(Role.class).toListExplicit(Role.class);
 	}
 
-	public void addPermission(Role role, MeshVertex node, PermissionType... permissionTypes) {
-		GraphPermission permission = getGraphPermission(role, node);
-		// Create a new permission relation when no existing one could be found
-		if (permission == null) {
-			permission = permissionService.create(role, node);
-		}
-		for (int i = 0; i < permissionTypes.length; i++) {
-			//TODO tinkerpop - handle grant call. Javahandler?
-			//			permission.grant(permissionTypes[i]);
-		}
-	}
-
-	public GraphPermission getGraphPermission(Role role, MeshVertex node) {
-		//		return roleRepository.findPermission(role.getId(), node.getId());
-		return null;
-	}
-
-	public GraphPermission revokePermission(Role role, MeshVertex node, PermissionType... permissionTypes) {
-		GraphPermission permission = getGraphPermission(role, node);
-		// Create a new permission relation when no existing one could be found
-		if (permission == null) {
-			return null;
-		}
-		for (int i = 0; i < permissionTypes.length; i++) {
-			permission.revoke(permissionTypes[i]);
-		}
-		role.addPermission(node);
-		//		permission = neo4jTemplate.save(permission);
-		return permission;
-	}
-
 	public RoleResponse transformToRest(Role role) {
 		if (role == null) {
 			throw new HttpStatusCodeErrorException(500, "Role can't be null");
@@ -99,7 +65,6 @@ public class RoleService extends AbstractMeshService {
 		restRole.setName(role.getName());
 
 		for (Group group : role.getGroups()) {
-			//			group = neo4jTemplate.fetch(group);
 			GroupResponse restGroup = new GroupResponse();
 			restGroup.setName(group.getName());
 			restGroup.setUuid(group.getUuid());
@@ -111,7 +76,7 @@ public class RoleService extends AbstractMeshService {
 
 	public void addCRUDPermissionOnRole(RoutingContext rc, MeshPermission meshPermission, GenericNode targetNode) {
 
-		User user = userService.findByUUID(rc.session().getPrincipal().getString("uuid"));
+		User user = userService.findUser(rc);
 
 		// 1. Determine all roles that grant given permission
 		//		Node userNode = neo4jTemplate.getPersistentState(user);
@@ -140,18 +105,18 @@ public class RoleService extends AbstractMeshService {
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : roles) {
-			addPermission(role, targetNode, PermissionType.CREATE, PermissionType.READ, PermissionType.UPDATE, PermissionType.DELETE);
+			role.addPermissions(targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 		}
 	}
 
 	public Page<Role> findAll(RoutingContext rc, PagingInfo pagingInfo) {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
+//		String userUuid = rc.session().getPrincipal().getString("uuid");
 		//		return findAll(userUuid, new MeshPageRequest(pagingInfo));
 		return null;
 	}
 
 	public Page<? extends Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) throws InvalidArgumentException {
-		String userUuid = rc.session().getPrincipal().getString("uuid");
+		String userUuid = rc.user().principal().getString("uuid");
 		//		return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 		//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
 		//			+ " return role ORDER BY role.name desc",
@@ -161,23 +126,20 @@ public class RoleService extends AbstractMeshService {
 		//		Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
 		//			return null;
 		//		}
-		VertexTraversal<?, ?, ?> traversal = framedGraph.v().has(Role.class).mark().out(AuthRelationships.HAS_ROLE)
-				.filter((VertexFrame vertex) -> {
-					return group.getId() == vertex.getId();
-				}).back();
+		VertexTraversal<?, ?, ?> traversal = framedGraph.v().has(Role.class).mark().out(HAS_ROLE).hasId(group.getId()).back();
 
 		Page<? extends Role> page = PagingHelper.getPagedResult(traversal, pagingInfo, Role.class);
 		return page;
 
 	}
 
-	public GraphPermission findPermission(Long roleId, Long nodeId) {
-		//	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
-		return null;
-	}
+	//	public GraphPermission findPermission(Long roleId, Long nodeId) {
+	//		//	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
+	//		return null;
+	//	}
 
 	public RoleRoot findRoot() {
-		return framedGraph.v().has(RoleRoot.class).next(RoleRoot.class);
+		return framedGraph.v().has(RoleRoot.class).nextExplicit(RoleRoot.class);
 	}
 
 	public Role create(String name) {

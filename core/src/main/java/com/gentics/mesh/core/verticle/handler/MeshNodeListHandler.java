@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.verticle.handler;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import io.vertx.core.AsyncResult;
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -37,7 +37,7 @@ public class MeshNodeListHandler {
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<Tag> rh) -> {
+		rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Tag> rh) -> {
 			Tag tag = rh.result();
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
@@ -58,7 +58,7 @@ public class MeshNodeListHandler {
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<MeshNode> rh) -> {
+		rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<MeshNode> rh) -> {
 			MeshNode parentNode = rh.result();
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);

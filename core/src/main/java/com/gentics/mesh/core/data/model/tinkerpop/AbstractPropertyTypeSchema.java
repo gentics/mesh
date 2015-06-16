@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
-import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 
 public class AbstractPropertyTypeSchema extends MeshVertex {
@@ -15,7 +15,7 @@ public class AbstractPropertyTypeSchema extends MeshVertex {
 	private static final String ORDER_KEY = "order";
 
 	public List<? extends Translated> getI18nTranslations() {
-		return outE(BasicRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
+		return outE(MeshRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
 	}
 
 	public String getType() {

@@ -1,6 +1,6 @@
 package com.gentics.mesh.util;
 
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
 
@@ -12,7 +12,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 

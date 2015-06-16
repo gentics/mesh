@@ -3,8 +3,8 @@ package com.gentics.mesh.etc;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.Router;
-import io.vertx.ext.apex.handler.CookieHandler;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CookieHandler;
 
 import java.util.HashMap;
 import java.util.Map;

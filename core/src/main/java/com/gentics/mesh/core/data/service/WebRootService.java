@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.apex.RoutingContext;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.relationship.BasicRelationships;
+import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.error.EntityNotFoundException;
@@ -80,7 +80,7 @@ public class WebRootService {
 		AtomicReference<Vertex> foundNode = new AtomicReference<>();
 		// TODO i wonder whether streams are useful in this case. We need to benchmark this section
 
-		for (Edge rel : node.getEdges(Direction.IN, BasicRelationships.HAS_PARENT_NODE)) {
+		for (Edge rel : node.getEdges(Direction.IN, MeshRelationships.HAS_PARENT_NODE)) {
 			Vertex nextHop = rel.getVertex(Direction.IN);
 			String languageTag = getI18nPropertyLanguageTag(nextHop, Schema.NAME_KEYWORD, i18nTagName);
 			if (languageTag != null) {
@@ -106,7 +106,7 @@ public class WebRootService {
 			return null;
 		}
 		key = "properties-" + key;
-		for (Edge rel : node.getEdges(Direction.OUT, BasicRelationships.HAS_I18N_PROPERTIES)) {
+		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_I18N_PROPERTIES)) {
 			String languageTag = (String) rel.getProperty("languageTag");
 			Vertex i18nPropertiesNode = rel.getVertex(Direction.OUT);
 			String i18nValue = i18nPropertiesNode.getProperty(key);
@@ -271,7 +271,7 @@ public class WebRootService {
 	 * @return
 	 */
 	private Vertex findSubTagWithName(Vertex rootTag, String name) {
-		for (Edge edge : rootTag.getEdges(Direction.OUT, BasicRelationships.HAS_TAG)) {
+		for (Edge edge : rootTag.getEdges(Direction.OUT, MeshRelationships.HAS_TAG)) {
 			Vertex endNode = edge.getVertex(Direction.OUT);
 			if (endNode != null && hasNodeI18NProperty(endNode, "name", name)) {
 				return endNode;
@@ -293,7 +293,7 @@ public class WebRootService {
 	 * @return true when the property could be found. Otherwise false.
 	 */
 	private boolean hasNodeI18NProperty(Vertex node, String key, String value) {
-		for (Edge rel : node.getEdges(Direction.OUT, BasicRelationships.HAS_I18N_PROPERTIES)) {
+		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_I18N_PROPERTIES)) {
 			if (rel.getVertex(Direction.OUT) != null && value.equals(rel.getVertex(Direction.OUT).getProperty("properties-" + key))) {
 				return true;
 			}

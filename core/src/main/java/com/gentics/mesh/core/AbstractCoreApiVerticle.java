@@ -1,6 +1,6 @@
 package com.gentics.mesh.core;
 
-import io.vertx.ext.apex.Router;
+import io.vertx.ext.web.Router;
 
 public abstract class AbstractCoreApiVerticle extends AbstractRestVerticle {
 

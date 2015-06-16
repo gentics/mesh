@@ -1,6 +1,6 @@
 package com.gentics.mesh.core;
 
-import io.vertx.ext.apex.Router;
+import io.vertx.ext.web.Router;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

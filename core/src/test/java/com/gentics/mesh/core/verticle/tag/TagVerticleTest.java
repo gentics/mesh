@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.verticle.tag;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -19,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -153,10 +155,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		Tag tag = data().getTag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), tag, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(tag, READ_PERM);
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
@@ -182,8 +181,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String restName = tagResponse.getProperty("displayName");
 		assertNotNull("The english displayName should be listed in the rest response since we requested the english tag", restName);
 		assertEquals(name, restName);
-		//			tx.success();
-		//		}
 
 		// 2. Setup the request object
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
@@ -208,10 +205,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = data().getTag("vehicle");
 
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), tag, PermissionType.UPDATE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(tag, UPDATE_PERM);
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -226,11 +220,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
 
-		//		try (Transaction tx = graphDb.beginTx()) {
 		String name = tag.getName(data().getEnglish());
 		assertEquals(name, tagUpdateRequest.getProperty("name"));
-		//			tx.success();
-		//		}
 	}
 
 	// Delete Tests
@@ -247,10 +238,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 
 		Tag tag = data().getTag("vehicle");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), tag, PermissionType.DELETE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(tag, DELETE_PERM);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());

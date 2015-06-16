@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.binary;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
@@ -12,7 +13,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.verticle.BinaryVerticle;
@@ -34,7 +34,7 @@ public class BinaryVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpload() throws Exception {
 		MeshNode node = data().getFolder("news");
-		roleService.addPermission(info.getRole(), node, PermissionType.UPDATE);
+		info.getRole().addPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(10000);
 		String response = sendFileUploadRequest(buffer, "/api/v1/" + PROJECT_NAME + "/binaries/" + node.getUuid(), 200, "OK");
 		System.out.println(response);

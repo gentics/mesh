@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -19,7 +22,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
@@ -137,10 +139,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
 		// Revoke create perm
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), data().getFolder("news"), PermissionType.CREATE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(data().getFolder("news"), CREATE_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
@@ -280,7 +279,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), node, PermissionType.READ);
+		info.getRole().revokePermissions(node, READ_PERM);
 		//			tx.success();
 		//		}
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
@@ -346,14 +345,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(newName, restNode.getProperty("name"));
 		assertEquals(newNode, restNode.getProperty("content"));
 
-		// Reload and update
-		//		try (Transaction tx = graphDb.beginTx()) {
-		//			node = nodeService.reload(node);
+		// TODO Reload and update
 		assertEquals(newFilename, node.getDisplayName(data().getEnglish()));
 		assertEquals(newName, node.getName(data().getEnglish()));
 		assertEquals(newNode, node.getContent(data().getEnglish()));
-		//			tx.success();
-		//		}
 
 	}
 
@@ -372,10 +367,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteNodeWithNoPerm() throws Exception {
 
 		MeshNode node = data().getFolder("2015");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), node, PermissionType.DELETE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(node, DELETE_PERM);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());

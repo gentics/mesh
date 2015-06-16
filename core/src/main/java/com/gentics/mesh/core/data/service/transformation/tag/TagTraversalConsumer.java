@@ -1,16 +1,15 @@
 package com.gentics.mesh.core.data.service.transformation.tag;
 
-import io.vertx.ext.apex.Session;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import io.vertx.ext.auth.User;
+import io.vertx.ext.web.Session;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
-import org.neo4j.graphdb.Transaction;
-
-import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
@@ -35,7 +34,8 @@ public class TagTraversalConsumer implements Consumer<Tag> {
 	public void accept(Tag tag) {
 		String currentUuid = tag.getUuid();
 		Session session = info.getRoutingContext().session();
-		session.hasPermission(new MeshPermission(tag, PermissionType.READ).toString(), handler -> {
+		User user = info.getRoutingContext().user();
+		user.isAuthorised(new MeshPermission(tag, READ_PERM).toString(), handler -> {
 			if (handler.result()) {
 //				try (Transaction tx = info.getGraphDb().beginTx()) {
 //					Tag loadedTag = info.getNeo4jTemplate().fetch(tag);

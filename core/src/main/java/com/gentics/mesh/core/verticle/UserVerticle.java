@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -8,17 +12,16 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.ext.apex.Route;
+import io.vertx.ext.web.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -29,7 +32,6 @@ import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
-
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -50,7 +52,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.READ, (AsyncResult<User> rh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<User> rh) -> {
 			}, trh -> {
 				User user = trh.result();
 				UserResponse restUser = userService.transformToRest(user);
@@ -83,7 +85,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", PermissionType.DELETE, (AsyncResult<User> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<User> rh) -> {
 				User user = rh.result();
 				userService.delete(user);
 			}, trh -> {
@@ -95,7 +97,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", PermissionType.UPDATE, (AsyncResult<User> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<User> rh) -> {
 				User user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
@@ -156,7 +158,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			Future<User> userCreated = Future.future();
 			// Load the parent group for the user
-			rcs.loadObjectByUuid(rc, groupUuid, PermissionType.CREATE, (AsyncResult<Group> rh) -> {
+			rcs.loadObjectByUuid(rc, groupUuid, CREATE_PERM, (AsyncResult<Group> rh) -> {
 
 				Group parentGroup = rh.result();
 
@@ -172,7 +174,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				user.setEmailAddress(requestModel.getEmailAddress());
 				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				user.addGroup(parentGroup);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, PermissionType.CREATE), user);
+				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, CREATE_PERM), user);
 				userCreated.complete(user);
 			}, trh -> {
 				User user = userCreated.result();

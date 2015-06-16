@@ -20,8 +20,10 @@
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<neo4j.version>2.2.2</neo4j.version>
 		<neo4j.cypher.version>2.1.4</neo4j.cypher.version>
+		<ferma.version>2.0.7-SNAPSHOT</ferma.version>
 		<spring.version>4.0.7.RELEASE</spring.version>
 		<neo4vertx.version>2.0.0-SNAPSHOT</neo4vertx.version>
+		<blueprints-neo4j2-graph.version>2.7.0-SNAPSHOT</blueprints-neo4j2-graph.version>
 	</properties>
 
 	<parent>
@@ -59,12 +61,12 @@
 			<dependency>
 				<groupId>com.tinkerpop.blueprints</groupId>
 				<artifactId>blueprints-neo4j2-graph</artifactId>
-				<version>2.7.0-SNAPSHOT</version>
+				<version>${blueprints-neo4j2-graph.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.syncleus.ferma</groupId>
 				<artifactId>ferma</artifactId>
-				<version>2.0.7-SNAPSHOT</version>
+				<version>${ferma.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>

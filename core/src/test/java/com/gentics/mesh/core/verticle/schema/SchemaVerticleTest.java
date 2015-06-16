@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle.schema;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.TinkerpopUtils.contains;
 import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
@@ -18,16 +22,15 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.auth.PermissionType;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.service.SchemaService;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.ProjectService;
+import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.response.ObjectSchemaListResponse;
-import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
+import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -113,14 +116,11 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllSchemaList() throws Exception {
 		final int nSchemas = 22;
 		Schema noPermSchema = schemaService.create("no_perm_schema");
-		//		try (Transaction tx = graphDb.beginTx()) {
 		for (int i = 0; i < nSchemas; i++) {
 			Schema extraSchema = schemaService.create("extra_schema_" + i);
-			roleService.addPermission(info.getRole(), extraSchema, PermissionType.READ);
+			info.getRole().addPermissions(extraSchema, READ_PERM);
 		}
 		// Don't grant permissions to no perm schema
-		//			tx.success();
-		//		}
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
@@ -153,8 +153,8 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		// Verify that the no perm schema is not part of the response
 		final String noPermSchemaName = noPermSchema.getName();
-		List<SchemaResponse> filteredSchemaList = allSchemas.parallelStream()
-				.filter(restSchema -> restSchema.getName().equals(noPermSchemaName)).collect(Collectors.toList());
+		List<SchemaResponse> filteredSchemaList = allSchemas.parallelStream().filter(restSchema -> restSchema.getName().equals(noPermSchemaName))
+				.collect(Collectors.toList());
 		assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
 		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
@@ -182,13 +182,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testReadSchemaByUUIDWithNoPerm() throws Exception {
 		Schema schema = data().getSchema("content");
 
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.addPermission(info.getRole(), schema, PermissionType.DELETE);
-		roleService.addPermission(info.getRole(), schema, PermissionType.UPDATE);
-		roleService.addPermission(info.getRole(), schema, PermissionType.CREATE);
-		roleService.revokePermission(info.getRole(), schema, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(schema, DELETE_PERM);
+		info.getRole().addPermissions(schema, UPDATE_PERM);
+		info.getRole().addPermissions(schema, CREATE_PERM);
+		info.getRole().revokePermissions(schema, READ_PERM);
 
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, schema.getUuid());
@@ -265,16 +262,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Schema schema = data().getSchema("content");
 
 		Project extraProject = projectService.create("extraProject");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		//			tx.success();
-		//		}
 
 		// Add only read perms
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-		roleService.addPermission(info.getRole(), extraProject, PermissionType.UPDATE);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(schema, READ_PERM);
+		info.getRole().addPermissions(extraProject, UPDATE_PERM);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
 		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
@@ -291,12 +282,9 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 
 		Project extraProject = projectService.create("extraProject");
-		//		try (Transaction tx = graphDb.beginTx()) {
 		// Add only read perms
-		roleService.addPermission(info.getRole(), schema, PermissionType.READ);
-		roleService.addPermission(info.getRole(), project, PermissionType.READ);
-		//			tx.success();
-		//		}
+		info.getRole().addPermissions(schema, READ_PERM);
+		info.getRole().addPermissions(project, READ_PERM);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 403,
 				"Forbidden");
@@ -312,11 +300,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
 		Schema schema = data().getSchema("content");
 		Project project = data().getProject();
-		//		try (Transaction tx = graphDb.beginTx()) {
-		//project = neo4jTemplate.fetch(project);
 		assertTrue("The schema should be assigned to the project.", contains(schema.getProjects(), project));
-		//			tx.success();
-		//		}
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 200, "OK");
 		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
@@ -337,10 +321,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertTrue("The schema should be assigned to the project.", contains(schema.getProjects(), project));
 
 		// Revoke update perms on the project
-		//		try (Transaction tx = graphDb.beginTx()) {
-		roleService.revokePermission(info.getRole(), project, PermissionType.UPDATE);
-		//			tx.success();
-		//		}
+		info.getRole().revokePermissions(project, UPDATE_PERM);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
