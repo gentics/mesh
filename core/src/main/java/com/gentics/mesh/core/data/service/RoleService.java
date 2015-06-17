@@ -31,11 +31,11 @@ public class RoleService extends AbstractMeshService {
 	private UserService userService;
 
 	public Role findByUUID(String uuid) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(Role.class), Role.class);
+		return fg.v().has("uuid", uuid).nextOrDefault(Role.class, null);
 	}
 
 	public Role findByName(String name) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Role.class), Role.class);
+		return fg.v().has("name", name).nextOrDefault(Role.class, null);
 	}
 
 	public List<? extends Role> findAll() {
@@ -96,7 +96,7 @@ public class RoleService extends AbstractMeshService {
 
 	public RoleRoot findRoot() {
 		//TODO use static reference of mesh root and edge instead?
-		return TraversalHelper.nextExplicitOrNull(fg.v().has(RoleRoot.class), RoleRoot.class);
+		return fg.v().nextOrDefault(RoleRoot.class, null);
 	}
 
 	public Role create(String name) {

@@ -12,7 +12,6 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.util.TraversalHelper;
 
 @Component
 public class MeshNodeService extends AbstractMeshService {
@@ -49,28 +48,28 @@ public class MeshNodeService extends AbstractMeshService {
 	public Page<MeshNode> findAll(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		String userUuid = rc.user().principal().getString("uuid");
 
-		//		@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
-		//				+ "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT node",
+		// @Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
+		// + "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT node",
 		//
-		//		countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
-		//				+ "RETURN count(DISTINCT node)"
+		// countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
+		// + "RETURN count(DISTINCT node)"
 		//
-		//		)
-		//		Page<MeshNode> findAll(String userUuid, String projectName, List<String> languageTags, Pageable pageable);
+		// )
+		// Page<MeshNode> findAll(String userUuid, String projectName, List<String> languageTags, Pageable pageable);
 		//
-		//		@Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "WITH p, node " + ORDER_BY_NAME_DESC
-		//				+ "RETURN DISTINCT node",
+		// @Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "WITH p, node " + ORDER_BY_NAME_DESC
+		// + "RETURN DISTINCT node",
 		//
-		//		countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "RETURN count(DISTINCT node)")
-		//		Page<MeshNode> findAll(String userUuid, String projectName, Pageable pageable);
+		// countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "RETURN count(DISTINCT node)")
+		// Page<MeshNode> findAll(String userUuid, String projectName, Pageable pageable);
 
-		//		
-		//		MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-		//		if (languageTags == null || languageTags.size() == 0) {
-		//			return findAll(userUuid, projectName, pr);
-		//		} else {
-		//			return findAll(userUuid, projectName, languageTags, pr);
-		//		}
+		//
+		// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
+		// if (languageTags == null || languageTags.size() == 0) {
+		// return findAll(userUuid, projectName, pr);
+		// } else {
+		// return findAll(userUuid, projectName, languageTags, pr);
+		// }
 		return null;
 	}
 
@@ -89,7 +88,7 @@ public class MeshNodeService extends AbstractMeshService {
 	}
 
 	public MeshNode findByUUID(String uuid) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(MeshNode.class), MeshNode.class);
+		return fg.v().has("uuid", uuid).nextOrDefault(MeshNode.class, null);
 	}
 
 	public void delete(MeshNode node) {

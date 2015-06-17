@@ -4,13 +4,12 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.util.TraversalHelper;
 
 @Component
 public class LanguageService extends AbstractMeshService {
 
 	public Language findByName(String name) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Language.class), Language.class);
+		return fg.v().has("name", name).nextOrDefault(Language.class,null);
 	}
 
 	/**
@@ -20,7 +19,7 @@ public class LanguageService extends AbstractMeshService {
 	 * @return Found language or null if none could be found
 	 */
 	public Language findByLanguageTag(String languageTag) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("languageTag", languageTag).has(Language.class), Language.class);
+		return fg.v().has("languageTag", languageTag).nextOrDefault(Language.class, null);
 	}
 
 	//	@Override
@@ -40,7 +39,7 @@ public class LanguageService extends AbstractMeshService {
 	//	}
 
 	public LanguageRoot findRoot() {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has(LanguageRoot.class), LanguageRoot.class);
+		return fg.v().nextOrDefault(LanguageRoot.class, null);
 	}
 
 	public LanguageRoot createRoot() {

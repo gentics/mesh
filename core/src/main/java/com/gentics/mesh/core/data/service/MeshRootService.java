@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
 
 @Component
@@ -14,7 +13,7 @@ public class MeshRootService {
 	private FramedGraph fg;
 
 	public MeshRoot findRoot() {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has(MeshRoot.class), MeshRoot.class);
+		return fg.v().has(MeshRoot.class).nextOrDefault(MeshRoot.class, null);
 	}
 
 	public MeshRoot create() {

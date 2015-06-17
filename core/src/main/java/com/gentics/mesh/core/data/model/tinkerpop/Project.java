@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG_ROOT;
-import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class Project extends GenericNode {
 	}
 
 	public SchemaRoot getSchemaRoot() {
-		return nextOrNull(out(HAS_SCHEMA_ROOT),SchemaRoot.class);
+		return out(HAS_SCHEMA_ROOT).nextOrDefault(SchemaRoot.class, null);
 	}
 
 	public void setSchemaRoot(SchemaRoot schemaRoot) {
@@ -36,7 +35,7 @@ public class Project extends GenericNode {
 	}
 
 	public MeshNode getRootNode() {
-		return nextOrNull(out(HAS_ROOT_NODE),MeshNode.class);
+		return out(HAS_ROOT_NODE).nextOrDefault(MeshNode.class, null);
 	}
 
 	public void setRootNode(MeshNode rootNode) {
@@ -49,27 +48,27 @@ public class Project extends GenericNode {
 		projectResponse.setName(getName());
 		projectResponse.setPerms(user.getPermissions(this));
 
-		//		MeshNode rootNode = neo4jTemplate.fetch(project.getRootNode());
-		//		if (rootNode != null) {
-		//			projectResponse.setRootNodeUuid(rootNode.getUuid());
-		//		} else {
-		//			log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
-		//		}
-		//		return projectResponse;
+		// MeshNode rootNode = neo4jTemplate.fetch(project.getRootNode());
+		// if (rootNode != null) {
+		// projectResponse.setRootNodeUuid(rootNode.getUuid());
+		// } else {
+		// log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
+		// }
+		// return projectResponse;
 		return null;
 	}
-	
-	//	@Override
-	//	public Project save(Project project) {
-	//		ProjectRoot root = projectRepository.findRoot();
-	//		if (root == null) {
-	//			throw new NullPointerException("The project root node could not be found.");
-	//		}
-	//		project = neo4jTemplate.save(project);
-	//		root.getProjects().add(project);
-	//		neo4jTemplate.save(root);
-	//		return project;
-	//		return null;
-	//	}
+
+	// @Override
+	// public Project save(Project project) {
+	// ProjectRoot root = projectRepository.findRoot();
+	// if (root == null) {
+	// throw new NullPointerException("The project root node could not be found.");
+	// }
+	// project = neo4jTemplate.save(project);
+	// root.getProjects().add(project);
+	// neo4jTemplate.save(root);
+	// return project;
+	// return null;
+	// }
 
 }

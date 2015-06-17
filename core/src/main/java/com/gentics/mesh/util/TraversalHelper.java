@@ -29,11 +29,11 @@ public final class TraversalHelper {
 
 		int low = page * pageSize;
 		int upper = low + pageSize - 1;
-		//		System.out.println("Page: " + page);
-		//		System.out.println("Range: " + low + " to " + (low + pageSize));
+		// System.out.println("Page: " + page);
+		// System.out.println("Range: " + low + " to " + (low + pageSize));
 
 		int count = (int) traversal.count();
-		//		System.out.println("Found: " + count);
+		// System.out.println("Found: " + count);
 
 		// Only add the filter to the pipeline when the needed parameters were correctly specified.
 		if (order != UNSORTED && sortBy != null) {
@@ -59,31 +59,6 @@ public final class TraversalHelper {
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, PagingInfo pagingInfo, Class<T> classOfT)
 			throws InvalidArgumentException {
 		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(), classOfT);
-	}
-
-	public static <T> T nextOrNull(VertexTraversal<?, ?, ?> traversal, Class<T> classOfT) {
-		try {
-			if (traversal.hasNext()) {
-				return traversal.next(classOfT);
-			} else {
-				return null;
-			}
-		} catch (FastNoSuchElementException e) {
-			return null;
-		}
-	}
-
-	public static <T> T nextExplicitOrNull(VertexTraversal<?, ?, ?> traversal, Class<T> classOfT) {
-		try {
-			if (traversal.hasNext()) {
-				return traversal.nextExplicit(classOfT);
-			} else {
-				return null;
-			}
-		} catch (FastNoSuchElementException e) {
-			return null;
-		}
-
 	}
 
 }

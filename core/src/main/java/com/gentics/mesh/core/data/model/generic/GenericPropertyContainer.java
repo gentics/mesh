@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.model.generic;
 
-import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
-
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
@@ -9,9 +7,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class GenericPropertyContainer extends GenericNode {
 
@@ -35,7 +31,7 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public Schema getSchema() {
-		return nextOrNull(out(MeshRelationships.HAS_OBJECT_SCHEMA), Schema.class);
+		return out(MeshRelationships.HAS_OBJECT_SCHEMA).nextOrDefault(Schema.class, null);
 	}
 
 	public void setProperty(Language language, String string, String string2) {
@@ -82,8 +78,8 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public I18NProperties getI18nProperties(Language language) {
-		I18NProperties properties = TraversalHelper.nextOrNull(
-				outE(MeshRelationships.HAS_I18N_PROPERTIES).has("languageTag", language.getLanguageTag()).inV(), I18NProperties.class);
+		I18NProperties properties = outE(MeshRelationships.HAS_I18N_PROPERTIES).has("languageTag", language.getLanguageTag()).inV()
+				.nextOrDefault(I18NProperties.class, null);
 		return properties;
 	}
 
@@ -103,8 +99,8 @@ public class GenericPropertyContainer extends GenericNode {
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(MeshRelationships.HAS_I18N_PROPERTIES)
 				.has(Translated.LANGUAGE_TAG_KEY, language.getLanguageTag());
 		if (edgeTraversal.hasNext()) {
-			VertexTraversal<?, ?, ?> traversal = edgeTraversal.next().outV();
-			properties = TraversalHelper.nextExplicitOrNull(traversal, I18NProperties.class);
+			properties = edgeTraversal.next().outV().nextOrDefault(I18NProperties.class, null);
+
 		}
 
 		if (properties == null) {

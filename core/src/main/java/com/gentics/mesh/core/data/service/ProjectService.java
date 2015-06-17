@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
 public class ProjectService extends AbstractMeshService {
@@ -26,11 +25,11 @@ public class ProjectService extends AbstractMeshService {
 	protected UserService userService;
 
 	public Project findByName(String projectName) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", projectName), Project.class);
+		return fg.v().has("name", projectName).nextOrDefault(Project.class, null);
 	}
 
 	public Project findByUUID(String uuid) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid), Project.class);
+		return fg.v().has("uuid", uuid).nextOrDefault(Project.class, null);
 	}
 
 	public List<? extends Project> findAll() {
@@ -41,14 +40,17 @@ public class ProjectService extends AbstractMeshService {
 	}
 
 	public Page<? extends Project> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
-		//	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return project ORDER BY project.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return count(project)")
-		//TODO check whether it is faster to use meshroot for starting the traversal
+		// @Query(value =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return project ORDER BY project.name",
+		// countQuery =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return count(project)")
+		// TODO check whether it is faster to use meshroot for starting the traversal
 		return TraversalHelper.getPagedResult(fg.v().has(ProjectRoot.class), pagingInfo, Project.class);
 
 	}
 
 	public ProjectRoot findRoot() {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has(ProjectRoot.class), ProjectRoot.class);
+		return fg.v().nextOrDefault(ProjectRoot.class, null);
 	}
 
 	public Project create(String name) {

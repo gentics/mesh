@@ -1,14 +1,12 @@
 package com.gentics.mesh.core.data.model.root;
 
-import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
-
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 
 public class MeshRoot extends MeshVertex {
 
 	public UserRoot getUserRoot() {
-		return nextOrNull(out(MeshRelationships.HAS_USER_ROOT), UserRoot.class);
+		return out(MeshRelationships.HAS_USER_ROOT).nextOrDefault(UserRoot.class, null);
 	}
 
 	public void setUserRoot(UserRoot userRoot) {
@@ -16,7 +14,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public RoleRoot getRoleRoot() {
-		return nextOrNull(out(MeshRelationships.HAS_ROLE_ROOT), RoleRoot.class);
+		return out(MeshRelationships.HAS_ROLE_ROOT).nextOrDefault(RoleRoot.class, null);
 	}
 
 	public void setRoleRoot(RoleRoot roleRoot) {
@@ -24,7 +22,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public GroupRoot getGroupRoot() {
-		return nextOrNull(out(MeshRelationships.HAS_GROUP_ROOT), GroupRoot.class);
+		return out(MeshRelationships.HAS_GROUP_ROOT).nextOrDefault(GroupRoot.class, null);
 	}
 
 	public void setGroupRoot(GroupRoot groupRoot) {
@@ -32,7 +30,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public SchemaRoot getObjectSchemaRoot() {
-		return nextOrNull(out(MeshRelationships.HAS_SCHEMA_ROOT), SchemaRoot.class);
+		return out(MeshRelationships.HAS_SCHEMA_ROOT).nextOrDefault(SchemaRoot.class, null);
 	}
 
 	public void setSchemaRoot(SchemaRoot schemaRoot) {
@@ -40,7 +38,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public LanguageRoot getLanguageRoot() {
-		return nextOrNull(out(MeshRelationships.HAS_LANGUAGE_ROOT), LanguageRoot.class);
+		return out(MeshRelationships.HAS_LANGUAGE_ROOT).nextOrDefault(LanguageRoot.class, null);
 	}
 
 	public void setLanguageRoot(LanguageRoot languageRoot) {
@@ -48,7 +46,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public ProjectRoot getProjectRoot() {
-		return nextOrNull(out(MeshRelationships.HAS_PROJECT_ROOT), ProjectRoot.class);
+		return out(MeshRelationships.HAS_PROJECT_ROOT).nextOrDefault(ProjectRoot.class, null);
 	}
 
 	public void setProjectRoot(ProjectRoot projectRoot) {

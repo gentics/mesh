@@ -110,7 +110,7 @@ public class MeshUser extends GenericNode {
 	public String[] getPermissions(MeshVertex node) {
 
 		Set<Permission> permissions = new HashSet<>();
-		Set<? extends String> labels = in(HAS_USER).out(HAS_ROLE).outE(Permission.labels()).mark().outV().hasId(node.getId()).back().label().toSet();
+		Set<? extends String> labels = in(HAS_USER).out(HAS_ROLE).outE(Permission.labels()).mark().outV().retain(node).back().label().toSet();
 		for (String label : labels) {
 			permissions.add(Permission.valueOf(label));
 		}
@@ -118,7 +118,7 @@ public class MeshUser extends GenericNode {
 	}
 
 	public boolean hasPermission(MeshVertex node, Permission permission) {
-		return in(HAS_USER).out(HAS_ROLE).outE(permission.getLabel()).mark().outV().hasId(node.getId()).back().label().hasNext();
+		return in(HAS_USER).out(HAS_ROLE).outE(permission.getLabel()).mark().outV().retain(node).back().label().hasNext();
 	}
 
 	public UserResponse transformToRest() {

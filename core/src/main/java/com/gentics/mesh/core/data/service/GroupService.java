@@ -15,11 +15,11 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 public class GroupService extends AbstractMeshService {
 
 	public Group findByName(String name) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Group.class), Group.class);
+		return fg.v().has("name", name).nextOrDefault(Group.class, null);
 	}
 
 	public Group findByUUID(String uuid) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(Group.class), Group.class);
+		return fg.v().has("uuid", uuid).nextOrDefault(Group.class, null);
 	}
 
 	public Group findOne(Long id) {
@@ -28,8 +28,7 @@ public class GroupService extends AbstractMeshService {
 	}
 
 	public GroupRoot findRoot() {
-
-		return TraversalHelper.nextExplicitOrNull(fg.v().has(GroupRoot.class), GroupRoot.class);
+		return fg.v().nextOrDefault(GroupRoot.class, null);
 	}
 
 	public Page<? extends Group> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {

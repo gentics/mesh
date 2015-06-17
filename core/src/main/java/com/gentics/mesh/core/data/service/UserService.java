@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.util.TraversalHelper;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -37,23 +36,23 @@ public class UserService extends AbstractMeshService {
 	}
 
 	public MeshUser findByUsername(String username) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("username", username).has(MeshUser.class), MeshUser.class);
+		return fg.v().has("username", username).nextOrDefault(MeshUser.class, null);
 	}
 
-	//TODO reduce calls to this method
+	// TODO reduce calls to this method
 	public MeshUser findUser(RoutingContext rc) {
 		String userUuid = rc.user().principal().getString("uuid");
 		return findByUUID(userUuid);
 	}
 
 	//
-	//	User findByPrincipalId(String principalId) {
-	//		// @Query("MATCH (u:_User) WHERE u.username + '%' + u.emailAddress + '%' +  u.passwordHash = {0} return u")
-	//		return null;
-	//	}
+	// User findByPrincipalId(String principalId) {
+	// // @Query("MATCH (u:_User) WHERE u.username + '%' + u.emailAddress + '%' +  u.passwordHash = {0} return u")
+	// return null;
+	// }
 
 	public UserRoot findRoot() {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has(UserRoot.class), UserRoot.class);
+		return fg.v().nextOrDefault(UserRoot.class, null);
 	}
 
 	public MeshUser create(String username) {
@@ -80,7 +79,7 @@ public class UserService extends AbstractMeshService {
 	}
 
 	public MeshUser findByUUID(String uuid) {
-		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(MeshUser.class), MeshUser.class);
+		return fg.v().has("uuid", uuid).nextOrDefault(MeshUser.class, null);
 	}
 
 }

@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.model.generic;
 
-import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
-
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
@@ -23,7 +21,7 @@ public class GenericNode extends MeshVertex {
 	}
 
 	public MeshUser getCreator() {
-		return nextOrNull(out(MeshRelationships.HAS_CREATOR), MeshUser.class);
+		return out(MeshRelationships.HAS_CREATOR).nextOrDefault(MeshUser.class, null);
 	}
 
 	public void setCreator(MeshUser user) {

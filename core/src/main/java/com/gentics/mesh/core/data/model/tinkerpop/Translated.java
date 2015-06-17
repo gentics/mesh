@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
-import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
 import com.syncleus.ferma.AbstractEdgeFrame;
 
 public class Translated extends AbstractEdgeFrame {
@@ -17,10 +16,10 @@ public class Translated extends AbstractEdgeFrame {
 	}
 
 	public GenericNode getStartNode() {
-		return nextOrNull(inV(), GenericNode.class);
+		return inV().nextOrDefault(GenericNode.class, null);
 	}
 
 	public I18NProperties getI18NProperties() {
-		return nextOrNull(outV(), I18NProperties.class);
+		return outV().nextOrDefault(I18NProperties.class, null);
 	}
 }

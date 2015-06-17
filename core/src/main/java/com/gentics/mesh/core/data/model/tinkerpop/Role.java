@@ -30,7 +30,7 @@ public class Role extends GenericNode {
 	public Set<Permission> getPermissions(MeshNode node) {
 		Set<Permission> permissions = new HashSet<>();
 		//TODO use retain
-		Set<? extends String> labels = outE(Permission.labels()).mark().outV().hasId(node.getId()).back().label().toSet();
+		Set<? extends String> labels = outE(Permission.labels()).mark().outV().retain(node).back().label().toSet();
 		for (String label : labels) {
 			permissions.add(Permission.valueOf(label));
 		}
