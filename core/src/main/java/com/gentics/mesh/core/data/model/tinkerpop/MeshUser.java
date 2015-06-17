@@ -20,9 +20,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 @Configurable
 public class MeshUser extends GenericNode {
 
-	@Autowired
-	private MeshSpringConfiguration springConfiguration;
-
 	public static String FIRSTNAME_KEY = "firstname";
 
 	public static String LASTNAME_KEY = "lastname";
@@ -160,9 +157,7 @@ public class MeshUser extends GenericNode {
 		return getUsername() + "%" + getEmailAddress() + "%" + getPasswordHash() + "#" + getId();
 	}
 
-	public void setPassword(String password) {
-		setPasswordHash(springConfiguration.passwordEncoder().encode(password));
-	}
+
 
 	//	public boolean isPermitted(long userNodeId, MeshPermission genericPermission) throws Exception {
 	//		if (genericPermission.getTargetNode() == null) {

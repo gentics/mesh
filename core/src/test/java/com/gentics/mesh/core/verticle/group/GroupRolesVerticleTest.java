@@ -2,7 +2,6 @@ package com.gentics.mesh.core.verticle.group;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -69,20 +68,20 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Role extraRole = roleService.create("extraRole");
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
-		assertEquals(1, count(info.getGroup().getRoles()));
+		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		assertTrue(restGroup.getRoles().contains("extraRole"));
 
 		Group group = info.getGroup();
-		assertEquals(2, count(group.getRoles()));
+		assertEquals(2, group.getRoles().size());
 
 	}
 
 	@Test
 	public void testAddBogusRoleToGroup() throws Exception {
-		assertEquals(1, count(info.getGroup().getRoles()));
+		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + "bogus", 404, "Not Found");
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
@@ -96,13 +95,13 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		//			tx.success();
 		//		}
 
-		assertEquals(1, count(info.getGroup().getRoles()));
+		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, extraRole.getUuid());
 
 		Group group = info.getGroup();
-		assertEquals(1, count(group.getRoles()));
+		assertEquals(1, group.getRoles().size());
 	}
 
 	@Test
@@ -110,14 +109,14 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Role extraRole = roleService.create("extraRole");
 		info.getGroup().addRole(extraRole);
 		info.getRole().addPermissions(extraRole, READ_PERM);
-		assertEquals(2, count(info.getGroup().getRoles()));
+		assertEquals(2, info.getGroup().getRoles().size());
 
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		assertFalse(restGroup.getRoles().contains("extraRole"));
 		Group group = info.getGroup();
-		assertEquals(1, count(group.getRoles()));
+		assertEquals(1, group.getRoles().size());
 
 	}
 

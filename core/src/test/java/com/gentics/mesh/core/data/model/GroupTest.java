@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.model;
 
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
@@ -26,31 +25,21 @@ public class GroupTest extends AbstractDBTest {
 	public void testUserGroup() {
 		MeshUser user = userService.create("testuser");
 		Group group = groupService.create("test group");
-//		try (Transaction tx = graphDb.beginTx()) {
-			group.addUser(user);
-//			tx.success();
-//		}
+		group.addUser(user);
 
-		assertEquals("The group should contain one member.", 1, count(group.getUsers()));
+		assertEquals("The group should contain one member.", 1, group.getUsers().size());
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			MeshUser userOfGroup = group.getUsers().iterator().next();
-			//			neo4jTemplate.fetch(userOfGroup);
-			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
-//			tx.success();
-//		}
+		MeshUser userOfGroup = group.getUsers().iterator().next();
+		assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 	}
 
 	@Test
 	public void testRootGroupNode() {
-		int nGroupsBefore = count(groupService.findRoot().getGroups());
+		int nGroupsBefore = groupService.findRoot().getGroups().size();
 
 		Group group = groupService.create("test group2");
-//		try (Transaction tx = graphDb.beginTx()) {
-//			tx.success();
-//		}
 
-		int nGroupsAfter = count(groupService.findRoot().getGroups());
+		int nGroupsAfter = groupService.findRoot().getGroups().size();
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);
 	}
 

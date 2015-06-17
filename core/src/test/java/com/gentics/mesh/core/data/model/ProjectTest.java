@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.model;
 
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -42,13 +41,13 @@ public class ProjectTest extends AbstractDBTest {
 
 	@Test
 	public void testProjectRootNode() {
-		int nProjectsBefore = count(projectService.findRoot().getProjects());
+		int nProjectsBefore = projectService.findRoot().getProjects().size();
 
 		//		try (Transaction tx = graphDb.beginTx()) {
 		Project project = projectService.create("test1234556");
 		//			tx.success();
 		//		}
-		int nProjectsAfter = count(projectService.findRoot().getProjects());
+		int nProjectsAfter = projectService.findRoot().getProjects().size();
 		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}
 }

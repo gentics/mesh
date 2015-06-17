@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -91,19 +90,15 @@ public class TagTest extends AbstractDBTest {
 
 		Language german = languageService.findByLanguageTag("de");
 
-		//		try (Transaction tx = graphDb.beginTx()) {
 		node.setDisplayName(german, GERMAN_TEST_FILENAME);
 		node.setName(german, "german node name");
 
 		// Assign the tag to the node
 		node.addTag(tag);
-		//			tx.success();
-		//		}
 
-		// Reload the tag and check whether the content was set
-		//		try (Transaction tx = graphDb.beginTx()) {
+		// TODO: Reload the tag and check whether the content was set
 
-		assertEquals("The tag should have exactly one node.", 1, count(tag.getNodes()));
+		assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
 		MeshNode contentFromTag = tag.getNodes().iterator().next();
 		assertNotNull(contentFromTag);
 		assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
@@ -113,9 +108,7 @@ public class TagTest extends AbstractDBTest {
 		// Remove the file/content and check whether the content was really removed
 		tag.removeNode(contentFromTag);
 		//TODO verify for removed node
-		//			tx.success();
-		//		}
-		assertEquals("The tag should not have any file.", 0, count(tag.getNodes()));
+		assertEquals("The tag should not have any file.", 0, tag.getNodes().size());
 
 	}
 

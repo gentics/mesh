@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.model;
 
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.vertx.ext.web.RoutingContext;
@@ -52,19 +51,12 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode newsNode = data().getContent("news overview");
 		assertNotNull(newsNode);
 		MeshNode newSubNode;
-		//		try (Transaction tx = graphDb.beginTx()) {
 		newSubNode = nodeService.create();
 		newSubNode.setParentNode(newsNode);
-		//			tx.success();
-		//		}
 
-		//		try (Transaction tx = graphDb.beginTx()) {
-		assertEquals(1, count(newsNode.getChildren()));
+		assertEquals(1, newsNode.getChildren().size());
 		MeshNode firstChild = newsNode.getChildren().iterator().next();
-		//			neo4jTemplate.fetch(firstChild);
 		assertEquals(newSubNode.getUuid(), firstChild.getUuid());
-		//			tx.success();
-		//		}
 	}
 
 	@Test
@@ -75,32 +67,21 @@ public class MeshNodeTest extends AbstractDBTest {
 		Tag carTag = data().getTag("car");
 		assertNotNull(carTag);
 
-		//		try (Transaction tx = graphDb.beginTx()) {
-
 		newsNode.addTag(carTag);
 
-		assertEquals(1, count(newsNode.getTags()));
+		assertEquals(1, newsNode.getTags().size());
 		Tag firstTag = newsNode.getTags().iterator().next();
-		//			neo4jTemplate.fetch(firstTag);
 		assertEquals(carTag.getUuid(), firstTag.getUuid());
-		//			tx.success();
-		//		}
 	}
 
 	@Test
 	public void testCreateNode() {
 		MeshNode node = nodeService.create();
-		//		try (Transaction tx = graphDb.beginTx()) {
 		node.setContent(data().getEnglish(), "english content");
 		node.setName(data().getEnglish(), "english.html");
-		//			tx.success();
-		//		}
 		assertNotNull(node.getUuid());
-		//		try (Transaction tx = graphDb.beginTx()) {
 		String text = node.getContent(data().getEnglish());
 		assertNotNull(text);
-		//			tx.success();
-		//		}
 	}
 
 	@Test

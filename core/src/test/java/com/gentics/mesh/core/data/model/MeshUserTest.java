@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.vertx.ext.web.RoutingContext;
@@ -17,7 +16,7 @@ import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 
-public class UserTest extends AbstractDBTest {
+public class MeshUserTest extends AbstractDBTest {
 
 	private UserInfo info;
 
@@ -56,11 +55,11 @@ public class UserTest extends AbstractDBTest {
 
 	@Test
 	public void testUserRoot() {
-		int nUserBefore = count(userService.findRoot().getUsers());
+		int nUserBefore = userService.findRoot().getUsers().size();
 
 		MeshUser user = userService.create("dummy12345");
 
-		int nUserAfter = count(userService.findRoot().getUsers());
+		int nUserAfter = userService.findRoot().getUsers().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 
 	}
@@ -74,7 +73,7 @@ public class UserTest extends AbstractDBTest {
 
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshShiroUser requestUser = getUser(rc);
-		Page<MeshUser> userPage =info.getGroup().getVisibleUsers(requestUser, new PagingInfo(1, 10));
+		Page<MeshUser> userPage = info.getGroup().getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 		assertEquals(2, userPage.getTotalElements());
 	}

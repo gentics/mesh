@@ -1,6 +1,5 @@
 package com.gentics.mesh.util;
 
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -12,11 +11,11 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
@@ -76,7 +75,7 @@ public class RestAssert {
 		assertEquals(user.getFirstname(), restUser.getFirstname());
 		assertEquals(user.getLastname(), restUser.getLastname());
 		assertEquals(user.getUuid(), restUser.getUuid());
-		assertEquals(count(user.getGroups()), restUser.getGroups().size());
+		assertEquals(user.getGroups().size(), restUser.getGroups().size());
 		// TODO groups
 	}
 

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PE
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -122,12 +121,12 @@ public class RoleTest extends AbstractDBTest {
 
 	@Test
 	public void testRoleRoot() {
-		int nRolesBefore = count(roleService.findRoot().getRoles());
+		int nRolesBefore = roleService.findRoot().getRoles().size();
 
 		final String roleName = "test2";
 		Role role = roleService.create(roleName);
 		assertNotNull(role);
-		int nRolesAfter = count(roleService.findRoot().getRoles());
+		int nRolesAfter = roleService.findRoot().getRoles().size();
 		assertEquals(nRolesBefore + 1, nRolesAfter);
 
 	}

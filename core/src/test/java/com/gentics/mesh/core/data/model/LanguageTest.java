@@ -1,12 +1,10 @@
 package com.gentics.mesh.core.data.model;
 
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
@@ -41,7 +39,7 @@ public class LanguageTest extends AbstractDBTest {
 
 	@Test
 	public void testLanguageRoot() {
-		int nLanguagesBefore = count(languageService.findRoot().getLanguages());
+		int nLanguagesBefore = languageService.findRoot().getLanguages().size();
 
 //		try (Transaction tx = graphDb.beginTx()) {
 			final String languageName = "klingon";
@@ -50,7 +48,7 @@ public class LanguageTest extends AbstractDBTest {
 //			tx.success();
 //		}
 
-		int nLanguagesAfter = count(languageService.findRoot().getLanguages());
+		int nLanguagesAfter = languageService.findRoot().getLanguages().size();
 		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 
 	}

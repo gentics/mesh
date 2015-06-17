@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -40,11 +39,7 @@ public class SchemaTest extends AbstractDBTest {
 	@Test
 	public void testDeleteByUUID() {
 		Schema schema = data().getSchema("content");
-//		try (Transaction tx = graphDb.beginTx()) {
-
-			schemaService.deleteByUUID(schema.getUuid());
-//			tx.success();
-//		}
+		schemaService.deleteByUUID(schema.getUuid());
 		assertNull(schemaService.findOne(schema.getId()));
 	}
 
@@ -62,14 +57,11 @@ public class SchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testObjectSchemaRootNode() {
-		int nSchemasBefore = count(schemaService.findRoot().getSchemas());
+		int nSchemasBefore = schemaService.findRoot().getSchemas().size();
 
 		Schema schema = schemaService.create("test1235");
-//		try (Transaction tx = graphDb.beginTx()) {
-//			tx.success();
-//		}
 
-		int nSchemasAfter = count(schemaService.findRoot().getSchemas());
+		int nSchemasAfter = schemaService.findRoot().getSchemas().size();
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);
 	}
 }

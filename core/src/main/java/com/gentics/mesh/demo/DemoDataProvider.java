@@ -310,7 +310,7 @@ public class DemoDataProvider {
 
 		MeshUser user = userService.create(username);
 		user.setUuid("UUIDOFUSER1");
-		user.setPassword(password);
+		userService.setPassword(user, password);
 		log.info("Creating user with username: " + username + " and password: " + password);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);

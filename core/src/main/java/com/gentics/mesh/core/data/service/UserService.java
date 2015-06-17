@@ -61,6 +61,10 @@ public class UserService extends AbstractMeshService {
 		return user;
 	}
 
+	public void setPassword(MeshUser user, String password) {
+		user.setPasswordHash(springConfiguration.passwordEncoder().encode(password));
+	}
+
 	public UserRoot createRoot() {
 		UserRoot root = framedGraph.addFramedVertex(UserRoot.class);
 		return root;

@@ -4,8 +4,6 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PE
 import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.util.TinkerpopUtils.contains;
-import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -79,7 +77,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Schema schema = schemaService.findByUUID(responseObject.getUuid());
 		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
-		assertEquals("There should be exactly one property schema.", 1, count(schema.getPropertyTypeSchemas()));
+		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
 
 	}
 
@@ -103,7 +101,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		// Verify that the object was created
 		Schema schema = schemaService.findByUUID(restSchema.getUuid());
 		test.assertSchema(schema, restSchema);
-		assertEquals("There should be exactly one property schema.", 1, count(schema.getPropertyTypeSchemas()));
+		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + restSchema.getUuid(), 200, "OK");
 		expectMessageResponse("schema_deleted", response, restSchema.getName());
@@ -272,7 +270,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(schema, restSchema);
 
 		// Reload the schema and check for expected changes
-		assertTrue("The schema should be added to the extra project", contains(schema.getProjects(), extraProject));
+		assertTrue("The schema should be added to the extra project", schema.getProjects().contains(extraProject));
 
 	}
 
@@ -291,7 +289,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_missing_perm", response, extraProject.getUuid());
 
 		// Reload the schema and check for expected changes
-		assertFalse("The schema should not have been added to the extra project", contains(schema.getProjects(), extraProject));
+		assertFalse("The schema should not have been added to the extra project", schema.getProjects().contains(extraProject));
 
 	}
 
@@ -300,7 +298,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
 		Schema schema = data().getSchema("content");
 		Project project = data().getProject();
-		assertTrue("The schema should be assigned to the project.", contains(schema.getProjects(), project));
+		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 200, "OK");
 		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
@@ -310,7 +308,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertFalse(restSchema.getProjects().stream().filter(p -> p.getName() == removedProjectName).findFirst().isPresent());
 
 		// Reload the schema and check for expected changes
-		assertFalse("The schema should have been removed from the extra project", contains(schema.getProjects(), project));
+		assertFalse("The schema should have been removed from the extra project", schema.getProjects().contains(project));
 	}
 
 	@Test
@@ -318,7 +316,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Schema schema = data().getSchema("content");
 		Project project = data().getProject();
 
-		assertTrue("The schema should be assigned to the project.", contains(schema.getProjects(), project));
+		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 
 		// Revoke update perms on the project
 		info.getRole().revokePermissions(project, UPDATE_PERM);
@@ -327,6 +325,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
 
 		// Reload the schema and check for expected changes
-		assertTrue("The schema should still be listed for the project.", contains(schema.getProjects(), project));
+		assertTrue("The schema should still be listed for the project.", schema.getProjects().contains(project));
 	}
 }

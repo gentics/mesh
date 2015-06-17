@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.TinkerpopUtils.contains;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -17,7 +18,6 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
-import static com.gentics.mesh.core.data.model.relationship.Permission.*;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
@@ -59,11 +59,11 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
-		assertFalse(contains(node.getTags(), tag));
+		assertFalse(node.getTags().contains(tag));
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertTrue(test.containsTag(restNode, tag));
-		assertTrue(contains(node.getTags(), tag));
+		assertTrue(node.getTags().contains(tag));
 		//TODO check for properties of the nested tag
 	}
 
@@ -71,26 +71,26 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testAddTagToNoPermNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
-		assertFalse(contains(node.getTags(), tag));
-		info.getRole().revokePermissions( node, UPDATE_PERM);
+		assertFalse(node.getTags().contains(tag));
+		info.getRole().revokePermissions(node, UPDATE_PERM);
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
 
-		assertFalse(contains(node.getTags(), tag));
+		assertFalse(node.getTags().contains(tag));
 	}
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
-		assertFalse(contains(node.getTags(), tag));
-		info.getRole().revokePermissions( tag, READ_PERM);
+		assertFalse(node.getTags().contains(tag));
+		info.getRole().revokePermissions(tag, READ_PERM);
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
 
-		assertFalse(contains(node.getTags(), tag));
+		assertFalse(node.getTags().contains(tag));
 	}
 
 	@Test
@@ -98,11 +98,11 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
 
-		assertTrue(contains(node.getTags(), tag));
+		assertTrue(node.getTags().contains(tag));
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertFalse(test.containsTag(restNode, tag));
-		assertFalse(contains(node.getTags(), tag));
+		assertFalse(node.getTags().contains(tag));
 		//TODO check for properties of the nested tag
 
 	}
@@ -119,27 +119,27 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveTagFromNoPermNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
-		assertTrue(contains(node.getTags(), tag));
-		info.getRole().revokePermissions( node, UPDATE_PERM);
+		assertTrue(node.getTags().contains(tag));
+		info.getRole().revokePermissions(node, UPDATE_PERM);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
 
-		assertTrue("The tag should not be removed from the node", contains(node.getTags(), tag));
+		assertTrue("The tag should not be removed from the node", node.getTags().contains(tag));
 	}
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
 		MeshNode node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
-		assertTrue(contains(node.getTags(), tag));
-		info.getRole().revokePermissions( tag, READ_PERM);
+		assertTrue(node.getTags().contains(tag));
+		info.getRole().revokePermissions(tag, READ_PERM);
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
 
 		//FramedVertexSet<Tag> tagSet = new FramedVertexSet<>(framedGraph, node.getTags(), Tag.class);
-		assertTrue("The tag should not have been removed from the node", contains(node.getTags(), tag));
+		assertTrue("The tag should not have been removed from the node", node.getTags().contains(tag));
 	}
 
 }

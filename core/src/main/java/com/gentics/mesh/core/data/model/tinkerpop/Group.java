@@ -25,8 +25,8 @@ public class Group extends GenericNode {
 		setProperty(NAME_KEY, name);
 	}
 
-	public Iterable<? extends MeshUser> getUsers() {
-		return in(HAS_USER).toList(MeshUser.class);
+	public List<? extends MeshUser> getUsers() {
+		return in(HAS_USER).has(MeshUser.class).toListExplicit(MeshUser.class);
 	}
 
 	//	@GremlinGroovy(value = "it.in('HAS_USER').order({ it.b.getProperty(fieldName) <=> it.a.getProperty(fieldName) })[skip..limit]")

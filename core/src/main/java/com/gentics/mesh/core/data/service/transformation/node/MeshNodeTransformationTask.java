@@ -72,7 +72,6 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 			/* Load the schema information */
 			if (node.getSchema() != null) {
-				//					ObjectSchema schema = info.getNeo4jTemplate().fetch(node.getSchema());
 				SchemaReference schemaReference = new SchemaReference();
 				schemaReference.setSchemaName(node.getSchema().getName());
 				schemaReference.setSchemaUuid(node.getSchema().getUuid());
