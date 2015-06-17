@@ -14,6 +14,6 @@ public class AbstractMeshService {
 	protected MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	protected FramedGraph framedGraph;
+	protected FramedGraph fg;
 
 }

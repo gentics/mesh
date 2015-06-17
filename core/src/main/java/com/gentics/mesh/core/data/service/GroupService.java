@@ -15,20 +15,21 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 public class GroupService extends AbstractMeshService {
 
 	public Group findByName(String name) {
-		return framedGraph.v().has("name", name).has(Group.class).nextExplicit(Group.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Group.class), Group.class);
 	}
 
 	public Group findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has(Group.class).nextExplicit(Group.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(Group.class), Group.class);
 	}
 
 	public Group findOne(Long id) {
 		// TODO move this in a dedicated utility class or ferma?
-		return framedGraph.frameElement(framedGraph.getVertex(id), Group.class);
+		return fg.frameElement(fg.getVertex(id), Group.class);
 	}
 
 	public GroupRoot findRoot() {
-		return framedGraph.v().has(GroupRoot.class).nextExplicit(GroupRoot.class);
+
+		return TraversalHelper.nextExplicitOrNull(fg.v().has(GroupRoot.class), GroupRoot.class);
 	}
 
 	public Page<? extends Group> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
@@ -38,13 +39,13 @@ public class GroupService extends AbstractMeshService {
 		// countQuery =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
 		// Page<Group> findAll(User requestUser, Pageable pageable);
-		VertexTraversal traversal = framedGraph.v().has(MeshUser.class);
+		VertexTraversal traversal = fg.v().has(MeshUser.class);
 		Page<? extends Group> groups = TraversalHelper.getPagedResult(traversal, pagingInfo, Group.class);
 		return groups;
 	}
 
 	public Group create(String name) {
-		Group group = framedGraph.addFramedVertex(Group.class);
+		Group group = fg.addFramedVertex(Group.class);
 		group.setName(name);
 		GroupRoot root = findRoot();
 		root.addGroup(group);
@@ -52,7 +53,7 @@ public class GroupService extends AbstractMeshService {
 	}
 
 	public GroupRoot createRoot() {
-		GroupRoot root = framedGraph.addFramedVertex(GroupRoot.class);
+		GroupRoot root = fg.addFramedVertex(GroupRoot.class);
 		return root;
 	}
 

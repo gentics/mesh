@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
 
 import java.util.List;
 
@@ -23,11 +24,11 @@ public class Project extends GenericNode {
 	}
 
 	public List<? extends TagFamilyRoot> getTagFamilies() {
-		return out(HAS_TAG_ROOT).toList(TagFamilyRoot.class);
+		return out(HAS_TAG_ROOT).has(TagFamilyRoot.class).toListExplicit(TagFamilyRoot.class);
 	}
 
 	public SchemaRoot getSchemaRoot() {
-		return out(HAS_SCHEMA_ROOT).next(SchemaRoot.class);
+		return nextOrNull(out(HAS_SCHEMA_ROOT),SchemaRoot.class);
 	}
 
 	public void setSchemaRoot(SchemaRoot schemaRoot) {
@@ -35,7 +36,7 @@ public class Project extends GenericNode {
 	}
 
 	public MeshNode getRootNode() {
-		return out(HAS_ROOT_NODE).next(MeshNode.class);
+		return nextOrNull(out(HAS_ROOT_NODE),MeshNode.class);
 	}
 
 	public void setRootNode(MeshNode rootNode) {

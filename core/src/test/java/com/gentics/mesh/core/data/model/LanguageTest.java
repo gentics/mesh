@@ -26,11 +26,8 @@ public class LanguageTest extends AbstractDBTest {
 		final String languageTag = "tlh";
 		final String languageName = "klingon";
 		Language lang = languageService.create(languageName, languageTag);
-//		try (Transaction tx = graphDb.beginTx()) {
-//			tx.success();
-//		}
-		//TODO reload?
-		lang = null;
+
+		lang = languageService.findByName(languageName);
 		assertNotNull(lang);
 		assertEquals(languageName, lang.getName());
 
@@ -41,12 +38,9 @@ public class LanguageTest extends AbstractDBTest {
 	public void testLanguageRoot() {
 		int nLanguagesBefore = languageService.findRoot().getLanguages().size();
 
-//		try (Transaction tx = graphDb.beginTx()) {
-			final String languageName = "klingon";
-			final String languageTag = "tlh";
-			Language lang = languageService.create(languageName, languageTag);
-//			tx.success();
-//		}
+		final String languageName = "klingon";
+		final String languageTag = "tlh";
+		Language lang = languageService.create(languageName, languageTag);
 
 		int nLanguagesAfter = languageService.findRoot().getLanguages().size();
 		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);

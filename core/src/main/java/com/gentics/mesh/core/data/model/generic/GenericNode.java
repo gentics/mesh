@@ -1,15 +1,17 @@
 package com.gentics.mesh.core.data.model.generic;
 
+import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
+
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
 
 public class GenericNode extends MeshVertex {
 
 	public List<? extends Project> getProjects() {
-		return out(MeshRelationships.ASSIGNED_TO_PROJECT).toList(Project.class);
+		return out(MeshRelationships.ASSIGNED_TO_PROJECT).has(Project.class).toListExplicit(Project.class);
 	}
 
 	public void addProject(Project project) {
@@ -21,7 +23,7 @@ public class GenericNode extends MeshVertex {
 	}
 
 	public MeshUser getCreator() {
-		return out(MeshRelationships.HAS_CREATOR).next(MeshUser.class);
+		return nextOrNull(out(MeshRelationships.HAS_CREATOR), MeshUser.class);
 	}
 
 	public void setCreator(MeshUser user) {

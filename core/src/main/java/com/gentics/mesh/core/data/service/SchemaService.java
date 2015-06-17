@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.service;
 
 import java.awt.print.Pageable;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,7 @@ import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.TraversalHelper;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -22,7 +22,7 @@ public class SchemaService extends AbstractMeshService {
 
 	public Schema findByUUID(String projectName, String uuid) {
 		//TODO check for projectName
-		return framedGraph.v().has("uuid", uuid).has(Schema.class).next(Schema.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(Schema.class), Schema.class);
 	}
 
 	public Schema findByName(String projectName, String name) {
@@ -68,7 +68,7 @@ public class SchemaService extends AbstractMeshService {
 	 */
 	public void deleteByUuid(String uuid) {
 		//TODO check for schema class
-		framedGraph.v().has("uuid", uuid).remove();
+		fg.v().has("uuid", uuid).remove();
 		//		@Query("MATCH (n:ObjectSchema {uuid: {0}}) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema) OPTIONAL MATCH (n)-[r]-(p:PropertyTypeSchema)-[rp]-() OPTIONAL MATCH (n)-[r2]-() DELETE n,r,p,r2,rp")
 	}
 
@@ -83,73 +83,65 @@ public class SchemaService extends AbstractMeshService {
 	}
 
 	public SchemaRoot findRoot() {
-		return framedGraph.v().has(SchemaRoot.class).next(SchemaRoot.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has(SchemaRoot.class), SchemaRoot.class);
 	}
 
-
-
 	public Schema findByName(String name) {
-		Schema schema = null;
-		try {
-			schema = framedGraph.v().has("name", name).has(Schema.class).nextExplicit(Schema.class);
-		} catch (NoSuchElementException e) {
-			// ignored - handled by null reference
-		}
-		return schema;
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Schema.class), Schema.class);
 	}
 
 	public Schema create(String name) {
-		Schema schema = framedGraph.addFramedVertex(Schema.class);
+		Schema schema = fg.addFramedVertex(Schema.class);
 		schema.setName(name);
 		return schema;
 	}
 
 	public SchemaRoot createRoot() {
-		SchemaRoot root = framedGraph.addFramedVertex(SchemaRoot.class);
+		SchemaRoot root = fg.addFramedVertex(SchemaRoot.class);
 		return root;
 	}
 
 	public BasicPropertyType create(String key, PropertyType type) {
-		BasicPropertyType schemaType = framedGraph.addFramedVertex(BasicPropertyType.class);
+		BasicPropertyType schemaType = fg.addFramedVertex(BasicPropertyType.class);
 		schemaType.setKey(key);
 		schemaType.setType(type);
 		return schemaType;
 	}
 
 	public MicroPropertyType createMicroPropertyTypeSchema(String key) {
-		MicroPropertyType type = framedGraph.addFramedVertex(MicroPropertyType.class);
+		MicroPropertyType type = fg.addFramedVertex(MicroPropertyType.class);
 		type.setKey(key);
 		type.setType(PropertyType.MICROSCHEMA);
 		return type;
 	}
 
 	public BasicPropertyType createBasicPropertyTypeSchema(String key, PropertyType type) {
-		BasicPropertyType propertType = framedGraph.addFramedVertex(BasicPropertyType.class);
+		BasicPropertyType propertType = fg.addFramedVertex(BasicPropertyType.class);
 		propertType.setKey(key);
 		propertType.setType(type);
 		return propertType;
 	}
 
 	public BasicPropertyType createListPropertyTypeSchema(String key) {
-		BasicPropertyType type = framedGraph.addFramedVertex(BasicPropertyType.class);
+		BasicPropertyType type = fg.addFramedVertex(BasicPropertyType.class);
 		type.setKey(key);
 		return type;
 	}
 
 	public Schema findOne(Long id) {
-		Vertex vertex = framedGraph.getVertex(id);
+		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			framedGraph.frameElement(vertex, Schema.class);
+			fg.frameElement(vertex, Schema.class);
 		}
 		return null;
 	}
 
 	public Schema findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has(Schema.class).nextExplicit(Schema.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(Schema.class), Schema.class);
 	}
 
 	public List<? extends Schema> findAll() {
-		return framedGraph.v().has(Schema.class).toListExplicit(Schema.class);
+		return fg.v().has(Schema.class).toListExplicit(Schema.class);
 	}
 
 	public void delete(Schema schema) {
@@ -157,4 +149,3 @@ public class SchemaService extends AbstractMeshService {
 	}
 
 }
-

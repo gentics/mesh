@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
+
 import java.util.Map;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
@@ -8,7 +10,7 @@ import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 public class I18NProperties extends MeshVertex {
 
 	public Language getLanguage() {
-		return out(MeshRelationships.HAS_LANGUAGE).next(Language.class);
+		return nextOrNull(out(MeshRelationships.HAS_LANGUAGE),Language.class);
 	}
 
 	public void setLanguage(Language language) {

@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.TraversalHelper;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -36,7 +37,7 @@ public class UserService extends AbstractMeshService {
 	}
 
 	public MeshUser findByUsername(String username) {
-		return framedGraph.v().has("username", username).has(MeshUser.class).nextExplicit(MeshUser.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("username", username).has(MeshUser.class), MeshUser.class);
 	}
 
 	//TODO reduce calls to this method
@@ -52,11 +53,11 @@ public class UserService extends AbstractMeshService {
 	//	}
 
 	public UserRoot findRoot() {
-		return framedGraph.v().has(UserRoot.class).nextExplicit(UserRoot.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has(UserRoot.class), UserRoot.class);
 	}
 
 	public MeshUser create(String username) {
-		MeshUser user = framedGraph.addFramedVertex(MeshUser.class);
+		MeshUser user = fg.addFramedVertex(MeshUser.class);
 		user.setUsername(username);
 		return user;
 	}
@@ -66,20 +67,20 @@ public class UserService extends AbstractMeshService {
 	}
 
 	public UserRoot createRoot() {
-		UserRoot root = framedGraph.addFramedVertex(UserRoot.class);
+		UserRoot root = fg.addFramedVertex(UserRoot.class);
 		return root;
 	}
 
 	public MeshUser findOne(Long id) {
-		Vertex vertex = framedGraph.getVertex(id);
+		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			return framedGraph.frameElement(vertex, MeshUser.class);
+			return fg.frameElement(vertex, MeshUser.class);
 		}
 		return null;
 	}
 
 	public MeshUser findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has(MeshUser.class).nextExplicit(MeshUser.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(MeshUser.class), MeshUser.class);
 	}
 
 }

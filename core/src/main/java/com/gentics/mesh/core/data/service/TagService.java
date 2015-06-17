@@ -11,6 +11,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.TraversalHelper;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -72,24 +73,24 @@ public class TagService extends AbstractMeshService {
 //	}
 
 	public Tag create() {
-		return framedGraph.addFramedVertex(Tag.class);
+		return fg.addFramedVertex(Tag.class);
 	}
 
 	public Tag findOne(Long id) {
-		Vertex vertex = framedGraph.getVertex(id);
+		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			return framedGraph.frameElement(vertex, Tag.class);
+			return fg.frameElement(vertex, Tag.class);
 		}
 		return null;
 	}
 
 	public Tag findByName(String projectName, String name) {
 		//TODO filter by i18n properties, projectname
-		return framedGraph.v().has("name", name).has(Tag.class).nextExplicit(Tag.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Tag.class), Tag.class);
 	}
 
 	public Tag findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has(Tag.class).nextExplicit(Tag.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(Tag.class), Tag.class);
 	}
 
 }

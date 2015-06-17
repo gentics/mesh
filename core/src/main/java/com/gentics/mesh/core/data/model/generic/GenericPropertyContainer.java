@@ -1,13 +1,17 @@
 package com.gentics.mesh.core.data.model.generic;
 
+import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
+
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
+import com.gentics.mesh.util.TraversalHelper;
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class GenericPropertyContainer extends GenericNode {
 
@@ -31,7 +35,7 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public Schema getSchema() {
-		return out(MeshRelationships.HAS_OBJECT_SCHEMA).next(Schema.class);
+		return nextOrNull(out(MeshRelationships.HAS_OBJECT_SCHEMA), Schema.class);
 	}
 
 	public void setProperty(Language language, String string, String string2) {
@@ -78,13 +82,13 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public I18NProperties getI18nProperties(Language language) {
-		I18NProperties properties = outE(MeshRelationships.HAS_I18N_PROPERTIES).has("languageTag", language.getLanguageTag()).inV()
-				.next(I18NProperties.class);
+		I18NProperties properties = TraversalHelper.nextOrNull(
+				outE(MeshRelationships.HAS_I18N_PROPERTIES).has("languageTag", language.getLanguageTag()).inV(), I18NProperties.class);
 		return properties;
 	}
 
 	public List<? extends I18NProperties> getI18nProperties() {
-		return out(MeshRelationships.HAS_I18N_PROPERTIES).toList(I18NProperties.class);
+		return out(MeshRelationships.HAS_I18N_PROPERTIES).has(I18NProperties.class).toListExplicit(I18NProperties.class);
 	}
 
 	/**
@@ -94,11 +98,16 @@ public class GenericPropertyContainer extends GenericNode {
 	 * @return i18n properties vertex entity
 	 */
 	public I18NProperties createI18nProperties(Language language) {
-		I18NProperties properties;
-		try {
-			properties = outE(MeshRelationships.HAS_I18N_PROPERTIES).has(Translated.LANGUAGE_TAG_KEY, language.getLanguageTag()).next().outV()
-					.next(I18NProperties.class);
-		} catch (NoSuchElementException e) {
+
+		I18NProperties properties = null;
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(MeshRelationships.HAS_I18N_PROPERTIES)
+				.has(Translated.LANGUAGE_TAG_KEY, language.getLanguageTag());
+		if (edgeTraversal.hasNext()) {
+			VertexTraversal<?, ?, ?> traversal = edgeTraversal.next().outV();
+			properties = TraversalHelper.nextExplicitOrNull(traversal, I18NProperties.class);
+		}
+
+		if (properties == null) {
 			properties = getGraph().addFramedVertex(I18NProperties.class);
 			properties.setLanguage(language);
 			Translated edge = addFramedEdge(MeshRelationships.HAS_I18N_PROPERTIES, properties, Translated.class);

@@ -8,6 +8,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -147,23 +147,23 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		// Test default paging parameters
 		String response = request(info, GET, "/api/v1/groups/", 200, "OK");
 		GroupListResponse restResponse = JsonUtils.readValue(response, GroupListResponse.class);
-		Assert.assertEquals(25, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals(25, restResponse.getData().size());
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + 3, 200, "OK");
 		restResponse = JsonUtils.readValue(response, GroupListResponse.class);
-		Assert.assertEquals(perPage, restResponse.getData().size());
+		assertEquals(perPage, restResponse.getData().size());
 
 		// created groups + test data group
 		int totalPages = (int) Math.ceil(totalGroups / (double) perPage);
-		Assert.assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		Assert.assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		Assert.assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
 				totalPages, restResponse.getMetainfo().getPageCount());
-		Assert.assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		Assert.assertEquals(totalGroups + 1, restResponse.getMetainfo().getTotalCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(totalGroups + 1, restResponse.getMetainfo().getTotalCount());
 
 		List<GroupResponse> allGroups = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
@@ -171,7 +171,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			restResponse = JsonUtils.readValue(response, GroupListResponse.class);
 			allGroups.addAll(restResponse.getData());
 		}
-		Assert.assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups + 1, allGroups.size());
+		assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups + 1, allGroups.size());
 
 		// Verify that extra group is not part of the response
 		final String extraGroupName = extraGroupWithNoPerm.getName();
@@ -235,7 +235,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		//TODO TP load node
 		Group reloadedGroup = null;
-		Assert.assertEquals("The group should have been updated", name, reloadedGroup.getName());
+		assertEquals("The group should have been updated", name, reloadedGroup.getName());
 	}
 
 	@Test
@@ -253,7 +253,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		//TODO TP load node
 		Group reloadedGroup = null;
-		Assert.assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
+		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
 	@Test
@@ -275,7 +275,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		//TODO TP load node
 		Group reloadedGroup = null;
-		Assert.assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
+		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
 	@Test
@@ -293,7 +293,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		//TODO TP load node
 		Group reloadedGroup = null;
-		Assert.assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
+		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
 	// Delete Tests

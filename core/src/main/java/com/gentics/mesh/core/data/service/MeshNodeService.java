@@ -12,6 +12,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.TraversalHelper;
 
 @Component
 public class MeshNodeService extends AbstractMeshService {
@@ -80,15 +81,15 @@ public class MeshNodeService extends AbstractMeshService {
 	}
 
 	public List<? extends MeshNode> findAllNodes() {
-		return framedGraph.v().has(MeshNode.class).toListExplicit(MeshNode.class);
+		return fg.v().has(MeshNode.class).toListExplicit(MeshNode.class);
 	}
 
 	public MeshNode create() {
-		return framedGraph.addFramedVertex(MeshNode.class);
+		return fg.addFramedVertex(MeshNode.class);
 	}
 
 	public MeshNode findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has(MeshNode.class).nextExplicit(MeshNode.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(MeshNode.class), MeshNode.class);
 	}
 
 	public void delete(MeshNode node) {

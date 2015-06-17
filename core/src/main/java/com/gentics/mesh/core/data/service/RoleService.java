@@ -31,11 +31,11 @@ public class RoleService extends AbstractMeshService {
 	private UserService userService;
 
 	public Role findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).has(Role.class).nextExplicit(Role.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid).has(Role.class), Role.class);
 	}
 
 	public Role findByName(String name) {
-		return framedGraph.v().has("name", name).has(Role.class).nextExplicit(Role.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Role.class), Role.class);
 	}
 
 	public List<? extends Role> findAll() {
@@ -47,7 +47,7 @@ public class RoleService extends AbstractMeshService {
 		//			return null;
 		//		}
 		//TODO filter for permissions?
-		return framedGraph.v().has(Role.class).toListExplicit(Role.class);
+		return fg.v().has(Role.class).toListExplicit(Role.class);
 	}
 
 	public void addCRUDPermissionOnRole(MeshShiroUser requestUser, MeshPermission meshPermission, GenericNode targetNode) {
@@ -85,7 +85,7 @@ public class RoleService extends AbstractMeshService {
 
 	public Page<? extends Role> findAll(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		//TODO filter for permissions
-		VertexTraversal traversal = framedGraph.v().has(Role.class);
+		VertexTraversal traversal = fg.v().has(Role.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, Role.class);
 	}
 
@@ -96,11 +96,11 @@ public class RoleService extends AbstractMeshService {
 
 	public RoleRoot findRoot() {
 		//TODO use static reference of mesh root and edge instead?
-		return framedGraph.v().has(RoleRoot.class).nextExplicit(RoleRoot.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has(RoleRoot.class), RoleRoot.class);
 	}
 
 	public Role create(String name) {
-		Role role = framedGraph.addFramedVertex(Role.class);
+		Role role = fg.addFramedVertex(Role.class);
 		role.setName(name);
 		RoleRoot root = findRoot();
 		root.addRole(role);
@@ -108,14 +108,14 @@ public class RoleService extends AbstractMeshService {
 	}
 
 	public RoleRoot createRoot() {
-		RoleRoot root = framedGraph.addFramedVertex(RoleRoot.class);
+		RoleRoot root = fg.addFramedVertex(RoleRoot.class);
 		return root;
 	}
 
 	public Role findOne(Long id) {
-		Vertex vertex = framedGraph.getVertex(id);
+		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			return framedGraph.frameElement(vertex, Role.class);
+			return fg.frameElement(vertex, Role.class);
 		}
 		return null;
 	}

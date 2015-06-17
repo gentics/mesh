@@ -26,15 +26,15 @@ public class ProjectService extends AbstractMeshService {
 	protected UserService userService;
 
 	public Project findByName(String projectName) {
-		return framedGraph.v().has("name", projectName).nextExplicit(Project.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", projectName), Project.class);
 	}
 
 	public Project findByUUID(String uuid) {
-		return framedGraph.v().has("uuid", uuid).nextExplicit(Project.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("uuid", uuid), Project.class);
 	}
 
 	public List<? extends Project> findAll() {
-		return framedGraph.v().has(Project.class).toListExplicit(Project.class);
+		return fg.v().has(Project.class).toListExplicit(Project.class);
 	}
 
 	public void deleteByName(String name) {
@@ -43,23 +43,22 @@ public class ProjectService extends AbstractMeshService {
 	public Page<? extends Project> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		//	@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return project ORDER BY project.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return count(project)")
 		//TODO check whether it is faster to use meshroot for starting the traversal
-		VertexTraversal traversal = framedGraph.v().has(ProjectRoot.class);
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, Project.class);
+		return TraversalHelper.getPagedResult(fg.v().has(ProjectRoot.class), pagingInfo, Project.class);
 
 	}
 
 	public ProjectRoot findRoot() {
-		return framedGraph.v().has(ProjectRoot.class).nextExplicit(ProjectRoot.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has(ProjectRoot.class), ProjectRoot.class);
 	}
 
 	public Project create(String name) {
-		Project project = framedGraph.addFramedVertex(Project.class);
+		Project project = fg.addFramedVertex(Project.class);
 		project.setName(name);
 		return project;
 	}
 
 	public ProjectRoot createRoot() {
-		return framedGraph.addFramedVertex(ProjectRoot.class);
+		return fg.addFramedVertex(ProjectRoot.class);
 	}
 
 	public void delete(Project project) {

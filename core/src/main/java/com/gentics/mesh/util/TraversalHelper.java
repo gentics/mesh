@@ -6,9 +6,11 @@ import static com.gentics.mesh.util.SortOrder.UNSORTED;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.paging.PagingInfo;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
 public final class TraversalHelper {
 
@@ -57,6 +59,31 @@ public final class TraversalHelper {
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, PagingInfo pagingInfo, Class<T> classOfT)
 			throws InvalidArgumentException {
 		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(), classOfT);
+	}
+
+	public static <T> T nextOrNull(VertexTraversal<?, ?, ?> traversal, Class<T> classOfT) {
+		try {
+			if (traversal.hasNext()) {
+				return traversal.next(classOfT);
+			} else {
+				return null;
+			}
+		} catch (FastNoSuchElementException e) {
+			return null;
+		}
+	}
+
+	public static <T> T nextExplicitOrNull(VertexTraversal<?, ?, ?> traversal, Class<T> classOfT) {
+		try {
+			if (traversal.hasNext()) {
+				return traversal.nextExplicit(classOfT);
+			} else {
+				return null;
+			}
+		} catch (FastNoSuchElementException e) {
+			return null;
+		}
+
 	}
 
 }

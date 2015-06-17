@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.data.model.root;
 
+import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
+
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 
 public class MeshRoot extends MeshVertex {
 
 	public UserRoot getUserRoot() {
-		return out(MeshRelationships.HAS_USER_ROOT).next(UserRoot.class);
+		return nextOrNull(out(MeshRelationships.HAS_USER_ROOT), UserRoot.class);
 	}
 
 	public void setUserRoot(UserRoot userRoot) {
@@ -14,7 +16,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public RoleRoot getRoleRoot() {
-		return out(MeshRelationships.HAS_ROLE_ROOT).next(RoleRoot.class);
+		return nextOrNull(out(MeshRelationships.HAS_ROLE_ROOT), RoleRoot.class);
 	}
 
 	public void setRoleRoot(RoleRoot roleRoot) {
@@ -22,7 +24,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public GroupRoot getGroupRoot() {
-		return out(MeshRelationships.HAS_GROUP_ROOT).next(GroupRoot.class);
+		return nextOrNull(out(MeshRelationships.HAS_GROUP_ROOT), GroupRoot.class);
 	}
 
 	public void setGroupRoot(GroupRoot groupRoot) {
@@ -30,7 +32,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public SchemaRoot getObjectSchemaRoot() {
-		return out(MeshRelationships.HAS_SCHEMA_ROOT).next(SchemaRoot.class);
+		return nextOrNull(out(MeshRelationships.HAS_SCHEMA_ROOT), SchemaRoot.class);
 	}
 
 	public void setSchemaRoot(SchemaRoot schemaRoot) {
@@ -38,7 +40,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public LanguageRoot getLanguageRoot() {
-		return out(MeshRelationships.HAS_LANGUAGE_ROOT).next(LanguageRoot.class);
+		return nextOrNull(out(MeshRelationships.HAS_LANGUAGE_ROOT), LanguageRoot.class);
 	}
 
 	public void setLanguageRoot(LanguageRoot languageRoot) {
@@ -46,7 +48,7 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public ProjectRoot getProjectRoot() {
-		return out(MeshRelationships.HAS_PROJECT_ROOT).next(ProjectRoot.class);
+		return nextOrNull(out(MeshRelationships.HAS_PROJECT_ROOT), ProjectRoot.class);
 	}
 
 	public void setProjectRoot(ProjectRoot projectRoot) {

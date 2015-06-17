@@ -4,12 +4,13 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.util.TraversalHelper;
 
 @Component
 public class LanguageService extends AbstractMeshService {
 
 	public Language findByName(String name) {
-		return framedGraph.v().has("name", name).has("ferma_type", Language.class).next(Language.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("name", name).has(Language.class), Language.class);
 	}
 
 	/**
@@ -19,7 +20,7 @@ public class LanguageService extends AbstractMeshService {
 	 * @return Found language or null if none could be found
 	 */
 	public Language findByLanguageTag(String languageTag) {
-		return framedGraph.v().has("languageTag", languageTag).next(Language.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has("languageTag", languageTag).has(Language.class), Language.class);
 	}
 
 	//	@Override
@@ -39,18 +40,20 @@ public class LanguageService extends AbstractMeshService {
 	//	}
 
 	public LanguageRoot findRoot() {
-		return framedGraph.v().has(LanguageRoot.class).nextExplicit(LanguageRoot.class);
+		return TraversalHelper.nextExplicitOrNull(fg.v().has(LanguageRoot.class), LanguageRoot.class);
 	}
 
 	public LanguageRoot createRoot() {
-		LanguageRoot root = framedGraph.addFramedVertex(LanguageRoot.class);
+		LanguageRoot root = fg.addFramedVertex(LanguageRoot.class);
 		return root;
 	}
 
 	public Language create(String languageName, String languageTag) {
-		Language language = framedGraph.addFramedVertex(Language.class);
+		Language language = fg.addFramedVertex(Language.class);
 		language.setName(languageName);
 		language.setLanguageTag(languageTag);
+		LanguageRoot root = findRoot();
+		root.addLanguage(language);
 		return language;
 	}
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import static com.gentics.mesh.util.TraversalHelper.nextOrNull;
+
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
@@ -27,7 +29,7 @@ public class MeshNode extends GenericPropertyContainer {
 	}
 
 	public MeshNode getParentNode() {
-		return out(MeshRelationships.HAS_PARENT_NODE).next(MeshNode.class);
+		return nextOrNull(out(MeshRelationships.HAS_PARENT_NODE), MeshNode.class);
 	}
 
 	public void setParentNode(MeshNode parent) {

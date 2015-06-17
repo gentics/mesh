@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import javax.naming.InvalidNameException;
 
@@ -33,10 +32,10 @@ import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;
@@ -47,9 +46,9 @@ import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.verticle.AdminVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
-import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.core.verticle.RoleVerticle;
+import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.core.verticle.TagVerticle;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
@@ -174,18 +173,12 @@ public class BootstrapInitializer {
 			joinCluster();
 		}
 
-		//		try (Transaction tx = graphDb.beginTx()) {
 		initMandatoryData();
-		//			tx.success();
-		//		}
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(springConfiguration.vertx());
 		}
-		//		try (Transaction tx = graphDb.beginTx()) {
 		initProjects();
-		//			tx.success();
-		//		}
 
 	}
 
@@ -222,51 +215,39 @@ public class BootstrapInitializer {
 	 * @throws JsonParseException
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
-		MeshRoot rootNode = null;
-		try {
-			rootNode = rootService.findRoot();
-		} catch (NoSuchElementException e) {
+		MeshRoot rootNode = rootService.findRoot();
+		if (rootNode == null) {
 			rootNode = rootService.create();
 			log.info("Stored mesh root {" + rootNode.getUuid() + "}");
 		}
 
-		LanguageRoot languageRoot;
-		try {
-			languageRoot = languageService.findRoot();
-		} catch (NoSuchElementException e) {
-
+		LanguageRoot languageRoot = languageService.findRoot();
+		if (languageRoot == null) {
 			languageRoot = languageService.createRoot();
 			log.info("Stored language root {" + languageRoot.getUuid() + "}");
 		}
 
 		GroupRoot groupRoot;
-		try {
-			groupRoot = groupService.findRoot();
-		} catch (NoSuchElementException e) {
+		groupRoot = groupService.findRoot();
+		if (groupRoot == null) {
 			groupRoot = groupService.createRoot();
 			log.info("Stored group root {" + groupRoot.getUuid() + "}");
 		}
 
-		UserRoot userRoot;
-		try {
-			userRoot = userService.findRoot();
-		} catch (NoSuchElementException e) {
+		UserRoot userRoot = userService.findRoot();
+		if (userRoot == null) {
 			userRoot = userService.createRoot();
 			log.info("Stored user root {" + userRoot.getUuid() + "}");
 		}
 
-		RoleRoot roleRoot;
-		try {
-			roleRoot = roleService.findRoot();
-		} catch (NoSuchElementException e) {
+		RoleRoot roleRoot = roleService.findRoot();
+		if (roleRoot == null) {
 			roleRoot = roleService.createRoot();
 			log.info("Stored role root {" + roleRoot.getUuid() + "}");
 		}
 
-		ProjectRoot projectRoot;
-		try {
-			projectRoot = projectService.findRoot();
-		} catch (NoSuchElementException e) {
+		ProjectRoot projectRoot = projectService.findRoot();
+		if (projectRoot == null) {
 			projectRoot = projectService.createRoot();
 			log.info("Stored project root {" + projectRoot.getUuid() + "}");
 		}
@@ -344,10 +325,8 @@ public class BootstrapInitializer {
 			log.info("Stored tag schema {" + tagSchema.getUuid() + "}");
 		}
 
-		SchemaRoot schemaRoot;
-		try {
-			schemaRoot = schemaService.findRoot();
-		} catch (NoSuchElementException e) {
+		SchemaRoot schemaRoot = schemaService.findRoot();
+		if (schemaRoot == null) {
 			schemaRoot = schemaService.createRoot();
 			schemaRoot.addSchema(tagSchema);
 			schemaRoot.addSchema(contentSchema);
@@ -367,10 +346,8 @@ public class BootstrapInitializer {
 		initLanguages(languageRoot);
 
 		// Verify that an admin user exists
-		MeshUser adminUser;
-		try {
-			adminUser = userService.findByUsername("admin");
-		} catch (NoSuchElementException e) {
+		MeshUser adminUser = userService.findByUsername("admin");
+		if (adminUser == null) {
 			adminUser = userService.create("admin");
 			System.out.println("Enter admin password:");
 			// Scanner scanIn = new Scanner(System.in);
@@ -383,20 +360,16 @@ public class BootstrapInitializer {
 		}
 		rootNode.getUserRoot().addUser(adminUser);
 
-		Group adminGroup;
-		try {
-			adminGroup = groupService.findByName("admin");
-		} catch (NoSuchElementException e) {
+		Group adminGroup = groupService.findByName("admin");
+		if (adminGroup == null) {
 			adminGroup = groupService.create("admin");
 			adminGroup.addUser(adminUser);
 			log.info("Stored admin group");
 		}
 		rootNode.getGroupRoot().addGroup(adminGroup);
 
-		Role adminRole;
-		try {
-			adminRole = roleService.findByName("admin");
-		} catch (NoSuchElementException e) {
+		Role adminRole = roleService.findByName("admin");
+		if (adminRole == null) {
 			adminRole = roleService.create("admin");
 			adminGroup.addRole(adminRole);
 		}
@@ -416,10 +389,8 @@ public class BootstrapInitializer {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language;
-			try {
-				language = languageService.findByName(languageName);
-			} catch (NoSuchElementException e) {
+			Language language = languageService.findByName(languageName);
+			if (language == null) {
 				language = languageService.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
 				rootNode.addLanguage(language);
