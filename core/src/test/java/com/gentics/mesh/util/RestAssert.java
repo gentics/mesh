@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
@@ -67,7 +67,7 @@ public class RestAssert {
 		assertNotNull(restGroup.getUuid());
 	}
 
-	public void assertUser(User user, UserResponse restUser) {
+	public void assertUser(MeshUser user, UserResponse restUser) {
 		assertNotNull("The user must not be null.", user);
 		assertNotNull("The restuser must not be null", restUser);
 		//		user = neo4jTemplate.fetch(user);
@@ -110,7 +110,7 @@ public class RestAssert {
 
 		assertNotNull(restNode.getUuid());
 		assertNotNull(restNode.getCreator());
-		assertNotNull(restNode.getPerms());
+		assertNotNull(restNode.getPermissions());
 
 	}
 
@@ -134,7 +134,7 @@ public class RestAssert {
 		assertEquals(node.getUuid(), readValue.getUuid());
 
 		//		assertEquals(node.getOrder(), readValue.getOrder());
-		assertNotNull(readValue.getPerms());
+		assertNotNull(readValue.getPermissions());
 
 		Schema schema = node.getSchema();
 		//		schema = neo4jTemplate.fetch(schema);

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -25,8 +26,9 @@ import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
@@ -75,7 +77,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 				}, trh -> {
 					Project project = trh.result();
-					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(rc, project)));
+					MeshUser user = userService.findUser(rc);
+					rc.response().setStatusCode(200).end(toJson(project.transformToRest(user)));
 				});
 		});
 	}
@@ -85,9 +88,11 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
+
 			// TODO also create a default object schema for the project. Move this into service class
 			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
 			ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
+			MeshShiroUser requestUser = getUser(rc);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_missing_name")));
@@ -96,6 +101,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			Future<Project> projectCreated = Future.future();
 			MeshRoot meshRoot = meshRootService.findRoot();
+			MeshUser user = userService.findUser(rc);
 			rcs.hasPermission(rc, meshRoot, CREATE_PERM, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
@@ -103,7 +109,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				}
 
 				Project project = projectService.create(requestModel.getName());
-				User user = userService.findUser(rc);
+
 				project.setRootNode(nodeService.create());
 				project.setCreator(user);
 
@@ -111,7 +117,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					roleService.addCRUDPermissionOnRole(rc, new MeshPermission(meshRoot, CREATE_PERM), project);
+					roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(meshRoot, CREATE_PERM), project);
 					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?
@@ -120,7 +126,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				}
 			}, trh -> {
 				Project project = projectCreated.result();
-				rc.response().end(toJson(projectService.transformToRest(rc, project)));
+				rc.response().end(toJson(project.transformToRest(user)));
 			});
 
 		});
@@ -138,7 +144,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 						rc.fail(rh.cause());
 					}
 					Project project = rh.result();
-					rc.response().setStatusCode(200).end(toJson(projectService.transformToRest(rc, project)));
+					MeshUser requestUser = userService.findUser(rc);
+					rc.response().setStatusCode(200).end(toJson(project.transformToRest(requestUser)));
 				});
 			}
 		});
@@ -149,12 +156,12 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			vertx.executeBlocking((Future<ProjectListResponse> bcr) -> {
 				ProjectListResponse listResponse = new ProjectListResponse();
-				User requestUser = userService.findUser(rc);
 				Page<? extends Project> projectPage;
 				try {
+					MeshUser requestUser = userService.findUser(rc);
 					projectPage = projectService.findAllVisible(requestUser, pagingInfo);
 					for (Project project : projectPage) {
-						listResponse.getData().add(projectService.transformToRest(rc, project));
+						listResponse.getData().add(project.transformToRest(requestUser));
 					}
 					RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
 					bcr.complete(listResponse);

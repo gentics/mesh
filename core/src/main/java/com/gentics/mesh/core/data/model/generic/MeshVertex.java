@@ -41,4 +41,5 @@ public class MeshVertex extends AbstractVertexFrame {
 	public Vertex getVertex() {
 		return getElement();
 	}
+
 }

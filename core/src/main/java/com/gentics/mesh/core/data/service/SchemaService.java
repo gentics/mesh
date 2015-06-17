@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
@@ -42,52 +42,10 @@ public class SchemaService extends AbstractMeshService {
 		return null;
 	}
 
-	public SchemaResponse transformToRest(Schema schema) {
-		if (schema == null) {
-			throw new HttpStatusCodeErrorException(500, "Schema can't be null");
-		}
-		SchemaResponse schemaForRest = new SchemaResponse();
-		schemaForRest.setDescription(schema.getDescription());
-		schemaForRest.setDisplayName(schema.getDisplayName());
-		schemaForRest.setName(schema.getName());
-		schemaForRest.setUuid(schema.getUuid());
-		// TODO creator
-
-		// TODO we need to add checks that prevents multiple schemas with the same key
-		for (BasicPropertyType propertyTypeSchema : schema.getPropertyTypeSchemas()) {
-			//			propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
-			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
-			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
-			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
-			propertyTypeSchemaForRest.setDescription(propertyTypeSchema.getDescription());
-			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType());
-			propertyTypeSchemaForRest.setDisplayName(propertyTypeSchema.getDisplayName());
-			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
-		}
-		Collections.sort(schemaForRest.getPropertyTypeSchemas(), new PropertTypeSchemaComparator());
-		// Sort the property types schema. Otherwise rest response is erratic
-
-		for (Project project : schema.getProjects()) {
-			//			project = neo4jTemplate.fetch(project);
-			ProjectResponse restProject = new ProjectResponse();
-			restProject.setUuid(project.getUuid());
-			restProject.setName(project.getName());
-			schemaForRest.getProjects().add(restProject);
-		}
-		// Sort the list by project name
-		Collections.sort(schemaForRest.getProjects(), new Comparator<ProjectResponse>() {
-			@Override
-			public int compare(ProjectResponse o1, ProjectResponse o2) {
-				return o1.getName().compareTo(o2.getName());
-			};
-		});
-		return schemaForRest;
-	}
-
 	public void deleteByUUID(String uuid) {
 	}
 
-	public Page<Schema> findAllVisible(User requestUser, PagingInfo pagingInfo) {
+	public Page<Schema> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) {
 		//		return findAll(requestUser, new MeshPageRequest(pagingInfo));
 		return null;
 	}
@@ -126,7 +84,7 @@ public class SchemaService extends AbstractMeshService {
 		return null;
 	}
 
-	public Page<Schema> findAll(User requestUser, Pageable pageable) {
+	public Page<Schema> findAll(MeshUser requestUser, Pageable pageable) {
 		//		@Query(value = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return schema ORDER BY schema.name", countQuery = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return count(schema)")
 		return null;
 	}
@@ -135,18 +93,7 @@ public class SchemaService extends AbstractMeshService {
 		return framedGraph.v().has(SchemaRoot.class).next(SchemaRoot.class);
 	}
 
-	//	@Override
-	//	public Schema save(Schema schema) {
-	//		ObjectSchemaRoot root = schemaService.findRoot();
-	//		if (root == null) {
-	//			throw new NullPointerException("The schema root node could not be found.");
-	//		}
-	//		schema = neo4jTemplate.save(schema);
-	//		root.getSchemas().add(schema);
-	//		neo4jTemplate.save(root);
-	//		return schema;
-	//		return null;
-	//	}
+
 
 	public Schema findByName(String name) {
 		Schema schema = null;
@@ -218,9 +165,3 @@ public class SchemaService extends AbstractMeshService {
 
 }
 
-class PropertTypeSchemaComparator implements Comparator<PropertyTypeSchemaResponse> {
-	@Override
-	public int compare(PropertyTypeSchemaResponse o1, PropertyTypeSchemaResponse o2) {
-		return o1.getKey().compareTo(o2.getKey());
-	}
-}

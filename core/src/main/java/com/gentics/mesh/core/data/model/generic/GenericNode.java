@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 
 public class GenericNode extends MeshVertex {
 
@@ -20,11 +20,11 @@ public class GenericNode extends MeshVertex {
 		unlinkOut(project, MeshRelationships.ASSIGNED_TO_PROJECT);
 	}
 
-	public User getCreator() {
-		return out(MeshRelationships.HAS_CREATOR).next(User.class);
+	public MeshUser getCreator() {
+		return out(MeshRelationships.HAS_CREATOR).next(MeshUser.class);
 	}
 
-	public void setCreator(User user) {
+	public void setCreator(MeshUser user) {
 		linkOut(user, MeshRelationships.HAS_CREATOR);
 	}
 

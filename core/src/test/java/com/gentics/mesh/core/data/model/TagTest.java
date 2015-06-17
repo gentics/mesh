@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -155,13 +157,14 @@ public class TagTest extends AbstractDBTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		RoutingContext rc = getMockedRoutingContext("");
+		MeshShiroUser requestUser = getUser(rc);
 
-		Page<Tag> tagPage = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 10));
+		Page<Tag> tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(8, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 
 		languageTags.add("en");
-		tagPage = tagService.findProjectTags(rc, "dummy", languageTags, new PagingInfo(1, 14));
+		tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 14));
 		assertEquals(data().getTags().size(), tagPage.getTotalElements());
 		assertEquals(14, tagPage.getSize());
 	}
@@ -176,9 +179,11 @@ public class TagTest extends AbstractDBTest {
 		int depth = 3;
 
 		RoutingContext rc = getMockedRoutingContext("lang=de,en");
+		MeshShiroUser requestUser = getUser(rc);
+
 		for (int i = 0; i < 100; i++) {
 			long start = System.currentTimeMillis();
-			TagResponse response = tagService.transformToRest(rc, tag);
+			TagResponse response = tag.transformToRest(requestUser);
 			assertNotNull(response);
 			long dur = System.currentTimeMillis() - start;
 			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");

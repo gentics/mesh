@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PE
 import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.TinkerpopUtils.count;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,12 +17,12 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
@@ -70,13 +71,11 @@ public class RoleTest extends AbstractDBTest {
 
 	@Test
 	public void testIsPermitted() throws Exception {
-		User user = info.getUser();
-		MeshPermission perm = new MeshPermission(data().getFolder("news"), READ_PERM);
+		MeshUser user = info.getUser();
 		long start = System.currentTimeMillis();
 		int nRuns = 200000;
 		for (int i = 0; i < nRuns; i++) {
-			user.
-			userService.isPermitted(user.getId(), perm);
+			user.hasPermission(data().getFolder("news"), READ_PERM);
 		}
 		long dur = System.currentTimeMillis() - start;
 		System.out.println("Duration: " + dur / (double) nRuns);
@@ -116,9 +115,8 @@ public class RoleTest extends AbstractDBTest {
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 
 		info.getRole().revokePermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
-
-		assertFalse("The create permission to the groups root node should have been revoked.",
-				userService.isPermitted(info.getUser().getId(), new MeshPermission(data().getMeshRoot().getGroupRoot(), CREATE_PERM)));
+		MeshUser user = info.getUser();
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(data().getMeshRoot(), CREATE_PERM));
 
 	}
 
@@ -142,7 +140,8 @@ public class RoleTest extends AbstractDBTest {
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		Page<? extends Role> roles = roleService.findByGroup(rc, info.getGroup(), new PagingInfo(1, 10));
+		MeshShiroUser requestUser = getUser(rc);
+		Page<? extends Role> roles = info.getGroup().getRoles(requestUser, new PagingInfo(1, 10));
 		assertEquals(2, roles.getSize());
 		//assertEquals(2, roles.getTotalElements());
 	}

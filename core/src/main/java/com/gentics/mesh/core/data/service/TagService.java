@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
@@ -39,61 +40,9 @@ public class TagService extends AbstractMeshService {
 	@Autowired
 	private RoutingContextService rcs;
 
-	private static ForkJoinPool pool = new ForkJoinPool(8);
+//	private static ForkJoinPool pool = new ForkJoinPool(8);
 
-	public TagResponse transformToRest(RoutingContext rc, Tag tag) {
-
-		TransformationInfo info = new TransformationInfo(rc);
-		info.setUserService(userService);
-		info.setLanguageService(languageService);
-		info.setContentService(nodeService);
-		info.setSpringConfiguration(springConfiguration);
-		//		info.setTagService(this);
-
-		// Configuration
-		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-		info.setLanguageTags(languageTags);
-
-		TagResponse restTag = new TagResponse();
-		TagTransformationTask task = new TagTransformationTask(tag, info, restTag);
-
-		pool.invoke(task);
-		return restTag;
-	}
-
-	public Page<Tag> findProjectTags(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.user().principal().getString("uuid");
-
-		//tagRepository.findProjectTags(userUuid, projectName, languageTags, pagingInfo);
-		return null;
-	}
-
-	public Page<Tag> findTags(RoutingContext rc, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.user().principal().getString("uuid");
-		//tagRepository.findTags(userUuid, projectName, node, languageTags, pagingInfo);
-		return null;
-	}
-
-	public Page<MeshNode> findTaggedNodes(RoutingContext rc, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.user().principal().getString("uuid");
-		//findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
-		return null;
-	}
-
-	static String PERMISSION_PATTERN_ON_TAG = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
-	static String PERMISSION_PATTERN_ON_NODE = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(node:MeshNode)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
-	static String TAG_PROJECT_PATTERN = "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
-	static String USER_PERMISSION_FILTER = " requestUser.uuid = {userUuid} AND perm.`permissions-read` = true ";
-	static String PROJECT_FILTER = "pr.name = {projectName} ";
-	static String ROOT_TAG_FILTER = "id(rootTag) = {rootTagId} ";
-	static String ORDER_BY_NAME = "ORDER BY p.`properties-name` desc";
-
-	public static String getLanguageFilter(String field) {
-		String filter = " " + field + ".languageTag IN {languageTags} ";
-		return filter;
-	}
-
-	public Page<Tag> findProjectTags(String userUuid, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<Tag> findProjectTags(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 
 		//		String langFilter = getLanguageFilter("l");
 		//		if (languageTags == null || languageTags.isEmpty()) {
@@ -116,54 +65,18 @@ public class TagService extends AbstractMeshService {
 		return null;
 	}
 
-	public Page<Tag> findTags(String userUuid, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
-		//		String langFilter = getLanguageFilter("l");
-		//		if (languageTags == null || languageTags.isEmpty()) {
-		//			langFilter = "";
-		//		} else {
-		//			langFilter += " AND ";
-		//		}
-		//
-		//		String baseQuery = PERMISSION_PATTERN_ON_TAG;
-		//		baseQuery += TAG_PROJECT_PATTERN;
-		//		baseQuery += "MATCH (node:MeshNode)-[:HAS_TAG]->(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
-		//		baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
-		//
-		//		String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
-		//		String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
-		//
-		//		Map<String, Object> parameters = new HashMap<>();
-		//		parameters.put("languageTags", languageTags);
-		//		parameters.put("projectName", projectName);
-		//		parameters.put("userUuid", userUuid);
-		//		parameters.put("node", node);
-		//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
-		return null;
-	}
+//	static String PERMISSION_PATTERN_ON_TAG = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
+//	static String PERMISSION_PATTERN_ON_NODE = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(node:MeshNode)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";
+//	static String TAG_PROJECT_PATTERN = "MATCH (tag)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
+//	static String USER_PERMISSION_FILTER = " requestUser.uuid = {userUuid} AND perm.`permissions-read` = true ";
+//	static String PROJECT_FILTER = "pr.name = {projectName} ";
+//	static String ROOT_TAG_FILTER = "id(rootTag) = {rootTagId} ";
+//	static String ORDER_BY_NAME = "ORDER BY p.`properties-name` desc";
 
-	public Page<MeshNode> findTaggedNodes(String userUuid, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
-		//		String langFilter = getLanguageFilter("l");
-		//		if (languageTags == null || languageTags.isEmpty()) {
-		//			langFilter = "";
-		//		} else {
-		//			langFilter += " AND ";
-		//		}
-		//		String baseQuery = PERMISSION_PATTERN_ON_NODE;
-		//		baseQuery += "MATCH (node)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
-		//		baseQuery += "MATCH (tag:Tag)-[:HAS_TAG]->(node)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
-		//		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
-		//
-		//		String query = baseQuery + " WITH sp, node " + ORDER_BY_NAME + " RETURN DISTINCT node as n";
-		//		String countQuery = baseQuery + " RETURN count(DISTINCT node) as count";
-		//
-		//		Map<String, Object> parameters = new HashMap<>();
-		//		parameters.put("languageTags", languageTags);
-		//		parameters.put("projectName", projectName);
-		//		parameters.put("userUuid", userUuid);
-		//		parameters.put("tag", tag);
-		//		return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
-		return null;
-	}
+//	public static String getLanguageFilter(String field) {
+//		String filter = " " + field + ".languageTag IN {languageTags} ";
+//		return filter;
+//	}
 
 	public Tag create() {
 		return framedGraph.addFramedVertex(Tag.class);
@@ -177,18 +90,13 @@ public class TagService extends AbstractMeshService {
 		return null;
 	}
 
-	public void delete(Tag tag) {
-		tag.getVertex().remove();
-	}
-
 	public Tag findByName(String projectName, String name) {
-		//TODO filter by i18n properties
-		return framedGraph.v().has("name", name).next(Tag.class);
+		//TODO filter by i18n properties, projectname
+		return framedGraph.v().has("name", name).has(Tag.class).nextExplicit(Tag.class);
 	}
 
-	public Object findByUUID(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public Tag findByUUID(String uuid) {
+		return framedGraph.v().has("uuid", uuid).has(Tag.class).nextExplicit(Tag.class);
 	}
 
 }

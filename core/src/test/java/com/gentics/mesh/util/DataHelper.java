@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.UserService;
@@ -37,8 +37,8 @@ public class DataHelper {
 		return node;
 	}
 
-	public User addUser(String name, Role role, Permission... perms) {
-		User user = userService.create("extraUser");
+	public MeshUser addUser(String name, Role role, Permission... perms) {
+		MeshUser user = userService.create("extraUser");
 		for (Permission perm : perms) {
 			role.addPermissions(user, perm);
 		}

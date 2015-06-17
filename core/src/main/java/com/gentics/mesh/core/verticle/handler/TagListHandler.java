@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.ext.web.RoutingContext;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -29,6 +31,7 @@ public class TagListHandler {
 	private RoutingContextService rcs;
 
 	public void handle(RoutingContext rc, TagListCallable tlc) {
+		MeshShiroUser requestUser = getUser(rc);
 		String projectName = rcs.getProjectName(rc);
 		TagListResponse listResponse = new TagListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
@@ -40,7 +43,7 @@ public class TagListHandler {
 
 			Page<Tag> tagPage = tlc.findTags(projectName, node, languageTags, pagingInfo);
 			for (Tag tag : tagPage) {
-				listResponse.getData().add(tagService.transformToRest(rc, tag));
+				listResponse.getData().add(tag.transformToRest(requestUser));
 			}
 			RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
 

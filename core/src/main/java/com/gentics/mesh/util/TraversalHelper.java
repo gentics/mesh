@@ -10,7 +10,7 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public final class PagingHelper {
+public final class TraversalHelper {
 
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy, SortOrder order, int page, int pageSize,
 			Class<T> classOfT) throws InvalidArgumentException {

@@ -2,8 +2,11 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 
 import java.util.List;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
+import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import com.gentics.mesh.paging.PagingInfo;
 
 public class Tag extends GenericPropertyContainer {
 
@@ -15,5 +18,59 @@ public class Tag extends GenericPropertyContainer {
 		unlinkIn(node, MeshRelationships.HAS_TAG);
 	}
 
+	public TagResponse transformToRest(MeshShiroUser requestUser) {
+
+//		TransformationInfo info = new TransformationInfo(rc);
+//		info.setUserService(userService);
+//		info.setLanguageService(languageService);
+//		info.setContentService(nodeService);
+//		info.setSpringConfiguration(springConfiguration);
+//		//		info.setTagService(this);
+//
+//		// Configuration
+//		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+//		info.setLanguageTags(languageTags);
+//
+//		TagResponse restTag = new TagResponse();
+//		TagTransformationTask task = new TagTransformationTask(this, info, restTag);
+//
+//		pool.invoke(task);
+//		return restTag;
+		return null;
+	}
+
+	public void delete() {
+		//TODO handle edges?
+		getVertex().remove();
+	}
+
+	public Page<MeshNode> findTaggedNodes(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+		//findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
+		return null;
+	}
+
+	public Page<MeshNode> findTaggedNodes(MeshShiroUser requestUser, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
+		//		String langFilter = getLanguageFilter("l");
+		//		if (languageTags == null || languageTags.isEmpty()) {
+		//			langFilter = "";
+		//		} else {
+		//			langFilter += " AND ";
+		//		}
+		//		String baseQuery = PERMISSION_PATTERN_ON_NODE;
+		//		baseQuery += "MATCH (node)-[:ASSIGNED_TO_PROJECT]->(pr:Project) ";
+		//		baseQuery += "MATCH (tag:Tag)-[:HAS_TAG]->(node)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
+		//		baseQuery += "WHERE " + langFilter + " AND " + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
+		//
+		//		String query = baseQuery + " WITH sp, node " + ORDER_BY_NAME + " RETURN DISTINCT node as n";
+		//		String countQuery = baseQuery + " RETURN count(DISTINCT node) as count";
+		//
+		//		Map<String, Object> parameters = new HashMap<>();
+		//		parameters.put("languageTags", languageTags);
+		//		parameters.put("projectName", projectName);
+		//		parameters.put("userUuid", userUuid);
+		//		parameters.put("tag", tag);
+		//		return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
+		return null;
+	}
 
 }

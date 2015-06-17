@@ -9,6 +9,8 @@ import java.util.Set;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
+import com.gentics.mesh.core.rest.group.response.GroupResponse;
+import com.gentics.mesh.core.rest.role.response.RoleResponse;
 
 public class Role extends GenericNode {
 
@@ -21,17 +23,13 @@ public class Role extends GenericNode {
 		setProperty("name", name);
 	}
 
-	//	public List<? extends GraphPermission> getPermissions() {
-	//		return outE(HAS_PERMISSION).toList(GraphPermission.class);
-	//	}
-
-	//	@Adjacency(label = HAS_ROLE, direction = Direction.OUT)
 	public List<? extends Group> getGroups() {
-		return out(HAS_ROLE).toList(Group.class);
+		return out(HAS_ROLE).has(Role.class).toListExplicit(Group.class);
 	}
 
 	public Set<Permission> getPermissions(MeshNode node) {
 		Set<Permission> permissions = new HashSet<>();
+		//TODO use retain
 		Set<? extends String> labels = outE(Permission.labels()).mark().outV().hasId(node.getId()).back().label().toSet();
 		for (String label : labels) {
 			permissions.add(Permission.valueOf(label));
@@ -64,10 +62,21 @@ public class Role extends GenericNode {
 	//		}
 	//	}
 
-	//	public GraphPermission getGraphPermission(Role role, MeshVertex node) {
-	//		//		return roleRepository.findPermission(role.getId(), node.getId());
-	//		return null;
-	//	}
+	public RoleResponse transformToRest() {
+
+		RoleResponse restRole = new RoleResponse();
+		restRole.setUuid(getUuid());
+		restRole.setName(getName());
+
+		for (Group group : getGroups()) {
+			GroupResponse restGroup = new GroupResponse();
+			restGroup.setName(group.getName());
+			restGroup.setUuid(group.getUuid());
+			restRole.getGroups().add(restGroup);
+		}
+
+		return restRole;
+	}
 
 	public void revokePermissions(MeshVertex node, Permission... permissions) {
 
@@ -85,6 +94,10 @@ public class Role extends GenericNode {
 		//		role.addPermission(node);
 		//		//		permission = neo4jTemplate.save(permission);
 		//		return permission;
+	}
+
+	public void delete() {
+		getVertex().remove();
 	}
 
 }

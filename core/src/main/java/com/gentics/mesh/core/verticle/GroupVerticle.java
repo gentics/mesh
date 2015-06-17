@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -24,8 +25,9 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
@@ -61,15 +63,17 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		route("/:groupUuid/roles").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			MeshShiroUser requestUser = getUser(rc);
+
 			rcs.loadObject(rc, "groupUuid", READ_PERM, (AsyncResult<Group> grh) -> {
 				vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 					RoleListResponse listResponse = new RoleListResponse();
 					Group group = grh.result();
 					Page<? extends Role> rolePage;
 					try {
-						rolePage = roleService.findByGroup(rc, group, pagingInfo);
+						rolePage = group.getRoles(requestUser, pagingInfo);
 						for (Role role : rolePage) {
-							listResponse.getData().add(roleService.transformToRest(role));
+							listResponse.getData().add(role.transformToRest());
 						}
 						//TODO  fix paging 
 						//					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
@@ -91,6 +95,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
 				rcs.loadObject(rc, "roleUuid", READ_PERM, (AsyncResult<Role> rrh) -> {
@@ -104,13 +109,14 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 							rc.fail(trh.cause());
 						}
 						Group group = grh.result();
-						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+						rc.response().setStatusCode(200).end(toJson(group.transformToRest(requestUser)));
 					});
 			});
 
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
 				rcs.loadObject(rc, "roleUuid", READ_PERM, (AsyncResult<Role> rrh) -> {
@@ -123,7 +129,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 							rc.fail(trh.cause());
 						}
 						Group group = grh.result();
-						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+						rc.response().setStatusCode(200).end(toJson(group.transformToRest(requestUser)));
 					});
 			});
 		});
@@ -131,14 +137,16 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addGroupUserHandlers() {
 		route("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
+
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 			rcs.loadObject(rc, "groupUuid", READ_PERM, (AsyncResult<Group> grh) -> {
 				vertx.executeBlocking((Future<UserListResponse> bch) -> {
 					UserListResponse listResponse = new UserListResponse();
 					Group group = grh.result();
-					Page<User> userPage = group.getUsers(rc, pagingInfo);
-					for (User user : userPage) {
-						listResponse.getData().add(userService.transformToRest(user));
+					Page<MeshUser> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+					for (MeshUser user : userPage) {
+						listResponse.getData().add(user.transformToRest());
 					}
 					RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 
@@ -157,29 +165,32 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "userUuid", READ_PERM, (AsyncResult<User> urh) -> {
+				rcs.loadObject(rc, "userUuid", READ_PERM, (AsyncResult<MeshUser> urh) -> {
 					Group group = grh.result();
-					User user = urh.result();
-					group.addUser(user);
+					MeshUser user = urh.result();
+					group.addUser(requestUser);
 					//group = groupService.save(group);
 					}, trh -> {
 						if (trh.failed()) {
 							rc.fail(trh.cause());
 						}
 						Group group = grh.result();
-						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+						rc.response().setStatusCode(200).end(toJson(group.transformToRest(requestUser)));
 					});
 			});
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
+
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "userUuid", READ_PERM, (AsyncResult<User> urh) -> {
+				rcs.loadObject(rc, "userUuid", READ_PERM, (AsyncResult<MeshUser> urh) -> {
 					Group group = grh.result();
-					User user = urh.result();
+					MeshUser user = urh.result();
 					group.removeUser(user);
 					//groupService.save(group);
 
@@ -188,7 +199,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 							rc.fail(trh.cause());
 						}
 						Group group = grh.result();
-						rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+						rc.response().setStatusCode(200).end(toJson(group.transformToRest(requestUser)));
 					});
 			});
 		});
@@ -213,6 +224,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
+
 			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
@@ -236,7 +249,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					rc.fail(trh.cause());
 				}
 				Group group = trh.result();
-				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+				rc.response().setStatusCode(200).end(toJson(group.transformToRest(requestUser)));
 			});
 
 		});
@@ -245,6 +258,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
+
 			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 			}, trh -> {
@@ -252,7 +267,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					rc.fail(trh.cause());
 				}
 				Group group = trh.result();
-				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, group)));
+				rc.response().setStatusCode(200).end(toJson(group.transformToRest(requestUser)));
 			});
 		});
 
@@ -265,12 +280,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 			vertx.executeBlocking((Future<GroupListResponse> glr) -> {
 				GroupListResponse listResponse = new GroupListResponse();
-				User user = userService.findUser(rc);
+				MeshShiroUser requestUser = getUser(rc);
+
 				Page<? extends Group> groupPage;
 				try {
-					groupPage = groupService.findAllVisible(user, pagingInfo);
+					groupPage = groupService.findAllVisible(requestUser, pagingInfo);
 					for (Group group : groupPage) {
-						listResponse.getData().add(groupService.transformToRest(rc, group));
+						listResponse.getData().add(group.transformToRest(requestUser));
 					}
 					RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
 					glr.complete(listResponse);
@@ -290,7 +306,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO handle conflicting group name: group_conflicting_name
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
-
+			MeshShiroUser requestUser = getUser(rc);
 			GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
@@ -303,14 +319,14 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshRoot root = meshRootService.findRoot();
 			rcs.hasPermission(rc, root.getGroupRoot(), CREATE_PERM, rh -> {
 				Group group = groupService.create(requestModel.getName());
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(root.getGroupRoot(), CREATE_PERM), group);
+				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(root.getGroupRoot(), CREATE_PERM), group);
 				groupCreated.complete(group);
 			}, tch -> {
 				if (tch.failed()) {
 					rc.fail(tch.cause());
 				}
 				Group createdGroup = groupCreated.result();
-				rc.response().setStatusCode(200).end(toJson(groupService.transformToRest(rc, createdGroup)));
+				rc.response().setStatusCode(200).end(toJson(createdGroup.transformToRest(requestUser)));
 			});
 
 		});

@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -24,7 +24,7 @@ public class GroupTest extends AbstractDBTest {
 
 	@Test
 	public void testUserGroup() {
-		User user = userService.create("testuser");
+		MeshUser user = userService.create("testuser");
 		Group group = groupService.create("test group");
 //		try (Transaction tx = graphDb.beginTx()) {
 			group.addUser(user);
@@ -34,7 +34,7 @@ public class GroupTest extends AbstractDBTest {
 		assertEquals("The group should contain one member.", 1, count(group.getUsers()));
 
 //		try (Transaction tx = graphDb.beginTx()) {
-			User userOfGroup = group.getUsers().iterator().next();
+			MeshUser userOfGroup = group.getUsers().iterator().next();
 			//			neo4jTemplate.fetch(userOfGroup);
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 //			tx.success();

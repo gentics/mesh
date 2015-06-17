@@ -36,7 +36,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;
@@ -367,7 +367,7 @@ public class BootstrapInitializer {
 		initLanguages(languageRoot);
 
 		// Verify that an admin user exists
-		User adminUser;
+		MeshUser adminUser;
 		try {
 			adminUser = userService.findByUsername("admin");
 		} catch (NoSuchElementException e) {

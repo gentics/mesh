@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.WebRootService;
@@ -64,6 +66,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			String projectName = rcs.getProjectName(rc);
+			MeshShiroUser requestUser = getUser(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
 			vertx.executeBlocking((Future<MeshNode> bch) -> {
@@ -100,7 +103,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
 					MeshNode node = arh.result();
-					rc.response().end(toJson(nodeService.transformToRest(rc, node)));
+					rc.response().end(toJson(node.transformToRest(requestUser)));
 
 				}
 			});

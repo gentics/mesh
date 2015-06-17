@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -31,10 +32,11 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
@@ -79,8 +81,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 	private void addChildrenHandler() {
 		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
 			nodeListHandler.handleNodeList(rc, (projectName, parentNode, languageTags, pagingInfo) -> {
-				return nodeService.findChildren(rc, projectName, parentNode, languageTags, pagingInfo);
+				return parentNode.getChildren(requestUser, projectName, languageTags, pagingInfo);
 			});
 		});
 
@@ -90,14 +93,17 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 	private void addTagsHandler() {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
 			tagListHandler.handle(rc, (projectName, node, languageTags, pagingInfo) -> {
-				return tagService.findTags(rc, projectName, node, languageTags, pagingInfo);
+				return node.getTags(requestUser, projectName, languageTags, pagingInfo);
 			});
 		});
 
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
+			MeshShiroUser requestUser = getUser(rc);
+
 			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
 				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, (AsyncResult<Tag> srh) -> {
 					MeshNode node = rh.result();
@@ -105,7 +111,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					node.addTag(tag);
 				}, trh -> {
 					MeshNode node = rh.result();
-					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
 				});
 
 			});
@@ -115,6 +121,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
+			MeshShiroUser requestUser = getUser(rc);
+
 			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
 				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, (AsyncResult<Tag> srh) -> {
 					MeshNode node = rh.result();
@@ -122,7 +130,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					node.removeTag(tag);
 				}, trh -> {
 					MeshNode node = rh.result();
-					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
 				});
 			});
 
@@ -137,6 +145,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/").method(POST);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
+			MeshShiroUser requestUser = getUser(rc);
+
 			NodeCreateRequest requestModel = fromJson(rc, NodeCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
@@ -165,7 +175,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					}
 				}
 
-				User user = userService.findUser(rc);
+				MeshUser user = userService.findUser(rc);
 				node.setCreator(user);
 
 				Project project = projectService.findByName(projectName);
@@ -186,15 +196,15 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					}
 				}
 
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(rootNodeForContent, CREATE_PERM), node);
+				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(rootNodeForContent, CREATE_PERM), node);
 
 				/* Assign the content to the tag and save the tag */
 				//				rootTagForContent.(content);
 
 					contentCreated.complete(node);
 				}, trh -> {
-					MeshNode content = contentCreated.result();
-					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
+					MeshNode node = contentCreated.result();
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
 				});
 
 		});
@@ -206,13 +216,15 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
+			MeshShiroUser requestUser = getUser(rc);
+
 			rcs.loadObject(rc, "uuid", projectName, READ_PERM, (AsyncResult<MeshNode> rh) -> {
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
 				}
 				MeshNode node = trh.result();
-				rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, node)));
+				rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
 			});
 
 		});
@@ -220,17 +232,19 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
+			MeshShiroUser requestUser = getUser(rc);
+
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<NodeListResponse> bch) -> {
 				NodeListResponse listResponse = new NodeListResponse();
 				//				try (Transaction tx = graphDb.beginTx()) {
-					Page<MeshNode> contentPage = nodeService.findAll(rc, projectName, languageTags, pagingInfo);
-					for (MeshNode content : contentPage) {
-						listResponse.getData().add(nodeService.transformToRest(rc, content));
+					Page<MeshNode> nodePage = nodeService.findAll(rc, projectName, languageTags, pagingInfo);
+					for (MeshNode content : nodePage) {
+						listResponse.getData().add(content.transformToRest(requestUser));
 					}
-					RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
 					bch.complete(listResponse);
 					//					tx.success();
 					//				}
@@ -274,6 +288,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+			MeshShiroUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "uuid", projectName, READ_PERM, (AsyncResult<MeshNode> rh) -> {
 				MeshNode content = rh.result();
@@ -318,8 +333,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					if (trh.failed()) {
 						rc.fail(trh.cause());
 					}
-					MeshNode content = trh.result();
-					rc.response().setStatusCode(200).end(toJson(nodeService.transformToRest(rc, content)));
+					MeshNode node = trh.result();
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
 				});
 
 		});

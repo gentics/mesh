@@ -12,7 +12,7 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 
 	private SchemaReference schema;
 
-	private String[] perms = {};
+	private String[] permissions = {};
 
 	private long order = 0;
 	private UserResponse creator;
@@ -44,12 +44,12 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 		this.order = order;
 	}
 
-	public String[] getPerms() {
-		return perms;
+	public String[] getPermissions() {
+		return permissions;
 	}
 
-	public void setPerms(String... perms) {
-		this.perms = perms;
+	public void setPermissions(String... permissions) {
+		this.permissions = permissions;
 	}
 
 	/**

@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
@@ -94,7 +94,7 @@ public abstract class AbstractDBTest {
 
 	protected RoutingContext getMockedRoutingContext(String query) {
 
-		User user = data().getUserInfo().getUser();
+		MeshUser user = data().getUserInfo().getUser();
 
 		RoutingContext rc = mock(RoutingContext.class);
 		Session session = mock(Session.class);

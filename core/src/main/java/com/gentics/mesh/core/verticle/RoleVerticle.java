@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -22,6 +23,7 @@ import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
@@ -55,7 +57,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			String uuid = rc.request().params().get("uuid");
 			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
-				roleService.delete(role);
+				role.delete();
 			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "role_deleted", uuid))));
 			});
@@ -77,7 +79,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				}
 			}, trh -> {
 				Role role = trh.result();
-				rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
+				rc.response().setStatusCode(200).end(toJson(role.transformToRest()));
 			});
 		});
 	}
@@ -86,7 +88,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(GET).handler(rc -> {
 			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
-				RoleResponse restRole = roleService.transformToRest(role);
+				RoleResponse restRole = role.transformToRest();
 				rc.response().setStatusCode(200).end(toJson(restRole));
 			});
 		});
@@ -95,19 +97,28 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		 * List all roles when no parameter was specified
 		 */
 		route("/").method(GET).handler(rc -> {
-
+			MeshShiroUser requestUser = getUser(rc);
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 				RoleListResponse listResponse = new RoleListResponse();
-				Page<Role> rolePage = roleService.findAll(rc, pagingInfo);
-				for (Role role : rolePage) {
-					listResponse.getData().add(roleService.transformToRest(role));
-				}
-				RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+				Page<? extends Role> rolePage;
+				try {
+					rolePage = roleService.findAll(requestUser, pagingInfo);
+					for (Role role : rolePage) {
+						listResponse.getData().add(role.transformToRest());
+					}
+					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
 
-				bch.complete(listResponse);
+					bch.complete(listResponse);
+				} catch (Exception e) {
+					rc.fail(e);
+				}
+
 			}, rh -> {
+				if (rh.failed()) {
+					rc.fail(rh.cause());
+				}
 				RoleListResponse listResponse = rh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
@@ -118,7 +129,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 			RoleCreateRequest requestModel = fromJson(rc, RoleCreateRequest.class);
-
+			MeshShiroUser requestUser = getUser(rc);
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
 				return;
@@ -138,11 +149,14 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				Role role = roleService.create(requestModel.getName());
 				Group parentGroup = rh.result();
 				role.addGroup(parentGroup);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, CREATE_PERM), role);
+				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(parentGroup, CREATE_PERM), role);
 				roleCreated.complete(role);
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				Role role = roleCreated.result();
-				rc.response().setStatusCode(200).end(toJson(roleService.transformToRest(role)));
+				rc.response().setStatusCode(200).end(toJson(role.transformToRest()));
 			});
 
 		});

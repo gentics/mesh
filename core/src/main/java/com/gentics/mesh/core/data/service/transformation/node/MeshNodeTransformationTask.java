@@ -15,13 +15,15 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.util.RoutingContextHelper;
 
 public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
@@ -64,8 +66,8 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 		// Check whether the node has already been transformed by another task
 		NodeResponse foundContent = (NodeResponse) info.getObjectReferences().get(uuid);
 		if (foundContent == null) {
-			//			try (Transaction tx = info.getGraphDb().beginTx()) {
-			restNode.setPerms(info.getUserService().getPerms(info.getRoutingContext(), node));
+			MeshShiroUser requestUser = RoutingContextHelper.getUser(info.getRoutingContext());
+			restNode.setPermissions(requestUser.getPermissions(node));
 			restNode.setUuid(node.getUuid());
 
 			/* Load the schema information */
@@ -77,14 +79,13 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 				restNode.setSchema(schemaReference);
 			}
 			/* Load the creator information */
-			User creator = node.getCreator();
+			MeshUser creator = node.getCreator();
 			if (creator != null) {
-				//					creator = info.getNeo4jTemplate().fetch(creator);
-				restNode.setCreator(info.getUserService().transformToRest(creator));
+				restNode.setCreator(creator.transformToRest());
 			}
 
 			/* Load the order */
-			//				restNode.setOrder(node.getOrder());
+			//	restNode.setOrder(node.getOrder());
 
 			/* Load the children */
 			if (node.getSchema().isNestingAllowed()) {
@@ -117,9 +118,6 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 					continue;
 				}
 			}
-
-			//				tx.success();
-			//			}
 
 			/* Add the object to the list of object references */
 			info.addObject(uuid, restNode);

@@ -25,6 +25,7 @@ import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
@@ -115,9 +116,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupRoot root;
 		root = data().getMeshRoot().getGroupRoot();
 		info.getRole().revokePermissions(root, CREATE_PERM);
-
-		assertFalse("The create permission to the groups root node should have been revoked.",
-				userService.isPermitted(info.getUser().getId(), new MeshPermission(root, CREATE_PERM)));
+		MeshUser user = info.getUser();
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
 
 		String response = request(info, POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
 		expectMessageResponse("error_missing_perm", response, root.getUuid());

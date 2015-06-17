@@ -5,7 +5,13 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 
 import java.util.List;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.rest.group.response.GroupResponse;
+import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.TraversalHelper;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class Group extends GenericNode {
 
@@ -19,8 +25,8 @@ public class Group extends GenericNode {
 		setProperty(NAME_KEY, name);
 	}
 
-	public Iterable<? extends User> getUsers() {
-		return in(HAS_USER).toList(User.class);
+	public Iterable<? extends MeshUser> getUsers() {
+		return in(HAS_USER).toList(MeshUser.class);
 	}
 
 	//	@GremlinGroovy(value = "it.in('HAS_USER').order({ it.b.getProperty(fieldName) <=> it.a.getProperty(fieldName) })[skip..limit]")
@@ -30,14 +36,14 @@ public class Group extends GenericNode {
 	//	}
 
 	// @Adjacency(label = HAS_USER, direction = Direction.IN)
-	public void addUser(User user) {
-		user.addFramedEdge(HAS_USER, this, User.class);
+	public void addUser(MeshUser user) {
+		user.addFramedEdge(HAS_USER, this, MeshUser.class);
 	}
 
-	public void removeUser(User user) {
+	public void removeUser(MeshUser user) {
 		unlinkIn(user, HAS_USER);
 	}
-	
+
 	public List<? extends Role> getRoles() {
 		return in(HAS_ROLE).toList(Role.class);
 	}
@@ -58,9 +64,88 @@ public class Group extends GenericNode {
 	}
 
 	// TODO add java handler
-	public boolean hasUser(User extraUser) {
+	public boolean hasUser(MeshUser extraUser) {
 		//TODO this is not optimal - research a better way
 		return in(HAS_USER).toList(Role.class).contains(extraUser);
 	}
 
+	/**
+	 * Get all users within this group that are visible for the given user.
+	 * 
+	 * @param user
+	 * @param pagingInfo
+	 * @return
+	 */
+	public Page<MeshUser> getVisibleUsers(MeshShiroUser user, PagingInfo pagingInfo) {
+
+		// @Query(value =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username",
+		// countQuery =
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
+		// Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
+		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
+		return null;
+	}
+
+	public Page<? extends Role> getRoles(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+		//		return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
+		//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
+		//			+ " return role ORDER BY role.name desc",
+
+		//	countQuery = MATCH_PERMISSION_ON_ROLE + "MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
+		//			+ "return count(role)")
+		//		Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
+		//			return null;
+		//		}
+		VertexTraversal<?, ?, ?> traversal = out(HAS_ROLE);
+
+		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, Role.class);
+		return page;
+
+	}
+
+	// TODO handle depth
+	public GroupResponse transformToRest(MeshShiroUser user) {
+		GroupResponse restGroup = new GroupResponse();
+		restGroup.setUuid(getUuid());
+		restGroup.setName(getName());
+
+		// for (User user : group.getUsers()) {
+		// user = neo4jTemplate.fetch(user);
+		// String name = user.getUsername();
+		// if (name != null) {
+		// restGroup.getUsers().add(name);
+		// }
+		// }
+		// Collections.sort(restGroup.getUsers());
+
+		for (Role role : getRoles()) {
+			String name = role.getName();
+			if (name != null) {
+				restGroup.getRoles().add(name);
+			}
+		}
+
+		// // Set<Group> children = groupRepository.findChildren(group);
+		// Set<Group> children = group.getGroups();
+		// for (Group childGroup : children) {
+		// restGroup.getGroups().add(childGroup.getName());
+		// }
+
+		return restGroup;
+
+	}
+
+	// @Override
+	// public Group save(Group group) {
+	// GroupRoot root = findRoot();
+	// if (root == null) {
+	// throw new NullPointerException("The group root node could not be found.");
+	// }
+	// group = neo4jTemplate.save(group);
+	// root.getGroups().add(group);
+	// neo4jTemplate.save(root);
+	// return group;
+	// return null;
+	// }
 }

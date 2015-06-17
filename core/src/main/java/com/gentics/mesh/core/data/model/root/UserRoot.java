@@ -4,20 +4,20 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 
 public class UserRoot extends MeshVertex {
 
-	public List<? extends User> getUsers() {
-		return out(MeshRelationships.HAS_USER).toList(User.class);
+	public List<? extends MeshUser> getUsers() {
+		return out(MeshRelationships.HAS_USER).toList(MeshUser.class);
 	}
 
-	public void addUser(User user) {
+	public void addUser(MeshUser user) {
 		linkOut(user, MeshRelationships.HAS_USER);
 
 	}
 
-	public void removeUser(User user) {
+	public void removeUser(MeshUser user) {
 		unlinkOut(user, MeshRelationships.HAS_USER);
 	}
 

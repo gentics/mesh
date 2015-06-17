@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -23,7 +24,8 @@ import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
@@ -32,6 +34,7 @@ import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -52,10 +55,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<User> rh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<MeshUser> rh) -> {
 			}, trh -> {
-				User user = trh.result();
-				UserResponse restUser = userService.transformToRest(user);
+				MeshUser user = trh.result();
+				UserResponse restUser = user.transformToRest();
 				rc.response().setStatusCode(200).end(toJson(restUser));
 			});
 		});
@@ -64,13 +67,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			MeshShiroUser requestUser = getUser(rc);
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 			vertx.executeBlocking((Future<UserListResponse> bch) -> {
 				UserListResponse listResponse = new UserListResponse();
 
-				Page<User> userPage = userService.findAllVisible(rc, pagingInfo);
-				for (User currentUser : userPage) {
-					listResponse.getData().add(userService.transformToRest(currentUser));
+				Page<MeshUser> userPage = userService.findAllVisible(requestUser, pagingInfo);
+				for (MeshUser currentUser : userPage) {
+					listResponse.getData().add(currentUser.transformToRest());
 				}
 				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 				bch.complete(listResponse);
@@ -85,9 +89,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<User> rh) -> {
-				User user = rh.result();
-				userService.delete(user);
+			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<MeshUser> rh) -> {
+				MeshUser user = rh.result();
+				user.delete();
 			}, trh -> {
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 			});
@@ -97,8 +101,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<User> rh) -> {
-				User user = rh.result();
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<MeshUser> rh) -> {
+				MeshUser user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
 				if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
@@ -126,8 +130,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 
 			}, trh -> {
-				User user = trh.result();
-				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
+				MeshUser user = trh.result();
+				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
 			});
 
 		});
@@ -136,6 +140,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
+
+			MeshShiroUser requestUser = getUser(rc);
 
 			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 			if (requestModel == null) {
@@ -156,7 +162,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
-			Future<User> userCreated = Future.future();
+			Future<MeshUser> userCreated = Future.future();
 			// Load the parent group for the user
 			rcs.loadObjectByUuid(rc, groupUuid, CREATE_PERM, (AsyncResult<Group> rh) -> {
 
@@ -168,17 +174,17 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				User user = userService.create(requestModel.getUsername());
+				MeshUser user = userService.create(requestModel.getUsername());
 				user.setFirstname(requestModel.getFirstname());
 				user.setLastname(requestModel.getLastname());
 				user.setEmailAddress(requestModel.getEmailAddress());
 				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 				user.addGroup(parentGroup);
-				roleService.addCRUDPermissionOnRole(rc, new MeshPermission(parentGroup, CREATE_PERM), user);
+				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(parentGroup, CREATE_PERM), user);
 				userCreated.complete(user);
 			}, trh -> {
-				User user = userCreated.result();
-				rc.response().setStatusCode(200).end(toJson(userService.transformToRest(user)));
+				MeshUser user = userCreated.result();
+				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
 			});
 
 		});

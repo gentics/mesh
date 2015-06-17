@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -110,7 +110,7 @@ public class DemoDataProvider {
 	private Map<String, MeshNode> folders = new HashMap<>();
 	private Map<String, MeshNode> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
-	private Map<String, User> users = new HashMap<>();
+	private Map<String, MeshUser> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
 	private Map<String, Group> groups = new HashMap<>();
 
@@ -308,9 +308,9 @@ public class DemoDataProvider {
 		String password = "test123";
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 
-		User user = userService.create(username);
+		MeshUser user = userService.create(username);
 		user.setUuid("UUIDOFUSER1");
-		userService.setPassword(user, password);
+		user.setPassword(password);
 		log.info("Creating user with username: " + username + " and password: " + password);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
@@ -353,7 +353,7 @@ public class DemoDataProvider {
 
 		// Extra User
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			User user = userService.create("guest_" + i);
+			MeshUser user = userService.create("guest_" + i);
 			// userService.setPassword(user, "guestpw" + i);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
@@ -641,7 +641,7 @@ public class DemoDataProvider {
 		return folders;
 	}
 
-	public Map<String, User> getUsers() {
+	public Map<String, MeshUser> getUsers() {
 		return users;
 	}
 

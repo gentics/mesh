@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.ext.web.RoutingContext;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
@@ -34,6 +36,8 @@ public class MeshNodeListHandler {
 
 	public void handleListByTag(RoutingContext rc, MeshNodeListTagCallable clc) {
 		String projectName = rcs.getProjectName(rc);
+		MeshShiroUser requestUser = getUser(rc);
+
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
@@ -42,11 +46,11 @@ public class MeshNodeListHandler {
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-			Page<MeshNode> contentPage = clc.findNodes(projectName, tag, languageTags, pagingInfo);
-			for (MeshNode content : contentPage) {
-				listResponse.getData().add(contentService.transformToRest(rc, content));
+			Page<MeshNode> nodePage = clc.findNodes(projectName, tag, languageTags, pagingInfo);
+			for (MeshNode node : nodePage) {
+				listResponse.getData().add(node.transformToRest(requestUser));
 			}
-			RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
+			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
 
 		}, trh -> {
 			rc.response().setStatusCode(200).end(JsonUtils.toJson(listResponse));
@@ -55,6 +59,8 @@ public class MeshNodeListHandler {
 
 	public void handleNodeList(RoutingContext rc, MeshNodeListNodeCallable clc) {
 		String projectName = rcs.getProjectName(rc);
+		MeshShiroUser requestUser = getUser(rc);
+
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
@@ -63,11 +69,11 @@ public class MeshNodeListHandler {
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 
-			Page<MeshNode> contentPage = clc.findNodes(projectName, parentNode, languageTags, pagingInfo);
-			for (MeshNode content : contentPage) {
-				listResponse.getData().add(contentService.transformToRest(rc, content));
+			Page<MeshNode> nodePage = clc.findNodes(projectName, parentNode, languageTags, pagingInfo);
+			for (MeshNode node : nodePage) {
+				listResponse.getData().add(node.transformToRest(requestUser));
 			}
-			RestModelPagingHelper.setPaging(listResponse, contentPage, pagingInfo);
+			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
 
 		}, trh -> {
 			rc.response().setStatusCode(200).end(JsonUtils.toJson(listResponse));

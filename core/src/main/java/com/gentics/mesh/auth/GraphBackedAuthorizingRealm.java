@@ -15,7 +15,7 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.syncleus.ferma.FramedGraph;
@@ -68,7 +68,7 @@ public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken upat = (UsernamePasswordToken) token;
-		User user = userService.findByUsername(upat.getUsername());
+		MeshUser user = userService.findByUsername(upat.getUsername());
 		if (user != null) {
 			return new SimpleAuthenticationInfo(user, new BCryptPasswordHash(user.getPasswordHash(), securityConfig), getName());
 		} else {

@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
@@ -48,7 +48,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 		TagResponse foundTag = (TagResponse) info.getObjectReferences().get(uuid);
 		if (foundTag == null) {
 
-				restTag.setPerms(info.getUserService().getPerms(info.getRoutingContext(), tag));
+				restTag.setPermissions(info.getUserService().findUser(info.getRoutingContext()).getPermissions(tag));
 				restTag.setUuid(tag.getUuid());
 				
 				Schema schema = tag.getSchema();
@@ -59,9 +59,9 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					restTag.setSchema(schemaReference);
 				}
 
-				User creator = tag.getCreator();
+				MeshUser creator = tag.getCreator();
 				if (creator != null) {
-					restTag.setCreator(info.getUserService().transformToRest(creator));
+					restTag.setCreator(creator.transformToRest());
 				}
 
 				for (String languageTag : info.getLanguageTags()) {

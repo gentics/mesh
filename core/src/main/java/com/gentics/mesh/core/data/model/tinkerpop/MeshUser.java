@@ -1,0 +1,234 @@
+package com.gentics.mesh.core.data.model.tinkerpop;
+
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+
+import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.model.relationship.Permission;
+import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+
+@Configurable
+public class MeshUser extends GenericNode {
+
+	@Autowired
+	private MeshSpringConfiguration springConfiguration;
+
+	public static String FIRSTNAME_KEY = "firstname";
+
+	public static String LASTNAME_KEY = "lastname";
+
+	public static String USERNAME_KEY = "username";
+
+	public static String EMAIL_KEY = "emailAddress";
+
+	public static String PASSWORD_HASH_KEY = "passwordHash";
+
+	public String getFirstname() {
+		return getProperty(FIRSTNAME_KEY);
+	}
+
+	public void setFirstname(String name) {
+		setProperty(FIRSTNAME_KEY, name);
+	}
+
+	public String getLastname() {
+		return getProperty(LASTNAME_KEY);
+	}
+
+	public void setLastname(String name) {
+		setProperty(LASTNAME_KEY, name);
+	}
+
+	// TODO add unique index
+	public String getUsername() {
+		return getProperty(USERNAME_KEY);
+	}
+
+	public void setUsername(String name) {
+		setProperty(USERNAME_KEY, name);
+	}
+
+	public String getEmailAddress() {
+		return getProperty(EMAIL_KEY);
+	}
+
+	public void setEmailAddress(String emailAddress) {
+		setProperty(EMAIL_KEY, emailAddress);
+	}
+
+	/**
+	 * Return all groups that are assigned to the user
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public List<? extends Group> getGroups() {
+		return out(HAS_USER).toList(Group.class);
+
+		//		public List<? extends Group> listAllGroups(User user) {
+		//			// @Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
+		//			//
+		//			return user.getGroups()
+		//			return framedGraph.v().has(Group.class).mark().in(MEMBER_OF).has(User.class).has("uuid", user.getUuid()).back().toList(Group.class);
+		//
+		//		}
+	}
+
+	//	
+	//	public Set<GraphPermission> findGraphPermissions(MeshVertex node) {
+	//
+	////		Set<GraphPermission> permissions = new HashSet<>();
+	////		Vertex userNode = user.getVertex();
+	//		// Node userNode = neo4jTemplate.getPersistentState(user);
+	//
+	//		// Traverse the graph from user to the page. Collect all permission relations and check them individually
+	//		// for (Edge edge : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUT)
+	//		// .relationships(AuthRelationships.HAS_ROLE, Direction.IN).relationships(AuthRelationships.HAS_PERMISSION, Direction.OUT)
+	//		// .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
+	//		// // log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+	//		// // + rel.getStartNode().getId() + rel.getStartNode().getLabels());
+	//		//
+	//		// if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(edge.getLabel())) {
+	//		// // Check whether this relation in fact targets our object we want to check
+	//		// boolean matchesTargetNode = edge.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == node.getId();
+	//		// if (matchesTargetNode) {
+	//		// // Convert the api relationship to a SDN relationship
+	//		// GraphPermission perm = framedGraph.frame(edge, GraphPermission.class);
+	//		// permissions.add(perm);
+	//		// }
+	//		// }
+	//		// }
+	//		return permissions;
+	//
+	//	}
+
+	public String[] getPermissions(MeshVertex node) {
+
+		Set<Permission> permissions = new HashSet<>();
+		Set<? extends String> labels = in(HAS_USER).out(HAS_ROLE).outE(Permission.labels()).mark().outV().hasId(node.getId()).back().label().toSet();
+		for (String label : labels) {
+			permissions.add(Permission.valueOf(label));
+		}
+		return permissions.toArray(new String[permissions.size()]);
+	}
+
+	public boolean hasPermission(MeshVertex node, Permission permission) {
+		return in(HAS_USER).out(HAS_ROLE).outE(permission.getLabel()).mark().outV().hasId(node.getId()).back().label().hasNext();
+	}
+
+	public UserResponse transformToRest() {
+		UserResponse restUser = new UserResponse();
+		restUser.setUuid(getUuid());
+		restUser.setUsername(getUsername());
+		restUser.setEmailAddress(getEmailAddress());
+		restUser.setFirstname(getFirstname());
+		restUser.setLastname(getLastname());
+
+		for (Group group : getGroups()) {
+			restUser.addGroup(group.getName());
+		}
+		return restUser;
+	}
+
+	public void addGroup(Group group) {
+		linkOut(group, HAS_USER);
+	}
+
+	public Long getGroupCount() {
+		return out(MeshRelationships.HAS_USER).count();
+	}
+
+	public String getPasswordHash() {
+		return getProperty(PASSWORD_HASH_KEY);
+	}
+
+	public void setPasswordHash(String hash) {
+		setProperty(PASSWORD_HASH_KEY, hash);
+	}
+
+	public String getPrincipalId() {
+		return getUsername() + "%" + getEmailAddress() + "%" + getPasswordHash() + "#" + getId();
+	}
+
+	public void setPassword(String password) {
+		setPasswordHash(springConfiguration.passwordEncoder().encode(password));
+	}
+
+	//	public boolean isPermitted(long userNodeId, MeshPermission genericPermission) throws Exception {
+	//		if (genericPermission.getTargetNode() == null) {
+	//			return false;
+	//		}
+	//		Vertex userNode = framedGraph.getVertex(userNodeId);
+	//		for (Edge groupRel : userNode.getEdges(com.tinkerpop.blueprints.Direction.OUT, MEMBER_OF)) {
+	//			Vertex group = groupRel.getVertex(com.tinkerpop.blueprints.Direction.OUT);
+	//			log.debug("Found group: " + group.getProperty("name"));
+	//			for (Edge roleRel : group.getEdges(Direction.IN, HAS_ROLE)) {
+	//				Vertex role = roleRel.getVertex(Direction.IN);
+	//				log.debug("Found role: " + role.getProperty("name"));
+	//				for (Edge authRel : role.getEdges(Direction.OUT, HAS_PERMISSION)) {
+	//					log.debug("Permission from {" + authRel.getVertex(Direction.IN).getId() + " to " + authRel.getVertex(Direction.OUT).getId());
+	//					boolean matchesTargetNode = authRel.getVertex(Direction.OUT).getId() == genericPermission.getTargetNode().getId();
+	//					if (matchesTargetNode) {
+	//						log.debug("Found permission");
+	//						// Convert the api relationship to a framed edge
+	//						GraphPermission perm = framedGraph.frameElement(authRel, GraphPermission.class);
+	//						if (genericPermission.implies(perm) == true) {
+	//							return true;
+	//						}
+	//					}
+	//				}
+	//			}
+	//		}
+
+	// // Traverse the graph from user to the page. Collect all permission relations and check them individually
+	// for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
+	// .relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
+	// .relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+	// .traverse(userNode).relationships()) {
+	// // log.debug("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
+	// // + rel.getStartNode().getId() + rel.getStartNode().getLabels());
+	//
+	// if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
+	// // Check whether this relation in fact targets our object we want to check
+	// boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
+	// if (matchesTargetNode) {
+	// // Convert the api relationship to a SDN relationship
+	// GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
+	// if (genericPermission.implies(perm) == true) {
+	// return true;
+	// }
+	// }
+	// }
+	// }
+	//		return false;
+	//	}
+
+	//	@Override
+	//	public User save(User user) {
+	// UserRoot root = userRepository.findRoot();
+	// if (root == null) {
+	// throw new NullPointerException("The user root node could not be found.");
+	// }
+	// user = neo4jTemplate.save(user);
+	// root.getUsers().add(user);
+	// neo4jTemplate.save(root);
+	// return user;
+	//		return null;
+	//	}
+
+	public void delete() {
+		//TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
+		getVertex().remove();
+	}
+
+}

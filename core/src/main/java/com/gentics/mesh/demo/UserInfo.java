@@ -2,16 +2,16 @@ package com.gentics.mesh.demo;
 
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 
 public class UserInfo {
 
-	private User user;
+	private MeshUser user;
 	private Group group;
 	private Role role;
 	private String password;
 
-	public UserInfo(User user, Group group, Role role, String password) {
+	public UserInfo(MeshUser user, Group group, Role role, String password) {
 		this.user = user;
 		this.group = group;
 		this.role = role;
@@ -22,7 +22,7 @@ public class UserInfo {
 		this.role = role;
 	}
 
-	public void setUser(User user) {
+	public void setUser(MeshUser user) {
 		this.user = user;
 	}
 
@@ -38,7 +38,7 @@ public class UserInfo {
 		return role;
 	}
 
-	public User getUser() {
+	public MeshUser getUser() {
 		return user;
 	}
 

@@ -105,6 +105,7 @@ public class MeshSpringConfiguration {
 	@Bean
 	public FramedGraph getFramedGraph() {
 		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
+		//TODO configure indices
 		graph.createKeyIndex("ferma_type", Vertex.class);
 		graph.createKeyIndex("uuid", Vertex.class);
 		graph.createKeyIndex("ferma_type", Edge.class);
@@ -166,6 +167,7 @@ public class MeshSpringConfiguration {
 	}
 
 	public CorsHandler corsHandler() {
+		//TODO make core configurable
 		CorsHandler corsHandler = CorsHandler.create("*");
 		// corsHandler.allowCredentials(true);
 		corsHandler.allowedMethod(HttpMethod.GET);
@@ -182,6 +184,7 @@ public class MeshSpringConfiguration {
 	public Handler<RoutingContext> bodyHandler() {
 		BodyHandler handler = BodyHandler.create();
 		handler.setBodyLimit(MeshSpringConfiguration.getConfiguration().getFileUploadByteLimit());
+		//TODO check for windows issues 
 		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
 		return handler;
 	}

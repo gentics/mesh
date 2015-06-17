@@ -22,7 +22,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
 import com.gentics.mesh.core.rest.user.response.UserListResponse;
@@ -41,7 +41,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
@@ -54,7 +54,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUIDWithNoPermission() throws Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
 		info.getRole().revokePermissions(user, READ_PERM);
@@ -66,7 +66,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllUsers() throws Exception {
 
-		User user3 = userService.create("testuser_3");
+		MeshUser user3 = userService.create("testuser_3");
 		//		try (Transaction tx = graphDb.beginTx()) {
 		user3.setLastname("should_not_be_listed");
 		user3.setFirstname("should_not_be_listed");
@@ -128,7 +128,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUser() throws Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setUuid(user.getUuid());
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -141,7 +141,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		test.assertUser(updateRequest, restUser);
 
 		//TODO TP load user again
-		User reloadedUser = null;
+		MeshUser reloadedUser = null;
 		assertEquals("Epic Stark", reloadedUser.getLastname());
 		assertEquals("Tony Awesome", reloadedUser.getFirstname());
 		assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
@@ -150,7 +150,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 		String oldHash = user.getPasswordHash();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
@@ -161,7 +161,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		test.assertUser(updateRequest, restUser);
 
 		//TODO TP load user again
-		User reloadedUser = null;
+		MeshUser reloadedUser = null;
 
 		assertTrue("The hash should be different and thus the password updated.", oldHash != reloadedUser.getPasswordHash());
 		assertEquals(user.getUsername(), reloadedUser.getUsername());
@@ -172,7 +172,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 		String oldHash = user.getPasswordHash();
 		info.getRole().revokePermissions(user, UPDATE_PERM);
 		UserUpdateRequest restUser = new UserUpdateRequest();
@@ -182,13 +182,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 				new ObjectMapper().writeValueAsString(restUser));
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
 
-		User reloadedUser = userService.findByUUID(user.getUuid());
+		MeshUser reloadedUser = userService.findByUUID(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 	}
 
 	@Test
 	public void testUpdateUserWithNoPermission() throws Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 		String oldHash = user.getPasswordHash();
 		info.getRole().revokePermissions(user, UPDATE_PERM);
 
@@ -203,7 +203,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 				new ObjectMapper().writeValueAsString(updatedUser));
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
 
-		User reloadedUser = userService.findByUUID(user.getUuid());
+		MeshUser reloadedUser = userService.findByUUID(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 		assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -211,10 +211,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 
 		// Create an user with a conflicting username
-		User conflictingUser = userService.create("existing_username");
+		MeshUser conflictingUser = userService.create("existing_username");
 		//		try (Transaction tx = graphDb.beginTx()) {
 
 		info.getGroup().addUser(conflictingUser);
@@ -237,7 +237,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		User conflictingUser = userService.create("existing_username");
+		MeshUser conflictingUser = userService.create("existing_username");
 		//		try (Transaction tx = graphDb.beginTx()) {
 		info.getGroup().addUser(conflictingUser);
 		// Add update permission to group in order to create the user in that group
@@ -329,7 +329,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 		test.assertUser(newUser, restUser);
 
-		User user = userService.findByUUID(restUser.getUuid());
+		MeshUser user = userService.findByUUID(restUser.getUuid());
 		test.assertUser(user, restUser);
 
 	}
@@ -370,7 +370,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	// Delete tests
 	@Test
 	public void testDeleteUserByUUID() throws Exception {
-		User user = info.getUser();
+		MeshUser user = info.getUser();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		expectMessageResponse("user_deleted", response, user.getUuid());
 		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
@@ -378,7 +378,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		User user = userService.create("extraUser");
+		MeshUser user = userService.create("extraUser");
 		//		try (Transaction tx = graphDb.beginTx()) {
 		info.getRole().addPermissions(user, UPDATE_PERM);
 		info.getRole().addPermissions(user, CREATE_PERM);
@@ -400,14 +400,14 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUID() throws Exception {
-		User extraUser = userService.create("extraUser");
+		MeshUser extraUser = userService.create("extraUser");
 		info.getRole().addPermissions(extraUser, DELETE_PERM);
 		assertNotNull(extraUser.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + extraUser.getUuid(), 200, "OK");
 		expectMessageResponse("user_deleted", response, extraUser.getUuid());
 		//TODO  TP load user and verify for null?
-		User loadedUser = new User();
+		MeshUser loadedUser = new MeshUser();
 		assertNull("The user should have been deleted", loadedUser);
 	}
 

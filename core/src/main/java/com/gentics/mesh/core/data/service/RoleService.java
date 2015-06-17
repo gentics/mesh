@@ -1,11 +1,9 @@
 package com.gentics.mesh.core.data.service;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.HashSet;
 import java.util.List;
@@ -18,15 +16,11 @@ import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
-import com.gentics.mesh.core.data.model.tinkerpop.User;
-import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.PagingHelper;
+import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -56,31 +50,11 @@ public class RoleService extends AbstractMeshService {
 		return framedGraph.v().has(Role.class).toListExplicit(Role.class);
 	}
 
-	public RoleResponse transformToRest(Role role) {
-		if (role == null) {
-			throw new HttpStatusCodeErrorException(500, "Role can't be null");
-		}
-		RoleResponse restRole = new RoleResponse();
-		restRole.setUuid(role.getUuid());
-		restRole.setName(role.getName());
-
-		for (Group group : role.getGroups()) {
-			GroupResponse restGroup = new GroupResponse();
-			restGroup.setName(group.getName());
-			restGroup.setUuid(group.getUuid());
-			restRole.getGroups().add(restGroup);
-		}
-
-		return restRole;
-	}
-
-	public void addCRUDPermissionOnRole(RoutingContext rc, MeshPermission meshPermission, GenericNode targetNode) {
-
-		User user = userService.findUser(rc);
+	public void addCRUDPermissionOnRole(MeshShiroUser requestUser, MeshPermission meshPermission, GenericNode targetNode) {
 
 		// 1. Determine all roles that grant given permission
 		//		Node userNode = neo4jTemplate.getPersistentState(user);
-		Vertex userNode = user.getVertex();
+		Vertex userNode = requestUser.getVertex();
 		Set<Role> roles = new HashSet<>();
 
 		//TODO use core blueprint api or gremlin traversal?
@@ -109,28 +83,10 @@ public class RoleService extends AbstractMeshService {
 		}
 	}
 
-	public Page<Role> findAll(RoutingContext rc, PagingInfo pagingInfo) {
-//		String userUuid = rc.session().getPrincipal().getString("uuid");
-		//		return findAll(userUuid, new MeshPageRequest(pagingInfo));
-		return null;
-	}
-
-	public Page<? extends Role> findByGroup(RoutingContext rc, Group group, PagingInfo pagingInfo) throws InvalidArgumentException {
-		String userUuid = rc.user().principal().getString("uuid");
-		//		return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
-		//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
-		//			+ " return role ORDER BY role.name desc",
-
-		//	countQuery = MATCH_PERMISSION_ON_ROLE + "MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
-		//			+ "return count(role)")
-		//		Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
-		//			return null;
-		//		}
-		VertexTraversal<?, ?, ?> traversal = framedGraph.v().has(Role.class).mark().out(HAS_ROLE).hasId(group.getId()).back();
-
-		Page<? extends Role> page = PagingHelper.getPagedResult(traversal, pagingInfo, Role.class);
-		return page;
-
+	public Page<? extends Role> findAll(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+		//TODO filter for permissions
+		VertexTraversal traversal = framedGraph.v().has(Role.class);
+		return TraversalHelper.getPagedResult(traversal, pagingInfo, Role.class);
 	}
 
 	//	public GraphPermission findPermission(Long roleId, Long nodeId) {
@@ -139,6 +95,7 @@ public class RoleService extends AbstractMeshService {
 	//	}
 
 	public RoleRoot findRoot() {
+		//TODO use static reference of mesh root and edge instead?
 		return framedGraph.v().has(RoleRoot.class).nextExplicit(RoleRoot.class);
 	}
 
@@ -161,10 +118,6 @@ public class RoleService extends AbstractMeshService {
 			return framedGraph.frameElement(vertex, Role.class);
 		}
 		return null;
-	}
-
-	public void delete(Role role) {
-		role.getVertex().remove();
 	}
 
 }
