@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
 import java.awt.print.Pageable;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -14,13 +12,8 @@ import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.rest.project.response.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
-import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 

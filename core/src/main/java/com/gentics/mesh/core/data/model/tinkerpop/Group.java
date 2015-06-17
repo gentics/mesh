@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -75,8 +76,9 @@ public class Group extends GenericNode {
 	 * @param user
 	 * @param pagingInfo
 	 * @return
+	 * @throws InvalidArgumentException
 	 */
-	public Page<MeshUser> getVisibleUsers(MeshShiroUser user, PagingInfo pagingInfo) {
+	public Page<? extends MeshUser> getVisibleUsers(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username",
@@ -84,7 +86,11 @@ public class Group extends GenericNode {
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
 		// Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
 		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
-		return null;
+
+		
+		//VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
+		VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
+		return TraversalHelper.getPagedResult(traversal, pagingInfo, MeshUser.class);
 	}
 
 	public Page<? extends Role> getRoles(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {

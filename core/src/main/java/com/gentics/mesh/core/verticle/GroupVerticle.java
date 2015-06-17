@@ -144,13 +144,18 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				vertx.executeBlocking((Future<UserListResponse> bch) -> {
 					UserListResponse listResponse = new UserListResponse();
 					Group group = grh.result();
-					Page<MeshUser> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-					for (MeshUser user : userPage) {
-						listResponse.getData().add(user.transformToRest());
-					}
-					RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
+					Page<? extends MeshUser> userPage;
+					try {
+						userPage = group.getVisibleUsers(requestUser, pagingInfo);
+						for (MeshUser user : userPage) {
+							listResponse.getData().add(user.transformToRest());
+						}
+						RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 
-					bch.complete(listResponse);
+						bch.complete(listResponse);
+					} catch (Exception e) {
+						rc.fail(e);
+					}
 				}, rh -> {
 					if (rh.failed()) {
 						rc.fail(rh.cause());

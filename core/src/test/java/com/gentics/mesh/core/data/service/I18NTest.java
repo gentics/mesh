@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -8,8 +8,6 @@ import java.util.MissingResourceException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class I18NTest extends AbstractDBTest {

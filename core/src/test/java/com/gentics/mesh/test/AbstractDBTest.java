@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
@@ -101,12 +102,14 @@ public abstract class AbstractDBTest {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 
-		io.vertx.ext.auth.User vertxUser = mock(io.vertx.ext.auth.User.class);
+		MeshShiroUser requestUser = framedGraph.frameElement(user.getElement(), MeshShiroUser.class);
+
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);
 		JsonObject principal = new JsonObject();
 		principal.put("uuid", user.getUuid());
-		when(vertxUser.principal()).thenReturn(principal);
+		when(rc.user()).thenReturn(requestUser);
+		//when(vertxUser.principal()).thenReturn(principal);
 		// Create login session
 		// String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
 		// String loginSessionId = null;

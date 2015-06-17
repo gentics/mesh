@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
-import io.vertx.ext.web.RoutingContext;
-
 import java.util.List;
 
 import com.gentics.mesh.core.Page;

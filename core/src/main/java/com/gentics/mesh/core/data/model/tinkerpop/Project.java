@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG_ROOT;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 

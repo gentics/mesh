@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
@@ -11,9 +10,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.rest.project.response.ProjectResponse;
+import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;

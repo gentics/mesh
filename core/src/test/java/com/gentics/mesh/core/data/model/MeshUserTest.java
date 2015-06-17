@@ -10,11 +10,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
+import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.InvalidArgumentException;
 
 public class MeshUserTest extends AbstractDBTest {
 
@@ -65,15 +68,18 @@ public class MeshUserTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testFindUsersOfGroup() {
+	public void testFindUsersOfGroup() throws InvalidArgumentException {
 
 		MeshUser extraUser = userService.create("extraUser");
-		info.getGroup().addUser(extraUser);
-		info.getRole().addPermissions(extraUser, READ_PERM);
+		Group group = info.getGroup();
+		Role role = info.getRole();
+		group.addUser(extraUser);
+
+		role.addPermissions(extraUser, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshShiroUser requestUser = getUser(rc);
-		Page<MeshUser> userPage = info.getGroup().getVisibleUsers(requestUser, new PagingInfo(1, 10));
+		Page<? extends MeshUser> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 		assertEquals(2, userPage.getTotalElements());
 	}

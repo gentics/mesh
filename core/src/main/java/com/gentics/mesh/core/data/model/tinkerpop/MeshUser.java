@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
@@ -15,7 +14,6 @@ import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 
 @Configurable
 public class MeshUser extends GenericNode {

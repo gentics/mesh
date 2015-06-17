@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;

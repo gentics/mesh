@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.ext.web.RoutingContext;
-
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 

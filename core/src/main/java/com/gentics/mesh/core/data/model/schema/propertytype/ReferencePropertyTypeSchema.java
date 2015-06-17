@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.model.schema.propertytype;
 
-import java.util.List;
 
 public class ReferencePropertyTypeSchema extends BasicPropertyType {
 
