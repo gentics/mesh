@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -14,6 +16,9 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
+
+import com.gentics.mesh.core.data.model.relationship.Permission;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class MeshShiroUser extends MeshUser implements ClusterSerializable, User {
 
@@ -62,7 +67,6 @@ public class MeshShiroUser extends MeshUser implements ClusterSerializable, User
 	@Override
 	public void writeToBuffer(Buffer buffer) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -76,5 +80,9 @@ public class MeshShiroUser extends MeshUser implements ClusterSerializable, User
 		PrincipalCollection coll = new SimplePrincipalCollection(username);
 		subjectContext.setPrincipals(coll);
 		subject = securityManager.createSubject(subjectContext);
+	}
+
+	public VertexTraversal<?, ?, ?> getPermTraversal(Permission permission) {
+		return in(HAS_USER).out(HAS_ROLE).out(permission.label());
 	}
 }

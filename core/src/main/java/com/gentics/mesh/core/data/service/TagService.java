@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.data.service;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -8,10 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.TraversalHelper;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -36,8 +43,10 @@ public class TagService extends AbstractMeshService {
 
 //	private static ForkJoinPool pool = new ForkJoinPool(8);
 
-	public Page<Tag> findProjectTags(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<? extends Tag> findProjectTags(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException {
 
+		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(Tag.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+		return TraversalHelper.getPagedResult(traversal, pagingInfo, Tag.class);
 		//		String langFilter = getLanguageFilter("l");
 		//		if (languageTags == null || languageTags.isEmpty()) {
 		//			langFilter = "";
@@ -56,7 +65,6 @@ public class TagService extends AbstractMeshService {
 		//		parameters.put("projectName", projectName);
 		//		parameters.put("userUuid", userUuid);
 		//		return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
-		return null;
 	}
 
 //	static String PERMISSION_PATTERN_ON_TAG = "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";

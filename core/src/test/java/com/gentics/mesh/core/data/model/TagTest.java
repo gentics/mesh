@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.JsonUtils;
 
 public class TagTest extends AbstractDBTest {
@@ -44,6 +45,13 @@ public class TagTest extends AbstractDBTest {
 	@Before
 	public void setup() throws Exception {
 		setupData();
+	}
+
+	@Test
+	public void testDependencyInjection() {
+		Tag tag = data().getTag("vehicle");
+		assertNotNull(tag);
+		assertNotNull("Tag i18n service is null", tag.i18n);
 	}
 
 	@Test
@@ -146,13 +154,13 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testFindAll() {
+	public void testFindAll() throws InvalidArgumentException {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshShiroUser requestUser = getUser(rc);
 
-		Page<Tag> tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
+		Page<? extends Tag> tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(8, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 

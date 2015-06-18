@@ -14,13 +14,27 @@ public enum Permission {
 		String[] names = new String[permissions.length];
 
 		for (int i = 0; i < permissions.length; i++) {
-			names[i] = permissions[i].name();
+			names[i] = permissions[i].label();
 		}
 
 		return names;
 	}
 
-	public String getLabel() {
+	public String label() {
+		return label;
+	}
+
+	public static Permission valueOfLabel(String labelName) {
+		for (Permission p : Permission.values()) {
+			if (labelName.equals(p.label())) {
+				return p;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String toString() {
 		return label;
 	}
 }

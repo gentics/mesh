@@ -118,7 +118,7 @@ public class MeshUser extends GenericNode {
 	}
 
 	public boolean hasPermission(MeshVertex node, Permission permission) {
-		return in(HAS_USER).out(HAS_ROLE).outE(permission.getLabel()).mark().outV().retain(node).back().label().hasNext();
+		return in(HAS_USER).out(HAS_ROLE).outE(permission.label()).mark().outV().retain(node).back().label().hasNext();
 	}
 
 	public UserResponse transformToRest() {

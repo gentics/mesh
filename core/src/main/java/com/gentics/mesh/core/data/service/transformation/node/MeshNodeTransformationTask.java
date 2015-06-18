@@ -60,12 +60,12 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 	@Override
 	protected Void compute() {
 
+		MeshShiroUser requestUser = info.getRequestUser();
 		Set<ForkJoinTask<Void>> tasks = new ConcurrentHashSet<>();
 		String uuid = node.getUuid();
 		// Check whether the node has already been transformed by another task
 		NodeResponse foundContent = (NodeResponse) info.getObjectReferences().get(uuid);
 		if (foundContent == null) {
-			MeshShiroUser requestUser = RoutingContextHelper.getUser(info.getRoutingContext());
 			restNode.setPermissions(requestUser.getPermissions(node));
 			restNode.setUuid(node.getUuid());
 

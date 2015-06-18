@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
@@ -44,11 +45,12 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 	protected Void compute() {
 		Set<ForkJoinTask<Void>> tasks = new HashSet<>();
 		String uuid = tag.getUuid();
+		MeshShiroUser requestUser = info.getRequestUser();
 		// Check whether the tag has already been transformed by another task
 		TagResponse foundTag = (TagResponse) info.getObjectReferences().get(uuid);
 		if (foundTag == null) {
 
-				restTag.setPermissions(info.getUserService().findUser(info.getRoutingContext()).getPermissions(tag));
+				restTag.setPermissions(requestUser.getPermissions(tag));
 				restTag.setUuid(tag.getUuid());
 				
 				Schema schema = tag.getSchema();

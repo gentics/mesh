@@ -1,37 +1,43 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PARENT_NODE;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
+
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Configurable;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
-import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
+
 
 public class MeshNode extends GenericPropertyContainer {
 
 	public List<? extends Tag> getTags() {
-		return out(MeshRelationships.HAS_TAG).toList(Tag.class);
+		return out(HAS_TAG).toList(Tag.class);
 	}
 
 	public void addTag(Tag tag) {
-		linkOut(tag, MeshRelationships.HAS_TAG);
+		//addFramedEdge(HAS_TAG, tag);
+		linkOut(tag, HAS_TAG);
 	}
 
 	public void removeTag(Tag tag) {
-		unlinkOut(tag, MeshRelationships.HAS_TAG);
+		unlinkOut(tag, HAS_TAG);
 	}
 
 	public List<? extends MeshNode> getChildren() {
-		return in(MeshRelationships.HAS_PARENT_NODE).toList(MeshNode.class);
+		return in(HAS_PARENT_NODE).toList(MeshNode.class);
 	}
 
 	public MeshNode getParentNode() {
-		return out(MeshRelationships.HAS_PARENT_NODE).nextOrDefault(MeshNode.class, null);
+		return out(HAS_PARENT_NODE).nextOrDefault(MeshNode.class, null);
 	}
 
 	public void setParentNode(MeshNode parent) {
-		setLinkOut(parent, MeshRelationships.HAS_PARENT_NODE);
+		setLinkOut(parent, HAS_PARENT_NODE);
 	}
 
 	public NodeResponse transformToRest(MeshShiroUser requestUser) {

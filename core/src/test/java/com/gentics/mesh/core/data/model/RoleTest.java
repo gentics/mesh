@@ -49,16 +49,16 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermission() {
 		Role role = info.getRole();
-		MeshNode content = data().getContent("news overview");
-		MeshNode content2;
-		role.addPermissions(content, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
+		MeshNode node = data().getContent("news overview");
+		MeshNode node2;
+		role.addPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
-		// content2
-		content2 = nodeService.create();
-		content2.setContent(data().getEnglish(), "Test");
-		role.addPermissions(content2, READ_PERM, DELETE_PERM);
-		role.addPermissions(content2, CREATE_PERM);
-		Set<Permission> permissions = role.getPermissions(content2);
+		// node2
+		node2 = nodeService.create();
+		node2.setContent(data().getEnglish(), "Test");
+		role.addPermissions(node2, READ_PERM, DELETE_PERM);
+		role.addPermissions(node2, CREATE_PERM);
+		Set<Permission> permissions = role.getPermissions(node2);
 
 		assertNotNull(permissions);
 		assertTrue(permissions.contains(CREATE_PERM));
@@ -83,12 +83,12 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermissionTwice() {
 		Role role = info.getRole();
-		MeshNode content = data().getContent("news overview");
+		MeshNode node = data().getContent("news overview");
 
-		role.addPermissions(content, CREATE_PERM);
-		role.addPermissions(content, CREATE_PERM);
+		role.addPermissions(node, CREATE_PERM);
+		role.addPermissions(node, CREATE_PERM);
 
-		Set<Permission> permissions = role.getPermissions(content);
+		Set<Permission> permissions = role.getPermissions(node);
 		assertNotNull(permissions);
 		assertTrue(permissions.contains(CREATE_PERM));
 		assertTrue(permissions.contains(READ_PERM));
@@ -97,12 +97,19 @@ public class RoleTest extends AbstractDBTest {
 	}
 
 	@Test
+	public void testGetPermissions() {
+		Role role = info.getRole();
+		MeshNode node = data().getContent("news overview");
+		assertEquals(4, role.getPermissions(node).size());
+	}
+
+	@Test
 	public void testRevokePermission() {
 		Role role = info.getRole();
-		MeshNode content = data().getContent("news overview");
-		role.revokePermissions(content, CREATE_PERM);
+		MeshNode node = data().getContent("news overview");
+		role.revokePermissions(node, CREATE_PERM);
 
-		Set<Permission> permissions = role.getPermissions(content);
+		Set<Permission> permissions = role.getPermissions(node);
 		assertNotNull(permissions);
 		assertFalse(permissions.contains(CREATE_PERM));
 		assertTrue(permissions.contains(DELETE_PERM));

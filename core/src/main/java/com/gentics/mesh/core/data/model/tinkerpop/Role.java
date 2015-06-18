@@ -3,14 +3,17 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshEdge;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
+import com.syncleus.ferma.EdgeFrame;
 
 public class Role extends GenericNode {
 
@@ -27,12 +30,11 @@ public class Role extends GenericNode {
 		return out(HAS_ROLE).has(Role.class).toListExplicit(Group.class);
 	}
 
-	public Set<Permission> getPermissions(MeshNode node) {
+	public Set<Permission> getPermissions(MeshVertex node) {
 		Set<Permission> permissions = new HashSet<>();
-		//TODO use retain
-		Set<? extends String> labels = outE(Permission.labels()).mark().outV().retain(node).back().label().toSet();
+		Set<? extends String> labels = outE(Permission.labels()).mark().inV().retain(node).back().label().toSet();
 		for (String label : labels) {
-			permissions.add(Permission.valueOf(label));
+			permissions.add(Permission.valueOfLabel(label));
 		}
 		return permissions;
 	}
@@ -43,7 +45,7 @@ public class Role extends GenericNode {
 
 	public void addPermissions(MeshVertex node, Permission... permissions) {
 		for (Permission permission : permissions) {
-			addFramedEdge(permission.getLabel(), node);
+			addFramedEdge(permission.label(), node);
 		}
 	}
 
@@ -81,19 +83,8 @@ public class Role extends GenericNode {
 	public void revokePermissions(MeshVertex node, Permission... permissions) {
 
 		for (Permission permission : permissions) {
-			//outE(permission.getLabel()).mark().outV().hasId(node.getId()).back().remove();
+			outE(permission.label()).mark().inV().retain(node).back().removeAll();
 		}
-		//		GraphPermission permission = getGraphPermission(role, node);
-		//		// Create a new permission relation when no existing one could be found
-		//		if (permission == null) {
-		//			return null;
-		//		}
-		//		for (int i = 0; i < permissions.length; i++) {
-		//			permission.revoke(permissions[i]);
-		//		}
-		//		role.addPermission(node);
-		//		//		permission = neo4jTemplate.save(permission);
-		//		return permission;
 	}
 
 	public void delete() {

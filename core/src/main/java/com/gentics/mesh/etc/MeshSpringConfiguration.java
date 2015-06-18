@@ -29,7 +29,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
@@ -43,7 +42,6 @@ import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
-@EnableAspectJAutoProxy
 public class MeshSpringConfiguration {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);

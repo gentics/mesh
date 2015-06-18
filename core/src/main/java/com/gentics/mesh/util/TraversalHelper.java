@@ -27,11 +27,8 @@ public final class TraversalHelper {
 
 		int low = page * pageSize;
 		int upper = low + pageSize - 1;
-		// System.out.println("Page: " + page);
-		// System.out.println("Range: " + low + " to " + (low + pageSize));
 
-		int count = (int) traversal.count();
-		// System.out.println("Found: " + count);
+		int count = (int) traversal.mark().count();
 
 		// Only add the filter to the pipeline when the needed parameters were correctly specified.
 		if (order != UNSORTED && sortBy != null) {
@@ -45,7 +42,7 @@ public final class TraversalHelper {
 			});
 		}
 
-		List<? extends T> list = traversal.range(low, upper).toList(classOfT);
+		List<? extends T> list = traversal.range(low, upper).toListExplicit(classOfT);
 
 		int totalPages = count / pageSize;
 

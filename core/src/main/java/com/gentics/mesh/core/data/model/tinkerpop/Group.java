@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
@@ -49,9 +50,8 @@ public class Group extends GenericNode {
 		return in(HAS_ROLE).toList(Role.class);
 	}
 
-	// @Adjacency(label = HAS_ROLE, direction = Direction.IN)
 	public void addRole(Role role) {
-
+		linkIn(role, HAS_ROLE);
 	}
 
 	public void removeRole(Role role) {
@@ -87,23 +87,19 @@ public class Group extends GenericNode {
 		// Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
 		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 
-		
 		//VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
-		VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
+		VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, MeshUser.class);
 	}
 
 	public Page<? extends Role> getRoles(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
-		//		return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
-		//	@Query(value = MATCH_PERMISSION_ON_ROLE + " MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
-		//			+ " return role ORDER BY role.name desc",
 
-		//	countQuery = MATCH_PERMISSION_ON_ROLE + "MATCH (role)-[:HAS_ROLE]->(group:Group) where id(group) = {1} AND " + FILTER_USER_PERM
-		//			+ "return count(role)")
-		//		Page<Role> findByGroup(String userUuid, Group group, Pageable pageable) {
-		//			return null;
-		//		}
-		VertexTraversal<?, ?, ?> traversal = out(HAS_ROLE);
+		for (MeshVertex v : in(HAS_ROLE).toListExplicit(MeshVertex.class)) {
+			System.out.println(v.getProperty("name"));
+			System.out.println(v.getProperty("ferma_type"));
+		}
+
+		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 
 		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, Role.class);
 		return page;

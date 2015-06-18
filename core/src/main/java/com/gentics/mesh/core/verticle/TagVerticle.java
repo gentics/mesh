@@ -213,12 +213,17 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
 				TagListResponse listResponse = new TagListResponse();
 				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-				Page<Tag> tagPage = tagService.findProjectTags(requestUser, projectName, languageTags, pagingInfo);
-				for (Tag tag : tagPage) {
-					listResponse.getData().add(tag.transformToRest(requestUser));
+				Page<? extends Tag> tagPage;
+				try {
+					tagPage = tagService.findProjectTags(requestUser, projectName, languageTags, pagingInfo);
+					for (Tag tag : tagPage) {
+						listResponse.getData().add(tag.transformToRest(requestUser));
+					}
+					RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+					bcr.complete(listResponse);
+				} catch (Exception e) {
+					bcr.fail(e);
 				}
-				RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
-				bcr.complete(listResponse);
 			}, arh -> {
 				if (arh.failed()) {
 					rc.fail(arh.cause());
