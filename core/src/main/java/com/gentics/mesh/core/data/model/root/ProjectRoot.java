@@ -1,17 +1,22 @@
 package com.gentics.mesh.core.data.model.root;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PROJECT;
+
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
-import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 
 public class ProjectRoot extends MeshVertex {
 
 	public List<? extends Project> getProjects() {
-		return out(MeshRelationships.HAS_PROJECT).toList(Project.class);
+		return out(HAS_PROJECT).toList(Project.class);
 	}
 
-	//TODO unique
+	public void addProject(Project project) {
+		linkOut(project, HAS_PROJECT);
+	}
+
+	// TODO unique
 
 }

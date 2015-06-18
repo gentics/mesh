@@ -20,7 +20,7 @@ import com.gentics.mesh.test.SpringTestConfiguration;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class TotoromTest {
+public class OGMTest {
 
 	@Autowired
 	private TagService tagService;

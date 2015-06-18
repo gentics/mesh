@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
+
 import java.awt.print.Pageable;
 import java.util.List;
 
@@ -28,10 +30,7 @@ public class SchemaService extends AbstractMeshService {
 		if (StringUtils.isEmpty(projectName) || StringUtils.isEmpty(name)) {
 			throw new NullPointerException("name or project name null");
 		}
-		// @Query("MATCH (project:Project)-[:ASSIGNED_TO_PROJECT]-(n:ObjectSchema) WHERE n.name = {1} AND project.name = {0} RETURN n")
-		// TODO fix query - somehow the project relationship is not matching
-		// @Query("MATCH (n:ObjectSchema) WHERE n.name = {1} RETURN n")
-		return null;
+		return fg.v().has("name", name).has(Schema.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back().nextOrDefault(Schema.class, null);
 	}
 
 	public void deleteByUUID(String uuid) {
@@ -95,6 +94,8 @@ public class SchemaService extends AbstractMeshService {
 	public Schema create(String name) {
 		Schema schema = fg.addFramedVertex(Schema.class);
 		schema.setName(name);
+		SchemaRoot root = findRoot();
+		root.addSchema(schema);
 		return schema;
 	}
 

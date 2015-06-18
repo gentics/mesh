@@ -31,14 +31,8 @@ public class Group extends GenericNode {
 		return in(HAS_USER).has(MeshUser.class).toListExplicit(MeshUser.class);
 	}
 
-	//	@GremlinGroovy(value = "it.in('HAS_USER').order({ it.b.getProperty(fieldName) <=> it.a.getProperty(fieldName) })[skip..limit]")
-	//	public Iterable<User> getUsersInOrder(@GremlinParam("fieldName") String fieldName, @GremlinParam("skip") int skip,
-	//			@GremlinParam("limit") int limit) {
-	//		in(HAS_USER).order()
-	//	}
-
-	// @Adjacency(label = HAS_USER, direction = Direction.IN)
 	public void addUser(MeshUser user) {
+		//TODO use link method
 		user.addFramedEdge(HAS_USER, this, MeshUser.class);
 	}
 
@@ -60,13 +54,13 @@ public class Group extends GenericNode {
 
 	// TODO add java handler
 	public boolean hasRole(Role extraRole) {
-		//TODO this is not optimal - research a better way
+		// TODO this is not optimal - research a better way
 		return in(HAS_ROLE).toList(Role.class).contains(extraRole);
 	}
 
 	// TODO add java handler
 	public boolean hasUser(MeshUser extraUser) {
-		//TODO this is not optimal - research a better way
+		// TODO this is not optimal - research a better way
 		return in(HAS_USER).toList(Role.class).contains(extraUser);
 	}
 
@@ -87,9 +81,10 @@ public class Group extends GenericNode {
 		// Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
 		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 
-		//VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
+		// VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
 		VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, MeshUser.class);
+		VertexTraversal countTraversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshUser.class);
 	}
 
 	public Page<? extends Role> getRoles(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
@@ -100,8 +95,9 @@ public class Group extends GenericNode {
 		}
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
+		VertexTraversal<?, ?, ?> countTraversal = in(HAS_ROLE);
 
-		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, Role.class);
+		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Role.class);
 		return page;
 
 	}

@@ -40,42 +40,42 @@ public class RoleService extends AbstractMeshService {
 
 	public List<? extends Role> findAll() {
 
-		//		public Page<Role> findAll(String userUuid, Pageable pageable) {
-		//			//		@Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
+		// public Page<Role> findAll(String userUuid, Pageable pageable) {
+		// // @Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
 		//
-		//			//		countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
-		//			return null;
-		//		}
-		//TODO filter for permissions?
+		// // countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
+		// return null;
+		// }
+		// TODO filter for permissions?
 		return fg.v().has(Role.class).toListExplicit(Role.class);
 	}
 
 	public void addCRUDPermissionOnRole(MeshShiroUser requestUser, MeshPermission meshPermission, GenericNode targetNode) {
 
 		// 1. Determine all roles that grant given permission
-		//		Node userNode = neo4jTemplate.getPersistentState(user);
+		// Node userNode = neo4jTemplate.getPersistentState(user);
 		Vertex userNode = requestUser.getVertex();
 		Set<Role> roles = new HashSet<>();
 
-		//TODO use core blueprint api or gremlin traversal?
-		//		for (Edge rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUT)
-		//				.relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.IN)
-		//				.relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUT).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-		//				.traverse(userNode).relationships()) {
+		// TODO use core blueprint api or gremlin traversal?
+		// for (Edge rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUT)
+		// .relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.IN)
+		// .relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUT).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+		// .traverse(userNode).relationships()) {
 		//
-		//			if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getLabel())) {
-		//				// Check whether this relation in fact targets our object we want to check
-		//				boolean matchesTargetNode = rel.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == meshPermission.getTargetNode().getId();
-		//				if (matchesTargetNode) {
-		//					// Convert the api relationship to a framed edge
-		//					GraphPermission perm = framedGraph.frame(rel, GraphPermission.class);
-		//					if (meshPermission.implies(perm) == true) {
-		//						// This permission is permitting. Add it to the list of roles
-		//						roles.add(perm.getRole());
-		//					}
-		//				}
-		//			}
-		//		}
+		// if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getLabel())) {
+		// // Check whether this relation in fact targets our object we want to check
+		// boolean matchesTargetNode = rel.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == meshPermission.getTargetNode().getId();
+		// if (matchesTargetNode) {
+		// // Convert the api relationship to a framed edge
+		// GraphPermission perm = framedGraph.frame(rel, GraphPermission.class);
+		// if (meshPermission.implies(perm) == true) {
+		// // This permission is permitting. Add it to the list of roles
+		// roles.add(perm.getRole());
+		// }
+		// }
+		// }
+		// }
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : roles) {
@@ -84,18 +84,19 @@ public class RoleService extends AbstractMeshService {
 	}
 
 	public Page<? extends Role> findAll(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
-		//TODO filter for permissions
+		// TODO filter for permissions
 		VertexTraversal traversal = fg.v().has(Role.class);
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, Role.class);
+		VertexTraversal countTraversal = fg.v().has(Role.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Role.class);
 	}
 
-	//	public GraphPermission findPermission(Long roleId, Long nodeId) {
-	//		//	@Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
-	//		return null;
-	//	}
+	// public GraphPermission findPermission(Long roleId, Long nodeId) {
+	// // @Query("MATCH (role:Role)-[r:HAS_PERMISSION]->(node) WHERE id(node) = {1} AND id(role) = {0} return r")
+	// return null;
+	// }
 
 	public RoleRoot findRoot() {
-		//TODO use static reference of mesh root and edge instead?
+		// TODO use static reference of mesh root and edge instead?
 		return fg.v().nextOrDefault(RoleRoot.class, null);
 	}
 

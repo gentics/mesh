@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
 public class ProjectService extends AbstractMeshService {
@@ -45,7 +46,10 @@ public class ProjectService extends AbstractMeshService {
 		// countQuery =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return count(project)")
 		// TODO check whether it is faster to use meshroot for starting the traversal
-		return TraversalHelper.getPagedResult(fg.v().has(ProjectRoot.class), pagingInfo, Project.class);
+		VertexTraversal<?, ?, ?> traversal = fg.v().has(ProjectRoot.class);
+		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(ProjectRoot.class);
+
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Project.class);
 
 	}
 
@@ -56,6 +60,8 @@ public class ProjectService extends AbstractMeshService {
 	public Project create(String name) {
 		Project project = fg.addFramedVertex(Project.class);
 		project.setName(name);
+		ProjectRoot root = findRoot();
+		root.addProject(project);
 		return project;
 	}
 

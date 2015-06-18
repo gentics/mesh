@@ -12,8 +12,8 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 public final class TraversalHelper {
 
-	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy, SortOrder order, int page, int pageSize,
-			Class<T> classOfT) throws InvalidArgumentException {
+	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal, String sortBy,
+			SortOrder order, int page, int pageSize, Class<T> classOfT) throws InvalidArgumentException {
 
 		if (page < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
@@ -28,7 +28,7 @@ public final class TraversalHelper {
 		int low = page * pageSize;
 		int upper = low + pageSize - 1;
 
-		int count = (int) traversal.mark().count();
+		int count = (int) countTraversal.count();
 
 		// Only add the filter to the pipeline when the needed parameters were correctly specified.
 		if (order != UNSORTED && sortBy != null) {
@@ -51,9 +51,10 @@ public final class TraversalHelper {
 
 	}
 
-	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, PagingInfo pagingInfo, Class<T> classOfT)
-			throws InvalidArgumentException {
-		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(), classOfT);
+	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal,
+			PagingInfo pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
+		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(),
+				pagingInfo.getPerPage(), classOfT);
 	}
 
 }

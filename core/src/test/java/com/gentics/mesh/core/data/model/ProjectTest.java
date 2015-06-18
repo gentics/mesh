@@ -35,18 +35,14 @@ public class ProjectTest extends AbstractDBTest {
 	public void testDeletion() {
 		Project project = data().getProject();
 		projectService.delete(project);
-//		assertNull(projectService.findOne(project.getId()));
+		// assertNull(projectService.findOne(project.getId()));
 		assertNull(projectService.findByUUID(project.getUuid()));
 	}
 
 	@Test
 	public void testProjectRootNode() {
 		int nProjectsBefore = projectService.findRoot().getProjects().size();
-
-		//		try (Transaction tx = graphDb.beginTx()) {
 		Project project = projectService.create("test1234556");
-		//			tx.success();
-		//		}
 		int nProjectsAfter = projectService.findRoot().getProjects().size();
 		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}

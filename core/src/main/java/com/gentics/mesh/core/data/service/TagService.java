@@ -46,7 +46,8 @@ public class TagService extends AbstractMeshService {
 	public Page<? extends Tag> findProjectTags(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(Tag.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, Tag.class);
+		VertexTraversal<?, ?, ?> countTraversal = requestUser.getPermTraversal(READ_PERM).has(Tag.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Tag.class);
 		//		String langFilter = getLanguageFilter("l");
 		//		if (languageTags == null || languageTags.isEmpty()) {
 		//			langFilter = "";

@@ -38,8 +38,10 @@ public class GroupService extends AbstractMeshService {
 		// countQuery =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
 		// Page<Group> findAll(User requestUser, Pageable pageable);
-		VertexTraversal traversal = fg.v().has(MeshUser.class);
-		Page<? extends Group> groups = TraversalHelper.getPagedResult(traversal, pagingInfo, Group.class);
+		VertexTraversal<?, ?, ?> traversal = fg.v().has(MeshUser.class);
+		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(MeshUser.class);
+		Page<? extends Group> groups = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Group.class);
+
 		return groups;
 	}
 

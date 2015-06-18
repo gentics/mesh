@@ -25,7 +25,9 @@ public class SchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testFindByName() {
-		assertNotNull(schemaService.findByName(PROJECT_NAME, "content"));
+		Schema schema = schemaService.findByName(PROJECT_NAME, "content");
+		assertNotNull(schema);
+		assertEquals("content", schema.getName());
 		assertNull(schemaService.findByName(PROJECT_NAME, "content1235"));
 	}
 
