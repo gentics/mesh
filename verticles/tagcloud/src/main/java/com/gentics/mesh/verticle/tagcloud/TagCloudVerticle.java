@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.tagcloud.model.TagCloud;
 import com.gentics.mesh.tagcloud.model.TagCloudEntry;
 import com.gentics.mesh.tagcloud.model.TagCloudResult;
@@ -24,7 +24,7 @@ import com.gentics.mesh.tagcloud.model.TagCloudResult;
 public class TagCloudVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
-	private TagCloudRepository pageRepository;
+	private TagCloudService tagCloudService;
 
 	@Autowired
 	GraphDatabaseService graphDb;
@@ -49,10 +49,10 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 			TagCloud cloud = new TagCloud();
 			// TODO transaction handling should be moved to abstract rest resource
 				try (Transaction tx = graphDb.beginTx()) {
-					List<TagCloudResult> res = pageRepository.getTagCloudInfo();
+					List<TagCloudResult> res = tagCloudService.getTagCloudInfo();
 					for (TagCloudResult current : res) {
 						TagCloudEntry entry = new TagCloudEntry();
-						String name = tagService.getName(current.getTag(), language);
+						String name = current.getTag().getName(language);
 						entry.setName(name);
 						// TODO determine link
 						entry.setLink("TBD");

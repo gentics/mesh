@@ -3,7 +3,7 @@ package com.gentics.mesh.verticle.admin;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.apex.Router;
+import io.vertx.ext.web.Router;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

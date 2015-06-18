@@ -1,19 +1,20 @@
 package com.gentics.mesh.demo.verticle;
 
-import static com.gentics.mesh.core.data.model.auth.PermissionType.READ;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.MeshNode;
-import com.gentics.mesh.core.data.model.auth.MeshPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.demo.DemoDataProvider;
 
 /**
@@ -39,18 +40,16 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		addPermissionTestHandler();
-		try (Transaction tx = graphDb.beginTx()) {
-			demoDataProvider.setup(1);
-			tx.success();
-		}
+		demoDataProvider.setup(1);
 	}
 
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rc -> {
-			MeshNode content = nodeService.findOne(23L);
-			rc.session().hasPermission(new MeshPermission(content, READ).toString(), handler -> {
-				rc.response().end("User perm for node {" + content.getId() + "} : " + (handler.result() ? "jow" : "noe"));
-			});
+			MeshNode content = null; //nodeService.findOne(23L);
+			MeshShiroUser requestUser = getUser(rc);
+//			requestUser.hasPermission(content, READ_PERM), handler -> {
+//				rc.response().end("User perm for node {" + content.getId() + "} : " + (handler.result() ? "jow" : "noe"));
+//			});
 		});
 
 	}

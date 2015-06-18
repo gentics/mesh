@@ -3,11 +3,11 @@ package com.gentics.mesh.demo.verticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.apex.Router;
-import io.vertx.ext.apex.handler.StaticHandler;
-import io.vertx.ext.apex.handler.TemplateHandler;
-import io.vertx.ext.apex.templ.HandlebarsTemplateEngine;
-import io.vertx.ext.apex.templ.TemplateEngine;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.TemplateHandler;
+import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
+import io.vertx.ext.web.templ.TemplateEngine;
 
 public class StaticContentVerticle extends AbstractVerticle {
 

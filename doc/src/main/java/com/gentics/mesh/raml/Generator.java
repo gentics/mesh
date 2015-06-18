@@ -11,7 +11,7 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import com.gentics.mesh.core.data.model.schema.propertytypes.PropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.rest.common.response.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -35,9 +35,9 @@ import com.gentics.mesh.core.rest.role.response.RoleResponse;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.response.ObjectSchemaListResponse;
-import com.gentics.mesh.core.rest.schema.response.ObjectSchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
+import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
@@ -189,8 +189,8 @@ public class Generator {
 		String lang = "en";
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
-		tag.addProperty(lang, "name", "Name for language tag de");
-		tag.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		tag.addProperty("name", "Name for language tag de");
+		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		tag.setSchema(schemaReference);
 		write(tag);
 
@@ -205,9 +205,9 @@ public class Generator {
 
 		TagResponse tag2 = new TagResponse();
 		tag2.setUuid(getUUID());
-		tag2.addProperty("en", "name", "Name for language tag en");
+		tag2.addProperty("name", "Name for language tag en");
 		tag2.setSchema(schemaReference);
-		tag2.setPerms("READ", "CREATE");
+		tag2.setPermissions("READ", "CREATE");
 
 		TagListResponse tagList = new TagListResponse();
 		tagList.getData().add(tag);
@@ -225,7 +225,7 @@ public class Generator {
 	}
 
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
-		ObjectSchemaResponse schema = new ObjectSchemaResponse();
+		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(getUUID());
 		schema.setDescription("Description of the schema");
 		schema.setName("extended-content");
@@ -237,7 +237,7 @@ public class Generator {
 		schema.getPropertyTypeSchemas().add(prop);
 		write(schema);
 
-		ObjectSchemaResponse schema2 = new ObjectSchemaResponse();
+		SchemaResponse schema2 = new SchemaResponse();
 		schema2.setUuid(getUUID());
 		schema2.setDescription("Description of the schema2");
 		schema2.setName("extended-content-2");
@@ -273,34 +273,27 @@ public class Generator {
 		NodeResponse content = new NodeResponse();
 		content.setUuid(getUUID());
 		content.setCreator(getUser());
-		content.addProperty(lang, "name", "Name for language tag de-DE");
-		content.addProperty(lang, "filename", "dummy-content.de.html");
-		content.addProperty(lang, "teaser", "Dummy teaser for de-DE");
-		content.addProperty(lang, "content", "Content for language tag de-DE");
+		content.addProperty("name", "Name for language tag de-DE");
+		content.addProperty("filename", "dummy-content.de.html");
+		content.addProperty("teaser", "Dummy teaser for de-DE");
+		content.addProperty("content", "Content for language tag de-DE");
 		content.setSchema(schemaReference);
-		content.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		content.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		write(content);
 
 		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
 		contentUpdate.setUuid(getUUID());
-		contentUpdate.addProperty(lang, "filename", "index-renamed.en.html");
+		contentUpdate.addProperty("filename", "index-renamed.en.html");
 		write(contentUpdate);
 
 		lang = "en";
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
-		contentCreate.addProperty(lang, "filename", "index.en.html");
-		contentCreate.addProperty(lang, "content", "English content");
-		contentCreate.addProperty(lang, "title", "English title");
-		contentCreate.addProperty(lang, "teaser", "English teaser");
-		contentCreate.addProperty(lang, "name", "English name");
-
-		lang = "de";
-		contentCreate.addProperty(lang, "filename", "index.de.html");
-		contentCreate.addProperty(lang, "content", "Deutscher Inhalt");
-		contentCreate.addProperty(lang, "title", "Deutscher Titel");
-		contentCreate.addProperty(lang, "teaser", "Deutscher Teaser");
-		contentCreate.addProperty(lang, "name", "Deutscher Name");
+		contentCreate.addProperty("filename", "index.en.html");
+		contentCreate.addProperty("content", "English content");
+		contentCreate.addProperty("title", "English title");
+		contentCreate.addProperty("teaser", "English teaser");
+		contentCreate.addProperty("name", "English name");
 
 		contentCreate.setSchema(schemaReference);
 		write(contentCreate);
@@ -309,12 +302,12 @@ public class Generator {
 		content2.setUuid(getUUID());
 		content2.setCreator(getUser());
 		lang = "en";
-		content2.addProperty(lang, "name", "Name for language tag en");
-		content2.addProperty(lang, "filename", "dummy-content.en.html");
-		content2.addProperty(lang, "teaser", "Dummy teaser for en");
-		content2.addProperty(lang, "content", "Content for language tag en");
+		content2.addProperty("name", "Name for language tag en");
+		content2.addProperty("filename", "dummy-content.en.html");
+		content2.addProperty("teaser", "Dummy teaser for en");
+		content2.addProperty("content", "Content for language tag en");
 		content2.setSchema(schemaReference);
-		content2.setPerms("READ", "CREATE");
+		content2.setPermissions("READ", "CREATE");
 
 		NodeListResponse list = new NodeListResponse();
 		list.getData().add(content);

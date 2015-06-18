@@ -1,8 +1,8 @@
 package com.gentics.mesh.nav.model;
 
 import io.vertx.core.Handler;
-import io.vertx.ext.apex.RoutingContext;
-import io.vertx.ext.apex.Session;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 import java.util.concurrent.ForkJoinPool;
 
@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.TagService;
+import com.gentics.mesh.core.verticle.NodeNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.Neo4jGenericContentUtils;
@@ -76,7 +77,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		Language language = null;
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
-		String name = tagService.getName(rootTag, language);
+		String name = rootTag.getName(language);
 		rootElement.setName(name);
 		rootElement.setType(NavigationElementType.TAG);
 		nav.setRoot(rootElement);

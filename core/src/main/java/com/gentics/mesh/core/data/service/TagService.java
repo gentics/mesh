@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.paging.PagingInfo;
@@ -91,5 +92,6 @@ public class TagService extends AbstractMeshService {
 	public Tag findByUUID(String uuid) {
 		return fg.v().has("uuid", uuid).nextOrDefault(Tag.class, null);
 	}
+
 
 }
