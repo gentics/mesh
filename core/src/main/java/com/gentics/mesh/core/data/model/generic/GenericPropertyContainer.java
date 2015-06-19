@@ -1,12 +1,15 @@
 package com.gentics.mesh.core.data.model.generic;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_I18N_PROPERTIES;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_OBJECT_SCHEMA;
+
 import java.util.List;
 
-import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
+import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 public class GenericPropertyContainer extends GenericNode {
@@ -27,15 +30,16 @@ public class GenericPropertyContainer extends GenericNode {
 	// }
 
 	public void setSchema(Schema schema) {
-		setLinkOut(schema, MeshRelationships.HAS_OBJECT_SCHEMA);
+		setLinkOut(schema, HAS_OBJECT_SCHEMA);
 	}
 
 	public Schema getSchema() {
-		return out(MeshRelationships.HAS_OBJECT_SCHEMA).nextOrDefault(Schema.class, null);
+		return out(HAS_OBJECT_SCHEMA).nextOrDefault(Schema.class, null);
 	}
 
-	public void setProperty(Language language, String string, String string2) {
-
+	public void setProperty(Language language, String name, String value) {
+		I18NProperties properties = getOrCreateI18nProperties(language);
+		properties.setProperty(name, value);
 	}
 
 	public String getDisplayName(Language language) {
@@ -56,10 +60,8 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public void setName(Language language, String name) {
-		I18NProperties properties = getI18nProperties(language);
-		if (properties != null) {
-			properties.setProperty("name", name);
-		}
+		I18NProperties properties = getOrCreateI18nProperties(language);
+		properties.setProperty("name", name);
 	}
 
 	public String getContent(Language language) {
@@ -71,20 +73,19 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public void setContent(Language language, String content) {
-		I18NProperties properties = getI18nProperties(language);
-		if (properties != null) {
-			properties.setProperty("content", content);
-		}
+		I18NProperties properties = getOrCreateI18nProperties(language);
+		properties.setProperty("content", content);
 	}
 
 	public I18NProperties getI18nProperties(Language language) {
-		I18NProperties properties = outE(MeshRelationships.HAS_I18N_PROPERTIES).has("languageTag", language.getLanguageTag()).inV()
+		I18NProperties properties = outE(HAS_I18N_PROPERTIES).has("languageTag", language.getLanguageTag()).inV()
 				.nextOrDefault(I18NProperties.class, null);
 		return properties;
 	}
 
 	public List<? extends I18NProperties> getI18nProperties() {
-		return out(MeshRelationships.HAS_I18N_PROPERTIES).has(I18NProperties.class).toListExplicit(I18NProperties.class);
+		TraversalHelper.debug(out(HAS_I18N_PROPERTIES));
+		return out(HAS_I18N_PROPERTIES).has(I18NProperties.class).toListExplicit(I18NProperties.class);
 	}
 
 	/**
@@ -93,20 +94,18 @@ public class GenericPropertyContainer extends GenericNode {
 	 * @param language
 	 * @return i18n properties vertex entity
 	 */
-	public I18NProperties createI18nProperties(Language language) {
+	public I18NProperties getOrCreateI18nProperties(Language language) {
 
 		I18NProperties properties = null;
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(MeshRelationships.HAS_I18N_PROPERTIES)
-				.has(Translated.LANGUAGE_TAG_KEY, language.getLanguageTag());
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_I18N_PROPERTIES).has(Translated.LANGUAGE_TAG_KEY, language.getLanguageTag());
 		if (edgeTraversal.hasNext()) {
 			properties = edgeTraversal.next().outV().nextOrDefault(I18NProperties.class, null);
-
 		}
 
 		if (properties == null) {
 			properties = getGraph().addFramedVertex(I18NProperties.class);
 			properties.setLanguage(language);
-			Translated edge = addFramedEdge(MeshRelationships.HAS_I18N_PROPERTIES, properties, Translated.class);
+			Translated edge = addFramedEdge(HAS_I18N_PROPERTIES, properties, Translated.class);
 			edge.setLanguageTag(language.getLanguageTag());
 		}
 
@@ -114,13 +113,13 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public void addI18nProperties(I18NProperties properties) {
-		linkOut(properties, MeshRelationships.HAS_I18N_PROPERTIES);
-		Translated edge = addFramedEdge(MeshRelationships.HAS_I18N_PROPERTIES, properties, Translated.class);
+		linkOut(properties, HAS_I18N_PROPERTIES);
+		Translated edge = addFramedEdge(HAS_I18N_PROPERTIES, properties, Translated.class);
 		edge.setLanguageTag(properties.getLanguage().getLanguageTag());
 	}
 
 	public void setDisplayName(Language language, String name) {
-		I18NProperties properties = createI18nProperties(language);
+		I18NProperties properties = getOrCreateI18nProperties(language);
 		properties.setProperty("displayName", name);
 	}
 

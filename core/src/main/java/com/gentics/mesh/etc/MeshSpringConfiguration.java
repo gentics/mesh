@@ -43,6 +43,18 @@ import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class MeshSpringConfiguration {
+	
+	public static MeshSpringConfiguration instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static MeshSpringConfiguration getMeshSpringConfiguration() {
+		return instance;
+	}
+
 
 	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);
 
@@ -125,7 +137,7 @@ public class MeshSpringConfiguration {
 	}
 
 	@PostConstruct
-	private void setup() {
+	private void setupDBService() {
 		log.debug("Setting up {" + getClass().getCanonicalName() + "}");
 		graphDatabaseService();
 	}

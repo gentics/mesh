@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.data.service.UserService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.syncleus.ferma.FramedGraph;
@@ -42,7 +42,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected I18NService i18n;
 
 	@Autowired
-	protected UserService userService;
+	protected MeshUserService userService;
 
 	@Autowired
 	protected LanguageService languageService;

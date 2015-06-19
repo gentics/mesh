@@ -16,7 +16,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.service.UserService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.syncleus.ferma.FramedGraph;
 
@@ -28,7 +28,7 @@ public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 	private MeshSpringConfiguration securityConfig;
 
 	@Autowired
-	private UserService userService;
+	private MeshUserService userService;
 
 	@Autowired
 	private FramedGraph framedGraph;

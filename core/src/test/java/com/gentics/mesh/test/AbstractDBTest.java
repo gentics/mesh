@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoleService;
-import com.gentics.mesh.core.data.service.UserService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -55,7 +55,7 @@ public abstract class AbstractDBTest {
 	protected UserVerticle userVerticle;
 
 	@Autowired
-	protected UserService userService;
+	protected MeshUserService userService;
 
 	@Autowired
 	protected GroupService groupService;
@@ -71,10 +71,7 @@ public abstract class AbstractDBTest {
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException {
 		purgeDatabase();
-		//		try (Transaction tx = graphDb.beginTx()) {
 		dataProvider.setup(1);
-		//			tx.success();
-		//		}
 	}
 
 	public DemoDataProvider data() {
@@ -82,15 +79,12 @@ public abstract class AbstractDBTest {
 	}
 
 	protected void purgeDatabase() {
-		//		try (Transaction tx = graphDb.beginTx()) {
 		for (Edge edge : framedGraph.getEdges()) {
 			edge.remove();
 		}
 		for (Vertex vertex : framedGraph.getVertices()) {
 			vertex.remove();
 		}
-		//			tx.success();
-		//		}
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {

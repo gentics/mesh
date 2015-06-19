@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +29,19 @@ import com.tinkerpop.blueprints.Vertex;
 @Component
 public class RoleService extends AbstractMeshService {
 
+	public static RoleService instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static RoleService getRoleService() {
+		return instance;
+	}
+
 	@Autowired
-	private UserService userService;
+	private MeshUserService userService;
 
 	public Role findByUUID(String uuid) {
 		return fg.v().has("uuid", uuid).nextOrDefault(Role.class, null);

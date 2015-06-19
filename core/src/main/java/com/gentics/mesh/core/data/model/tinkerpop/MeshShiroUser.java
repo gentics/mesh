@@ -83,6 +83,7 @@ public class MeshShiroUser extends MeshUser implements ClusterSerializable, User
 	}
 
 	public VertexTraversal<?, ?, ?> getPermTraversal(Permission permission) {
+		// TODO out/in/out?
 		return in(HAS_USER).out(HAS_ROLE).out(permission.label());
 	}
 }

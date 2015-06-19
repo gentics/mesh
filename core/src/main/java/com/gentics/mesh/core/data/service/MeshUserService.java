@@ -4,6 +4,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
@@ -14,9 +16,20 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
-public class UserService extends AbstractMeshService {
+public class MeshUserService extends AbstractMeshService {
 
-	private static final Logger log = LoggerFactory.getLogger(UserService.class);
+	public static MeshUserService instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static MeshUserService getUserService() {
+		return instance;
+	}
+
+	private static final Logger log = LoggerFactory.getLogger(MeshUserService.class);
 
 	/**
 	 * Find all users that are visible for the given user.
@@ -61,10 +74,6 @@ public class UserService extends AbstractMeshService {
 		UserRoot root = findRoot();
 		root.addUser(user);
 		return user;
-	}
-
-	public void setPassword(MeshUser user, String password) {
-		user.setPasswordHash(springConfiguration.passwordEncoder().encode(password));
 	}
 
 	public UserRoot createRoot() {

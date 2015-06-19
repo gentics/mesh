@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
@@ -13,6 +15,17 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
 public class GroupService extends AbstractMeshService {
+
+	public static GroupService instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static GroupService getGroupService() {
+		return instance;
+	}
 
 	public Group findByName(String name) {
 		return fg.v().has("name", name).nextOrDefault(Group.class, null);
@@ -61,4 +74,5 @@ public class GroupService extends AbstractMeshService {
 	public void delete(Group group) {
 		group.getVertex().remove();
 	}
+
 }

@@ -5,13 +5,13 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Configurable;
-
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
+import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationPool;
+import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
-
 
 public class MeshNode extends GenericPropertyContainer {
 
@@ -42,21 +42,13 @@ public class MeshNode extends GenericPropertyContainer {
 
 	public NodeResponse transformToRest(MeshShiroUser requestUser) {
 
-		// TransformationInfo info = new TransformationInfo(rc);
-		//
+		TransformationInfo info = new TransformationInfo(requestUser);
 		// List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 		// info.setLanguageTags(languageTags);
-		// info.setUserService(userService);
-		// info.setLanguageService(languageService);
-		// info.setTagService(tagService);
-		// info.setSpringConfiguration(springConfiguration);
-		// info.setContentService(this);
-		// info.setI18nService(i18n);
-		// NodeResponse restContent = new NodeResponse();
-		// MeshNodeTransformationTask task = new MeshNodeTransformationTask(content, info, restContent);
-		// pool.invoke(task);
-		// return restContent;
-		return null;
+		NodeResponse restContent = new NodeResponse();
+		MeshNodeTransformationTask task = new MeshNodeTransformationTask(this, info, restContent);
+		TransformationPool.getPool().invoke(task);
+		return restContent;
 
 	}
 

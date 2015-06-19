@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoleService;
-import com.gentics.mesh.core.data.service.UserService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 
 /**
  * Various helper methods that can be used to setup test data.
@@ -27,7 +27,7 @@ public class DataHelper {
 	private MeshNodeService nodeService;
 
 	@Autowired
-	private UserService userService;
+	private MeshUserService userService;
 
 	public MeshNode addNode(MeshNode parentNode, String name, Role role, Permission... perms) {
 		MeshNode node = nodeService.create();

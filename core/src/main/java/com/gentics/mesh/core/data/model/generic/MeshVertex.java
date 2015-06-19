@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
 public class MeshVertex extends AbstractVertexFrame {
@@ -40,6 +41,10 @@ public class MeshVertex extends AbstractVertexFrame {
 
 	public Vertex getVertex() {
 		return getElement();
+	}
+
+	public String getFermaType() {
+		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
 	}
 
 }

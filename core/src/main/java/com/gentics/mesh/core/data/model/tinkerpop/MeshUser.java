@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;
+import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
 
 import java.util.HashSet;
 import java.util.List;
@@ -155,8 +156,6 @@ public class MeshUser extends GenericNode {
 		return getUsername() + "%" + getEmailAddress() + "%" + getPasswordHash() + "#" + getId();
 	}
 
-
-
 	//	public boolean isPermitted(long userNodeId, MeshPermission genericPermission) throws Exception {
 	//		if (genericPermission.getTargetNode() == null) {
 	//			return false;
@@ -222,6 +221,15 @@ public class MeshUser extends GenericNode {
 	public void delete() {
 		//TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
 		getVertex().remove();
+	}
+
+	/**
+	 * Encode the given password and set the generated hash.
+	 * 
+	 * @param password
+	 */
+	public void setPassword(String password) {
+		setPasswordHash(getMeshSpringConfiguration().passwordEncoder().encode(password));
 	}
 
 }

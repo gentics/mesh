@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
@@ -8,6 +10,18 @@ import com.gentics.mesh.core.data.model.tinkerpop.Language;
 @Component
 public class LanguageService extends AbstractMeshService {
 
+	public static LanguageService instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static LanguageService getLanguageService() {
+		return instance;
+	}
+
+	
 	public Language findByName(String name) {
 		return fg.v().has("name", name).nextOrDefault(Language.class,null);
 	}

@@ -40,7 +40,7 @@ import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.data.service.UserService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -61,7 +61,7 @@ public class DemoDataProvider {
 	private FramedGraph framedGraph;
 
 	@Autowired
-	private UserService userService;
+	private MeshUserService userService;
 
 	@Autowired
 	private MeshRootService rootService;
@@ -310,7 +310,7 @@ public class DemoDataProvider {
 
 		MeshUser user = userService.create(username);
 		user.setUuid("UUIDOFUSER1");
-		userService.setPassword(user, password);
+		user.setPassword(password);
 		log.info("Creating user with username: " + username + " and password: " + password);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);

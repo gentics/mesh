@@ -6,12 +6,25 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class I18NService {
+
+	public static I18NService instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static I18NService getI18n() {
+		return instance;
+	}
 
 	private static final Logger log = LoggerFactory.getLogger(I18NService.class);
 

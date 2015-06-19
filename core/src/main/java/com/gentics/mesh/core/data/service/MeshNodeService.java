@@ -1,76 +1,56 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.ext.web.RoutingContext;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.TraversalHelper;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
 public class MeshNodeService extends AbstractMeshService {
 
-	@Autowired
-	private LanguageService languageService;
+	public static MeshNodeService instance;
 
-	@Autowired
-	private ProjectService projectService;
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
 
-	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private SchemaService objectSchemaService;
-
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private MeshSpringConfiguration springConfiguration;
-
-	@Autowired
-	private I18NService i18n;
-
-	@Autowired
-	private RoutingContextService rcs;
+	public static MeshNodeService getNodeService() {
+		return instance;
+	}
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
-	public Page<MeshNode> findAll(RoutingContext rc, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		String userUuid = rc.user().principal().getString("uuid");
+	public Page<? extends MeshNode> findAll(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
+			throws InvalidArgumentException {
 
-		// @Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
-		// + "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT node",
-		//
-		// countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE l.languageTag IN {2} AND " + FILTER_USER_PERM_AND_PROJECT
-		// + "RETURN count(DISTINCT node)"
-		//
-		// )
-		// Page<MeshNode> findAll(String userUuid, String projectName, List<String> languageTags, Pageable pageable);
-		//
-		// @Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "WITH p, node " + ORDER_BY_NAME_DESC
-		// + "RETURN DISTINCT node",
-		//
-		// countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + "WHERE " + FILTER_USER_PERM_AND_PROJECT + "RETURN count(DISTINCT node)")
-		// Page<MeshNode> findAll(String userUuid, String projectName, Pageable pageable);
+		for (MeshVertex v : requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back().toListExplicit(MeshVertex.class)) {
+			System.out.println(v.getProperty("name"));
+			System.out.println(v.getProperty("ferma_type"));
+		}
 
-		//
-		// MeshPageRequest pr = new MeshPageRequest(pagingInfo);
-		// if (languageTags == null || languageTags.size() == 0) {
-		// return findAll(userUuid, projectName, pr);
-		// } else {
-		// return findAll(userUuid, projectName, languageTags, pr);
-		// }
-		return null;
+		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark()
+				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+		VertexTraversal<?, ?, ?> countTraversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark()
+				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+		Page<? extends MeshNode> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshNode.class);
+		return nodePage;
 	}
 
 	public void createLink(MeshNode from, MeshNode to) {
@@ -94,7 +74,5 @@ public class MeshNodeService extends AbstractMeshService {
 	public void delete(MeshNode node) {
 		node.getVertex().remove();
 	}
-
-	// node children
 
 }

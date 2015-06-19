@@ -42,7 +42,7 @@ import com.gentics.mesh.core.data.service.MeshRootService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaService;
-import com.gentics.mesh.core.data.service.UserService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.verticle.AdminVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
@@ -73,7 +73,7 @@ public class BootstrapInitializer {
 	private MeshRootService rootService;
 
 	@Autowired
-	private UserService userService;
+	private MeshUserService userService;
 
 	@Autowired
 	private GroupService groupService;

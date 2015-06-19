@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.AS
 import java.awt.print.Pageable;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,18 @@ import com.tinkerpop.blueprints.Vertex;
 
 @Component
 public class SchemaService extends AbstractMeshService {
+	
+	public static SchemaService instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static SchemaService getSchemaService() {
+		return instance;
+	}
+
 
 	public Schema findByUUID(String projectName, String uuid) {
 		// TODO check for projectName

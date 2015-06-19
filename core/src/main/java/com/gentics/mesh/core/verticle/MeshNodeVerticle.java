@@ -190,7 +190,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 						return;
 					}
 
-					I18NProperties tagProps = node.createI18nProperties(language);
+					I18NProperties tagProps = node.getOrCreateI18nProperties(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
 						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}
@@ -203,6 +203,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 					contentCreated.complete(node);
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					MeshNode node = contentCreated.result();
 					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
 				});
@@ -239,22 +242,25 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 			vertx.executeBlocking((Future<NodeListResponse> bch) -> {
 				NodeListResponse listResponse = new NodeListResponse();
-				//				try (Transaction tx = graphDb.beginTx()) {
-					Page<MeshNode> nodePage = nodeService.findAll(rc, projectName, languageTags, pagingInfo);
+				Page<? extends MeshNode> nodePage;
+				try {
+					nodePage = nodeService.findAll(requestUser, projectName, languageTags, pagingInfo);
 					for (MeshNode content : nodePage) {
 						listResponse.getData().add(content.transformToRest(requestUser));
 					}
 					RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
 					bch.complete(listResponse);
-					//					tx.success();
-					//				}
-				}, arh -> {
-					if (arh.failed()) {
-						rc.fail(arh.cause());
-					}
-					NodeListResponse listResponse = arh.result();
-					rc.response().setStatusCode(200).end(toJson(listResponse));
-				});
+				} catch (Exception e) {
+					bch.fail(e);
+				}
+
+			}, arh -> {
+				if (arh.failed()) {
+					rc.fail(arh.cause());
+				}
+				NodeListResponse listResponse = arh.result();
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+			});
 		});
 	}
 

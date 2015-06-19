@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.model;
 
+import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.vertx.ext.web.RoutingContext;
@@ -11,11 +13,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.InvalidArgumentException;
 
 public class MeshNodeTest extends AbstractDBTest {
 
@@ -77,30 +83,52 @@ public class MeshNodeTest extends AbstractDBTest {
 	@Test
 	public void testCreateNode() {
 		MeshNode node = nodeService.create();
+		Language english = data().getEnglish();
 		node.setContent(data().getEnglish(), "english content");
 		node.setName(data().getEnglish(), "english.html");
 		assertNotNull(node.getUuid());
-		String text = node.getContent(data().getEnglish());
+
+		List<? extends I18NProperties> allProperties = node.getI18nProperties();
+		assertNotNull(allProperties);
+		assertEquals(1, allProperties.size());
+
+		node.setContent(data().getGerman(), "german content");
+		assertEquals(2, node.getI18nProperties().size());
+
+		I18NProperties properties = node.getI18nProperties(english);
+		assertNotNull(properties);
+		String text = node.getContent(english);
 		assertNotNull(text);
 	}
 
 	@Test
-	public void testFindAll() {
+	public void testFindAll() throws InvalidArgumentException {
 
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 
 		RoutingContext rc = getMockedRoutingContext("");
-
-		Page<MeshNode> page = nodeService.findAll(rc, DemoDataProvider.PROJECT_NAME, languageTags, new PagingInfo(1, 10));
+		MeshShiroUser requestUser = getUser(rc);
+		Page<? extends MeshNode> page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are nodes that are only available in english
-		assertEquals(data().getNodeCount() - 5, page.getTotalElements());
+		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = nodeService.findAll(rc, "dummy", languageTags, new PagingInfo(1, 15));
+		page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 15));
 		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
+
+	}
+
+	@Test
+	public void testTransformToRest() {
+		RoutingContext rc = getMockedRoutingContext("");
+		MeshShiroUser requestUser = getUser(rc);
+
+		MeshNode newsNode = data().getContent("news overview");
+		NodeResponse response = newsNode.transformToRest(requestUser);
+		assertNotNull(response);
 
 	}
 

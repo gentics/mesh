@@ -23,7 +23,7 @@ public class ProjectService extends AbstractMeshService {
 	private static Logger log = LoggerFactory.getLogger(ProjectService.class);
 
 	@Autowired
-	protected UserService userService;
+	protected MeshUserService userService;
 
 	public Project findByName(String projectName) {
 		return fg.v().has("name", projectName).nextOrDefault(Project.class, null);

@@ -177,7 +177,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				Map<String, String> i18nProperties = request.getProperties();
 				Language language = languageService.findByLanguageTag(requestLanguage);
 				//TODO check whether language could be found?
-					I18NProperties tagProps = newTag.createI18nProperties(language);
+					I18NProperties tagProps = newTag.getOrCreateI18nProperties(language);
 					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
 						tagProps.setProperty(entry.getKey(), entry.getValue());
 					}

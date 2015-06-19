@@ -2,23 +2,16 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-@Configurable
 public class Tag extends GenericPropertyContainer {
-
-	@Autowired
-	public I18NService i18n;
 
 	public List<? extends MeshNode> getNodes() {
 		return in(MeshRelationships.HAS_TAG).toList(MeshNode.class);
@@ -31,11 +24,6 @@ public class Tag extends GenericPropertyContainer {
 	public TagResponse transformToRest(MeshShiroUser requestUser) {
 
 		TransformationInfo info = new TransformationInfo(requestUser);
-		//		info.setUserService(userService);
-		//		info.setLanguageService(languageService);
-		//		info.setContentService(nodeService);
-		//		info.setSpringConfiguration(springConfiguration);
-		//		info.setTagService(this);
 
 		// Configuration
 		//		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
@@ -43,10 +31,8 @@ public class Tag extends GenericPropertyContainer {
 
 		TagResponse restTag = new TagResponse();
 		TagTransformationTask task = new TagTransformationTask(this, info, restTag);
-
-		//		pool.invoke(task);
-		//		return restTag;
-		return null;
+		TransformationPool.getPool().invoke(task);
+		return restTag;
 	}
 
 	public void delete() {
