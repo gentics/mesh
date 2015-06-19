@@ -37,7 +37,30 @@
 			<name>Johannes Schüth</name>
 			<url>https://github.com/Jotschi</url>
 		</developer>
+		<developer>
+			<name>Michael Bromley</name>
+			<url>https://github.com/michaelbromley/</url>
+		</developer>
 	</developers>
+
+	<issueManagement>
+		<system>github</system>
+		<url>https://github.com/gentics/mesh/issues</url>
+	</issueManagement>
+
+	<organization>
+		<name>Gentics Software GmbH</name>
+		<url>http://www.gentics.com</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>Gentics Software GmbH License</name>
+			<url>http://www.gentics.com</url>
+		</license>
+	</licenses>
+
+	<inceptionYear>2014</inceptionYear>
 
 	<modules>
 		<module>rest</module>
