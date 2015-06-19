@@ -82,7 +82,7 @@ public class RestAssert {
 	public void assertTag(Tag tag, TagResponse restTag) {
 		//		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
 		assertEquals(tag.getUuid(), restTag.getUuid());
-		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getSchemaUuid());
+		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
 		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
 	}
 
@@ -139,7 +139,7 @@ public class RestAssert {
 		//		schema = neo4jTemplate.fetch(schema);
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), readValue.getSchema().getSchemaName());
-		assertEquals(schema.getUuid(), readValue.getSchema().getSchemaUuid());
+		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
 
 		assertNotNull(readValue.getCreator());
 

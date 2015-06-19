@@ -84,7 +84,6 @@ public class GenericPropertyContainer extends GenericNode {
 	}
 
 	public List<? extends I18NProperties> getI18nProperties() {
-		TraversalHelper.debug(out(HAS_I18N_PROPERTIES));
 		return out(HAS_I18N_PROPERTIES).has(I18NProperties.class).toListExplicit(I18NProperties.class);
 	}
 

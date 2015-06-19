@@ -73,7 +73,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 			if (node.getSchema() != null) {
 				SchemaReference schemaReference = new SchemaReference();
 				schemaReference.setSchemaName(node.getSchema().getName());
-				schemaReference.setSchemaUuid(node.getSchema().getUuid());
+				schemaReference.setUuid(node.getSchema().getUuid());
 				restNode.setSchema(schemaReference);
 			}
 			/* Load the creator information */

@@ -8,6 +8,10 @@ import com.gentics.mesh.core.rest.tag.response.TagResponse;
 
 public class NodeResponse extends AbstractPropertyContainerModel {
 
+	private boolean publish;
+
+	private String path;
+
 	private String parentNodeUuid;
 
 	private List<TagResponse> tags = new ArrayList<>();
@@ -15,6 +19,13 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 	private List<String> children;
 
 	private boolean isContainer;
+
+	private String version;
+
+	private String displayField;
+
+	private String segmentField;
+	
 
 	public NodeResponse() {
 	}
@@ -45,5 +56,45 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 
 	public void setContainer(boolean isContainer) {
 		this.isContainer = isContainer;
+	}
+
+	public boolean isPublish() {
+		return publish;
+	}
+
+	public void setPublish(boolean publish) {
+		this.publish = publish;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getDisplayField() {
+		return displayField;
+	}
+
+	public void setDisplayField(String displayField) {
+		this.displayField = displayField;
+	}
+
+	public String getSegmentField() {
+		return segmentField;
+	}
+
+	public void setSegmentField(String segmentField) {
+		this.segmentField = segmentField;
 	}
 }

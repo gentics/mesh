@@ -184,7 +184,7 @@ public class Generator {
 
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("tag");
-		schemaReference.setSchemaUuid(getUUID());
+		schemaReference.setUuid(getUUID());
 
 		String lang = "en";
 		TagResponse tag = new TagResponse();
@@ -267,7 +267,7 @@ public class Generator {
 
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setSchemaName("content");
-		schemaReference.setSchemaUuid(getUUID());
+		schemaReference.setUuid(getUUID());
 
 		String lang = "de";
 		NodeResponse content = new NodeResponse();

@@ -40,15 +40,10 @@ public class MeshNodeService extends AbstractMeshService {
 	public Page<? extends MeshNode> findAll(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
 
-		for (MeshVertex v : requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back().toListExplicit(MeshVertex.class)) {
-			System.out.println(v.getProperty("name"));
-			System.out.println(v.getProperty("ferma_type"));
-		}
-
-		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark()
-				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
-		VertexTraversal<?, ?, ?> countTraversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark()
-				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark().out(ASSIGNED_TO_PROJECT)
+				.has("name", projectName).back();
+		VertexTraversal<?, ?, ?> countTraversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark().out(ASSIGNED_TO_PROJECT)
+				.has("name", projectName).back();
 		Page<? extends MeshNode> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshNode.class);
 		return nodePage;
 	}

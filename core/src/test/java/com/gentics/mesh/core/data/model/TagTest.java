@@ -174,7 +174,6 @@ public class TagTest extends AbstractDBTest {
 
 		RoutingContext rc = getMockedRoutingContext("lang=de,en");
 		MeshShiroUser requestUser = getUser(rc);
-System.out.println(tag.getUuid());
 		for (int i = 0; i < 100; i++) {
 			long start = System.currentTimeMillis();
 			TagResponse response = tag.transformToRest(requestUser);

@@ -62,7 +62,6 @@ public final class TraversalHelper {
 		for (MeshVertex v : in.toListExplicit(MeshVertex.class)) {
 			System.out.println(v.getProperty("name") + " type: " + v.getFermaType());
 		}
-
 	}
 
 }

@@ -1,27 +1,26 @@
 package com.gentics.mesh.core.rest.schema.response;
 
-
 public class SchemaReference {
 
-	private String schemaName;
-	private String schemaUuid;
+	private String name;
+	private String uuid;
 
 	public SchemaReference() {
 	}
 
 	public String getSchemaName() {
-		return schemaName;
+		return name;
 	}
 
-	public void setSchemaName(String schemaName) {
-		this.schemaName = schemaName;
+	public void setSchemaName(String name) {
+		this.name = name;
 	}
 
-	public String getSchemaUuid() {
-		return schemaUuid;
+	public String getUuid() {
+		return uuid;
 	}
 
-	public void setSchemaUuid(String schemaUuid) {
-		this.schemaUuid = schemaUuid;
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 }

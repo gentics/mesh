@@ -57,7 +57,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				if (schema != null) {
 					SchemaReference schemaReference = new SchemaReference();
 					schemaReference.setSchemaName(schema.getName());
-					schemaReference.setSchemaUuid(schema.getUuid());
+					schemaReference.setUuid(schema.getUuid());
 					restTag.setSchema(schemaReference);
 				}
 

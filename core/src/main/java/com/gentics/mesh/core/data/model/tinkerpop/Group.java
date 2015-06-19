@@ -89,11 +89,6 @@ public class Group extends GenericNode {
 
 	public Page<? extends Role> getRoles(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 
-		for (MeshVertex v : in(HAS_ROLE).toListExplicit(MeshVertex.class)) {
-			System.out.println(v.getProperty("name"));
-			System.out.println(v.getProperty("ferma_type"));
-		}
-
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		VertexTraversal<?, ?, ?> countTraversal = in(HAS_ROLE);
 
