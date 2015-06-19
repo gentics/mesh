@@ -107,13 +107,16 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	public String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, String requestBody) throws Exception {
 
-		Map<String, String> extraHeaders = new HashMap<>();
-
-		Buffer buffer = Buffer.buffer();
-		buffer.appendString(requestBody);
-		extraHeaders.put("content-length", String.valueOf(buffer.length()));
-		extraHeaders.put("content-type", "application/json");
-		return request(info, method, path, statusCode, statusMessage, buffer, extraHeaders);
+		if (requestBody != null) {
+			Map<String, String> extraHeaders = new HashMap<>();
+			Buffer buffer = Buffer.buffer();
+			buffer.appendString(requestBody);
+			extraHeaders.put("content-length", String.valueOf(buffer.length()));
+			extraHeaders.put("content-type", "application/json");
+			return request(info, method, path, statusCode, statusMessage, buffer, extraHeaders);
+		} else {
+			return request(info, method, path, statusCode, statusMessage, null, null);
+		}
 	}
 
 	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, Buffer requestBuffer,

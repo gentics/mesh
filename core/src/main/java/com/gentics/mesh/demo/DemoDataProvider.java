@@ -27,22 +27,22 @@ import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -58,7 +58,7 @@ public class DemoDataProvider {
 	private static SecureRandom random = new SecureRandom();
 
 	@Autowired
-	private FramedGraph framedGraph;
+	private FramedTransactionalGraph fg;
 
 	@Autowired
 	private MeshUserService userService;
@@ -147,6 +147,7 @@ public class DemoDataProvider {
 		log.info("Users:    " + users.size());
 		log.info("Groups:   " + groups.size());
 		log.info("Roles:    " + roles.size());
+		fg.commit();
 	}
 
 	private void addContents(int multiplicator) {
@@ -482,7 +483,7 @@ public class DemoDataProvider {
 		//		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
 		Role role = userInfo.getRole();
 
-		for (Vertex vertex : framedGraph.getVertices()) {
+		for (Vertex vertex : fg.getVertices()) {
 			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
 			//TODO typecheck? and verify how orient will behave
@@ -491,7 +492,7 @@ public class DemoDataProvider {
 				continue;
 			}
 
-			MeshVertex meshVertex = framedGraph.frameElement(wrappedVertex.getBaseElement(), MeshVertex.class);
+			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertex.class);
 			role.addPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 
 			//			GraphPermission perm = role.addPermissions();

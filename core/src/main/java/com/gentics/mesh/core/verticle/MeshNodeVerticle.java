@@ -175,8 +175,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					}
 				}
 
-				MeshUser user = userService.findUser(rc);
-				node.setCreator(user);
+				node.setCreator(requestUser);
 
 				Project project = projectService.findByName(projectName);
 				node.addProject(project);

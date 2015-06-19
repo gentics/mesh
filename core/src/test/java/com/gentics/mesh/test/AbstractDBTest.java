@@ -49,7 +49,7 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected FramedGraph framedGraph;
+	protected FramedGraph fg;
 
 	@Autowired
 	protected UserVerticle userVerticle;
@@ -79,10 +79,10 @@ public abstract class AbstractDBTest {
 	}
 
 	protected void purgeDatabase() {
-		for (Edge edge : framedGraph.getEdges()) {
+		for (Edge edge : fg.getEdges()) {
 			edge.remove();
 		}
-		for (Vertex vertex : framedGraph.getVertices()) {
+		for (Vertex vertex : fg.getVertices()) {
 			vertex.remove();
 		}
 	}
@@ -96,7 +96,7 @@ public abstract class AbstractDBTest {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 
-		MeshShiroUser requestUser = framedGraph.frameElement(user.getElement(), MeshShiroUser.class);
+		MeshShiroUser requestUser = fg.frameElement(user.getElement(), MeshShiroUser.class);
 
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);

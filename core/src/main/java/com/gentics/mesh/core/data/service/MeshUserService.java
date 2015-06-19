@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 import javax.annotation.PostConstruct;
 
@@ -13,6 +12,7 @@ import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.TraversalHelper;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -49,13 +49,7 @@ public class MeshUserService extends AbstractMeshService {
 	}
 
 	public MeshUser findByUsername(String username) {
-		return fg.v().has("username", username).nextOrDefault(MeshUser.class, null);
-	}
-
-	// TODO reduce calls to this method
-	public MeshUser findUser(RoutingContext rc) {
-		String userUuid = rc.user().principal().getString("uuid");
-		return findByUUID(userUuid);
+		return fg.v().has(MeshUser.USERNAME_KEY, username).nextOrDefault(MeshUser.class, null);
 	}
 
 	//

@@ -35,7 +35,7 @@ import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
 import com.gentics.mesh.auth.MeshShiroAuthProvider;
 import com.gentics.mesh.etc.config.MeshConfiguration;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
@@ -43,7 +43,7 @@ import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class MeshSpringConfiguration {
-	
+
 	public static MeshSpringConfiguration instance;
 
 	@PostConstruct
@@ -54,7 +54,6 @@ public class MeshSpringConfiguration {
 	public static MeshSpringConfiguration getMeshSpringConfiguration() {
 		return instance;
 	}
-
 
 	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);
 
@@ -113,7 +112,7 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
-	public FramedGraph getFramedGraph() {
+	public FramedTransactionalGraph getFramedTransactionalGraph() {
 		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
 		//TODO configure indices
 		graph.createKeyIndex("ferma_type", Vertex.class);
@@ -124,7 +123,7 @@ public class MeshSpringConfiguration {
 		graph.createKeyIndex("languageTag", Vertex.class);
 		graph.createKeyIndex("name", Vertex.class);
 		graph.createKeyIndex("key", Vertex.class);
-		FramedGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
+		FramedTransactionalGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
 		return framedGraph;
 	}
 
@@ -166,9 +165,14 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
+	public GraphBackedAuthorizingRealm graphBackedAuthorizingRealm() {
+		return new GraphBackedAuthorizingRealm();
+	}
+
+	@Bean
 	public AuthProvider authProvider() {
 
-		GraphBackedAuthorizingRealm realm = new GraphBackedAuthorizingRealm();
+		GraphBackedAuthorizingRealm realm = graphBackedAuthorizingRealm();
 		realm.setCacheManager(new MemoryConstrainedCacheManager());
 		realm.setAuthenticationCachingEnabled(true);
 		realm.setCachingEnabled(true);

@@ -14,12 +14,15 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
 
+@Component
 public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 
 	private static final Logger log = LoggerFactory.getLogger(GraphBackedAuthorizingRealm.class);
@@ -31,39 +34,39 @@ public class GraphBackedAuthorizingRealm extends AuthorizingRealm {
 	private MeshUserService userService;
 
 	@Autowired
-	private FramedGraph framedGraph;
+	private FramedGraph fg;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		return new SimpleAuthorizationInfo();
 	}
 
-//	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-//		if (principals.getPrimaryPrincipal() instanceof Long) {
-//			if (permission instanceof WildcardPermission) {
-//				WildcardPermission wildcardPermission = (WildcardPermission) permission;
-//				String perm = wildcardPermission.toString();
-//				int mid = perm.indexOf("#");
-//				String targetId = perm.substring(1, mid);
-//				String permName = perm.substring(mid + 1, perm.length() - 1);
-//				Long userId = (Long) principals.getPrimaryPrincipal();
-//				boolean permitted = false;
-//					try {
-//						Vertex node = framedGraph.getVertex(Long.valueOf(targetId));
-//						GenericNode framedNode = framedGraph.frameElement(node, GenericNode.class);
-//						Permission type = Permission.(permName);
-//						permitted = userService.isPermitted(userId, new MeshPermission(framedNode, type));
-//					} catch (Exception e) {
-//						throw new HttpStatusCodeErrorException(500, "Error while checking permission for user {" + userId + "}", e);
-//					}
-//				return permitted;
-//			} else {
-//				throw new HttpStatusCodeErrorException(500, "Permission format does not match expected values");
-//			}
-//		} else {
-//			throw new HttpStatusCodeErrorException(500, "Permission format does not match expected values");
-//		}
-//	}
+	//	public boolean isPermitted(PrincipalCollection principals, Permission permission) {
+	//		if (principals.getPrimaryPrincipal() instanceof Long) {
+	//			if (permission instanceof WildcardPermission) {
+	//				WildcardPermission wildcardPermission = (WildcardPermission) permission;
+	//				String perm = wildcardPermission.toString();
+	//				int mid = perm.indexOf("#");
+	//				String targetId = perm.substring(1, mid);
+	//				String permName = perm.substring(mid + 1, perm.length() - 1);
+	//				Long userId = (Long) principals.getPrimaryPrincipal();
+	//				boolean permitted = false;
+	//					try {
+	//						Vertex node = framedGraph.getVertex(Long.valueOf(targetId));
+	//						GenericNode framedNode = framedGraph.frameElement(node, GenericNode.class);
+	//						Permission type = Permission.(permName);
+	//						permitted = userService.isPermitted(userId, new MeshPermission(framedNode, type));
+	//					} catch (Exception e) {
+	//						throw new HttpStatusCodeErrorException(500, "Error while checking permission for user {" + userId + "}", e);
+	//					}
+	//				return permitted;
+	//			} else {
+	//				throw new HttpStatusCodeErrorException(500, "Permission format does not match expected values");
+	//			}
+	//		} else {
+	//			throw new HttpStatusCodeErrorException(500, "Permission format does not match expected values");
+	//		}
+	//	}
 
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {

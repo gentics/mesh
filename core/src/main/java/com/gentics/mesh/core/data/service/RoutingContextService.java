@@ -174,6 +174,7 @@ public class RoutingContextService extends AbstractMeshService {
 		}
 
 		configuration.vertx().executeBlocking((Future<T> fut) -> {
+			//TODO add generic loading and framing of objects
 			T node = null;
 			if (projectName != null) {
 				//				node = (T) genericNodeService.findByUUID(projectName, uuid);

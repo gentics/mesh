@@ -60,7 +60,8 @@ public final class TraversalHelper {
 
 	public static void debug(VertexTraversal<?, ?, ?> in) {
 		for (MeshVertex v : in.toListExplicit(MeshVertex.class)) {
-			System.out.println(v.getProperty("name") + " type: " + v.getFermaType());
+			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
+
 		}
 	}
 
