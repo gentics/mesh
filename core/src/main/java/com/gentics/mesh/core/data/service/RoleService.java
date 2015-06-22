@@ -111,7 +111,7 @@ public class RoleService extends AbstractMeshService {
 
 	public RoleRoot findRoot() {
 		// TODO use static reference of mesh root and edge instead?
-		return fg.v().nextOrDefault(RoleRoot.class, null);
+		return fg.v().has(RoleRoot.class).nextOrDefault(RoleRoot.class, null);
 	}
 
 	public Role create(String name) {

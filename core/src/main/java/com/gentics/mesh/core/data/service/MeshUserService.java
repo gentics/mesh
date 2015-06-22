@@ -52,7 +52,7 @@ public class MeshUserService extends AbstractMeshService {
 	}
 
 	public UserRoot findRoot() {
-		return fg.v().nextOrDefault(UserRoot.class, null);
+		return fg.v().has(UserRoot.class).nextOrDefault(UserRoot.class, null);
 	}
 
 	public MeshUser create(String username) {

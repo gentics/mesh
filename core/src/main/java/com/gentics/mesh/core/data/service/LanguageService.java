@@ -53,7 +53,7 @@ public class LanguageService extends AbstractMeshService {
 	//	}
 
 	public LanguageRoot findRoot() {
-		return fg.v().nextOrDefault(LanguageRoot.class, null);
+		return fg.v().has(LanguageRoot.class).nextOrDefault(LanguageRoot.class, null);
 	}
 
 	public LanguageRoot createRoot() {

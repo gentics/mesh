@@ -21,7 +21,6 @@ import org.apache.shiro.subject.support.DefaultSubjectContext;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
-import com.gentics.mesh.error.InvalidPermissionException;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class MeshShiroUser extends MeshUser implements ClusterSerializable, User {
@@ -62,7 +61,22 @@ public class MeshShiroUser extends MeshUser implements ClusterSerializable, User
 	}
 
 	public MeshShiroUser isAuthorised(MeshVertex targetNode, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
-		vertx.executeBlocking(fut -> fut.complete(this.hasPermission(targetNode, permission)), resultHandler);
+		
+//		  if (cachedPermissions.contains(authority)) {
+//		      resultHandler.handle(Future.succeededFuture(true));
+//		    } else {
+//		      doIsPermitted(authority, res -> {
+//		        if (res.succeeded()) {
+//		          if (res.result()) {
+//		            cachedPermissions.add(authority);
+//		          }
+//		        }
+//		        resultHandler.handle(res);
+//		      });
+//		    }
+//		    return this;
+//		
+		//vertx.executeBlocking(fut -> fut.complete(this.hasPermission(targetNode, permission)), resultHandler);
 		return this;
 	}
 

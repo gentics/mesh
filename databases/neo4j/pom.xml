@@ -23,21 +23,12 @@
 	<dependencies>
 
 		<!-- Workaround to fix fat-jar jersey issue with neo4j browser -->
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-core</artifactId>
-			<version>1.9</version>
-		</dependency>
-
-
 		<!-- This is a workaround/hack - We need to specifiy the lucene index dependency. 
 			Otherwise the fatjar is not build correctly. -->
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-lucene-index</artifactId>
-			<version>${neo4j.version}</version>
-		</dependency>
-
+		<!-- <dependency> <groupId>com.sun.jersey</groupId> <artifactId>jersey-core</artifactId> 
+			<version>1.9</version> </dependency> <dependency> <groupId>org.neo4j</groupId> 
+			<artifactId>neo4j-lucene-index</artifactId> <version>${neo4j.version}</version> 
+			</dependency> -->
 
 		<!-- Tinkerpop implementation -->
 		<dependency>
@@ -91,8 +82,6 @@
 			<type>test-jar</type>
 			<scope>compile</scope>
 		</dependency>
-
-
 
 
 		<!-- Neo4j -->

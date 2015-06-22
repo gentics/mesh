@@ -35,10 +35,14 @@
 			<artifactId>mesh-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-orientdb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>mesh-neo4j</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

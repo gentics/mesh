@@ -342,7 +342,6 @@ public class DemoDataProvider {
 		project.setCreator(userInfo.getUser());
 
 		root = rootService.findRoot();
-		root.getUserRoot().addUser(userInfo.getUser());
 
 		// Guest Group / Role
 		Role guestRole = roleService.create("guest_role");

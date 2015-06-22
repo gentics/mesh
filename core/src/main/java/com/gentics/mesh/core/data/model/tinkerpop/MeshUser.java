@@ -110,7 +110,7 @@ public class MeshUser extends GenericNode {
 	//	}
 
 	public String[] getPermissions(MeshVertex node) {
-
+		
 		Set<Permission> permissions = new HashSet<>();
 		Set<? extends String> labels = in(HAS_USER).out(HAS_ROLE).outE(Permission.labels()).mark().outV().retain(node).back().label().toSet();
 		for (String label : labels) {
@@ -120,9 +120,15 @@ public class MeshUser extends GenericNode {
 	}
 
 	public boolean hasPermission(MeshVertex node, Permission permission) {
-		TraversalHelper.debug(in(HAS_USER).out(HAS_ROLE).outE(permission.label()).inV());
-		System.out.println("-----");
-		return in(HAS_USER).out(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().label().hasNext();
+		//TraversalHelper.debug(out(HAS_USER).in(HAS_ROLE).outE(permission.label()).inV());
+		//System.out.println(out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().next().getLabel());
+		//System.out.println("-----");
+//		try {
+			return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().hasNext();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+	//	return false;
 	}
 
 	public UserResponse transformToRest() {
@@ -207,7 +213,6 @@ public class MeshUser extends GenericNode {
 	// }
 	//		return false;
 	//	}
-
 
 	public void delete() {
 		//TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.

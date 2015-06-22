@@ -41,7 +41,7 @@ public class GroupService extends AbstractMeshService {
 	}
 
 	public GroupRoot findRoot() {
-		return fg.v().nextOrDefault(GroupRoot.class, null);
+		return fg.v().has(GroupRoot.class).nextOrDefault(GroupRoot.class, null);
 	}
 
 	public Page<? extends Group> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {

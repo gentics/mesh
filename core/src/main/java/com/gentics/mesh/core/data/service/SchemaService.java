@@ -98,11 +98,11 @@ public class SchemaService extends AbstractMeshService {
 	}
 
 	public SchemaRoot findRoot() {
-		return fg.v().nextOrDefault(SchemaRoot.class, null);
+		return fg.v().has(SchemaRoot.class).nextOrDefault(SchemaRoot.class, null);
 	}
 
 	public Schema findByName(String name) {
-		return fg.v().has("name", name).nextOrDefault(Schema.class, null);
+		return fg.v().has("name", name).has(Schema.class).nextOrDefault(Schema.class, null);
 	}
 
 	public Schema create(String name) {

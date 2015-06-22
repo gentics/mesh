@@ -6,9 +6,11 @@ import static com.gentics.mesh.util.SortOrder.UNSORTED;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.generic.MeshEdge;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.paging.PagingInfo;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 public final class TraversalHelper {
@@ -58,11 +60,18 @@ public final class TraversalHelper {
 				pagingInfo.getPerPage(), classOfT);
 	}
 
-	public static void debug(VertexTraversal<?, ?, ?> in) {
-		for (MeshVertex v : in.toListExplicit(MeshVertex.class)) {
+	public static void debug(VertexTraversal<?, ?, ?> traversal) {
+		for (MeshVertex v : traversal.toListExplicit(MeshVertex.class)) {
 			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
 
 		}
+	}
+
+	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
+		for (MeshEdge e : traversal.toListExplicit(MeshEdge.class)) {
+			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
+		}
+
 	}
 
 }

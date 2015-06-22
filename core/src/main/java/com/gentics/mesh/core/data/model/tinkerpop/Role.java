@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.gentics.mesh.util.TraversalHelper;
 
 public class Role extends GenericNode {
 

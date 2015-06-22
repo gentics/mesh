@@ -254,6 +254,12 @@ public class BootstrapInitializer {
 
 		// Save the default object schemas
 
+		SchemaRoot schemaRoot = schemaService.findRoot();
+		if (schemaRoot == null) {
+			schemaRoot = schemaService.createRoot();
+			log.info("Stored schema root node");
+		}
+
 		// Content
 		Schema contentSchema = schemaService.findByName("content");
 		if (contentSchema == null) {
@@ -325,14 +331,9 @@ public class BootstrapInitializer {
 			log.info("Stored tag schema {" + tagSchema.getUuid() + "}");
 		}
 
-		SchemaRoot schemaRoot = schemaService.findRoot();
-		if (schemaRoot == null) {
-			schemaRoot = schemaService.createRoot();
-			schemaRoot.addSchema(tagSchema);
-			schemaRoot.addSchema(contentSchema);
-			schemaRoot.addSchema(binarySchema);
-			log.info("Stored schema root node");
-		}
+		schemaRoot.addSchema(tagSchema);
+		schemaRoot.addSchema(contentSchema);
+		schemaRoot.addSchema(binarySchema);
 
 		// Verify that the root node is existing
 		rootNode.setProjectRoot(projectRoot);
@@ -358,7 +359,6 @@ public class BootstrapInitializer {
 			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
 			log.info("Stored admin user");
 		}
-		rootNode.getUserRoot().addUser(adminUser);
 
 		Group adminGroup = groupService.findByName("admin");
 		if (adminGroup == null) {
@@ -366,7 +366,6 @@ public class BootstrapInitializer {
 			adminGroup.addUser(adminUser);
 			log.info("Stored admin group");
 		}
-		rootNode.getGroupRoot().addGroup(adminGroup);
 
 		Role adminRole = roleService.findByName("admin");
 		if (adminRole == null) {

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import io.vertx.ext.web.RoutingContext;
 
 import org.junit.Before;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
@@ -65,6 +67,14 @@ public class MeshUserTest extends AbstractDBTest {
 		int nUserAfter = userService.findRoot().getUsers().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 
+	}
+
+	@Test
+	public void testHasPermission() {
+		MeshUser user = info.getUser();
+		Language language = data().getEnglish();
+
+		assertTrue(user.hasPermission(language, READ_PERM));
 	}
 
 	@Test

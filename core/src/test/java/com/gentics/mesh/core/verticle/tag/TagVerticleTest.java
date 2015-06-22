@@ -53,11 +53,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		Tag noPermTag = tagService.create();
-		//		try (Transaction tx = graphDb.beginTx()) {
 		//noPermTag = data().addTag("NoPermEN", "NoPermDE");
 		noPermTag.addProject(data().getProject());
-		//			tx.success();
-		//		}
 		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters

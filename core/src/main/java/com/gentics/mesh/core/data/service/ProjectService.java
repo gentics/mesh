@@ -54,7 +54,7 @@ public class ProjectService extends AbstractMeshService {
 	}
 
 	public ProjectRoot findRoot() {
-		return fg.v().nextOrDefault(ProjectRoot.class, null);
+		return fg.v().has(ProjectRoot.class).nextOrDefault(ProjectRoot.class, null);
 	}
 
 	public Project create(String name) {
