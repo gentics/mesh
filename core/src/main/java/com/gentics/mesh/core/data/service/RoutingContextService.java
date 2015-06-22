@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -22,21 +23,23 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.RoutingContextHelper;
+
 
 @Component
 public class RoutingContextService extends AbstractMeshService {
 
 	@Autowired
-	private MeshSpringConfiguration configuration;
+	private MeshDatabaseService meshDatabaseService;
 
 	private static final Logger log = LoggerFactory.getLogger(RoutingContextService.class);
 
@@ -157,16 +160,17 @@ public class RoutingContextService extends AbstractMeshService {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}
 
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Handler<AsyncResult<T>> resultHandler) {
-		loadObjectByUuid(rc, uuid, null, permType, resultHandler, null);
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Class<T> classOfT,
+			Handler<AsyncResult<T>> resultHandler) {
+		loadObjectByUuid(rc, uuid, null, permType, classOfT, resultHandler, null);
 	}
 
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Handler<AsyncResult<T>> resultHandler,
-			Handler<AsyncResult<T>> transactionCompletedHandler) {
-		loadObjectByUuid(rc, uuid, null, permType, resultHandler, transactionCompletedHandler);
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Class<T> classOfT,
+			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
+		loadObjectByUuid(rc, uuid, null, permType, classOfT, resultHandler, transactionCompletedHandler);
 	}
 
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, Permission permType,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, Permission permType, Class<T> classOfT,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		if (StringUtils.isEmpty(uuid)) {
 			// TODO i18n, add info about uuid source?
@@ -175,73 +179,72 @@ public class RoutingContextService extends AbstractMeshService {
 
 		configuration.vertx().executeBlocking((Future<T> fut) -> {
 			//TODO add generic loading and framing of objects
-			T node = null;
-			if (projectName != null) {
-				//				node = (T) genericNodeService.findByUUID(projectName, uuid);
-			} else {
-				//				node = (T) genericNodeService.findByUUID(uuid);
-			}
-			if (node == null) {
-				fut.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid)));
-				return;
-			}
-			final T foundNode = node;
-			rc.user().isAuthorised(new MeshPermission(node, permType).toString(), handler -> {
-				if (!handler.result()) {
-					fut.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", foundNode.getUuid())));
-					return;
+				T node = null;
+				if (projectName != null) {
+					node = meshDatabaseService.findByUUID(projectName, uuid, classOfT);
 				} else {
-					fut.complete(foundNode);
+					node = meshDatabaseService.findByUUID(uuid, classOfT);
+				}
+				if (node == null) {
+					fut.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid)));
 					return;
 				}
+				final T foundNode = node;
+				MeshShiroUser requestUser = RoutingContextHelper.getUser(rc);
+				requestUser.isAuthorised(node, permType, handler -> {
+					if (!handler.result()) {
+						fut.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", foundNode.getUuid())));
+						return;
+					} else {
+						fut.complete(foundNode);
+						return;
+					}
+				});
+			}, res -> {
+				if (res.failed()) {
+					rc.fail(res.cause());
+				} else {
+					try {
+						if (resultHandler != null) {
+							resultHandler.handle(res);
+						}
+						if (transactionCompletedHandler != null) {
+							AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
+							transactionCompletedHandler.handle(transactionCompletedFuture);
+						}
+					} catch (Exception e) {
+						rc.fail(e);
+					}
+				}
 			});
-		}, res -> {
-			if (res.failed()) {
-				rc.fail(res.cause());
-			} else {
-				try {
-					if (resultHandler != null) {
-						//						try (Transaction tx = graphDb.beginTx()) {
-				resultHandler.handle(res);
-				//							tx.success();
-				//						}
-			}
-			if (transactionCompletedHandler != null) {
-				AsyncResult<T> transactionCompletedFuture = Future.succeededFuture(res.result());
-				transactionCompletedHandler.handle(transactionCompletedFuture);
-			}
-		} catch (Exception e) {
-			rc.fail(e);
-		}
-	}
-}		);
 
 	}
 
 	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, Permission permType,
-			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
+			Class<T> classOfT, Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
 		String uuid = rc.request().params().get(uuidParamName);
 		if (StringUtils.isEmpty(uuid)) {
 			rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", uuidParamName)));
 			return;
 		}
 
-		loadObjectByUuid(rc, uuid, projectName, permType, resultHandler, transactionCompleteHandler);
+		loadObjectByUuid(rc, uuid, projectName, permType, classOfT, resultHandler, transactionCompleteHandler);
 
 	}
 
-	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType, Handler<AsyncResult<T>> resultHandler) {
-		loadObject(rc, uuidParamName, permType, resultHandler, null);
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType, Class<T> classOfT,
+			Handler<AsyncResult<T>> resultHandler) {
+		loadObject(rc, uuidParamName, permType, classOfT, resultHandler, null);
 	}
 
 	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, Permission permType,
-			Handler<AsyncResult<T>> resultHandler) {
-		loadObject(rc, uuidParamName, projectName, permType, resultHandler, null);
+			Class<T> classOfT, Handler<AsyncResult<T>> resultHandler) {
+		loadObject(rc, uuidParamName, projectName, permType, classOfT, resultHandler, null);
 	}
 
-	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType, Class<T> classOfT,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
-		loadObject(rc, uuidParamName, null, permType, resultHandler, transactionCompleteHandler);
+		loadObject(rc, uuidParamName, null, permType, classOfT, resultHandler, transactionCompleteHandler);
 	}
 
 	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler) {
@@ -258,7 +261,8 @@ public class RoutingContextService extends AbstractMeshService {
 	 */
 	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
-		rc.user().isAuthorised(new MeshPermission(node, type).toString(), handler -> {
+		MeshShiroUser requestUser = getUser(rc);
+		requestUser.isAuthorised(node, type, handler -> {
 			if (!handler.result()) {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));
 				AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);

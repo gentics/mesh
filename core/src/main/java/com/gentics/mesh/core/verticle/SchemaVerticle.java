@@ -20,7 +20,6 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
@@ -62,8 +61,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, (AsyncResult<Project> rh) -> {
-				rcs.loadObject(rc, "schemaUuid", READ_PERM, (AsyncResult<Schema> srh) -> {
+			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class , (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "schemaUuid", READ_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 					Project project = rh.result();
 					Schema schema = srh.result();
 					schema.addProject(project);
@@ -82,8 +81,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, (AsyncResult<Project> rh) -> {
-				rcs.loadObject(rc, "schemaUuid", READ_PERM, (AsyncResult<Schema> srh) -> {
+			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "schemaUuid", READ_PERM,Schema.class, (AsyncResult<Schema> srh) -> {
 					Schema schema = srh.result();
 					Project project = rh.result();
 					schema.removeProject(project);
@@ -116,7 +115,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			}
 
 			Future<Schema> schemaCreated = Future.future();
-			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, (AsyncResult<Project> srh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
 
 				Schema schema = schemaService.create(requestModel.getName());
@@ -133,7 +132,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					schema.addPropertyTypeSchema(propSchema);
 				}
 				schema.addProject(project);
-				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(project, CREATE_PERM), schema);
+				roleService.addCRUDPermissionOnRole(requestUser, project, CREATE_PERM, schema);
 				schemaCreated.complete(schema);
 			}, trh -> {
 				if (trh.failed()) {
@@ -153,7 +152,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<Schema> srh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 				Schema schema = srh.result();
 				ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
 
@@ -182,7 +181,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<Schema> srh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 				Schema schema = srh.result();
 				schemaService.delete(schema);
 			}, trh -> {
@@ -201,7 +200,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Schema> srh) -> {
+				rcs.loadObject(rc, "uuid", READ_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 				}, trh -> {
 					if (trh.failed()) {
 						rc.fail(trh.cause());

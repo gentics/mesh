@@ -145,7 +145,7 @@ public class SchemaService extends AbstractMeshService {
 		return type;
 	}
 
-	public Schema findOne(Long id) {
+	public Schema findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
 			fg.frameElement(vertex, Schema.class);

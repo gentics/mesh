@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,9 +36,6 @@ import com.gentics.mesh.core.rest.user.response.UserResponse;
 
 @Component
 public class RestAssert {
-
-	@Autowired
-	private GraphDatabaseService graphDb;
 
 	@Autowired
 	private MeshNodeService nodeService;

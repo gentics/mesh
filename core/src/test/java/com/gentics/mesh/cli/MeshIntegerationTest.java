@@ -2,7 +2,6 @@ package com.gentics.mesh.cli;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +20,6 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
 		MeshConfiguration config = new MeshConfiguration();
 		config.setHttpPort(TestUtil.getRandomPort());
-		config.getNeo4jConfiguration().setMode(Neo4jGraphVerticle.DEFAULT_MODE);
 
 		final Mesh mesh = Mesh.mesh();
 		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);

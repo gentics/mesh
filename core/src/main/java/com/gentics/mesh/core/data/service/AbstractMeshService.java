@@ -16,4 +16,7 @@ public class AbstractMeshService {
 	@Autowired
 	protected FramedTransactionalGraph fg;
 
+	@Autowired
+	protected MeshSpringConfiguration configuration;
+
 }

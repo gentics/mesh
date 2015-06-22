@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.util.TraversalHelper;
 
 @Configurable
 public class MeshUser extends GenericNode {
@@ -119,7 +120,9 @@ public class MeshUser extends GenericNode {
 	}
 
 	public boolean hasPermission(MeshVertex node, Permission permission) {
-		return in(HAS_USER).out(HAS_ROLE).outE(permission.label()).mark().outV().retain(node).back().label().hasNext();
+		TraversalHelper.debug(in(HAS_USER).out(HAS_ROLE).outE(permission.label()).inV());
+		System.out.println("-----");
+		return in(HAS_USER).out(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().label().hasNext();
 	}
 
 	public UserResponse transformToRest() {
@@ -205,18 +208,6 @@ public class MeshUser extends GenericNode {
 	//		return false;
 	//	}
 
-	//	@Override
-	//	public User save(User user) {
-	// UserRoot root = userRepository.findRoot();
-	// if (root == null) {
-	// throw new NullPointerException("The user root node could not be found.");
-	// }
-	// user = neo4jTemplate.save(user);
-	// root.getUsers().add(user);
-	// neo4jTemplate.save(root);
-	// return user;
-	//		return null;
-	//	}
 
 	public void delete() {
 		//TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.

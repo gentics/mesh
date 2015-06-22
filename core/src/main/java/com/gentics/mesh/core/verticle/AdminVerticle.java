@@ -3,9 +3,6 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.util.DeploymentUtils.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
-
-import java.io.File;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
@@ -54,8 +51,8 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		addStatusHandler();
 
 		// TODO secure handlers below
-		addBackupHandler();
-		addNeo4VertxRestartHandler();
+//		addBackupHandler();
+//		addNeo4VertxRestartHandler();
 
 		// addVerticleHandler();
 		// addServiceHandler();
@@ -75,32 +72,6 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 			rc.response().setStatusCode(200);
 			rc.response().end("OK");
 		});
-
-	}
-
-	private void addNeo4VertxRestartHandler() {
-		route("/neo4vertx/restart").method(GET).handler(rc -> {
-			try {
-				springConfiguration.neo4VertxVerticle().stop();
-				springConfiguration.neo4VertxVerticle().config().put(Neo4VertxConfiguration.PATH_KEY, "/tmp/backup");
-				springConfiguration.neo4VertxVerticle().start();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-
-	}
-
-	private void addBackupHandler() {
-		route("/backup").method(GET).handler(rc -> {
-			log.info("Backup started");
-			// TODO handle path by config setting
-			// TODO check for admin role
-				File backupPath = new File("/tmp/backup");
-//				OnlineBackup backup = OnlineBackup.from("127.0.0.1");
-//				backup.backup(backupPath.getAbsolutePath());
-				log.info("Backup completed");
-			});
 
 	}
 

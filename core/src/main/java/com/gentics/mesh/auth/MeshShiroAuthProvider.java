@@ -62,6 +62,7 @@ public class MeshShiroAuthProvider implements ShiroAuth {
 			} catch (AuthenticationException e) {
 				throw new VertxException(e);
 			}
+			System.out.println("Class: " + subject.getPrincipal().getClass().getName());
 			fut.complete(new MeshShiroUser(vertx, securityManager, username, rolePrefix));
 		}, resultHandler);
 	}

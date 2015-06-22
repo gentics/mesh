@@ -26,14 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
@@ -104,8 +102,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
-				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, (AsyncResult<Tag> srh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, Tag.class, (AsyncResult<Tag> srh) -> {
 					MeshNode node = rh.result();
 					Tag tag = srh.result();
 					node.addTag(tag);
@@ -123,8 +121,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
-				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, (AsyncResult<Tag> srh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
+				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, Tag.class, (AsyncResult<Tag> srh) -> {
 					MeshNode node = rh.result();
 					Tag tag = srh.result();
 					node.removeTag(tag);
@@ -156,7 +154,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 			Future<MeshNode> contentCreated = Future.future();
 
-			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, CREATE_PERM, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, CREATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 
 				MeshNode rootNodeForContent = rh.result();
 				MeshNode node = nodeService.create();
@@ -195,7 +193,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					}
 				}
 
-				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(rootNodeForContent, CREATE_PERM), node);
+				roleService.addCRUDPermissionOnRole(requestUser, rootNodeForContent, CREATE_PERM, node);
 
 				/* Assign the content to the tag and save the tag */
 				//				rootTagForContent.(content);
@@ -220,7 +218,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, READ_PERM, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
@@ -268,7 +266,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				MeshNode node = rh.result();
 				nodeService.delete(node);
 			}, trh -> {
@@ -295,7 +293,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, READ_PERM, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				MeshNode content = rh.result();
 
 				NodeUpdateRequest request = fromJson(rc, NodeUpdateRequest.class);

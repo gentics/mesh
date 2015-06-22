@@ -20,7 +20,6 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
@@ -65,7 +64,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "groupUuid", READ_PERM, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "groupUuid", READ_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 					RoleListResponse listResponse = new RoleListResponse();
 					Group group = grh.result();
@@ -97,8 +96,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "roleUuid", READ_PERM, (AsyncResult<Role> rrh) -> {
+			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "roleUuid", READ_PERM, Role.class, (AsyncResult<Role> rrh) -> {
 					Group group = grh.result();
 					Role role = rrh.result();
 					group.addRole(role);
@@ -118,8 +117,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "roleUuid", READ_PERM, (AsyncResult<Role> rrh) -> {
+			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "roleUuid", READ_PERM, Role.class, (AsyncResult<Role> rrh) -> {
 					Group group = grh.result();
 					Role role = rrh.result();
 					group.removeRole(role);
@@ -140,7 +139,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshShiroUser requestUser = getUser(rc);
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-			rcs.loadObject(rc, "groupUuid", READ_PERM, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "groupUuid", READ_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				vertx.executeBlocking((Future<UserListResponse> bch) -> {
 					UserListResponse listResponse = new UserListResponse();
 					Group group = grh.result();
@@ -172,8 +171,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "userUuid", READ_PERM, (AsyncResult<MeshUser> urh) -> {
+			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "userUuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> urh) -> {
 					Group group = grh.result();
 					MeshUser user = urh.result();
 					group.addUser(requestUser);
@@ -192,8 +191,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "userUuid", READ_PERM, (AsyncResult<MeshUser> urh) -> {
+			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
+				rcs.loadObject(rc, "userUuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> urh) -> {
 					Group group = grh.result();
 					MeshUser user = urh.result();
 					group.removeUser(user);
@@ -213,7 +212,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 				groupService.delete(group);
 			}, trh -> {
@@ -231,7 +230,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
@@ -265,7 +264,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Group> grh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
 			}, trh -> {
 				if (trh.failed()) {
@@ -324,7 +323,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshRoot root = meshRootService.findRoot();
 			rcs.hasPermission(rc, root.getGroupRoot(), CREATE_PERM, rh -> {
 				Group group = groupService.create(requestModel.getName());
-				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(root.getGroupRoot(), CREATE_PERM), group);
+				roleService.addCRUDPermissionOnRole(requestUser, root.getGroupRoot(), CREATE_PERM, group);
 				groupCreated.complete(group);
 			}, tch -> {
 				if (tch.failed()) {

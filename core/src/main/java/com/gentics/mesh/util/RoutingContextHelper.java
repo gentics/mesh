@@ -9,7 +9,8 @@ public final class RoutingContextHelper {
 
 	public static MeshShiroUser getUser(RoutingContext routingContext) {
 		if (routingContext.user() instanceof MeshShiroUser) {
-			return (MeshShiroUser) routingContext.user();
+			MeshShiroUser user = (MeshShiroUser) routingContext.user();
+			return user;
 		}
 		//TODO i18n
 		throw new HttpStatusCodeErrorException(500, "Could not load request user");

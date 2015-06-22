@@ -97,6 +97,7 @@ public abstract class AbstractDBTest {
 		when(request.query()).thenReturn(query);
 
 		MeshShiroUser requestUser = fg.frameElement(user.getElement(), MeshShiroUser.class);
+		requestUser.setVertx(springConfig.vertx());
 
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);

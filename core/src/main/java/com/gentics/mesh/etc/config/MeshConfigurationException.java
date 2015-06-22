@@ -7,4 +7,8 @@ public class MeshConfigurationException extends Exception {
 	public MeshConfigurationException(String msg) {
 		super(msg);
 	}
+
+	public MeshConfigurationException(String msg, Throwable t) {
+		super(msg, t);
+	}
 }

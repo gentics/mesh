@@ -53,17 +53,11 @@ public class TagTest extends AbstractDBTest {
 
 		Tag tag = tagService.create();
 		tag.setDisplayName(german, GERMAN_NAME);
-		//		try (Transaction tx = graphDb.beginTx()) {
-		//			tx.success();
-		//		}
 		assertNotNull(tag.getId());
 		tag = tagService.findOne(tag.getId());
 		assertNotNull("The folder could not be found.", tag);
-		//		try (Transaction tx = graphDb.beginTx()) {
 		String name = tag.getDisplayName(german);
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-		//			tx.success();
-		//		}
 	}
 
 	@Test
@@ -80,9 +74,6 @@ public class TagTest extends AbstractDBTest {
 		Language english = languageService.findByLanguageTag("en");
 
 		tag.setDisplayName(english, ENGLISH_NAME);
-		//		try (Transaction tx = graphDb.beginTx()) {
-		//			tx.success();
-		//		}
 		tag = tagService.findOne(tag.getId());
 		assertNotNull(tag);
 

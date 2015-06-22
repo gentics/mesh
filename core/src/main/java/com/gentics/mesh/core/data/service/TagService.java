@@ -82,7 +82,7 @@ public class TagService extends AbstractMeshService {
 		return fg.addFramedVertex(Tag.class);
 	}
 
-	public Tag findOne(Long id) {
+	public Tag findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
 			return fg.frameElement(vertex, Tag.class);

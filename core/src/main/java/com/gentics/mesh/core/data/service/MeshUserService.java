@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.util.TraversalHelper;
 import com.tinkerpop.blueprints.Vertex;
 
 @Component
@@ -52,12 +51,6 @@ public class MeshUserService extends AbstractMeshService {
 		return fg.v().has(MeshUser.USERNAME_KEY, username).nextOrDefault(MeshUser.class, null);
 	}
 
-	//
-	// User findByPrincipalId(String principalId) {
-	// // @Query("MATCH (u:_User) WHERE u.username + '%' + u.emailAddress + '%' +  u.passwordHash = {0} return u")
-	// return null;
-	// }
-
 	public UserRoot findRoot() {
 		return fg.v().nextOrDefault(UserRoot.class, null);
 	}
@@ -75,7 +68,7 @@ public class MeshUserService extends AbstractMeshService {
 		return root;
 	}
 
-	public MeshUser findOne(Long id) {
+	public MeshUser findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
 			return fg.frameElement(vertex, MeshUser.class);

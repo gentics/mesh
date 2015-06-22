@@ -18,12 +18,8 @@
 
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
-		<neo4j.version>2.2.2</neo4j.version>
-		<neo4j.cypher.version>2.1.4</neo4j.cypher.version>
 		<ferma.version>2.0.7-SNAPSHOT</ferma.version>
 		<spring.version>4.1.6.RELEASE</spring.version>
-		<neo4vertx.version>2.0.0-SNAPSHOT</neo4vertx.version>
-		<blueprints-neo4j2-graph.version>2.7.0-SNAPSHOT</blueprints-neo4j2-graph.version>
 	</properties>
 
 	<parent>
@@ -63,6 +59,9 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
+		<module>api</module>
+		<module>databases</module>
+		<module>git</module>
 		<module>rest</module>
 		<module>core</module>
 		<module>examples</module>
@@ -81,11 +80,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>com.tinkerpop.blueprints</groupId>
-				<artifactId>blueprints-neo4j2-graph</artifactId>
-				<version>${blueprints-neo4j2-graph.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>com.syncleus.ferma</groupId>
 				<artifactId>ferma</artifactId>
@@ -111,14 +105,6 @@
 				<artifactId>log4j-core</artifactId>
 				<version>${log4j.version}</version>
 			</dependency>
-
-			<!-- neo4vertx -->
-			<dependency>
-				<groupId>org.openpcf</groupId>
-				<artifactId>neo4vertx-core</artifactId>
-				<version>${neo4vertx.version}</version>
-			</dependency>
-
 
 			<!-- Spring - bcrypt -->
 			<dependency>
@@ -242,13 +228,6 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>neo4j</id>
-			<url>http://m2.neo4j.org/releases/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-		<repository>
 			<id>spring-snapshots</id>
 			<name>Spring Snapshots</name>
 			<url>http://repo.spring.io/snapshot</url>
@@ -278,6 +257,5 @@
 			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
 		</snapshotRepository>
 	</distributionManagement>
-
 
 </project>

@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
@@ -61,7 +60,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 
 				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
@@ -116,7 +115,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(meshRoot, CREATE_PERM), project);
+					roleService.addCRUDPermissionOnRole(requestUser, meshRoot, CREATE_PERM, project);
 					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?
@@ -140,7 +139,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "uuid", READ_PERM, Project.class, (AsyncResult<Project> rh) -> {
 					if (rh.failed()) {
 						rc.fail(rh.cause());
 					}
@@ -182,7 +181,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, Project.class, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);

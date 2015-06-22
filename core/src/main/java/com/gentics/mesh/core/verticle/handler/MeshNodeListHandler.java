@@ -41,7 +41,7 @@ public class MeshNodeListHandler {
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Tag> rh) -> {
+		rcs.loadObject(rc, "uuid", READ_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
 			Tag tag = rh.result();
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
@@ -64,7 +64,7 @@ public class MeshNodeListHandler {
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<MeshNode> rh) -> {
+		rcs.loadObject(rc, "uuid", READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 			MeshNode parentNode = rh.result();
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);

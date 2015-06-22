@@ -44,7 +44,7 @@ public class BinaryVerticle extends AbstractProjectRestVerticle {
 	private void addFileuploadHandler() {
 		route("/:uuid").method(HttpMethod.POST).handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<MeshNode> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				MeshNode node = rh.result();
 				Set<FileUpload> fileUploads = rc.fileUploads();
 				for (FileUpload ul : fileUploads) {

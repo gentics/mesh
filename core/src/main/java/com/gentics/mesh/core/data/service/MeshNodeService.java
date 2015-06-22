@@ -1,19 +1,15 @@
 package com.gentics.mesh.core.data.service;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.paging.PagingInfo;
@@ -35,7 +31,7 @@ public class MeshNodeService extends AbstractMeshService {
 		return instance;
 	}
 
-	private static ForkJoinPool pool = new ForkJoinPool(8);
+	//private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	public Page<? extends MeshNode> findAll(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {

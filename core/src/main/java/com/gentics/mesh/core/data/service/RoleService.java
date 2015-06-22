@@ -14,9 +14,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
@@ -63,7 +64,7 @@ public class RoleService extends AbstractMeshService {
 		return fg.v().has(Role.class).toListExplicit(Role.class);
 	}
 
-	public void addCRUDPermissionOnRole(MeshShiroUser requestUser, MeshPermission meshPermission, GenericNode targetNode) {
+	public void addCRUDPermissionOnRole(MeshShiroUser requestUser, MeshVertex node, Permission permission, GenericNode targetNode) {
 
 		// 1. Determine all roles that grant given permission
 		// Node userNode = neo4jTemplate.getPersistentState(user);
@@ -126,7 +127,7 @@ public class RoleService extends AbstractMeshService {
 		return root;
 	}
 
-	public Role findOne(Long id) {
+	public Role findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
 			return fg.frameElement(vertex, Role.class);

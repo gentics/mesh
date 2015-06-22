@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
@@ -82,7 +81,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						throw new EntityNotFoundException(message);
 					}
 
-					rc.user().isAuthorised(new MeshPermission(node, READ_PERM).toString(), rh -> {
+					requestUser.isAuthorised(node, READ_PERM, rh -> {
 						languageTags.add(lastSegment.getLanguageTag());
 						if (rh.result()) {
 							bch.complete(node);

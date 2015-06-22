@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsume
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.util.RoutingContextHelper;
 
 public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 

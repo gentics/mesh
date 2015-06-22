@@ -1,8 +1,5 @@
 package com.gentics.mesh.etc.config;
 
-import io.vertx.ext.graph.neo4j.Neo4VertxConfiguration;
-
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,9 +25,10 @@ public class MeshConfiguration {
 	public static final String DEFAULT_NEO4VERTX_MODE = "default";
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
+	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
 
-	@JsonProperty("neo4j_config")
-	private Neo4VertxConfiguration neo4jConfiguration;
+	@JsonProperty("database_provider_class")
+	private String databaseProviderClass = DEFAULT_DATABASE_PROVIDER_CLASS;
 
 	@JsonProperty("http_port")
 	private int httpPort = DEFAULT_HTTP_PORT;
@@ -61,16 +59,14 @@ public class MeshConfiguration {
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
 
 	public MeshConfiguration() {
-		neo4jConfiguration = new Neo4VertxConfiguration();
-		neo4jConfiguration.setMode(DEFAULT_NEO4VERTX_MODE);
-		neo4jConfiguration.setWebServerBindAddress(DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS);
+
 		// Check for target directory and use it as a subdirectory if possible
-		File targetDir = new File("target");
-		if (targetDir.exists()) {
-			neo4jConfiguration.setPath(new File(targetDir, DEFAULT_DIRECTORY_NAME).getAbsolutePath());
-		} else {
-			neo4jConfiguration.setPath(new File(DEFAULT_DIRECTORY_NAME).getAbsolutePath());
-		}
+		//		File targetDir = new File("target");
+		//		if (targetDir.exists()) {
+		//			neo4jConfiguration.setPath(new File(targetDir, DEFAULT_DIRECTORY_NAME).getAbsolutePath());
+		//		} else {
+		//			neo4jConfiguration.setPath(new File(DEFAULT_DIRECTORY_NAME).getAbsolutePath());
+		//		}
 	}
 
 	public Map<String, MeshVerticleConfiguration> getVerticles() {
@@ -83,10 +79,6 @@ public class MeshConfiguration {
 
 	public void setClusterMode(boolean clusterMode) {
 		this.clusterMode = clusterMode;
-	}
-
-	public Neo4VertxConfiguration getNeo4jConfiguration() {
-		return neo4jConfiguration;
 	}
 
 	public int getHttpPort() {
@@ -123,6 +115,10 @@ public class MeshConfiguration {
 
 	public int getDefaultNestedTagsLimit() {
 		return defaultNestedTagsLimit;
+	}
+
+	public String getDatabaseProviderClass() {
+		return databaseProviderClass;
 	}
 
 }

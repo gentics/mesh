@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -12,12 +13,15 @@ import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.shiro.impl.SimplePrincipalCollection;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
 
+import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
+import com.gentics.mesh.error.InvalidPermissionException;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class MeshShiroUser extends MeshUser implements ClusterSerializable, User {
@@ -54,8 +58,12 @@ public class MeshShiroUser extends MeshUser implements ClusterSerializable, User
 
 	@Override
 	public User isAuthorised(String authority, Handler<AsyncResult<Boolean>> resultHandler) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException("Please use the MeshShiroUser method instead.");
+	}
+
+	public MeshShiroUser isAuthorised(MeshVertex targetNode, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
+		vertx.executeBlocking(fut -> fut.complete(this.hasPermission(targetNode, permission)), resultHandler);
+		return this;
 	}
 
 	@Override
@@ -86,4 +94,10 @@ public class MeshShiroUser extends MeshUser implements ClusterSerializable, User
 		// TODO out/in/out?
 		return in(HAS_USER).out(HAS_ROLE).out(permission.label());
 	}
+
+	public void setVertx(Vertx vertx) {
+		this.vertx = vertx;
+
+	}
+
 }

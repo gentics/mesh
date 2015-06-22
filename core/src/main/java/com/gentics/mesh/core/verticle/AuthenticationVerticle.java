@@ -2,9 +2,6 @@ package com.gentics.mesh.core.verticle;
 
 import static io.vertx.core.http.HttpMethod.GET;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.SecurityContext;
-
 import org.apache.http.entity.ContentType;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
@@ -17,8 +14,6 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 @SpringVerticle()
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
-	@Context
-	SecurityContext securityContext;
 
 	public AuthenticationVerticle() {
 		super("auth");
@@ -27,13 +22,6 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		addLoginHandler();
-		addUserInfoHandler();
-	}
-
-	private void addUserInfoHandler() {
-		route("/principal").method(GET).handler(rc -> {
-			rc.response().end(securityContext.getUserPrincipal().getName());
-		});
 	}
 
 	private void addLoginHandler() {

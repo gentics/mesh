@@ -3,17 +3,15 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.gentics.mesh.core.data.model.generic.MeshEdge;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.syncleus.ferma.EdgeFrame;
+import com.gentics.mesh.util.TraversalHelper;
 
 public class Role extends GenericNode {
 
@@ -83,7 +81,9 @@ public class Role extends GenericNode {
 	public void revokePermissions(MeshVertex node, Permission... permissions) {
 
 		for (Permission permission : permissions) {
+			//System.out.println(inE(permission.label()).mark().outV().retain(node).back().next().getLabel());
 			outE(permission.label()).mark().inV().retain(node).back().removeAll();
+			//System.out.println(outE(permission.label()).mark().inV().retain(node).back().next().getLabel());
 		}
 	}
 

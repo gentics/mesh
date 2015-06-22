@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.service.transformation.tag;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Session;
 
@@ -9,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.auth.MeshPermission;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
@@ -34,22 +35,18 @@ public class TagTraversalConsumer implements Consumer<Tag> {
 	public void accept(Tag tag) {
 		String currentUuid = tag.getUuid();
 		Session session = info.getRoutingContext().session();
-		User user = info.getRoutingContext().user();
-		user.isAuthorised(new MeshPermission(tag, READ_PERM).toString(), handler -> {
+		MeshShiroUser requestUser = getUser(info.getRoutingContext());
+		requestUser.isAuthorised(tag, READ_PERM, handler -> {
 			if (handler.result()) {
-//				try (Transaction tx = info.getGraphDb().beginTx()) {
-//					Tag loadedTag = info.getNeo4jTemplate().fetch(tag);
-					TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
-					if (currentRestTag == null) {
-						currentRestTag = new TagResponse();
-						/* info.addTag(currentUuid, currentRestTag); */
-						TagTransformationTask subTask = new TagTransformationTask(tag, info, currentRestTag, currentDepth + 1);
-						tasks.add(subTask.fork());
+				TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
+				if (currentRestTag == null) {
+					currentRestTag = new TagResponse();
+					/* info.addTag(currentUuid, currentRestTag); */
+					TagTransformationTask subTask = new TagTransformationTask(tag, info, currentRestTag, currentDepth + 1);
+					tasks.add(subTask.fork());
 
-//						tx.success();
-					}
-					tagContainer.getTags().add(currentRestTag);
-//				}
+				}
+				tagContainer.getTags().add(currentRestTag);
 			}
 		});
 		Collections.sort(tagContainer.getTags(), new UuidRestModelComparator<TagResponse>());

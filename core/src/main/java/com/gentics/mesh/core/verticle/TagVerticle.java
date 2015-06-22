@@ -99,7 +99,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			MeshShiroUser requestUser = getUser(rc);
 
 			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, (AsyncResult<Tag> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
@@ -165,7 +165,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
-			rcs.loadObjectByUuid(rc, request.getTagUuid(), CREATE_PERM, (AsyncResult<Tag> rh) -> {
+			rcs.loadObjectByUuid(rc, request.getTagUuid(), CREATE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
 				Tag rootTag = rh.result();
 
 				Tag newTag = tagService.create();
@@ -198,7 +198,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			MeshShiroUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", READ_PERM, null, (AsyncResult<Tag> trh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, Tag.class, (AsyncResult<Tag> trh) -> {
 				Tag tag = trh.result();
 				rc.response().setStatusCode(200).end(toJson(tag.transformToRest(requestUser)));
 			});
@@ -241,7 +241,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, (AsyncResult<Tag> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 				tag.delete();
 			}, trh -> {

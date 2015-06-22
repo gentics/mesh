@@ -36,7 +36,7 @@ public class TagListHandler {
 		TagListResponse listResponse = new TagListResponse();
 		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<MeshNode> rh) -> {
+		rcs.loadObject(rc, "uuid", READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 			MeshNode node = rh.result();
 
 			PagingInfo pagingInfo = rcs.getPagingInfo(rc);

@@ -1,14 +1,13 @@
 package com.gentics.mesh.etc;
 
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
-import io.vertx.ext.graph.neo4j.Neo4jGraphVerticle;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
@@ -19,13 +18,9 @@ import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-
 import javax.annotation.PostConstruct;
 
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -34,11 +29,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
 import com.gentics.mesh.auth.MeshShiroAuthProvider;
 import com.gentics.mesh.etc.config.MeshConfiguration;
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.gentics.mesh.etc.config.MeshConfigurationException;
+import com.gentics.mesh.graphdb.DatabaseServiceProvider;
 import com.syncleus.ferma.FramedTransactionalGraph;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -61,70 +54,31 @@ public class MeshSpringConfiguration {
 
 	private static MeshConfiguration configuration = null;
 
-	private void deployNeo4Vertx() throws IOException, InterruptedException {
-		log.info("Deploying neo4vertx...");
-
-		final CountDownLatch latch = new CountDownLatch(1);
-
-		// TODO use deployment utils
-		vertx().deployVerticle(neo4VertxVerticle(), new DeploymentOptions().setConfig(configuration.getNeo4jConfiguration().getJsonConfig()),
-				handler -> {
-					log.info("Deployed neo4vertx => " + handler.result());
-					if (handler.failed()) {
-						log.error("Could not deploy neo4vertx. Aborting..");
-						log.error("Error:", handler.cause());
-						/* TODO safe exit */
-						System.exit(10);
-					} else {
-						log.info("Neo4Vertx deployed successfully");
-					}
-
-					// TODO handle exceptions
-				latch.countDown();
-			});
-		latch.await();
-	}
-
 	@Bean
-	public Neo4jGraphVerticle neo4VertxVerticle() {
-		return new Neo4jGraphVerticle();
-	}
+	public FramedTransactionalGraph getFramedTransactionalGraph() throws MeshConfigurationException {
+		//		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
+		//		//TODO configure indices
+		//		graph.createKeyIndex("ferma_type", Vertex.class);
+		//		graph.createKeyIndex("uuid", Vertex.class);
+		//		graph.createKeyIndex("ferma_type", Edge.class);
+		//		graph.createKeyIndex("uuid", Edge.class);
+		//		graph.createKeyIndex("languageTag", Edge.class);
+		//		graph.createKeyIndex("languageTag", Vertex.class);
+		//		graph.createKeyIndex("name", Vertex.class);
+		//		graph.createKeyIndex("key", Vertex.class);
+		//		FramedTransactionalGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
 
-	private void registerShutdownHook(final GraphDatabaseService graphDatabaseService) {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				graphDatabaseService.shutdown();
-			}
-		});
-	}
-
-	@Bean
-	public GraphDatabaseService graphDatabaseService() {
+		String className = configuration.getDatabaseProviderClass();
 		try {
-			deployNeo4Vertx();
-			GraphDatabaseService service = Neo4jGraphVerticle.getService().getGraphDatabaseService();
-			return service;
+			Class<?> clazz = Class.forName(className);
+			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
+			JsonObject settings = new JsonObject();
+			return provider.getFramedGraph(settings);
 		} catch (Exception e) {
-			log.error("Could not get Neo4J Database from neo4vertx", e);
+			throw new MeshConfigurationException("Could not load database provider class {" + className
+					+ "}. Maybe there is no such provider within the classpath.", e);
 		}
-		return null;
-	}
 
-	@Bean
-	public FramedTransactionalGraph getFramedTransactionalGraph() {
-		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
-		//TODO configure indices
-		graph.createKeyIndex("ferma_type", Vertex.class);
-		graph.createKeyIndex("uuid", Vertex.class);
-		graph.createKeyIndex("ferma_type", Edge.class);
-		graph.createKeyIndex("uuid", Edge.class);
-		graph.createKeyIndex("languageTag", Edge.class);
-		graph.createKeyIndex("languageTag", Vertex.class);
-		graph.createKeyIndex("name", Vertex.class);
-		graph.createKeyIndex("key", Vertex.class);
-		FramedTransactionalGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
-		return framedGraph;
 	}
 
 	public static MeshConfiguration getConfiguration() {
@@ -135,11 +89,11 @@ public class MeshSpringConfiguration {
 		configuration = conf;
 	}
 
-	@PostConstruct
-	private void setupDBService() {
-		log.debug("Setting up {" + getClass().getCanonicalName() + "}");
-		graphDatabaseService();
-	}
+	//	@PostConstruct
+	//	private void setupDBService() {
+	//		log.debug("Setting up {" + getClass().getCanonicalName() + "}");
+	//		graphDatabaseService();
+	//	}
 
 	@Bean
 	public Vertx vertx() {

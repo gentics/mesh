@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Translated;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 public class GenericPropertyContainer extends GenericNode {

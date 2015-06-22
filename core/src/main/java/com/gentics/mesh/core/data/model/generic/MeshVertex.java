@@ -27,8 +27,8 @@ public class MeshVertex extends AbstractVertexFrame {
 		return properties;
 	}
 
-	public Long getId() {
-		return (Long) getElement().getId();
+	public Object getId() {
+		return getElement().getId();
 	}
 
 	public String getUuid() {

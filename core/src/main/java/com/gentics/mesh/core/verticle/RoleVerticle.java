@@ -19,7 +19,6 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.auth.MeshPermission;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
@@ -55,7 +54,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", DELETE_PERM, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, Role.class, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				role.delete();
 			}, trh -> {
@@ -66,7 +65,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, Role.class, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 
@@ -86,7 +85,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			rcs.loadObject(rc, "uuid", READ_PERM, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, Role.class, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleResponse restRole = role.transformToRest();
 				rc.response().setStatusCode(200).end(toJson(restRole));
@@ -145,11 +144,11 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 			Future<Role> roleCreated = Future.future();
-			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, (AsyncResult<Group> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, Group.class, (AsyncResult<Group> rh) -> {
 				Role role = roleService.create(requestModel.getName());
 				Group parentGroup = rh.result();
 				role.addGroup(parentGroup);
-				roleService.addCRUDPermissionOnRole(requestUser, new MeshPermission(parentGroup, CREATE_PERM), role);
+				roleService.addCRUDPermissionOnRole(requestUser, parentGroup, CREATE_PERM, role);
 				roleCreated.complete(role);
 			}, trh -> {
 				if (trh.failed()) {

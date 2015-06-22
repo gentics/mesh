@@ -8,7 +8,6 @@ import io.vertx.core.logging.impl.SLF4JLogDelegateFactory;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
-import org.neo4j.kernel.Version;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.gentics.mesh.etc.ConfigurationLoader;
@@ -130,7 +129,7 @@ public class Mesh {
 		log.info(infoLine("Mesh Version " + getVersion()));
 		log.info(infoLine("Gentics Software GmbH"));
 		log.info("#-----------------------------------------------#");
-		log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
+		//log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
 		log.info("#################################################");
 	}

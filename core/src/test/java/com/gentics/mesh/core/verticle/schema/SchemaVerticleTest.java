@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
@@ -33,7 +32,6 @@ import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.JsonUtils;
-import com.gentics.mesh.util.TraversalHelper;
 
 public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
@@ -45,9 +43,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectService projectService;
-
-	@Autowired
-	private GraphDatabaseService databaseService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -171,7 +166,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
-		
 
 		Schema schema = data().getSchema("content");
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");

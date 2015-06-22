@@ -49,8 +49,8 @@ public class DemoRunner {
 
 		// Setup custom config to enable neo4j web console
 		MeshConfiguration config = ConfigurationLoader.createOrloadConfiguration();
-		config.getNeo4jConfiguration().setMode("gui");
-		config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
+//		config.getNeo4jConfiguration().setMode("gui");
+//		config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
 		mesh.run(config);
 
 	}
