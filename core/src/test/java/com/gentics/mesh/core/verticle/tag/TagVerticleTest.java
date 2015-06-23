@@ -173,10 +173,10 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		System.out.println(response);
 		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		//		try (Transaction tx = graphDb.beginTx()) {
 		String name = tag.getDisplayName(data().getEnglish());
 		assertNotNull("The name of the tag should be loaded.", name);
 		String restName = tagResponse.getProperty("displayName");
+		Thread.sleep(100000);
 		assertNotNull("The english displayName should be listed in the rest response since we requested the english tag", restName);
 		assertEquals(name, restName);
 

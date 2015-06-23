@@ -13,7 +13,7 @@ import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.server.configuration.ServerConfigurator;
 
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -33,9 +33,9 @@ public class Neo4jDatabaseProviderImpl implements DatabaseServiceProvider {
 		GraphDatabaseService graphDatabaseService = builder.newGraphDatabase();
 		// Start the neo4j web console - by default it can be accessed using http://localhost:7474. It is handy for development and should not be enabled by
 		// default.
-		 ServerConfigurator webConfig = new ServerConfigurator((GraphDatabaseAPI) graphDatabaseService);
-		 WrappingNeoServerBootstrapper bootStrapper = new WrappingNeoServerBootstrapper((GraphDatabaseAPI) graphDatabaseService, webConfig);
-		 bootStrapper.start();
+		ServerConfigurator webConfig = new ServerConfigurator((GraphDatabaseAPI) graphDatabaseService);
+		WrappingNeoServerBootstrapper bootStrapper = new WrappingNeoServerBootstrapper((GraphDatabaseAPI) graphDatabaseService, webConfig);
+		bootStrapper.start();
 
 		// Setup neo4j blueprint implementation
 		Neo4j2Graph neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
@@ -46,9 +46,22 @@ public class Neo4jDatabaseProviderImpl implements DatabaseServiceProvider {
 		neo4jBlueprintGraph.createKeyIndex("ferma_type", Vertex.class);
 		neo4jBlueprintGraph.createKeyIndex("ferma_type", Edge.class);
 
-		FramedTransactionalGraph fg = new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false);
-		return null;
-		//return fg;
+		//		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
+		//		//TODO configure indices
+		//		graph.createKeyIndex("ferma_type", Vertex.class);
+		//		graph.createKeyIndex("uuid", Vertex.class);
+		//		graph.createKeyIndex("ferma_type", Edge.class);
+		//		graph.createKeyIndex("uuid", Edge.class);
+		//		graph.createKeyIndex("languageTag", Edge.class);
+		//		graph.createKeyIndex("languageTag", Vertex.class);
+		//		graph.createKeyIndex("name", Vertex.class);
+		//		graph.createKeyIndex("key", Vertex.class);
+		//		FramedTransactionalGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
+
+		ThreadedTransactionalGraphWrapper wrapper = new Neo4jThreadedTransactionalGraphWrapper(neo4jBlueprintGraph);
+
+		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+		return fg;
 	}
 
 	private void registerShutdownHook(final GraphDatabaseService graphDatabaseService) {

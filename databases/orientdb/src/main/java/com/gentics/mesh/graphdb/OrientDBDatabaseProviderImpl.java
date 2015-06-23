@@ -14,7 +14,7 @@ public class OrientDBDatabaseProviderImpl implements DatabaseServiceProvider {
 	public FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) {
 		//OrientTransactionalGraph memoryGraph = new OrientGraph("memory:tinkerpop");
 
-		OrientThreadedTransactionalGraphWrapper wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
+		ThreadedTransactionalGraphWrapper wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
 		
 		// Add some indices
 		// memoryGraph.createKeyIndex("name", Vertex.class);

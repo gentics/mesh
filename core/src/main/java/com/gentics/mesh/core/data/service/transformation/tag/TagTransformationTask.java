@@ -74,6 +74,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					restTag.setCreator(creator.transformToRest());
 				}
 
+				//TODO only add one language
 				for (String languageTag : info.getLanguageTags()) {
 					Language language = getLanguageService().findByLanguageTag(languageTag);
 					if (language == null) {

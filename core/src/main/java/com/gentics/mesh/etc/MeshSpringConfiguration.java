@@ -53,21 +53,10 @@ public class MeshSpringConfiguration {
 
 	@Bean
 	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
-		//		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
-		//		//TODO configure indices
-		//		graph.createKeyIndex("ferma_type", Vertex.class);
-		//		graph.createKeyIndex("uuid", Vertex.class);
-		//		graph.createKeyIndex("ferma_type", Edge.class);
-		//		graph.createKeyIndex("uuid", Edge.class);
-		//		graph.createKeyIndex("languageTag", Edge.class);
-		//		graph.createKeyIndex("languageTag", Vertex.class);
-		//		graph.createKeyIndex("name", Vertex.class);
-		//		graph.createKeyIndex("key", Vertex.class);
-		//		FramedTransactionalGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
 
 		String className = configuration.getDatabaseProviderClass();
 
-		//className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
+		className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
