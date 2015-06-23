@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.Future;
@@ -17,16 +18,16 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
-
 
 @Component
 @Scope("singleton")
@@ -65,17 +66,16 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String path = rc.request().params().get("param0");
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			vertx.executeBlocking((Future<MeshNode> bch) -> {
 				Path nodePath = webrootService.findByProjectPath(rc, projectName, path);
 				PathSegment lastSegment = nodePath.getLast();
 
 				if (lastSegment != null) {
-					//					try (Transaction tx = graphDb.beginTx()) {
 
-					MeshNode node = framedGraph.frameElement(lastSegment.getVertex(), MeshNode.class);
+					MeshNode node = fg.frameElement(lastSegment.getVertex(), MeshNode.class);
 					if (node == null) {
 						String message = i18n.get(rc, "node_not_found_for_path", path);
 						throw new EntityNotFoundException(message);
@@ -90,8 +90,6 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						}
 					});
 
-					//						tx.success();
-					//					}
 				} else {
 					throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
 				}
@@ -102,7 +100,9 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
 					MeshNode node = arh.result();
-					rc.response().end(toJson(node.transformToRest(requestUser)));
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+
+					rc.response().end(toJson(node.transformToRest(info)));
 
 				}
 			});

@@ -99,12 +99,13 @@
 			<artifactId>vertx-auth-common</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-auth-shiro</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
-
+ -->
 		<!-- Vertx / Spring -->
 		<dependency>
 			<groupId>org.jacpfx.vertx.spring</groupId>
@@ -113,12 +114,13 @@
 		</dependency>
 
 		<!-- Shiro - Authentication -->
+		<!-- 
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-
+        -->
 		<!-- UUID Support -->
 		<dependency>
 			<groupId>com.fasterxml.uuid</groupId>

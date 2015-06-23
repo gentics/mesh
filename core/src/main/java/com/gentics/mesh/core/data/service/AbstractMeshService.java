@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 public class AbstractMeshService {
 
@@ -14,7 +14,7 @@ public class AbstractMeshService {
 	protected MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	protected FramedTransactionalGraph fg;
+	protected FramedThreadedTransactionalGraph fg;
 
 	@Autowired
 	protected MeshSpringConfiguration configuration;

@@ -166,7 +166,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
 		test.assertProject(project, restProject);
 
-		List<String> permissions = Arrays.asList(restProject.getPerms());
+		List<String> permissions = Arrays.asList(restProject.getPermissions());
 		assertTrue(permissions.contains("create"));
 		assertTrue(permissions.contains("read"));
 		assertTrue(permissions.contains("update"));

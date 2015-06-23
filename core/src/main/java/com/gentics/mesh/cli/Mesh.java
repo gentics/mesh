@@ -123,7 +123,6 @@ public class Mesh {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void printProductInformation() {
 		log.info("#################################################");
 		log.info(infoLine("Mesh Version " + getVersion()));

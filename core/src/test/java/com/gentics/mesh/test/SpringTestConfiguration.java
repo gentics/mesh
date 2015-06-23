@@ -5,13 +5,11 @@ import io.vertx.core.VertxOptions;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
-import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshConfiguration;
 
@@ -45,15 +43,15 @@ public class SpringTestConfiguration {
 //		return graphService;
 //	}
 
-	@Bean
-	public GraphBackedAuthorizingRealm customSecurityRealm() {
-		GraphBackedAuthorizingRealm realm = new GraphBackedAuthorizingRealm();
-		realm.setCacheManager(new MemoryConstrainedCacheManager());
-		// Disable caching for testing
-		realm.setAuthenticationCachingEnabled(false);
-		realm.setCachingEnabled(false);
-		return realm;
-	}
+//	@Bean
+//	public GraphBackedAuthorizingRealm customSecurityRealm() {
+//		GraphBackedAuthorizingRealm realm = new GraphBackedAuthorizingRealm();
+//		realm.setCacheManager(new MemoryConstrainedCacheManager());
+//		// Disable caching for testing
+//		realm.setAuthenticationCachingEnabled(false);
+//		realm.setCachingEnabled(false);
+//		return realm;
+//	}
 
 	@Bean
 	public Vertx vertx() {

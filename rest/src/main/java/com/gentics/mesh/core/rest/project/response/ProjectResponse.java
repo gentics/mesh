@@ -5,7 +5,7 @@ import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 public class ProjectResponse extends AbstractRestModel {
 
 	private String name;
-	private String[] perms = {};
+	private String[] permissions = {};
 
 	private String rootNodeUuid;
 
@@ -20,12 +20,12 @@ public class ProjectResponse extends AbstractRestModel {
 		this.name = name;
 	}
 
-	public String[] getPerms() {
-		return perms;
+	public String[] getPermissions() {
+		return permissions;
 	}
 
-	public void setPerms(String... perms) {
-		this.perms = perms;
+	public void setPermissions(String... permissions) {
+		this.permissions = permissions;
 	}
 
 	public String getRootNodeUuid() {

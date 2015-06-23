@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
+import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -20,8 +22,6 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -30,11 +30,12 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
@@ -53,7 +54,7 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 @SpringVerticle
 public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
+	//	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
 
 	@Autowired
 	private TagListHandler tagListHandler;
@@ -79,7 +80,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 	private void addChildrenHandler() {
 		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 			nodeListHandler.handleNodeList(rc, (projectName, parentNode, languageTags, pagingInfo) -> {
 				return parentNode.getChildren(requestUser, projectName, languageTags, pagingInfo);
 			});
@@ -91,7 +92,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 	private void addTagsHandler() {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 			tagListHandler.handle(rc, (projectName, node, languageTags, pagingInfo) -> {
 				return node.getTags(requestUser, projectName, languageTags, pagingInfo);
 			});
@@ -100,7 +101,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, Tag.class, (AsyncResult<Tag> srh) -> {
@@ -109,7 +111,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					node.addTag(tag);
 				}, trh -> {
 					MeshNode node = rh.result();
-					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
 				});
 
 			});
@@ -119,7 +122,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				rcs.loadObject(rc, "tagUuid", projectName, READ_PERM, Tag.class, (AsyncResult<Tag> srh) -> {
@@ -128,7 +132,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					node.removeTag(tag);
 				}, trh -> {
 					MeshNode node = rh.result();
-					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
 				});
 			});
 
@@ -143,7 +148,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/").method(POST);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			NodeCreateRequest requestModel = fromJson(rc, NodeCreateRequest.class);
 
@@ -204,7 +210,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 						rc.fail(trh.cause());
 					}
 					MeshNode node = contentCreated.result();
-					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
 				});
 
 		});
@@ -216,7 +223,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			rcs.loadObject(rc, "uuid", projectName, READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 			}, trh -> {
@@ -224,7 +232,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					rc.fail(trh.cause());
 				}
 				MeshNode node = trh.result();
-				rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
+				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+				rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
 			});
 
 		});
@@ -232,18 +241,19 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<NodeListResponse> bch) -> {
 				NodeListResponse listResponse = new NodeListResponse();
 				Page<? extends MeshNode> nodePage;
 				try {
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 					nodePage = nodeService.findAll(requestUser, projectName, languageTags, pagingInfo);
 					for (MeshNode content : nodePage) {
-						listResponse.getData().add(content.transformToRest(requestUser));
+						listResponse.getData().add(content.transformToRest(info));
 					}
 					RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
 					bch.complete(listResponse);
@@ -290,8 +300,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "uuid", projectName, READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				MeshNode content = rh.result();
@@ -337,7 +347,8 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 						rc.fail(trh.cause());
 					}
 					MeshNode node = trh.result();
-					rc.response().setStatusCode(200).end(toJson(node.transformToRest(requestUser)));
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
 				});
 
 		});

@@ -78,8 +78,8 @@ public class RestAssert {
 	public void assertTag(Tag tag, TagResponse restTag) {
 		//		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
 		assertEquals(tag.getUuid(), restTag.getUuid());
-		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
-		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
+//		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
+//		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
 	}
 
 	/**
@@ -165,14 +165,14 @@ public class RestAssert {
 		assertNotNull(restProject);
 		assertEquals(request.getName(), restProject.getName());
 		assertNotNull(restProject.getUuid());
-		assertNotNull(restProject.getPerms());
+		assertNotNull(restProject.getPermissions());
 	}
 
 	public void assertProject(Project project, ProjectResponse restProject) {
 		assertNotNull(project);
 		assertNotNull(restProject);
 		assertNotNull(restProject.getUuid());
-		assertNotNull(restProject.getPerms());
+		assertNotNull(restProject.getPermissions());
 		assertNotNull(restProject.getRootNodeUuid());
 		assertEquals(project.getName(), restProject.getName());
 		assertEquals(project.getUuid(), restProject.getUuid());

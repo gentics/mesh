@@ -15,9 +15,10 @@ import org.junit.Test;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
@@ -108,7 +109,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		languageTags.add("de");
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshShiroUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends MeshNode> page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are nodes that are only available in english
 		assertEquals(data().getNodeCount(), page.getTotalElements());
@@ -124,10 +125,12 @@ public class MeshNodeTest extends AbstractDBTest {
 	@Test
 	public void testTransformToRest() {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshShiroUser requestUser = getUser(rc);
-
+		MeshAuthUser requestUser = getUser(rc);
+		List<String> languageTags = new ArrayList<>();
+		languageTags.add("en");
 		MeshNode newsNode = data().getContent("news overview");
-		NodeResponse response = newsNode.transformToRest(requestUser);
+		TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+		NodeResponse response = newsNode.transformToRest(info);
 		assertNotNull(response);
 
 	}

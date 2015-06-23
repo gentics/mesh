@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +17,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 @Component
 public class ProjectService extends AbstractMeshService {
 
-	private static Logger log = LoggerFactory.getLogger(ProjectService.class);
+//	private static Logger log = LoggerFactory.getLogger(ProjectService.class);
 
 	@Autowired
 	protected MeshUserService userService;

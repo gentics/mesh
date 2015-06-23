@@ -17,7 +17,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -34,7 +34,7 @@ public class MeshShiroUserTest extends AbstractDBTest {
 	@Test
 	public void testAuthorization() throws InterruptedException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshShiroUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Language targetNode = data().getEnglish();
 		final CountDownLatch latch = new CountDownLatch(1);
 

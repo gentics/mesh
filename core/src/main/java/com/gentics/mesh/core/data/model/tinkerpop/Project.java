@@ -46,7 +46,7 @@ public class Project extends GenericNode {
 		ProjectResponse projectResponse = new ProjectResponse();
 		projectResponse.setUuid(getUuid());
 		projectResponse.setName(getName());
-		projectResponse.setPerms(user.getPermissions(this));
+		projectResponse.setPermissions(user.getPermissionNames(this));
 
 		// MeshNode rootNode = neo4jTemplate.fetch(project.getRootNode());
 		// if (rootNode != null) {

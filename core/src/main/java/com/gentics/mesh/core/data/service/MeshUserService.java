@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
@@ -37,7 +37,7 @@ public class MeshUserService extends AbstractMeshService {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<MeshUser> findAllVisible(MeshShiroUser requestUser, PagingInfo pagingInfo) {
+	public Page<MeshUser> findAllVisible(MeshAuthUser requestUser, PagingInfo pagingInfo) {
 		// String userUuid = session.getPrincipal().getString("uuid");
 		// return findAll(userUuid, new MeshPageRequest(pagingInfo));
 		return null;
@@ -49,6 +49,10 @@ public class MeshUserService extends AbstractMeshService {
 
 	public MeshUser findByUsername(String username) {
 		return fg.v().has(MeshUser.USERNAME_KEY, username).nextOrDefault(MeshUser.class, null);
+	}
+
+	public MeshAuthUser findMeshAuthUserByUsername(String username) {
+		return fg.v().has(MeshUser.USERNAME_KEY, username).nextOrDefaultExplicit(MeshAuthUser.class, null);
 	}
 
 	public UserRoot findRoot() {

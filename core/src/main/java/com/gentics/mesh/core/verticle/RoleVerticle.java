@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
@@ -96,8 +97,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		 * List all roles when no parameter was specified
 		 */
 		route("/").method(GET).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<RoleListResponse> bch) -> {
 				RoleListResponse listResponse = new RoleListResponse();
@@ -128,7 +129,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
 			RoleCreateRequest requestModel = fromJson(rc, RoleCreateRequest.class);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
 				return;

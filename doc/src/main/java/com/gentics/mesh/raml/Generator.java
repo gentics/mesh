@@ -125,13 +125,13 @@ public class Generator {
 		ProjectResponse project = new ProjectResponse();
 		project.setName("Dummy Project");
 		project.setUuid(getUUID());
-		project.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		project.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		project.setRootNodeUuid(getUUID());
 		write(project);
 
 		ProjectResponse project2 = new ProjectResponse();
 		project2.setName("Dummy Project (Mobile)");
-		project2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		project2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		project2.setUuid(getUUID());
 		project2.setRootNodeUuid(getUUID());
 
@@ -392,7 +392,7 @@ public class Generator {
 		user.setLastname("Doe");
 		user.setEmailAddress("j.doe@nowhere.com");
 		user.addGroup("editors");
-		user.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		user.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		return user;
 	}
 

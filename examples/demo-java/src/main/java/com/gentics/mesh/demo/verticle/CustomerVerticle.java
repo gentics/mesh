@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.demo.DemoDataProvider;
 
 /**
@@ -44,7 +44,7 @@ public class CustomerVerticle extends AbstractProjectRestVerticle {
 	private void addPermissionTestHandler() {
 		route("/permtest").method(GET).handler(rc -> {
 			MeshNode content = null; //nodeService.findOne(23L);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 //			requestUser.hasPermission(content, READ_PERM), handler -> {
 //				rc.response().end("User perm for node {" + content.getId() + "} : " + (handler.result() ? "jow" : "noe"));
 //			});

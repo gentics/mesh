@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
+import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -31,9 +33,10 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
@@ -80,7 +83,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addTaggedNodesHandler() {
 		Route getRoute = route("/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			nodeListHandler.handleListByTag(rc, (projectName, tag, languageTags, pagingInfo) -> {
 				return tag.findTaggedNodes(requestUser, projectName, languageTags, pagingInfo);
@@ -96,9 +99,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 
@@ -144,7 +147,9 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 						}
 
 					}
-					rc.response().setStatusCode(200).end(toJson(tag.transformToRest(requestUser)));
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+
+					rc.response().setStatusCode(200).end(toJson(tag.transformToRest(info)));
 				});
 
 		});
@@ -160,8 +165,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
@@ -186,7 +191,8 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 					tagCreated.complete(newTag);
 				}, trh -> {
 					Tag newTag = tagCreated.result();
-					rc.response().setStatusCode(200).end(toJson(newTag.transformToRest(requestUser)));
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+					rc.response().setStatusCode(200).end(toJson(newTag.transformToRest(info)));
 				});
 
 		});
@@ -196,28 +202,33 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			rcs.loadObject(rc, "uuid", READ_PERM, Tag.class, (AsyncResult<Tag> trh) -> {
 				Tag tag = trh.result();
-				rc.response().setStatusCode(200).end(toJson(tag.transformToRest(requestUser)));
+				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+
+				rc.response().setStatusCode(200).end(toJson(tag.transformToRest(info)));
 			});
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
-			List<String> languageTags = rcs.getSelectedLanguageTags(rc);
+			List<String> languageTags = getSelectedLanguageTags(rc);
 			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
 				TagListResponse listResponse = new TagListResponse();
-				PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+				PagingInfo pagingInfo = getPagingInfo(rc);
 				Page<? extends Tag> tagPage;
 				try {
 					tagPage = tagService.findProjectTags(requestUser, projectName, languageTags, pagingInfo);
 					for (Tag tag : tagPage) {
-						listResponse.getData().add(tag.transformToRest(requestUser));
+						TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+
+						listResponse.getData().add(tag.transformToRest(info));
 					}
 					RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
 					bcr.complete(listResponse);

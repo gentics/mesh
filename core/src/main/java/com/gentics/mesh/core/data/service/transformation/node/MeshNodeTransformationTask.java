@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.service.transformation.node;
 
+import static com.gentics.mesh.core.data.service.I18NService.getI18n;
+import static com.gentics.mesh.core.data.service.LanguageService.getLanguageService;
 import io.vertx.core.impl.ConcurrentHashSet;
 
 import java.util.ArrayList;
@@ -14,8 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
@@ -59,13 +61,13 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 	@Override
 	protected Void compute() {
 
-		MeshShiroUser requestUser = info.getRequestUser();
+		MeshAuthUser requestUser = info.getRequestUser();
 		Set<ForkJoinTask<Void>> tasks = new ConcurrentHashSet<>();
 		String uuid = node.getUuid();
 		// Check whether the node has already been transformed by another task
 		NodeResponse foundContent = (NodeResponse) info.getObjectReferences().get(uuid);
 		if (foundContent == null) {
-			restNode.setPermissions(requestUser.getPermissions(node));
+			restNode.setPermissions(requestUser.getPermissionNames(node));
 			restNode.setUuid(node.getUuid());
 
 			/* Load the schema information */
@@ -99,9 +101,9 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 			/* Load the i18n properties */
 			for (String languageTag : info.getLanguageTags()) {
-				Language language = info.getLanguageService().findByLanguageTag(languageTag);
+				Language language = getLanguageService().findByLanguageTag(languageTag);
 				if (language == null) {
-					throw new HttpStatusCodeErrorException(400, info.getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
+					throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
 				}
 
 				// Add all i18n properties for the selected language to the response

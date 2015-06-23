@@ -16,19 +16,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
-import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.MeshUserService;
+import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.RestAssert;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -49,7 +49,7 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected FramedGraph fg;
+	protected FramedThreadedTransactionalGraph fg;
 
 	@Autowired
 	protected UserVerticle userVerticle;
@@ -96,8 +96,7 @@ public abstract class AbstractDBTest {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 
-		MeshShiroUser requestUser = fg.frameElement(user.getElement(), MeshShiroUser.class);
-		requestUser.setVertx(springConfig.vertx());
+		MeshAuthUser requestUser = fg.frameElement(user.getElement(), MeshAuthUser.class);
 
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);

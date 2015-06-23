@@ -19,7 +19,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.demo.UserInfo;
@@ -146,7 +146,7 @@ public class RoleTest extends AbstractDBTest {
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshShiroUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends Role> roles = info.getGroup().getRoles(requestUser, new PagingInfo(1, 10));
 		assertEquals(2, roles.getSize());
 		//assertEquals(2, roles.getTotalElements());

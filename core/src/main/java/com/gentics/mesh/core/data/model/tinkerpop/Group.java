@@ -71,7 +71,7 @@ public class Group extends GenericNode {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	public Page<? extends MeshUser> getVisibleUsers(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+	public Page<? extends MeshUser> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username",
@@ -81,12 +81,12 @@ public class Group extends GenericNode {
 		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 
 		// VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
-		VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
-		VertexTraversal countTraversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
+		VertexTraversal<?,?,?> traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
+		VertexTraversal<?,?,?> countTraversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshUser.class);
 	}
 
-	public Page<? extends Role> getRoles(MeshShiroUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		VertexTraversal<?, ?, ?> countTraversal = in(HAS_ROLE);
@@ -97,7 +97,7 @@ public class Group extends GenericNode {
 	}
 
 	// TODO handle depth
-	public GroupResponse transformToRest(MeshShiroUser user) {
+	public GroupResponse transformToRest(MeshAuthUser user) {
 		GroupResponse restGroup = new GroupResponse();
 		restGroup.setUuid(getUuid());
 		restGroup.setName(getName());

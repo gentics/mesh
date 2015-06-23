@@ -6,6 +6,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
@@ -42,7 +43,7 @@ public class TitanDBDatabaseProviderImpl implements DatabaseServiceProvider {
 	}
 
 	@Override
-	public FramedTransactionalGraph getFramedGraph(JsonObject settings) {
+	public FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) {
 		// You may use getCassandraConf() or getInMemoryConf() to switch the backend graph db
 		TitanGraph graphDb = TitanFactory.open(getBerkleyDBConf());
 
@@ -52,7 +53,7 @@ public class TitanDBDatabaseProviderImpl implements DatabaseServiceProvider {
 		graphDb.createKeyIndex("ferma_type", Edge.class);
 
 		FramedTransactionalGraph fg = new DelegatingFramedTransactionalGraph<>(graphDb, true, false);
-		return fg;
+		return null;
 	}
 
 }

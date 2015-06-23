@@ -20,18 +20,15 @@ import io.vertx.ext.web.sstore.SessionStore;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.auth.GraphBackedAuthorizingRealm;
-import com.gentics.mesh.auth.MeshShiroAuthProvider;
+import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.etc.config.MeshConfiguration;
-import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.graphdb.DatabaseServiceProvider;
-import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -55,7 +52,7 @@ public class MeshSpringConfiguration {
 	private static MeshConfiguration configuration = null;
 
 	@Bean
-	public FramedTransactionalGraph getFramedTransactionalGraph() throws MeshConfigurationException {
+	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
 		//		Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
 		//		//TODO configure indices
 		//		graph.createKeyIndex("ferma_type", Vertex.class);
@@ -77,9 +74,11 @@ public class MeshSpringConfiguration {
 			JsonObject settings = new JsonObject();
 			return provider.getFramedGraph(settings);
 		} catch (Exception e) {
-			throw new MeshConfigurationException("Could not load database provider class {" + className
-					+ "}. Maybe there is no such provider within the classpath.", e);
+			log.error("Could not load database provider class {" + className + "}. Maybe there is no such provider within the classpath.", e);
+			//TODO soft shutdown
+			System.exit(10);
 		}
+		return null;
 
 	}
 
@@ -120,20 +119,20 @@ public class MeshSpringConfiguration {
 		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
 	}
 
-	@Bean
-	public GraphBackedAuthorizingRealm graphBackedAuthorizingRealm() {
-		return new GraphBackedAuthorizingRealm();
-	}
+	//	@Bean
+	//	public GraphBackedAuthorizingRealm graphBackedAuthorizingRealm() {
+	//		return new GraphBackedAuthorizingRealm();
+	//	}
 
 	@Bean
 	public AuthProvider authProvider() {
 
-		GraphBackedAuthorizingRealm realm = graphBackedAuthorizingRealm();
-		realm.setCacheManager(new MemoryConstrainedCacheManager());
-		realm.setAuthenticationCachingEnabled(true);
-		realm.setCachingEnabled(true);
+		//		GraphBackedAuthorizingRealm realm = graphBackedAuthorizingRealm();
+		//		realm.setCacheManager(new MemoryConstrainedCacheManager());
+		//		realm.setAuthenticationCachingEnabled(true);
+		//		realm.setCachingEnabled(true);
 
-		return new MeshShiroAuthProvider(vertx(), realm);
+		return new MeshAuthProvider();
 	}
 
 	public CorsHandler corsHandler() {

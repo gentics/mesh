@@ -119,6 +119,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
+		System.out.println(response);
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
 	}

@@ -60,9 +60,7 @@ public class SchemaTest extends AbstractDBTest {
 	@Test
 	public void testObjectSchemaRootNode() {
 		int nSchemasBefore = schemaService.findRoot().getSchemas().size();
-
-		Schema schema = schemaService.create("test1235");
-
+		assertNotNull(schemaService.create("test1235"));
 		int nSchemasAfter = schemaService.findRoot().getSchemas().size();
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);
 	}

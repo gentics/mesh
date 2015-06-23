@@ -1,13 +1,13 @@
 package com.gentics.mesh.graphdb;
 
-import java.io.IOException;
-
 import io.vertx.core.json.JsonObject;
 
-import com.syncleus.ferma.FramedTransactionalGraph;
+import java.io.IOException;
+
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 public interface DatabaseServiceProvider {
 
-	FramedTransactionalGraph getFramedGraph(JsonObject settings) throws IOException;
+	FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) throws IOException;
 
 }

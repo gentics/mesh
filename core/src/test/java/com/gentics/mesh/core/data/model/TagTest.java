@@ -17,11 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
+import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
@@ -142,7 +143,7 @@ public class TagTest extends AbstractDBTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshShiroUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 
 		Page<? extends Tag> tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(8, tagPage.getTotalElements());
@@ -164,10 +165,11 @@ public class TagTest extends AbstractDBTest {
 		int depth = 3;
 
 		RoutingContext rc = getMockedRoutingContext("lang=de,en");
-		MeshShiroUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		for (int i = 0; i < 100; i++) {
 			long start = System.currentTimeMillis();
-			TagResponse response = tag.transformToRest(requestUser);
+			TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+			TagResponse response = tag.transformToRest(info);
 			assertNotNull(response);
 			long dur = System.currentTimeMillis() - start;
 			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");

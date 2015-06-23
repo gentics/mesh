@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -33,7 +33,7 @@ public class MeshNodeService extends AbstractMeshService {
 
 	//private static ForkJoinPool pool = new ForkJoinPool(8);
 
-	public Page<? extends MeshNode> findAll(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
+	public Page<? extends MeshNode> findAll(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark().out(ASSIGNED_TO_PROJECT)

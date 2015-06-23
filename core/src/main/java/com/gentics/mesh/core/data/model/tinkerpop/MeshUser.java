@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +16,8 @@ import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
-import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.util.BlueprintTransaction;
 
 @Configurable
 public class MeshUser extends GenericNode {
@@ -109,26 +111,36 @@ public class MeshUser extends GenericNode {
 	//
 	//	}
 
-	public String[] getPermissions(MeshVertex node) {
-		
-		Set<Permission> permissions = new HashSet<>();
-		Set<? extends String> labels = in(HAS_USER).out(HAS_ROLE).outE(Permission.labels()).mark().outV().retain(node).back().label().toSet();
-		for (String label : labels) {
-			permissions.add(Permission.valueOf(label));
+	public String[] getPermissionNames(MeshVertex node) {
+		Set<Permission> permissions = getPermissions(node);
+		String[] strings = new String[permissions.size()];
+		Iterator<Permission> it = permissions.iterator();
+		for (int i = 0; i < permissions.size(); i++) {
+			strings[i] = it.next().name();
 		}
-		return permissions.toArray(new String[permissions.size()]);
+		return strings;
+	}
+
+	public Set<Permission> getPermissions(MeshVertex node) {
+
+		Set<Permission> permissions = new HashSet<>();
+		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(Permission.labels()).mark().inV().retain(node).back().label().toSet();
+		for (String label : labels) {
+			permissions.add(Permission.valueOfLabel(label));
+		}
+		return permissions;
 	}
 
 	public boolean hasPermission(MeshVertex node, Permission permission) {
 		//TraversalHelper.debug(out(HAS_USER).in(HAS_ROLE).outE(permission.label()).inV());
 		//System.out.println(out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().next().getLabel());
 		//System.out.println("-----");
-//		try {
-			return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().hasNext();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-	//	return false;
+		//		try {
+		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().hasNext();
+		//		} catch (Exception e) {
+		//			e.printStackTrace();
+		//		}
+		//	return false;
 	}
 
 	public UserResponse transformToRest() {

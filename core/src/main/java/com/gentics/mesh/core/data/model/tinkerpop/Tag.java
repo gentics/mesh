@@ -21,13 +21,7 @@ public class Tag extends GenericPropertyContainer {
 		unlinkIn(node, MeshRelationships.HAS_TAG);
 	}
 
-	public TagResponse transformToRest(MeshShiroUser requestUser) {
-
-		TransformationInfo info = new TransformationInfo(requestUser);
-
-		// Configuration
-		//		List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-		//		info.setLanguageTags(languageTags);
+	public TagResponse transformToRest(TransformationInfo info) {
 
 		TagResponse restTag = new TagResponse();
 		TagTransformationTask task = new TagTransformationTask(this, info, restTag);
@@ -40,12 +34,12 @@ public class Tag extends GenericPropertyContainer {
 		getVertex().remove();
 	}
 
-	public Page<MeshNode> findTaggedNodes(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> findTaggedNodes(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		//findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
 		return null;
 	}
 
-	public Page<MeshNode> findTaggedNodes(MeshShiroUser requestUser, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> findTaggedNodes(MeshAuthUser requestUser, String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo) {
 		//		String langFilter = getLanguageFilter("l");
 		//		if (languageTags == null || languageTags.isEmpty()) {
 		//			langFilter = "";

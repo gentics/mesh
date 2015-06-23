@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
@@ -58,7 +59,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "uuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
@@ -90,7 +91,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			// TODO also create a default object schema for the project. Move this into service class
 			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
 			ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_missing_name")));
@@ -134,7 +135,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -151,8 +152,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			vertx.executeBlocking((Future<ProjectListResponse> bcr) -> {
 				ProjectListResponse listResponse = new ProjectListResponse();

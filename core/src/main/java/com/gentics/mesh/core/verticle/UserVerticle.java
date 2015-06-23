@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.rest.user.response.UserListResponse;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
@@ -56,9 +58,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			rcs.loadObject(rc, "uuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> rh) -> {
 			}, trh -> {
-				MeshUser user = trh.result();
-				UserResponse restUser = user.transformToRest();
-				rc.response().setStatusCode(200).end(toJson(restUser));
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					MeshUser user = trh.result();
+					UserResponse restUser = user.transformToRest();
+					tx.success();
+					rc.response().setStatusCode(200).end(toJson(restUser));
+				}
 			});
 		});
 
@@ -66,8 +71,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
 			vertx.executeBlocking((Future<UserListResponse> bch) -> {
 				UserListResponse listResponse = new UserListResponse();
 
@@ -104,30 +109,34 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				MeshUser user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
-				if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
-					if (userService.findByUsername(requestModel.getUsername()) != null) {
-						rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username")));
-						return;
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
+						if (userService.findByUsername(requestModel.getUsername()) != null) {
+							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username")));
+							return;
+						}
+						user.setUsername(requestModel.getUsername());
 					}
-					user.setUsername(requestModel.getUsername());
-				}
 
-				if (!StringUtils.isEmpty(requestModel.getFirstname()) && user.getFirstname() != requestModel.getFirstname()) {
-					user.setFirstname(requestModel.getFirstname());
-				}
+					if (!StringUtils.isEmpty(requestModel.getFirstname()) && user.getFirstname() != requestModel.getFirstname()) {
+						user.setFirstname(requestModel.getFirstname());
+					}
 
-				if (!StringUtils.isEmpty(requestModel.getLastname()) && user.getLastname() != requestModel.getLastname()) {
-					user.setLastname(requestModel.getLastname());
-				}
+					if (!StringUtils.isEmpty(requestModel.getLastname()) && user.getLastname() != requestModel.getLastname()) {
+						user.setLastname(requestModel.getLastname());
+					}
 
-				if (!StringUtils.isEmpty(requestModel.getEmailAddress()) && user.getEmailAddress() != requestModel.getEmailAddress()) {
-					user.setEmailAddress(requestModel.getEmailAddress());
-				}
+					if (!StringUtils.isEmpty(requestModel.getEmailAddress()) && user.getEmailAddress() != requestModel.getEmailAddress()) {
+						user.setEmailAddress(requestModel.getEmailAddress());
+					}
 
-				if (!StringUtils.isEmpty(requestModel.getPassword())) {
-					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+					if (!StringUtils.isEmpty(requestModel.getPassword())) {
+						user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+					}
+					tx.success();
+					fg.commit();
 				}
-
+				fg.commit();
 			}, trh -> {
 				MeshUser user = trh.result();
 				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
@@ -140,7 +149,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 			if (requestModel == null) {

@@ -40,11 +40,8 @@ public class MeshNode extends GenericPropertyContainer {
 		setLinkOut(parent, HAS_PARENT_NODE);
 	}
 
-	public NodeResponse transformToRest(MeshShiroUser requestUser) {
+	public NodeResponse transformToRest(TransformationInfo info) {
 
-		TransformationInfo info = new TransformationInfo(requestUser);
-		// List<String> languageTags = rcs.getSelectedLanguageTags(rc);
-		// info.setLanguageTags(languageTags);
 		NodeResponse restContent = new NodeResponse();
 		MeshNodeTransformationTask task = new MeshNodeTransformationTask(this, info, restContent);
 		TransformationPool.getPool().invoke(task);
@@ -52,7 +49,7 @@ public class MeshNode extends GenericPropertyContainer {
 
 	}
 
-	public Page<Tag> getTags(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<Tag> getTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		return null;
 		// public Page<Tag> findTags(String userUuid, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
 		// // String langFilter = getLanguageFilter("l");
@@ -80,7 +77,7 @@ public class MeshNode extends GenericPropertyContainer {
 		// }
 	}
 
-	public Page<MeshNode> getChildren(MeshShiroUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<MeshNode> getChildren(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 
 		// if (languageTags == null || languageTags.size() == 0) {
 		// return findChildren(userUuid, projectName, parentNode, pr);

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -24,7 +25,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -61,8 +62,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupTPRoleHandlers() {
 
 		route("/:groupUuid/roles").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
-			MeshShiroUser requestUser = getUser(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", READ_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				vertx.executeBlocking((Future<RoleListResponse> bch) -> {
@@ -94,7 +95,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				rcs.loadObject(rc, "roleUuid", READ_PERM, Role.class, (AsyncResult<Role> rrh) -> {
@@ -115,7 +116,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				rcs.loadObject(rc, "roleUuid", READ_PERM, Role.class, (AsyncResult<Role> rrh) -> {
@@ -136,9 +137,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addGroupUserHandlers() {
 		route("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
 			rcs.loadObject(rc, "groupUuid", READ_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				vertx.executeBlocking((Future<UserListResponse> bch) -> {
 					UserListResponse listResponse = new UserListResponse();
@@ -169,7 +170,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				rcs.loadObject(rc, "userUuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> urh) -> {
@@ -189,7 +190,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				rcs.loadObject(rc, "userUuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> urh) -> {
@@ -228,7 +229,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "uuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
@@ -262,7 +263,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "uuid", READ_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
@@ -280,11 +281,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			vertx.executeBlocking((Future<GroupListResponse> glr) -> {
 				GroupListResponse listResponse = new GroupListResponse();
-				MeshShiroUser requestUser = getUser(rc);
+				MeshAuthUser requestUser = getUser(rc);
 
 				Page<? extends Group> groupPage;
 				try {
@@ -310,7 +311,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO handle conflicting group name: group_conflicting_name
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 			GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {

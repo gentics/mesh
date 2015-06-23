@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static org.junit.Assert.assertArrayEquals;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -13,7 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.demo.UserInfo;
@@ -76,6 +77,14 @@ public class MeshUserTest extends AbstractDBTest {
 
 		assertTrue(user.hasPermission(language, READ_PERM));
 	}
+	
+	@Test
+	public void testGetPermissions() {
+		MeshUser user = info.getUser();
+		Language language = data().getEnglish();
+		String[] perms = {"UPDATE_PERM","CREATE_PERM", "DELETE_PERM", "READ_PERM"};
+		assertArrayEquals("Permissions do not match", perms,user.getPermissionNames(language));
+	}
 
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
@@ -88,7 +97,7 @@ public class MeshUserTest extends AbstractDBTest {
 		role.addPermissions(extraUser, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshShiroUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends MeshUser> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 		assertEquals(2, userPage.getTotalElements());

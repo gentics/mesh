@@ -4,36 +4,23 @@ import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RoutingContextHelper;
-
 
 @Component
 public class RoutingContextService extends AbstractMeshService {
@@ -43,118 +30,9 @@ public class RoutingContextService extends AbstractMeshService {
 
 	private static final Logger log = LoggerFactory.getLogger(RoutingContextService.class);
 
-	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
-	private static final String DEPTH_PARAM_KEY = "depth";
-	private static final String TAGS_PARAM_KEY = "tags";
-	private static final String CONTENTS_PARAM_KEY = "contents";
-	private static final String CHILD_TAGS_PARAM_KEY = "childTags";
-	public static final int DEFAULT_PER_PAGE = 25;
-	public static final String QUERY_MAP_DATA_KEY = "queryMap";
 
-	/**
-	 * Extracts the lang parameter values from the query.
-	 * 
-	 * @param rc
-	 * @return List of languages. List can be empty.
-	 */
-	public List<String> getSelectedLanguageTags(RoutingContext rc) {
-		List<String> languageTags = new ArrayList<>();
-		Map<String, String> queryPairs = splitQuery(rc);
-		if (queryPairs == null) {
-			return new ArrayList<>();
-		}
-		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
-		if (value != null) {
-			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
-		}
-		languageTags.add(MeshSpringConfiguration.getConfiguration().getDefaultLanguage());
-		return languageTags;
 
-	}
 
-	public Map<String, String> splitQuery(RoutingContext rc) {
-		rc.data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
-			String query = rc.request().query();
-			Map<String, String> queryPairs = new LinkedHashMap<String, String>();
-			if (query == null) {
-				return queryPairs;
-			}
-			String[] pairs = query.split("&");
-			for (String pair : pairs) {
-				int idx = pair.indexOf("=");
-
-				try {
-					queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					throw new HttpStatusCodeErrorException(500, "Could not decode query string pair {" + pair + "}", e);
-				}
-
-			}
-			return queryPairs;
-		});
-		return (Map<String, String>) rc.data().get(QUERY_MAP_DATA_KEY);
-	}
-
-	/**
-	 * Extract the paging information from the request parameters. The paging information contains information about the number of the page that is currently
-	 * requested and the amount of items that should be included in a single page.
-	 * 
-	 * @param rc
-	 * @return Paging information
-	 */
-	public PagingInfo getPagingInfo(RoutingContext rc) {
-		MultiMap params = rc.request().params();
-		int page = NumberUtils.toInt(params.get("page"), 1);
-		int perPage = NumberUtils.toInt(params.get("per_page"), DEFAULT_PER_PAGE);
-		if (page < 1) {
-			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_invalid_paging_parameters"));
-		}
-		if (perPage <= 0) {
-			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_invalid_paging_parameters"));
-		}
-		return new PagingInfo(page, perPage);
-	}
-
-	public Future<Integer> getDepthParameter(RoutingContext rc) {
-
-		Future<Integer> depthFut = Future.future();
-
-		Map<String, String> queryPairs = splitQuery(rc);
-		String value = queryPairs.get(DEPTH_PARAM_KEY);
-
-		int depth = NumberUtils.toInt(value, 0);
-		int maxDepth = MeshSpringConfiguration.getConfiguration().getMaxDepth();
-		if (depth > maxDepth) {
-			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_depth_max_exceeded", String.valueOf(depth), String.valueOf(maxDepth)));
-		}
-		depthFut.complete(depth);
-
-		return depthFut;
-	}
-
-	public Future<Boolean> getTagsIncludeParameter(RoutingContext rc) {
-		Future<Boolean> tagsFut = Future.future();
-		Map<String, String> queryPairs = splitQuery(rc);
-		String value = queryPairs.get(TAGS_PARAM_KEY);
-		tagsFut.complete(BooleanUtils.toBoolean(value));
-		return tagsFut;
-	}
-
-	public Future<Boolean> getChildTagIncludeParameter(RoutingContext rc) {
-		Future<Boolean> childTagsFut = Future.future();
-		Map<String, String> queryPairs = splitQuery(rc);
-		String value = queryPairs.get(CHILD_TAGS_PARAM_KEY);
-		childTagsFut.complete(BooleanUtils.toBoolean(value));
-		return childTagsFut;
-	}
-
-	public Future<Boolean> getContentsIncludeParameter(RoutingContext rc) {
-		Future<Boolean> contentsFut = Future.future();
-		Map<String, String> queryPairs = splitQuery(rc);
-		String value = queryPairs.get(CONTENTS_PARAM_KEY);
-		contentsFut.complete(BooleanUtils.toBoolean(value));
-		return contentsFut;
-	}
 
 	public String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
@@ -180,17 +58,20 @@ public class RoutingContextService extends AbstractMeshService {
 		configuration.vertx().executeBlocking((Future<T> fut) -> {
 			//TODO add generic loading and framing of objects
 				T node = null;
-				if (projectName != null) {
-					node = meshDatabaseService.findByUUID(projectName, uuid, classOfT);
-				} else {
-					node = meshDatabaseService.findByUUID(uuid, classOfT);
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					if (projectName != null) {
+						node = meshDatabaseService.findByUUID(projectName, uuid, classOfT);
+					} else {
+						node = meshDatabaseService.findByUUID(uuid, classOfT);
+					}
+					tx.success();
 				}
 				if (node == null) {
 					fut.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid)));
 					return;
 				}
 				final T foundNode = node;
-				MeshShiroUser requestUser = RoutingContextHelper.getUser(rc);
+				MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 				requestUser.isAuthorised(node, permType, handler -> {
 					if (!handler.result()) {
 						fut.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", foundNode.getUuid())));
@@ -261,7 +142,7 @@ public class RoutingContextService extends AbstractMeshService {
 	 */
 	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
-		MeshShiroUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		requestUser.isAuthorised(node, type, handler -> {
 			if (!handler.result()) {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid())));

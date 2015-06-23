@@ -14,6 +14,7 @@ import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.server.configuration.ServerConfigurator;
 
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -22,7 +23,7 @@ import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 public class Neo4jDatabaseProviderImpl implements DatabaseServiceProvider {
 
 	@Override
-	public FramedTransactionalGraph getFramedGraph(JsonObject settings) throws IOException {
+	public FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) throws IOException {
 
 		String DB_LOCATION = "/tmp/graphdb";
 		File dbDir = new File(DB_LOCATION);
@@ -46,7 +47,8 @@ public class Neo4jDatabaseProviderImpl implements DatabaseServiceProvider {
 		neo4jBlueprintGraph.createKeyIndex("ferma_type", Edge.class);
 
 		FramedTransactionalGraph fg = new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false);
-		return fg;
+		return null;
+		//return fg;
 	}
 
 	private void registerShutdownHook(final GraphDatabaseService graphDatabaseService) {

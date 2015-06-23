@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -24,7 +25,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -59,7 +60,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addSchemaProjectHandlers() {
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class , (AsyncResult<Project> rh) -> {
 				rcs.loadObject(rc, "schemaUuid", READ_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
@@ -79,7 +80,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
 				rcs.loadObject(rc, "schemaUuid", READ_PERM,Schema.class, (AsyncResult<Schema> srh) -> {
@@ -101,7 +102,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			ObjectSchemaCreateRequest requestModel = fromJson(rc, ObjectSchemaCreateRequest.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
@@ -150,7 +151,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "uuid", UPDATE_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 				Schema schema = srh.result();
@@ -194,7 +195,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandlers() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -212,9 +213,9 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshShiroUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = getUser(rc);
 
-			PagingInfo pagingInfo = rcs.getPagingInfo(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
 			vertx.executeBlocking((Future<ObjectSchemaListResponse> bch) -> {
 				ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
 				Page<Schema> schemaPage = schemaService.findAllVisible(requestUser, pagingInfo);

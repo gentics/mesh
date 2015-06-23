@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PE
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
 import com.gentics.mesh.core.rest.user.response.UserListResponse;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.JsonUtils;
 
 public class UserVerticleTest extends AbstractRestVerticleTest {
@@ -139,13 +141,16 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", JsonUtils.toJson(updateRequest));
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 		test.assertUser(updateRequest, restUser);
-
-		//TODO TP load user again
-		MeshUser reloadedUser = null;
-		assertEquals("Epic Stark", reloadedUser.getLastname());
-		assertEquals("Tony Awesome", reloadedUser.getFirstname());
-		assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
-		assertEquals("dummy_user_changed", reloadedUser.getUsername());
+		Thread.sleep(1000);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			assertNull("The user node should have been updated and thus no user should be found.", userService.findByUsername(user.getUsername()));
+			MeshUser reloadedUser = userService.findByUsername("dummy_user_changed");
+			assertNotNull(reloadedUser);
+			assertEquals("Epic Stark", reloadedUser.getLastname());
+			assertEquals("Tony Awesome", reloadedUser.getFirstname());
+			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+		}
 	}
 
 	@Test
@@ -160,14 +165,16 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
 		test.assertUser(updateRequest, restUser);
 
-		//TODO TP load user again
-		MeshUser reloadedUser = null;
-
-		assertTrue("The hash should be different and thus the password updated.", oldHash != reloadedUser.getPasswordHash());
-		assertEquals(user.getUsername(), reloadedUser.getUsername());
-		assertEquals(user.getFirstname(), reloadedUser.getFirstname());
-		assertEquals(user.getLastname(), reloadedUser.getLastname());
-		assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			MeshUser reloadedUser = userService.findByUsername(user.getUsername());
+			System.out.println(oldHash);
+			System.out.println(reloadedUser.getPasswordHash());
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+			assertEquals(user.getUsername(), reloadedUser.getUsername());
+			assertEquals(user.getFirstname(), reloadedUser.getFirstname());
+			assertEquals(user.getLastname(), reloadedUser.getLastname());
+			assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
+		}
 	}
 
 	@Test

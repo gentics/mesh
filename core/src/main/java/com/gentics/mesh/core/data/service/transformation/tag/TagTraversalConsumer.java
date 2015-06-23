@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.model.tinkerpop.MeshShiroUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
@@ -34,7 +34,7 @@ public class TagTraversalConsumer implements Consumer<Tag> {
 	public void accept(Tag tag) {
 		String currentUuid = tag.getUuid();
 		Session session = info.getRoutingContext().session();
-		MeshShiroUser requestUser = getUser(info.getRoutingContext());
+		MeshAuthUser requestUser = getUser(info.getRoutingContext());
 		requestUser.isAuthorised(tag, READ_PERM, handler -> {
 			if (handler.result()) {
 				TagResponse currentRestTag = (TagResponse) info.getObject(currentUuid);
