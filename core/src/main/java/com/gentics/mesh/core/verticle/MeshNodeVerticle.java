@@ -47,7 +47,7 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 /**
- * The content verticle adds rest endpoints for manipulating contents.
+ * The content verticle adds rest endpoints for manipulating nodes.
  */
 @Component
 @Scope("singleton")
