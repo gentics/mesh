@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 public class TagFamilyRoot extends MeshVertex {
 
 	public List<? extends Tag> getTags() {
-		return out(HAS_TAG).toList(Tag.class);
+		return out(HAS_TAG).has(Tag.class).toListExplicit(Tag.class);
 	}
 
 }

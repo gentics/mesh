@@ -40,13 +40,8 @@
 			<artifactId>mesh-orientdb</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-neo4j</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-        -->
+		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-neo4j</artifactId> 
+			<version>${project.version}</version> </dependency> -->
 		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -81,14 +76,8 @@
 			<version>2.4</version>
 		</dependency>
 
-
-
 		<!-- Additional vertx dependencies that are not included in the gtx vertx 
 			parent artifact -->
-		<!-- <dependency> <groupId>io.vertx</groupId> <artifactId>vertx-rx-java</artifactId> 
-			<version>${vertx.version}</version> </dependency> <dependency> <groupId>io.vertx</groupId> 
-			<artifactId>vertx-lang-js</artifactId> <version>${vertx.version}</version> 
-			</dependency> -->
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-codegen</artifactId>
@@ -163,7 +152,6 @@
 		</dependency>
 
 
-
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -210,8 +198,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-
 	</dependencies>
 
 
@@ -255,7 +241,6 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
 			</plugin>
-
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>

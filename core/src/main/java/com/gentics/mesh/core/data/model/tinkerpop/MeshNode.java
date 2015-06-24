@@ -29,7 +29,7 @@ public class MeshNode extends GenericPropertyContainer {
 	}
 
 	public List<? extends MeshNode> getChildren() {
-		return in(HAS_PARENT_NODE).toList(MeshNode.class);
+		return in(HAS_PARENT_NODE).has(MeshNode.class).toListExplicit(MeshNode.class);
 	}
 
 	public MeshNode getParentNode() {

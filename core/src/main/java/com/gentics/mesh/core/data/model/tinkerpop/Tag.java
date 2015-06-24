@@ -4,21 +4,24 @@ import java.util.List;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
-import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import com.gentics.mesh.paging.PagingInfo;
 
 public class Tag extends GenericPropertyContainer {
 
 	public List<? extends MeshNode> getNodes() {
-		return in(MeshRelationships.HAS_TAG).toList(MeshNode.class);
+		return in(HAS_TAG).toList(MeshNode.class);
 	}
 
 	public void removeNode(MeshNode node) {
-		unlinkIn(node, MeshRelationships.HAS_TAG);
+		unlinkIn(node, HAS_TAG);
 	}
 
 	public TagResponse transformToRest(TransformationInfo info) {
@@ -27,6 +30,14 @@ public class Tag extends GenericPropertyContainer {
 		TagTransformationTask task = new TagTransformationTask(this, info, restTag);
 		TransformationPool.getPool().invoke(task);
 		return restTag;
+	}
+
+	public void setTagFamilyRoot(TagFamilyRoot root) {
+		linkOut(root, HAS_TAGFAMILY_ROOT);
+	}
+
+	public TagFamilyRoot getTagFamilyRoot() {
+		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyRoot.class).nextOrDefaultExplicit(TagFamilyRoot.class, null);
 	}
 
 	public void delete() {

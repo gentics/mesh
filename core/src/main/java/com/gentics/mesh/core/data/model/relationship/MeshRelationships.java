@@ -17,6 +17,7 @@ public class MeshRelationships {
 
 	//Tags
 	public static final String HAS_TAG_ROOT = "HAS_TAG_ROOT";
+	public static final String HAS_TAGFAMILY_ROOT = "HAS_TAGFAMILY_ROOT";
 	public static final String HAS_TAG = "HAS_TAG";
 
 	//Misc

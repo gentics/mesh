@@ -16,11 +16,9 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<orientdb.version>2.1-rc4</orientdb.version>
-		<!-- <orientdb.version>2.0.11</orientdb.version> -->
 	</properties>
 
 	<dependencies>
-
 
 		<!-- OrientDB -->
 		<dependency>
