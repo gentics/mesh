@@ -52,22 +52,6 @@
 		</dependency>
 
 
-		<!-- Neo4J -->
-		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<version>${neo4j.version}</version>
-		</dependency>
-
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-io</artifactId>
-			<version>${neo4j.version}</version>
-			<classifier>tests</classifier>
-			<scope>compile</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-kernel</artifactId>
@@ -118,16 +102,8 @@
 			<artifactId>neo4j-io</artifactId>
 			<version>${neo4j.version}</version>
 			<classifier>tests</classifier>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-kernel</artifactId>
-			<version>${neo4j.version}</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 
