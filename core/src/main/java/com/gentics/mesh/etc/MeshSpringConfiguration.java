@@ -56,7 +56,7 @@ public class MeshSpringConfiguration {
 
 		String className = configuration.getDatabaseProviderClass();
 
-		className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
+		//className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
@@ -78,12 +78,6 @@ public class MeshSpringConfiguration {
 	public static void setConfiguration(MeshConfiguration conf) {
 		configuration = conf;
 	}
-
-	//	@PostConstruct
-	//	private void setupDBService() {
-	//		log.debug("Setting up {" + getClass().getCanonicalName() + "}");
-	//		graphDatabaseService();
-	//	}
 
 	@Bean
 	public Vertx vertx() {
@@ -108,19 +102,8 @@ public class MeshSpringConfiguration {
 		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
 	}
 
-	//	@Bean
-	//	public GraphBackedAuthorizingRealm graphBackedAuthorizingRealm() {
-	//		return new GraphBackedAuthorizingRealm();
-	//	}
-
 	@Bean
 	public AuthProvider authProvider() {
-
-		//		GraphBackedAuthorizingRealm realm = graphBackedAuthorizingRealm();
-		//		realm.setCacheManager(new MemoryConstrainedCacheManager());
-		//		realm.setAuthenticationCachingEnabled(true);
-		//		realm.setCachingEnabled(true);
-
 		return new MeshAuthProvider();
 	}
 

@@ -586,9 +586,6 @@ public class DemoDataProvider {
 
 	/**
 	 * Returns the path to the tag for the given language.
-	 * 
-	 * @param language
-	 * @return
 	 */
 	public String getPathForNews2015Tag(Language language) {
 

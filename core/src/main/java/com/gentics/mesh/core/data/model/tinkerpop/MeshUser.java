@@ -66,10 +66,7 @@ public class MeshUser extends GenericNode {
 	}
 
 	/**
-	 * Return all groups that are assigned to the user
-	 * 
-	 * @param user
-	 * @return
+	 * Return all assigned groups.
 	 */
 	public List<? extends Group> getGroups() {
 		return out(HAS_USER).toList(Group.class);

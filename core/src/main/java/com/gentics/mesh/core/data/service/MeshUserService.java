@@ -32,10 +32,6 @@ public class MeshUserService extends AbstractMeshService {
 
 	/**
 	 * Find all users that are visible for the given user.
-	 * 
-	 * @param requestUser
-	 * @param pagingInfo
-	 * @return
 	 */
 	public Page<MeshUser> findAllVisible(MeshAuthUser requestUser, PagingInfo pagingInfo) {
 		// String userUuid = session.getPrincipal().getString("uuid");

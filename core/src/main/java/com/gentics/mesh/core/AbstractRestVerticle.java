@@ -60,8 +60,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	/**
 	 * Wrapper for getRouter().route(path)
-	 * 
-	 * @return
 	 */
 	protected Route route(String path) {
 		Route route = localRouter.route(path);
@@ -70,8 +68,6 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 
 	/**
 	 * Wrapper for getRouter().route()
-	 * 
-	 * @return
 	 */
 	protected Route route() {
 		Route route = localRouter.route();

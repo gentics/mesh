@@ -183,7 +183,7 @@ public class RouterStorage {
 	 * Add a new project router with the given name to the api router. This method will return an existing router when one already has been setup.
 	 * 
 	 * @param name
-	 * @return
+	 * @return Router for the given project name
 	 * @throws InvalidNameException
 	 */
 	public Router addProjectRouter(String name) throws InvalidNameException {

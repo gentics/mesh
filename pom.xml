@@ -19,7 +19,11 @@
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.0.7-SNAPSHOT</ferma.version>
+		<!-- 
+		<spring.version>4.0.7.RELEASE</spring.version>
+		 -->
 		<spring.version>4.1.6.RELEASE</spring.version>
+		
 	</properties>
 
 	<parent>

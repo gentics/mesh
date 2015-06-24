@@ -6,8 +6,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import java.util.List;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -25,9 +23,6 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private TagCloudService tagCloudService;
-
-	@Autowired
-	GraphDatabaseService graphDb;
 
 	public TagCloudVerticle() {
 		super("page");
@@ -48,17 +43,15 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 		route("/tagcloud").method(GET).handler(rc -> {
 			TagCloud cloud = new TagCloud();
 			// TODO transaction handling should be moved to abstract rest resource
-				try (Transaction tx = graphDb.beginTx()) {
-					List<TagCloudResult> res = tagCloudService.getTagCloudInfo();
-					for (TagCloudResult current : res) {
-						TagCloudEntry entry = new TagCloudEntry();
-						String name = current.getTag().getName(language);
-						entry.setName(name);
-						// TODO determine link
-						entry.setLink("TBD");
-						entry.setCount(current.getCounts());
-						cloud.getEntries().add(entry);
-					}
+				List<TagCloudResult> res = tagCloudService.getTagCloudInfo();
+				for (TagCloudResult current : res) {
+					TagCloudEntry entry = new TagCloudEntry();
+					String name = current.getTag().getName(language);
+					entry.setName(name);
+					// TODO determine link
+					entry.setLink("TBD");
+					entry.setCount(current.getCounts());
+					cloud.getEntries().add(entry);
 				}
 				rc.response().headers().add("Content-Type", APPLICATION_JSON);
 				rc.response().end(toJson(cloud));

@@ -42,11 +42,6 @@ public class LinkReplacer<T extends AbstractLinkResolver> {
 
 	/**
 	 * Replace the links in the content.
-	 * 
-	 * @param content
-	 * @return
-	 * @throws InterruptedException
-	 * @throws ExecutionException
 	 */
 	public String replace(String content) throws InterruptedException, ExecutionException {
 

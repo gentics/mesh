@@ -65,11 +65,6 @@ public class Group extends GenericNode {
 
 	/**
 	 * Get all users within this group that are visible for the given user.
-	 * 
-	 * @param user
-	 * @param pagingInfo
-	 * @return
-	 * @throws InvalidArgumentException
 	 */
 	public Page<? extends MeshUser> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 

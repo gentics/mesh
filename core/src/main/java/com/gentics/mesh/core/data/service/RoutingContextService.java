@@ -134,11 +134,6 @@ public class RoutingContextService extends AbstractMeshService {
 
 	/**
 	 * Check the permission and throw an invalid permission exception when no matching permission could be found.
-	 *
-	 * @param rc
-	 * @param node
-	 * @param type
-	 * @return
 	 */
 	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {

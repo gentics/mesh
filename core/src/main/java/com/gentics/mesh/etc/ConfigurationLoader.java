@@ -26,8 +26,6 @@ public final class ConfigurationLoader {
 
 	/**
 	 * Load the main mesh configuration file.
-	 * 
-	 * @return
 	 */
 	public static MeshConfiguration createOrloadConfiguration() {
 		File confFile = new File(MESH_CONF_FILENAME);
