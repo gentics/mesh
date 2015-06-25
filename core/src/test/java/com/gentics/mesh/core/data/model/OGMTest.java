@@ -61,7 +61,8 @@ public class OGMTest {
 
 		Tag tag = tagFamily.create("dummyTag");
 		System.out.println(tag.getId());
-		SchemaRoot schemaRoot = schemaService.createRoot();
+
+		SchemaRoot schemaRoot = project.getSchemaRoot();
 		System.out.println(groupRoot.getUuid());
 		System.out.println(groupRoot.getId());
 		root.setGroupRoot(groupRoot);
@@ -78,9 +79,9 @@ public class OGMTest {
 		assertEquals("description", schema.getDescription());
 
 		root.getProjectRoot().addProject(project);
-		//		tag.setSchema(schema);
-		//		Schema loadedSchema = tag.getSchema();
-		//		System.out.println(loadedSchema.getDescription());
+		// tag.setSchema(schema);
+		// Schema loadedSchema = tag.getSchema();
+		// System.out.println(loadedSchema.getDescription());
 
 	}
 }

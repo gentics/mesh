@@ -221,9 +221,9 @@ public class BootstrapInitializer {
 			log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
 		}
 
-		LanguageRoot languageRoot = languageService.findRoot();
+		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		if (languageRoot == null) {
-			languageRoot = languageService.createRoot();
+			languageRoot = meshRoot.createLanguageRoot();
 			log.info("Stored language root {" + languageRoot.getUuid() + "}");
 		}
 
@@ -255,7 +255,7 @@ public class BootstrapInitializer {
 
 		SchemaRoot schemaRoot = schemaService.findRoot();
 		if (schemaRoot == null) {
-			schemaRoot = schemaService.createRoot();
+			schemaRoot = meshRoot.createRoot();
 			log.info("Stored schema root node");
 		}
 
@@ -390,7 +390,7 @@ public class BootstrapInitializer {
 			String languageNativeName = entry.getValue().getNativeName();
 			Language language = languageService.findByName(languageName);
 			if (language == null) {
-				language = languageService.create(languageName, languageTag);
+				language = rootNode.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
 				rootNode.addLanguage(language);
 				log.debug("Added language {" + languageTag + " / " + languageName + "}");

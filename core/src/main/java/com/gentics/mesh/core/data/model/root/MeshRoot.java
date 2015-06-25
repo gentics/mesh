@@ -60,26 +60,43 @@ public class MeshRoot extends MeshVertex {
 	}
 
 	public ProjectRoot createProjectRoot() {
-		return getGraph().addFramedVertex(ProjectRoot.class);
+		ProjectRoot projectRoot = getGraph().addFramedVertex(ProjectRoot.class);
+		setProjectRoot(projectRoot);
+		return projectRoot;
 	}
 
 	public GroupRoot createGroupRoot() {
-		GroupRoot root = getGraph().addFramedVertex(GroupRoot.class);
-		return root;
+		GroupRoot groupRoot = getGraph().addFramedVertex(GroupRoot.class);
+		setGroupRoot(groupRoot);
+		return groupRoot;
 	}
-	
+
 	public RoleRoot createRoleRoot() {
-		RoleRoot root = getGraph().addFramedVertex(RoleRoot.class);
-		return root;
+		RoleRoot roleRoot = getGraph().addFramedVertex(RoleRoot.class);
+		setRoleRoot(roleRoot);
+		return roleRoot;
 	}
-	
-	
+
+	public SchemaRoot createRoot() {
+		SchemaRoot schemaRoot = getGraph().addFramedVertex(SchemaRoot.class);
+		setSchemaRoot(schemaRoot);
+		return schemaRoot;
+	}
 
 	public UserRoot createUserRoot() {
-		UserRoot root = getGraph().addFramedVertex(UserRoot.class);
-		linkOut(root, HAS_USER_ROOT);
-		return root;
+		UserRoot userRoot = getGraph().addFramedVertex(UserRoot.class);
+		setUserRoot(userRoot);
+		return userRoot;
+	}
+	
+	
+	public LanguageRoot createLanguageRoot() {
+		LanguageRoot languageRoot = getGraph().addFramedVertex(LanguageRoot.class);
+		setLanguageRoot(languageRoot);
+		return languageRoot;
 	}
 
+
+	
 
 }

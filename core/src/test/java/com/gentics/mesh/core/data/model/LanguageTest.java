@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.test.AbstractDBTest;
@@ -23,9 +24,10 @@ public class LanguageTest extends AbstractDBTest {
 
 	@Test
 	public void testCreation() {
+		LanguageRoot languageRoot = data().getMeshRoot().getLanguageRoot();
 		final String languageTag = "tlh";
 		final String languageName = "klingon";
-		Language lang = languageService.create(languageName, languageTag);
+		Language lang = languageRoot.create(languageName, languageTag);
 
 		lang = languageService.findByName(languageName);
 		assertNotNull(lang);
@@ -36,13 +38,15 @@ public class LanguageTest extends AbstractDBTest {
 
 	@Test
 	public void testLanguageRoot() {
-		int nLanguagesBefore = languageService.findRoot().getLanguages().size();
+		LanguageRoot languageRoot = data().getMeshRoot().getLanguageRoot();
+
+		int nLanguagesBefore = languageRoot.getLanguages().size();
 
 		final String languageName = "klingon";
 		final String languageTag = "tlh";
-		Language lang = languageService.create(languageName, languageTag);
+		Language lang = languageRoot.create(languageName, languageTag);
 
-		int nLanguagesAfter = languageService.findRoot().getLanguages().size();
+		int nLanguagesAfter = languageRoot.getLanguages().size();
 		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 
 	}

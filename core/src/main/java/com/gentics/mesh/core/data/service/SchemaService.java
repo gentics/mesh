@@ -22,7 +22,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 @Component
 public class SchemaService extends AbstractMeshService {
-	
+
 	public static SchemaService instance;
 
 	@PostConstruct
@@ -34,7 +34,6 @@ public class SchemaService extends AbstractMeshService {
 		return instance;
 	}
 
-
 	public Schema findByUUID(String projectName, String uuid) {
 		// TODO check for projectName
 		return fg.v().has("uuid", uuid).nextOrDefault(Schema.class, null);
@@ -44,7 +43,8 @@ public class SchemaService extends AbstractMeshService {
 		if (StringUtils.isEmpty(projectName) || StringUtils.isEmpty(name)) {
 			throw new NullPointerException("name or project name null");
 		}
-		return fg.v().has("name", name).has(Schema.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back().nextOrDefault(Schema.class, null);
+		return fg.v().has("name", name).has(Schema.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back()
+				.nextOrDefault(Schema.class, null);
 	}
 
 	public void deleteByUUID(String uuid) {
@@ -104,13 +104,6 @@ public class SchemaService extends AbstractMeshService {
 	public Schema findByName(String name) {
 		return fg.v().has("name", name).has(Schema.class).nextOrDefault(Schema.class, null);
 	}
-
-
-	public SchemaRoot createRoot() {
-		SchemaRoot root = fg.addFramedVertex(SchemaRoot.class);
-		return root;
-	}
-
 
 	public Schema findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);

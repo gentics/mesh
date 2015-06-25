@@ -23,6 +23,8 @@ public class ProjectRoot extends MeshVertex {
 		Project project = getGraph().addFramedVertex(Project.class);
 		project.setName(name);
 		project.getOrCreateRootNode();
+		SchemaRoot schemaRoot = getGraph().addFramedVertex(SchemaRoot.class);
+		project.setSchemaRoot(schemaRoot);
 		addProject(project);
 		return project;
 	}

@@ -39,37 +39,8 @@ public class LanguageService extends AbstractMeshService {
 		return findByLanguageTag("en");
 	}
 
-	//	@Override
-	//	public Language save(Language language) {
-	//		if (StringUtils.isEmpty(language.getLanguageTag()) || StringUtils.isEmpty(language.getName())) {
-	//			// TODO throw exception?
-	//		}
-	//		LanguageRoot root = findRoot();
-	//		if (root == null) {
-	//			throw new NullPointerException("The language root node could not be found.");
-	//		}
-	//		language = neo4jTemplate.save(language);
-	//		root.getLanguages().add(language);
-	//		neo4jTemplate.save(root);
-	//		return language;
-	//		return null;
-	//	}
-
 	public LanguageRoot findRoot() {
 		return fg.v().has(LanguageRoot.class).nextOrDefault(LanguageRoot.class, null);
 	}
 
-	public LanguageRoot createRoot() {
-		LanguageRoot root = fg.addFramedVertex(LanguageRoot.class);
-		return root;
-	}
-
-	public Language create(String languageName, String languageTag) {
-		Language language = fg.addFramedVertex(Language.class);
-		language.setName(languageName);
-		language.setLanguageTag(languageTag);
-		LanguageRoot root = findRoot();
-		root.addLanguage(language);
-		return language;
-	}
 }

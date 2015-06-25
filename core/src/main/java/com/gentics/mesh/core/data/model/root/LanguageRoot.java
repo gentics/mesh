@@ -18,4 +18,12 @@ public class LanguageRoot extends MeshVertex {
 	}
 
 	// TODO add unique index
+
+	public Language create(String languageName, String languageTag) {
+		Language language = getGraph().addFramedVertex(Language.class);
+		language.setName(languageName);
+		language.setLanguageTag(languageTag);
+		addLanguage(language);
+		return language;
+	}
 }

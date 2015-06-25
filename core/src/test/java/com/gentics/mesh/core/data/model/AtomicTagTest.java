@@ -32,9 +32,9 @@ public class AtomicTagTest extends AbstractDBTest {
 
 	@Test
 	public void testTagCreation() {
-		LanguageRoot root = languageService.createRoot();
-		assertNotNull(root);
-		Language language = languageService.create("Deutsch", "de");
+		LanguageRoot languageRoot = data().getMeshRoot().getLanguageRoot();
+		assertNotNull(languageRoot);
+		Language language = languageRoot.create("Deutsch", "de");
 
 		MeshRoot meshRoot = rootService.create();
 		ProjectRoot projectRoot = meshRoot.createProjectRoot();
