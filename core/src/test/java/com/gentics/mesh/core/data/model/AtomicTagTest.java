@@ -32,11 +32,12 @@ public class AtomicTagTest extends AbstractDBTest {
 
 	@Test
 	public void testTagCreation() {
-		LanguageRoot languageRoot = data().getMeshRoot().getLanguageRoot();
+		MeshRoot meshRoot = rootService.create();
+		LanguageRoot languageRoot = meshRoot.createLanguageRoot();
 		assertNotNull(languageRoot);
 		Language language = languageRoot.create("Deutsch", "de");
+		Language english = languageRoot.create("English", "en");
 
-		MeshRoot meshRoot = rootService.create();
 		ProjectRoot projectRoot = meshRoot.createProjectRoot();
 		Project project = projectRoot.create("dummy");
 		TagFamilyRoot tagFamilyRoot = project.create();
@@ -45,11 +46,12 @@ public class AtomicTagTest extends AbstractDBTest {
 		Tag tag = tagFamily.create("dummyName");
 		assertNotNull(tag);
 		assertEquals("dummyName", tag.getName());
+		tag.setName("renamed tag");
 
 		Tag reloadedTag = tagService.findByUUID(tag.getUuid());
 		assertNotNull(reloadedTag);
 		assertNotNull(reloadedTag.getI18nProperties());
 		assertEquals(1, reloadedTag.getI18nProperties().size());
-		assertEquals("test content", reloadedTag.getI18nProperties().get(0).getProperty("content"));
+		assertEquals("renamed tag", reloadedTag.getName());
 	}
 }
