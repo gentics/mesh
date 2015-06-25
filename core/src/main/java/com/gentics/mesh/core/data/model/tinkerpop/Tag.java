@@ -28,7 +28,7 @@ public class Tag extends GenericPropertyContainer {
 	}
 
 	public void setName(String name) {
-		getI18nProperties(LanguageService.getLanguageService().getTagDefaultLanguage()).setProperty("name", name);
+		getOrCreateI18nProperties(LanguageService.getLanguageService().getTagDefaultLanguage()).setProperty("name", name);
 	}
 
 	public void removeNode(MeshNode node) {
