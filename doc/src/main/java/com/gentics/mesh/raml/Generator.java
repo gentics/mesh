@@ -40,6 +40,7 @@ import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
+import com.gentics.mesh.core.rest.tag.response.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
@@ -182,16 +183,16 @@ public class Generator {
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {
 
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("tag");
-		schemaReference.setUuid(getUUID());
+		
+		TagFamilyReference tagFamilyReference = new TagFamilyReference();
+		tagFamilyReference.setName("colors");
+		tagFamilyReference.setUuid(getUUID());
 
 		String lang = "en";
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
-		tag.addProperty("name", "Name for language tag de");
 		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		tag.setSchema(schemaReference);
+		tag.setTagFamilyReference(tagFamilyReference);
 		write(tag);
 
 		TagUpdateRequest tagUpdate = new TagUpdateRequest();
@@ -199,14 +200,13 @@ public class Generator {
 		write(tagUpdate);
 
 		TagCreateRequest tagCreate = new TagCreateRequest();
-		tagCreate.setSchema(schemaReference);
-		tagCreate.setTagUuid(getUUID());
+		tagCreate.setTagFamilyReference(tagFamilyReference);
 		write(tagCreate);
 
 		TagResponse tag2 = new TagResponse();
 		tag2.setUuid(getUUID());
-		tag2.addProperty("name", "Name for language tag en");
-		tag2.setSchema(schemaReference);
+		tag2.setName("Name for language tag en");
+		tag2.setTagFamilyReference(tagFamilyReference);
 		tag2.setPermissions("READ", "CREATE");
 
 		TagListResponse tagList = new TagListResponse();
@@ -266,7 +266,7 @@ public class Generator {
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
 
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("content");
+		schemaReference.setName("content");
 		schemaReference.setUuid(getUUID());
 
 		String lang = "de";

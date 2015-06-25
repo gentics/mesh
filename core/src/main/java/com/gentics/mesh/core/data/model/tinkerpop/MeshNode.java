@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
 
@@ -28,6 +29,14 @@ public class MeshNode extends GenericPropertyContainer {
 		unlinkOut(tag, HAS_TAG);
 	}
 
+	public void setSchema(Schema schema) {
+		setLinkOut(schema, HAS_SCHEMA);
+	}
+
+	public Schema getSchema() {
+		return out(HAS_SCHEMA).nextOrDefault(Schema.class, null);
+	}
+
 	public List<? extends MeshNode> getChildren() {
 		return in(HAS_PARENT_NODE).has(MeshNode.class).toListExplicit(MeshNode.class);
 	}
@@ -38,6 +47,13 @@ public class MeshNode extends GenericPropertyContainer {
 
 	public void setParentNode(MeshNode parent) {
 		setLinkOut(parent, HAS_PARENT_NODE);
+	}
+
+	public MeshNode create() {
+		//TODO check whether the mesh node is in fact a container node.
+		MeshNode node = getGraph().addFramedVertex(MeshNode.class);
+		node.setParentNode(this);
+		return node;
 	}
 
 	public NodeResponse transformToRest(TransformationInfo info) {
@@ -106,5 +122,7 @@ public class MeshNode extends GenericPropertyContainer {
 		return null;
 
 	}
+
+
 
 }

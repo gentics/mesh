@@ -114,18 +114,7 @@ public class RoleService extends AbstractMeshService {
 		return fg.v().has(RoleRoot.class).nextOrDefault(RoleRoot.class, null);
 	}
 
-	public Role create(String name) {
-		Role role = fg.addFramedVertex(Role.class);
-		role.setName(name);
-		RoleRoot root = findRoot();
-		root.addRole(role);
-		return role;
-	}
 
-	public RoleRoot createRoot() {
-		RoleRoot root = fg.addFramedVertex(RoleRoot.class);
-		return root;
-	}
 
 	public Role findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);

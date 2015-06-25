@@ -162,17 +162,17 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 
 			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, CREATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 
-				MeshNode rootNodeForContent = rh.result();
-				MeshNode node = nodeService.create();
+				MeshNode parentNode = rh.result();
+				MeshNode node = parentNode.create();
 
-				if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getSchemaName())) {
+				if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getName())) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
 					return;
 				} else {
 
-					Schema schema = schemaService.findByName(requestModel.getSchema().getSchemaName());
+					Schema schema = schemaService.findByName(requestModel.getSchema().getName());
 					if (schema == null) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getSchemaName())));
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getName())));
 						return;
 					} else {
 						node.setSchema(schema);
@@ -199,7 +199,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 					}
 				}
 
-				roleService.addCRUDPermissionOnRole(requestUser, rootNodeForContent, CREATE_PERM, node);
+				roleService.addCRUDPermissionOnRole(requestUser, parentNode, CREATE_PERM, node);
 
 				/* Assign the content to the tag and save the tag */
 				//				rootTagForContent.(content);

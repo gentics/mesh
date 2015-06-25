@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.model.root.GroupRoot;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
@@ -23,8 +25,11 @@ public class GroupTest extends AbstractDBTest {
 
 	@Test
 	public void testUserGroup() {
-		MeshUser user = userService.create("testuser");
-		Group group = groupService.create("test group");
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
+
+		MeshUser user = userRoot.create("testuser");
+		Group group = groupRoot.create("test group");
 		group.addUser(user);
 
 		assertEquals("The group should contain one member.", 1, group.getUsers().size());
@@ -36,8 +41,8 @@ public class GroupTest extends AbstractDBTest {
 	@Test
 	public void testRootGroupNode() {
 		int nGroupsBefore = groupService.findRoot().getGroups().size();
-
-		Group group = groupService.create("test group2");
+		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
+		Group group = groupRoot.create("test group2");
 
 		int nGroupsAfter = groupService.findRoot().getGroups().size();
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);

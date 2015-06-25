@@ -8,11 +8,11 @@ public class SchemaReference {
 	public SchemaReference() {
 	}
 
-	public String getSchemaName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setSchemaName(String name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 

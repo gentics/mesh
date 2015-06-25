@@ -17,7 +17,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 @Component
 public class ProjectService extends AbstractMeshService {
 
-//	private static Logger log = LoggerFactory.getLogger(ProjectService.class);
+	//	private static Logger log = LoggerFactory.getLogger(ProjectService.class);
 
 	@Autowired
 	protected MeshUserService userService;
@@ -54,20 +54,5 @@ public class ProjectService extends AbstractMeshService {
 		return fg.v().has(ProjectRoot.class).nextOrDefault(ProjectRoot.class, null);
 	}
 
-	public Project create(String name) {
-		Project project = fg.addFramedVertex(Project.class);
-		project.setName(name);
-		ProjectRoot root = findRoot();
-		root.addProject(project);
-		return project;
-	}
-
-	public ProjectRoot createRoot() {
-		return fg.addFramedVertex(ProjectRoot.class);
-	}
-
-	public void delete(Project project) {
-		project.getVertex().remove();
-	}
 
 }

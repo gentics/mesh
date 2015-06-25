@@ -2,9 +2,7 @@ package com.gentics.mesh.core.data.model.tinkerpop;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG_ROOT;
-
-import java.util.List;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
@@ -22,12 +20,22 @@ public class Project extends GenericNode {
 		setProperty("name", name);
 	}
 
-	public List<? extends TagFamilyRoot> getTagFamilies() {
-		return out(HAS_TAG_ROOT).has(TagFamilyRoot.class).toListExplicit(TagFamilyRoot.class);
+	public TagFamilyRoot getTagFamilyRoot() {
+		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyRoot.class).nextOrDefaultExplicit(TagFamilyRoot.class, null);
+	}
+
+	public void addTagFamilyRoot(TagFamilyRoot root) {
+		linkOut(root, HAS_TAGFAMILY_ROOT);
+	}
+
+	public TagFamilyRoot create() {
+		TagFamilyRoot root = getGraph().addFramedVertex(TagFamilyRoot.class);
+		addTagFamilyRoot(root);
+		return root;
 	}
 
 	public SchemaRoot getSchemaRoot() {
-		return out(HAS_SCHEMA_ROOT).nextOrDefault(SchemaRoot.class, null);
+		return out(HAS_SCHEMA_ROOT).has(SchemaRoot.class).nextOrDefault(SchemaRoot.class, null);
 	}
 
 	public void setSchemaRoot(SchemaRoot schemaRoot) {
@@ -35,7 +43,7 @@ public class Project extends GenericNode {
 	}
 
 	public MeshNode getRootNode() {
-		return out(HAS_ROOT_NODE).nextOrDefault(MeshNode.class, null);
+		return out(HAS_ROOT_NODE).has(MeshNode.class).nextOrDefault(MeshNode.class, null);
 	}
 
 	public void setRootNode(MeshNode rootNode) {
@@ -48,7 +56,6 @@ public class Project extends GenericNode {
 		projectResponse.setName(getName());
 		projectResponse.setPermissions(user.getPermissionNames(this));
 
-		// MeshNode rootNode = neo4jTemplate.fetch(project.getRootNode());
 		// if (rootNode != null) {
 		// projectResponse.setRootNodeUuid(rootNode.getUuid());
 		// } else {
@@ -58,17 +65,18 @@ public class Project extends GenericNode {
 		return null;
 	}
 
-	// @Override
-	// public Project save(Project project) {
-	// ProjectRoot root = projectRepository.findRoot();
-	// if (root == null) {
-	// throw new NullPointerException("The project root node could not be found.");
-	// }
-	// project = neo4jTemplate.save(project);
-	// root.getProjects().add(project);
-	// neo4jTemplate.save(root);
-	// return project;
-	// return null;
-	// }
+	public MeshNode getOrCreateRootNode() {
+		MeshNode rootNode = getRootNode();
+		if (rootNode == null) {
+			rootNode = getGraph().addFramedVertex(MeshNode.class);
+		}
+		return rootNode;
+
+	}
+
+	public void delete() {
+		//TODO handle this correctly
+		getVertex().remove();
+	}
 
 }

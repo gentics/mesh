@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -52,8 +53,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllTags() throws Exception {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-		Tag noPermTag = tagService.create();
-		//noPermTag = data().addTag("NoPermEN", "NoPermDE");
+		TagFamily basicTagFamily = data().getTagFamily("basic");
+		Tag noPermTag = basicTagFamily.create("noPermTag");
+		//TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 		noPermTag.addProject(data().getProject());
 		assertNotNull(noPermTag.getUuid());
 
@@ -125,27 +127,16 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagByUUIDWithSingleLanguage() throws Exception {
-
-		Tag tag = data().getTag("vehicle");
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
-		assertNull("The returned tag should not have an german name property.", restTag.getProperty("displayName"));
-		assertNotNull("The returned tag should have an english name property.", restTag.getProperty("displayName"));
-		test.assertTag(tag, restTag);
-	}
-
-	@Test
-	public void testReadTagByUUIDWithMultipleLanguages() throws Exception {
+	public void testReadTagByUUIDWithLanguageParameter() throws Exception {
 
 		Tag tag = data().getTag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en,de", 200, "OK");
+		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=de", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
-		assertNotNull(restTag.getProperty("displayName"));
-		//TODO verify that name is english
+		assertNotNull(restTag.getName());
+		assertEquals("Vehicle", restTag.getName());
 	}
 
 	@Test
@@ -163,39 +154,41 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUID() throws Exception {
 
 		Tag tag = data().getTag("vehicle");
-
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setUuid(tag.getUuid());
-		request.addProperty("displayName", "new Name");
+		request.setName("new Name");
 
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		System.out.println(response);
 		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		String name = tag.getDisplayName(data().getEnglish());
+		System.out.println(response);
+		String name = tag.getName();
 		assertNotNull("The name of the tag should be loaded.", name);
-		String restName = tagResponse.getProperty("displayName");
-		Thread.sleep(100000);
+		String restName = tagResponse.getName();
 		assertNotNull("The english displayName should be listed in the rest response since we requested the english tag", restName);
 		assertEquals(name, restName);
 
 		// 2. Setup the request object
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		final String newName = "new Name";
-		tagUpdateRequest.addProperty("displayName", newName);
-		assertEquals(newName, tagUpdateRequest.getProperty("displayName"));
+		tagUpdateRequest.setName(newName);
+		assertEquals(newName, tagUpdateRequest.getName());
 
 		// 3. Send the request to the server
 		// TODO test with no ?lang query parameter
 		String requestJson = JsonUtils.toJson(request);
 		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
+		System.out.println(response);
+
 		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
+		System.out.println(response);
+
 		tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		assertEquals(request.getProperty("displayName"), tagResponse.getProperty("displayName"));
+		assertEquals(request.getName(), tagResponse.getName());
 		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 	}
 
@@ -208,7 +201,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setUuid(tag.getUuid());
-		request.addProperty("name", "new Name");
+		request.setName("new Name");
 
 		String requestJson = new ObjectMapper().writeValueAsString(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden", requestJson);
@@ -218,8 +211,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
 
-		String name = tag.getName(data().getEnglish());
-		assertEquals(name, tagUpdateRequest.getProperty("name"));
+		String name = tag.getName();
+		assertEquals(name, tagUpdateRequest.getName());
 	}
 
 	// Delete Tests

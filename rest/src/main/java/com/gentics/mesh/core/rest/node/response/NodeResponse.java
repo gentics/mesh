@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.common.response.AbstractPropertyContainerModel;
+import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 
 public class NodeResponse extends AbstractPropertyContainerModel {
@@ -18,6 +19,8 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 
 	private List<String> children;
 
+	private SchemaReference schema;
+
 	private boolean isContainer;
 
 	private String version;
@@ -25,7 +28,6 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 	private String displayField;
 
 	private String segmentField;
-	
 
 	public NodeResponse() {
 	}
@@ -40,6 +42,14 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 
 	public List<TagResponse> getTags() {
 		return tags;
+	}
+
+	public void setSchema(SchemaReference schema) {
+		this.schema = schema;
+	}
+
+	public SchemaReference getSchema() {
+		return schema;
 	}
 
 	public List<String> getChildren() {

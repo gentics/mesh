@@ -46,7 +46,7 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 				List<TagCloudResult> res = tagCloudService.getTagCloudInfo();
 				for (TagCloudResult current : res) {
 					TagCloudEntry entry = new TagCloudEntry();
-					String name = current.getTag().getName(language);
+					String name = current.getTag().getName();
 					entry.setName(name);
 					// TODO determine link
 					entry.setLink("TBD");

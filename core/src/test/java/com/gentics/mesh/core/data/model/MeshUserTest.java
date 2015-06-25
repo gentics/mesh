@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
-import static org.junit.Assert.assertArrayEquals;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
@@ -40,7 +41,8 @@ public class MeshUserTest extends AbstractDBTest {
 		final String LASTNAME = "doe";
 		final String PASSWDHASH = "RANDOM";
 
-		MeshUser user = userService.create(USERNAME);
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser user = userRoot.create(USERNAME);
 		user.setEmailAddress(EMAIL);
 		user.setFirstname(FIRSTNAME);
 		user.setLastname(LASTNAME);
@@ -62,8 +64,9 @@ public class MeshUserTest extends AbstractDBTest {
 	@Test
 	public void testUserRoot() {
 		int nUserBefore = userService.findRoot().getUsers().size();
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 
-		MeshUser user = userService.create("dummy12345");
+		MeshUser user = userRoot.create("dummy12345");
 
 		int nUserAfter = userService.findRoot().getUsers().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
@@ -77,19 +80,20 @@ public class MeshUserTest extends AbstractDBTest {
 
 		assertTrue(user.hasPermission(language, READ_PERM));
 	}
-	
+
 	@Test
 	public void testGetPermissions() {
 		MeshUser user = info.getUser();
 		Language language = data().getEnglish();
-		String[] perms = {"UPDATE_PERM","CREATE_PERM", "DELETE_PERM", "READ_PERM"};
-		assertArrayEquals("Permissions do not match", perms,user.getPermissionNames(language));
+		String[] perms = { "UPDATE_PERM", "CREATE_PERM", "DELETE_PERM", "READ_PERM" };
+		assertArrayEquals("Permissions do not match", perms, user.getPermissionNames(language));
 	}
 
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 
-		MeshUser extraUser = userService.create("extraUser");
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser extraUser = userRoot.create("extraUser");
 		Group group = info.getGroup();
 		Role role = info.getRole();
 		group.addUser(extraUser);

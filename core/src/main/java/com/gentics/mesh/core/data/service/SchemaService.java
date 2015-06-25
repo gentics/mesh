@@ -105,45 +105,12 @@ public class SchemaService extends AbstractMeshService {
 		return fg.v().has("name", name).has(Schema.class).nextOrDefault(Schema.class, null);
 	}
 
-	public Schema create(String name) {
-		Schema schema = fg.addFramedVertex(Schema.class);
-		schema.setName(name);
-		SchemaRoot root = findRoot();
-		root.addSchema(schema);
-		return schema;
-	}
 
 	public SchemaRoot createRoot() {
 		SchemaRoot root = fg.addFramedVertex(SchemaRoot.class);
 		return root;
 	}
 
-	public BasicPropertyType create(String key, PropertyType type) {
-		BasicPropertyType schemaType = fg.addFramedVertex(BasicPropertyType.class);
-		schemaType.setKey(key);
-		schemaType.setType(type);
-		return schemaType;
-	}
-
-	public MicroPropertyType createMicroPropertyTypeSchema(String key) {
-		MicroPropertyType type = fg.addFramedVertex(MicroPropertyType.class);
-		type.setKey(key);
-		type.setType(PropertyType.MICROSCHEMA);
-		return type;
-	}
-
-	public BasicPropertyType createBasicPropertyTypeSchema(String key, PropertyType type) {
-		BasicPropertyType propertType = fg.addFramedVertex(BasicPropertyType.class);
-		propertType.setKey(key);
-		propertType.setType(type);
-		return propertType;
-	}
-
-	public BasicPropertyType createListPropertyTypeSchema(String key) {
-		BasicPropertyType type = fg.addFramedVertex(BasicPropertyType.class);
-		type.setKey(key);
-		return type;
-	}
 
 	public Schema findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);

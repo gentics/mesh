@@ -1,12 +1,21 @@
 package com.gentics.mesh.core.rest.tag.response;
 
-import com.gentics.mesh.core.rest.common.response.AbstractPropertyContainerModel;
+import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
+import com.gentics.mesh.core.rest.user.response.UserResponse;
 
-public class TagResponse extends AbstractPropertyContainerModel {
+public class TagResponse extends AbstractRestModel {
 
 	private TagFamilyReference tagFamily;
 
-	private String value;
+	private String name;
+
+	private UserResponse creator;
+	private long created;
+
+	private UserResponse editor;
+	private long edited;
+
+	private String[] permissions = {};
 
 	public TagResponse() {
 	}
@@ -15,16 +24,60 @@ public class TagResponse extends AbstractPropertyContainerModel {
 		return tagFamily;
 	}
 
-	public void setTagFamily(TagFamilyReference tagFamily) {
+	public void setTagFamilyReference(TagFamilyReference tagFamily) {
 		this.tagFamily = tagFamily;
 	}
 
-	public String getValue() {
-		return value;
+	public TagFamilyReference getTagFamilyReference() {
+		return tagFamily;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public UserResponse getCreator() {
+		return creator;
+	}
+
+	public void setCreator(UserResponse author) {
+		this.creator = author;
+	}
+
+	public UserResponse getEditor() {
+		return editor;
+	}
+
+	public void setEditor(UserResponse editor) {
+		this.editor = editor;
+	}
+
+	public long getEdited() {
+		return edited;
+	}
+
+	public void setEdited(long edited) {
+		this.edited = edited;
+	}
+
+	public long getCreated() {
+		return created;
+	}
+
+	public void setCreated(long created) {
+		this.created = created;
+	}
+
+	public String[] getPermissions() {
+		return permissions;
+	}
+
+	public void setPermissions(String... permissions) {
+		this.permissions = permissions;
 	}
 
 }

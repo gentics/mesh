@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
@@ -118,8 +119,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			Future<Schema> schemaCreated = Future.future();
 			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
-
-				Schema schema = schemaService.create(requestModel.getName());
+				SchemaRoot root = project.getSchemaRoot();
+				Schema schema = root.create(requestModel.getName());
 				schema.setDescription(requestModel.getDescription());
 				schema.setDisplayName(requestModel.getDisplayName());
 
@@ -127,7 +128,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					// TODO validate field?
 					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
 					String key = restPropSchema.getKey();
-					BasicPropertyType propSchema = schemaService.createBasicPropertyTypeSchema(key, type);
+					BasicPropertyType propSchema = schema.createBasicPropertyTypeSchema(key, type);
 					propSchema.setDescription(restPropSchema.getDesciption());
 					propSchema.setType(type);
 					schema.addPropertyTypeSchema(propSchema);

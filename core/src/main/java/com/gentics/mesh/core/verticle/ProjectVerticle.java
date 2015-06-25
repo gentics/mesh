@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -101,15 +102,14 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			Future<Project> projectCreated = Future.future();
 			MeshRoot meshRoot = meshRootService.findRoot();
 
-			rcs.hasPermission(rc, meshRoot, CREATE_PERM, rh -> {
+			rcs.hasPermission(rc, meshRoot.getProjectRoot(), CREATE_PERM, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
 					return;
 				}
 
-				Project project = projectService.create(requestModel.getName());
-
-				project.setRootNode(nodeService.create());
+				ProjectRoot projectRoot = meshRoot.getProjectRoot();
+				Project project = projectRoot.create(requestModel.getName());
 				project.setCreator(requestUser);
 
 				try {
@@ -186,7 +186,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				Project project = rh.result();
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);
-				projectService.delete(project);
+				project.delete();
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());

@@ -18,6 +18,7 @@ public class MeshRelationships {
 	//Tags
 	public static final String HAS_TAG_ROOT = "HAS_TAG_ROOT";
 	public static final String HAS_TAGFAMILY_ROOT = "HAS_TAGFAMILY_ROOT";
+	public static final String HAS_TAG_FAMILY = "HAS_TAG_FAMILY";
 	public static final String HAS_TAG = "HAS_TAG";
 
 	//Misc
@@ -36,9 +37,11 @@ public class MeshRelationships {
 	// Schemas
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
-	public static final String HAS_OBJECT_SCHEMA = "HAS_OBJECT_SCHEMA";
+	public static final String HAS_SCHEMA = "HAS_OBJECT_SCHEMA";
 	public static final String HAS_MICRO_SCHEMA_ROOT = "HAS_MICRO_SCHEMA_ROOT";
-	public static final String HAS_PROPERTY_TYPE_SCHEMA = "HAS_PROPERTY_TYPE_SCHEMA";
+	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
+
+	// Roots
 	public static final String HAS_ROLE_ROOT = "HAS_ROLE_ROOT";
 	public static final String HAS_USER_ROOT = "HAS_USER_ROOT";
 	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";

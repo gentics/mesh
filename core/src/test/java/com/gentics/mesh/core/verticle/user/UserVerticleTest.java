@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
@@ -67,16 +68,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllUsers() throws Exception {
+		UserRoot root = data().getMeshRoot().getUserRoot();
 
-		MeshUser user3 = userService.create("testuser_3");
-		//		try (Transaction tx = graphDb.beginTx()) {
+		MeshUser user3 = root.create("testuser_3");
 		user3.setLastname("should_not_be_listed");
 		user3.setFirstname("should_not_be_listed");
 		user3.setEmailAddress("should_not_be_listed");
 		info.getGroup().addUser(user3);
-		// Don't grant permissions to user3
-		//			tx.success();
-		//		}
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
@@ -221,12 +219,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		MeshUser user = info.getUser();
 
 		// Create an user with a conflicting username
-		MeshUser conflictingUser = userService.create("existing_username");
-		//		try (Transaction tx = graphDb.beginTx()) {
-
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser conflictingUser = userRoot.create("existing_username");
 		info.getGroup().addUser(conflictingUser);
-		//			tx.success();
-		//		}
 
 		UserUpdateRequest newUser = new UserUpdateRequest();
 		newUser.setUsername("existing_username");
@@ -244,13 +239,11 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		MeshUser conflictingUser = userService.create("existing_username");
-		//		try (Transaction tx = graphDb.beginTx()) {
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser conflictingUser = userRoot.create("existing_username");
 		info.getGroup().addUser(conflictingUser);
 		// Add update permission to group in order to create the user in that group
 		info.getRole().addPermissions(info.getGroup(), CREATE_PERM);
-		//			tx.success();
-		//		}
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
@@ -385,13 +378,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		MeshUser user = userService.create("extraUser");
-		//		try (Transaction tx = graphDb.beginTx()) {
+
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser user = userRoot.create("extraUser");
 		info.getRole().addPermissions(user, UPDATE_PERM);
 		info.getRole().addPermissions(user, CREATE_PERM);
 		info.getRole().addPermissions(user, READ_PERM);
-		//			tx.success();
-		//		}
 		assertNotNull(user.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
@@ -407,7 +399,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUID() throws Exception {
-		MeshUser extraUser = userService.create("extraUser");
+
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, DELETE_PERM);
 		assertNotNull(extraUser.getUuid());
 

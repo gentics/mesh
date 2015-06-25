@@ -182,7 +182,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				MeshUser user = userService.create(requestModel.getUsername());
+				MeshUser user = parentGroup.createUser(requestModel.getUsername());
 				user.setFirstname(requestModel.getFirstname());
 				user.setLastname(requestModel.getLastname());
 				user.setEmailAddress(requestModel.getEmailAddress());

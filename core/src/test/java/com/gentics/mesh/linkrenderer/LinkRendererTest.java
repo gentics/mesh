@@ -38,21 +38,16 @@ public class LinkRendererTest extends AbstractDBTest {
 
 		Language german = data().getGerman();
 		Language english = data().getEnglish();
+		MeshNode parentNode = data().getFolder("2015");
 
 		// Create some dummy content
-		MeshNode content = nodeService.create();
-		//		try (Transaction tx = graphDb.beginTx()) {
-		content.setDisplayName(german, "german name");
-		content.setName(german, "german.html");
-		//			tx.success();
-		//		}
+		MeshNode content = parentNode.create();
+		content.setI18NProperty(german, "displayName", "german name");
+		content.setI18NProperty(german, "name", "german.html");
 
-		MeshNode content2 = nodeService.create();
-		//		try (Transaction tx = graphDb.beginTx()) {
-		content2.setDisplayName(english, "content 2 english");
-		content2.setName(english, "english.html");
-		//			tx.success();
-		//		}
+		MeshNode content2 = parentNode.create();
+		content2.setI18NProperty(english, "displayName", "content 2 english");
+		content2.setI18NProperty(english, "name", "english.html");
 
 		LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
 		String out = replacer.replace("dgasd");

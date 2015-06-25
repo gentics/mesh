@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
@@ -55,7 +56,8 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testGetUsersByGroup() throws Exception {
-		MeshUser extraUser = userService.create("extraUser");
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser extraUser = userRoot.create("extraUser");
 		info.getGroup().addUser(extraUser);
 		info.getRole().addPermissions(extraUser, READ_PERM);
 
@@ -73,8 +75,8 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
-
-		MeshUser extraUser = helper.addUser("extraUser", info.getRole(), READ_PERM);
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
 		String response = request(info, POST, "/api/v1/groups/bogus/users/" + extraUser.getUuid(), 404, "Not Found");
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
@@ -83,9 +85,8 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
 		Group group = info.getGroup();
-
-		MeshUser extraUser = helper.addUser("extraUser", info.getRole(), READ_PERM);
-
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
 		String response = request(info, POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 200, "OK");
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		test.assertGroup(group, restGroup);
@@ -96,8 +97,8 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
 		Group group = info.getGroup();
-
-		MeshUser extraUser = userService.create("extraUser");
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, READ_PERM);
 		info.getRole().revokePermissions(group, UPDATE_PERM);
 
@@ -110,8 +111,8 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
 		Group group = info.getGroup();
-
-		MeshUser extraUser = userService.create("extraUser");
+		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		MeshUser extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, DELETE_PERM);
 
 		String response = request(info, POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");

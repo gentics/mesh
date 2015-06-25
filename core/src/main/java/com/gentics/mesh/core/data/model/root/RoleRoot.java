@@ -14,9 +14,21 @@ public class RoleRoot extends MeshVertex {
 	}
 
 	public void addRole(Role role) {
-		addFramedEdge(HAS_ROLE, role);
+		linkOut(role, HAS_ROLE);
+	}
+
+	public void removeRole(Role role) {
+		//TODO delete the role?  unlink from all groups? how is ferma / blueprint handling this. Neo4j would explode when trying to remove a node that still has connecting edges.
+		unlinkOut(role, HAS_ROLE);
 	}
 
 	// TODO unique index
+
+	public Role create(String name) {
+		Role role = getGraph().addFramedVertex(Role.class);
+		role.setName(name);
+		addRole(role);
+		return role;
+	}
 
 }

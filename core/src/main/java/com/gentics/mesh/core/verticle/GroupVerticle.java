@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
@@ -322,8 +323,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			Future<Group> groupCreated = Future.future();
 
 			MeshRoot root = meshRootService.findRoot();
-			rcs.hasPermission(rc, root.getGroupRoot(), CREATE_PERM, rh -> {
-				Group group = groupService.create(requestModel.getName());
+			GroupRoot groupRoot = root.getGroupRoot();
+			rcs.hasPermission(rc, groupRoot, CREATE_PERM, rh -> {
+				Group group = groupRoot.create(requestModel.getName());
 				roleService.addCRUDPermissionOnRole(requestUser, root.getGroupRoot(), CREATE_PERM, group);
 				groupCreated.complete(group);
 			}, tch -> {

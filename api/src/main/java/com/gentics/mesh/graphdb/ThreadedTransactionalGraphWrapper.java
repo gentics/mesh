@@ -11,10 +11,6 @@ public abstract class ThreadedTransactionalGraphWrapper implements Transactional
 
 	TransactionalGraph graph;
 
-	public ThreadedTransactionalGraphWrapper() {
-
-	}
-
 	@Override
 	public Features getFeatures() {
 		return graph.getFeatures();

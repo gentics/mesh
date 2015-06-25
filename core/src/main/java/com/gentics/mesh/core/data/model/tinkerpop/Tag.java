@@ -1,23 +1,34 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
+
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
-import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.model.root.TagFamily;
+import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG_ROOT;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import com.gentics.mesh.paging.PagingInfo;
 
 public class Tag extends GenericPropertyContainer {
 
+	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
+
 	public List<? extends MeshNode> getNodes() {
 		return in(HAS_TAG).toList(MeshNode.class);
+	}
+
+	public String getName() {
+		return getI18nProperties(LanguageService.getLanguageService().getTagDefaultLanguage()).getProperty("name");
+	}
+
+	public void setName(String name) {
+		getI18nProperties(LanguageService.getLanguageService().getTagDefaultLanguage()).setProperty("name", name);
 	}
 
 	public void removeNode(MeshNode node) {
@@ -32,12 +43,12 @@ public class Tag extends GenericPropertyContainer {
 		return restTag;
 	}
 
-	public void setTagFamilyRoot(TagFamilyRoot root) {
+	public void setTagFamilyRoot(TagFamily root) {
 		linkOut(root, HAS_TAGFAMILY_ROOT);
 	}
 
-	public TagFamilyRoot getTagFamilyRoot() {
-		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyRoot.class).nextOrDefaultExplicit(TagFamilyRoot.class, null);
+	public TagFamily getTagFamilyRoot() {
+		return out(HAS_TAGFAMILY_ROOT).has(TagFamily.class).nextOrDefaultExplicit(TagFamily.class, null);
 	}
 
 	public void delete() {

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
@@ -93,16 +94,17 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadProjectList() throws Exception {
 
+		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
 		info.getRole().addPermissions(data().getProject(), READ_PERM);
 
 		final int nProjects = 142;
 		Project noPermProject;
 		for (int i = 0; i < nProjects; i++) {
-			Project extraProject = projectService.create("extra_project_" + i);
+			Project extraProject = projectRoot.create("extra_project_" + i);
 			extraProject.setRootNode(data().getProject().getRootNode());
 			info.getRole().addPermissions(extraProject, READ_PERM);
 		}
-		noPermProject = projectService.create("no_perm_project");
+		noPermProject = projectRoot.create("no_perm_project");
 
 		// Don't grant permissions to no perm project
 

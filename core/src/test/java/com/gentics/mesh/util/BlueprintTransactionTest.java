@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -25,9 +26,10 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 	public void testTransaction() throws InterruptedException {
 		AtomicInteger i = new AtomicInteger(0);
 
+		UserRoot root = data().getMeshRoot().getUserRoot();
 		int e = i.incrementAndGet();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNotNull(userService.create("testuser" + e));
+			assertNotNull(root.create("testuser" + e));
 			assertNotNull(userService.findByUsername("testuser" + e));
 			tx.success();
 		}
@@ -36,7 +38,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				assertNotNull(userService.create("testuser" + u));
+				assertNotNull(root.create("testuser" + u));
 				assertNotNull(userService.findByUsername("testuser" + u));
 				tx.failure();
 			}

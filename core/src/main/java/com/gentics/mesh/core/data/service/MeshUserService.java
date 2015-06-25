@@ -55,18 +55,6 @@ public class MeshUserService extends AbstractMeshService {
 		return fg.v().has(UserRoot.class).nextOrDefault(UserRoot.class, null);
 	}
 
-	public MeshUser create(String username) {
-		MeshUser user = fg.addFramedVertex(MeshUser.class);
-		user.setUsername(username);
-		UserRoot root = findRoot();
-		root.addUser(user);
-		return user;
-	}
-
-	public UserRoot createRoot() {
-		UserRoot root = fg.addFramedVertex(UserRoot.class);
-		return root;
-	}
 
 	public MeshUser findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);

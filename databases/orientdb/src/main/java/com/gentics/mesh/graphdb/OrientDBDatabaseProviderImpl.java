@@ -9,6 +9,10 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 public class OrientDBDatabaseProviderImpl implements DatabaseServiceProvider {
 
 	OrientGraphFactory factory = new OrientGraphFactory("memory:tinkerpop");//.setupPool(5, 100);
+	
+	public OrientDBDatabaseProviderImpl() {
+		
+	}
 
 	@Override
 	public FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) {

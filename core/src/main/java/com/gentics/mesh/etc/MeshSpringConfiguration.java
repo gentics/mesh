@@ -56,7 +56,7 @@ public class MeshSpringConfiguration {
 
 		String className = configuration.getDatabaseProviderClass();
 
-		//className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
+		className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();

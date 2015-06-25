@@ -21,9 +21,8 @@ public class LanguageService extends AbstractMeshService {
 		return instance;
 	}
 
-	
 	public Language findByName(String name) {
-		return fg.v().has("name", name).nextOrDefault(Language.class,null);
+		return fg.v().has("name", name).nextOrDefault(Language.class, null);
 	}
 
 	/**
@@ -34,6 +33,10 @@ public class LanguageService extends AbstractMeshService {
 	 */
 	public Language findByLanguageTag(String languageTag) {
 		return fg.v().has("languageTag", languageTag).nextOrDefault(Language.class, null);
+	}
+
+	public Language getTagDefaultLanguage() {
+		return findByLanguageTag("en");
 	}
 
 	//	@Override

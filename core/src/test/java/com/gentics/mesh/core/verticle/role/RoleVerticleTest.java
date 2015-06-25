@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
@@ -139,7 +140,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testReadExtraRoleByUUID() throws Exception {
 		UserInfo info = data().getUserInfo();
 
-		Role extraRole = roleService.create("extra role");
+		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role");
 		info.getGroup().addRole(extraRole);
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
@@ -154,8 +156,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadExtraRoleByUUIDWithMissingPermission() throws Exception {
 		UserInfo info = data().getUserInfo();
+		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
 
-		Role extraRole = roleService.create("extra role");
+		Role extraRole = roleRoot.create("extra role");
 		info.getGroup().addRole(extraRole);
 
 		// Revoke read permission from the role
@@ -181,24 +184,22 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadRoles() throws Exception {
+		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
 
-		Role noPermRole = roleService.create("no_perm_role");
+		Role noPermRole = roleRoot.create("no_perm_role");
 		final int nRoles = 21;
-		//		try (Transaction tx = graphDb.beginTx()) {
 
 		info.getRole().addPermissions(info.getGroup(), READ_PERM);
 
 		// Create and save some roles
 		for (int i = 0; i < nRoles; i++) {
-			Role extraRole = roleService.create("extra role " + i);
+			Role extraRole = roleRoot.create("extra role " + i);
 			info.getGroup().addRole(extraRole);
 			info.getRole().addPermissions(extraRole, READ_PERM);
 		}
 
 		// Role with no permission
 		info.getGroup().addRole(noPermRole);
-		//			tx.success();
-		//		}
 		// Test default paging parameters
 		String response = request(info, GET, "/api/v1/roles/", 200, "OK");
 		RoleListResponse restResponse = JsonUtils.readValue(response, RoleListResponse.class);
@@ -256,7 +257,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		Role extraRole = roleService.create("extra role");
+
+		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role");
 		info.getGroup().addRole(extraRole);
 
 		info.getRole().addPermissions(extraRole, UPDATE_PERM);
@@ -295,7 +298,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteRoleByUUID() throws Exception {
-		Role extraRole = roleService.create("extra role");
+		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role");
 		info.getGroup().addRole(extraRole);
 		info.getRole().addPermissions(extraRole, DELETE_PERM);
 

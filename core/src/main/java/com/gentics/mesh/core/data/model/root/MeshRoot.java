@@ -35,7 +35,7 @@ public class MeshRoot extends MeshVertex {
 		linkOut(groupRoot, HAS_GROUP_ROOT);
 	}
 
-	public SchemaRoot getObjectSchemaRoot() {
+	public SchemaRoot getSchemaRoot() {
 		return out(HAS_SCHEMA_ROOT).has(SchemaRoot.class).nextOrDefault(SchemaRoot.class, null);
 	}
 
@@ -58,5 +58,28 @@ public class MeshRoot extends MeshVertex {
 	public void setProjectRoot(ProjectRoot projectRoot) {
 		linkOut(projectRoot, HAS_PROJECT_ROOT);
 	}
+
+	public ProjectRoot createProjectRoot() {
+		return getGraph().addFramedVertex(ProjectRoot.class);
+	}
+
+	public GroupRoot createGroupRoot() {
+		GroupRoot root = getGraph().addFramedVertex(GroupRoot.class);
+		return root;
+	}
+	
+	public RoleRoot createRoleRoot() {
+		RoleRoot root = getGraph().addFramedVertex(RoleRoot.class);
+		return root;
+	}
+	
+	
+
+	public UserRoot createUserRoot() {
+		UserRoot root = getGraph().addFramedVertex(UserRoot.class);
+		linkOut(root, HAS_USER_ROOT);
+		return root;
+	}
+
 
 }

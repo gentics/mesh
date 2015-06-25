@@ -74,10 +74,9 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	 */
 	private Navigation getNavigation(Tag rootTag) {
 		// TODO handle language
-		Language language = null;
 		Navigation nav = new Navigation();
 		NavigationElement rootElement = new NavigationElement();
-		String name = rootTag.getName(language);
+		String name = rootTag.getName();
 		rootElement.setName(name);
 		rootElement.setType(NavigationElementType.TAG);
 		nav.setRoot(rootElement);

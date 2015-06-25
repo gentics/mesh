@@ -19,6 +19,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.root.ProjectRoot;
+import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.ProjectService;
@@ -73,7 +75,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Schema schema = schemaService.findByUUID(responseObject.getUuid());
 		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
-		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
+		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
 	}
 
@@ -97,7 +99,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		// Verify that the object was created
 		Schema schema = schemaService.findByUUID(restSchema.getUuid());
 		test.assertSchema(schema, restSchema);
-		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypeSchemas().size());
+		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + restSchema.getUuid(), 200, "OK");
 		expectMessageResponse("schema_deleted", response, restSchema.getName());
@@ -108,10 +110,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllSchemaList() throws Exception {
+
+		SchemaRoot schemaRoot = data().getMeshRoot().getSchemaRoot();
 		final int nSchemas = 22;
-		Schema noPermSchema = schemaService.create("no_perm_schema");
+		Schema noPermSchema = schemaRoot.create("no_perm_schema");
 		for (int i = 0; i < nSchemas; i++) {
-			Schema extraSchema = schemaService.create("extra_schema_" + i);
+			Schema extraSchema = schemaRoot.create("extra_schema_" + i);
 			info.getRole().addPermissions(extraSchema, READ_PERM);
 		}
 		// Don't grant permissions to no perm schema
@@ -255,8 +259,8 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddSchemaToProjectWithPerm() throws Exception {
 		Schema schema = data().getSchema("content");
-
-		Project extraProject = projectService.create("extraProject");
+		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
+		Project extraProject = projectRoot.create("extraProject");
 
 		// Add only read perms
 		info.getRole().addPermissions(schema, READ_PERM);
@@ -275,8 +279,8 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testAddSchemaToProjectWithoutPerm() throws Exception {
 		Schema schema = data().getSchema("content");
 		Project project = data().getProject();
-
-		Project extraProject = projectService.create("extraProject");
+		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
+		Project extraProject = projectRoot.create("extraProject");
 		// Add only read perms
 		info.getRole().addPermissions(schema, READ_PERM);
 		info.getRole().addPermissions(project, READ_PERM);

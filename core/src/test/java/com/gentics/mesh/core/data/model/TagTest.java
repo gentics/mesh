@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
@@ -49,42 +50,41 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testLocalizedFolder() {
-		Language german = languageService.findByLanguageTag("de");
-
-		Tag tag = tagService.create();
-		tag.setDisplayName(german, GERMAN_NAME);
+	public void testTagCreation() {
+		TagFamily root = data().getTagFamily("basic");
+		Tag tag = root.create(GERMAN_NAME);
 		assertNotNull(tag.getId());
 		tag = tagService.findOne(tag.getId());
 		assertNotNull("The folder could not be found.", tag);
-		String name = tag.getDisplayName(german);
+		String name = tag.getName();
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
 	}
 
 	@Test
 	public void testSimpleTag() {
-		Tag tag = tagService.create();
-		tag.setProperty(data().getEnglish(), "name", "test");
+		TagFamily root = data().getTagFamily("basic");
+		Tag tag = root.create("test");
+		assertEquals("test", tag.getName());
+		tag.setI18NProperty(data().getEnglish(), "name", "test");
 	}
 
 	@Test
 	public void testNodes() {
 
-		Tag tag = tagService.create();
-
-		Language english = languageService.findByLanguageTag("en");
-
-		tag.setDisplayName(english, ENGLISH_NAME);
+		Language english = data().getEnglish();
+		TagFamily root = data().getTagFamily("basic");
+		Tag tag = root.create(ENGLISH_NAME);
 		tag = tagService.findOne(tag.getId());
 		assertNotNull(tag);
 
 		final String GERMAN_TEST_FILENAME = "german.html";
-		MeshNode node = nodeService.create();
+		MeshNode parentNode = data().getFolder("2015");
+		MeshNode node = parentNode.create();
 
 		Language german = languageService.findByLanguageTag("de");
 
-		node.setDisplayName(german, GERMAN_TEST_FILENAME);
-		node.setName(german, "german node name");
+		node.setI18NProperty(german, "displayName", GERMAN_TEST_FILENAME);
+		node.setI18NProperty(german, "name", "german node name");
 
 		// Assign the tag to the node
 		node.addTag(tag);
@@ -95,7 +95,7 @@ public class TagTest extends AbstractDBTest {
 		MeshNode contentFromTag = tag.getNodes().iterator().next();
 		assertNotNull(contentFromTag);
 		assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
-		String filename = contentFromTag.getDisplayName(german);
+		String filename = contentFromTag.getI18nProperty(german, "displayName");
 		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 		// Remove the file/content and check whether the content was really removed
@@ -105,26 +105,13 @@ public class TagTest extends AbstractDBTest {
 
 	}
 
-	//	@Test
-	//	@SuppressWarnings("unchecked")
-	//	public void testQueryBuilding() {
-	//		String query = "MATCH (n:Tag) return n";
-	//		Result<Map<String, Object>> result = neo4jTemplate.query(query, Collections.emptyMap());
-	//		for (Map<String, Object> r : result.slice(1, 3)) {
-	//			Tag tag = (Tag) neo4jTemplate.getDefaultConverter().convert(r.get("n"), Tag.class);
-	//			System.out.println(tag.getUuid());
-	//		}
-	//	}
-
 	@Test
 	public void testNodeTagging() {
-		Language german = languageService.findByLanguageTag("de");
 		final String TEST_TAG_NAME = "testTag";
+		TagFamily tagFamily = data().getTagFamily("basic");
+		Tag tag = tagFamily.create(TEST_TAG_NAME);
 
 		MeshNode node = data().getFolder("news");
-
-		Tag tag = tagService.create();
-		tag.setDisplayName(german, TEST_TAG_NAME);
 		node.addTag(tag);
 
 		MeshNode reloadedNode = nodeService.findByUUID(node.getUuid());

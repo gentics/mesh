@@ -97,8 +97,8 @@ public class RestAssert {
 
 		}
 
-		String schemaName = request.getSchema().getSchemaName();
-		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restNode.getSchema().getSchemaName());
+		String schemaName = request.getSchema().getName();
+		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restNode.getSchema().getName());
 		assertEquals(request.getOrder(), restNode.getOrder());
 		String tagUuid = request.getParentNodeUuid();
 		// TODO how to match the parent tag?
@@ -134,7 +134,7 @@ public class RestAssert {
 		Schema schema = node.getSchema();
 		//		schema = neo4jTemplate.fetch(schema);
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
-		assertEquals(schema.getName(), readValue.getSchema().getSchemaName());
+		assertEquals(schema.getName(), readValue.getSchema().getName());
 		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
 
 		assertNotNull(readValue.getCreator());

@@ -19,4 +19,11 @@ public class GroupRoot extends MeshVertex {
 		linkOut(group, HAS_GROUP);
 	}
 
+	public Group create(String name) {
+		Group group = getGraph().addFramedVertex(Group.class);
+		group.setName(name);
+		addGroup(group);
+		return group;
+	}
+
 }

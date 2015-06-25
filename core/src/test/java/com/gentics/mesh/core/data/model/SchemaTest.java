@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.test.AbstractDBTest;
@@ -59,9 +60,10 @@ public class SchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testObjectSchemaRootNode() {
-		int nSchemasBefore = schemaService.findRoot().getSchemas().size();
-		assertNotNull(schemaService.create("test1235"));
-		int nSchemasAfter = schemaService.findRoot().getSchemas().size();
+		SchemaRoot root = data().getMeshRoot().getSchemaRoot();
+		int nSchemasBefore = root.getSchemas().size();
+		assertNotNull(root.create("test1235"));
+		int nSchemasAfter = root.getSchemas().size();
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);
 	}
 }

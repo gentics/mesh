@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Group;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.service.GroupService;
@@ -45,8 +46,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadRolesByGroup() throws Exception {
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		Role extraRole = root.create("extraRole");
 
-		Role extraRole = roleService.create("extraRole");
 		info.getGroup().addRole(extraRole);
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
@@ -65,7 +67,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddRoleToGroup() throws Exception {
-		Role extraRole = roleService.create("extraRole");
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		Role extraRole = root.create("extraRole");
+
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		assertEquals(1, info.getGroup().getRoles().size());
@@ -89,11 +93,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddNoPermissionRoleToGroup() throws Exception {
-		Role extraRole = roleService.create("extraRole");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		//Don't grant read permission on role
-		//			tx.success();
-		//		}
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		Role extraRole = root.create("extraRole");
 
 		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
@@ -106,7 +107,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveRoleFromGroup() throws Exception {
-		Role extraRole = roleService.create("extraRole");
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		Role extraRole = root.create("extraRole");
+
 		info.getGroup().addRole(extraRole);
 		info.getRole().addPermissions(extraRole, READ_PERM);
 		assertEquals(2, info.getGroup().getRoles().size());
@@ -123,8 +126,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroupWithPerm() throws Exception {
 		Group group = info.getGroup();
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
 
-		Role extraRole = roleService.create("extraRole");
+		Role extraRole = root.create("extraRole");
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
@@ -138,8 +142,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
 		Group group = info.getGroup();
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
 
-		Role extraRole = roleService.create("extraRole");
+		Role extraRole = root.create("extraRole");
 
 		info.getRole().revokePermissions(group, UPDATE_PERM);
 
@@ -161,13 +166,11 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		Group group = info.getGroup();
 
-		Role extraRole = roleService.create("extraRole");
-		//		try (Transaction tx = graphDb.beginTx()) {
+		Role extraRole = root.create("extraRole");
 		group.addRole(extraRole);
-		//			tx.success();
-		//		}
 
 		assertNotNull(group.getUuid());
 		assertNotNull(extraRole.getUuid());
@@ -184,8 +187,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveRoleFromGroupWithoutPerm() throws Exception {
 		Group group = info.getGroup();
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
 
-		Role extraRole = roleService.create("extraRole");
+		Role extraRole = root.create("extraRole");
 		group.addRole(extraRole);
 		info.getRole().revokePermissions(group, UPDATE_PERM);
 

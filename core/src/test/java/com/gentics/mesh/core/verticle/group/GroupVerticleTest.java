@@ -129,18 +129,15 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadGroups() throws Exception {
 
+		GroupRoot root = data().getMeshRoot().getGroupRoot();
 		// Create and save some groups
 		final int nGroups = 21;
-		Group extraGroupWithNoPerm = groupService.create("no_perm_group");
-		//		try (Transaction tx = graphDb.beginTx()) {
+		Group extraGroupWithNoPerm = root.create("no_perm_group");
 
 		for (int i = 0; i < nGroups; i++) {
-			Group group = groupService.create("group_" + i);
+			Group group = root.create("group_" + i);
 			info.getRole().addPermissions(group, READ_PERM);
 		}
-		// Don't grant permissions to extra group
-		//			tx.success();
-		//		}
 
 		int totalGroups = nGroups + data().getGroups().size();
 
@@ -259,11 +256,11 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateGroupWithConflictingName() throws HttpStatusCodeErrorException, Exception {
 		Group group = info.getGroup();
-
+		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
 		final String alreadyUsedName = "extraGroup";
 
 		// Create a group which occupies the name
-		Group extraGroup = groupService.create(alreadyUsedName);
+		Group extraGroup = groupRoot.create(alreadyUsedName);
 
 		info.getRole().addPermissions(group, UPDATE_PERM);
 		GroupUpdateRequest request = new GroupUpdateRequest();

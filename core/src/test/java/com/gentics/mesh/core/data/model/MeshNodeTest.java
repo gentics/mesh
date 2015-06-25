@@ -36,17 +36,15 @@ public class MeshNodeTest extends AbstractDBTest {
 	 */
 	@Test
 	public void testPageLinks() {
-		MeshNode content = nodeService.create();
-		MeshNode content2 = nodeService.create();
-		//		try (Transaction tx = graphDb.beginTx()) {
+		MeshNode folder = data().getFolder("2015");
+		MeshNode content = folder.create();
+		MeshNode content2 = folder.create();
 
-		content.setContent(data().getEnglish(), "english content");
-		content.setName(data().getEnglish(), "english.html");
+		content.setI18NProperty(data().getEnglish(), "content", "english content");
+		content.setI18NProperty(data().getEnglish(), "name", "english.html");
 
-		content2.setContent(data().getEnglish(), "english2 content");
-		content2.setName(data().getEnglish(), "english2.html");
-		//			tx.success();
-		//		}
+		content2.setI18NProperty(data().getEnglish(), "content", "english2 content");
+		content2.setI18NProperty(data().getEnglish(), "name", "english2.html");
 		nodeService.createLink(content, content2);
 
 		// TODO verify that link relation has been created
@@ -58,8 +56,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode newsNode = data().getContent("news overview");
 		assertNotNull(newsNode);
 		MeshNode newSubNode;
-		newSubNode = nodeService.create();
-		newSubNode.setParentNode(newsNode);
+		newSubNode = newsNode.create();
 
 		assertEquals(1, newsNode.getChildren().size());
 		MeshNode firstChild = newsNode.getChildren().iterator().next();
@@ -83,23 +80,25 @@ public class MeshNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testCreateNode() {
-		MeshNode node = nodeService.create();
+		MeshNode parentNode = data().getFolder("2015");
+		MeshNode node = parentNode.create();
 		Language english = data().getEnglish();
-		node.setContent(data().getEnglish(), "english content");
-		node.setName(data().getEnglish(), "english.html");
+		node.setI18NProperty(english, "content", "english content");
+		node.setI18NProperty(english, "name", "english.html");
 		assertNotNull(node.getUuid());
 
 		List<? extends I18NProperties> allProperties = node.getI18nProperties();
 		assertNotNull(allProperties);
 		assertEquals(1, allProperties.size());
 
-		node.setContent(data().getGerman(), "german content");
+		node.setI18NProperty(data().getGerman(), "content", "german content");
 		assertEquals(2, node.getI18nProperties().size());
 
 		I18NProperties properties = node.getI18nProperties(english);
 		assertNotNull(properties);
-		String text = node.getContent(english);
+		String text = node.getI18nProperty(english, "content");
 		assertNotNull(text);
+		assertEquals("english content", text);
 	}
 
 	@Test

@@ -146,8 +146,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			}
 			Future<Role> roleCreated = Future.future();
 			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, Group.class, (AsyncResult<Group> rh) -> {
-				Role role = roleService.create(requestModel.getName());
 				Group parentGroup = rh.result();
+				Role role = parentGroup.createRole(requestModel.getName());
 				role.addGroup(parentGroup);
 				roleService.addCRUDPermissionOnRole(requestUser, parentGroup, CREATE_PERM, role);
 				roleCreated.complete(role);

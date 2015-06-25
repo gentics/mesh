@@ -18,8 +18,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.relationship.Permission;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.demo.UserInfo;
@@ -40,7 +41,8 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testCreation() {
 		final String roleName = "test";
-		Role role = roleService.create(roleName);
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		Role role = root.create(roleName);
 		role = roleService.findOne(role.getId());
 		assertNotNull(role);
 		assertEquals(roleName, role.getName());
@@ -54,8 +56,9 @@ public class RoleTest extends AbstractDBTest {
 		role.addPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
 		// node2
-		node2 = nodeService.create();
-		node2.setContent(data().getEnglish(), "Test");
+		MeshNode parentNode = data().getFolder("2015");
+		node2 = parentNode.create();
+		node2.setI18NProperty(data().getEnglish(), "content", "Test");
 		role.addPermissions(node2, READ_PERM, DELETE_PERM);
 		role.addPermissions(node2, CREATE_PERM);
 		Set<Permission> permissions = role.getPermissions(node2);
@@ -128,10 +131,11 @@ public class RoleTest extends AbstractDBTest {
 
 	@Test
 	public void testRoleRoot() {
-		int nRolesBefore = roleService.findRoot().getRoles().size();
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		int nRolesBefore = root.getRoles().size();
 
 		final String roleName = "test2";
-		Role role = roleService.create(roleName);
+		Role role = root.create(roleName);
 		assertNotNull(role);
 		int nRolesAfter = roleService.findRoot().getRoles().size();
 		assertEquals(nRolesBefore + 1, nRolesAfter);
@@ -141,7 +145,8 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testRolesOfGroup() throws InvalidArgumentException {
 
-		Role extraRole = roleService.create("extraRole");
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		Role extraRole = root.create("extraRole");
 		info.getGroup().addRole(extraRole);
 		info.getRole().addPermissions(extraRole, READ_PERM);
 

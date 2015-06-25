@@ -15,8 +15,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
+import com.gentics.mesh.util.RoutingContextHelper;
 
 @Component
 @Scope("singleton")
@@ -43,6 +45,7 @@ public class BinaryVerticle extends AbstractProjectRestVerticle {
 
 	private void addFileuploadHandler() {
 		route("/:uuid").method(HttpMethod.POST).handler(rc -> {
+			MeshAuthUser user = RoutingContextHelper.getUser(rc);
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				MeshNode node = rh.result();

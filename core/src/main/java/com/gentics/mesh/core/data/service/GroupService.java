@@ -58,19 +58,6 @@ public class GroupService extends AbstractMeshService {
 		return groups;
 	}
 
-	public Group create(String name) {
-		Group group = fg.addFramedVertex(Group.class);
-		group.setName(name);
-		GroupRoot root = findRoot();
-		root.addGroup(group);
-		return group;
-	}
-
-	public GroupRoot createRoot() {
-		GroupRoot root = fg.addFramedVertex(GroupRoot.class);
-		return root;
-	}
-
 	public void delete(Group group) {
 		group.getVertex().remove();
 	}

@@ -1,12 +1,16 @@
 package com.gentics.mesh.core.data.model.tinkerpop;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_I18N_PROPERTIES;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PROPERTY_TYPE;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
+import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.data.service.PropertTypeSchemaComparator;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
@@ -60,11 +64,11 @@ public class Schema extends GenericNode {
 	}
 
 	public List<? extends Translated> getI18nTranslations() {
-		return outE(MeshRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
+		return outE(HAS_I18N_PROPERTIES).toList(Translated.class);
 	}
 
-	public List<? extends BasicPropertyType> getPropertyTypeSchemas() {
-		return out(MeshRelationships.HAS_PROPERTY_TYPE_SCHEMA).toList(BasicPropertyType.class);
+	public List<? extends BasicPropertyType> getPropertyTypes() {
+		return out(HAS_PROPERTY_TYPE).toList(BasicPropertyType.class);
 	}
 
 	//	@Adjacency(label = BasicRelationships.HAS_PROPERTY_TYPE_SCHEMA, direction = Direction.OUT)
@@ -82,7 +86,7 @@ public class Schema extends GenericNode {
 		// TODO creator
 
 		// TODO we need to add checks that prevents multiple schemas with the same key
-		for (BasicPropertyType propertyTypeSchema : getPropertyTypeSchemas()) {
+		for (BasicPropertyType propertyTypeSchema : getPropertyTypes()) {
 			//			propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
 			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
 			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
@@ -111,18 +115,33 @@ public class Schema extends GenericNode {
 		});
 		return schemaForRest;
 	}
-	
-	//	@Override
-	//	public Schema save(Schema schema) {
-	//		ObjectSchemaRoot root = schemaService.findRoot();
-	//		if (root == null) {
-	//			throw new NullPointerException("The schema root node could not be found.");
-	//		}
-	//		schema = neo4jTemplate.save(schema);
-	//		root.getSchemas().add(schema);
-	//		neo4jTemplate.save(root);
-	//		return schema;
-	//		return null;
-	//	}
+
+	public BasicPropertyType create(String key, PropertyType type) {
+		BasicPropertyType schemaType = getGraph().addFramedVertex(BasicPropertyType.class);
+		schemaType.setKey(key);
+		schemaType.setType(type);
+		return schemaType;
+	}
+
+	public MicroPropertyType createMicroPropertyTypeSchema(String key) {
+		MicroPropertyType type = getGraph().addFramedVertex(MicroPropertyType.class);
+		type.setKey(key);
+		type.setType(PropertyType.MICROSCHEMA);
+		return type;
+	}
+
+	public BasicPropertyType createBasicPropertyTypeSchema(String key, PropertyType type) {
+		BasicPropertyType propertType = getGraph().addFramedVertex(BasicPropertyType.class);
+		propertType.setKey(key);
+		propertType.setType(type);
+		linkOut(propertType, HAS_PROPERTY_TYPE);
+		return propertType;
+	}
+
+	public BasicPropertyType createListPropertyTypeSchema(String key) {
+		BasicPropertyType type = getGraph().addFramedVertex(BasicPropertyType.class);
+		type.setKey(key);
+		return type;
+	}
 
 }

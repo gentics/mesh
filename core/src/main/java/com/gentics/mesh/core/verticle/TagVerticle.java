@@ -19,10 +19,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.web.Route;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +29,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
 import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
@@ -101,56 +100,21 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 
-			List<String> languageTags = getSelectedLanguageTags(rc);
 			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 
-				// Iterate through all properties and update the changed ones
-					String requestLanguage = requestModel.getLanguage();
-					Language language = languageService.findByLanguageTag(requestLanguage);
-					if (language != null) {
-						Map<String, String> properties = requestModel.getProperties();
+				/** Iterate through all properties and update the changed ones **/
+				Language tagDefaultLanguage = languageService.getTagDefaultLanguage();
+				I18NProperties i18nProperties = tag.getI18nProperties(tagDefaultLanguage);
+				i18nProperties.setProperty("name", requestModel.getName());
+				List<String> languageTags = new ArrayList<>();
+				languageTags.add(Tag.DEFAULT_TAG_LANGUAGE_TAG);
+				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 
-						if (properties != null) {
-							I18NProperties i18nProperties = tag.getI18nProperties(language);
-
-							for (Map.Entry<String, String> set : properties.entrySet()) {
-								String key = set.getKey();
-								String value = set.getValue();
-								String i18nValue = i18nProperties.getProperty(key);
-								if (i18nValue == null) {
-									i18nProperties.setProperty(key, value);
-								} else {
-									if (!value.equals(i18nValue)) {
-										i18nProperties.setProperty(key, value);
-									}
-								}
-							}
-
-							/*
-							 * Check whether there are any key missing in the request. This would mean we should remove those i18n properties. First lets
-							 * collect those keys
-							 */
-							Set<String> keysToBeRemoved = new HashSet<>();
-							for (String i18nKey : i18nProperties.getProperties().keySet()) {
-								if (!properties.containsKey(i18nKey)) {
-									keysToBeRemoved.add(i18nKey);
-								}
-							}
-
-							/* Now remove the keys */
-							for (String key : keysToBeRemoved) {
-								i18nProperties.removeProperty(key);
-							}
-						}
-
-					}
-					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-
-					rc.response().setStatusCode(200).end(toJson(tag.transformToRest(info)));
-				});
+				rc.response().setStatusCode(200).end(toJson(tag.transformToRest(info)));
+			});
 
 		});
 
@@ -170,30 +134,17 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
-			rcs.loadObjectByUuid(rc, request.getTagUuid(), CREATE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
-				Tag rootTag = rh.result();
-
-				Tag newTag = tagService.create();
-
+			rcs.loadObjectByUuid(rc, request.getTagFamilyReference().getUuid(), CREATE_PERM, TagFamily.class, (AsyncResult<TagFamily> rh) -> {
+				TagFamily tagFamily = rh.result();
+				Tag newTag = tagFamily.create(request.getName());
 				Project project = projectService.findByName(projectName);
 				newTag.addProject(project);
-				String requestLanguage = request.getLanguage();
-
-				Map<String, String> i18nProperties = request.getProperties();
-				Language language = languageService.findByLanguageTag(requestLanguage);
-				//TODO check whether language could be found?
-					I18NProperties tagProps = newTag.getOrCreateI18nProperties(language);
-					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-						tagProps.setProperty(entry.getKey(), entry.getValue());
-					}
-					// Create the relationship to the i18n properties
-					newTag.addI18nProperties(tagProps);
-					tagCreated.complete(newTag);
-				}, trh -> {
-					Tag newTag = tagCreated.result();
-					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-					rc.response().setStatusCode(200).end(toJson(newTag.transformToRest(info)));
-				});
+				tagCreated.complete(newTag);
+			}, trh -> {
+				Tag newTag = tagCreated.result();
+				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+				rc.response().setStatusCode(200).end(toJson(newTag.transformToRest(info)));
+			});
 
 		});
 	}

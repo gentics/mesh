@@ -54,9 +54,6 @@ public class MeshNodeService extends AbstractMeshService {
 		return fg.v().has(MeshNode.class).toListExplicit(MeshNode.class);
 	}
 
-	public MeshNode create() {
-		return fg.addFramedVertex(MeshNode.class);
-	}
 
 	public MeshNode findByUUID(String uuid) {
 		return fg.v().has("uuid", uuid).nextOrDefault(MeshNode.class, null);

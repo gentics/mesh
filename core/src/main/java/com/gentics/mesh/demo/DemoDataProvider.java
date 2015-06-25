@@ -20,7 +20,12 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.model.root.SchemaRoot;
+import com.gentics.mesh.core.data.model.root.TagFamily;
+import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
@@ -106,6 +111,7 @@ public class DemoDataProvider {
 	private MeshRoot root;
 
 	private Map<String, Schema> schemas = new HashMap<>();
+	private Map<String, TagFamily> tagFamilies = new HashMap<>();
 	private Map<String, MicroPropertyType> microSchemas = new HashMap<>();
 	private Map<String, MeshNode> folders = new HashMap<>();
 	private Map<String, MeshNode> contents = new HashMap<>();
@@ -121,6 +127,7 @@ public class DemoDataProvider {
 		bootstrapInitializer.initMandatoryData();
 
 		schemas.clear();
+		tagFamilies.clear();
 		microSchemas.clear();
 		contents.clear();
 		folders.clear();
@@ -133,7 +140,7 @@ public class DemoDataProvider {
 		german = languageService.findByLanguageTag("de");
 
 		addUserGroupRoleProject(multiplicator);
-		addMicoSchemas();
+//		addMicoSchemas();
 		addSchemas();
 		addTags();
 		addFolderStructure();
@@ -144,6 +151,8 @@ public class DemoDataProvider {
 		log.info("Folders:  " + folders.size());
 		log.info("Contents: " + contents.size());
 		log.info("Tags:     " + tags.size());
+		log.info("Schemas: " + schemas.size());
+		log.info("TagFamilies: " + tagFamilies.size());
 		log.info("Users:    " + users.size());
 		log.info("Groups:   " + groups.size());
 		log.info("Roles:    " + roles.size());
@@ -260,8 +269,7 @@ public class DemoDataProvider {
 
 	private void addFolderStructure() {
 
-		MeshNode rootNode = nodeService.create();
-		//		rootNode = nodeService.save(rootNode);
+		MeshNode rootNode = project.getOrCreateRootNode();
 		rootNode.setCreator(userInfo.getUser());
 		rootNode.addProject(project);
 		project.setRootNode(rootNode);
@@ -283,24 +291,24 @@ public class DemoDataProvider {
 
 	private void addTags() {
 
-		Schema colorSchema = schemas.get("color");
-		Schema categoriesSchema = schemas.get("category");
+		TagFamily colorTags = tagFamilies.get("colors");
+		TagFamily basicTags = tagFamilies.get("basic");
 
 		// Tags for categories
-		addTag("Vehicle", "Fahrzeug", categoriesSchema);
-		addTag("Car", "Auto", categoriesSchema);
-		addTag("Jeep", null, categoriesSchema);
-		addTag("Bike", "Fahrrad", categoriesSchema);
-		addTag("Motorcycle", "Motorrad", categoriesSchema);
-		addTag("Bus", "Bus", categoriesSchema);
-		addTag("Plane", "Flugzeug", categoriesSchema);
-		addTag("JetFigther", "Düsenjäger", categoriesSchema);
-		addTag("Twinjet", "Zweistrahliges Flugzeug", categoriesSchema);
+		addTag("Vehicle", basicTags);
+		addTag("Car", basicTags);
+		addTag("Jeep", basicTags);
+		addTag("Bike", basicTags);
+		addTag("Motorcycle", basicTags);
+		addTag("Bus", basicTags);
+		addTag("Plane", basicTags);
+		addTag("JetFigther", basicTags);
+		addTag("Twinjet", basicTags);
 
 		// Tags for colors
-		addTag("red", null, colorSchema);
-		addTag("blue", null, colorSchema);
-		addTag("green", null, colorSchema);
+		addTag("red", colorTags);
+		addTag("blue", colorTags);
+		addTag("green", colorTags);
 
 	}
 
@@ -309,7 +317,7 @@ public class DemoDataProvider {
 		String password = "test123";
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 
-		MeshUser user = userService.create(username);
+		MeshUser user = root.getUserRoot().create(username);
 		user.setUuid("UUIDOFUSER1");
 		user.setPassword(password);
 		log.info("Creating user with username: " + username + " and password: " + password);
@@ -319,12 +327,13 @@ public class DemoDataProvider {
 		users.put(username, user);
 
 		String roleName = username + "_role";
-		Role role = roleService.create(roleName);
+		Role role = root.getRoleRoot().create(roleName);
+
 		role.addPermissions(role, READ_PERM);
 		roles.put(roleName, role);
 
 		String groupName = username + "_group";
-		Group group = groupService.create(groupName);
+		Group group = root.getGroupRoot().create(groupName);
 		group.addUser(user);
 		group.addRole(role);
 		groups.put(groupName, group);
@@ -337,23 +346,26 @@ public class DemoDataProvider {
 	private void addUserGroupRoleProject(int multiplicator) {
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
+		UserRoot userRoot = getMeshRoot().getUserRoot();
+		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
+		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
-		project = projectService.create(PROJECT_NAME);
+		project = root.getProjectRoot().create(PROJECT_NAME);
 		project.setCreator(userInfo.getUser());
 
 		root = rootService.findRoot();
 
 		// Guest Group / Role
-		Role guestRole = roleService.create("guest_role");
+		Role guestRole = root.getRoleRoot().create("guest_role");
 		roles.put(guestRole.getName(), guestRole);
 
-		Group guests = groupService.create("guests");
+		Group guests = root.getGroupRoot().create("guests");
 		guests.addRole(guestRole);
 		groups.put("guests", guests);
 
 		// Extra User
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			MeshUser user = userService.create("guest_" + i);
+			MeshUser user = userRoot.create("guest_" + i);
 			// userService.setPassword(user, "guestpw" + i);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
@@ -363,27 +375,34 @@ public class DemoDataProvider {
 		}
 		// Extra Groups
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			Group group = groupService.create("extra_group_" + i);
+			Group group = groupRoot.create("extra_group_" + i);
 			groups.put(group.getName(), group);
 		}
 
 		// Extra Roles
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			Role role = roleService.create("extra_role_" + i);
+			Role role = roleRoot.create("extra_role_" + i);
 			roles.put(role.getName(), role);
 		}
 	}
 
-	private void addMicoSchemas() {
-		MicroPropertyType imageGallery = schemaService.createMicroPropertyTypeSchema("gallery");
-		BasicPropertyType descriptionSchema = schemaService.createBasicPropertyTypeSchema("description", PropertyType.STRING);
-		imageGallery.addProperty(descriptionSchema);
+	//	private void addMicoSchemas() {
+	//		SchemaRoot schemaRoot = root.getSchemaRoot();
+	//		MicroPropertyType imageGallery = schemaService.createMicroPropertyTypeSchema("gallery");
+	//		BasicPropertyType descriptionSchema = imageGallery.createBasicPropertyTypeSchema("description", PropertyType.STRING);
+	//		imageGallery.addProperty(descriptionSchema);
+	//
+	//		BasicPropertyType imagesSchemas = imageGallery.createListPropertyTypeSchema("images");
+	//		//		imagesSchemas.add(PropertyType.REFERENCE);
+	//		imageGallery.addProperty(imagesSchemas);
+	//		microSchemas.put("gallery", imageGallery);
+	//
+	//	}
 
-		BasicPropertyType imagesSchemas = schemaService.createListPropertyTypeSchema("images");
-		//		imagesSchemas.add(PropertyType.REFERENCE);
-		imageGallery.addProperty(imagesSchemas);
-		microSchemas.put("gallery", imageGallery);
-
+	private void addTagFamilies() {
+		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic");
+		basicTagFamily.setDescription("Description for basic tag family");
+		tagFamilies.put("basic", basicTagFamily);
 	}
 
 	private void addSchemas() {
@@ -417,11 +436,11 @@ public class DemoDataProvider {
 	}
 
 	private void addColorsSchema() {
-
-		Schema colorSchema = schemaService.create("colors");
+		SchemaRoot schemaRoot = root.getSchemaRoot();
+		Schema colorSchema = schemaRoot.create("colors");
 		colorSchema.setDescription("Colors");
 		colorSchema.setDescription("Colors");
-		BasicPropertyType nameProp = schemaService.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType nameProp = colorSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		colorSchema.addPropertyTypeSchema(nameProp);
@@ -429,30 +448,32 @@ public class DemoDataProvider {
 	}
 
 	private void addBlogPostSchema() {
-		Schema blogPostSchema = schemaService.create("blogpost");
-		BasicPropertyType content = schemaService.createBasicPropertyTypeSchema("content", PropertyType.LIST);
+		SchemaRoot schemaRoot = root.getSchemaRoot();
+		Schema blogPostSchema = schemaRoot.create("blogpost");
+		BasicPropertyType content = blogPostSchema.createBasicPropertyTypeSchema("content", PropertyType.LIST);
 		blogPostSchema.addPropertyTypeSchema(content);
 		schemas.put("blogpost", blogPostSchema);
 
 	}
 
 	private void addCategorySchema() {
-		Schema categoriesSchema = schemaService.create(TAG_CATEGORIES_SCHEMA_NAME);
+		SchemaRoot root = getMeshRoot().getSchemaRoot();
+		Schema categoriesSchema = root.create(TAG_CATEGORIES_SCHEMA_NAME);
 		categoriesSchema.addProject(project);
 		categoriesSchema.setDisplayName("Category");
 		categoriesSchema.setDescription("Custom schema for tag categories");
 		categoriesSchema.setCreator(userInfo.getUser());
-		BasicPropertyType nameProp = schemaService.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType nameProp = categoriesSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		categoriesSchema.addPropertyTypeSchema(nameProp);
 
-		BasicPropertyType displayNameProp = schemaService.createBasicPropertyTypeSchema(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType displayNameProp = categoriesSchema.createBasicPropertyTypeSchema(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 		displayNameProp.setDisplayName("Display Name");
 		displayNameProp.setDescription("The display name property of the category.");
 		categoriesSchema.addPropertyTypeSchema(displayNameProp);
 
-		BasicPropertyType contentProp = schemaService.createBasicPropertyTypeSchema(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType contentProp = categoriesSchema.createBasicPropertyTypeSchema(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 		contentProp.setDisplayName("Content");
 		contentProp.setDescription("The main content html of the category.");
 		categoriesSchema.addPropertyTypeSchema(contentProp);
@@ -509,17 +530,17 @@ public class DemoDataProvider {
 	}
 
 	public MeshNode addFolder(MeshNode rootNode, String englishName, String germanName) {
-		MeshNode folderNode = nodeService.create();
+		MeshNode folderNode = rootNode.create();
 		folderNode.setParentNode(rootNode);
 		folderNode.addProject(project);
 
 		if (germanName != null) {
-			folderNode.setDisplayName(german, germanName);
-			folderNode.setName(german, germanName);
+			folderNode.setI18NProperty(german, "displayName", germanName);
+			folderNode.setI18NProperty(german, "name", germanName);
 		}
 		if (englishName != null) {
-			folderNode.setDisplayName(english, englishName);
-			folderNode.setName(english, englishName);
+			folderNode.setI18NProperty(english, "displayName", englishName);
+			folderNode.setI18NProperty(english, "name", englishName);
 		}
 		folderNode.setCreator(userInfo.getUser());
 		folderNode.setSchema(schemas.get("folder"));
@@ -534,38 +555,31 @@ public class DemoDataProvider {
 		return folderNode;
 	}
 
-	public Tag addTag(String englishName, String germanName) {
-		return addTag(englishName, germanName, schemas.get("tag"));
+	public Tag addTag(String name) {
+		return addTag(name, getTagFamily("demo"));
 	}
 
-	public Tag addTag(String englishName, String germanName, Schema schema) {
-		Tag tag = tagService.create();
-		if (englishName != null) {
-			tag.setDisplayName(english, englishName);
+	public Tag addTag(String name, TagFamily tagFamily) {
+		if (name == null || StringUtils.isEmpty(name)) {
+			throw new RuntimeException("Name for tag empty");
 		}
-		if (germanName != null) {
-			tag.setDisplayName(german, germanName);
-		}
+		Tag tag = tagFamily.create(name);
 		tag.addProject(project);
-		tag.setSchema(schema);
 		tag.setCreator(userInfo.getUser());
-		if (englishName == null || StringUtils.isEmpty(englishName)) {
-			throw new RuntimeException("Key for tag empty");
-		}
-		tags.put(englishName.toLowerCase(), tag);
+		tags.put(name.toLowerCase(), tag);
 		return tag;
 	}
 
 	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, Schema schema) {
-		MeshNode node = nodeService.create();
-		node.setDisplayName(english, name + " english");
-		node.setName(english, name + ".en.html");
-		node.setContent(english, englishContent);
+		MeshNode node = parentNode.create();
+		node.setI18NProperty(english, "displayName", name + " english");
+		node.setI18NProperty(english, "name", name + ".en.html");
+		node.setI18NProperty(english, "content", englishContent);
 
 		if (germanContent != null) {
-			node.setDisplayName(german, name + " german");
-			node.setName(german, name + ".de.html");
-			node.setContent(german, germanContent);
+			node.setI18NProperty(german, "displayName", name + " german");
+			node.setI18NProperty(german, "name", name + ".de.html");
+			node.setI18NProperty(german, "content", germanContent);
 		}
 		// TODO maybe set project should be done inside the save?
 		node.addProject(project);
@@ -589,8 +603,8 @@ public class DemoDataProvider {
 	 */
 	public String getPathForNews2015Tag(Language language) {
 
-		String name = folders.get("news").getName(language);
-		String name2 = folders.get("2015").getName(language);
+		String name = folders.get("news").getI18nProperties(language).getProperty("name");
+		String name2 = folders.get("2015").getI18nProperties(language).getProperty("name");
 		return name + "/" + name2;
 	}
 
@@ -612,6 +626,10 @@ public class DemoDataProvider {
 
 	public MeshNode getFolder(String name) {
 		return folders.get(name);
+	}
+
+	public TagFamily getTagFamily(String key) {
+		return tagFamilies.get(key);
 	}
 
 	public MeshNode getContent(String name) {
@@ -662,4 +680,5 @@ public class DemoDataProvider {
 	public int getNodeCount() {
 		return folders.size() + contents.size();
 	}
+
 }

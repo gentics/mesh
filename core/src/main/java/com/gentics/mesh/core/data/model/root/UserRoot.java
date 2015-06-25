@@ -23,4 +23,11 @@ public class UserRoot extends MeshVertex {
 
 	// TODO unique index
 
+	public MeshUser create(String username) {
+		MeshUser user = getGraph().addFramedVertex(MeshUser.class);
+		user.setUsername(username);
+		addUser(user);
+		return user;
+	}
+
 }

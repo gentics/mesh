@@ -19,4 +19,12 @@ public class ProjectRoot extends MeshVertex {
 
 	// TODO unique
 
+	public Project create(String name) {
+		Project project = getGraph().addFramedVertex(Project.class);
+		project.setName(name);
+		project.getOrCreateRootNode();
+		addProject(project);
+		return project;
+	}
+
 }

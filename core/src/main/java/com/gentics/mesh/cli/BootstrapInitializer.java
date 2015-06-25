@@ -39,10 +39,10 @@ import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;
+import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaService;
-import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.verticle.AdminVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
@@ -215,10 +215,10 @@ public class BootstrapInitializer {
 	 * @throws JsonParseException
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
-		MeshRoot rootNode = rootService.findRoot();
-		if (rootNode == null) {
-			rootNode = rootService.create();
-			log.info("Stored mesh root {" + rootNode.getUuid() + "}");
+		MeshRoot meshRoot = rootService.findRoot();
+		if (meshRoot == null) {
+			meshRoot = rootService.create();
+			log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
 		}
 
 		LanguageRoot languageRoot = languageService.findRoot();
@@ -227,28 +227,27 @@ public class BootstrapInitializer {
 			log.info("Stored language root {" + languageRoot.getUuid() + "}");
 		}
 
-		GroupRoot groupRoot;
-		groupRoot = groupService.findRoot();
+		GroupRoot groupRoot = meshRoot.getGroupRoot();
 		if (groupRoot == null) {
-			groupRoot = groupService.createRoot();
+			groupRoot = meshRoot.createGroupRoot();
 			log.info("Stored group root {" + groupRoot.getUuid() + "}");
 		}
 
-		UserRoot userRoot = userService.findRoot();
+		UserRoot userRoot = meshRoot.getUserRoot();
 		if (userRoot == null) {
-			userRoot = userService.createRoot();
+			userRoot = meshRoot.createUserRoot();
 			log.info("Stored user root {" + userRoot.getUuid() + "}");
 		}
 
-		RoleRoot roleRoot = roleService.findRoot();
+		RoleRoot roleRoot = meshRoot.getRoleRoot();
 		if (roleRoot == null) {
-			roleRoot = roleService.createRoot();
+			roleRoot = meshRoot.createRoleRoot();
 			log.info("Stored role root {" + roleRoot.getUuid() + "}");
 		}
 
-		ProjectRoot projectRoot = projectService.findRoot();
+		ProjectRoot projectRoot = meshRoot.getProjectRoot();
 		if (projectRoot == null) {
-			projectRoot = projectService.createRoot();
+			projectRoot = meshRoot.createProjectRoot();
 			log.info("Stored project root {" + projectRoot.getUuid() + "}");
 		}
 
@@ -263,22 +262,22 @@ public class BootstrapInitializer {
 		// Content
 		Schema contentSchema = schemaService.findByName("content");
 		if (contentSchema == null) {
-			contentSchema = schemaService.create("content");
+			contentSchema = schemaRoot.create("content");
 			contentSchema.setNestingAllowed(false);
 			contentSchema.setDescription("Default schema for contents");
 			contentSchema.setDisplayName("Content");
 
-			BasicPropertyType nameProp = schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType nameProp = contentSchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			contentSchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyType displayNameProp = schemaService.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType displayNameProp = contentSchema.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 			displayNameProp.setDisplayName("Display Name");
 			displayNameProp.setDescription("The display name property of the content.");
 			contentSchema.addPropertyTypeSchema(displayNameProp);
 
-			BasicPropertyType contentProp = schemaService.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType contentProp = contentSchema.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 			contentProp.setDisplayName("Content");
 			contentProp.setDescription("The main content html of the content.");
 			contentSchema.addPropertyTypeSchema(contentProp);
@@ -288,12 +287,12 @@ public class BootstrapInitializer {
 		// Folder
 		Schema folderSchema = schemaService.findByName("folder");
 		if (folderSchema == null) {
-			folderSchema = schemaService.create("folder");
+			folderSchema = schemaRoot.create("folder");
 			folderSchema.setNestingAllowed(true);
 			folderSchema.setDescription("Default schema for folders");
 			folderSchema.setDisplayName("Folder");
 
-			BasicPropertyType nameProp = schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType nameProp = folderSchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the folder.");
 			folderSchema.addPropertyTypeSchema(nameProp);
@@ -303,16 +302,16 @@ public class BootstrapInitializer {
 		// Binary content for images and other downloads
 		Schema binarySchema = schemaService.findByName("binary-content");
 		if (binarySchema == null) {
-			binarySchema = schemaService.create("binary-content");
+			binarySchema = schemaRoot.create("binary-content");
 			binarySchema.setDescription("Default schema for binary contents");
 			binarySchema.setDisplayName("Binary Content");
 
-			BasicPropertyType nameProp = schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType nameProp = binarySchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
 			nameProp.setDisplayName("Name");
 			nameProp.setDescription("The name of the content.");
 			binarySchema.addPropertyTypeSchema(nameProp);
 
-			BasicPropertyType displayNameProp = schemaService.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+			BasicPropertyType displayNameProp = binarySchema.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 			displayNameProp.setDisplayName("Display Name");
 			displayNameProp.setDescription("The display name property of the content.");
 			binarySchema.addPropertyTypeSchema(displayNameProp);
@@ -322,12 +321,12 @@ public class BootstrapInitializer {
 		// Tag schema
 		Schema tagSchema = schemaService.findByName("tag");
 		if (tagSchema == null) {
-			tagSchema = schemaService.create("tag");
+			tagSchema = schemaRoot.create("tag");
 			tagSchema.setDisplayName("Tag");
 			tagSchema.setDescription("Default schema for tags");
-			tagSchema.addPropertyTypeSchema(schemaService.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(schemaService.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(schemaService.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(tagSchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(tagSchema.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
+			tagSchema.addPropertyTypeSchema(tagSchema.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
 			log.info("Stored tag schema {" + tagSchema.getUuid() + "}");
 		}
 
@@ -336,20 +335,21 @@ public class BootstrapInitializer {
 		schemaRoot.addSchema(binarySchema);
 
 		// Verify that the root node is existing
-		rootNode.setProjectRoot(projectRoot);
-		rootNode.setGroupRoot(groupRoot);
-		rootNode.setRoleRoot(roleRoot);
-		rootNode.setLanguageRoot(languageRoot);
-		rootNode.setSchemaRoot(schemaRoot);
-		rootNode.setUserRoot(userRoot);
+		meshRoot.setProjectRoot(projectRoot);
+		meshRoot.setGroupRoot(groupRoot);
+		meshRoot.setRoleRoot(roleRoot);
+		meshRoot.setLanguageRoot(languageRoot);
+		meshRoot.setSchemaRoot(schemaRoot);
+		meshRoot.setUserRoot(userRoot);
 		log.info("Stored mesh root node");
 
 		initLanguages(languageRoot);
 
 		// Verify that an admin user exists
 		MeshUser adminUser = userService.findByUsername("admin");
+
 		if (adminUser == null) {
-			adminUser = userService.create("admin");
+			adminUser = userRoot.create("admin");
 			System.out.println("Enter admin password:");
 			// Scanner scanIn = new Scanner(System.in);
 			// String pw = scanIn.nextLine();
@@ -362,14 +362,14 @@ public class BootstrapInitializer {
 
 		Group adminGroup = groupService.findByName("admin");
 		if (adminGroup == null) {
-			adminGroup = groupService.create("admin");
+			adminGroup = groupRoot.create("admin");
 			adminGroup.addUser(adminUser);
 			log.info("Stored admin group");
 		}
 
 		Role adminRole = roleService.findByName("admin");
 		if (adminRole == null) {
-			adminRole = roleService.create("admin");
+			adminRole = roleRoot.create("admin");
 			adminGroup.addRole(adminRole);
 		}
 

@@ -54,7 +54,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("content");
+		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		request.addProperty("filename", "new-page.html");
 		request.addProperty("name", "english node name");
@@ -74,7 +74,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("content");
+		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		request.addProperty("filename", "new-page.html");
 		request.addProperty("name", "english node name");
@@ -90,7 +90,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateReadDeleteNode() throws Exception {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("content");
+		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		request.addProperty("filename", "new-page.html");
 		request.addProperty("name", "english node name");
@@ -124,7 +124,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("node");
+		schemaReference.setName("node");
 		request.setSchema(schemaReference);
 		request.addProperty("filename", "new-page.html");
 		request.addProperty("name", "english node name");
@@ -143,7 +143,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("node");
+		schemaReference.setName("node");
 		request.setSchema(schemaReference);
 		request.addProperty("filename", "new-page.html");
 		request.addProperty("name", "english node name");
@@ -169,14 +169,10 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodes() throws Exception {
-
+		MeshNode parentNode = data().getFolder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		MeshNode noPermNode = nodeService.create();
-		//		try (Transaction tx = graphDb.beginTx()) {
+		MeshNode noPermNode = parentNode.create();
 		noPermNode.setCreator(info.getUser());
-		//			tx.success();
-		//		}
-		// noPermNode = nodeService.reload(noPermNode);
 		assertNotNull(noPermNode.getUuid());
 
 		int perPage = 11;
@@ -305,7 +301,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("content");
+		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
 		request.addProperty("filename", newFilename);
@@ -328,7 +324,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateNodeWithExtraJson() throws HttpStatusCodeErrorException, Exception {
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setSchemaName("content");
+		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
 		request.addProperty("displayName", newFilename);
@@ -346,9 +342,9 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(newNode, restNode.getProperty("content"));
 
 		// TODO Reload and update
-		assertEquals(newFilename, node.getDisplayName(data().getEnglish()));
-		assertEquals(newName, node.getName(data().getEnglish()));
-		assertEquals(newNode, node.getContent(data().getEnglish()));
+		assertEquals(newFilename, node.getI18nProperty(data().getEnglish(), "displayName"));
+		assertEquals(newName, node.getI18nProperty(data().getEnglish(), "name"));
+		assertEquals(newNode, node.getI18nProperty(data().getEnglish(), "content"));
 
 	}
 

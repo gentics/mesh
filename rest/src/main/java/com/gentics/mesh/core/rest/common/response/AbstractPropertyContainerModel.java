@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 
 public class AbstractPropertyContainerModel extends AbstractRestModel {
@@ -14,8 +13,6 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 	private List<String> availableLanguages;
 
 	private Map<String, String> properties = new HashMap<>();
-
-	private SchemaReference schema;
 
 	private String[] permissions = {};
 
@@ -38,14 +35,6 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 
 	public void setCreator(UserResponse author) {
 		this.creator = author;
-	}
-
-	public void setSchema(SchemaReference schema) {
-		this.schema = schema;
-	}
-
-	public SchemaReference getSchema() {
-		return schema;
 	}
 
 	public long getOrder() {

@@ -76,8 +76,8 @@ public class Group extends GenericNode {
 		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 
 		// VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
-		VertexTraversal<?,?,?> traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
-		VertexTraversal<?,?,?> countTraversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
+		VertexTraversal<?, ?, ?> traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
+		VertexTraversal<?, ?, ?> countTraversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(MeshUser.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshUser.class);
 	}
 
@@ -121,6 +121,20 @@ public class Group extends GenericNode {
 
 		return restGroup;
 
+	}
+
+	public MeshUser createUser(String username) {
+		MeshUser user = getGraph().addFramedVertex(MeshUser.class);
+		//TODO also add user to userroot
+		addUser(user);
+		return user;
+	}
+
+	public Role createRole(String name) {
+		Role role = getGraph().addFramedVertex(Role.class);
+		// Add role also to role root
+		addRole(role);
+		return role;
 	}
 
 	// @Override
