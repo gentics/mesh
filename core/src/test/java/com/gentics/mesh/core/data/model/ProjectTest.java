@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.BlueprintTransaction;
 
 public class ProjectTest extends AbstractDBTest {
 
@@ -35,10 +36,13 @@ public class ProjectTest extends AbstractDBTest {
 
 	@Test
 	public void testDeletion() {
-		Project project = data().getProject();
-		project.delete();
-		// assertNull(projectService.findOne(project.getId()));
-		assertNull(projectService.findByUUID(project.getUuid()));
+		String uuid = data().getProject().getUuid();
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			Project project = data().getProject();
+			project.delete();
+			tx.success();
+		}
+		assertNull(projectService.findByUUID(uuid));
 	}
 
 	@Test

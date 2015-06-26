@@ -318,29 +318,8 @@ public class BootstrapInitializer {
 
 		}
 
-		// Tag schema
-		Schema tagSchema = schemaService.findByName("tag");
-		if (tagSchema == null) {
-			tagSchema = schemaRoot.create("tag");
-			tagSchema.setDisplayName("Tag");
-			tagSchema.setDescription("Default schema for tags");
-			tagSchema.addPropertyTypeSchema(tagSchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(tagSchema.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING));
-			tagSchema.addPropertyTypeSchema(tagSchema.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING));
-			log.info("Stored tag schema {" + tagSchema.getUuid() + "}");
-		}
-
-		schemaRoot.addSchema(tagSchema);
 		schemaRoot.addSchema(contentSchema);
 		schemaRoot.addSchema(binarySchema);
-
-		// Verify that the root node is existing
-		meshRoot.setProjectRoot(projectRoot);
-		meshRoot.setGroupRoot(groupRoot);
-		meshRoot.setRoleRoot(roleRoot);
-		meshRoot.setLanguageRoot(languageRoot);
-		meshRoot.setSchemaRoot(schemaRoot);
-		meshRoot.setUserRoot(userRoot);
 		log.info("Stored mesh root node");
 
 		initLanguages(languageRoot);

@@ -138,10 +138,11 @@ public class DemoDataProvider {
 
 		english = languageService.findByLanguageTag("en");
 		german = languageService.findByLanguageTag("de");
-
+		root = rootService.findRoot();
 		addUserGroupRoleProject(multiplicator);
-//		addMicoSchemas();
+		//		addMicoSchemas();
 		addSchemas();
+		addTagFamilies();
 		addTags();
 		addFolderStructure();
 		addContents(multiplicator);
@@ -272,7 +273,6 @@ public class DemoDataProvider {
 		MeshNode rootNode = project.getOrCreateRootNode();
 		rootNode.setCreator(userInfo.getUser());
 		rootNode.addProject(project);
-		project.setRootNode(rootNode);
 
 		MeshNode news = addFolder(rootNode, "News", "Neuigkeiten");
 		MeshNode news2015 = addFolder(news, "2015", null);
@@ -353,8 +353,6 @@ public class DemoDataProvider {
 		project = root.getProjectRoot().create(PROJECT_NAME);
 		project.setCreator(userInfo.getUser());
 
-		root = rootService.findRoot();
-
 		// Guest Group / Role
 		Role guestRole = root.getRoleRoot().create("guest_role");
 		roles.put(guestRole.getName(), guestRole);
@@ -403,20 +401,20 @@ public class DemoDataProvider {
 		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic");
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
+
+		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors");
+		basicTagFamily.setDescription("Description for color tag family");
+		tagFamilies.put("colors", colorTagFamily);
 	}
 
 	private void addSchemas() {
 		addBootstrapSchemas();
 		addBlogPostSchema();
-		addColorsSchema();
+		//		addColorsSchema();
 		addCategorySchema();
 	}
 
 	private void addBootstrapSchemas() {
-		// tag
-		Schema tagSchema = schemaService.findByName("tag");
-		tagSchema.addProject(project);
-		schemas.put("tag", tagSchema);
 
 		// folder
 		Schema folderSchema = schemaService.findByName("folder");
@@ -435,17 +433,17 @@ public class DemoDataProvider {
 
 	}
 
-	private void addColorsSchema() {
-		SchemaRoot schemaRoot = root.getSchemaRoot();
-		Schema colorSchema = schemaRoot.create("colors");
-		colorSchema.setDescription("Colors");
-		colorSchema.setDescription("Colors");
-		BasicPropertyType nameProp = colorSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
-		nameProp.setDisplayName("Name");
-		nameProp.setDescription("The name of the category.");
-		colorSchema.addPropertyTypeSchema(nameProp);
-		schemas.put("color", colorSchema);
-	}
+	//	private void addColorsSchema() {
+	//		SchemaRoot schemaRoot = root.getSchemaRoot();
+	//		Schema colorSchema = schemaRoot.create("colors");
+	//		colorSchema.setDescription("Colors");
+	//		colorSchema.setDescription("Colors");
+	//		BasicPropertyType nameProp = colorSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+	//		nameProp.setDisplayName("Name");
+	//		nameProp.setDescription("The name of the category.");
+	//		colorSchema.addPropertyTypeSchema(nameProp);
+	//		schemas.put("color", colorSchema);
+	//	}
 
 	private void addBlogPostSchema() {
 		SchemaRoot schemaRoot = root.getSchemaRoot();
@@ -678,7 +676,7 @@ public class DemoDataProvider {
 	}
 
 	public int getNodeCount() {
-		return folders.size() + contents.size();
+		return folders.size() + contents.size() + root.getProjectRoot().getProjects().size();
 	}
 
 }

@@ -40,15 +40,17 @@ public class AtomicTagTest extends AbstractDBTest {
 
 		ProjectRoot projectRoot = meshRoot.createProjectRoot();
 		Project project = projectRoot.create("dummy");
-		TagFamilyRoot tagFamilyRoot = project.create();
+		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		TagFamily tagFamily = tagFamilyRoot.create("basic");
 
 		Tag tag = tagFamily.create("dummyName");
+		String uuid = tag.getUuid();
 		assertNotNull(tag);
 		assertEquals("dummyName", tag.getName());
 		tag.setName("renamed tag");
+		assertEquals("renamed tag", tag.getName());
 
-		Tag reloadedTag = tagService.findByUUID(tag.getUuid());
+		Tag reloadedTag = tagService.findByUUID(uuid);
 		assertNotNull(reloadedTag);
 		assertNotNull(reloadedTag.getI18nProperties());
 		assertEquals(1, reloadedTag.getI18nProperties().size());

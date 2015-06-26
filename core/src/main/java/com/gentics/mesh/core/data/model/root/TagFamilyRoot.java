@@ -10,6 +10,7 @@ public class TagFamilyRoot extends MeshVertex {
 
 	public TagFamily create(String name) {
 		TagFamily tagFamily = getGraph().addFramedVertex(TagFamily.class);
+		tagFamily.setName(name);
 		addTagFamily(tagFamily);
 		return tagFamily;
 	}

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.model;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -51,13 +52,29 @@ public class TagTest extends AbstractDBTest {
 
 	@Test
 	public void testTagCreation() {
-		TagFamily root = data().getTagFamily("basic");
-		Tag tag = root.create(GERMAN_NAME);
+		TagFamily tagFamily = data().getTagFamily("basic");
+		Tag tag = tagFamily.create(GERMAN_NAME);
 		assertNotNull(tag.getId());
 		tag = tagService.findOne(tag.getId());
 		assertNotNull("The folder could not be found.", tag);
 		String name = tag.getName();
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
+
+		assertEquals(10, tagFamily.getTags().size());
+	}
+
+	@Test
+	public void testTagFamilyTagCreation() {
+		final String TAG_FAMILY_NAME = "mycustomtagFamily";
+		TagFamily tagFamily = data().getProject().getTagFamilyRoot().create(TAG_FAMILY_NAME);
+		assertNotNull(tagFamily);
+		assertEquals(TAG_FAMILY_NAME, tagFamily.getName());
+		assertNull(tagFamily.getDescription());
+		tagFamily.setDescription("description");
+		assertEquals("description", tagFamily.getDescription());
+		assertEquals(0, tagFamily.getTags().size());
+		Tag tag = tagFamily.create(GERMAN_NAME);
+		assertEquals(1, tagFamily.getTags().size());
 	}
 
 	@Test
@@ -69,28 +86,27 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodes() {
+	public void testNodeTaggging() {
 
-		Language english = data().getEnglish();
+		// 1. Create the tag
 		TagFamily root = data().getTagFamily("basic");
 		Tag tag = root.create(ENGLISH_NAME);
 		tag = tagService.findOne(tag.getId());
 		assertNotNull(tag);
 
+		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
 		MeshNode parentNode = data().getFolder("2015");
 		MeshNode node = parentNode.create();
-
 		Language german = languageService.findByLanguageTag("de");
-
 		node.setI18NProperty(german, "displayName", GERMAN_TEST_FILENAME);
 		node.setI18NProperty(german, "name", "german node name");
 
-		// Assign the tag to the node
+		// 3. Assign the tag to the node
 		node.addTag(tag);
 
-		// TODO: Reload the tag and check whether the content was set
-
+		// 4. Reload the tag and inspect the tagged nodes
+		tag = tagService.findByUUID(tag.getUuid());
 		assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
 		MeshNode contentFromTag = tag.getNodes().iterator().next();
 		assertNotNull(contentFromTag);
@@ -133,13 +149,13 @@ public class TagTest extends AbstractDBTest {
 		MeshAuthUser requestUser = getUser(rc);
 
 		Page<? extends Tag> tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
-		assertEquals(8, tagPage.getTotalElements());
+		assertEquals(12, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 
 		languageTags.add("en");
 		tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 14));
 		assertEquals(data().getTags().size(), tagPage.getTotalElements());
-		assertEquals(14, tagPage.getSize());
+		assertEquals(12, tagPage.getSize());
 	}
 
 	@Test

@@ -24,13 +24,14 @@ public class Project extends GenericNode {
 		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyRoot.class).nextOrDefaultExplicit(TagFamilyRoot.class, null);
 	}
 
-	public void addTagFamilyRoot(TagFamilyRoot root) {
+	public void setTagFamilyRoot(TagFamilyRoot root) {
+		outE(HAS_TAGFAMILY_ROOT).removeAll();
 		linkOut(root, HAS_TAGFAMILY_ROOT);
 	}
 
-	public TagFamilyRoot create() {
+	public TagFamilyRoot createTagFamilyRoot() {
 		TagFamilyRoot root = getGraph().addFramedVertex(TagFamilyRoot.class);
-		addTagFamilyRoot(root);
+		setTagFamilyRoot(root);
 		return root;
 	}
 
@@ -69,6 +70,7 @@ public class Project extends GenericNode {
 		MeshNode rootNode = getRootNode();
 		if (rootNode == null) {
 			rootNode = getGraph().addFramedVertex(MeshNode.class);
+			setRootNode(rootNode);
 		}
 		return rootNode;
 

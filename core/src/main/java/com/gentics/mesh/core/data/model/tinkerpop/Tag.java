@@ -20,7 +20,7 @@ public class Tag extends GenericPropertyContainer {
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
 	public List<? extends MeshNode> getNodes() {
-		return in(HAS_TAG).toList(MeshNode.class);
+		return in(HAS_TAG).has(MeshNode.class).toListExplicit(MeshNode.class);
 	}
 
 	public String getName() {

@@ -6,6 +6,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collections;
+
 import io.vertx.ext.web.RoutingContext;
 
 import org.junit.Before;
@@ -85,8 +89,11 @@ public class MeshUserTest extends AbstractDBTest {
 	public void testGetPermissions() {
 		MeshUser user = info.getUser();
 		Language language = data().getEnglish();
-		String[] perms = { "UPDATE_PERM", "CREATE_PERM", "DELETE_PERM", "READ_PERM" };
-		assertArrayEquals("Permissions do not match", perms, user.getPermissionNames(language));
+		String[] perms = { "CREATE_PERM", "UPDATE_PERM", "DELETE_PERM", "READ_PERM" };
+		String[] loadedPerms = user.getPermissionNames(language);
+		Arrays.sort(perms);
+		Arrays.sort(loadedPerms);
+		assertArrayEquals("Permissions do not match", perms,  loadedPerms);
 	}
 
 	@Test

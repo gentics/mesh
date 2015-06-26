@@ -10,11 +10,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gentics.mesh.core.data.model.root.GroupRoot;
+import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
@@ -54,9 +56,11 @@ public class OGMTest {
 		GroupRoot groupRoot = root.createGroupRoot();
 		ProjectRoot projectRoot = root.createProjectRoot();
 
-		Project project = projectRoot.create("testproject");
+		LanguageRoot languageRoot = root.createLanguageRoot();
+		Language defaultLanguage = languageRoot.create("English", "en");
 
-		TagFamilyRoot tagFamilyRoot = project.create();
+		Project project = projectRoot.create("testproject");
+		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		TagFamily tagFamily = tagFamilyRoot.create("basic");
 
 		Tag tag = tagFamily.create("dummyTag");

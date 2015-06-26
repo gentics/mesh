@@ -32,7 +32,7 @@ public class LanguageService extends AbstractMeshService {
 	 * @return Found language or null if none could be found
 	 */
 	public Language findByLanguageTag(String languageTag) {
-		return fg.v().has("languageTag", languageTag).nextOrDefault(Language.class, null);
+		return fg.v().has("languageTag", languageTag).has(Language.class).nextOrDefault(Language.class, null);
 	}
 
 	public Language getTagDefaultLanguage() {

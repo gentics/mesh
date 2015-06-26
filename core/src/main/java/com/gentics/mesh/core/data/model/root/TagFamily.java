@@ -5,9 +5,7 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
-import com.gentics.mesh.core.data.service.LanguageService;
 
 public class TagFamily extends MeshVertex {
 
@@ -19,7 +17,7 @@ public class TagFamily extends MeshVertex {
 		setProperty("name", name);
 	}
 
-	public String getDecription() {
+	public String getDescription() {
 		return getProperty("description");
 	}
 

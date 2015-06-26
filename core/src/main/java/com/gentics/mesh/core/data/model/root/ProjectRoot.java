@@ -26,7 +26,9 @@ public class ProjectRoot extends MeshVertex {
 		SchemaRoot schemaRoot = getGraph().addFramedVertex(SchemaRoot.class);
 		project.setSchemaRoot(schemaRoot);
 		addProject(project);
+
+		TagFamilyRoot tagFamilyRoot = project.createTagFamilyRoot();
+		project.setTagFamilyRoot(tagFamilyRoot);
 		return project;
 	}
-
 }

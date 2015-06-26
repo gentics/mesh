@@ -72,7 +72,7 @@ public class GenericPropertyContainer extends GenericNode {
 		I18NProperties properties = null;
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_I18N_PROPERTIES).has(Translated.LANGUAGE_TAG_KEY, language.getLanguageTag());
 		if (edgeTraversal.hasNext()) {
-			properties = edgeTraversal.next().outV().nextOrDefault(I18NProperties.class, null);
+			properties = edgeTraversal.next().inV().has(I18NProperties.class).nextOrDefault(I18NProperties.class, null);
 		}
 
 		if (properties == null) {
