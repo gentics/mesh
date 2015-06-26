@@ -1,10 +1,11 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;

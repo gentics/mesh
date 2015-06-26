@@ -16,8 +16,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.model.relationship.Permission;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 

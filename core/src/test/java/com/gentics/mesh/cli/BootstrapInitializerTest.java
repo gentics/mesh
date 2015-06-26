@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class BootstrapInitializerTest extends AbstractDBTest {

@@ -16,8 +16,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;

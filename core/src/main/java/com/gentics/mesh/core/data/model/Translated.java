@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model;
 
 import com.gentics.mesh.core.data.model.generic.GenericNode;
 import com.syncleus.ferma.AbstractEdgeFrame;
@@ -19,7 +19,7 @@ public class Translated extends AbstractEdgeFrame {
 		return inV().nextOrDefault(GenericNode.class, null);
 	}
 
-	public I18NProperties getI18NProperties() {
-		return outV().nextOrDefault(I18NProperties.class, null);
+	public AbstractFieldContainer getI18NProperties() {
+		return outV().nextOrDefault(AbstractFieldContainer.class, null);
 	}
 }

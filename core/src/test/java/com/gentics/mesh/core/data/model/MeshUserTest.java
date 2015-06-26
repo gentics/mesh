@@ -17,11 +17,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;

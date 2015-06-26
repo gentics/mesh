@@ -11,12 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.Schema;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 

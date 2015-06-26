@@ -5,8 +5,8 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
+import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.Project;
 
 public class GenericNode extends MeshVertex {
 

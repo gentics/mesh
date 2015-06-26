@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.verticle.NodeNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;

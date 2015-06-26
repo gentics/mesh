@@ -17,12 +17,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
@@ -52,13 +50,13 @@ public class RoleTest extends AbstractDBTest {
 	public void testGrantPermission() {
 		Role role = info.getRole();
 		MeshNode node = data().getContent("news overview");
-		MeshNode node2;
 		role.addPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
 		// node2
 		MeshNode parentNode = data().getFolder("2015");
-		node2 = parentNode.create();
-		node2.setI18NProperty(data().getEnglish(), "content", "Test");
+		MeshNode node2 = parentNode.create();
+		MeshNodeFieldContainer englishContainer = node2.getFieldContainer(data().getEnglish());
+		englishContainer.setProperty("content", "Test");
 		role.addPermissions(node2, READ_PERM, DELETE_PERM);
 		role.addPermissions(node2, CREATE_PERM);
 		Set<Permission> permissions = role.getPermissions(node2);

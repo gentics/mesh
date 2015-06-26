@@ -19,6 +19,7 @@ import io.vertx.ext.web.Route;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -28,18 +29,19 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.AbstractFieldContainer;
+import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.Project;
+import com.gentics.mesh.core.data.model.Schema;
+import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
+import com.gentics.mesh.core.rest.node.response.field.FieldProperty;
 import com.gentics.mesh.core.verticle.handler.MeshNodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -184,20 +186,25 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				Project project = projectService.findByName(projectName);
 				node.addProject(project);
 
-				/* Add the i18n properties to the newly created tag */
-				for (String languageTag : requestModel.getProperties().keySet()) {
-					Map<String, String> i18nProperties = requestModel.getProperties();
-					Language language = languageService.findByLanguageTag(languageTag);
-					if (language == null) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-						return;
-					}
-
-					I18NProperties tagProps = node.getOrCreateI18nProperties(language);
-					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-						tagProps.setProperty(entry.getKey(), entry.getValue());
-					}
+				for (Entry<String, FieldProperty> entry : requestModel.getFields().entrySet()) {
+					String key = entry.getKey();
+					FieldProperty property = entry.getValue();
 				}
+
+//				/* Add the i18n properties to the newly created tag */
+//				for (String languageTag : requestModel.getProperties().keySet()) {
+//					Map<String, String> i18nProperties = requestModel.getProperties();
+//					Language language = languageService.findByLanguageTag(languageTag);
+//					if (language == null) {
+//						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+//						return;
+//					}
+//
+//					I18NProperties tagProps = node.getOrCreateI18nProperties(language);
+//					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
+//						tagProps.setProperty(entry.getKey(), entry.getValue());
+//					}
+//				}
 
 				roleService.addCRUDPermissionOnRole(requestUser, parentNode, CREATE_PERM, node);
 
@@ -309,39 +316,39 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				NodeUpdateRequest request = fromJson(rc, NodeUpdateRequest.class);
 				// Iterate through all properties and update the changed
 				// ones
-					for (String languageTag : request.getProperties().keySet()) {
-						Language language = languageService.findByLanguageTag(languageTag);
-						if (language != null) {
-							languageTags.add(languageTag);
-							Map<String, String> properties = request.getProperties();
-							if (properties != null) {
-								I18NProperties i18nProperties = content.getI18nProperties(language);
-								for (Map.Entry<String, String> set : properties.entrySet()) {
-									String key = set.getKey();
-									String value = set.getValue();
-									String i18nValue = i18nProperties.getProperty(key);
-									/*
-									 * Tag does not have the value so lets create it
-									 */
-									if (i18nValue == null) {
-										i18nProperties.setProperty(key, value);
-									} else {
-										/*
-										 * Lets compare and update if the value has changed
-										 */
-										if (!value.equals(i18nValue)) {
-											i18nProperties.setProperty(key, value);
-										}
-									}
-								}
-
-							}
-						} else {
-							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-							return;
-						}
-
-					}
+//					for (String languageTag : request.getProperties().keySet()) {
+//						Language language = languageService.findByLanguageTag(languageTag);
+//						if (language != null) {
+//							languageTags.add(languageTag);
+//							Map<String, String> properties = request.getProperties();
+//							if (properties != null) {
+//								I18NProperties i18nProperties = content.getI18nProperties(language);
+//								for (Map.Entry<String, String> set : properties.entrySet()) {
+//									String key = set.getKey();
+//									String value = set.getValue();
+//									String i18nValue = i18nProperties.getProperty(key);
+//									/*
+//									 * Tag does not have the value so lets create it
+//									 */
+//									if (i18nValue == null) {
+//										i18nProperties.setProperty(key, value);
+//									} else {
+//										/*
+//										 * Lets compare and update if the value has changed
+//										 */
+//										if (!value.equals(i18nValue)) {
+//											i18nProperties.setProperty(key, value);
+//										}
+//									}
+//								}
+//
+//							}
+//						} else {
+//							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+//							return;
+//						}
+//
+//					}
 				}, trh -> {
 					if (trh.failed()) {
 						rc.fail(trh.cause());

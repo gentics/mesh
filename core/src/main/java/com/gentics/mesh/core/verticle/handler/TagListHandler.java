@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;

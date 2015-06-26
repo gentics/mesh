@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.root.TagFamily;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;

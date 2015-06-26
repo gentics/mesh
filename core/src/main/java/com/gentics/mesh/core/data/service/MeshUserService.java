@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -54,7 +54,6 @@ public class MeshUserService extends AbstractMeshService {
 	public UserRoot findRoot() {
 		return fg.v().has(UserRoot.class).nextOrDefault(UserRoot.class, null);
 	}
-
 
 	public MeshUser findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);

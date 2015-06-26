@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.Group;
+import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;

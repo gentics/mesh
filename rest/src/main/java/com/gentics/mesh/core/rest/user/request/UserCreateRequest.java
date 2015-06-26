@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest.user.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 public class UserCreateRequest extends UserUpdateRequest {
 
@@ -13,11 +12,12 @@ public class UserCreateRequest extends UserUpdateRequest {
 	 */
 	private String groupUuid;
 
-	@JsonProperty(required = true)
-	private String username;
+	//@JsonProperty(required = true)
+	//TODO why is the old annotation no longer working?
+//	private String username;
 
-	@JsonProperty(required = true)
-	private String password;
+	//@JsonProperty(required = true)
+//	private String password;
 	
 	public UserCreateRequest() {
 	}
@@ -29,4 +29,5 @@ public class UserCreateRequest extends UserUpdateRequest {
 	public void setGroupUuid(String groupUuid) {
 		this.groupUuid = groupUuid;
 	}
+	
 }

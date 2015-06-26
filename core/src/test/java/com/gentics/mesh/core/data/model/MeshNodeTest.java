@@ -13,11 +13,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
@@ -40,11 +37,13 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode content = folder.create();
 		MeshNode content2 = folder.create();
 
-		content.setI18NProperty(data().getEnglish(), "content", "english content");
-		content.setI18NProperty(data().getEnglish(), "name", "english.html");
+		MeshNodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(data().getEnglish());
+		englishContainer.setProperty("content", "english content");
+		englishContainer.setProperty("name", "english.html");
 
-		content2.setI18NProperty(data().getEnglish(), "content", "english2 content");
-		content2.setI18NProperty(data().getEnglish(), "name", "english2.html");
+		MeshNodeFieldContainer englishContainer2 = content.getOrCreateFieldContainer(data().getGerman());
+		englishContainer2.setProperty("content", "english2 content");
+		englishContainer2.setProperty("name", "english2.html");
 		nodeService.createLink(content, content2);
 
 		// TODO verify that link relation has been created
@@ -83,20 +82,24 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode parentNode = data().getFolder("2015");
 		MeshNode node = parentNode.create();
 		Language english = data().getEnglish();
-		node.setI18NProperty(english, "content", "english content");
-		node.setI18NProperty(english, "name", "english.html");
+		Language german = data().getGerman();
+
+		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
+		englishContainer.setProperty("content", "english content");
+		englishContainer.setProperty("name", "english.html");
 		assertNotNull(node.getUuid());
 
-		List<? extends I18NProperties> allProperties = node.getI18nProperties();
+		List<? extends AbstractFieldContainer> allProperties = node.getFieldContainers();
 		assertNotNull(allProperties);
 		assertEquals(1, allProperties.size());
 
-		node.setI18NProperty(data().getGerman(), "content", "german content");
-		assertEquals(2, node.getI18nProperties().size());
+		MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+		germanContainer.setProperty("content", "german content");
+		assertEquals(2, node.getFieldContainers().size());
 
-		I18NProperties properties = node.getI18nProperties(english);
-		assertNotNull(properties);
-		String text = node.getI18nProperty(english, "content");
+		MeshNodeFieldContainer container = node.getFieldContainer(english);
+		assertNotNull(container);
+		String text = container.getProperty("content");
 		assertNotNull(text);
 		assertEquals("english content", text);
 	}

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -10,9 +10,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.model.Project;
+import com.gentics.mesh.core.data.model.Schema;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -106,7 +106,7 @@ public class WebRootService {
 			return null;
 		}
 		key = "properties-" + key;
-		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_I18N_PROPERTIES)) {
+		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_FIELD_CONTAINER)) {
 			String languageTag = (String) rel.getProperty("languageTag");
 			Vertex i18nPropertiesNode = rel.getVertex(Direction.OUT);
 			String i18nValue = i18nPropertiesNode.getProperty(key);
@@ -293,7 +293,7 @@ public class WebRootService {
 	 * @return true when the property could be found. Otherwise false.
 	 */
 	private boolean hasNodeI18NProperty(Vertex node, String key, String value) {
-		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_I18N_PROPERTIES)) {
+		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_FIELD_CONTAINER)) {
 			if (rel.getVertex(Direction.OUT) != null && value.equals(rel.getVertex(Direction.OUT).getProperty("properties-" + key))) {
 				return true;
 			}

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model.node;
 
 import com.syncleus.ferma.AbstractEdgeFrame;
 

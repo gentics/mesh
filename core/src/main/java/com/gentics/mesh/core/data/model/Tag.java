@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
@@ -6,7 +6,8 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
+import com.gentics.mesh.core.data.model.generic.GenericFieldContainerNode;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -15,7 +16,7 @@ import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTa
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public class Tag extends GenericPropertyContainer {
+public class Tag extends GenericFieldContainerNode {
 
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
@@ -23,12 +24,24 @@ public class Tag extends GenericPropertyContainer {
 		return in(HAS_TAG).has(MeshNode.class).toListExplicit(MeshNode.class);
 	}
 
+	public List<? extends TagFieldContainer> getFieldContainers() {
+		return getFieldContainers(TagFieldContainer.class);
+	}
+
+	public TagFieldContainer getFieldContainer(Language language) {
+		return getFieldContainer(language, TagFieldContainer.class);
+	}
+
+	public TagFieldContainer getOrCreateFieldContainer(Language language) {
+		return getOrCreateFieldContainer(language, TagFieldContainer.class);
+	}
+
 	public String getName() {
-		return getI18nProperties(LanguageService.getLanguageService().getTagDefaultLanguage()).getProperty("name");
+		return getFieldContainer(LanguageService.getLanguageService().getTagDefaultLanguage()).getName();
 	}
 
 	public void setName(String name) {
-		getOrCreateI18nProperties(LanguageService.getLanguageService().getTagDefaultLanguage()).setProperty("name", name);
+		getOrCreateFieldContainer(LanguageService.getLanguageService().getTagDefaultLanguage()).setName(name);
 	}
 
 	public void removeNode(MeshNode node) {

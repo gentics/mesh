@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;

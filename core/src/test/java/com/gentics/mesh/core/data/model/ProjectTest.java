@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.BlueprintTransaction;

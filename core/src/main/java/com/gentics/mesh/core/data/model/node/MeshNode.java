@@ -1,23 +1,39 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model.node;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PARENT_NODE;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
 
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.generic.GenericPropertyContainer;
+import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.Schema;
+import com.gentics.mesh.core.data.model.Tag;
+import com.gentics.mesh.core.data.model.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
-public class MeshNode extends GenericPropertyContainer {
+public class MeshNode extends GenericFieldContainerNode {
 
 	public List<? extends Tag> getTags() {
 		return out(HAS_TAG).toList(Tag.class);
+	}
+
+	public List<? extends MeshNodeFieldContainer> getFieldContainers() {
+		return getFieldContainers(MeshNodeFieldContainer.class);
+	}
+
+	public MeshNodeFieldContainer getFieldContainer(Language language) {
+		return getFieldContainer(language, MeshNodeFieldContainer.class);
+	}
+
+	public MeshNodeFieldContainer getOrCreateFieldContainer(Language language) {
+		return getOrCreateFieldContainer(language, MeshNodeFieldContainer.class);
 	}
 
 	public void addTag(Tag tag) {
@@ -122,7 +138,5 @@ public class MeshNode extends GenericPropertyContainer {
 		return null;
 
 	}
-
-
 
 }

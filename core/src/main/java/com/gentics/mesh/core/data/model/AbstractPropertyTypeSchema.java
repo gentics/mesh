@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public class AbstractPropertyTypeSchema extends MeshVertex {
 	private static final String ORDER_KEY = "order";
 
 	public List<? extends Translated> getI18nTranslations() {
-		return outE(MeshRelationships.HAS_I18N_PROPERTIES).toList(Translated.class);
+		return outE(MeshRelationships.HAS_FIELD_CONTAINER).toList(Translated.class);
 	}
 
 	public String getType() {

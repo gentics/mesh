@@ -6,8 +6,11 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.mail.MailClient;
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.StartTLSOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
@@ -82,7 +85,7 @@ public class MeshSpringConfiguration {
 	@Bean
 	public Vertx vertx() {
 		VertxOptions options = new VertxOptions();
-		options.setBlockedThreadCheckPeriod(1000 * 60 * 60);
+		options.setBlockedThreadCheckInterval(1000 * 60 * 60);
 		return Vertx.vertx(options);
 	}
 
@@ -105,6 +108,19 @@ public class MeshSpringConfiguration {
 	@Bean
 	public AuthProvider authProvider() {
 		return new MeshAuthProvider();
+	}
+
+	@Bean
+	public MailClient mailClient() {
+		MailConfig config = new MailConfig();
+		//TODO configure mail client
+		config.setHostname("bogus");
+		config.setPort(587);
+		config.setStarttls(StartTLSOptions.REQUIRED);
+		config.setUsername("user");
+		config.setPassword("password");
+		MailClient mailClient = MailClient.createShared(vertx(), config, "exampleclient");
+		return mailClient;
 	}
 
 	public CorsHandler corsHandler() {

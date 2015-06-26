@@ -4,8 +4,8 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
 
 @Component
 public class LanguageService extends AbstractMeshService {

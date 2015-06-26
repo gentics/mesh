@@ -2,8 +2,8 @@ package com.gentics.mesh.cli;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.core.logging.impl.SLF4JLogDelegateFactory;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;

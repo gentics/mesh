@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PE
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -19,7 +19,16 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.model.Group;
+import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.Project;
+import com.gentics.mesh.core.data.model.Role;
+import com.gentics.mesh.core.data.model.Schema;
+import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
@@ -29,14 +38,6 @@ import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.Group;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.Role;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -533,12 +534,14 @@ public class DemoDataProvider {
 		folderNode.addProject(project);
 
 		if (germanName != null) {
-			folderNode.setI18NProperty(german, "displayName", germanName);
-			folderNode.setI18NProperty(german, "name", germanName);
+			MeshNodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
+			germanContainer.setProperty("displayName", germanName);
+			germanContainer.setProperty("name", germanName);
 		}
 		if (englishName != null) {
-			folderNode.setI18NProperty(english, "displayName", englishName);
-			folderNode.setI18NProperty(english, "name", englishName);
+			MeshNodeFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
+			englishContainer.setProperty("displayName", englishName);
+			englishContainer.setProperty("name", englishName);
 		}
 		folderNode.setCreator(userInfo.getUser());
 		folderNode.setSchema(schemas.get("folder"));
@@ -570,14 +573,16 @@ public class DemoDataProvider {
 
 	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, Schema schema) {
 		MeshNode node = parentNode.create();
-		node.setI18NProperty(english, "displayName", name + " english");
-		node.setI18NProperty(english, "name", name + ".en.html");
-		node.setI18NProperty(english, "content", englishContent);
+		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
+		englishContainer.setProperty("displayName", name + " english");
+		englishContainer.setProperty("name", name + ".en.html");
+		englishContainer.setProperty("content", englishContent);
 
 		if (germanContent != null) {
-			node.setI18NProperty(german, "displayName", name + " german");
-			node.setI18NProperty(german, "name", name + ".de.html");
-			node.setI18NProperty(german, "content", germanContent);
+			MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			germanContainer.setProperty("displayName", name + " german");
+			germanContainer.setProperty("name", name + ".de.html");
+			germanContainer.setProperty("content", germanContent);
 		}
 		// TODO maybe set project should be done inside the save?
 		node.addProject(project);
@@ -601,8 +606,8 @@ public class DemoDataProvider {
 	 */
 	public String getPathForNews2015Tag(Language language) {
 
-		String name = folders.get("news").getI18nProperties(language).getProperty("name");
-		String name2 = folders.get("2015").getI18nProperties(language).getProperty("name");
+		String name = folders.get("news").getFieldContainer(language).getProperty("name");
+		String name2 = folders.get("2015").getFieldContainer(language).getProperty("name");
 		return name + "/" + name2;
 	}
 

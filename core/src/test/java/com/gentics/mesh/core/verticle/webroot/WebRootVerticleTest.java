@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;

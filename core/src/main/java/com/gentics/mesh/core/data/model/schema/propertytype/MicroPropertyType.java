@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.model.schema.propertytype;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.model.AbstractPropertyTypeSchema;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
-import com.gentics.mesh.core.data.model.tinkerpop.AbstractPropertyTypeSchema;
 
 public class MicroPropertyType extends AbstractPropertyTypeSchema {
 

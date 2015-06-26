@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.test.AbstractDBTest;
 

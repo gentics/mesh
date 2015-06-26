@@ -22,8 +22,10 @@ import com.gentics.mesh.core.rest.group.response.GroupListResponse;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.response.NodeFieldContainer;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.node.response.field.StringFieldProperty;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.project.response.ProjectListResponse;
@@ -41,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.mesh.core.rest.tag.response.TagFamilyReference;
+import com.gentics.mesh.core.rest.tag.response.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
@@ -183,12 +186,10 @@ public class Generator {
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {
 
-		
 		TagFamilyReference tagFamilyReference = new TagFamilyReference();
 		tagFamilyReference.setName("colors");
 		tagFamilyReference.setUuid(getUUID());
 
-		String lang = "en";
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
 		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
@@ -205,7 +206,8 @@ public class Generator {
 
 		TagResponse tag2 = new TagResponse();
 		tag2.setUuid(getUUID());
-		tag2.setName("Name for language tag en");
+		TagFieldContainer tagFields = tag2.getFields();
+		tagFields.setName("Name for language tag en");
 		tag2.setTagFamilyReference(tagFamilyReference);
 		tag2.setPermissions("READ", "CREATE");
 
@@ -269,7 +271,6 @@ public class Generator {
 		schemaReference.setName("content");
 		schemaReference.setUuid(getUUID());
 
-		String lang = "de";
 		NodeResponse content = new NodeResponse();
 		content.setUuid(getUUID());
 		content.setCreator(getUser());
@@ -283,17 +284,20 @@ public class Generator {
 
 		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
 		contentUpdate.setUuid(getUUID());
-		contentUpdate.addProperty("filename", "index-renamed.en.html");
+		NodeFieldContainer updateFields = new NodeFieldContainer();
+		updateFields.put("filename", new StringFieldProperty("index-renamed.en.html"));
 		write(contentUpdate);
 
-		lang = "en";
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
-		contentCreate.addProperty("filename", "index.en.html");
-		contentCreate.addProperty("content", "English content");
-		contentCreate.addProperty("title", "English title");
-		contentCreate.addProperty("teaser", "English teaser");
-		contentCreate.addProperty("name", "English name");
+
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty("English name"));
+		fields.put("filename", new StringFieldProperty("index.en.html"));
+		fields.put("content", new StringFieldProperty("English content"));
+		fields.put("title", new StringFieldProperty("English title"));
+		fields.put("teaser", new StringFieldProperty("English teaser"));
+		contentCreate.setFields(fields);
 
 		contentCreate.setSchema(schemaReference);
 		write(contentCreate);
@@ -301,7 +305,6 @@ public class Generator {
 		NodeResponse content2 = new NodeResponse();
 		content2.setUuid(getUUID());
 		content2.setCreator(getUser());
-		lang = "en";
 		content2.addProperty("name", "Name for language tag en");
 		content2.addProperty("filename", "dummy-content.en.html");
 		content2.addProperty("teaser", "Dummy teaser for en");

@@ -8,7 +8,7 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.util.Neo4jGenericContentUtils;
 
 /**

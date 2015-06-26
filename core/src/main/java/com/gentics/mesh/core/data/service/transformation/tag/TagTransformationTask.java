@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.data.service.transformation.tag;
 
-import static com.gentics.mesh.core.data.service.I18NService.getI18n;
-import static com.gentics.mesh.core.data.service.LanguageService.getLanguageService;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
@@ -11,16 +8,13 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.root.TagFamily;
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
 
@@ -75,7 +69,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					restTag.setCreator(creator.transformToRest());
 				}
 
-				restTag.setName(tag.getName());
+				restTag.getFields().setName(tag.getName());
 				tx.success();
 			}
 

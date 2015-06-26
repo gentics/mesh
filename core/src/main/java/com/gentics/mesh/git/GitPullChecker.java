@@ -1,7 +1,7 @@
 package com.gentics.mesh.git;
 
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;

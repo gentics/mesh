@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
+import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.tagcloud.model.TagCloud;
 import com.gentics.mesh.tagcloud.model.TagCloudEntry;
 import com.gentics.mesh.tagcloud.model.TagCloudResult;

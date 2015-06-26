@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_USER;

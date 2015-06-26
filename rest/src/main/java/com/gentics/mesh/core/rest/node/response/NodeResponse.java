@@ -4,18 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.common.response.AbstractPropertyContainerModel;
+import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 
 public class NodeResponse extends AbstractPropertyContainerModel {
 
-	private boolean publish;
+	private boolean published;
 
 	private String path;
+
+	private String version;
 
 	private String parentNodeUuid;
 
 	private List<TagResponse> tags = new ArrayList<>();
+
+	private ProjectResponse project;
 
 	private List<String> children;
 
@@ -23,11 +28,11 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 
 	private boolean isContainer;
 
-	private String version;
-
 	private String displayField;
 
 	private String segmentField;
+
+	private NodeFieldContainer fields = new NodeFieldContainer();
 
 	public NodeResponse() {
 	}
@@ -68,12 +73,12 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 		this.isContainer = isContainer;
 	}
 
-	public boolean isPublish() {
-		return publish;
+	public boolean isPublished() {
+		return published;
 	}
 
-	public void setPublish(boolean publish) {
-		this.publish = publish;
+	public void setPublished(boolean published) {
+		this.published = published;
 	}
 
 	public String getPath() {
@@ -107,4 +112,17 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 	public void setSegmentField(String segmentField) {
 		this.segmentField = segmentField;
 	}
+
+	public ProjectResponse getProject() {
+		return project;
+	}
+
+	public void setProject(ProjectResponse project) {
+		this.project = project;
+	}
+	
+	public NodeFieldContainer getFields() {
+		return fields;
+	}
+	
 }

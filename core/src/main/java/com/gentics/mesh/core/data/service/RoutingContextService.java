@@ -5,16 +5,16 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -29,10 +29,6 @@ public class RoutingContextService extends AbstractMeshService {
 	private MeshDatabaseService meshDatabaseService;
 
 	private static final Logger log = LoggerFactory.getLogger(RoutingContextService.class);
-
-
-
-
 
 	public String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 
 public class TransformationInfo {

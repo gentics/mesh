@@ -3,11 +3,11 @@ package com.gentics.mesh.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.Role;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Role;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.RoleService;

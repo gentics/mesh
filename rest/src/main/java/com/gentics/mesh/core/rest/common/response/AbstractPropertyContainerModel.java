@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.core.rest.user.response.UserResponse;
 
 public class AbstractPropertyContainerModel extends AbstractRestModel {
@@ -16,15 +15,12 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 
 	private String[] permissions = {};
 
-	private long order = 0;
-
 	private UserResponse creator;
 	private long created;
 
 	private UserResponse editor;
 	private long edited;
 
-	private ProjectResponse project;
 
 	public AbstractPropertyContainerModel() {
 	}
@@ -35,14 +31,6 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 
 	public void setCreator(UserResponse author) {
 		this.creator = author;
-	}
-
-	public long getOrder() {
-		return order;
-	}
-
-	public void setOrder(long order) {
-		this.order = order;
 	}
 
 	public String[] getPermissions() {
@@ -124,11 +112,5 @@ public class AbstractPropertyContainerModel extends AbstractRestModel {
 		this.edited = edited;
 	}
 
-	public ProjectResponse getProject() {
-		return project;
-	}
 
-	public void setProject(ProjectResponse project) {
-		this.project = project;
-	}
 }

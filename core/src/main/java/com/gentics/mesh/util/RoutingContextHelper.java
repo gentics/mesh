@@ -14,7 +14,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshConfiguration;

@@ -1,6 +1,6 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_I18N_PROPERTIES;
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PROPERTY_TYPE;
 
 import java.util.Collections;
@@ -64,7 +64,7 @@ public class Schema extends GenericNode {
 	}
 
 	public List<? extends Translated> getI18nTranslations() {
-		return outE(HAS_I18N_PROPERTIES).toList(Translated.class);
+		return outE(HAS_FIELD_CONTAINER).toList(Translated.class);
 	}
 
 	public List<? extends BasicPropertyType> getPropertyTypes() {

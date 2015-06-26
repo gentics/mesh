@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.ArrayList;
@@ -17,18 +17,15 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.model.root.TagFamily;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.JsonUtils;
 
@@ -83,7 +80,8 @@ public class TagTest extends AbstractDBTest {
 		TagFamily root = data().getTagFamily("basic");
 		Tag tag = root.create("test");
 		assertEquals("test", tag.getName());
-		tag.setI18NProperty(data().getEnglish(), "name", "test");
+		tag.setName("test2");
+		assertEquals("test2", tag.getName());
 	}
 
 	@Test
@@ -100,19 +98,24 @@ public class TagTest extends AbstractDBTest {
 		MeshNode parentNode = data().getFolder("2015");
 		MeshNode node = parentNode.create();
 		Language german = languageService.findByLanguageTag("de");
-		node.setI18NProperty(german, "displayName", GERMAN_TEST_FILENAME);
-		node.setI18NProperty(german, "name", "german node name");
+		MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+
+		germanContainer.setProperty("displayName", GERMAN_TEST_FILENAME);
+		germanContainer.setProperty("name", "german node name");
 
 		// 3. Assign the tag to the node
 		node.addTag(tag);
 
 		// 4. Reload the tag and inspect the tagged nodes
 		tag = tagService.findByUUID(tag.getUuid());
+
 		assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
 		MeshNode contentFromTag = tag.getNodes().iterator().next();
+		MeshNodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
+
 		assertNotNull(contentFromTag);
 		assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
-		String filename = contentFromTag.getI18nProperty(german, "displayName");
+		String filename = fieldContainer.getProperty("displayName");
 		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 		// Remove the file/content and check whether the content was really removed

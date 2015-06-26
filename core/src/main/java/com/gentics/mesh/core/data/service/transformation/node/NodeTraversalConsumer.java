@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 

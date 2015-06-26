@@ -1,6 +1,6 @@
 package com.gentics.mesh.tagcloud.model;
 
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
+import com.gentics.mesh.core.data.model.Tag;
 
 
 public class TagCloudResult {

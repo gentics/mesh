@@ -4,8 +4,8 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.model.Role;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
-import com.gentics.mesh.core.data.model.tinkerpop.Role;
 
 public class RoleRoot extends MeshVertex {
 

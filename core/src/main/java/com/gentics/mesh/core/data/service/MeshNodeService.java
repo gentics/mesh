@@ -10,8 +10,8 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;

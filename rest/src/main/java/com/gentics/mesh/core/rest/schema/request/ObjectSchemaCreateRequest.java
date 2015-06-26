@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.schema.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 public class ObjectSchemaCreateRequest extends ObjectSchemaUpdateRequest {
 

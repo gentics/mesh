@@ -22,16 +22,20 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.response.NodeFieldContainer;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.node.response.field.StringFieldProperty;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.JsonUtils;
 
 public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
@@ -55,10 +59,13 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
+		request.setLanguage("BOGUS");
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty("some name"));
+		fields.put("filename", new StringFieldProperty("new-page.html"));
+		fields.put("content", new StringFieldProperty("Blessed mealtime again!"));
+		request.setFields(fields);
 		request.setSchema(schemaReference);
-		request.addProperty("filename", "new-page.html");
-		request.addProperty("name", "english node name");
-		request.addProperty("node", "Blessed mealtime again!");
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtils.toJson(request));
@@ -76,9 +83,13 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
-		request.addProperty("filename", "new-page.html");
-		request.addProperty("name", "english node name");
-		request.addProperty("content", "Blessed mealtime again!");
+
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty("some name"));
+		fields.put("filename", new StringFieldProperty("new-page.html"));
+		fields.put("content", new StringFieldProperty("Blessed mealtime again!"));
+		request.setFields(fields);
+
 		request.setParentNodeUuid(parentNode.getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK", JsonUtils.toJson(request));
@@ -92,9 +103,13 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
-		request.addProperty("filename", "new-page.html");
-		request.addProperty("name", "english node name");
-		request.addProperty("content", "Blessed mealtime again!");
+
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty("some name"));
+		fields.put("filename", new StringFieldProperty("new-page.html"));
+		fields.put("content", new StringFieldProperty("Blessed mealtime again!"));
+		request.setFields(fields);
+
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		// Create node
@@ -126,9 +141,11 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("node");
 		request.setSchema(schemaReference);
-		request.addProperty("filename", "new-page.html");
-		request.addProperty("name", "english node name");
-		request.addProperty("node", "Blessed mealtime again!");
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty("some name"));
+		fields.put("filename", new StringFieldProperty("new-page.html"));
+		fields.put("content", new StringFieldProperty("Blessed mealtime again!"));
+		request.setFields(fields);
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtils.toJson(request));
 		expectMessageResponse("node_missing_parentnode_field", response);
@@ -145,9 +162,12 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("node");
 		request.setSchema(schemaReference);
-		request.addProperty("filename", "new-page.html");
-		request.addProperty("name", "english node name");
-		request.addProperty("node", "Blessed mealtime again!");
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty("some name"));
+		fields.put("filename", new StringFieldProperty("new-page.html"));
+		fields.put("content", new StringFieldProperty("Blessed mealtime again!"));
+		request.setFields(fields);
+
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 403, "Forbidden", JsonUtils.toJson(request));
@@ -304,11 +324,14 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
-		request.addProperty("filename", newFilename);
 		final String newName = "english renamed name";
-		request.addProperty("name", newName);
 		final String newContent = "english renamed content!";
-		request.addProperty("content", newContent);
+
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty(newName));
+		fields.put("filename", new StringFieldProperty(newFilename));
+		fields.put("content", new StringFieldProperty(newContent));
+		request.setFields(fields);
 
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtils.toJson(request));
@@ -327,11 +350,14 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
-		request.addProperty("displayName", newFilename);
 		final String newName = "english renamed name";
-		request.addProperty("name", newName);
-		final String newNode = "english renamed content!";
-		request.addProperty("content", newNode);
+		final String newContent = "english renamed content!";
+
+		NodeFieldContainer fields = new NodeFieldContainer();
+		fields.put("name", new StringFieldProperty(newName));
+		fields.put("filename", new StringFieldProperty(newFilename));
+		fields.put("content", new StringFieldProperty(newContent));
+		request.setFields(fields);
 
 		MeshNode node = data().getFolder("2015");
 		String json = JsonUtils.toJson(request);
@@ -339,12 +365,13 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertEquals(newFilename, restNode.getProperty("displayName"));
 		assertEquals(newName, restNode.getProperty("name"));
-		assertEquals(newNode, restNode.getProperty("content"));
+		assertEquals(newContent, restNode.getProperty("content"));
 
 		// TODO Reload and update
-		assertEquals(newFilename, node.getI18nProperty(data().getEnglish(), "displayName"));
-		assertEquals(newName, node.getI18nProperty(data().getEnglish(), "name"));
-		assertEquals(newNode, node.getI18nProperty(data().getEnglish(), "content"));
+		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
+		assertEquals(newFilename, englishContainer.getProperty("displayName"));
+		assertEquals(newName, englishContainer.getProperty("name"));
+		assertEquals(newContent, englishContainer.getProperty("content"));
 
 	}
 
@@ -362,13 +389,17 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteNodeWithNoPerm() throws Exception {
 
-		MeshNode node = data().getFolder("2015");
-		info.getRole().revokePermissions(node, DELETE_PERM);
+		String uuid = data().getFolder("2015").getUuid();
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			MeshNode node = data().getFolder("2015");
+			info.getRole().revokePermissions(node, DELETE_PERM);
+			tx.success();
+		}
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, node.getUuid());
+		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + uuid, 403, "Forbidden");
+		expectMessageResponse("error_missing_perm", response, uuid);
 
-		assertNotNull(nodeService.findByUUID(node.getUuid()));
+		assertNotNull(nodeService.findByUUID(uuid));
 	}
 
 }

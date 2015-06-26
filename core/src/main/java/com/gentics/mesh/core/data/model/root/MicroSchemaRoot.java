@@ -4,8 +4,8 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HA
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.model.Schema;
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 
 public class MicroSchemaRoot extends MeshVertex {
 

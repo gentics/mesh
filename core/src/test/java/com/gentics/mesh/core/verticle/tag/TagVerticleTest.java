@@ -22,8 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.Tag;
 import com.gentics.mesh.core.data.model.root.TagFamily;
-import com.gentics.mesh.core.data.model.tinkerpop.Tag;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
@@ -136,8 +136,8 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=de", 200, "OK");
 		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
-		assertNotNull(restTag.getName());
-		assertEquals("Vehicle", restTag.getName());
+		assertNotNull(restTag.getFields().getName());
+		assertEquals("Vehicle", restTag.getFields().getName());
 	}
 
 	@Test
@@ -166,7 +166,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		System.out.println(response);
 		String name = tag.getName();
 		assertNotNull("The name of the tag should be loaded.", name);
-		String restName = tagResponse.getName();
+		String restName = tagResponse.getFields().getName();
 		assertNotNull("The tag name must be set.", restName);
 		assertEquals(name, restName);
 
@@ -189,7 +189,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		System.out.println(response);
 
 		tagResponse = JsonUtils.readValue(response, TagResponse.class);
-		assertEquals(request.getName(), tagResponse.getName());
+		assertEquals(request.getName(), tagResponse.getFields().getName());
 		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
 	}
 
@@ -213,7 +213,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
 
 		String name = tag.getName();
-		assertEquals(name, tagUpdateRequest.getName());
+		assertEquals(name, tagUpdateRequest.getFields().getName());
 	}
 
 	// Delete Tests

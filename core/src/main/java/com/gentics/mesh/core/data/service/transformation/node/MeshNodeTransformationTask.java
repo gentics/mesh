@@ -14,11 +14,11 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshUser;
+import com.gentics.mesh.core.data.model.AbstractFieldContainer;
+import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
@@ -104,24 +104,24 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 					restNode.setChildren(children);
 				}
 
-				/* Load the i18n properties */
-				for (String languageTag : info.getLanguageTags()) {
-					Language language = getLanguageService().findByLanguageTag(languageTag);
-					if (language == null) {
-						throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
-					}
-
-					// Add all i18n properties for the selected language to the response
-					I18NProperties i18nProperties = node.getI18nProperties(language);
-					if (i18nProperties != null) {
-						for (String key : i18nProperties.getProperties().keySet()) {
-							restNode.addProperty(key, i18nProperties.getProperty(key));
-						}
-					} else {
-						log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
-						continue;
-					}
-				}
+//				/* Load the i18n properties */
+//				for (String languageTag : info.getLanguageTags()) {
+//					Language language = getLanguageService().findByLanguageTag(languageTag);
+//					if (language == null) {
+//						throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
+//					}
+//
+//					// Add all i18n properties for the selected language to the response
+//					AbstractFieldContainer i18nProperties = node.getI18nProperties(language);
+//					if (i18nProperties != null) {
+//						for (String key : i18nProperties.getProperties().keySet()) {
+//							restNode.addProperty(key, i18nProperties.getProperty(key));
+//						}
+//					} else {
+//						log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
+//						continue;
+//					}
+//				}
 
 				/* Add the object to the list of object references */
 				info.addObject(uuid, restNode);

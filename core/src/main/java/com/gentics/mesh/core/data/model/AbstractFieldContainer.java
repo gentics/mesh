@@ -1,11 +1,11 @@
-package com.gentics.mesh.core.data.model.tinkerpop;
+package com.gentics.mesh.core.data.model;
 
 import java.util.Map;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 
-public class I18NProperties extends MeshVertex {
+public abstract class AbstractFieldContainer extends MeshVertex {
 
 	public Language getLanguage() {
 		return out(MeshRelationships.HAS_LANGUAGE).nextOrDefault(Language.class, null);

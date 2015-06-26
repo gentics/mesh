@@ -3,7 +3,8 @@ package com.gentics.mesh.core.rest.schema.request;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
 

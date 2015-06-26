@@ -6,7 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 
@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -30,7 +30,7 @@ public class MeshAuthProvider implements AuthProvider {
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
-	
+
 	@Autowired
 	private FramedThreadedTransactionalGraph fg;
 

@@ -28,7 +28,7 @@ public class MeshRelationships {
 	public static final String HAS_LOCALIZED_TAGS = "HAS_LOCALIZED_TAGS";
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
 	public static final String HAS_LOCALISATION = "HAS_LOCALISATION";
-	public static final String HAS_I18N_PROPERTIES = "HAS_I18N_PROPERTIES";
+	public static final String HAS_FIELD_CONTAINER = "HAS_FIELD_CONTAINER";
 	public static final String HAS_CHILD = "HAS_CHILD";
 
 	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";

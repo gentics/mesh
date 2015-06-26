@@ -23,12 +23,12 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.Project;
+import com.gentics.mesh.core.data.model.Schema;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;

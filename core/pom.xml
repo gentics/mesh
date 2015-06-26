@@ -40,13 +40,8 @@
 			<artifactId>mesh-orientdb</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-neo4j</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		 -->
+		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-neo4j</artifactId> 
+			<version>${project.version}</version> </dependency> -->
 		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -81,27 +76,36 @@
 			<version>2.4</version>
 		</dependency>
 
-		<!-- Additional vertx dependencies that are not included in the gtx vertx 
-			parent artifact -->
+
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-core</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-codegen</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-hazelcast</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-auth-common</artifactId>
-			<version>${vertx.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-mail-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web</artifactId>
-			<version>${vertx.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>

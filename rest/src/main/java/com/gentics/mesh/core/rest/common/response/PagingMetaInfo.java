@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.common.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 public class PagingMetaInfo {
 

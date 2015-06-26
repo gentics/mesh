@@ -10,8 +10,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
-import com.gentics.mesh.core.data.model.tinkerpop.MeshNode;
+import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;
@@ -42,12 +43,14 @@ public class LinkRendererTest extends AbstractDBTest {
 
 		// Create some dummy content
 		MeshNode content = parentNode.create();
-		content.setI18NProperty(german, "displayName", "german name");
-		content.setI18NProperty(german, "name", "german.html");
+		MeshNodeFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
+		germanContainer.setProperty("displayName", "german name");
+		germanContainer.setProperty("name", "german.html");
 
 		MeshNode content2 = parentNode.create();
-		content2.setI18NProperty(english, "displayName", "content 2 english");
-		content2.setI18NProperty(english, "name", "english.html");
+		MeshNodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
+		englishContainer.setProperty("displayName", "content 2 english");
+		englishContainer.setProperty("name", "english.html");
 
 		LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
 		String out = replacer.replace("dgasd");

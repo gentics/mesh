@@ -19,10 +19,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.model.Project;
+import com.gentics.mesh.core.data.model.Schema;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
-import com.gentics.mesh.core.data.model.tinkerpop.Project;
-import com.gentics.mesh.core.data.model.tinkerpop.Schema;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;

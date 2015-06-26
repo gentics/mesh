@@ -7,15 +7,16 @@ public class TagResponse extends AbstractRestModel {
 
 	private TagFamilyReference tagFamily;
 
-	private String name;
-
 	private UserResponse creator;
+
 	private long created;
 
 	private UserResponse editor;
 	private long edited;
 
 	private String[] permissions = {};
+
+	private TagFieldContainer fields = new TagFieldContainer();
 
 	public TagResponse() {
 	}
@@ -30,14 +31,6 @@ public class TagResponse extends AbstractRestModel {
 
 	public TagFamilyReference getTagFamilyReference() {
 		return tagFamily;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public UserResponse getCreator() {
@@ -78,6 +71,10 @@ public class TagResponse extends AbstractRestModel {
 
 	public void setPermissions(String... permissions) {
 		this.permissions = permissions;
+	}
+
+	public TagFieldContainer getFields() {
+		return fields;
 	}
 
 }
