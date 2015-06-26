@@ -47,4 +47,6 @@ public class MeshRelationships {
 	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 
+	public static final String HAS_FIELD = "HAS_FIELD";
+
 }
