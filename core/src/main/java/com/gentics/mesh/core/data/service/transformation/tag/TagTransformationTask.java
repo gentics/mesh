@@ -28,12 +28,6 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 
 	private static final long serialVersionUID = -5106639943022399262L;
 
-	/**
-	 * The tag language is currently fixed to english since we only want to store tags based on a single language. The idea is that tags will be localizable in
-	 * the future.
-	 */
-	private static final String TAG_LANGUAGE = "en";
-
 	private static final Logger log = LoggerFactory.getLogger(TagTransformationTask.class);
 
 	private Tag tag;
@@ -81,27 +75,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					restTag.setCreator(creator.transformToRest());
 				}
 
-				//TODO only add one language
-				for (String languageTag : info.getLanguageTags()) {
-					Language language = getLanguageService().findByLanguageTag(languageTag);
-					if (language == null) {
-						throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
-					}
-					// TODO tags can also be dynamically enhanced. Maybe we should check the schema here? This would be costly. Currently we are just returning
-					// all
-					// found i18n properties for the language.
-
-					// Add all i18n properties for the selected language to the response
-//					I18NProperties i18nProperties = tag.getI18nProperties(language);
-//					if (i18nProperties != null) {
-//						for (String key : i18nProperties.getProperties().keySet()) {
-//							restTag.addProperty(key, i18nProperties.getProperty(key));
-//						}
-//					} else {
-//						log.error("Could not find any i18n properties for language {" + languageTag + "}.");
-//						continue;
-//					}
-				}
+				restTag.setName(tag.getName());
 				tx.success();
 			}
 

@@ -35,6 +35,11 @@ public class LanguageService extends AbstractMeshService {
 		return fg.v().has("languageTag", languageTag).has(Language.class).nextOrDefault(Language.class, null);
 	}
 
+
+	/**
+	 * The tag language is currently fixed to english since we only want to store tags based on a single language. The idea is that tags will be localizable in
+	 * the future.
+	 */
 	public Language getTagDefaultLanguage() {
 		return findByLanguageTag("en");
 	}

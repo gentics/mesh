@@ -22,6 +22,7 @@ import io.vertx.ext.web.Route;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -42,7 +43,9 @@ import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
 import com.gentics.mesh.core.rest.tag.response.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.MeshNodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
+import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 /**
@@ -105,13 +108,15 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 
-				/** Iterate through all properties and update the changed ones **/
-				Language tagDefaultLanguage = languageService.getTagDefaultLanguage();
-				I18NProperties i18nProperties = tag.getI18nProperties(tagDefaultLanguage);
-				i18nProperties.setProperty("name", requestModel.getName());
-				List<String> languageTags = new ArrayList<>();
-				languageTags.add(Tag.DEFAULT_TAG_LANGUAGE_TAG);
-				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+				if (StringUtils.isEmpty(requestModel.getName())) {
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
+					return;
+				}
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					tag.setName(requestModel.getName());
+					tx.success();
+				}
+				TransformationInfo info = new TransformationInfo(requestUser, null, rc);
 
 				rc.response().setStatusCode(200).end(toJson(tag.transformToRest(info)));
 			});
@@ -133,10 +138,18 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			Future<Tag> tagCreated = Future.future();
-			TagCreateRequest request = fromJson(rc, TagCreateRequest.class);
-			rcs.loadObjectByUuid(rc, request.getTagFamilyReference().getUuid(), CREATE_PERM, TagFamily.class, (AsyncResult<TagFamily> rh) -> {
+			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
+
+			if (StringUtils.isEmpty(requestModel.getName())) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
+				return;
+			}
+
+			//TODO check tag family reference for null
+
+			rcs.loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, TagFamily.class, (AsyncResult<TagFamily> rh) -> {
 				TagFamily tagFamily = rh.result();
-				Tag newTag = tagFamily.create(request.getName());
+				Tag newTag = tagFamily.create(requestModel.getName());
 				Project project = projectService.findByName(projectName);
 				newTag.addProject(project);
 				tagCreated.complete(newTag);

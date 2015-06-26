@@ -166,7 +166,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String name = tag.getName();
 		assertNotNull("The name of the tag should be loaded.", name);
 		String restName = tagResponse.getName();
-		assertNotNull("The english displayName should be listed in the rest response since we requested the english tag", restName);
+		assertNotNull("The tag name must be set.", restName);
 		assertEquals(name, restName);
 
 		// 2. Setup the request object
