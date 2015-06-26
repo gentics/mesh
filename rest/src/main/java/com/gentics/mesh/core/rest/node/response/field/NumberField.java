@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.node.response.field;
 
-public class NumberFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class NumberField extends AbstractField {
 
 	private String number;
 
@@ -44,7 +46,7 @@ public class NumberFieldProperty extends AbstractFieldProperty {
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.NUMBER.toString();
+		return FieldTypes.NUMBER.toString();
 	}
 
 }

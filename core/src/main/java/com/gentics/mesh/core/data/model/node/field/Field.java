@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.model.node.field;
 
-public interface FieldProperty {
+public interface Field {
 
 	public String getFieldLabel();
 

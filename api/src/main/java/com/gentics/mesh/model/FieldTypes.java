@@ -1,6 +1,6 @@
-package com.gentics.mesh.core.rest.node.response.field;
+package com.gentics.mesh.model;
 
-public enum PropertyFieldTypes {
+public enum FieldTypes {
 	STRING, HTML, NUMBER, DATE, BOOLEAN, SELECT, NODE, LIST, MICROSCHEMA;
 
 	public String toString() {

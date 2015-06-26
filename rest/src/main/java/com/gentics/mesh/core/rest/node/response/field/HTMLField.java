@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.node.response.field;
 
-public class HTMLFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class HTMLField extends AbstractField {
 
 	private String html;
 
@@ -16,7 +18,7 @@ public class HTMLFieldProperty extends AbstractFieldProperty {
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.HTML.toString();
+		return FieldTypes.HTML.toString();
 	}
 
 }

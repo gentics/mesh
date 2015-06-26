@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.model.node.field;
 
 import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 
-public class NumberFieldProperty extends AbstractSimpleFieldProperty {
+public class NumberField extends AbstractSimpleField {
 
-	public NumberFieldProperty(String fieldKey, MeshNodeFieldContainer parentContainer) {
+	public NumberField(String fieldKey, MeshNodeFieldContainer parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

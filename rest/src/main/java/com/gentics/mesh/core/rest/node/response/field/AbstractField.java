@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node.response.field;
 
-public abstract class AbstractFieldProperty implements FieldProperty {
+
+public abstract class AbstractField implements Field {
 
 	private String name;
 

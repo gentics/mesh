@@ -18,7 +18,6 @@ import io.vertx.core.Future;
 import io.vertx.ext.web.Route;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +28,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.AbstractFieldContainer;
-import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.Schema;
@@ -41,7 +38,7 @@ import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
-import com.gentics.mesh.core.rest.node.response.field.FieldProperty;
+import com.gentics.mesh.core.rest.node.response.field.Field;
 import com.gentics.mesh.core.verticle.handler.MeshNodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -186,9 +183,9 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				Project project = projectService.findByName(projectName);
 				node.addProject(project);
 
-				for (Entry<String, FieldProperty> entry : requestModel.getFields().entrySet()) {
+				for (Entry<String, Field> entry : requestModel.getFields().entrySet()) {
 					String key = entry.getKey();
-					FieldProperty property = entry.getValue();
+					Field property = entry.getValue();
 				}
 
 //				/* Add the i18n properties to the newly created tag */

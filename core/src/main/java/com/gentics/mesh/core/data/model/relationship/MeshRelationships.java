@@ -2,26 +2,26 @@ package com.gentics.mesh.core.data.model.relationship;
 
 public class MeshRelationships {
 
-	//Auth Relationships
+	// Auth Relationships
 	public static final String MEMBER_OF = "MEMBER_OF";
 
 	// Project
 	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
 	public static final String HAS_PROJECT = "HAS_PROJECT";
 
-	//Groups/User/Role
+	// Groups/User/Role
 	public static final String HAS_GROUP_ROOT = "HAS_GROUP_ROOT";
 	public static final String HAS_USER = "HAS_USER";
 	public static final String HAS_GROUP = "HAS_GROUP";
 	public static final String HAS_ROLE = "HAS_ROLE";
 
-	//Tags
+	// Tags
 	public static final String HAS_TAG_ROOT = "HAS_TAG_ROOT";
 	public static final String HAS_TAGFAMILY_ROOT = "HAS_TAGFAMILY_ROOT";
 	public static final String HAS_TAG_FAMILY = "HAS_TAG_FAMILY";
 	public static final String HAS_TAG = "HAS_TAG";
 
-	//Misc
+	// Misc
 	public static final String LINKED = "LINKED";
 	public static final String HAS_CREATOR = "HAS_CREATOR";
 	public static final String PARENT_OF = "PARENT_OF";
@@ -48,5 +48,6 @@ public class MeshRelationships {
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
+	public static final String ALLOWED_SCHEMA = "ALLOWED_SCHEMA";
 
 }

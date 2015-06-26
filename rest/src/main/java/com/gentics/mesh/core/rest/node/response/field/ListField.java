@@ -2,7 +2,9 @@ package com.gentics.mesh.core.rest.node.response.field;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class ListFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class ListField extends AbstractField {
 
 	private String listType;
 	private Integer min;
@@ -45,6 +47,6 @@ public class ListFieldProperty extends AbstractFieldProperty {
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.LIST.toString();
+		return FieldTypes.LIST.toString();
 	}
 }

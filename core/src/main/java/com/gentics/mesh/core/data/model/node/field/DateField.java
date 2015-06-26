@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.model.node.field;
 
 import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 
-public class DateFieldProperty extends AbstractSimpleFieldProperty {
+public class DateField extends AbstractSimpleField {
 
-	public DateFieldProperty(String fieldKey, MeshNodeFieldContainer parentContainer) {
+	public DateField(String fieldKey, MeshNodeFieldContainer parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 
@@ -15,5 +15,4 @@ public class DateFieldProperty extends AbstractSimpleFieldProperty {
 	public String getDate() {
 		return getFieldProperty("date");
 	}
-	
 }

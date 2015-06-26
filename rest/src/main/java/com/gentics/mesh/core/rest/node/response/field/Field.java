@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.node.response.field;
 
-public interface FieldProperty {
+public interface Field {
 
 	public String getType();
 

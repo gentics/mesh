@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.node.response.field;
 
-public class DateFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class DateField extends AbstractField {
 
 	private String date;
 
@@ -16,6 +18,6 @@ public class DateFieldProperty extends AbstractFieldProperty {
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.DATE.toString();
+		return FieldTypes.DATE.toString();
 	}
 }

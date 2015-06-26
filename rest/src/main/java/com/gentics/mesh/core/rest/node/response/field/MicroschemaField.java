@@ -5,12 +5,14 @@ import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class MicroschemaFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class MicroschemaField extends AbstractField {
 
 	@JsonProperty("allow")
 	private String[] allowedMicroSchemas;
 
-	private Map<String, FieldProperty> defaultValues = new HashMap<>();
+	private Map<String, Field> defaultValues = new HashMap<>();
 
 	public String[] getAllowedMicroSchemas() {
 		return allowedMicroSchemas;
@@ -20,13 +22,13 @@ public class MicroschemaFieldProperty extends AbstractFieldProperty {
 		this.allowedMicroSchemas = allowedMicroSchemas;
 	}
 
-	public Map<String, FieldProperty> getDefaultValues() {
+	public Map<String, Field> getDefaultValues() {
 		return defaultValues;
 	}
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.MICROSCHEMA.toString();
+		return FieldTypes.MICROSCHEMA.toString();
 	}
 
 }

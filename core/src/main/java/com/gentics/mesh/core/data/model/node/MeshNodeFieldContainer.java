@@ -1,17 +1,18 @@
 package com.gentics.mesh.core.data.model.node;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_FIELD;
+
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.AbstractFieldContainer;
-import com.gentics.mesh.core.data.model.node.field.BooleanFieldProperty;
-import com.gentics.mesh.core.data.model.node.field.DateFieldProperty;
-import com.gentics.mesh.core.data.model.node.field.HTMLFieldProperty;
-import com.gentics.mesh.core.data.model.node.field.ListFieldProperty;
-import com.gentics.mesh.core.data.model.node.field.MicroschemaFieldProperty;
-import com.gentics.mesh.core.data.model.node.field.NodeFieldProperty;
-import com.gentics.mesh.core.data.model.node.field.NumberFieldProperty;
-import com.gentics.mesh.core.data.model.node.field.StringFieldProperty;
-import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.model.node.field.BooleanField;
+import com.gentics.mesh.core.data.model.node.field.DateField;
+import com.gentics.mesh.core.data.model.node.field.HTMLField;
+import com.gentics.mesh.core.data.model.node.field.ListField;
+import com.gentics.mesh.core.data.model.node.field.MicroschemaField;
+import com.gentics.mesh.core.data.model.node.field.NodeField;
+import com.gentics.mesh.core.data.model.node.field.NumberField;
+import com.gentics.mesh.core.data.model.node.field.StringField;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 public class MeshNodeFieldContainer extends AbstractFieldContainer {
@@ -20,49 +21,50 @@ public class MeshNodeFieldContainer extends AbstractFieldContainer {
 		return null;
 	}
 
-	public ListFieldProperty getListFieldProperty(String key) {
+	public ListField getListFieldProperty(String key) {
 		return null;
 	}
 
-	public MicroschemaFieldProperty getMicroschemaFieldProperty(String key) {
+	public MicroschemaField getMicroschemaFieldProperty(String key) {
 		return null;
 	}
 
-	public NodeFieldProperty getNodeFieldProperty(String key) {
-		EdgeTraversal<?, ?, ?> traversal = outE(MeshRelationships.HAS_FIELD).has(NodeFieldProperty.class).has("key", key);
-		if (traversal.hasNext()) {
-			return traversal.nextExplicit(NodeFieldProperty.class);
-		} else {
-			return null;
-		}
+	public NodeField getNodeFieldProperty(String key) {
+		return outE(HAS_FIELD).has(NodeField.class).has("key", key).nextOrDefaultExplicit(NodeField.class, null);
 	}
 
-	public StringFieldProperty createString(String key) {
-		//TODO check whether the key is already occupied
-		return new StringFieldProperty(key, this);
+	public StringField createString(String key) {
+		// TODO check whether the key is already occupied
+		return new StringField(key, this);
 	}
 
-	public NodeFieldProperty createNode(String key, MeshNode node) {
-		return getGraph().addFramedEdge(this, node, MeshRelationships.HAS_FIELD, NodeFieldProperty.class);
+	public NodeField createNode(String key, MeshNode node) {
+		return getGraph().addFramedEdge(this, node, HAS_FIELD, NodeField.class);
 	}
 
-	public DateFieldProperty createDate(String key) {
-		return null;
+	public DateField createDate(String key) {
+		DateField field = new DateField(key, this);
+		return field;
 	}
 
-	public NumberFieldProperty createNumber(String key) {
-		return null;
+	public NumberField createNumber(String key) {
+		NumberField field = new NumberField(key, this);
+		return field;
 	}
 
-	public HTMLFieldProperty createHTML(String key) {
-		return null;
+	public HTMLField createHTML(String key) {
+		HTMLField field = new HTMLField(key, this);
+		return field;
 	}
 
-	public BooleanFieldProperty createBoolean(String key) {
-		return null;
+	public BooleanField createBoolean(String key) {
+		BooleanField field = new BooleanField(key, this);
+		return field;
 	}
 
-	public MicroschemaFieldProperty createMicroschema(String key) {
-		return null;
+	public MicroschemaField createMicroschema(String key) {
+		MicroschemaField field = getGraph().addFramedVertex(MicroschemaField.class);
+		linkOut(field, HAS_FIELD);
+		return field;
 	}
 }

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.model.node.field;
 
 import com.gentics.mesh.core.data.model.generic.MeshVertex;
 
-public abstract class AbstractComplexFieldProperty extends MeshVertex {
+public abstract class AbstractComplexField extends MeshVertex {
 
 	public String getLabel() {
 		return getProperty("label");

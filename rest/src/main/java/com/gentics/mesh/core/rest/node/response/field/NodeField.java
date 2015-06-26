@@ -2,7 +2,9 @@ package com.gentics.mesh.core.rest.node.response.field;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class NodeFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class NodeField extends AbstractField {
 
 	private String uuid;
 
@@ -33,6 +35,6 @@ public class NodeFieldProperty extends AbstractFieldProperty {
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.NODE.toString();
+		return FieldTypes.NODE.toString();
 	}
 }

@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.rest.node.response.field;
 
-public class StringFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class StringField extends AbstractField {
 
 	private String text;
 
-	public StringFieldProperty(String text) {
+	public StringField(String text) {
 		this.text = text;
 	}
 
@@ -18,6 +20,6 @@ public class StringFieldProperty extends AbstractFieldProperty {
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.STRING.toString();
+		return FieldTypes.STRING.toString();
 	}
 }

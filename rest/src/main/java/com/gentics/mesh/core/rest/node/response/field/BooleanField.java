@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.node.response.field;
 
-public class BooleanFieldProperty extends AbstractFieldProperty {
+import com.gentics.mesh.model.FieldTypes;
+
+public class BooleanField extends AbstractField {
 
 	private Boolean value;
 
@@ -14,6 +16,6 @@ public class BooleanFieldProperty extends AbstractFieldProperty {
 
 	@Override
 	public String getType() {
-		return PropertyFieldTypes.BOOLEAN.toString();
+		return FieldTypes.BOOLEAN.toString();
 	}
 }

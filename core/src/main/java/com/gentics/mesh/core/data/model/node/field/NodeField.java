@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.model.node.field;
 
 import com.gentics.mesh.core.data.model.generic.MeshEdge;
 
-public class NodeFieldProperty extends MeshEdge implements FieldProperty {
+public class NodeField extends MeshEdge implements Field {
 
 	@Override
 	public void setFieldLabel(String label) {

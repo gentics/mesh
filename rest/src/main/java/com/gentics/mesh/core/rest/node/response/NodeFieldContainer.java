@@ -2,9 +2,9 @@ package com.gentics.mesh.core.rest.node.response;
 
 import java.util.HashMap;
 
-import com.gentics.mesh.core.rest.node.response.field.FieldProperty;
+import com.gentics.mesh.core.rest.node.response.field.Field;
 
-public class NodeFieldContainer extends HashMap<String, FieldProperty> {
+public class NodeFieldContainer extends HashMap<String, Field> {
 
 	private static final long serialVersionUID = -7545911876433656283L;
 

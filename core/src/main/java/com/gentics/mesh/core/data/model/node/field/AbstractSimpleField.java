@@ -2,29 +2,29 @@ package com.gentics.mesh.core.data.model.node.field;
 
 import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 
-public abstract class AbstractSimpleFieldProperty {
+public abstract class AbstractSimpleField implements Field {
 
 	private String fieldKey;
 	private MeshNodeFieldContainer parentContainer;
 
-	public AbstractSimpleFieldProperty(String fieldKey, MeshNodeFieldContainer parentContainer) {
+	public AbstractSimpleField(String fieldKey, MeshNodeFieldContainer parentContainer) {
 		this.fieldKey = fieldKey;
 		this.parentContainer = parentContainer;
 	}
 
-	public String getLabel() {
+	public String getFieldLabel() {
 		return getFieldProperty("label");
 	}
 
-	public void setLabel(String label) {
+	public void setFieldLabel(String label) {
 		setFieldProperty("label", label);
 	}
 
-	public String getName() {
+	public String getFieldName() {
 		return getFieldProperty("name");
 	}
 
-	public void setName(String name) {
+	public void setFieldName(String name) {
 		setFieldProperty("name", name);
 	}
 
