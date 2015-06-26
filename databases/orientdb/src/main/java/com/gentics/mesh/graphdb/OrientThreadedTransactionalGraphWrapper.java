@@ -7,8 +7,6 @@ public class OrientThreadedTransactionalGraphWrapper extends ThreadedTransaction
 
 	private OrientGraphFactory factory;
 
-	TransactionalGraph graph;
-
 	public OrientThreadedTransactionalGraphWrapper(OrientGraphFactory factory) {
 		this.factory = factory;
 		graph = factory.getTx();

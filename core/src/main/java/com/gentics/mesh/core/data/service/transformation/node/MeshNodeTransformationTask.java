@@ -24,6 +24,8 @@ import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsume
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.util.BlueprintTransaction;
 
 public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
@@ -63,75 +65,78 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 		MeshAuthUser requestUser = info.getRequestUser();
 		Set<ForkJoinTask<Void>> tasks = new ConcurrentHashSet<>();
-		String uuid = node.getUuid();
-		// Check whether the node has already been transformed by another task
-		NodeResponse foundContent = (NodeResponse) info.getObjectReferences().get(uuid);
-		if (foundContent == null) {
-			restNode.setPermissions(requestUser.getPermissionNames(node));
-			restNode.setUuid(node.getUuid());
+		try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
+				.getFramedThreadedTransactionalGraph())) {
 
-			/* Load the schema information */
-			if (node.getSchema() != null) {
-				SchemaReference schemaReference = new SchemaReference();
-				schemaReference.setName(node.getSchema().getName());
-				schemaReference.setUuid(node.getSchema().getUuid());
-				restNode.setSchema(schemaReference);
-			}
-			/* Load the creator information */
-			MeshUser creator = node.getCreator();
-			if (creator != null) {
-				restNode.setCreator(creator.transformToRest());
-			}
+			String uuid = node.getUuid();
+			// Check whether the node has already been transformed by another task
+			NodeResponse foundContent = (NodeResponse) info.getObjectReferences().get(uuid);
+			if (foundContent == null) {
+				restNode.setPermissions(requestUser.getPermissionNames(node));
+				restNode.setUuid(node.getUuid());
 
-			/* Load the order */
-			//	restNode.setOrder(node.getOrder());
-
-			/* Load the children */
-			if (node.getSchema().isNestingAllowed()) {
-				//TODO handle uuid
-				//TODO handle expand
-				List<String> children = new ArrayList<>();
-				//TODO check permissions
-				for (MeshNode child : node.getChildren()) {
-					children.add(child.getUuid());
+				/* Load the schema information */
+				if (node.getSchema() != null) {
+					SchemaReference schemaReference = new SchemaReference();
+					schemaReference.setName(node.getSchema().getName());
+					schemaReference.setUuid(node.getSchema().getUuid());
+					restNode.setSchema(schemaReference);
 				}
-				restNode.setContainer(true);
-				restNode.setChildren(children);
-			}
-
-			/* Load the i18n properties */
-			for (String languageTag : info.getLanguageTags()) {
-				Language language = getLanguageService().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
+				/* Load the creator information */
+				MeshUser creator = node.getCreator();
+				if (creator != null) {
+					restNode.setCreator(creator.transformToRest());
 				}
 
-				// Add all i18n properties for the selected language to the response
-				I18NProperties i18nProperties = node.getI18nProperties(language);
-				if (i18nProperties != null) {
-					for (String key : i18nProperties.getProperties().keySet()) {
-						restNode.addProperty(key, i18nProperties.getProperty(key));
+				/* Load the order */
+				//	restNode.setOrder(node.getOrder());
+
+				/* Load the children */
+				if (node.getSchema().isNestingAllowed()) {
+					//TODO handle uuid
+					//TODO handle expand
+					List<String> children = new ArrayList<>();
+					//TODO check permissions
+					for (MeshNode child : node.getChildren()) {
+						children.add(child.getUuid());
 					}
-				} else {
-					log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
-					continue;
+					restNode.setContainer(true);
+					restNode.setChildren(children);
 				}
+
+				/* Load the i18n properties */
+				for (String languageTag : info.getLanguageTags()) {
+					Language language = getLanguageService().findByLanguageTag(languageTag);
+					if (language == null) {
+						throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
+					}
+
+					// Add all i18n properties for the selected language to the response
+					I18NProperties i18nProperties = node.getI18nProperties(language);
+					if (i18nProperties != null) {
+						for (String key : i18nProperties.getProperties().keySet()) {
+							restNode.addProperty(key, i18nProperties.getProperty(key));
+						}
+					} else {
+						log.error("Could not find any i18n properties for language {" + languageTag + "}. Skipping language.");
+						continue;
+					}
+				}
+
+				/* Add the object to the list of object references */
+				info.addObject(uuid, restNode);
+
 			}
 
-			/* Add the object to the list of object references */
-			info.addObject(uuid, restNode);
+			if (depth < 2) {
+				TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restNode, tasks);
+				//TODO replace this with iterator handling
+				node.getTags().spliterator().forEachRemaining(tagConsumer);
+			}
 
+			tasks.forEach(action -> action.join());
 		}
-
-		if (depth < 2) {
-			TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restNode, tasks);
-			//TODO replace this with iterator handling
-			node.getTags().spliterator().forEachRemaining(tagConsumer);
-		}
-
-		tasks.forEach(action -> action.join());
 
 		return null;
 	}
-
 }

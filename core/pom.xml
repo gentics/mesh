@@ -40,11 +40,13 @@
 			<artifactId>mesh-orientdb</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-neo4j</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		 -->
 		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
