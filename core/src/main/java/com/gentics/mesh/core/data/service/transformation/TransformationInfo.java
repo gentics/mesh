@@ -21,6 +21,7 @@ public class TransformationInfo {
 	public TransformationInfo(MeshAuthUser requestUser, List<String> languageTags, RoutingContext rc) {
 		this.requestUser = requestUser;
 		this.languageTags = languageTags;
+		this.rc = rc;
 	}
 
 	public Map<String, AbstractRestModel> getObjectReferences() {

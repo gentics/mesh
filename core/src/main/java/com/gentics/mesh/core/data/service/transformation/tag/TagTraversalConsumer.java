@@ -33,7 +33,6 @@ public class TagTraversalConsumer implements Consumer<Tag> {
 	@Override
 	public void accept(Tag tag) {
 		String currentUuid = tag.getUuid();
-		Session session = info.getRoutingContext().session();
 		MeshAuthUser requestUser = getUser(info.getRoutingContext());
 		requestUser.isAuthorised(tag, READ_PERM, handler -> {
 			if (handler.result()) {

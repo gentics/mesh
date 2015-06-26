@@ -79,6 +79,7 @@ public abstract class AbstractDBTest {
 	}
 
 	protected void purgeDatabase() {
+		fg.commit();
 		for (Edge edge : fg.getEdges()) {
 			edge.remove();
 		}

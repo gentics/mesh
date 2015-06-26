@@ -221,7 +221,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteTagByUUID() throws Exception {
 
 		Tag tag = data().getTag("vehicle");
-		String uuid = tag.getUuid(); 
+		String uuid = tag.getUuid();
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
 		expectMessageResponse("tag_deleted", response, uuid);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -236,7 +236,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().revokePermissions(tag, DELETE_PERM);
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
-		assertNotNull("The tag should not have been deleted", tagService.findByUUID(tag.getUuid()));
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			assertNotNull("The tag should not have been deleted", tagService.findByUUID(tag.getUuid()));
+		}
 	}
 
 }
