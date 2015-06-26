@@ -52,7 +52,7 @@ public class Tag extends GenericPropertyContainer {
 	}
 
 	public void delete() {
-		//TODO handle edges?
+		e().removeAll();
 		getVertex().remove();
 	}
 

@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.JsonUtils;
 
@@ -182,4 +183,11 @@ public class TagTest extends AbstractDBTest {
 		// assertEquals(4, response.getPerms().length);
 	}
 
+	@Test
+	public void testTagDeletion() {
+		Tag tag = data().getTag("red");
+		String uuid = tag.getUuid();
+		tag.remove();
+		assertNull(tagService.findByUUID(uuid));
+	}
 }

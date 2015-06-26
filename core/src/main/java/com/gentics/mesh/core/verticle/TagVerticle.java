@@ -19,7 +19,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.web.Route;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,8 +30,6 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.root.TagFamily;
-import com.gentics.mesh.core.data.model.tinkerpop.I18NProperties;
-import com.gentics.mesh.core.data.model.tinkerpop.Language;
 import com.gentics.mesh.core.data.model.tinkerpop.MeshAuthUser;
 import com.gentics.mesh.core.data.model.tinkerpop.Project;
 import com.gentics.mesh.core.data.model.tinkerpop.Tag;
@@ -47,6 +44,7 @@ import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
+import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -218,11 +216,20 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
-				tag.delete();
-			}, trh -> {
-				String uuid = rc.request().params().get("uuid");
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
-			});
+				//				DelegatingFramedThreadedTransactionalGraph dfttg = (DelegatingFramedThreadedTransactionalGraph)tag.getGraph();
+				//				dfttg.newTransaction();
+				//				tag = tagService.findByUUID(tag.getUuid());
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						tag.delete();
+						tx.success();
+					}
+				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
+					String uuid = rc.request().params().get("uuid");
+					rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
+				});
 		});
 	}
 
