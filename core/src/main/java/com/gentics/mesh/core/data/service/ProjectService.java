@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.Project;
+import com.gentics.mesh.core.data.model.impl.ProjectImpl;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
+import com.gentics.mesh.core.data.model.root.impl.ProjectRootImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -17,21 +19,21 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 @Component
 public class ProjectService extends AbstractMeshService {
 
-	//	private static Logger log = LoggerFactory.getLogger(ProjectService.class);
+	// private static Logger log = LoggerFactory.getLogger(ProjectService.class);
 
 	@Autowired
 	protected MeshUserService userService;
 
 	public Project findByName(String projectName) {
-		return fg.v().has("name", projectName).nextOrDefault(Project.class, null);
+		return fg.v().has("name", projectName).has(ProjectImpl.class).nextOrDefault(ProjectImpl.class, null);
 	}
 
 	public Project findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).nextOrDefault(Project.class, null);
+		return fg.v().has("uuid", uuid).has(ProjectImpl.class).nextOrDefault(ProjectImpl.class, null);
 	}
 
 	public List<? extends Project> findAll() {
-		return fg.v().has(Project.class).toListExplicit(Project.class);
+		return fg.v().has(ProjectImpl.class).toListExplicit(ProjectImpl.class);
 	}
 
 	public void deleteByName(String name) {
@@ -43,16 +45,15 @@ public class ProjectService extends AbstractMeshService {
 		// countQuery =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return count(project)")
 		// TODO check whether it is faster to use meshroot for starting the traversal
-		VertexTraversal<?, ?, ?> traversal = fg.v().has(ProjectRoot.class);
-		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(ProjectRoot.class);
+		VertexTraversal<?, ?, ?> traversal = fg.v().has(ProjectRootImpl.class);
+		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(ProjectRootImpl.class);
 
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Project.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, ProjectImpl.class);
 
 	}
 
 	public ProjectRoot findRoot() {
-		return fg.v().has(ProjectRoot.class).nextOrDefault(ProjectRoot.class, null);
+		return fg.v().has(ProjectRootImpl.class).nextOrDefault(ProjectRootImpl.class, null);
 	}
-
 
 }

@@ -5,16 +5,16 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.model.node.field.NumberField;
+import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class NumberFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleNumber() {
-		MeshNodeFieldContainer container = fg.addFramedVertex(MeshNodeFieldContainer.class);
-		NumberField field = new NumberField("test", container);
+		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		NumberFieldImpl field = new NumberFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setFieldLabel("dummyLabel");
 		field.setFieldName("dummyName");

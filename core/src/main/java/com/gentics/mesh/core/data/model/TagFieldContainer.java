@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.data.model;
 
-public class TagFieldContainer extends AbstractFieldContainer {
+public interface TagFieldContainer extends FieldContainer {
 
-	public String getName() {
-		return getProperty("name");
-	}
+	String getName();
 
-	public void setName(String name) {
-		setProperty("name", name);
-	}
+	void setName(String name);
+
 }

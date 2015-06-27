@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.root.TagFamily;
+import com.gentics.mesh.core.data.model.TagFamily;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
@@ -55,12 +55,12 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				restTag.setPermissions(requestUser.getPermissionNames(tag));
 				restTag.setUuid(tag.getUuid());
 
-				TagFamily tagFamilyRoot = tag.getTagFamilyRoot();
+				TagFamily tagFamily = tag.getTagFamilyRoot();
 
-				if (tagFamilyRoot != null) {
+				if (tagFamily != null) {
 					TagFamilyReference tagFamilyReference = new TagFamilyReference();
-					tagFamilyReference.setName(tagFamilyRoot.getName());
-					tagFamilyReference.setUuid(tagFamilyRoot.getUuid());
+					tagFamilyReference.setName(tagFamily.getName());
+					tagFamilyReference.setUuid(tagFamily.getUuid());
 					restTag.setTagFamilyReference(tagFamilyReference);
 				}
 

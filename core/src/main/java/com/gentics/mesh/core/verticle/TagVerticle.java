@@ -32,7 +32,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.root.TagFamily;
+import com.gentics.mesh.core.data.model.TagFamily;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;

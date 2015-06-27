@@ -5,16 +5,16 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.model.node.field.BooleanField;
+import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class BooleanFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleBoolean() {
-		MeshNodeFieldContainer container = fg.addFramedVertex(MeshNodeFieldContainer.class);
-		BooleanField field = new BooleanField("test", container);
+		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		BooleanFieldImpl field = new BooleanFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setFieldLabel("dummyLabel");
 		field.setFieldName("dummyName");

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.Group;
 import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.impl.GroupImpl;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshUserService;
@@ -112,8 +113,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 		String requestJson = JsonUtils.toJson(request);
 
-		GroupRoot root;
-		root = data().getMeshRoot().getGroupRoot();
+		GroupRoot root = data().getMeshRoot().getGroupRoot();
 		info.getRole().revokePermissions(root, CREATE_PERM);
 		MeshUser user = info.getUser();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
@@ -230,8 +230,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		//TODO TP load node
-		Group reloadedGroup = null;
+		// TODO TP load node
+		GroupImpl reloadedGroup = null;
 		assertEquals("The group should have been updated", name, reloadedGroup.getName());
 	}
 
@@ -248,8 +248,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtils.toJson(request));
 		expectMessageResponse("error_name_must_be_set", response);
 
-		//TODO TP load node
-		Group reloadedGroup = null;
+		Group reloadedGroup = groupService.findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -270,8 +269,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtils.toJson(request));
 		expectMessageResponse("group_conflicting_name", response);
 
-		//TODO TP load node
-		Group reloadedGroup = null;
+		Group reloadedGroup = groupService.findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -288,8 +286,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, PUT, "/api/v1/groups/bogus", 404, "Not Found", JsonUtils.toJson(request));
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
-		//TODO TP load node
-		Group reloadedGroup = null;
+		Group reloadedGroup = groupService.findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 

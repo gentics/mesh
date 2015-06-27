@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.model.node.field;
 
-
-public class MicroschemaField extends AbstractComplexField {
-
+public interface MicroschemaField extends Field {
 
 }

@@ -64,7 +64,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertTrue(test.containsTag(restNode, tag));
 		assertTrue(node.getTags().contains(tag));
-		//TODO check for properties of the nested tag
+		// TODO check for properties of the nested tag
 	}
 
 	@Test
@@ -103,7 +103,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
 		assertFalse(test.containsTag(restNode, tag));
 		assertFalse(node.getTags().contains(tag));
-		//TODO check for properties of the nested tag
+		// TODO check for properties of the nested tag
 
 	}
 
@@ -138,7 +138,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
 
-		//FramedVertexSet<Tag> tagSet = new FramedVertexSet<>(framedGraph, node.getTags(), Tag.class);
+		// FramedVertexSet<Tag> tagSet = new FramedVertexSet<>(framedGraph, node.getTags(), Tag.class);
 		assertTrue("The tag should not have been removed from the node", node.getTags().contains(tag));
 	}
 

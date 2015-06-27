@@ -1,29 +1,19 @@
 package com.gentics.mesh.core.data.model.root;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA;
-
 import java.util.List;
 
+import com.gentics.mesh.core.data.model.MeshVertex;
 import com.gentics.mesh.core.data.model.Schema;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.root.impl.SchemaRootImpl;
 
-public class SchemaRoot extends MeshVertex {
+public interface SchemaRoot extends MeshVertex {
 
-	public List<? extends Schema> getSchemas() {
-		return out(HAS_SCHEMA).toList(Schema.class);
-	}
+	Schema create(String name);
 
-	public void addSchema(Schema schema) {
-		linkOut(schema, HAS_SCHEMA);
-	}
+	void addSchema(Schema schema);
 
-	public Schema create(String name) {
-		Schema schema = getGraph().addFramedVertex(Schema.class);
-		schema.setName(name);
-		addSchema(schema);
-		return schema;
-	}
+	List<? extends Schema> getSchemas();
 
-	// TODO unique index
+	SchemaRootImpl getImpl();
 
 }

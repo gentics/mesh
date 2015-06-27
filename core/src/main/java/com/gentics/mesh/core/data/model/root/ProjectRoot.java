@@ -1,34 +1,19 @@
 package com.gentics.mesh.core.data.model.root;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PROJECT;
-
 import java.util.List;
 
+import com.gentics.mesh.core.data.model.MeshVertex;
 import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.root.impl.ProjectRootImpl;
 
-public class ProjectRoot extends MeshVertex {
+public interface ProjectRoot extends MeshVertex {
 
-	public List<? extends Project> getProjects() {
-		return out(HAS_PROJECT).toList(Project.class);
-	}
+	Project create(String projectName);
 
-	public void addProject(Project project) {
-		linkOut(project, HAS_PROJECT);
-	}
+	void addProject(Project project);
 
-	// TODO unique
+	List<? extends Project> getProjects();
 
-	public Project create(String name) {
-		Project project = getGraph().addFramedVertex(Project.class);
-		project.setName(name);
-		project.getOrCreateRootNode();
-		SchemaRoot schemaRoot = getGraph().addFramedVertex(SchemaRoot.class);
-		project.setSchemaRoot(schemaRoot);
-		addProject(project);
+	ProjectRootImpl getImpl();
 
-		TagFamilyRoot tagFamilyRoot = project.createTagFamilyRoot();
-		project.setTagFamilyRoot(tagFamilyRoot);
-		return project;
-	}
 }

@@ -63,7 +63,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class , (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
 				rcs.loadObject(rc, "schemaUuid", READ_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 					Project project = rh.result();
 					Schema schema = srh.result();
@@ -84,7 +84,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
-				rcs.loadObject(rc, "schemaUuid", READ_PERM,Schema.class, (AsyncResult<Schema> srh) -> {
+				rcs.loadObject(rc, "schemaUuid", READ_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 					Schema schema = srh.result();
 					Project project = rh.result();
 					schema.removeProject(project);

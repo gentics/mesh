@@ -6,11 +6,9 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.Arrays;
-import java.util.Collections;
-
-import io.vertx.ext.web.RoutingContext;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +45,7 @@ public class MeshUserTest extends AbstractDBTest {
 		user.setLastname(LASTNAME);
 		user.setPasswordHash(PASSWDHASH);
 
-		MeshUser reloadedUser = userService.findOne(user.getId());
+		MeshUser reloadedUser = userService.findByUUID(user.getUuid());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 		assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -88,7 +86,7 @@ public class MeshUserTest extends AbstractDBTest {
 		String[] loadedPerms = user.getPermissionNames(language);
 		Arrays.sort(perms);
 		Arrays.sort(loadedPerms);
-		assertArrayEquals("Permissions do not match", perms,  loadedPerms);
+		assertArrayEquals("Permissions do not match", perms, loadedPerms);
 	}
 
 	@Test

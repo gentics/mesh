@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
+import com.gentics.mesh.core.data.model.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.test.AbstractDBTest;
 

@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.AS
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.MeshVertex;
 
 @Component
 public class MeshDatabaseService extends AbstractMeshService {

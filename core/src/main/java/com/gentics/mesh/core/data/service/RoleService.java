@@ -15,12 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.model.GenericNode;
+import com.gentics.mesh.core.data.model.Group;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
+import com.gentics.mesh.core.data.model.MeshVertex;
 import com.gentics.mesh.core.data.model.Role;
-import com.gentics.mesh.core.data.model.generic.GenericNode;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.impl.RoleImpl;
 import com.gentics.mesh.core.data.model.relationship.Permission;
+import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.model.root.impl.RoleRootImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -29,6 +33,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 @Component
 public class RoleService extends AbstractMeshService {
+
+	@Autowired
+	private MeshUserService userService;
 
 	public static RoleService instance;
 
@@ -41,15 +48,12 @@ public class RoleService extends AbstractMeshService {
 		return instance;
 	}
 
-	@Autowired
-	private MeshUserService userService;
-
 	public Role findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).nextOrDefault(Role.class, null);
+		return fg.v().has("uuid", uuid).nextOrDefault(RoleImpl.class, null);
 	}
 
 	public Role findByName(String name) {
-		return fg.v().has("name", name).nextOrDefault(Role.class, null);
+		return fg.v().has("name", name).nextOrDefault(RoleImpl.class, null);
 	}
 
 	public List<? extends Role> findAll() {
@@ -61,8 +65,9 @@ public class RoleService extends AbstractMeshService {
 		// return null;
 		// }
 		// TODO filter for permissions?
-		return fg.v().has(Role.class).toListExplicit(Role.class);
+		return fg.v().has(RoleImpl.class).toListExplicit(RoleImpl.class);
 	}
+	//public void addCRUDPermissionOnRole(MeshAuthUser requestUser, GroupRoot groupRoot, Permission createPerm, Group group) {
 
 	public void addCRUDPermissionOnRole(MeshAuthUser requestUser, MeshVertex node, Permission permission, GenericNode targetNode) {
 
@@ -99,9 +104,9 @@ public class RoleService extends AbstractMeshService {
 
 	public Page<? extends Role> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		// TODO filter for permissions
-		VertexTraversal traversal = fg.v().has(Role.class);
-		VertexTraversal countTraversal = fg.v().has(Role.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Role.class);
+		VertexTraversal traversal = fg.v().has(RoleImpl.class);
+		VertexTraversal countTraversal = fg.v().has(RoleImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, RoleImpl.class);
 	}
 
 	// public GraphPermission findPermission(Long roleId, Long nodeId) {
@@ -111,17 +116,16 @@ public class RoleService extends AbstractMeshService {
 
 	public RoleRoot findRoot() {
 		// TODO use static reference of mesh root and edge instead?
-		return fg.v().has(RoleRoot.class).nextOrDefault(RoleRoot.class, null);
+		return fg.v().has(RoleRootImpl.class).nextOrDefault(RoleRootImpl.class, null);
 	}
-
-
 
 	public Role findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			return fg.frameElement(vertex, Role.class);
+			return fg.frameElement(vertex, RoleImpl.class);
 		}
 		return null;
 	}
+
 
 }

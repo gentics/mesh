@@ -4,11 +4,11 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.impl.MeshNodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 
-public class NodeTraversalConsumer implements Consumer<MeshNode> {
+public class NodeTraversalConsumer implements Consumer<MeshNodeImpl> {
 
 	private TransformationInfo info;
 	private int currentDepth;
@@ -23,7 +23,7 @@ public class NodeTraversalConsumer implements Consumer<MeshNode> {
 	}
 
 	@Override
-	public void accept(MeshNode content) {
+	public void accept(MeshNodeImpl content) {
 //		try (Transaction tx = info.getGraphDb().beginTx()) {
 //			String currentUuid = content.getUuid();
 //			info.getRoutingContext()

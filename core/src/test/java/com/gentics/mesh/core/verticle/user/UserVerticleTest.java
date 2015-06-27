@@ -402,14 +402,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		MeshUser extraUser = userRoot.create("extraUser");
+		String uuid = extraUser.getUuid();
 		info.getRole().addPermissions(extraUser, DELETE_PERM);
 		assertNotNull(extraUser.getUuid());
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + extraUser.getUuid(), 200, "OK");
 		expectMessageResponse("user_deleted", response, extraUser.getUuid());
-		//TODO  TP load user and verify for null?
-		MeshUser loadedUser = new MeshUser();
-		assertNull("The user should have been deleted", loadedUser);
+		assertNull("The user should have been deleted", userService.findByUUID(uuid));
 	}
 
 	@Test

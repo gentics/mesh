@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.MeshVertex;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -140,10 +140,7 @@ public class RoutingContextService extends AbstractMeshService {
 				AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
 				transactionCompletedHandler.handle(transactionCompletedFuture);
 			} else {
-				//				try (Transaction tx = graphDb.beginTx()) {
 				resultHandler.handle(Future.succeededFuture(handler.result()));
-				//					tx.success();
-				//				}
 				if (transactionCompletedHandler != null) {
 					AsyncResult<Boolean> transactionCompletedFuture = Future.succeededFuture(true);
 					transactionCompletedHandler.handle(transactionCompletedFuture);

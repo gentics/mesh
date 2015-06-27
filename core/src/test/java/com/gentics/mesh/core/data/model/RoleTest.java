@@ -18,7 +18,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.demo.UserInfo;
@@ -41,7 +40,7 @@ public class RoleTest extends AbstractDBTest {
 		final String roleName = "test";
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		Role role = root.create(roleName);
-		role = roleService.findOne(role.getId());
+		role = roleService.findByUUID(role.getUuid());
 		assertNotNull(role);
 		assertEquals(roleName, role.getName());
 	}
@@ -152,6 +151,6 @@ public class RoleTest extends AbstractDBTest {
 		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends Role> roles = info.getGroup().getRoles(requestUser, new PagingInfo(1, 10));
 		assertEquals(2, roles.getSize());
-		//assertEquals(2, roles.getTotalElements());
+		// assertEquals(2, roles.getTotalElements());
 	}
 }

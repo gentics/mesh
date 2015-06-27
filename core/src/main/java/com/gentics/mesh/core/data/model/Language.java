@@ -1,32 +1,17 @@
 package com.gentics.mesh.core.data.model;
 
-import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.impl.LanguageImpl;
 
-public class Language extends GenericNode {
+public interface Language extends GenericNode {
 
-	//TODO add index
-	public String getName() {
-		return getProperty("name");
-	}
+	String getName();
 
-	public void setName(String name) {
-		setProperty("name", name);
-	}
+	void setNativeName(String languageNativeName);
 
-	public String getNativeName() {
-		return getProperty("nativeName");
-	}
+	String getNativeName();
 
-	public void setNativeName(String name) {
-		setProperty("nativeName", name);
-	}
+	String getLanguageTag();
 
-	public String getLanguageTag() {
-		return getProperty("languageTag");
-	}
-
-	public void setLanguageTag(String languageTag) {
-		setProperty("languageTag", languageTag);
-	}
+	LanguageImpl getImpl();
 
 }

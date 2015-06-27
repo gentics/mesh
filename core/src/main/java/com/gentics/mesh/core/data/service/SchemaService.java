@@ -13,10 +13,11 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.Schema;
+import com.gentics.mesh.core.data.model.impl.MeshUserImpl;
+import com.gentics.mesh.core.data.model.impl.SchemaImpl;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
-import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
+import com.gentics.mesh.core.data.model.root.impl.SchemaRootImpl;
+import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyTypeImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -36,15 +37,15 @@ public class SchemaService extends AbstractMeshService {
 
 	public Schema findByUUID(String projectName, String uuid) {
 		// TODO check for projectName
-		return fg.v().has("uuid", uuid).nextOrDefault(Schema.class, null);
+		return fg.v().has("uuid", uuid).has(SchemaImpl.class).nextOrDefault(SchemaImpl.class, null);
 	}
 
 	public Schema findByName(String projectName, String name) {
 		if (StringUtils.isEmpty(projectName) || StringUtils.isEmpty(name)) {
 			throw new NullPointerException("name or project name null");
 		}
-		return fg.v().has("name", name).has(Schema.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back()
-				.nextOrDefault(Schema.class, null);
+		return fg.v().has("name", name).has(SchemaImpl.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back()
+				.nextOrDefault(SchemaImpl.class, null);
 	}
 
 	public void deleteByUUID(String uuid) {
@@ -55,7 +56,7 @@ public class SchemaService extends AbstractMeshService {
 		return null;
 	}
 
-	public BasicPropertyType getPropertyTypeSchema(String typeKey) {
+	public BasicPropertyTypeImpl getPropertyTypeSchema(String typeKey) {
 		// if (StringUtils.isEmpty(typeKey)) {
 		// return null;
 		// }
@@ -89,7 +90,7 @@ public class SchemaService extends AbstractMeshService {
 		return null;
 	}
 
-	public Page<Schema> findAll(MeshUser requestUser, Pageable pageable) {
+	public Page<Schema> findAll(MeshUserImpl requestUser, Pageable pageable) {
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return schema ORDER BY schema.name",
 		// countQuery =
@@ -98,31 +99,31 @@ public class SchemaService extends AbstractMeshService {
 	}
 
 	public SchemaRoot findRoot() {
-		return fg.v().has(SchemaRoot.class).nextOrDefault(SchemaRoot.class, null);
+		return fg.v().has(SchemaRootImpl.class).nextOrDefault(SchemaRootImpl.class, null);
 	}
 
 	public Schema findByName(String name) {
-		return fg.v().has("name", name).has(Schema.class).nextOrDefault(Schema.class, null);
+		return fg.v().has("name", name).has(SchemaImpl.class).nextOrDefault(SchemaImpl.class, null);
 	}
 
 	public Schema findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			fg.frameElement(vertex, Schema.class);
+			fg.frameElement(vertex, SchemaImpl.class);
 		}
 		return null;
 	}
 
 	public Schema findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).nextOrDefault(Schema.class, null);
+		return fg.v().has("uuid", uuid).nextOrDefault(SchemaImpl.class, null);
 	}
 
-	public List<? extends Schema> findAll() {
-		return fg.v().has(Schema.class).toListExplicit(Schema.class);
+	public List<? extends SchemaImpl> findAll() {
+		return fg.v().has(SchemaImpl.class).toListExplicit(SchemaImpl.class);
 	}
 
 	public void delete(Schema schema) {
-		schema.getVertex().remove();
+		((SchemaImpl) schema).getVertex().remove();
 	}
 
 }

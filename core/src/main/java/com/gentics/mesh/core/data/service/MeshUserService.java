@@ -10,7 +10,10 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.impl.MeshAuthUserImpl;
+import com.gentics.mesh.core.data.model.impl.MeshUserImpl;
 import com.gentics.mesh.core.data.model.root.UserRoot;
+import com.gentics.mesh.core.data.model.root.impl.UserRootImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -44,27 +47,27 @@ public class MeshUserService extends AbstractMeshService {
 	}
 
 	public MeshUser findByUsername(String username) {
-		return fg.v().has(MeshUser.USERNAME_KEY, username).nextOrDefault(MeshUser.class, null);
+		return fg.v().has(MeshUserImpl.USERNAME_KEY, username).nextOrDefault(MeshUserImpl.class, null);
 	}
 
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
-		return fg.v().has(MeshUser.USERNAME_KEY, username).nextOrDefaultExplicit(MeshAuthUser.class, null);
+		return fg.v().has(MeshUserImpl.USERNAME_KEY, username).nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
 	}
 
 	public UserRoot findRoot() {
-		return fg.v().has(UserRoot.class).nextOrDefault(UserRoot.class, null);
+		return fg.v().has(UserRootImpl.class).nextOrDefault(UserRootImpl.class, null);
 	}
 
 	public MeshUser findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			return fg.frameElement(vertex, MeshUser.class);
+			return fg.frameElement(vertex, MeshUserImpl.class);
 		}
 		return null;
 	}
 
 	public MeshUser findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).nextOrDefault(MeshUser.class, null);
+		return fg.v().has("uuid", uuid).nextOrDefault(MeshUserImpl.class, null);
 	}
 
 }

@@ -6,10 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.model.impl.TagImpl;
 import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
-import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;

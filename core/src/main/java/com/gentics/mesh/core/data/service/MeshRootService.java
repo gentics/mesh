@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.root.MeshRoot;
+import com.gentics.mesh.core.data.model.root.impl.MeshRootImpl;
 import com.syncleus.ferma.FramedGraph;
 
 @Component
@@ -13,11 +14,11 @@ public class MeshRootService {
 	private FramedGraph fg;
 
 	public MeshRoot findRoot() {
-		return fg.v().has(MeshRoot.class).nextOrDefault(MeshRoot.class, null);
+		return fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 	}
 
 	public MeshRoot create() {
-		MeshRoot root = fg.addFramedVertex(MeshRoot.class);
+		MeshRootImpl root = fg.addFramedVertex(MeshRootImpl.class);
 		return root;
 	}
 

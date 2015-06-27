@@ -1,85 +1,36 @@
 package com.gentics.mesh.core.data.model;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_ROOT_NODE;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
-
-import com.gentics.mesh.core.data.model.generic.GenericNode;
+import com.gentics.mesh.core.data.model.impl.ProjectImpl;
 import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 
-public class Project extends GenericNode {
+public interface Project extends GenericNode {
 
-	// TODO index to name + unique constraint
-	public String getName() {
-		return getProperty("name");
-	}
+	MeshNode getOrCreateRootNode();
 
-	public void setName(String name) {
-		setProperty("name", name);
-	}
+	MeshNode getRootNode();
 
-	public TagFamilyRoot getTagFamilyRoot() {
-		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyRoot.class).nextOrDefaultExplicit(TagFamilyRoot.class, null);
-	}
+	TagFamilyRoot getTagFamilyRoot();
 
-	public void setTagFamilyRoot(TagFamilyRoot root) {
-		outE(HAS_TAGFAMILY_ROOT).removeAll();
-		linkOut(root, HAS_TAGFAMILY_ROOT);
-	}
+	SchemaRoot getSchemaRoot();
 
-	public TagFamilyRoot createTagFamilyRoot() {
-		TagFamilyRoot root = getGraph().addFramedVertex(TagFamilyRoot.class);
-		setTagFamilyRoot(root);
-		return root;
-	}
+	String getName();
 
-	public SchemaRoot getSchemaRoot() {
-		return out(HAS_SCHEMA_ROOT).has(SchemaRoot.class).nextOrDefault(SchemaRoot.class, null);
-	}
+	void setName(String name);
 
-	public void setSchemaRoot(SchemaRoot schemaRoot) {
-		linkOut(schemaRoot, HAS_SCHEMA_ROOT);
-	}
+	void setRootNode(MeshNode rootNode);
 
-	public MeshNode getRootNode() {
-		return out(HAS_ROOT_NODE).has(MeshNode.class).nextOrDefault(MeshNode.class, null);
-	}
+	void delete();
 
-	public void setRootNode(MeshNode rootNode) {
-		linkOut(rootNode, HAS_ROOT_NODE);
-	}
+	ProjectResponse transformToRest(MeshAuthUser requestUser);
 
-	public ProjectResponse transformToRest(MeshUser user) {
-		ProjectResponse projectResponse = new ProjectResponse();
-		projectResponse.setUuid(getUuid());
-		projectResponse.setName(getName());
-		projectResponse.setPermissions(user.getPermissionNames(this));
+	ProjectImpl getImpl();
 
-		// if (rootNode != null) {
-		// projectResponse.setRootNodeUuid(rootNode.getUuid());
-		// } else {
-		// log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
-		// }
-		// return projectResponse;
-		return null;
-	}
+	void setSchemaRoot(SchemaRoot schemaRoot);
 
-	public MeshNode getOrCreateRootNode() {
-		MeshNode rootNode = getRootNode();
-		if (rootNode == null) {
-			rootNode = getGraph().addFramedVertex(MeshNode.class);
-			setRootNode(rootNode);
-		}
-		return rootNode;
+	TagFamilyRoot createTagFamilyRoot();
 
-	}
-
-	public void delete() {
-		//TODO handle this correctly
-		getVertex().remove();
-	}
-
+	void setTagFamilyRoot(TagFamilyRoot tagFamilyRoot);
 }

@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.root.TagFamily;
+import com.gentics.mesh.core.data.model.TagFamily;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;

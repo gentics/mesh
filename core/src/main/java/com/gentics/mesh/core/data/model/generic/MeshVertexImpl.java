@@ -3,12 +3,13 @@ package com.gentics.mesh.core.data.model.generic;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.core.data.model.MeshVertex;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
-public class MeshVertex extends AbstractVertexFrame {
+public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	protected void init() {

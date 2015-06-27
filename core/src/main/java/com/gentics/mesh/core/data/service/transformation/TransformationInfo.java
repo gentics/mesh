@@ -32,15 +32,10 @@ public class TransformationInfo {
 		return requestUser;
 	}
 
-	//	public int getMaxDepth() {
-	//		return maxDepth;
-	//	}
-	//
 	public AbstractRestModel getObject(String uuid) {
 		return objectReferences.get(uuid);
 	}
 
-	//
 	public void addObject(String uuid, AbstractRestModel object) {
 		objectReferences.put(uuid, object);
 	}

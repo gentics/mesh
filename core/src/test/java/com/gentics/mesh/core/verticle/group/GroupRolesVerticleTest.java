@@ -156,10 +156,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroupWithBogusRoleUUID() throws Exception {
 		Group group = info.getGroup();
-
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/bogus", 404, "Not Found");
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
-
 	}
 
 	// Group Role Testcases - DELETE / Remove

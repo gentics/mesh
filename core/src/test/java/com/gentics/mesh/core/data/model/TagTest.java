@@ -18,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -52,8 +50,9 @@ public class TagTest extends AbstractDBTest {
 	public void testTagCreation() {
 		TagFamily tagFamily = data().getTagFamily("basic");
 		Tag tag = tagFamily.create(GERMAN_NAME);
-		assertNotNull(tag.getId());
-		tag = tagService.findOne(tag.getId());
+		assertNotNull(tag);
+		String uuid = tag.getUuid();
+		tag = tagService.findByUUID(uuid);
 		assertNotNull("The folder could not be found.", tag);
 		String name = tag.getName();
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
@@ -90,7 +89,8 @@ public class TagTest extends AbstractDBTest {
 		// 1. Create the tag
 		TagFamily root = data().getTagFamily("basic");
 		Tag tag = root.create(ENGLISH_NAME);
-		tag = tagService.findOne(tag.getId());
+		String uuid = tag.getUuid();
+		tag = tagService.findByUUID(uuid);
 		assertNotNull(tag);
 
 		// 2. Create the node
@@ -114,13 +114,13 @@ public class TagTest extends AbstractDBTest {
 		MeshNodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
 
 		assertNotNull(contentFromTag);
-		assertEquals("We did not get the correct content.", node.getId(), contentFromTag.getId());
+		assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
 		String filename = fieldContainer.getProperty("displayName");
 		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 		// Remove the file/content and check whether the content was really removed
 		tag.removeNode(contentFromTag);
-		//TODO verify for removed node
+		// TODO verify for removed node
 		assertEquals("The tag should not have any file.", 0, tag.getNodes().size());
 
 	}

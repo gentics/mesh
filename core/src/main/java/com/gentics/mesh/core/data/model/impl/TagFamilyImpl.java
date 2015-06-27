@@ -1,13 +1,14 @@
-package com.gentics.mesh.core.data.model.root;
+package com.gentics.mesh.core.data.model.impl;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
 
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.TagFamily;
+import com.gentics.mesh.core.data.model.generic.MeshVertexImpl;
 
-public class TagFamily extends MeshVertex {
+public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
 
 	public String getName() {
 		return getProperty("name");
@@ -25,24 +26,29 @@ public class TagFamily extends MeshVertex {
 		setProperty("description", description);
 	}
 
-	public List<? extends Tag> getTags() {
-		return out(HAS_TAG).has(Tag.class).toListExplicit(Tag.class);
+	public List<Tag> getTags() {
+		return (List<Tag>) out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
 	}
 
 	public void addTag(Tag tag) {
-		linkOut(tag, HAS_TAG);
+		linkOut((TagImpl) tag, HAS_TAG);
 	}
 
 	public void removeTag(Tag tag) {
-		unlinkOut(tag, HAS_TAG);
-		//TODO delete tag node?!
+		unlinkOut((TagImpl) tag, HAS_TAG);
+		// TODO delete tag node?!
 	}
 
 	public Tag create(String name) {
-		Tag tag = getGraph().addFramedVertex(Tag.class);
+		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		addTag(tag);
 		return tag;
+	}
+
+	@Override
+	public TagFamilyImpl getImpl() {
+		return this;
 	}
 
 }

@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.model.root.LanguageRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
-import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.model.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -60,14 +59,11 @@ public class OGMTest {
 		TagFamily tagFamily = tagFamilyRoot.create("basic");
 
 		Tag tag = tagFamily.create("dummyTag");
-		System.out.println(tag.getId());
 
 		SchemaRoot schemaRoot = project.getSchemaRoot();
 		System.out.println(groupRoot.getUuid());
-		System.out.println(groupRoot.getId());
 		root.setGroupRoot(groupRoot);
 
-		System.out.println(root.getGroupRoot().getId());
 		System.out.println(root.getGroupRoot().getUuid());
 
 		Schema schema = schemaRoot.create("test");

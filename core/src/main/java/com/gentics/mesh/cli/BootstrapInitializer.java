@@ -326,7 +326,6 @@ public class BootstrapInitializer {
 
 		// Verify that an admin user exists
 		MeshUser adminUser = userService.findByUsername("admin");
-
 		if (adminUser == null) {
 			adminUser = userRoot.create("admin");
 			System.out.println("Enter admin password:");

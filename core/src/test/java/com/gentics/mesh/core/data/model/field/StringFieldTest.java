@@ -4,16 +4,16 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.model.node.field.StringField;
+import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class StringFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleString() {
-		MeshNodeFieldContainer container = fg.addFramedVertex(MeshNodeFieldContainer.class);
-		StringField field = new StringField("test", container);
+		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		StringFieldImpl field = new StringFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setFieldLabel("dummyLabel");
 		field.setFieldName("dummyName");

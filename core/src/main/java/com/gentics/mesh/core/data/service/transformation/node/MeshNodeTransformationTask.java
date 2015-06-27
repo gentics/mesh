@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.service.transformation.node;
 
-import static com.gentics.mesh.core.data.service.I18NService.getI18n;
-import static com.gentics.mesh.core.data.service.LanguageService.getLanguageService;
 import io.vertx.core.impl.ConcurrentHashSet;
 
 import java.util.ArrayList;
@@ -14,8 +12,6 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.AbstractFieldContainer;
-import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.node.MeshNode;
@@ -23,7 +19,6 @@ import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
 
@@ -53,7 +48,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 		// spring service
 		// TODO handle language
 		//		@Autowired
-		//		private LinkResolverFactoryImpl<LinkResolver> resolver;
+		//		private LinkResolverFactory<LinkResolver> resolver;
 		//		Language language = null;
 		//		LinkReplacer replacer = new LinkReplacer(resolver);
 		// content.setContent(language,

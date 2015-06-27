@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.impl.LanguageImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class MeshDatabaseServiceTest extends AbstractDBTest {
@@ -26,7 +26,7 @@ public class MeshDatabaseServiceTest extends AbstractDBTest {
 
 	@Test
 	public void testGraphDatabaseService() {
-		Language language = meshDatabaseService.findByUUID(data().getEnglish().getUuid(), Language.class);
+		LanguageImpl language = meshDatabaseService.findByUUID(data().getEnglish().getUuid(), LanguageImpl.class);
 		assertNotNull(language);
 		assertEquals("English", language.getName());
 	}

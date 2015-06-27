@@ -21,19 +21,21 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.model.Group;
 import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.MeshVertex;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.Role;
 import com.gentics.mesh.core.data.model.Schema;
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.TagFamily;
+import com.gentics.mesh.core.data.model.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.model.impl.SchemaImpl;
 import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.model.root.MeshRoot;
 import com.gentics.mesh.core.data.model.root.RoleRoot;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
-import com.gentics.mesh.core.data.model.root.TagFamily;
 import com.gentics.mesh.core.data.model.root.UserRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
@@ -106,7 +108,6 @@ public class DemoDataProvider {
 	private Language german;
 
 	private Project project;
-
 	private UserInfo userInfo;
 
 	private MeshRoot root;
@@ -141,7 +142,7 @@ public class DemoDataProvider {
 		german = languageService.findByLanguageTag("de");
 		root = rootService.findRoot();
 		addUserGroupRoleProject(multiplicator);
-		//		addMicoSchemas();
+		// addMicoSchemas();
 		addSchemas();
 		addTagFamilies();
 		addTags();
@@ -385,18 +386,18 @@ public class DemoDataProvider {
 		}
 	}
 
-	//	private void addMicoSchemas() {
-	//		SchemaRoot schemaRoot = root.getSchemaRoot();
-	//		MicroPropertyType imageGallery = schemaService.createMicroPropertyTypeSchema("gallery");
-	//		BasicPropertyType descriptionSchema = imageGallery.createBasicPropertyTypeSchema("description", PropertyType.STRING);
-	//		imageGallery.addProperty(descriptionSchema);
+	// private void addMicoSchemas() {
+	// SchemaRoot schemaRoot = root.getSchemaRoot();
+	// MicroPropertyType imageGallery = schemaService.createMicroPropertyTypeSchema("gallery");
+	// BasicPropertyType descriptionSchema = imageGallery.createBasicPropertyTypeSchema("description", PropertyType.STRING);
+	// imageGallery.addProperty(descriptionSchema);
 	//
-	//		BasicPropertyType imagesSchemas = imageGallery.createListPropertyTypeSchema("images");
-	//		//		imagesSchemas.add(PropertyType.REFERENCE);
-	//		imageGallery.addProperty(imagesSchemas);
-	//		microSchemas.put("gallery", imageGallery);
+	// BasicPropertyType imagesSchemas = imageGallery.createListPropertyTypeSchema("images");
+	// // imagesSchemas.add(PropertyType.REFERENCE);
+	// imageGallery.addProperty(imagesSchemas);
+	// microSchemas.put("gallery", imageGallery);
 	//
-	//	}
+	// }
 
 	private void addTagFamilies() {
 		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic");
@@ -411,7 +412,7 @@ public class DemoDataProvider {
 	private void addSchemas() {
 		addBootstrapSchemas();
 		addBlogPostSchema();
-		//		addColorsSchema();
+		// addColorsSchema();
 		addCategorySchema();
 	}
 
@@ -434,17 +435,17 @@ public class DemoDataProvider {
 
 	}
 
-	//	private void addColorsSchema() {
-	//		SchemaRoot schemaRoot = root.getSchemaRoot();
-	//		Schema colorSchema = schemaRoot.create("colors");
-	//		colorSchema.setDescription("Colors");
-	//		colorSchema.setDescription("Colors");
-	//		BasicPropertyType nameProp = colorSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
-	//		nameProp.setDisplayName("Name");
-	//		nameProp.setDescription("The name of the category.");
-	//		colorSchema.addPropertyTypeSchema(nameProp);
-	//		schemas.put("color", colorSchema);
-	//	}
+	// private void addColorsSchema() {
+	// SchemaRoot schemaRoot = root.getSchemaRoot();
+	// Schema colorSchema = schemaRoot.create("colors");
+	// colorSchema.setDescription("Colors");
+	// colorSchema.setDescription("Colors");
+	// BasicPropertyType nameProp = colorSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+	// nameProp.setDisplayName("Name");
+	// nameProp.setDescription("The name of the category.");
+	// colorSchema.addPropertyTypeSchema(nameProp);
+	// schemas.put("color", colorSchema);
+	// }
 
 	private void addBlogPostSchema() {
 		SchemaRoot schemaRoot = root.getSchemaRoot();
@@ -462,17 +463,17 @@ public class DemoDataProvider {
 		categoriesSchema.setDisplayName("Category");
 		categoriesSchema.setDescription("Custom schema for tag categories");
 		categoriesSchema.setCreator(userInfo.getUser());
-		BasicPropertyType nameProp = categoriesSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType nameProp = categoriesSchema.createBasicPropertyTypeSchema(SchemaImpl.NAME_KEYWORD, PropertyType.I18N_STRING);
 		nameProp.setDisplayName("Name");
 		nameProp.setDescription("The name of the category.");
 		categoriesSchema.addPropertyTypeSchema(nameProp);
 
-		BasicPropertyType displayNameProp = categoriesSchema.createBasicPropertyTypeSchema(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType displayNameProp = categoriesSchema.createBasicPropertyTypeSchema(SchemaImpl.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
 		displayNameProp.setDisplayName("Display Name");
 		displayNameProp.setDescription("The display name property of the category.");
 		categoriesSchema.addPropertyTypeSchema(displayNameProp);
 
-		BasicPropertyType contentProp = categoriesSchema.createBasicPropertyTypeSchema(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
+		BasicPropertyType contentProp = categoriesSchema.createBasicPropertyTypeSchema(SchemaImpl.CONTENT_KEYWORD, PropertyType.I18N_STRING);
 		contentProp.setDisplayName("Content");
 		contentProp.setDescription("The main content html of the category.");
 		categoriesSchema.addPropertyTypeSchema(contentProp);
@@ -499,26 +500,26 @@ public class DemoDataProvider {
 
 		// TODO determine why this is not working when using sdn
 		// Add Permissions
-		//		Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
+		// Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
 		Role role = userInfo.getRole();
 
 		for (Vertex vertex : fg.getVertices()) {
 			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
-			//TODO typecheck? and verify how orient will behave
-			if (role.getVertex().getId() == vertex.getId()) {
+			// TODO typecheck? and verify how orient will behave
+			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
 				log.info("Skipping own role");
 				continue;
 			}
 
-			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertex.class);
+			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 			role.addPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 
-			//			GraphPermission perm = role.addPermissions();
-			//			perm.setProperty("permissions-read", true);
-			//			perm.setProperty("permissions-delete", true);
-			//			perm.setProperty("permissions-create", true);
-			//			perm.setProperty("permissions-update", true);
+			// GraphPermission perm = role.addPermissions();
+			// perm.setProperty("permissions-read", true);
+			// perm.setProperty("permissions-delete", true);
+			// perm.setProperty("permissions-create", true);
+			// perm.setProperty("permissions-update", true);
 			// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
 			// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
 			// genericNodeService.save(node);
@@ -588,11 +589,11 @@ public class DemoDataProvider {
 		node.addProject(project);
 		node.setCreator(userInfo.getUser());
 		node.setSchema(schema);
-		//		node.setOrder(42);
+		// node.setOrder(42);
 		node.setParentNode(parentNode);
 		// Add the content to the given tag
-		//		parentTag.addContent(content);
-		//		parentTag = tagService.save(parentTag);
+		// parentTag.addContent(content);
+		// parentTag = tagService.save(parentTag);
 
 		if (contents.containsKey(name.toLowerCase())) {
 			throw new RuntimeException("Collsion of contents detected for key " + name.toLowerCase());
@@ -677,7 +678,6 @@ public class DemoDataProvider {
 
 	public MeshRoot getMeshRoot() {
 		return root;
-
 	}
 
 	public int getNodeCount() {

@@ -3,8 +3,6 @@ package com.gentics.mesh.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -132,7 +130,6 @@ public class RestAssert {
 		assertNotNull(readValue.getPermissions());
 
 		Schema schema = node.getSchema();
-		//		schema = neo4jTemplate.fetch(schema);
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), readValue.getSchema().getName());
 		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());

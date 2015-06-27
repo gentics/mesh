@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;
@@ -89,7 +88,7 @@ public class MeshNodeTest extends AbstractDBTest {
 		englishContainer.setProperty("name", "english.html");
 		assertNotNull(node.getUuid());
 
-		List<? extends AbstractFieldContainer> allProperties = node.getFieldContainers();
+		List<? extends FieldContainer> allProperties = node.getFieldContainers();
 		assertNotNull(allProperties);
 		assertEquals(1, allProperties.size());
 

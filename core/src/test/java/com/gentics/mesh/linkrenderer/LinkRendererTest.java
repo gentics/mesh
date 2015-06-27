@@ -11,12 +11,12 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.node.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;
-import com.gentics.mesh.core.link.LinkResolverFactoryImpl;
+import com.gentics.mesh.core.link.LinkResolverFactory;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class LinkRendererTest extends AbstractDBTest {
@@ -24,7 +24,7 @@ public class LinkRendererTest extends AbstractDBTest {
 	final String content = "some bla START<a href=\"${Page(2)}\">Test</a>   dasasdg <a href=\"${Page(3)}\">Test</a>DEN";
 
 	@Autowired
-	private LinkResolverFactoryImpl<LinkResolver> resolverFactory;
+	private LinkResolverFactory<LinkResolver> resolverFactory;
 
 	@Autowired
 	private MeshNodeService nodeService;

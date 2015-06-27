@@ -1,29 +1,19 @@
 package com.gentics.mesh.core.data.model.root;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_LANGUAGE;
-
 import java.util.List;
 
 import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.generic.MeshVertex;
+import com.gentics.mesh.core.data.model.MeshVertex;
+import com.gentics.mesh.core.data.model.root.impl.LanguageRootImpl;
 
-public class LanguageRoot extends MeshVertex {
+public interface LanguageRoot extends MeshVertex {
 
-	public List<? extends Language> getLanguages() {
-		return out(HAS_LANGUAGE).toList(Language.class);
-	}
+	List<? extends Language> getLanguages();
 
-	public void addLanguage(Language language) {
-		linkOut(language, HAS_LANGUAGE);
-	}
+	Language create(String languageName, String languageTag);
 
-	// TODO add unique index
+	void addLanguage(Language language);
 
-	public Language create(String languageName, String languageTag) {
-		Language language = getGraph().addFramedVertex(Language.class);
-		language.setName(languageName);
-		language.setLanguageTag(languageTag);
-		addLanguage(language);
-		return language;
-	}
+	LanguageRootImpl getImpl();
+
 }

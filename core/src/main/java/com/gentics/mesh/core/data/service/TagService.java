@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.root.TagFamily;
+import com.gentics.mesh.core.data.model.impl.TagImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -40,11 +40,11 @@ public class TagService extends AbstractMeshService {
 	public Page<? extends Tag> findProjectTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
 
-		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(Tag.class).mark().out(ASSIGNED_TO_PROJECT)
+		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(TagImpl.class).mark().out(ASSIGNED_TO_PROJECT)
 				.has("name", projectName).back();
-		VertexTraversal<?, ?, ?> countTraversal = requestUser.getPermTraversal(READ_PERM).has(Tag.class).mark().out(ASSIGNED_TO_PROJECT)
+		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(TagImpl.class).mark().out(ASSIGNED_TO_PROJECT)
 				.has("name", projectName).back();
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, Tag.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
 		//		String langFilter = getLanguageFilter("l");
 		//		if (languageTags == null || languageTags.isEmpty()) {
 		//			langFilter = "";
@@ -83,18 +83,18 @@ public class TagService extends AbstractMeshService {
 	public Tag findOne(Object id) {
 		Vertex vertex = fg.getVertex(id);
 		if (vertex != null) {
-			return fg.frameElement(vertex, Tag.class);
+			return fg.frameElement(vertex, TagImpl.class);
 		}
 		return null;
 	}
 
 	public Tag findByName(String projectName, String name) {
 		//TODO filter by i18n properties, projectname
-		return fg.v().has("name", name).nextOrDefault(Tag.class, null);
+		return fg.v().has("name", name).nextOrDefault(TagImpl.class, null);
 	}
 
 	public Tag findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).nextOrDefault(Tag.class, null);
+		return fg.v().has("uuid", uuid).nextOrDefault(TagImpl.class, null);
 	}
 
 }

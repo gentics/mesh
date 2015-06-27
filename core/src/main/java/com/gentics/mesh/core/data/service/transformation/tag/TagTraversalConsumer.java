@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.service.transformation.tag;
 
 import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import io.vertx.ext.web.Session;
 
 import java.util.Collections;
 import java.util.Set;

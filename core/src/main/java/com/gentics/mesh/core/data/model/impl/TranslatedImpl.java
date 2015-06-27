@@ -1,0 +1,26 @@
+package com.gentics.mesh.core.data.model.impl;
+
+import com.gentics.mesh.core.data.model.Translated;
+import com.gentics.mesh.core.data.model.generic.AbstractGenericNode;
+import com.syncleus.ferma.AbstractEdgeFrame;
+
+public class TranslatedImpl extends AbstractEdgeFrame implements Translated {
+
+	public static final String LANGUAGE_TAG_KEY = "languageTag";
+
+	public String getLanguageTag() {
+		return getProperty(LANGUAGE_TAG_KEY);
+	}
+
+	public void setLanguageTag(String languageTag) {
+		setProperty(LANGUAGE_TAG_KEY, languageTag);
+	}
+
+	public AbstractGenericNode getStartNode() {
+		return inV().nextOrDefault(AbstractGenericNode.class, null);
+	}
+
+	public AbstractFieldContainerImpl getI18NProperties() {
+		return outV().nextOrDefault(AbstractFieldContainerImpl.class, null);
+	}
+}

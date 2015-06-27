@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.impl.MeshNodeImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -31,16 +32,16 @@ public class MeshNodeService extends AbstractMeshService {
 		return instance;
 	}
 
-	//private static ForkJoinPool pool = new ForkJoinPool(8);
+	// private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	public Page<? extends MeshNode> findAll(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
 
-		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark().out(ASSIGNED_TO_PROJECT)
-				.has("name", projectName).back();
-		VertexTraversal<?, ?, ?> countTraversal = requestUser.getPermTraversal(READ_PERM).has(MeshNode.class).mark().out(ASSIGNED_TO_PROJECT)
-				.has("name", projectName).back();
-		Page<? extends MeshNode> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshNode.class);
+		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(MeshNodeImpl.class).mark()
+				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(MeshNodeImpl.class).mark()
+				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+		Page<? extends MeshNode> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshNodeImpl.class);
 		return nodePage;
 	}
 
@@ -51,16 +52,15 @@ public class MeshNodeService extends AbstractMeshService {
 	}
 
 	public List<? extends MeshNode> findAllNodes() {
-		return fg.v().has(MeshNode.class).toListExplicit(MeshNode.class);
+		return fg.v().has(MeshNodeImpl.class).toListExplicit(MeshNodeImpl.class);
 	}
 
-
 	public MeshNode findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).nextOrDefault(MeshNode.class, null);
+		return fg.v().has("uuid", uuid).has(MeshNodeImpl.class).nextOrDefault(MeshNodeImpl.class, null);
 	}
 
 	public void delete(MeshNode node) {
-		node.getVertex().remove();
+		node.getImpl().getVertex().remove();
 	}
 
 }

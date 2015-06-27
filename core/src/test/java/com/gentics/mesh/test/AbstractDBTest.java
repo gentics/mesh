@@ -16,8 +16,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.MeshUser;
+import com.gentics.mesh.core.data.model.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
@@ -97,7 +97,7 @@ public abstract class AbstractDBTest {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 
-		MeshAuthUser requestUser = fg.frameElement(user.getElement(), MeshAuthUser.class);
+		MeshAuthUserImpl requestUser = fg.frameElement(user.getElement(), MeshAuthUserImpl.class);
 
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);
