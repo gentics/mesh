@@ -121,7 +121,8 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 	public Set<Permission> getPermissions(MeshVertex node) {
 
 		Set<Permission> permissions = new HashSet<>();
-		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(Permission.labels()).mark().inV().retain(node).back().label().toSet();
+		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(Permission.labels()).mark().inV().retain(node.getImpl()).back().label()
+				.toSet();
 		for (String label : labels) {
 			permissions.add(Permission.valueOfLabel(label));
 		}
@@ -133,7 +134,7 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 		// System.out.println(out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().next().getLabel());
 		// System.out.println("-----");
 		// try {
-		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().hasNext();
+		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).back().hasNext();
 		// } catch (Exception e) {
 		// e.printStackTrace();
 		// }

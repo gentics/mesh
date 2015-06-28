@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model.node.impl;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_SCHEMA;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
@@ -29,10 +30,12 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
 	}
 
+	@Override
 	public List<? extends MeshNodeFieldContainer> getFieldContainers() {
-		return getFieldContainers(MeshNodeFieldContainerImpl.class);
+		return out(HAS_FIELD_CONTAINER).has(MeshNodeFieldContainerImpl.class).toListExplicit(MeshNodeFieldContainerImpl.class);
 	}
 
+	@Override
 	public MeshNodeFieldContainer getFieldContainer(Language language) {
 		return getFieldContainer(language, MeshNodeFieldContainerImpl.class);
 	}

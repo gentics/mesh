@@ -48,4 +48,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
 	}
 
+	@Override
+	public MeshVertexImpl getImpl() {
+		return this;
+	}
 }

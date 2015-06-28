@@ -6,7 +6,6 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.impl.TagImpl;
 import com.gentics.mesh.core.data.model.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.node.response.field.Field;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
@@ -16,7 +15,7 @@ public interface Tag extends GenericNode {
 
 	String getName();
 
-	List<? extends Field> getFieldContainers();
+	List<? extends TagFieldContainer> getFieldContainers();
 
 	MeshUser getCreator();
 

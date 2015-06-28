@@ -17,10 +17,6 @@ public class GenericFieldContainerNode extends AbstractGenericNode {
 		return container;
 	}
 
-	protected <T extends FieldContainer> List<? extends T> getFieldContainers(Class<T> classOfT) {
-		return out(HAS_FIELD_CONTAINER).has(classOfT).toListExplicit(classOfT);
-	}
-
 	/**
 	 * Optionally creates a new field container for the given container and language.
 	 * 
@@ -38,7 +34,7 @@ public class GenericFieldContainerNode extends AbstractGenericNode {
 		if (container == null) {
 			container = getGraph().addFramedVertex(classOfT);
 			container.setLanguage(language);
-			Translated edge = addFramedEdge(HAS_FIELD_CONTAINER, container, TranslatedImpl.class);
+			Translated edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), TranslatedImpl.class);
 			edge.setLanguageTag(language.getLanguageTag());
 		}
 

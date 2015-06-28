@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.model.impl;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.service.LanguageService.getLanguageService;
@@ -30,7 +31,7 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 	}
 
 	public List<? extends TagFieldContainer> getFieldContainers() {
-		return getFieldContainers(TagFieldContainerImpl.class);
+		return out(HAS_FIELD_CONTAINER).has(TagFieldContainerImpl.class).toListExplicit(TagFieldContainerImpl.class);
 	}
 
 	public TagFieldContainer getFieldContainer(Language language) {
