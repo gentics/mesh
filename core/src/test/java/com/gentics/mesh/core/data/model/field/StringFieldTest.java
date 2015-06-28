@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.HTMLField;
+import com.gentics.mesh.core.data.model.node.field.StringField;
 import com.gentics.mesh.core.data.model.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -21,4 +23,25 @@ public class StringFieldTest extends AbstractDBTest {
 		field.setString("dummyString");
 		assertEquals(5, container.getPropertyKeys().size());
 	}
+
+	@Test
+	public void testStringField() {
+		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		StringField stringField = container.createString("stringField");
+		assertEquals("stringField", stringField.getFieldKey());
+		stringField.setFieldLabel("stringLabel");
+		assertEquals("stringLabel", stringField.getFieldLabel());
+		stringField.setFieldName("stringName");
+		assertEquals("stringName", stringField.getFieldName());
+		stringField.setString("dummyString");
+		assertEquals("dummyString", stringField.getString());
+		StringField bogusField1 = container.getString("bogus");
+		assertNull(bogusField1);
+		StringField reloadedStringField = container.getString("stringField");
+		assertNotNull(reloadedStringField);
+		assertEquals("stringLabel", reloadedStringField.getFieldLabel());
+		assertEquals("stringField", reloadedStringField.getFieldKey());
+		assertEquals("stringName", reloadedStringField.getFieldName());
+	}
+
 }

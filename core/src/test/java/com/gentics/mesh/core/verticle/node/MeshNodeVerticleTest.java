@@ -369,9 +369,9 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// TODO Reload and update
 		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
-		assertEquals(newFilename, englishContainer.getProperty("displayName"));
-		assertEquals(newName, englishContainer.getProperty("name"));
-		assertEquals(newContent, englishContainer.getProperty("content"));
+		assertEquals(newFilename, englishContainer.getI18nProperty("displayName"));
+		assertEquals(newName, englishContainer.getI18nProperty("name"));
+		assertEquals(newContent, englishContainer.getI18nProperty("content"));
 
 	}
 

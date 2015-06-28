@@ -9,6 +9,8 @@ import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
 
 public abstract class AbstractFieldContainerImpl extends MeshVertexImpl implements FieldContainer {
 
+	public static final String I18N_PREFIX = "i18n-";
+
 	public Language getLanguage() {
 		return out(MeshRelationships.HAS_LANGUAGE).nextOrDefault(LanguageImpl.class, null);
 	}
@@ -17,21 +19,25 @@ public abstract class AbstractFieldContainerImpl extends MeshVertexImpl implemen
 		setLinkOut(language.getImpl(), MeshRelationships.HAS_LANGUAGE);
 	}
 
-	public Map<String, String> getProperties() {
-		return getProperties("i18n-");
+	public boolean fieldExists(String key) {
+		return getProperty(key + "-field") != null;
 	}
 
-	public String getProperty(String key) {
+	public Map<String, String> getI18nProperties() {
+		return getProperties(I18N_PREFIX);
+	}
+
+	public String getI18nProperty(String key) {
 		// TODO typecheck?
-		return super.getProperty("i18n-" + key);
+		return super.getProperty(I18N_PREFIX + key);
 	}
 
-	public void setProperty(String key, String value) {
-		super.setProperty("i18n-" + key, value);
+	public void setI18nProperty(String key, String value) {
+		super.setProperty(I18N_PREFIX + key, value);
 	}
 
 	// TODO Check whether this is the correct way of dealing with property deletions
-	public void removeProperty(String key) {
-		super.setProperty("i18n-" + key, null);
+	public void removeI18nProperty(String key) {
+		super.setProperty(I18N_PREFIX + key, null);
 	}
 }

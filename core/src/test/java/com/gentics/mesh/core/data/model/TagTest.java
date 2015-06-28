@@ -56,7 +56,6 @@ public class TagTest extends AbstractDBTest {
 		assertNotNull("The folder could not be found.", tag);
 		String name = tag.getName();
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-
 		assertEquals(10, tagFamily.getTags().size());
 	}
 
@@ -100,8 +99,8 @@ public class TagTest extends AbstractDBTest {
 		Language german = languageService.findByLanguageTag("de");
 		MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
-		germanContainer.setProperty("displayName", GERMAN_TEST_FILENAME);
-		germanContainer.setProperty("name", "german node name");
+		germanContainer.setI18nProperty("displayName", GERMAN_TEST_FILENAME);
+		germanContainer.setI18nProperty("name", "german node name");
 
 		// 3. Assign the tag to the node
 		node.addTag(tag);
@@ -115,7 +114,7 @@ public class TagTest extends AbstractDBTest {
 
 		assertNotNull(contentFromTag);
 		assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
-		String filename = fieldContainer.getProperty("displayName");
+		String filename = fieldContainer.getI18nProperty("displayName");
 		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 		// Remove the file/content and check whether the content was really removed

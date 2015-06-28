@@ -24,5 +24,10 @@ public class NodeFieldImpl extends MeshEdge implements NodeField {
 	public String getFieldLabel() {
 		return getProperty("label");
 	}
+	
+	@Override
+	public String getFieldKey() {
+		return null;
+	}
 
 }

@@ -12,24 +12,33 @@ public abstract class AbstractSimpleField implements Field {
 		this.parentContainer = parentContainer;
 	}
 
+	@Override
 	public String getFieldLabel() {
 		return getFieldProperty("label");
 	}
 
+	@Override
 	public void setFieldLabel(String label) {
 		setFieldProperty("label", label);
 	}
 
+	@Override
 	public String getFieldName() {
 		return getFieldProperty("name");
 	}
 
+	@Override
 	public void setFieldName(String name) {
 		setFieldProperty("name", name);
 	}
 
+	@Override
 	public String getFieldKey() {
 		return fieldKey;
+	}
+
+	public void setFieldKey() {
+		setFieldProperty("field", "true");
 	}
 
 	public MeshNodeFieldContainerImpl getParentContainer() {
@@ -43,4 +52,5 @@ public abstract class AbstractSimpleField implements Field {
 	public String getFieldProperty(String key) {
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
+
 }

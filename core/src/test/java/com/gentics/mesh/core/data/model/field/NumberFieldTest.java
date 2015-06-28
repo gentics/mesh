@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data.model.field;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.NumberField;
+import com.gentics.mesh.core.data.model.node.field.StringField;
 import com.gentics.mesh.core.data.model.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -27,5 +30,26 @@ public class NumberFieldTest extends AbstractDBTest {
 		field.setNumber(null);
 		assertNull(field.getNumber());
 		assertNull(container.getProperty("test-number"));
+	}
+
+	@Test
+	public void testNumberField() {
+		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		NumberField numberField = container.createNumber("numberField");
+		assertEquals("numberField", numberField.getFieldKey());
+		numberField.setFieldLabel("numberLabel");
+		assertEquals("numberLabel", numberField.getFieldLabel());
+		numberField.setFieldName("numberName");
+		assertEquals("numberName", numberField.getFieldName());
+		numberField.setNumber("dummyNumber");
+		assertEquals("dummyNumber", numberField.getNumber());
+		StringField bogusField1 = container.getString("bogus");
+		assertNull(bogusField1);
+		NumberField reloadedNumberField = container.getNumber("numberField");
+		assertNotNull(reloadedNumberField);
+		assertEquals("numberLabel", reloadedNumberField.getFieldLabel());
+		assertEquals("numberField", reloadedNumberField.getFieldKey());
+		assertEquals("numberName", reloadedNumberField.getFieldName());
+
 	}
 }

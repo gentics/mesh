@@ -55,7 +55,7 @@ public class RoleTest extends AbstractDBTest {
 		MeshNode parentNode = data().getFolder("2015");
 		MeshNode node2 = parentNode.create();
 		MeshNodeFieldContainer englishContainer = node2.getFieldContainer(data().getEnglish());
-		englishContainer.setProperty("content", "Test");
+		englishContainer.setI18nProperty("content", "Test");
 		role.addPermissions(node2, READ_PERM, DELETE_PERM);
 		role.addPermissions(node2, CREATE_PERM);
 		Set<Permission> permissions = role.getPermissions(node2);

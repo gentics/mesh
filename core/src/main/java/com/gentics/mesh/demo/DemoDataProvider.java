@@ -536,13 +536,13 @@ public class DemoDataProvider {
 
 		if (germanName != null) {
 			MeshNodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
-			germanContainer.setProperty("displayName", germanName);
-			germanContainer.setProperty("name", germanName);
+			germanContainer.setI18nProperty("displayName", germanName);
+			germanContainer.setI18nProperty("name", germanName);
 		}
 		if (englishName != null) {
 			MeshNodeFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
-			englishContainer.setProperty("displayName", englishName);
-			englishContainer.setProperty("name", englishName);
+			englishContainer.setI18nProperty("displayName", englishName);
+			englishContainer.setI18nProperty("name", englishName);
 		}
 		folderNode.setCreator(userInfo.getUser());
 		folderNode.setSchema(schemas.get("folder"));
@@ -575,15 +575,15 @@ public class DemoDataProvider {
 	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, Schema schema) {
 		MeshNode node = parentNode.create();
 		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
-		englishContainer.setProperty("displayName", name + " english");
-		englishContainer.setProperty("name", name + ".en.html");
-		englishContainer.setProperty("content", englishContent);
+		englishContainer.setI18nProperty("displayName", name + " english");
+		englishContainer.setI18nProperty("name", name + ".en.html");
+		englishContainer.setI18nProperty("content", englishContent);
 
 		if (germanContent != null) {
 			MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
-			germanContainer.setProperty("displayName", name + " german");
-			germanContainer.setProperty("name", name + ".de.html");
-			germanContainer.setProperty("content", germanContent);
+			germanContainer.setI18nProperty("displayName", name + " german");
+			germanContainer.setI18nProperty("name", name + ".de.html");
+			germanContainer.setI18nProperty("content", germanContent);
 		}
 		// TODO maybe set project should be done inside the save?
 		node.addProject(project);
@@ -607,8 +607,8 @@ public class DemoDataProvider {
 	 */
 	public String getPathForNews2015Tag(Language language) {
 
-		String name = folders.get("news").getFieldContainer(language).getProperty("name");
-		String name2 = folders.get("2015").getFieldContainer(language).getProperty("name");
+		String name = folders.get("news").getFieldContainer(language).getI18nProperty("name");
+		String name2 = folders.get("2015").getFieldContainer(language).getI18nProperty("name");
 		return name + "/" + name2;
 	}
 

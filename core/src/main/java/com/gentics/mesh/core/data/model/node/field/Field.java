@@ -9,4 +9,6 @@ public interface Field {
 	public String getFieldName();
 
 	public void setFieldName(String name);
+
+	String getFieldKey();
 }
