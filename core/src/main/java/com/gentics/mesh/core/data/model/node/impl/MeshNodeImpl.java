@@ -149,6 +149,11 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 		return null;
 
 	}
+	
+	@Override
+	public void delete() {
+		getElement().remove();
+	}
 
 	@Override
 	public MeshNodeImpl getImpl() {

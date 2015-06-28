@@ -55,4 +55,6 @@ public interface MeshNode extends GenericNode {
 
 	Page<Tag> getTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
+	void delete();
+
 }

@@ -144,6 +144,11 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 	}
 
 	@Override
+	public void delete() {
+		getElement().remove();
+	}
+
+	@Override
 	public GroupImpl getImpl() {
 		return this;
 	}

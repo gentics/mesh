@@ -19,7 +19,7 @@ import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
-public class MeshNodeService extends AbstractMeshService {
+public class MeshNodeService extends AbstractMeshGraphService<MeshNode> {
 
 	public static MeshNodeService instance;
 
@@ -31,8 +31,6 @@ public class MeshNodeService extends AbstractMeshService {
 	public static MeshNodeService getNodeService() {
 		return instance;
 	}
-
-	// private static ForkJoinPool pool = new ForkJoinPool(8);
 
 	public Page<? extends MeshNode> findAll(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
@@ -51,16 +49,14 @@ public class MeshNodeService extends AbstractMeshService {
 		// this.links.add(link);
 	}
 
-	public List<? extends MeshNode> findAllNodes() {
+	@Override
+	public List<? extends MeshNode> findAll() {
 		return fg.v().has(MeshNodeImpl.class).toListExplicit(MeshNodeImpl.class);
 	}
 
+	@Override
 	public MeshNode findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).has(MeshNodeImpl.class).nextOrDefault(MeshNodeImpl.class, null);
-	}
-
-	public void delete(MeshNode node) {
-		node.getImpl().getVertex().remove();
+		return findByUUID(uuid, MeshNodeImpl.class);
 	}
 
 }

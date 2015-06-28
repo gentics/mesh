@@ -68,7 +68,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		assertNotNull("Group should have been created.", groupService.findByName(name));
+		assertNotNull("Group should have been created.", groupService.findByUUID(restGroup.getUuid()));
 	}
 
 	@Test
@@ -84,7 +84,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		assertNotNull("Group should have been created.", groupService.findByName(name));
+		assertNotNull("Group should have been created.", groupService.findByUUID(restGroup.getUuid()));
 
 		// Now delete the group
 		response = request(info, DELETE, "/api/v1/groups/" + restGroup.getUuid(), 200, "OK", requestJson);
@@ -121,7 +121,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
 		expectMessageResponse("error_missing_perm", response, root.getUuid());
 
-		assertNull(groupService.findByName(name));
 	}
 
 	// Read Tests

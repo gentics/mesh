@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,11 +39,12 @@ public class GroupTest extends AbstractDBTest {
 
 	@Test
 	public void testRootGroupNode() {
-		int nGroupsBefore = groupService.findRoot().getGroups().size();
+		GroupRoot root = data().getMeshRoot().getGroupRoot();
+		int nGroupsBefore = root.getGroups().size();
 		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
-		Group group = groupRoot.create("test group2");
+		assertNotNull(groupRoot.create("test group2"));
 
-		int nGroupsAfter = groupService.findRoot().getGroups().size();
+		int nGroupsAfter = root.getGroups().size();
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);
 	}
 

@@ -1,16 +1,18 @@
 package com.gentics.mesh.core.data.service;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.Language;
+import com.gentics.mesh.core.data.model.impl.GroupImpl;
 import com.gentics.mesh.core.data.model.impl.LanguageImpl;
-import com.gentics.mesh.core.data.model.root.LanguageRoot;
-import com.gentics.mesh.core.data.model.root.impl.LanguageRootImpl;
+import com.gentics.mesh.core.data.model.impl.TagImpl;
 
 @Component
-public class LanguageService extends AbstractMeshService {
+public class LanguageService extends AbstractMeshGraphService<Language> {
 
 	public static LanguageService instance;
 
@@ -24,7 +26,12 @@ public class LanguageService extends AbstractMeshService {
 	}
 
 	public Language findByName(String name) {
-		return fg.v().has("name", name).has(LanguageImpl.class).nextOrDefault(LanguageImpl.class, null);
+		return findByName(name, LanguageImpl.class);
+	}
+
+	@Override
+	public List<? extends Language> findAll() {
+		return fg.v().has(LanguageImpl.class).toListExplicit(LanguageImpl.class);
 	}
 
 	/**
@@ -42,11 +49,11 @@ public class LanguageService extends AbstractMeshService {
 	 * the future.
 	 */
 	public Language getTagDefaultLanguage() {
-		return findByLanguageTag("en");
+		return findByLanguageTag(TagImpl.DEFAULT_TAG_LANGUAGE_TAG);
 	}
 
-	public LanguageRoot findRoot() {
-		return fg.v().has(LanguageRootImpl.class).nextOrDefault(LanguageRootImpl.class, null);
+	@Override
+	public Language findByUUID(String uuid) {
+		return findByUUID(uuid, LanguageImpl.class);
 	}
-
 }

@@ -253,7 +253,7 @@ public class BootstrapInitializer {
 
 		// Save the default object schemas
 
-		SchemaRoot schemaRoot = schemaService.findRoot();
+		SchemaRoot schemaRoot = meshRoot.getSchemaRoot();
 		if (schemaRoot == null) {
 			schemaRoot = meshRoot.createRoot();
 			log.info("Stored schema root node");

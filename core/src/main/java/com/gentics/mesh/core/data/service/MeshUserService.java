@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
+import java.util.List;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -12,13 +14,12 @@ import com.gentics.mesh.core.data.model.MeshAuthUser;
 import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.model.impl.MeshUserImpl;
-import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.root.impl.UserRootImpl;
 import com.gentics.mesh.paging.PagingInfo;
-import com.tinkerpop.blueprints.Vertex;
 
 @Component
-public class MeshUserService extends AbstractMeshService {
+public class MeshUserService extends AbstractMeshGraphService<MeshUser> {
+
+	private static final Logger log = LoggerFactory.getLogger(MeshUserService.class);
 
 	public static MeshUserService instance;
 
@@ -30,8 +31,6 @@ public class MeshUserService extends AbstractMeshService {
 	public static MeshUserService getUserService() {
 		return instance;
 	}
-
-	private static final Logger log = LoggerFactory.getLogger(MeshUserService.class);
 
 	/**
 	 * Find all users that are visible for the given user.
@@ -53,21 +52,15 @@ public class MeshUserService extends AbstractMeshService {
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		return fg.v().has(MeshUserImpl.USERNAME_KEY, username).nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
 	}
-
-	public UserRoot findRoot() {
-		return fg.v().has(UserRootImpl.class).nextOrDefault(UserRootImpl.class, null);
+	
+	@Override
+	public List<? extends MeshUser> findAll() {
+		return fg.v().has(MeshUserImpl.class).toListExplicit(MeshUserImpl.class);
 	}
 
-	public MeshUser findOne(Object id) {
-		Vertex vertex = fg.getVertex(id);
-		if (vertex != null) {
-			return fg.frameElement(vertex, MeshUserImpl.class);
-		}
-		return null;
-	}
-
+	@Override
 	public MeshUser findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).nextOrDefault(MeshUserImpl.class, null);
+		return findByUUID(uuid, MeshUserImpl.class);
 	}
 
 }

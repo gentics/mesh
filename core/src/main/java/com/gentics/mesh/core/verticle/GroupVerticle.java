@@ -216,7 +216,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			String uuid = rc.request().params().get("uuid");
 			rcs.loadObject(rc, "uuid", DELETE_PERM, Group.class, (AsyncResult<Group> grh) -> {
 				Group group = grh.result();
-				groupService.delete(group);
+				group.delete();
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());

@@ -121,6 +121,7 @@ public class MeshNodeFieldContainerImpl extends AbstractFieldContainerImpl imple
 	@Override
 	public MicroschemaField createMicroschema(String key) {
 		MicroschemaFieldImpl field = getGraph().addFramedVertex(MicroschemaFieldImpl.class);
+		field.setFieldKey(key);
 		linkOut(field, HAS_FIELD);
 		return field;
 	}

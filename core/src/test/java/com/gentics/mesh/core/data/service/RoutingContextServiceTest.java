@@ -14,10 +14,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.model.impl.LanguageImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
-public class MeshDatabaseServiceTest extends AbstractDBTest {
+public class RoutingContextServiceTest extends AbstractDBTest {
 
 	@Autowired
-	private MeshDatabaseService meshDatabaseService;
+	private RoutingContextService meshDatabaseService;
 
 	@Before
 	public void setup() throws JsonParseException, JsonMappingException, IOException {

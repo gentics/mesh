@@ -9,7 +9,6 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.model.MeshUser;
 import com.gentics.mesh.core.data.model.Project;
 import com.gentics.mesh.core.data.model.impl.ProjectImpl;
-import com.gentics.mesh.core.data.model.root.ProjectRoot;
 import com.gentics.mesh.core.data.model.root.impl.ProjectRootImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -17,26 +16,18 @@ import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 @Component
-public class ProjectService extends AbstractMeshService {
-
-	// private static Logger log = LoggerFactory.getLogger(ProjectService.class);
+public class ProjectService extends AbstractMeshGraphService<Project> {
 
 	@Autowired
 	protected MeshUserService userService;
 
-	public Project findByName(String projectName) {
-		return fg.v().has("name", projectName).has(ProjectImpl.class).nextOrDefault(ProjectImpl.class, null);
+	public Project findByName(String name) {
+		return findByName(name, ProjectImpl.class);
 	}
 
-	public Project findByUUID(String uuid) {
-		return fg.v().has("uuid", uuid).has(ProjectImpl.class).nextOrDefault(ProjectImpl.class, null);
-	}
-
+	@Override
 	public List<? extends Project> findAll() {
 		return fg.v().has(ProjectImpl.class).toListExplicit(ProjectImpl.class);
-	}
-
-	public void deleteByName(String name) {
 	}
 
 	public Page<? extends Project> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
@@ -52,8 +43,9 @@ public class ProjectService extends AbstractMeshService {
 
 	}
 
-	public ProjectRoot findRoot() {
-		return fg.v().has(ProjectRootImpl.class).nextOrDefault(ProjectRootImpl.class, null);
+	@Override
+	public Project findByUUID(String uuid) {
+		return findByUUID(uuid, ProjectImpl.class);
 	}
 
 }

@@ -134,7 +134,7 @@ public class RoleTest extends AbstractDBTest {
 		final String roleName = "test2";
 		Role role = root.create(roleName);
 		assertNotNull(role);
-		int nRolesAfter = roleService.findRoot().getRoles().size();
+		int nRolesAfter = root.getRoles().size();
 		assertEquals(nRolesBefore + 1, nRolesAfter);
 
 	}

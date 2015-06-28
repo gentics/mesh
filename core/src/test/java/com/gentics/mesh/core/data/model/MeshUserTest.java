@@ -60,14 +60,11 @@ public class MeshUserTest extends AbstractDBTest {
 
 	@Test
 	public void testUserRoot() {
-		int nUserBefore = userService.findRoot().getUsers().size();
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-
-		MeshUser user = userRoot.create("dummy12345");
-
-		int nUserAfter = userService.findRoot().getUsers().size();
+		UserRoot root = data().getMeshRoot().getUserRoot();
+		int nUserBefore = root.getUsers().size();
+		assertNotNull(root.create("dummy12345"));
+		int nUserAfter = root.getUsers().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
-
 	}
 
 	@Test

@@ -282,7 +282,7 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
 				MeshNode node = rh.result();
-				nodeService.delete(node);
+				node.delete();
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());

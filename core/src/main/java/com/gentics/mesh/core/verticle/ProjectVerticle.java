@@ -101,7 +101,11 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			Future<Project> projectCreated = Future.future();
 			MeshRoot meshRoot = meshRootService.findRoot();
-
+// TODO replace rcs.hasPerm with requestUser.isAuthorised
+//			requestUser.isAuthorised(meshRoot.getProjectRoot(), CREATE_PERM, rh-> {
+//				
+//			});
+			
 			rcs.hasPermission(rc, meshRoot.getProjectRoot(), CREATE_PERM, rh -> {
 				if (projectService.findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));

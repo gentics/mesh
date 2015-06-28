@@ -14,13 +14,8 @@ public class MicroschemaFieldImpl extends AbstractComplexField implements Micros
 
 	@Override
 	public List<? extends MicroschemaListable> getFields() {
-		List<? extends MeshNodeFieldContainer> list = out(HAS_FIELD_CONTAINER).has(MeshNodeFieldContainerImpl.class).toListExplicit(MeshNodeFieldContainerImpl.class);
-		return null;
-	}
-	
-	@Override
-	public String getFieldKey() {
-		// TODO Auto-generated method stub
+		List<? extends MeshNodeFieldContainer> list = out(HAS_FIELD_CONTAINER).has(MeshNodeFieldContainerImpl.class).toListExplicit(
+				MeshNodeFieldContainerImpl.class);
 		return null;
 	}
 

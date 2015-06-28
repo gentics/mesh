@@ -185,7 +185,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			rcs.loadObject(rc, "uuid", DELETE_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 				Schema schema = srh.result();
-				schemaService.delete(schema);
+				schema.delete();
 			}, trh -> {
 				Schema schema = trh.result();
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", schema.getName()))));

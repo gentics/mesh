@@ -35,15 +35,7 @@ public class SchemaTest extends AbstractDBTest {
 	public void testDeleteByObject() {
 		Schema schema = data().getSchema("content");
 		String uuid = schema.getUuid();
-		schemaService.delete(schema);
-		assertNull(schemaService.findByUUID(uuid));
-	}
-
-	@Test
-	public void testDeleteByUUID() {
-		Schema schema = data().getSchema("content");
-		String uuid = schema.getUuid();
-		schemaService.deleteByUUID(uuid);
+		schema.delete();
 		assertNull(schemaService.findByUUID(uuid));
 	}
 

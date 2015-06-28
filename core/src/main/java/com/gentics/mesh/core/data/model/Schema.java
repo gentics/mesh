@@ -48,4 +48,6 @@ public interface Schema extends GenericNode {
 
 	SchemaResponse transformToRest(MeshAuthUser requestUser);
 
+	void delete();
+
 }

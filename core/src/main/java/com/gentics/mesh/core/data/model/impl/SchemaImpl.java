@@ -143,6 +143,11 @@ public class SchemaImpl extends AbstractGenericNode implements Schema {
 	}
 
 	@Override
+	public void delete() {
+		getElement().remove();
+	}
+
+	@Override
 	public SchemaImpl getImpl() {
 		return this;
 	}

@@ -42,4 +42,6 @@ public interface Group extends GenericNode {
 
 	GroupImpl getImpl();
 
+	void delete();
+
 }

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
+import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -18,17 +19,25 @@ import com.gentics.mesh.core.data.model.relationship.Permission;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.InvalidPermissionException;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RoutingContextHelper;
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 @Component
-public class RoutingContextService extends AbstractMeshService {
-
-	@Autowired
-	private MeshDatabaseService meshDatabaseService;
+public class RoutingContextService {
 
 	private static final Logger log = LoggerFactory.getLogger(RoutingContextService.class);
+
+	@Autowired
+	private FramedThreadedTransactionalGraph fg;
+
+	@Autowired
+	private MeshSpringConfiguration configuration;
+
+	@Autowired
+	private I18NService i18n;
 
 	public String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
@@ -44,6 +53,14 @@ public class RoutingContextService extends AbstractMeshService {
 		loadObjectByUuid(rc, uuid, null, permType, classOfT, resultHandler, transactionCompletedHandler);
 	}
 
+	public <T extends MeshVertex> T findByUUID(String projectName, String uuid, Class<T> classOfT) {
+		return fg.v().has("uuid", uuid).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back().nextOrDefault(classOfT, null);
+	}
+
+	public <T extends MeshVertex> T findByUUID(String uuid, Class<T> classOfT) {
+		return fg.v().has("uuid", uuid).has(classOfT).nextOrDefault(classOfT, null);
+	}
+
 	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, Permission permType, Class<T> classOfT,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		if (StringUtils.isEmpty(uuid)) {
@@ -52,13 +69,13 @@ public class RoutingContextService extends AbstractMeshService {
 		}
 
 		configuration.vertx().executeBlocking((Future<T> fut) -> {
-			//TODO add generic loading and framing of objects
+			// TODO add generic loading and framing of objects
 				T node = null;
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					if (projectName != null) {
-						node = meshDatabaseService.findByUUID(projectName, uuid, classOfT);
+						node = findByUUID(projectName, uuid, classOfT);
 					} else {
-						node = meshDatabaseService.findByUUID(uuid, classOfT);
+						node = findByUUID(uuid, classOfT);
 					}
 					tx.success();
 				}
@@ -124,13 +141,11 @@ public class RoutingContextService extends AbstractMeshService {
 		loadObject(rc, uuidParamName, null, permType, classOfT, resultHandler, transactionCompleteHandler);
 	}
 
-	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler) {
-		hasPermission(rc, node, type, resultHandler, null);
-	}
 
 	/**
 	 * Check the permission and throw an invalid permission exception when no matching permission could be found.
 	 */
+	//TODO move this to MeshAuthUser class
 	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
 		MeshAuthUser requestUser = getUser(rc);

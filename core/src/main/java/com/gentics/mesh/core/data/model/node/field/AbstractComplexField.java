@@ -20,4 +20,13 @@ public abstract class AbstractComplexField extends MeshVertexImpl implements Fie
 		setProperty("name", name);
 	}
 
+	@Override
+	public String getFieldKey() {
+		return getProperty("fieldKey");
+	}
+
+	public void setFieldKey(String key) {
+		setProperty("fieldKey", key);
+	}
+
 }
