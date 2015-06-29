@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
 
@@ -26,6 +27,11 @@ public class MicroschemaFieldSchemaImpl extends AbstractFieldSchema implements M
 	@Override
 	public Map<String, Field> getDefaultValues() {
 		return defaultValues;
+	}
+
+	@Override
+	public String getType() {
+		return FieldTypes.MICROSCHEMA.toString();
 	}
 
 }

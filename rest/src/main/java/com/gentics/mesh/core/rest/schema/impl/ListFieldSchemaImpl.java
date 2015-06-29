@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
@@ -51,6 +52,11 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	@Override
 	public void setMin(Integer min) {
 		this.min = min;
+	}
+
+	@Override
+	public String getType() {
+		return FieldTypes.LIST.toString();
 	}
 
 }

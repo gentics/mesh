@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 
 public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFieldSchema {
@@ -28,6 +29,11 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 	@Override
 	public void setUuid(String uuid) {
 		this.defaultUuid = uuid;
+	}
+
+	@Override
+	public String getType() {
+		return FieldTypes.NODE.toString();
 	}
 
 }

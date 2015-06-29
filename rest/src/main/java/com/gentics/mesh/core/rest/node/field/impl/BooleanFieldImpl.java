@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.model.FieldTypes;
 
 public class BooleanFieldImpl implements BooleanField {
 

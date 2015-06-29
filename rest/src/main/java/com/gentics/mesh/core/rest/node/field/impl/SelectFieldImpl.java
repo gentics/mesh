@@ -3,8 +3,8 @@ package com.gentics.mesh.core.rest.node.field.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.SelectField;
-import com.gentics.mesh.model.FieldTypes;
 
 public class SelectFieldImpl implements SelectField {
 

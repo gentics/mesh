@@ -5,10 +5,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.service.SchemaService;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -68,7 +72,7 @@ public class SchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodeSchemaCreateRequest() {
+	public void testNodeSchemaCreateRequest() throws JsonParseException, JsonMappingException, IOException {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("blogpost");
 		request.setDisplayField("name");
@@ -89,14 +93,11 @@ public class SchemaTest extends AbstractDBTest {
 		booleanSchema.setValue(true);
 		request.addField(booleanSchema);
 
-		for (FieldSchema field : request.getFields()) {
-			System.out.println(field.getName());
-			System.out.println(field.getLabel());
-			System.out.println(field.getType());
-			System.out.println();
-		}
-
 		String json = JsonUtils.toJson(request);
-		System.out.println(json);
+		SchemaCreateRequest loadedRequest = JsonUtils.readValue(json, SchemaCreateRequest.class);
+		assertNotNull(loadedRequest);
+		String json2 = JsonUtils.toJson(loadedRequest);
+		assertEquals(json, json2);
+
 	}
 }

@@ -3,11 +3,12 @@ package com.gentics.mesh.core.rest.schema.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 
 public class SelectFieldSchemaImpl extends AbstractFieldSchema implements SelectFieldSchema {
 
-	//TODO check whether we also want to support nodes in here? Do we want to support tags as well?
+	// TODO check whether we also want to support nodes in here? Do we want to support tags as well?
 	private List<String> options;
 
 	private List<String> defaultSelections = new ArrayList<>();
@@ -25,6 +26,11 @@ public class SelectFieldSchemaImpl extends AbstractFieldSchema implements Select
 	@Override
 	public List<String> getSelections() {
 		return this.defaultSelections;
+	}
+
+	@Override
+	public String getType() {
+		return FieldTypes.SELECT.toString();
 	}
 
 }

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.model.FieldTypes;
 
 public class NodeFieldImpl implements NodeField {
 

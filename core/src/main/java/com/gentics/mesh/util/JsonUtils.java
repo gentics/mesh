@@ -12,7 +12,10 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.common.response.SchemaFieldDeserializer;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 
 @Component
@@ -27,6 +30,11 @@ public final class JsonUtils {
 		mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(FieldSchema.class, new SchemaFieldDeserializer());
+		mapper.registerModule(module);
+
 	}
 
 	public static ObjectMapper getMapper() {

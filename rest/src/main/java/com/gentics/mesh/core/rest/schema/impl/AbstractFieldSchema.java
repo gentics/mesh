@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 public abstract class AbstractFieldSchema implements FieldSchema {
@@ -26,12 +27,6 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	@Override
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	@Override
-	public String getType() {
-		//TODO maybe a short name would be better.
-		return getClass().getName();
 	}
 
 }

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-
 
 public class DateFieldSchemaImpl extends AbstractFieldSchema implements DateFieldSchema {
 
@@ -10,12 +10,16 @@ public class DateFieldSchemaImpl extends AbstractFieldSchema implements DateFiel
 	@Override
 	public void setDate(String date) {
 		this.defaultValue = date;
-
 	}
 
 	@Override
 	public String getDate() {
 		return this.defaultValue;
+	}
+
+	@Override
+	public String getType() {
+		return FieldTypes.DATE.toString();
 	}
 
 }

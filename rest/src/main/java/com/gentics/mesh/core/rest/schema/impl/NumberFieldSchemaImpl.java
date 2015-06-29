@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 
 public class NumberFieldSchemaImpl extends AbstractFieldSchema implements NumberFieldSchema {
@@ -50,6 +51,10 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 	@Override
 	public void setNumber(String number) {
 		this.defaultNumber = number;
+	}
 
+	@Override
+	public String getType() {
+		return FieldTypes.NUMBER.toString();
 	}
 }
