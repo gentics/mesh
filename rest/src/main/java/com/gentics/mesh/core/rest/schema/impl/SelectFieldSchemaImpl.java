@@ -1,7 +1,9 @@
-package com.gentics.mesh.core.rest.schema;
+package com.gentics.mesh.core.rest.schema.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 
 public class SelectFieldSchemaImpl extends AbstractFieldSchema implements SelectFieldSchema {
 

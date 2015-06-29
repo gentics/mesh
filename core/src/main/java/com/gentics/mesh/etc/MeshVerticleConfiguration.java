@@ -2,7 +2,7 @@ package com.gentics.mesh.etc;
 
 import io.vertx.core.json.JsonObject;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MeshVerticleConfiguration {
 

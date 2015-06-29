@@ -1,11 +1,11 @@
-package com.gentics.mesh.core.rest.schema;
+package com.gentics.mesh.core.rest.schema.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
 
 public class MicroschemaFieldSchemaImpl extends AbstractFieldSchema implements MicroschemaFieldSchema {
 

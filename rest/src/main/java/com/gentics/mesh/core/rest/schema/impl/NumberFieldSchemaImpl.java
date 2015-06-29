@@ -1,4 +1,6 @@
-package com.gentics.mesh.core.rest.schema;
+package com.gentics.mesh.core.rest.schema.impl;
+
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 
 public class NumberFieldSchemaImpl extends AbstractFieldSchema implements NumberFieldSchema {
 

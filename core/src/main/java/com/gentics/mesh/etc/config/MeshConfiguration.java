@@ -3,8 +3,7 @@ package com.gentics.mesh.etc.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 
 public class MeshConfiguration {

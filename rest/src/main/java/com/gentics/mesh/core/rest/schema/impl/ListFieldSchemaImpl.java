@@ -1,6 +1,7 @@
-package com.gentics.mesh.core.rest.schema;
+package com.gentics.mesh.core.rest.schema.impl;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 

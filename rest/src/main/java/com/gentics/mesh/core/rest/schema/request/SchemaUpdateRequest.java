@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest.schema.request;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 
 public class SchemaUpdateRequest extends AbstractRestModel {

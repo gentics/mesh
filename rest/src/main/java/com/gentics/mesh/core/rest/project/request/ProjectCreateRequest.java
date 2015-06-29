@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.project.request;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ProjectCreateRequest extends ProjectUpdateRequest {
 

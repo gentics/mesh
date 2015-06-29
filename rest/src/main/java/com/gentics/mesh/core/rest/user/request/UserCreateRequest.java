@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.user.request;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class UserCreateRequest extends UserUpdateRequest {
 

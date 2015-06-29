@@ -1,4 +1,6 @@
-package com.gentics.mesh.core.rest.schema;
+package com.gentics.mesh.core.rest.schema.impl;
+
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
 public class StringFieldSchemaImpl extends AbstractFieldSchema implements StringFieldSchema {
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.node.request;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class NodeCreateRequest extends NodeUpdateRequest {
 
