@@ -1,20 +1,21 @@
 package com.gentics.mesh.core.data.model.field;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
-import com.gentics.mesh.core.data.model.node.field.HTMLField;
-import com.gentics.mesh.core.data.model.node.field.StringField;
-import com.gentics.mesh.core.data.model.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.data.model.impl.AbstractFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.basic.StringField;
+import com.gentics.mesh.core.data.model.node.field.impl.basic.StringFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class StringFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleString() {
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		StringFieldImpl field = new StringFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setFieldLabel("dummyLabel");
@@ -26,7 +27,7 @@ public class StringFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testStringField() {
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		StringField stringField = container.createString("stringField");
 		assertEquals("stringField", stringField.getFieldKey());
 		stringField.setFieldLabel("stringLabel");

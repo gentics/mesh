@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.model.Group;
 import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.impl.GroupImpl;
 import com.gentics.mesh.core.data.model.root.GroupRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshUserService;
@@ -229,8 +228,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		// TODO TP load node
-		GroupImpl reloadedGroup = null;
+		Group reloadedGroup = groupService.findByUUID(restGroup.getUuid());
 		assertEquals("The group should have been updated", name, reloadedGroup.getName());
 	}
 
@@ -258,7 +256,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String alreadyUsedName = "extraGroup";
 
 		// Create a group which occupies the name
-		Group extraGroup = groupRoot.create(alreadyUsedName);
+		assertNotNull(groupRoot.create(alreadyUsedName));
 
 		info.getRole().addPermissions(group, UPDATE_PERM);
 		GroupUpdateRequest request = new GroupUpdateRequest();

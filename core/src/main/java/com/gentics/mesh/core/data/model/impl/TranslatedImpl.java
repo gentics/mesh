@@ -20,7 +20,7 @@ public class TranslatedImpl extends AbstractEdgeFrame implements Translated {
 		return inV().nextOrDefault(AbstractGenericNode.class, null);
 	}
 
-	public AbstractFieldContainerImpl getI18NProperties() {
-		return outV().nextOrDefault(AbstractFieldContainerImpl.class, null);
+	public AbstractBasicFieldContainerImpl getI18NProperties() {
+		return outV().nextOrDefault(AbstractBasicFieldContainerImpl.class, null);
 	}
 }

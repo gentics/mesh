@@ -2,7 +2,8 @@ package com.gentics.mesh.core.data.model;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.ArrayList;
@@ -12,10 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
 import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.node.field.BooleanField;
-import com.gentics.mesh.core.data.model.node.field.StringField;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
 import com.gentics.mesh.paging.PagingInfo;

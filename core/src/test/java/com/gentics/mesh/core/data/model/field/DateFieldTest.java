@@ -6,17 +6,17 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
-import com.gentics.mesh.core.data.model.node.field.DateField;
-import com.gentics.mesh.core.data.model.node.field.StringField;
-import com.gentics.mesh.core.data.model.node.field.impl.DateFieldImpl;
+import com.gentics.mesh.core.data.model.impl.AbstractFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.basic.DateField;
+import com.gentics.mesh.core.data.model.node.field.basic.StringField;
+import com.gentics.mesh.core.data.model.node.field.impl.basic.DateFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class DateFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleDate() {
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		DateFieldImpl field = new DateFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setFieldLabel("dummyLabel");
@@ -33,7 +33,7 @@ public class DateFieldTest extends AbstractDBTest {
 	@Test
 	public void testDateField() {
 
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		DateField dateField = container.createDate("dateField");
 		assertEquals("dateField", dateField.getFieldKey());
 		dateField.setFieldLabel("dateLabel");

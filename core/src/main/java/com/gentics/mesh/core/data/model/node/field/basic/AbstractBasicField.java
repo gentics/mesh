@@ -1,13 +1,14 @@
-package com.gentics.mesh.core.data.model.node.field;
+package com.gentics.mesh.core.data.model.node.field.basic;
 
-import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.model.impl.AbstractFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.Field;
 
-public abstract class AbstractSimpleField implements Field {
+public abstract class AbstractBasicField implements Field {
 
 	private String fieldKey;
-	private MeshNodeFieldContainerImpl parentContainer;
+	private AbstractFieldContainerImpl parentContainer;
 
-	public AbstractSimpleField(String fieldKey, MeshNodeFieldContainerImpl parentContainer) {
+	public AbstractBasicField(String fieldKey, AbstractFieldContainerImpl parentContainer) {
 		this.fieldKey = fieldKey;
 		this.parentContainer = parentContainer;
 	}
@@ -37,11 +38,12 @@ public abstract class AbstractSimpleField implements Field {
 		return fieldKey;
 	}
 
-	public void setFieldKey() {
+	@Override
+	public void setFieldKey(String key) {
 		setFieldProperty("field", "true");
 	}
 
-	public MeshNodeFieldContainerImpl getParentContainer() {
+	public AbstractFieldContainerImpl getParentContainer() {
 		return parentContainer;
 	}
 

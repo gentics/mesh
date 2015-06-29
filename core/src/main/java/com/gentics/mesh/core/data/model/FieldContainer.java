@@ -1,12 +1,46 @@
 package com.gentics.mesh.core.data.model;
 
+import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.model.node.field.basic.BooleanField;
+import com.gentics.mesh.core.data.model.node.field.basic.DateField;
+import com.gentics.mesh.core.data.model.node.field.basic.HTMLField;
+import com.gentics.mesh.core.data.model.node.field.basic.NumberField;
+import com.gentics.mesh.core.data.model.node.field.basic.StringField;
+import com.gentics.mesh.core.data.model.node.field.nesting.ListField;
+import com.gentics.mesh.core.data.model.node.field.nesting.ListableField;
+import com.gentics.mesh.core.data.model.node.field.nesting.NodeField;
+import com.gentics.mesh.core.data.model.node.field.nesting.SelectField;
 
-public interface FieldContainer extends MeshVertex {
+public interface FieldContainer extends BasicFieldContainer {
 
-	void setLanguage(Language language);
+	StringField getString(String key);
 
-	void setI18nProperty(String key, String value);
+	StringField createString(String key);
 
-	String getI18nProperty(String string);
+	NodeField createNode(String key, MeshNode node);
+
+	DateField getDate(String key);
+
+	DateField createDate(String key);
+
+	NumberField createNumber(String key);
+
+	NumberField getNumber(String key);
+
+	HTMLField createHTML(String key);
+
+	HTMLField getHTML(String key);
+
+	BooleanField getBoolean(String key);
+
+	BooleanField createBoolean(String key);
+
+	<T extends ListableField> ListField<T> createList(String key);
+
+	<T extends ListableField> ListField<T> getList(String key);
+
+	<T extends ListableField> SelectField<T> createSelect(String key);
+
+	<T extends ListableField> SelectField<T> getSelect(String key);
 
 }

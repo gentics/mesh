@@ -2,9 +2,7 @@ package com.gentics.mesh.core.data.model.generic;
 
 import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 
-import java.util.List;
-
-import com.gentics.mesh.core.data.model.FieldContainer;
+import com.gentics.mesh.core.data.model.BasicFieldContainer;
 import com.gentics.mesh.core.data.model.Language;
 import com.gentics.mesh.core.data.model.Translated;
 import com.gentics.mesh.core.data.model.impl.TranslatedImpl;
@@ -12,7 +10,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 
 public class GenericFieldContainerNode extends AbstractGenericNode {
 
-	protected <T extends FieldContainer> T getFieldContainer(Language language, Class<T> classOfT) {
+	protected <T extends BasicFieldContainer> T getFieldContainer(Language language, Class<T> classOfT) {
 		T container = outE(HAS_FIELD_CONTAINER).has("languageTag", language.getLanguageTag()).inV().nextOrDefault(classOfT, null);
 		return container;
 	}
@@ -23,7 +21,7 @@ public class GenericFieldContainerNode extends AbstractGenericNode {
 	 * @param language
 	 * @return i18n properties vertex entity
 	 */
-	protected <T extends FieldContainer> T getOrCreateFieldContainer(Language language, Class<T> classOfT) {
+	protected <T extends BasicFieldContainer> T getOrCreateFieldContainer(Language language, Class<T> classOfT) {
 
 		T container = null;
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, language.getLanguageTag());

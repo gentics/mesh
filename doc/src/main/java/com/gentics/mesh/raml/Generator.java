@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.response.NodeFieldContainer;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
-import com.gentics.mesh.core.rest.node.response.field.StringFieldProperty;
+import com.gentics.mesh.core.rest.node.response.field.StringField;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.project.response.ProjectListResponse;
@@ -285,18 +285,18 @@ public class Generator {
 		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
 		contentUpdate.setUuid(getUUID());
 		NodeFieldContainer updateFields = new NodeFieldContainer();
-		updateFields.put("filename", new StringFieldProperty("index-renamed.en.html"));
+		updateFields.put("filename", new StringField("index-renamed.en.html"));
 		write(contentUpdate);
 
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
 
 		NodeFieldContainer fields = new NodeFieldContainer();
-		fields.put("name", new StringFieldProperty("English name"));
-		fields.put("filename", new StringFieldProperty("index.en.html"));
-		fields.put("content", new StringFieldProperty("English content"));
-		fields.put("title", new StringFieldProperty("English title"));
-		fields.put("teaser", new StringFieldProperty("English teaser"));
+		fields.put("name", new StringField("English name"));
+		fields.put("filename", new StringField("index.en.html"));
+		fields.put("content", new StringField("English content"));
+		fields.put("title", new StringField("English title"));
+		fields.put("teaser", new StringField("English teaser"));
 		contentCreate.setFields(fields);
 
 		contentCreate.setSchema(schemaReference);

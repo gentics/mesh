@@ -6,17 +6,17 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
-import com.gentics.mesh.core.data.model.node.field.NumberField;
-import com.gentics.mesh.core.data.model.node.field.StringField;
-import com.gentics.mesh.core.data.model.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.data.model.impl.AbstractFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.basic.NumberField;
+import com.gentics.mesh.core.data.model.node.field.basic.StringField;
+import com.gentics.mesh.core.data.model.node.field.impl.basic.NumberFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class NumberFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleNumber() {
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		NumberFieldImpl field = new NumberFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setFieldLabel("dummyLabel");
@@ -34,7 +34,7 @@ public class NumberFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testNumberField() {
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		NumberField numberField = container.createNumber("numberField");
 		assertEquals("numberField", numberField.getFieldKey());
 		numberField.setFieldLabel("numberLabel");

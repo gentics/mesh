@@ -48,6 +48,7 @@ public class MeshRelationships {
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
+	public static final String HAS_ITEM = "HAS_ITEM";
 	public static final String ALLOWED_SCHEMA = "ALLOWED_SCHEMA";
 
 }

@@ -10,5 +10,7 @@ public interface Field {
 
 	public void setFieldName(String name);
 
+	void setFieldKey(String key);
+	
 	String getFieldKey();
 }

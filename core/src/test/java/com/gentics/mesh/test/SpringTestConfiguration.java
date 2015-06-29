@@ -1,11 +1,7 @@
 package com.gentics.mesh.test;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-
 import javax.annotation.PostConstruct;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;

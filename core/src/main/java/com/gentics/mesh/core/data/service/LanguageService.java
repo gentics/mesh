@@ -7,7 +7,6 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.impl.GroupImpl;
 import com.gentics.mesh.core.data.model.impl.LanguageImpl;
 import com.gentics.mesh.core.data.model.impl.TagImpl;
 

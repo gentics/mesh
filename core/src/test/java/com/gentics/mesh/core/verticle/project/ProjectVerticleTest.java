@@ -180,10 +180,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-		//		try (Transaction tx = graphDb.beginTx()) {
 		info.getRole().revokePermissions(project, READ_PERM);
-		//			tx.success();
-		//		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
@@ -222,8 +219,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden", JsonUtils.toJson(request));
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
 
-		//TODO reload?
-		Project reloadedProject = null;
+		Project reloadedProject = projectService.findByUUID(project.getUuid());
 		Assert.assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());
 	}
 

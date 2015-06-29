@@ -6,16 +6,16 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.model.impl.MeshNodeFieldContainerImpl;
-import com.gentics.mesh.core.data.model.node.field.HTMLField;
-import com.gentics.mesh.core.data.model.node.field.impl.HTMLFieldImpl;
+import com.gentics.mesh.core.data.model.impl.AbstractFieldContainerImpl;
+import com.gentics.mesh.core.data.model.node.field.basic.HTMLField;
+import com.gentics.mesh.core.data.model.node.field.impl.basic.HTMLFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class HTMLFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleHTML() {
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		HTMLFieldImpl field = new HTMLFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setFieldLabel("dummyLabel");
@@ -34,7 +34,7 @@ public class HTMLFieldTest extends AbstractDBTest {
 	@Test
 	public void testHTMLField() {
 
-		MeshNodeFieldContainerImpl container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		HTMLField htmlField = container.createHTML("htmlField");
 		assertEquals("htmlField", htmlField.getFieldKey());
 		htmlField.setFieldLabel("htmlLabel");
