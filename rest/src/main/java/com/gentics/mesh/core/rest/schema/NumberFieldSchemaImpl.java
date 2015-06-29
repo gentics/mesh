@@ -1,10 +1,6 @@
-package com.gentics.mesh.core.rest.node.response.field;
+package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.model.FieldTypes;
-
-public class NumberField extends AbstractField {
-
-	private String number;
+public class NumberFieldSchemaImpl extends AbstractFieldSchema implements NumberFieldSchema {
 
 	private Integer min;
 
@@ -12,41 +8,46 @@ public class NumberField extends AbstractField {
 
 	private Float step;
 
-	public String getNumber() {
-		return number;
-	}
+	private String defaultNumber;
 
-	public void setNumber(String number) {
-		this.number = number;
-	}
-
+	@Override
 	public Integer getMax() {
 		return max;
 	}
 
+	@Override
 	public void setMax(Integer max) {
 		this.max = max;
 	}
 
+	@Override
 	public Integer getMin() {
 		return min;
 	}
 
+	@Override
 	public void setMin(Integer min) {
 		this.min = min;
 	}
 
+	@Override
 	public Float getStep() {
 		return step;
 	}
 
+	@Override
 	public void setStep(Float step) {
 		this.step = step;
 	}
 
 	@Override
-	public String getType() {
-		return FieldTypes.NUMBER.toString();
+	public String getNumber() {
+		return defaultNumber;
 	}
 
+	@Override
+	public void setNumber(String number) {
+		this.defaultNumber = number;
+
+	}
 }

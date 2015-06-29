@@ -1,15 +1,18 @@
-package com.gentics.mesh.core.rest.node.response.field;
+package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.model.FieldTypes;
 
-public class BooleanField extends AbstractField {
+public class BooleanFieldImpl implements BooleanField {
 
 	private Boolean value;
 
+	@Override
 	public Boolean getValue() {
 		return value;
 	}
 
+	@Override
 	public void setValue(Boolean value) {
 		this.value = value;
 	}

@@ -14,9 +14,7 @@ import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyTypeImpl;
 import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
-import com.gentics.mesh.core.data.service.PropertTypeSchemaComparator;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 
 public class SchemaImpl extends AbstractGenericNode implements Schema {
@@ -77,24 +75,24 @@ public class SchemaImpl extends AbstractGenericNode implements Schema {
 	public SchemaResponse transformToRest(MeshAuthUser user) {
 
 		SchemaResponse schemaForRest = new SchemaResponse();
-		schemaForRest.setDescription(getDescription());
-		schemaForRest.setDisplayName(getDisplayName());
-		schemaForRest.setName(getName());
+//		schemaForRest.setDescription(getDescription());
+//		schemaForRest.setDisplayName(getDisplayName());
+//		schemaForRest.setName(getName());
 		schemaForRest.setUuid(getUuid());
 		// TODO creator
 
 		// TODO we need to add checks that prevents multiple schemas with the same key
 		for (BasicPropertyType propertyTypeSchema : getPropertyTypes()) {
 			// propertyTypeSchema = neo4jTemplate.fetch(propertyTypeSchema);
-			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
-			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
-			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
-			propertyTypeSchemaForRest.setDescription(propertyTypeSchema.getDescription());
-			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType());
-			propertyTypeSchemaForRest.setDisplayName(propertyTypeSchema.getDisplayName());
-			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
+//			PropertyTypeSchemaResponse propertyTypeSchemaForRest = new PropertyTypeSchemaResponse();
+//			propertyTypeSchemaForRest.setUuid(propertyTypeSchema.getUuid());
+//			propertyTypeSchemaForRest.setKey(propertyTypeSchema.getKey());
+//			propertyTypeSchemaForRest.setDescription(propertyTypeSchema.getDescription());
+//			propertyTypeSchemaForRest.setType(propertyTypeSchema.getType());
+//			propertyTypeSchemaForRest.setDisplayName(propertyTypeSchema.getDisplayName());
+//			schemaForRest.getPropertyTypeSchemas().add(propertyTypeSchemaForRest);
 		}
-		Collections.sort(schemaForRest.getPropertyTypeSchemas(), new PropertTypeSchemaComparator());
+//		Collections.sort(schemaForRest.getPropertyTypeSchemas(), new PropertTypeSchemaComparator());
 		// Sort the property types schema. Otherwise rest response is erratic
 
 		for (ProjectImpl project : getProjects()) {

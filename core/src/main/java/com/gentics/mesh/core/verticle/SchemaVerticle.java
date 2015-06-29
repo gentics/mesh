@@ -30,10 +30,9 @@ import com.gentics.mesh.core.data.model.root.SchemaRoot;
 import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
 import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
-import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.response.ObjectSchemaListResponse;
-import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
+import com.gentics.mesh.core.rest.schema.request.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.request.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.response.SchemaListResponse;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -105,34 +104,35 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			ObjectSchemaCreateRequest requestModel = fromJson(rc, ObjectSchemaCreateRequest.class);
+			SchemaCreateRequest requestModel = fromJson(rc, SchemaCreateRequest.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_name")));
 				return;
 			}
 
-			if (StringUtils.isEmpty(requestModel.getProjectUuid())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_project_uuid")));
-				return;
-			}
+//			if (StringUtils.isEmpty(requestModel.getProjectUuid())) {
+//				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_project_uuid")));
+//				return;
+//			}
 
 			Future<Schema> schemaCreated = Future.future();
-			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
+//			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
+			rcs.loadObjectByUuid(rc, null, CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
 				SchemaRoot root = project.getSchemaRoot();
 				Schema schema = root.create(requestModel.getName());
-				schema.setDescription(requestModel.getDescription());
-				schema.setDisplayName(requestModel.getDisplayName());
-
-				for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
-					// TODO validate field?
-					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
-					String key = restPropSchema.getKey();
-					BasicPropertyType propSchema = schema.createBasicPropertyTypeSchema(key, type);
-					propSchema.setDescription(restPropSchema.getDesciption());
-					propSchema.setType(type);
-					schema.addPropertyTypeSchema(propSchema);
-				}
+//				schema.setDescription(requestModel.getDescription());
+//				schema.setDisplayName(requestModel.getDisplayName());
+//
+//				for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
+//					// TODO validate field?
+//					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
+//					String key = restPropSchema.getKey();
+//					BasicPropertyType propSchema = schema.createBasicPropertyTypeSchema(key, type);
+//					propSchema.setDescription(restPropSchema.getDesciption());
+//					propSchema.setType(type);
+//					schema.addPropertyTypeSchema(propSchema);
+//				}
 				schema.addProject(project);
 				roleService.addCRUDPermissionOnRole(requestUser, project, CREATE_PERM, schema);
 				schemaCreated.complete(schema);
@@ -156,7 +156,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 			rcs.loadObject(rc, "uuid", UPDATE_PERM, Schema.class, (AsyncResult<Schema> srh) -> {
 				Schema schema = srh.result();
-				ObjectSchemaUpdateRequest requestModel = fromJson(rc, ObjectSchemaUpdateRequest.class);
+				SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
 
 				if (StringUtils.isEmpty(requestModel.getName())) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
@@ -217,8 +217,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 
 			PagingInfo pagingInfo = getPagingInfo(rc);
-			vertx.executeBlocking((Future<ObjectSchemaListResponse> bch) -> {
-				ObjectSchemaListResponse listResponse = new ObjectSchemaListResponse();
+			vertx.executeBlocking((Future<SchemaListResponse> bch) -> {
+				SchemaListResponse listResponse = new SchemaListResponse();
 				Page<Schema> schemaPage = schemaService.findAllVisible(requestUser, pagingInfo);
 				for (Schema schema : schemaPage) {
 					listResponse.getData().add(schema.transformToRest(requestUser));
@@ -229,7 +229,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				if (rh.failed()) {
 					rc.fail(rh.cause());
 				}
-				ObjectSchemaListResponse listResponse = rh.result();
+				SchemaListResponse listResponse = rh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 

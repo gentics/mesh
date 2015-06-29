@@ -1,19 +1,18 @@
-package com.gentics.mesh.core.rest.node.response.field;
+package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.model.FieldTypes;
 
-public class StringField extends AbstractField {
+public class StringFieldImpl implements StringField {
 
 	private String text;
 
-	public StringField(String text) {
-		this.text = text;
-	}
-
+	@Override
 	public String getText() {
 		return text;
 	}
 
+	@Override
 	public void setText(String text) {
 		this.text = text;
 	}
@@ -22,4 +21,5 @@ public class StringField extends AbstractField {
 	public String getType() {
 		return FieldTypes.STRING.toString();
 	}
+
 }

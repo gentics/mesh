@@ -1,13 +1,10 @@
-package com.gentics.mesh.core.rest.node.response.field;
+package com.gentics.mesh.core.rest.schema;
 
-
-public abstract class AbstractField implements Field {
+public abstract class AbstractFieldSchema implements FieldSchema {
 
 	private String name;
 
 	private String label;
-
-	public abstract String getType();
 
 	@Override
 	public String getLabel() {
@@ -27,6 +24,12 @@ public abstract class AbstractField implements Field {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String getType() {
+		//TODO maybe a short name would be better.
+		return getClass().getName();
 	}
 
 }

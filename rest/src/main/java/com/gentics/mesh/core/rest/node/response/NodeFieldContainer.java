@@ -2,7 +2,7 @@ package com.gentics.mesh.core.rest.node.response;
 
 import java.util.HashMap;
 
-import com.gentics.mesh.core.rest.node.response.field.Field;
+import com.gentics.mesh.core.rest.node.field.Field;
 
 public class NodeFieldContainer extends HashMap<String, Field> {
 

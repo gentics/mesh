@@ -11,7 +11,6 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
 import com.gentics.mesh.core.rest.common.response.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
@@ -20,12 +19,13 @@ import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.group.response.GroupListResponse;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.response.NodeFieldContainer;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
-import com.gentics.mesh.core.rest.node.response.field.StringField;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.project.response.ProjectListResponse;
@@ -34,10 +34,9 @@ import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.request.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.role.response.RoleListResponse;
 import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.gentics.mesh.core.rest.schema.request.ObjectSchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.request.ObjectSchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.response.ObjectSchemaListResponse;
-import com.gentics.mesh.core.rest.schema.response.PropertyTypeSchemaResponse;
+import com.gentics.mesh.core.rest.schema.request.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.request.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.response.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
@@ -229,39 +228,39 @@ public class Generator {
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(getUUID());
-		schema.setDescription("Description of the schema");
-		schema.setName("extended-content");
+//		schema.setDescription("Description of the schema");
+//		schema.setName("extended-content");
 		schema.setPerms("READ", "UPDATE", "DELETE", "CREATE");
-		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
-		prop.setDescription("Html Content");
-		prop.setKey("content");
-		prop.setType(PropertyType.HTML.name());
-		schema.getPropertyTypeSchemas().add(prop);
+//		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
+//		prop.setDescription("Html Content");
+//		prop.setKey("content");
+//		prop.setType(PropertyType.HTML.name());
+//		schema.getPropertyTypeSchemas().add(prop);
 		write(schema);
 
 		SchemaResponse schema2 = new SchemaResponse();
 		schema2.setUuid(getUUID());
-		schema2.setDescription("Description of the schema2");
-		schema2.setName("extended-content-2");
+//		schema2.setDescription("Description of the schema2");
+//		schema2.setName("extended-content-2");
 
 		// TODO properties
 
-		ObjectSchemaListResponse schemaList = new ObjectSchemaListResponse();
+		SchemaListResponse schemaList = new SchemaListResponse();
 		schemaList.getData().add(schema);
 		schemaList.getData().add(schema2);
 		setPaging(schemaList, 1, 10, 2, 20);
 		write(schemaList);
 
-		ObjectSchemaUpdateRequest schemaUpdate = new ObjectSchemaUpdateRequest();
+		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
 		schemaUpdate.setUuid(getUUID());
 		// TODO should i allow changing the name?
 		schemaUpdate.setName("extended-content");
 		schemaUpdate.setDescription("New description");
 		write(schemaUpdate);
 
-		ObjectSchemaCreateRequest schemaCreate = new ObjectSchemaCreateRequest();
+		SchemaCreateRequest schemaCreate = new SchemaCreateRequest();
 		schemaCreate.setName("extended-content");
-		schemaCreate.setDescription("Just a dummy ");
+//		schemaCreate.setDescription("Just a dummy ");
 		write(schemaCreate);
 	}
 
@@ -285,18 +284,18 @@ public class Generator {
 		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
 		contentUpdate.setUuid(getUUID());
 		NodeFieldContainer updateFields = new NodeFieldContainer();
-		updateFields.put("filename", new StringField("index-renamed.en.html"));
+		updateFields.put("filename", getStringField("index-renamed.en.html"));
 		write(contentUpdate);
 
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
 
 		NodeFieldContainer fields = new NodeFieldContainer();
-		fields.put("name", new StringField("English name"));
-		fields.put("filename", new StringField("index.en.html"));
-		fields.put("content", new StringField("English content"));
-		fields.put("title", new StringField("English title"));
-		fields.put("teaser", new StringField("English teaser"));
+		fields.put("name", getStringField("English name"));
+		fields.put("filename", getStringField("index.en.html"));
+		fields.put("content", getStringField("English content"));
+		fields.put("title", getStringField("English title"));
+		fields.put("teaser", getStringField("English teaser"));
 		contentCreate.setFields(fields);
 
 		contentCreate.setSchema(schemaReference);
@@ -318,6 +317,11 @@ public class Generator {
 		setPaging(list, 1, 10, 2, 20);
 		write(list);
 
+	}
+
+	private StringField getStringField(String string) {
+		StringField field = new StringFieldImpl();
+		return field;
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {

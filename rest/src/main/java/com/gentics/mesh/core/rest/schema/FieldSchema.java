@@ -1,7 +1,8 @@
-package com.gentics.mesh.core.rest.node.response.field;
+package com.gentics.mesh.core.rest.schema;
 
-public interface Field {
+import com.gentics.mesh.core.rest.node.field.Field;
 
+public interface FieldSchema extends Field {
 	public String getType();
 
 	public String getLabel();
