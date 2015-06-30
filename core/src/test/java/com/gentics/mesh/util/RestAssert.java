@@ -129,7 +129,7 @@ public class RestAssert {
 		//		assertEquals(node.getOrder(), readValue.getOrder());
 		assertNotNull(readValue.getPermissions());
 
-		SchemaContainer schema = node.getSchema();
+		SchemaContainer schema = node.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 //		assertEquals(schema.getName(), readValue.getSchema().getName());
 //		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());

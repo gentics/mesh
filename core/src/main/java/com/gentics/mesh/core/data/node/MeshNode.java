@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
@@ -15,6 +16,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.paging.PagingInfo;
 
 public interface MeshNode extends GenericNode {
@@ -23,7 +25,9 @@ public interface MeshNode extends GenericNode {
 
 	void removeTag(Tag tag);
 
-	SchemaContainer getSchema();
+	SchemaContainer getSchemaContainer();
+	
+	Schema getSchema() throws IOException;
 
 	void setSchemaContainer(SchemaContainer schema);
 

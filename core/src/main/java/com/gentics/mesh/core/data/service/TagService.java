@@ -23,6 +23,8 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 @Component
 public class TagService extends AbstractMeshGraphService<Tag> {
 
+	private static final Logger log = LoggerFactory.getLogger(TagService.class);
+
 	public static TagService instance;
 
 	@PostConstruct
@@ -33,8 +35,6 @@ public class TagService extends AbstractMeshGraphService<Tag> {
 	public static TagService getTagService() {
 		return instance;
 	}
-
-	private static final Logger log = LoggerFactory.getLogger(TagService.class);
 
 	public Page<? extends Tag> findProjectTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {

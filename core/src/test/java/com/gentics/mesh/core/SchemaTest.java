@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
+import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -34,7 +35,10 @@ import com.gentics.mesh.util.UUIDUtil;
 public class SchemaTest extends AbstractDBTest {
 
 	@Autowired
-	private SchemaContainerService schemaService;
+	private SchemaContainerService schemaContainerService;
+
+	@Autowired
+	private SchemaStorage schemaStorage;
 
 	@Before
 	public void setup() throws Exception {
@@ -43,10 +47,10 @@ public class SchemaTest extends AbstractDBTest {
 
 	@Test
 	public void testFindByName() {
-		SchemaContainer schema = schemaService.findByName(PROJECT_NAME, "content");
+		SchemaContainer schema = schemaContainerService.findByName(PROJECT_NAME, "content");
 		assertNotNull(schema);
 		//		assertEquals("content", schema.getName());
-		assertNull(schemaService.findByName(PROJECT_NAME, "content1235"));
+		assertNull(schemaContainerService.findByName(PROJECT_NAME, "content1235"));
 	}
 
 	@Test
@@ -54,7 +58,7 @@ public class SchemaTest extends AbstractDBTest {
 		SchemaContainer schema = data().getSchemaContainer("content");
 		String uuid = schema.getUuid();
 		schema.delete();
-		assertNull(schemaService.findByUUID(uuid));
+		assertNull(schemaContainerService.findByUUID(uuid));
 	}
 
 	// @Test
@@ -82,6 +86,15 @@ public class SchemaTest extends AbstractDBTest {
 	public void testDefaultSchema() {
 		SchemaContainerRoot root = data().getMeshRoot().getSchemaContainerRoot();
 		assertEquals(4, root.getSchemaContainers().size());
+	}
+
+	@Test
+	public void testSchemaStorage() {
+		schemaStorage.clear();
+		schemaStorage.init();
+		Schema schema = schemaStorage.getSchema("folder");
+		assertNotNull(schema);
+		assertEquals("folder", schema.getName());
 	}
 
 	@Test
@@ -132,6 +145,9 @@ public class SchemaTest extends AbstractDBTest {
 		//		request.addField(microschemaFieldSchema);
 
 		request.setSchema(schema);
+		schema = schemaStorage.getSchema(schema.getName());
+		assertNotNull(schema);
+
 		String json = JsonUtils.toJson(request);
 		SchemaCreateRequest loadedRequest = JsonUtils.readValue(json, SchemaCreateRequest.class);
 		assertNotNull(loadedRequest);

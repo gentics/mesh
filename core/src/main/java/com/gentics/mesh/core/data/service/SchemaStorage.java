@@ -19,7 +19,19 @@ import com.gentics.mesh.core.rest.schema.Schema;
 @Component
 @Scope(value = "singleton")
 public class SchemaStorage {
+
 	private static final Logger log = LoggerFactory.getLogger(SchemaStorage.class);
+
+	public static SchemaStorage instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static SchemaStorage getSchemaStorage() {
+		return instance;
+	}
 
 	@Autowired
 	private SchemaContainerService schemaService;
@@ -28,10 +40,6 @@ public class SchemaStorage {
 
 	@PostConstruct
 	public void init() {
-		initStorage();
-	}
-
-	private void initStorage() {
 		//Iterate over all schemas and load them into the storage
 		for (SchemaContainer container : schemaService.findAll()) {
 			try {
@@ -42,6 +50,14 @@ public class SchemaStorage {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public void clear() {
+		schemas.clear();
+	}
+
+	public int size() {
+		return schemas.size();
 	}
 
 	public Schema getSchema(String name) {

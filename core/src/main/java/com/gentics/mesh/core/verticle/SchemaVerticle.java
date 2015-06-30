@@ -70,7 +70,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+//					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 				});
 			});
 
@@ -90,7 +90,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+//					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 				});
 			});
 		});
@@ -141,7 +141,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					rc.fail(trh.cause());
 				}
 				SchemaContainer schema = schemaCreated.result();
-				rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+//				rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 			});
 		});
 
@@ -174,7 +174,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					rc.fail(trh.cause());
 				}
 				SchemaContainer schema = trh.result();
-				rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+//				rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 			});
 
 		});
@@ -208,7 +208,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+//					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 				});
 			}
 		});
@@ -221,7 +221,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				SchemaListResponse listResponse = new SchemaListResponse();
 				Page<SchemaContainer> schemaPage = schemaService.findAllVisible(requestUser, pagingInfo);
 				for (SchemaContainer schema : schemaPage) {
-					listResponse.getData().add(schema.transformToRest(requestUser));
+//					listResponse.getData().add(schema.transformToRest(requestUser));
 				}
 				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
 				bch.complete(listResponse);

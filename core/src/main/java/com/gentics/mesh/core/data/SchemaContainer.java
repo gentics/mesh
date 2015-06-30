@@ -19,8 +19,6 @@ public interface SchemaContainer extends GenericNode {
 
 	SchemaContainerImpl getImpl();
 
-	SchemaResponse transformToRest(MeshAuthUser requestUser);
-
 	void delete();
 
 	void setSchemaName(String name);

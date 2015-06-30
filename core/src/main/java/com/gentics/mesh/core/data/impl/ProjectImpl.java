@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.impl.SchemaRootImpl;
+import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 
@@ -42,7 +42,7 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 	}
 
 	public SchemaContainerRoot getSchemaRoot() {
-		return out(HAS_SCHEMA_ROOT).has(SchemaRootImpl.class).nextOrDefault(SchemaRootImpl.class, null);
+		return out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefault(SchemaContainerRootImpl.class, null);
 	}
 
 	public void setSchemaRoot(SchemaContainerRoot schemaRoot) {

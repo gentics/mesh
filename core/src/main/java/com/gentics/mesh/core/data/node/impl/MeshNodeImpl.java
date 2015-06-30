@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.paging.PagingInfo;
 
 public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode {
@@ -59,8 +61,13 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
 	}
 
-	public SchemaContainer getSchema() {
+	public SchemaContainer getSchemaContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefault(SchemaContainerImpl.class, null);
+	}
+
+	@Override
+	public Schema getSchema() throws IOException {
+		return getSchemaContainer().getSchema();
 	}
 
 	public List<? extends MeshNode> getChildren() {
@@ -149,7 +156,7 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 		return null;
 
 	}
-	
+
 	@Override
 	public void delete() {
 		getElement().remove();

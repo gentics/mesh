@@ -27,7 +27,7 @@ public class ProjectRootImpl extends MeshVertexImpl implements ProjectRoot {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		project.setName(name);
 		project.getOrCreateRootNode();
-		SchemaContainerRoot schemaRoot = getGraph().addFramedVertex(SchemaRootImpl.class);
+		SchemaContainerRoot schemaRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 		project.setSchemaRoot(schemaRoot);
 		addProject(project);
 

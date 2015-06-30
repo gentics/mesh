@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.root.impl.SchemaRootImpl;
+import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 
 public interface SchemaContainerRoot extends MeshVertex {
 
@@ -14,6 +14,6 @@ public interface SchemaContainerRoot extends MeshVertex {
 
 	List<? extends SchemaContainer> getSchemaContainers();
 
-	SchemaRootImpl getImpl();
+	SchemaContainerRootImpl getImpl();
 
 }

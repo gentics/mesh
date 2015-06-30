@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 
-public class SchemaRootImpl extends MeshVertexImpl implements SchemaContainerRoot {
+public class SchemaContainerRootImpl extends MeshVertexImpl implements SchemaContainerRoot {
 
 	public List<? extends SchemaContainer> getSchemaContainers() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).toList(SchemaContainerImpl.class);
@@ -29,7 +29,7 @@ public class SchemaRootImpl extends MeshVertexImpl implements SchemaContainerRoo
 	// TODO unique index
 
 	@Override
-	public SchemaRootImpl getImpl() {
+	public SchemaContainerRootImpl getImpl() {
 		return this;
 	}
 

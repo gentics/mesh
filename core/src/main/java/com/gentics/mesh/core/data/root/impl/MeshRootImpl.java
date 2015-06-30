@@ -43,7 +43,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	public SchemaContainerRoot getSchemaContainerRoot() {
-		return out(HAS_SCHEMA_ROOT).has(SchemaRootImpl.class).nextOrDefault(SchemaRootImpl.class, null);
+		return out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefault(SchemaContainerRootImpl.class, null);
 	}
 
 	public void setSchemaRoot(SchemaContainerRoot schemaRoot) {
@@ -85,7 +85,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	public SchemaContainerRoot createRoot() {
-		SchemaRootImpl schemaRoot = getGraph().addFramedVertex(SchemaRootImpl.class);
+		SchemaContainerRootImpl schemaRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 		setSchemaRoot(schemaRoot);
 		return schemaRoot;
 	}
