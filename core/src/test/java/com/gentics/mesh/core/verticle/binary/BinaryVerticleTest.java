@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.binary;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.verticle.BinaryVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;

@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.fromJson;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
@@ -25,10 +25,10 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.root.ProjectRoot;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;

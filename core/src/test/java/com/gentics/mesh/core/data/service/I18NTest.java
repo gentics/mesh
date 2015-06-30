@@ -8,6 +8,7 @@ import java.util.MissingResourceException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class I18NTest extends AbstractDBTest {

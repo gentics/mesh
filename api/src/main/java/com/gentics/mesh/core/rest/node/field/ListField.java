@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.node.field;
 
-public interface ListField extends Field {
+import java.util.List;
+
+public interface ListField<T extends ListableField> extends Field, MicroschemaListableField {
+
+	List<T> getItems();
 
 }

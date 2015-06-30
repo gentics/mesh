@@ -21,28 +21,32 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.data.model.Group;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.Role;
-import com.gentics.mesh.core.data.model.Schema;
-import com.gentics.mesh.core.data.model.root.GroupRoot;
-import com.gentics.mesh.core.data.model.root.LanguageRoot;
-import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.root.ProjectRoot;
-import com.gentics.mesh.core.data.model.root.RoleRoot;
-import com.gentics.mesh.core.data.model.root.SchemaRoot;
-import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
-import com.gentics.mesh.core.data.service.SchemaService;
+import com.gentics.mesh.core.data.service.SchemaContainerService;
+import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.AdminVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
@@ -88,7 +92,7 @@ public class BootstrapInitializer {
 	private LanguageService languageService;
 
 	@Autowired
-	private SchemaService schemaService;
+	private SchemaContainerService schemaService;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
@@ -252,74 +256,87 @@ public class BootstrapInitializer {
 		}
 
 		// Save the default object schemas
-
-		SchemaRoot schemaRoot = meshRoot.getSchemaRoot();
-		if (schemaRoot == null) {
-			schemaRoot = meshRoot.createRoot();
+		SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
+		if (schemaContainerRoot == null) {
+			schemaContainerRoot = meshRoot.createRoot();
 			log.info("Stored schema root node");
 		}
 
 		// Content
-		Schema contentSchema = schemaService.findByName("content");
-		if (contentSchema == null) {
-			contentSchema = schemaRoot.create("content");
-			contentSchema.setNestingAllowed(false);
-			contentSchema.setDescription("Default schema for contents");
-			contentSchema.setDisplayName("Content");
+		SchemaContainer contentSchemaContainer = schemaService.findByName("content");
+		if (contentSchemaContainer == null) {
+			Schema schema = new SchemaImpl();
+			schema.setName("content");
+			schema.setDisplayField("title");
+			schema.setMeshVersion(Mesh.getVersion());
+			schema.setSchemaVersion("1.0.0");
 
-			BasicPropertyType nameProp = contentSchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
-			nameProp.setDisplayName("Name");
-			nameProp.setDescription("The name of the content.");
-			contentSchema.addPropertyTypeSchema(nameProp);
+			StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
+			titleFieldSchema.setName("title");
+			titleFieldSchema.setLabel("Title");
+			titleFieldSchema.setText("Enter the title here");
 
-			BasicPropertyType displayNameProp = contentSchema.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
-			displayNameProp.setDisplayName("Display Name");
-			displayNameProp.setDescription("The display name property of the content.");
-			contentSchema.addPropertyTypeSchema(displayNameProp);
+			HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
+			titleFieldSchema.setName("content");
+			titleFieldSchema.setLabel("Content");
+			titleFieldSchema.setText("Enter your text here");
 
-			BasicPropertyType contentProp = contentSchema.create(Schema.CONTENT_KEYWORD, PropertyType.I18N_STRING);
-			contentProp.setDisplayName("Content");
-			contentProp.setDescription("The main content html of the content.");
-			contentSchema.addPropertyTypeSchema(contentProp);
-			log.info("Stored content schema {" + contentSchema.getUuid() + "}");
+			schema.addField(titleFieldSchema);
+			schema.addField(contentFieldSchema);
+			schema.setBinary(false);
+			schema.setContainer(false);
+			contentSchemaContainer = schemaContainerRoot.create("content");
+			contentSchemaContainer.setSchema(schema);
+
 		}
 
 		// Folder
-		Schema folderSchema = schemaService.findByName("folder");
-		if (folderSchema == null) {
-			folderSchema = schemaRoot.create("folder");
-			folderSchema.setNestingAllowed(true);
-			folderSchema.setDescription("Default schema for folders");
-			folderSchema.setDisplayName("Folder");
+		SchemaContainer folderSchemaContainer = schemaService.findByName("folder");
+		if (folderSchemaContainer == null) {
+			Schema schema = new SchemaImpl();
+			schema.setName("folder");
+			schema.setDisplayField("name");
+			schema.setMeshVersion(Mesh.getVersion());
+			schema.setSchemaVersion("1.0.0");
 
-			BasicPropertyType nameProp = folderSchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
-			nameProp.setDisplayName("Name");
-			nameProp.setDescription("The name of the folder.");
-			folderSchema.addPropertyTypeSchema(nameProp);
-			log.info("Stored folder schema  {" + folderSchema.getUuid() + "}");
+			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+			nameFieldSchema.setName("name");
+			nameFieldSchema.setLabel("Name");
+
+			schema.addField(nameFieldSchema);
+			schema.setBinary(false);
+			schema.setContainer(true);
+			folderSchemaContainer = schemaContainerRoot.create("folder");
+			folderSchemaContainer.setSchema(schema);
+
 		}
 
 		// Binary content for images and other downloads
-		Schema binarySchema = schemaService.findByName("binary-content");
-		if (binarySchema == null) {
-			binarySchema = schemaRoot.create("binary-content");
-			binarySchema.setDescription("Default schema for binary contents");
-			binarySchema.setDisplayName("Binary Content");
+		SchemaContainer binarySchemaContainer = schemaService.findByName("binary-content");
+		if (binarySchemaContainer == null) {
 
-			BasicPropertyType nameProp = binarySchema.create(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
-			nameProp.setDisplayName("Name");
-			nameProp.setDescription("The name of the content.");
-			binarySchema.addPropertyTypeSchema(nameProp);
+			Schema schema = new SchemaImpl();
+			schema.setName("folder");
+			schema.setDisplayField("name");
+			schema.setMeshVersion(Mesh.getVersion());
+			schema.setSchemaVersion("1.0.0");
 
-			BasicPropertyType displayNameProp = binarySchema.create(Schema.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
-			displayNameProp.setDisplayName("Display Name");
-			displayNameProp.setDescription("The display name property of the content.");
-			binarySchema.addPropertyTypeSchema(displayNameProp);
+			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+			nameFieldSchema.setName("name");
+			nameFieldSchema.setLabel("Name");
 
+			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
+			nameFieldSchema.setName("filename");
+			nameFieldSchema.setLabel("Filename");
+
+			schema.addField(nameFieldSchema);
+			schema.addField(filenameFieldSchema);
+			schema.setBinary(true);
+			schema.setContainer(false);
+			binarySchemaContainer = schemaContainerRoot.create("binary-content");
+			binarySchemaContainer.setSchema(schema);
 		}
 
-		schemaRoot.addSchema(contentSchema);
-		schemaRoot.addSchema(binarySchema);
 		log.info("Stored mesh root node");
 
 		initLanguages(languageRoot);

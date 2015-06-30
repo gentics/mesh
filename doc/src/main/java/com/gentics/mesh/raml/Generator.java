@@ -258,10 +258,10 @@ public class Generator {
 		schemaUpdate.setDescription("New description");
 		write(schemaUpdate);
 
-		SchemaCreateRequest schemaCreate = new SchemaCreateRequest();
-		schemaCreate.setName("extended-content");
+//		SchemaCreateRequest schemaCreate = new SchemaCreateRequest();
+//		schemaCreate.setName("extended-content");
 //		schemaCreate.setDescription("Just a dummy ");
-		write(schemaCreate);
+//		write(schemaCreate);
 	}
 
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {

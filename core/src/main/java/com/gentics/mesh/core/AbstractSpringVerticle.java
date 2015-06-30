@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
-import com.gentics.mesh.core.data.service.SchemaService;
+import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
@@ -51,7 +51,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected RoleService roleService;
 
 	@Autowired
-	protected SchemaService schemaService;
+	protected SchemaContainerService schemaService;
 
 	@Autowired
 	protected ProjectService projectService;

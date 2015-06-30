@@ -78,6 +78,7 @@ public abstract class ThreadedTransactionalGraphWrapper implements Transactional
 
 	public abstract TransactionalGraph newTransaction();
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void stopTransaction(Conclusion conclusion) {
 		graph.stopTransaction(conclusion);

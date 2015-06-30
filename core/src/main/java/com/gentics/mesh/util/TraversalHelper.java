@@ -6,8 +6,8 @@ import static com.gentics.mesh.util.SortOrder.UNSORTED;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.generic.MeshEdge;
-import com.gentics.mesh.core.data.model.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.generic.MeshEdge;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;

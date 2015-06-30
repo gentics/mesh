@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
-import static com.gentics.mesh.core.data.model.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 
 import java.util.List;
 
@@ -10,9 +10,9 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.node.impl.MeshNodeImpl;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;

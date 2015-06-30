@@ -10,9 +10,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshNodeFieldContainer;
+import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;

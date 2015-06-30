@@ -8,10 +8,10 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.TagFamily;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.response.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;

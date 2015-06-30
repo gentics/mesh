@@ -12,10 +12,14 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.common.response.SchemaFieldDeserializer;
+import com.gentics.mesh.core.rest.node.field.ListableField;
+import com.gentics.mesh.core.rest.node.field.MicroschemaListableField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 
 @Component
@@ -33,6 +37,18 @@ public final class JsonUtils {
 
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(FieldSchema.class, new SchemaFieldDeserializer());
+		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
+		module.addDeserializer(MicroschemaListableField.class, new FieldDeserializer<MicroschemaListableField>());
+
+		mapper.registerModule(new SimpleModule("interfaceMapping") {
+			private static final long serialVersionUID = -4667167382238425197L;
+
+			@Override
+			public void setupModule(SetupContext context) {
+				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Schema.class, SchemaImpl.class));
+			}
+		});
+
 		mapper.registerModule(module);
 
 	}
@@ -43,7 +59,8 @@ public final class JsonUtils {
 
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
-			return mapper.writeValueAsString(obj);
+			//TODO don't use pretty printer in final version
+			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";

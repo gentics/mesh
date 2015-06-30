@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.impl.LanguageImpl;
+import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class RoutingContextServiceTest extends AbstractDBTest {

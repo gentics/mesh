@@ -2,7 +2,7 @@ package com.gentics.mesh.core.rest.schema;
 
 import com.gentics.mesh.core.rest.node.field.NumberField;
 
-public interface NumberFieldSchema extends NumberField, FieldSchema {
+public interface NumberFieldSchema extends NumberField, MicroschemaListableFieldSchema {
 
 	void setStep(Float step);
 

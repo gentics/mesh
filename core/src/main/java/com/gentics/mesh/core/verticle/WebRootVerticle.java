@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
@@ -18,8 +18,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.WebRootService;

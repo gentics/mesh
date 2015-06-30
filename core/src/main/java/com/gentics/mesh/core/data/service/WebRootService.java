@@ -10,9 +10,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.Schema;
-import com.gentics.mesh.core.data.model.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -82,12 +82,12 @@ public class WebRootService {
 
 		for (Edge rel : node.getEdges(Direction.IN, MeshRelationships.HAS_PARENT_NODE)) {
 			Vertex nextHop = rel.getVertex(Direction.IN);
-			String languageTag = getI18nPropertyLanguageTag(nextHop, Schema.NAME_KEYWORD, i18nTagName);
-			if (languageTag != null) {
-				foundNode.set(nextHop);
-				path.addSegment(new PathSegment(nextHop, languageTag));
-				break;
-			}
+//			String languageTag = getI18nPropertyLanguageTag(nextHop, SchemaContainer.NAME_KEYWORD, i18nTagName);
+//			if (languageTag != null) {
+//				foundNode.set(nextHop);
+//				path.addSegment(new PathSegment(nextHop, languageTag));
+//				break;
+//			}
 		}
 
 		return foundNode.get();

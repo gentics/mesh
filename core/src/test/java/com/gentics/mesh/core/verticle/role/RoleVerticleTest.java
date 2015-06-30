@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.verticle.role;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -25,8 +25,8 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Role;
-import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.request.RoleUpdateRequest;

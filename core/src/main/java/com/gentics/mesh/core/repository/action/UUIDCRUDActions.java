@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.repository.action;
 
-import com.gentics.mesh.core.data.model.generic.AbstractGenericNode;
+import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 
 public interface UUIDCRUDActions<T extends AbstractGenericNode> {
 

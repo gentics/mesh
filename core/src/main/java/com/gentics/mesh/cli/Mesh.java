@@ -144,7 +144,7 @@ public class Mesh {
 		return "# " + StringUtils.rightPad(text, 45) + " #";
 	}
 
-	private static String getVersion() {
+	public static String getVersion() {
 		Package pack = Mesh.class.getPackage();
 		return pack.getImplementationVersion();
 	}

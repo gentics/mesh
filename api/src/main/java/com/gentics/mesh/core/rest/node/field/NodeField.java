@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.node.field;
 
-public interface NodeField extends Field {
+public interface NodeField extends ListableField, MicroschemaListableField {
 
 	String getUuid();
 

@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.verticle.project;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -24,8 +24,8 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.root.ProjectRoot;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;

@@ -12,9 +12,9 @@ import java.util.concurrent.RecursiveTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
@@ -73,7 +73,7 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 				/* Load the schema information */
 				if (node.getSchema() != null) {
 					SchemaReference schemaReference = new SchemaReference();
-					schemaReference.setName(node.getSchema().getName());
+//					schemaReference.setName(node.getSchema().getName());
 					schemaReference.setUuid(node.getSchema().getUuid());
 					restNode.setSchema(schemaReference);
 				}
@@ -87,17 +87,17 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 				//	restNode.setOrder(node.getOrder());
 
 				/* Load the children */
-				if (node.getSchema().isNestingAllowed()) {
-					//TODO handle uuid
-					//TODO handle expand
-					List<String> children = new ArrayList<>();
-					//TODO check permissions
-					for (MeshNode child : node.getChildren()) {
-						children.add(child.getUuid());
-					}
-					restNode.setContainer(true);
-					restNode.setChildren(children);
-				}
+//				if (node.getSchema().isNestingAllowed()) {
+//					//TODO handle uuid
+//					//TODO handle expand
+//					List<String> children = new ArrayList<>();
+//					//TODO check permissions
+//					for (MeshNode child : node.getChildren()) {
+//						children.add(child.getUuid());
+//					}
+//					restNode.setContainer(true);
+//					restNode.setChildren(children);
+//				}
 
 //				/* Load the i18n properties */
 //				for (String languageTag : info.getLanguageTags()) {

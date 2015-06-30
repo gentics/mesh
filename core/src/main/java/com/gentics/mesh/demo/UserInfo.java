@@ -1,8 +1,8 @@
 package com.gentics.mesh.demo;
 
-import com.gentics.mesh.core.data.model.Group;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.Role;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.Role;
 
 public class UserInfo {
 

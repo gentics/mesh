@@ -1,18 +1,19 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.response.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicroschemaListableFieldSchema;
 
 public class MicroschemaFieldSchemaImpl extends AbstractFieldSchema implements MicroschemaFieldSchema {
 
 	@JsonProperty("allow")
 	private String[] allowedMicroSchemas;
-	private Map<String, Field> defaultValues = new HashMap<>();
+
+	private List<MicroschemaListableFieldSchema> defaultValues = new ArrayList<>();
 
 	@Override
 	public String[] getAllowedMicroSchemas() {
@@ -25,13 +26,13 @@ public class MicroschemaFieldSchemaImpl extends AbstractFieldSchema implements M
 	}
 
 	@Override
-	public Map<String, Field> getDefaultValues() {
-		return defaultValues;
+	public String getType() {
+		return FieldTypes.MICROSCHEMA.toString();
 	}
 
 	@Override
-	public String getType() {
-		return FieldTypes.MICROSCHEMA.toString();
+	public List<MicroschemaListableFieldSchema> getFields() {
+		return defaultValues;
 	}
 
 }

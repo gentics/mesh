@@ -11,8 +11,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.root.UserRoot;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class BlueprintTransactionTest extends AbstractDBTest {

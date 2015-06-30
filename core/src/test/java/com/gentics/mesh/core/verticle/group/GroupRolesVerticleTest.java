@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.verticle.group;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -14,9 +14,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.model.Group;
-import com.gentics.mesh.core.data.model.Role;
-import com.gentics.mesh.core.data.model.root.RoleRoot;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.rest.group.response.GroupResponse;

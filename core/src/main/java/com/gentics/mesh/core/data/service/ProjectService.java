@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.impl.ProjectImpl;
-import com.gentics.mesh.core.data.model.root.impl.ProjectRootImpl;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;

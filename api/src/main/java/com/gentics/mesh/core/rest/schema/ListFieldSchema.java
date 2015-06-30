@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.rest.schema;
 
 import com.gentics.mesh.core.rest.node.field.ListField;
+import com.gentics.mesh.core.rest.node.field.ListableField;
 
-public interface ListFieldSchema extends ListField, FieldSchema {
+public interface ListFieldSchema<T extends ListableField> extends ListField<T>, MicroschemaListableFieldSchema {
 
 	String[] getAllowedSchemas();
 

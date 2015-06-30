@@ -1,9 +1,9 @@
 package com.gentics.mesh.demo;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -19,27 +19,24 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.model.Group;
-import com.gentics.mesh.core.data.model.Language;
-import com.gentics.mesh.core.data.model.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.MeshVertex;
-import com.gentics.mesh.core.data.model.Project;
-import com.gentics.mesh.core.data.model.Role;
-import com.gentics.mesh.core.data.model.Schema;
-import com.gentics.mesh.core.data.model.Tag;
-import com.gentics.mesh.core.data.model.TagFamily;
-import com.gentics.mesh.core.data.model.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.model.impl.SchemaImpl;
-import com.gentics.mesh.core.data.model.node.MeshNode;
-import com.gentics.mesh.core.data.model.root.GroupRoot;
-import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.root.RoleRoot;
-import com.gentics.mesh.core.data.model.root.SchemaRoot;
-import com.gentics.mesh.core.data.model.root.UserRoot;
-import com.gentics.mesh.core.data.model.schema.propertytype.BasicPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytype.MicroPropertyType;
-import com.gentics.mesh.core.data.model.schema.propertytype.PropertyType;
+import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshNodeFieldContainer;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
@@ -47,8 +44,14 @@ import com.gentics.mesh.core.data.service.MeshRootService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
-import com.gentics.mesh.core.data.service.SchemaService;
+import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.data.service.TagService;
+import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -93,7 +96,7 @@ public class DemoDataProvider {
 	private ProjectService projectService;
 
 	@Autowired
-	private SchemaService schemaService;
+	private SchemaContainerService schemaService;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;
@@ -108,13 +111,13 @@ public class DemoDataProvider {
 	private Language german;
 
 	private Project project;
+
 	private UserInfo userInfo;
 
 	private MeshRoot root;
 
-	private Map<String, Schema> schemas = new HashMap<>();
+	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
-	private Map<String, MicroPropertyType> microSchemas = new HashMap<>();
 	private Map<String, MeshNode> folders = new HashMap<>();
 	private Map<String, MeshNode> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
@@ -128,9 +131,8 @@ public class DemoDataProvider {
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
 		bootstrapInitializer.initMandatoryData();
 
-		schemas.clear();
+		schemaContainers.clear();
 		tagFamilies.clear();
-		microSchemas.clear();
 		contents.clear();
 		folders.clear();
 		tags.clear();
@@ -142,8 +144,7 @@ public class DemoDataProvider {
 		german = languageService.findByLanguageTag("de");
 		root = rootService.findRoot();
 		addUserGroupRoleProject(multiplicator);
-		// addMicoSchemas();
-		addSchemas();
+		addSchemaContainers();
 		addTagFamilies();
 		addTags();
 		addFolderStructure();
@@ -154,7 +155,7 @@ public class DemoDataProvider {
 		log.info("Folders:  " + folders.size());
 		log.info("Contents: " + contents.size());
 		log.info("Tags:     " + tags.size());
-		log.info("Schemas: " + schemas.size());
+		log.info("Schemas: " + schemaContainers.size());
 		log.info("TagFamilies: " + tagFamilies.size());
 		log.info("Users:    " + users.size());
 		log.info("Groups:   " + groups.size());
@@ -164,7 +165,7 @@ public class DemoDataProvider {
 
 	private void addContents(int multiplicator) {
 
-		Schema contentSchema = schemas.get("content");
+		SchemaContainer contentSchema = schemaContainers.get("content");
 
 		for (int i = 0; i < 12 * multiplicator; i++) {
 			addContent(folders.get("2014"), "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
@@ -409,76 +410,55 @@ public class DemoDataProvider {
 		tagFamilies.put("colors", colorTagFamily);
 	}
 
-	private void addSchemas() {
+	private void addSchemaContainers() {
 		addBootstrapSchemas();
 		addBlogPostSchema();
-		// addColorsSchema();
-		addCategorySchema();
 	}
 
 	private void addBootstrapSchemas() {
 
 		// folder
-		Schema folderSchema = schemaService.findByName("folder");
-		folderSchema.addProject(project);
-		schemas.put("folder", folderSchema);
+		SchemaContainer folderSchemaContainer = schemaService.findByName("folder");
+		folderSchemaContainer.addProject(project);
+		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		Schema contentSchema = schemaService.findByName("content");
-		contentSchema.addProject(project);
-		schemas.put("content", contentSchema);
+		SchemaContainer contentSchemaContainer = schemaService.findByName("content");
+		contentSchemaContainer.addProject(project);
+		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
-		Schema binaryContentSchema = schemaService.findByName("binary-content");
-		binaryContentSchema.addProject(project);
-		schemas.put("binary-content", binaryContentSchema);
+		SchemaContainer binaryContentSchemaContainer = schemaService.findByName("binary-content");
+		binaryContentSchemaContainer.addProject(project);
+		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
 	}
-
-	// private void addColorsSchema() {
-	// SchemaRoot schemaRoot = root.getSchemaRoot();
-	// Schema colorSchema = schemaRoot.create("colors");
-	// colorSchema.setDescription("Colors");
-	// colorSchema.setDescription("Colors");
-	// BasicPropertyType nameProp = colorSchema.createBasicPropertyTypeSchema(Schema.NAME_KEYWORD, PropertyType.I18N_STRING);
-	// nameProp.setDisplayName("Name");
-	// nameProp.setDescription("The name of the category.");
-	// colorSchema.addPropertyTypeSchema(nameProp);
-	// schemas.put("color", colorSchema);
-	// }
 
 	private void addBlogPostSchema() {
-		SchemaRoot schemaRoot = root.getSchemaRoot();
-		Schema blogPostSchema = schemaRoot.create("blogpost");
-		BasicPropertyType content = blogPostSchema.createBasicPropertyTypeSchema("content", PropertyType.LIST);
-		blogPostSchema.addPropertyTypeSchema(content);
-		schemas.put("blogpost", blogPostSchema);
+		Schema schema = new SchemaImpl();
+		schema.setName("blogpost");
+		schema.setDisplayField("title");
+		schema.setMeshVersion(Mesh.getVersion());
+		schema.setSchemaVersion("1.0.0");
 
-	}
+		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
+		titleFieldSchema.setName("title");
+		titleFieldSchema.setLabel("Title");
+		titleFieldSchema.setText("Enter the title here");
 
-	private void addCategorySchema() {
-		SchemaRoot root = getMeshRoot().getSchemaRoot();
-		Schema categoriesSchema = root.create(TAG_CATEGORIES_SCHEMA_NAME);
-		categoriesSchema.addProject(project);
-		categoriesSchema.setDisplayName("Category");
-		categoriesSchema.setDescription("Custom schema for tag categories");
-		categoriesSchema.setCreator(userInfo.getUser());
-		BasicPropertyType nameProp = categoriesSchema.createBasicPropertyTypeSchema(SchemaImpl.NAME_KEYWORD, PropertyType.I18N_STRING);
-		nameProp.setDisplayName("Name");
-		nameProp.setDescription("The name of the category.");
-		categoriesSchema.addPropertyTypeSchema(nameProp);
+		HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
+		titleFieldSchema.setName("content");
+		titleFieldSchema.setLabel("Content");
+		titleFieldSchema.setText("Enter your text here");
 
-		BasicPropertyType displayNameProp = categoriesSchema.createBasicPropertyTypeSchema(SchemaImpl.DISPLAY_NAME_KEYWORD, PropertyType.I18N_STRING);
-		displayNameProp.setDisplayName("Display Name");
-		displayNameProp.setDescription("The display name property of the category.");
-		categoriesSchema.addPropertyTypeSchema(displayNameProp);
+		schema.addField(titleFieldSchema);
+		schema.addField(contentFieldSchema);
 
-		BasicPropertyType contentProp = categoriesSchema.createBasicPropertyTypeSchema(SchemaImpl.CONTENT_KEYWORD, PropertyType.I18N_STRING);
-		contentProp.setDisplayName("Content");
-		contentProp.setDescription("The main content html of the category.");
-		categoriesSchema.addPropertyTypeSchema(contentProp);
-		schemas.put("category", categoriesSchema);
+		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
+		SchemaContainer blogPostSchemaContainer = schemaRoot.create("blogpost");
+		blogPostSchemaContainer.setSchema(schema);
 
+		schemaContainers.put("blogpost", blogPostSchemaContainer);
 	}
 
 	private void updatePermissions() {
@@ -545,7 +525,7 @@ public class DemoDataProvider {
 			englishContainer.setI18nProperty("name", englishName);
 		}
 		folderNode.setCreator(userInfo.getUser());
-		folderNode.setSchema(schemas.get("folder"));
+		folderNode.setSchemaContainer(schemaContainers.get("folder"));
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
 			throw new RuntimeException("Key for folder empty");
 		}
@@ -572,7 +552,7 @@ public class DemoDataProvider {
 		return tag;
 	}
 
-	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, Schema schema) {
+	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
 		MeshNode node = parentNode.create();
 		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
 		englishContainer.setI18nProperty("displayName", name + " english");
@@ -588,7 +568,7 @@ public class DemoDataProvider {
 		// TODO maybe set project should be done inside the save?
 		node.addProject(project);
 		node.setCreator(userInfo.getUser());
-		node.setSchema(schema);
+		node.setSchemaContainer(schema);
 		// node.setOrder(42);
 		node.setParentNode(parentNode);
 		// Add the content to the given tag
@@ -644,8 +624,8 @@ public class DemoDataProvider {
 		return tags.get(name);
 	}
 
-	public Schema getSchema(String name) {
-		return schemas.get(name);
+	public SchemaContainer getSchemaContainer(String name) {
+		return schemaContainers.get(name);
 	}
 
 	public Map<String, Tag> getTags() {
@@ -672,8 +652,8 @@ public class DemoDataProvider {
 		return roles;
 	}
 
-	public Map<String, Schema> getSchemas() {
-		return schemas;
+	public Map<String, SchemaContainer> getSchemaContainers() {
+		return schemaContainers;
 	}
 
 	public MeshRoot getMeshRoot() {

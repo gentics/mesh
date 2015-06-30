@@ -10,10 +10,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.MeshUser;
-import com.gentics.mesh.core.data.model.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.model.impl.MeshUserImpl;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
+import com.gentics.mesh.core.data.impl.MeshUserImpl;
 import com.gentics.mesh.paging.PagingInfo;
 
 @Component

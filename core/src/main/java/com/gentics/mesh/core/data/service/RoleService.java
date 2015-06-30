@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.service;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 
 import java.util.HashSet;
 import java.util.List;
@@ -15,12 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.model.GenericNode;
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.MeshVertex;
-import com.gentics.mesh.core.data.model.Role;
-import com.gentics.mesh.core.data.model.impl.RoleImpl;
-import com.gentics.mesh.core.data.model.relationship.Permission;
+import com.gentics.mesh.core.data.GenericNode;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.impl.RoleImpl;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;

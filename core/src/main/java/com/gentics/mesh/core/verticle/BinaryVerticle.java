@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.model.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.JsonUtils.toJson;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.http.HttpMethod;
@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.model.MeshAuthUser;
-import com.gentics.mesh.core.data.model.node.MeshNode;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
 import com.gentics.mesh.util.RoutingContextHelper;
 

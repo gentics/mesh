@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.model.root.MeshRoot;
-import com.gentics.mesh.core.data.model.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.syncleus.ferma.FramedGraph;
 
 @Component
