@@ -3,14 +3,27 @@ package com.gentics.mesh.core.rest.node.response;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.response.AbstractPropertyContainerModel;
+import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.project.response.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import com.gentics.mesh.core.rest.user.response.UserResponse;
 
-public class NodeResponse extends AbstractPropertyContainerModel {
+public class NodeResponse extends AbstractRestModel {
 
 	private boolean published;
+
+	private String language;
+	private List<String> availableLanguages;
+
+	private String[] permissions = {};
+
+	private UserResponse creator;
+	private long created;
+
+	private UserResponse editor;
+	private long edited;
 
 	private String path;
 
@@ -32,7 +45,7 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 
 	private String segmentField;
 
-	private NodeFieldContainer fields = new NodeFieldContainer();
+	private List<Field> fields = new ArrayList<>();
 
 	public NodeResponse() {
 	}
@@ -120,9 +133,65 @@ public class NodeResponse extends AbstractPropertyContainerModel {
 	public void setProject(ProjectResponse project) {
 		this.project = project;
 	}
-	
-	public NodeFieldContainer getFields() {
+
+	public List<Field> getFields() {
 		return fields;
 	}
-	
+
+	public UserResponse getCreator() {
+		return creator;
+	}
+
+	public void setCreator(UserResponse author) {
+		this.creator = author;
+	}
+
+	public String[] getPermissions() {
+		return permissions;
+	}
+
+	public void setPermissions(String... permissions) {
+		this.permissions = permissions;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	public List<String> getAvailableLanguages() {
+		return availableLanguages;
+	}
+
+	public void setAvailableLanguages(List<String> availableLanguages) {
+		this.availableLanguages = availableLanguages;
+	}
+
+	public long getCreated() {
+		return created;
+	}
+
+	public void setCreated(long created) {
+		this.created = created;
+	}
+
+	public UserResponse getEditor() {
+		return editor;
+	}
+
+	public void setEditor(UserResponse editor) {
+		this.editor = editor;
+	}
+
+	public long getEdited() {
+		return edited;
+	}
+
+	public void setEdited(long edited) {
+		this.edited = edited;
+	}
+
 }

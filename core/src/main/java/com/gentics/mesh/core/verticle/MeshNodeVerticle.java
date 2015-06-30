@@ -18,7 +18,6 @@ import io.vertx.core.Future;
 import io.vertx.ext.web.Route;
 
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -35,7 +34,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.response.NodeListResponse;
@@ -183,10 +181,10 @@ public class MeshNodeVerticle extends AbstractProjectRestVerticle {
 				Project project = projectService.findByName(projectName);
 				node.addProject(project);
 
-				for (Entry<String, Field> entry : requestModel.getFields().entrySet()) {
-					String key = entry.getKey();
-					Field property = entry.getValue();
-				}
+//				for (Entry<String, Field> entry : requestModel.getFields().entrySet()) {
+//					String key = entry.getKey();
+//					Field property = entry.getValue();
+//				}
 
 //				/* Add the i18n properties to the newly created tag */
 //				for (String languageTag : requestModel.getProperties().keySet()) {

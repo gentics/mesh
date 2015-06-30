@@ -22,9 +22,19 @@ import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
+import com.gentics.mesh.core.rest.common.response.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.response.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -55,10 +65,10 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 		// TODO fix issues with generics - Maybe move the link replacer to a
 		// spring service
 		// TODO handle language
-		//		@Autowired
-		//		private LinkResolverFactory<LinkResolver> resolver;
-		//		Language language = null;
-		//		LinkReplacer replacer = new LinkReplacer(resolver);
+		// @Autowired
+		// private LinkResolverFactory<LinkResolver> resolver;
+		// Language language = null;
+		// LinkReplacer replacer = new LinkReplacer(resolver);
 		// content.setContent(language,
 		// replacer.replace(content.getContent(language)));
 	}
@@ -97,10 +107,10 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 				/* Load the children */
 				if (node.getSchema().isContainer()) {
-					//					//TODO handle uuid
-					//					//TODO handle expand
+					// //TODO handle uuid
+					// //TODO handle expand
 					List<String> children = new ArrayList<>();
-					//					//TODO check permissions
+					// //TODO check permissions
 					for (MeshNode child : node.getChildren()) {
 						children.add(child.getUuid());
 					}
@@ -126,6 +136,46 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 				}
 
 				for (FieldSchema fieldSchema : schema.getFields()) {
+					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+					if (FieldTypes.STRING.equals(type)) {
+						StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
+						StringField stringField = new StringFieldImpl();
+						com.gentics.mesh.core.data.node.field.basic.StringField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl(stringFieldSchema.getName(), node);
+						// restNode.getFields().add()
+					}
+
+					if (FieldTypes.NUMBER.equals(type)) {
+						NumberFieldSchema numberField = (NumberFieldSchema) fieldSchema;
+					}
+
+					if (FieldTypes.BOOLEAN.equals(type)) {
+						BooleanFieldSchema booleanField = (BooleanFieldSchema) fieldSchema;
+					}
+
+					if (FieldTypes.NODE.equals(type)) {
+						NodeFieldSchema nodeField = (NodeFieldSchema) fieldSchema;
+					}
+
+					if (FieldTypes.HTML.equals(type)) {
+						HTMLFieldSchema htmlField = (HTMLFieldSchema) fieldSchema;
+
+					}
+
+					if (FieldTypes.LIST.equals(type)) {
+						ListFieldSchema listField = (ListFieldSchema) fieldSchema;
+						String listType = listField.getListType();
+					}
+					if (FieldTypes.SELECT.equals(type)) {
+						SelectFieldSchema selectField = (SelectFieldSchema) fieldSchema;
+					}
+
+					if (FieldTypes.MICROSCHEMA.equals(type)) {
+						NumberFieldSchema numberField = (NumberFieldSchema) fieldSchema;
+					}
+					System.out.println(fieldSchema.getClass().getName());
+					// fieldSchema.getType()
+					// restNode.getFields().add(e)
+					// restNode.addProperty(d, value);
 				}
 
 				/* Add the object to the list of object references */
@@ -135,13 +185,13 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 
 			if (depth < 2) {
 				TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restNode, tasks);
-				//TODO replace this with iterator handling
+				// TODO replace this with iterator handling
 				node.getTags().spliterator().forEachRemaining(tagConsumer);
 			}
 
 			tasks.forEach(action -> action.join());
 		} catch (IOException e) {
-			//TODO handle error - we need to tell our caller
+			// TODO handle error - we need to tell our caller
 			e.printStackTrace();
 			return null;
 		}
