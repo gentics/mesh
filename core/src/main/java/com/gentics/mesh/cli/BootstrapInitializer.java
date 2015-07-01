@@ -1,6 +1,6 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.util.DeploymentUtils.deployAndWait;
+import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -275,14 +275,14 @@ public class BootstrapInitializer {
 			titleFieldSchema.setName("title");
 			titleFieldSchema.setLabel("Title");
 			titleFieldSchema.setText("Enter the title here");
+			schema.addField("title", titleFieldSchema);
 
 			HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
 			titleFieldSchema.setName("content");
 			titleFieldSchema.setLabel("Content");
 			titleFieldSchema.setText("Enter your text here");
+			schema.addField("content", contentFieldSchema);
 
-			schema.addField(titleFieldSchema);
-			schema.addField(contentFieldSchema);
 			schema.setBinary(false);
 			schema.setContainer(false);
 			contentSchemaContainer = schemaContainerRoot.create("content");
@@ -302,8 +302,8 @@ public class BootstrapInitializer {
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("name");
 			nameFieldSchema.setLabel("Name");
+			schema.addField("name", nameFieldSchema);
 
-			schema.addField(nameFieldSchema);
 			schema.setBinary(false);
 			schema.setContainer(true);
 			folderSchemaContainer = schemaContainerRoot.create("folder");
@@ -324,13 +324,13 @@ public class BootstrapInitializer {
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("name");
 			nameFieldSchema.setLabel("Name");
+			schema.addField("name", nameFieldSchema);
 
 			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("filename");
 			nameFieldSchema.setLabel("Filename");
+			schema.addField("filename", filenameFieldSchema);
 
-			schema.addField(nameFieldSchema);
-			schema.addField(filenameFieldSchema);
 			schema.setBinary(true);
 			schema.setContainer(false);
 			binarySchemaContainer = schemaContainerRoot.create("binary-content");

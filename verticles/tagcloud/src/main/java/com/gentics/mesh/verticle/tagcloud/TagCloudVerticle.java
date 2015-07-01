@@ -1,6 +1,6 @@
 package com.gentics.mesh.verticle.tagcloud;
 
-import static com.gentics.mesh.util.JsonUtils.toJson;
+import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import java.util.List;

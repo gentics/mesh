@@ -20,7 +20,8 @@ import com.gentics.mesh.core.data.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -42,12 +43,12 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode content2 = folder.create();
 
 		MeshNodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(data().getEnglish());
-		englishContainer.setI18nProperty("content", "english content");
-		englishContainer.setI18nProperty("name", "english.html");
+		englishContainer.createString("content").setString("english content");
+		englishContainer.createString("name").setString("english.html");
 
 		MeshNodeFieldContainer englishContainer2 = content.getOrCreateFieldContainer(data().getGerman());
-		englishContainer2.setI18nProperty("content", "english2 content");
-		englishContainer2.setI18nProperty("name", "english2.html");
+		englishContainer2.createString("content").setString("english2 content");
+		englishContainer2.createString("name").setString("english2.html");
 		nodeService.createLink(content, content2);
 
 		// TODO verify that link relation has been created
@@ -89,8 +90,8 @@ public class MeshNodeTest extends AbstractDBTest {
 		Language german = data().getGerman();
 
 		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
-		englishContainer.setI18nProperty("content", "english content");
-		englishContainer.setI18nProperty("name", "english.html");
+		englishContainer.createString("content").setString("english content");
+		englishContainer.createString("name").setString("english.html");
 		assertNotNull(node.getUuid());
 
 		List<? extends FieldContainer> allProperties = node.getFieldContainers();
@@ -98,12 +99,12 @@ public class MeshNodeTest extends AbstractDBTest {
 		assertEquals(1, allProperties.size());
 
 		MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
-		germanContainer.setI18nProperty("content", "german content");
+		germanContainer.createString("content").setString("german content");
 		assertEquals(2, node.getFieldContainers().size());
 
 		MeshNodeFieldContainer container = node.getFieldContainer(english);
 		assertNotNull(container);
-		String text = container.getI18nProperty("content");
+		String text = container.getString("content").getString();
 		assertNotNull(text);
 		assertEquals("english content", text);
 	}
@@ -134,10 +135,11 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshAuthUser requestUser = getUser(rc);
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("en");
-		MeshNode newsNode = data().getContent("news overview");
+		MeshNode newsNode = data().getContent("porsche 911");
 		TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 		NodeResponse response = newsNode.transformToRest(info);
 		assertNotNull(response);
+		System.out.println(JsonUtil.toJson(response));
 	}
 
 	@Test
@@ -145,13 +147,9 @@ public class MeshNodeTest extends AbstractDBTest {
 		MeshNode newsNode = data().getContent("news overview");
 		Language german = data().getGerman();
 		MeshNodeFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
-		
 
+		//TODO add some fields
 
-	//TODO add some fields
-		
-		
-		
 	}
 
 }

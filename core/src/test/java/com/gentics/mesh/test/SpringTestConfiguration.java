@@ -4,14 +4,12 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshConfiguration;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
-@EnableAspectJAutoProxy
 public class SpringTestConfiguration {
 
 	//	@Bean

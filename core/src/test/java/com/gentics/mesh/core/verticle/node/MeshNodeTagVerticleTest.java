@@ -18,12 +18,12 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
-import com.gentics.mesh.core.rest.tag.response.TagListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
-import com.gentics.mesh.util.JsonUtils;
 
 public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
@@ -48,7 +48,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags", 200, "OK");
-		TagListResponse tagList = JsonUtils.readValue(response, TagListResponse.class);
+		TagListResponse tagList = JsonUtil.readValue(response, TagListResponse.class);
 		assertEquals(4, tagList.getData().size());
 		assertEquals(4, tagList.getMetainfo().getTotalCount());
 
@@ -61,7 +61,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getTag("red");
 		assertFalse(node.getTags().contains(tag));
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
+		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		assertTrue(test.containsTag(restNode, tag));
 		assertTrue(node.getTags().contains(tag));
 		// TODO check for properties of the nested tag
@@ -100,7 +100,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 		assertTrue(node.getTags().contains(tag));
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
+		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		assertFalse(test.containsTag(restNode, tag));
 		assertFalse(node.getTags().contains(tag));
 		// TODO check for properties of the nested tag

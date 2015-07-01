@@ -12,10 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.JsonUtils;
 
 public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
@@ -33,7 +33,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		MeshNode folder = data().getFolder("2015");
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/News/2015";
 		String response = request(info, GET, path, 200, "OK");
-		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
+		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(folder, restNode);
 //		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
 //				restNode.getProperties());
@@ -46,7 +46,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
 		MeshNode concordeNode = data().getContent("concorde");
 		String response = request(info, GET, path, 200, "OK");
-		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
+		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(concordeNode, restNode);
 //		assertNotNull(restNode.getProperties());
 

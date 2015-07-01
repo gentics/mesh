@@ -44,13 +44,13 @@ public class LinkRendererTest extends AbstractDBTest {
 		// Create some dummy content
 		MeshNode content = parentNode.create();
 		MeshNodeFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
-		germanContainer.setI18nProperty("displayName", "german name");
-		germanContainer.setI18nProperty("name", "german.html");
+		germanContainer.createString("displayName").setString("german name");
+		germanContainer.createString("name").setString("german.html");
 
 		MeshNode content2 = parentNode.create();
 		MeshNodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
-		englishContainer.setI18nProperty("displayName", "content 2 english");
-		englishContainer.setI18nProperty("name", "english.html");
+		englishContainer.createString("displayName").setString("content 2 english");
+		englishContainer.createString("name").setString("english.html");
 
 		LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
 		String out = replacer.replace("dgasd");

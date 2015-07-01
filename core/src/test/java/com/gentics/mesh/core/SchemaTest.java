@@ -22,14 +22,14 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.request.SchemaCreateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
-import com.gentics.mesh.util.JsonUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
 public class SchemaTest extends AbstractDBTest {
@@ -111,13 +111,13 @@ public class SchemaTest extends AbstractDBTest {
 		StringFieldSchema stringSchema = new StringFieldSchemaImpl();
 		stringSchema.setLabel("string field label");
 		stringSchema.setName("string field name");
-		schema.addField(stringSchema);
+		schema.addField("name", stringSchema);
 
 		BooleanFieldSchema booleanSchema = new BooleanFieldSchemaImpl();
 		booleanSchema.setLabel("boolean field label");
 		booleanSchema.setName("boolean field name");
 		booleanSchema.setValue(true);
-		schema.addField(booleanSchema);
+		schema.addField("boolean", booleanSchema);
 
 		ListFieldSchema<NodeField> listFieldSchema = new ListFieldSchemaImpl<>();
 		listFieldSchema.setName("list field name");
@@ -129,7 +129,7 @@ public class SchemaTest extends AbstractDBTest {
 		NodeField defaultNode = new NodeFieldImpl();
 		defaultNode.setUuid(UUIDUtil.randomUUID());
 		listFieldSchema.getItems().add(defaultNode);
-		schema.addField(listFieldSchema);
+		schema.addField("list", listFieldSchema);
 
 		//		MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
 		//		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "gallery", "shorttext" });
@@ -148,10 +148,10 @@ public class SchemaTest extends AbstractDBTest {
 		schema = schemaStorage.getSchema(schema.getName());
 		assertNotNull(schema);
 
-		String json = JsonUtils.toJson(request);
-		SchemaCreateRequest loadedRequest = JsonUtils.readValue(json, SchemaCreateRequest.class);
+		String json = JsonUtil.toJson(request);
+		SchemaCreateRequest loadedRequest = JsonUtil.readValue(json, SchemaCreateRequest.class);
 		assertNotNull(loadedRequest);
-		String json2 = JsonUtils.toJson(loadedRequest);
+		String json2 = JsonUtil.toJson(loadedRequest);
 		assertEquals(json, json2);
 		System.out.println(json2);
 

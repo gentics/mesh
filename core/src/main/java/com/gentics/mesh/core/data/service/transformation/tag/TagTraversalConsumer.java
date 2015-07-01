@@ -12,8 +12,8 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 
 public class TagTraversalConsumer implements Consumer<Tag> {
 

@@ -12,8 +12,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.role.response.RoleResponse;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 
 public class RoleImpl extends AbstractGenericNode implements Role {
 

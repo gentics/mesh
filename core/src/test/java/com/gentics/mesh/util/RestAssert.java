@@ -15,22 +15,22 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshNodeService;
-import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
-import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
-import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.project.response.ProjectResponse;
-import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
-import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.gentics.mesh.core.rest.schema.request.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
-import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.core.rest.group.GroupCreateRequest;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 @Component
 public class RestAssert {

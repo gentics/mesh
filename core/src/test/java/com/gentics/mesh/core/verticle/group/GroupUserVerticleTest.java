@@ -23,13 +23,13 @@ import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshUserService;
-import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.user.response.UserListResponse;
-import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
-import com.gentics.mesh.util.JsonUtils;
 
 public class GroupUserVerticleTest
 
@@ -63,7 +63,7 @@ extends AbstractRestVerticleTest {
 
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, GET, "/api/v1/groups/" + uuid + "/users", 200, "OK");
-		UserListResponse userList = JsonUtils.readValue(response, UserListResponse.class);
+		UserListResponse userList = JsonUtil.readValue(response, UserListResponse.class);
 		assertEquals(2, userList.getMetainfo().getTotalCount());
 		assertEquals(2, userList.getData().size());
 		Iterator<UserResponse> userIt = userList.getData().iterator();
@@ -88,7 +88,7 @@ extends AbstractRestVerticleTest {
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		MeshUser extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
 		String response = request(info, POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(group, restGroup);
 
 		assertTrue("User should be member of the group.", group.hasUser(extraUser));
@@ -141,7 +141,7 @@ extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 
 		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(group, restGroup);
 
 		assertFalse("User should not be member of the group.", group.hasUser(user));

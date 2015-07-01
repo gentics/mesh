@@ -19,12 +19,12 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshUserService;
-import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.role.response.RoleListResponse;
-import com.gentics.mesh.core.rest.role.response.RoleResponse;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.JsonUtils;
 
 public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
@@ -54,7 +54,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + uuid + "/roles", 200, "OK");
-		RoleListResponse roleList = JsonUtils.readValue(response, RoleListResponse.class);
+		RoleListResponse roleList = JsonUtil.readValue(response, RoleListResponse.class);
 		assertEquals(2, roleList.getMetainfo().getTotalCount());
 		assertEquals(2, roleList.getData().size());
 
@@ -75,7 +75,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		assertTrue(restGroup.getRoles().contains("extraRole"));
 
 		Group group = info.getGroup();
@@ -116,7 +116,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 		String uuid = info.getGroup().getUuid();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		assertFalse(restGroup.getRoles().contains("extraRole"));
 		Group group = info.getGroup();
 		assertEquals(1, group.getRoles().size());
@@ -133,7 +133,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
 		System.out.println(response);
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(group, restGroup);
 
 		assertTrue("Role should be assigned to group.", group.hasRole(extraRole));
@@ -177,7 +177,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(group, UPDATE_PERM);
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(group, restGroup);
 		assertFalse("Role should now no longer be assigned to group.", group.hasRole(extraRole));
 	}

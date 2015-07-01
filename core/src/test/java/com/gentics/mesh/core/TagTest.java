@@ -26,11 +26,11 @@ import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.JsonUtils;
 
 public class TagTest extends AbstractDBTest {
 
@@ -104,8 +104,8 @@ public class TagTest extends AbstractDBTest {
 		Language german = languageService.findByLanguageTag("de");
 		MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
-		germanContainer.setI18nProperty("displayName", GERMAN_TEST_FILENAME);
-		germanContainer.setI18nProperty("name", "german node name");
+		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
+		germanContainer.createString("name").setString("german node name");
 
 		// 3. Assign the tag to the node
 		node.addTag(tag);
@@ -119,7 +119,7 @@ public class TagTest extends AbstractDBTest {
 
 		assertNotNull(contentFromTag);
 		assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
-		String filename = fieldContainer.getI18nProperty("displayName");
+		String filename = fieldContainer.getString("displayName").getString();
 		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 		// Remove the file/content and check whether the content was really removed
@@ -184,7 +184,7 @@ public class TagTest extends AbstractDBTest {
 			assertNotNull(response);
 			long dur = System.currentTimeMillis() - start;
 			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
-			System.out.println(JsonUtils.toJson(response));
+			System.out.println(JsonUtil.toJson(response));
 		}
 		// assertEquals(2, response.getChildTags().size());
 		// assertEquals(4, response.getPerms().length);

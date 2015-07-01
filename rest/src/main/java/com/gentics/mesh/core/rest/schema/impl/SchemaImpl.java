@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 public class SchemaImpl implements Schema {
 
 	private String name;
+	private String description;
 	private String displayField;
 	private boolean binary = false;
 	private boolean container = false;
@@ -16,7 +17,7 @@ public class SchemaImpl implements Schema {
 	private String meshVersion;
 
 	private String schemaVersion;
-	private List<FieldSchema> fields = new ArrayList<>();
+	private Map<String, FieldSchema> fields = new HashMap<>();
 
 	@Override
 	public String getName() {
@@ -26,7 +27,16 @@ public class SchemaImpl implements Schema {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
 
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	@Override
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override
@@ -60,7 +70,7 @@ public class SchemaImpl implements Schema {
 	}
 
 	@Override
-	public List<FieldSchema> getFields() {
+	public Map<String, FieldSchema> getFields() {
 		return fields;
 	}
 
@@ -85,8 +95,8 @@ public class SchemaImpl implements Schema {
 	}
 
 	@Override
-	public void addField(FieldSchema fieldSchema) {
-		this.fields.add(fieldSchema);
+	public void addField(String key, FieldSchema fieldSchema) {
+		this.fields.put(key, fieldSchema);
 	}
 
 }

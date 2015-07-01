@@ -15,7 +15,9 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.paging.PagingInfo;
 
@@ -26,7 +28,7 @@ public interface MeshNode extends GenericNode {
 	void removeTag(Tag tag);
 
 	SchemaContainer getSchemaContainer();
-	
+
 	Schema getSchema() throws IOException;
 
 	void setSchemaContainer(SchemaContainer schema);

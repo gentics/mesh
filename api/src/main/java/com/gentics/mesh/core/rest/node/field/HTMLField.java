@@ -2,8 +2,8 @@ package com.gentics.mesh.core.rest.node.field;
 
 public interface HTMLField extends ListableField, MicroschemaListableField {
 
-	String getHtml();
+	String getHTML();
 
-	void setHtml(String html);
+	void setHTML(String html);
 
 }

@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
 public class TagImpl extends GenericFieldContainerNode implements Tag {

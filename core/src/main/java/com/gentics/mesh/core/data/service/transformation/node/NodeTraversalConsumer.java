@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 
 public class NodeTraversalConsumer implements Consumer<MeshNodeImpl> {
 

@@ -7,6 +7,7 @@ import io.vertx.core.impl.ConcurrentHashSet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinTask;
@@ -22,20 +23,11 @@ import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
-import com.gentics.mesh.core.rest.common.response.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
-import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.response.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -135,47 +127,9 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 					throw new HttpStatusCodeErrorException(400, "Could not find any field for one of the languagetags that were specified.");
 				}
 
-				for (FieldSchema fieldSchema : schema.getFields()) {
-					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-					if (FieldTypes.STRING.equals(type)) {
-						StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
-						StringField stringField = new StringFieldImpl();
-						com.gentics.mesh.core.data.node.field.basic.StringField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl(stringFieldSchema.getName(), node);
-						// restNode.getFields().add()
-					}
-
-					if (FieldTypes.NUMBER.equals(type)) {
-						NumberFieldSchema numberField = (NumberFieldSchema) fieldSchema;
-					}
-
-					if (FieldTypes.BOOLEAN.equals(type)) {
-						BooleanFieldSchema booleanField = (BooleanFieldSchema) fieldSchema;
-					}
-
-					if (FieldTypes.NODE.equals(type)) {
-						NodeFieldSchema nodeField = (NodeFieldSchema) fieldSchema;
-					}
-
-					if (FieldTypes.HTML.equals(type)) {
-						HTMLFieldSchema htmlField = (HTMLFieldSchema) fieldSchema;
-
-					}
-
-					if (FieldTypes.LIST.equals(type)) {
-						ListFieldSchema listField = (ListFieldSchema) fieldSchema;
-						String listType = listField.getListType();
-					}
-					if (FieldTypes.SELECT.equals(type)) {
-						SelectFieldSchema selectField = (SelectFieldSchema) fieldSchema;
-					}
-
-					if (FieldTypes.MICROSCHEMA.equals(type)) {
-						NumberFieldSchema numberField = (NumberFieldSchema) fieldSchema;
-					}
-					System.out.println(fieldSchema.getClass().getName());
-					// fieldSchema.getType()
-					// restNode.getFields().add(e)
-					// restNode.addProperty(d, value);
+				for (Entry<String, ? extends FieldSchema> fieldEntry : schema.getFields().entrySet()) {
+					Field restField = fieldContainer.getRestField(fieldEntry.getKey(), fieldEntry.getValue());
+					restNode.getFields().put(fieldEntry.getKey(), restField);
 				}
 
 				/* Add the object to the list of object references */

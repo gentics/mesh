@@ -24,15 +24,15 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
+import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.core.rest.schema.request.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.request.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.response.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.JsonUtils;
 
 public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
@@ -63,11 +63,11 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		//		request.getPropertyTypeSchemas().add(propertySchema);
 
-		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtils.toJson(request));
-		SchemaResponse restSchemaResponse = JsonUtils.readValue(response, SchemaResponse.class);
+		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtil.toJson(request));
+		SchemaResponse restSchemaResponse = JsonUtil.readValue(response, SchemaResponse.class);
 		test.assertSchema(request, restSchemaResponse);
 
-		SchemaResponse responseObject = JsonUtils.readValue(response, SchemaResponse.class);
+		SchemaResponse responseObject = JsonUtil.readValue(response, SchemaResponse.class);
 		SchemaContainer schema = schemaService.findByUUID(responseObject.getUuid());
 		//		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		//		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
@@ -118,14 +118,14 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
-		SchemaListResponse restResponse = JsonUtils.readValue(response, SchemaListResponse.class);
+		SchemaListResponse restResponse = JsonUtil.readValue(response, SchemaListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + 2, 200, "OK");
-		restResponse = JsonUtils.readValue(response, SchemaListResponse.class);
+		restResponse = JsonUtil.readValue(response, SchemaListResponse.class);
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra schemas + default schema
@@ -140,7 +140,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		List<SchemaResponse> allSchemas = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtils.readValue(response, SchemaListResponse.class);
+			restResponse = JsonUtil.readValue(response, SchemaListResponse.class);
 			allSchemas.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all schemas were loaded when loading all pages.", totalSchemas, allSchemas.size());
@@ -159,7 +159,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_invalid_paging_parameters", response);
 
 		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		SchemaListResponse list = JsonUtils.readValue(response, SchemaListResponse.class);
+		SchemaListResponse list = JsonUtil.readValue(response, SchemaListResponse.class);
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 	}
@@ -169,7 +169,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		SchemaContainer schema = data().getSchemaContainer("content");
 		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
-		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
+		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
 		test.assertSchema(schema, restSchema);
 	}
 
@@ -201,8 +201,8 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(schema.getUuid());
 		request.setName("new-name");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + schema.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
+		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + schema.getUuid(), 200, "OK", JsonUtil.toJson(request));
+		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
 		//		assertEquals(request.getName(), restSchema.getName());
 
 		SchemaContainer reloaded = schemaService.findByUUID(schema.getUuid());
@@ -218,7 +218,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid("bogus");
 		request.setName("new-name");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + "bogus", 404, "Not Found", JsonUtils.toJson(request));
+		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + "bogus", 404, "Not Found", JsonUtil.toJson(request));
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
 		SchemaContainer reloaded = schemaService.findByUUID(schema.getUuid());
@@ -263,7 +263,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(extraProject, UPDATE_PERM);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
-		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
+		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
 		test.assertSchema(schema, restSchema);
 
 		// Reload the schema and check for expected changes
@@ -298,7 +298,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 200, "OK");
-		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
+		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
 		test.assertSchema(schema, restSchema);
 
 		final String removedProjectName = project.getName();

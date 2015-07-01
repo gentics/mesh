@@ -18,11 +18,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.http.LocaleContextDataHandler;
-import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.util.JsonUtils;
+import com.gentics.mesh.json.JsonUtil;
 
 /**
  * Central storage for all apex request routers.
@@ -92,11 +92,11 @@ public class RouterStorage {
 						log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
 						int code = getResponseStatusCode(failure);
 						failureRoutingContext.response().setStatusCode(code);
-						failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse(failure.getMessage())));
+						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 					} else {
 						log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
 						failureRoutingContext.response().setStatusCode(500);
-						failureRoutingContext.response().end(JsonUtils.toJson(new GenericMessageResponse("Internal error occured")));
+						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse("Internal error occured")));
 					}
 				}
 

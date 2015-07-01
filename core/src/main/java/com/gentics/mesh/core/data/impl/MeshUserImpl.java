@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 
 @Configurable
 public class MeshUserImpl extends AbstractGenericNode implements MeshUser {

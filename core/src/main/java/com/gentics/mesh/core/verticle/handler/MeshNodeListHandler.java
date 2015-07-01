@@ -20,9 +20,9 @@ import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.rest.node.response.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.util.JsonUtils;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
@@ -57,7 +57,7 @@ public class MeshNodeListHandler {
 			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
 
 		}, trh -> {
-			rc.response().setStatusCode(200).end(JsonUtils.toJson(listResponse));
+			rc.response().setStatusCode(200).end(JsonUtil.toJson(listResponse));
 		});
 	}
 
@@ -81,7 +81,7 @@ public class MeshNodeListHandler {
 			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
 
 		}, trh -> {
-			rc.response().setStatusCode(200).end(JsonUtils.toJson(listResponse));
+			rc.response().setStatusCode(200).end(JsonUtil.toJson(listResponse));
 		});
 	}
 }

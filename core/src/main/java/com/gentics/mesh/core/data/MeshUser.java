@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.impl.MeshUserImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 
 public interface MeshUser extends GenericNode {
 

@@ -28,14 +28,14 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
-import com.gentics.mesh.core.rest.role.request.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.role.response.RoleListResponse;
-import com.gentics.mesh.core.rest.role.response.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.verticle.RoleVerticle;
 import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.JsonUtils;
 
 public class RoleVerticleTest extends AbstractRestVerticleTest {
 
@@ -58,9 +58,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setName("new_role");
 		request.setGroupUuid(info.getGroup().getUuid());
 
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, POST, "/api/v1/roles/", 200, "OK", requestJson);
-		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
 		test.assertRole(request, restRole);
 	}
 
@@ -70,9 +70,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setName("new_role");
 		request.setGroupUuid(info.getGroup().getUuid());
 
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, POST, "/api/v1/roles/", 200, "OK", requestJson);
-		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
 		test.assertRole(request, restRole);
 
 		response = request(info, DELETE, "/api/v1/roles/" + restRole.getUuid(), 200, "OK");
@@ -90,7 +90,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().revokePermissions(info.getGroup(), CREATE_PERM);
 		// roleService.revokePermission(info.getRole(), data().getMeshRoot().getRoleRoot(), CREATE);
 
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, POST, "/api/v1/roles/", 403, "Forbidden", requestJson);
 		expectMessageResponse("error_missing_perm", response, info.getGroup().getUuid());
 	}
@@ -107,7 +107,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
 		expectMessageResponse("role_missing_parentgroup_field", response);
 
@@ -118,7 +118,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setGroupUuid(info.getGroup().getUuid());
 
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
 		expectMessageResponse("error_name_must_be_set", response);
 	}
@@ -132,7 +132,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 
 		String response = request(info, GET, "/api/v1/roles/" + role.getUuid(), 200, "OK");
-		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
 		test.assertRole(role, restRole);
 	}
 
@@ -148,7 +148,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		String response = request(info, GET, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
-		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
 		test.assertRole(extraRole, restRole);
 
 	}
@@ -202,7 +202,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		info.getGroup().addRole(noPermRole);
 		// Test default paging parameters
 		String response = request(info, GET, "/api/v1/roles/", 200, "OK");
-		RoleListResponse restResponse = JsonUtils.readValue(response, RoleListResponse.class);
+		RoleListResponse restResponse = JsonUtil.readValue(response, RoleListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
@@ -210,7 +210,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		int perPage = 11;
 		int page = 1;
 		response = request(info, GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + page, 200, "OK");
-		restResponse = JsonUtils.readValue(response, RoleListResponse.class);
+		restResponse = JsonUtil.readValue(response, RoleListResponse.class);
 		assertEquals("The amount of items for page {" + page + "} does not match the expected amount.", 11, restResponse.getData().size());
 
 		// created roles + test data role
@@ -230,7 +230,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		List<RoleResponse> allRoles = new ArrayList<>();
 		for (page = 1; page <= totalPages; page++) {
 			response = request(info, GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtils.readValue(response, RoleListResponse.class);
+			restResponse = JsonUtil.readValue(response, RoleListResponse.class);
 			allRoles.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all roles were loaded when loading all pages.", totalRoles, allRoles.size());
@@ -267,8 +267,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setName("renamed role");
 		request.setUuid(extraRole.getUuid());
 
-		String response = request(info, PUT, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		RoleResponse restRole = JsonUtils.readValue(response, RoleResponse.class);
+		String response = request(info, PUT, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK", JsonUtil.toJson(request));
+		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
 		assertEquals(request.getName(), restRole.getName());
 		assertEquals(extraRole.getUuid(), restRole.getUuid());
 

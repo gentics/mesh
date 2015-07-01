@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.util.DeploymentUtils.deployAndWait;
+import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.json.JsonObject;
 

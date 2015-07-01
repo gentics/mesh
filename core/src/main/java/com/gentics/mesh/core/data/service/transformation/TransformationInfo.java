@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractRestModel;
 
 public class TransformationInfo {
 

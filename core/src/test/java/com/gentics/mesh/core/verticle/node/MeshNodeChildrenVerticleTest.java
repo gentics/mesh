@@ -14,12 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.node.MeshNode;
 import com.gentics.mesh.core.data.service.MeshNodeService;
-import com.gentics.mesh.core.rest.node.response.NodeListResponse;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.MeshNodeVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
-import com.gentics.mesh.util.JsonUtils;
 
 public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
@@ -44,7 +44,7 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
+		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 		assertTrue(restNode.getChildren().size() > 5);
@@ -57,7 +57,7 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtils.readValue(response, NodeResponse.class);
+		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(node, restNode);
 		assertFalse(restNode.isContainer());
 		assertNull(restNode.getChildren());
@@ -71,7 +71,7 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");
-		NodeListResponse nodeList = JsonUtils.readValue(response, NodeListResponse.class);
+		NodeListResponse nodeList = JsonUtil.readValue(response, NodeListResponse.class);
 		assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 		assertEquals(expectedItemsInPage, nodeList.getData().size());
 	}

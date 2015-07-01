@@ -1,7 +1,10 @@
 package com.gentics.mesh.raml;
 
+import static com.gentics.mesh.util.FieldUtil.createStringField;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -11,45 +14,41 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import com.gentics.mesh.core.rest.common.response.AbstractListResponse;
-import com.gentics.mesh.core.rest.common.response.AbstractRestModel;
-import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.response.PagingMetaInfo;
-import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
-import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.group.response.GroupListResponse;
-import com.gentics.mesh.core.rest.group.response.GroupResponse;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.request.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.request.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.response.NodeFieldContainer;
-import com.gentics.mesh.core.rest.node.response.NodeListResponse;
-import com.gentics.mesh.core.rest.node.response.NodeResponse;
-import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.project.response.ProjectListResponse;
-import com.gentics.mesh.core.rest.project.response.ProjectResponse;
-import com.gentics.mesh.core.rest.role.request.RoleCreateRequest;
-import com.gentics.mesh.core.rest.role.request.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.role.response.RoleListResponse;
-import com.gentics.mesh.core.rest.role.response.RoleResponse;
-import com.gentics.mesh.core.rest.schema.request.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.request.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.response.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.response.SchemaReference;
-import com.gentics.mesh.core.rest.schema.response.SchemaResponse;
-import com.gentics.mesh.core.rest.tag.request.TagCreateRequest;
-import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
-import com.gentics.mesh.core.rest.tag.response.TagFamilyReference;
-import com.gentics.mesh.core.rest.tag.response.TagFieldContainer;
-import com.gentics.mesh.core.rest.tag.response.TagListResponse;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
-import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
-import com.gentics.mesh.core.rest.user.response.UserListResponse;
-import com.gentics.mesh.core.rest.user.response.UserResponse;
-import com.gentics.mesh.util.JsonUtils;
+import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.PagingMetaInfo;
+import com.gentics.mesh.core.rest.group.GroupCreateRequest;
+import com.gentics.mesh.core.rest.group.GroupListResponse;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
+import com.gentics.mesh.core.rest.tag.TagFieldContainer;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 
 public class Generator {
 
@@ -217,7 +216,7 @@ public class Generator {
 		write(tagList);
 	}
 
-	public void setPaging(AbstractListResponse<? extends AbstractRestModel> response, long currentPage, long pageCount, long perPage, long totalCount) {
+	public void setPaging(AbstractListResponse<?> response, long currentPage, long pageCount, long perPage, long totalCount) {
 		PagingMetaInfo info = response.getMetainfo();
 		info.setCurrentPage(currentPage);
 		info.setPageCount(pageCount);
@@ -228,20 +227,20 @@ public class Generator {
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(getUUID());
-//		schema.setDescription("Description of the schema");
-//		schema.setName("extended-content");
+		//		schema.setDescription("Description of the schema");
+		//		schema.setName("extended-content");
 		schema.setPerms("READ", "UPDATE", "DELETE", "CREATE");
-//		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
-//		prop.setDescription("Html Content");
-//		prop.setKey("content");
-//		prop.setType(PropertyType.HTML.name());
-//		schema.getPropertyTypeSchemas().add(prop);
+		//		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
+		//		prop.setDescription("Html Content");
+		//		prop.setKey("content");
+		//		prop.setType(PropertyType.HTML.name());
+		//		schema.getPropertyTypeSchemas().add(prop);
 		write(schema);
 
 		SchemaResponse schema2 = new SchemaResponse();
 		schema2.setUuid(getUUID());
-//		schema2.setDescription("Description of the schema2");
-//		schema2.setName("extended-content-2");
+		//		schema2.setDescription("Description of the schema2");
+		schema2.setName("extended-content-2");
 
 		// TODO properties
 
@@ -258,10 +257,10 @@ public class Generator {
 		schemaUpdate.setDescription("New description");
 		write(schemaUpdate);
 
-//		SchemaCreateRequest schemaCreate = new SchemaCreateRequest();
-//		schemaCreate.setName("extended-content");
-//		schemaCreate.setDescription("Just a dummy ");
-//		write(schemaCreate);
+		//		SchemaCreateRequest schemaCreate = new SchemaCreateRequest();
+		//		schemaCreate.setName("extended-content");
+		//		schemaCreate.setDescription("Just a dummy ");
+		//		write(schemaCreate);
 	}
 
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -273,30 +272,29 @@ public class Generator {
 		NodeResponse content = new NodeResponse();
 		content.setUuid(getUUID());
 		content.setCreator(getUser());
-		content.addProperty("name", "Name for language tag de-DE");
-		content.addProperty("filename", "dummy-content.de.html");
-		content.addProperty("teaser", "Dummy teaser for de-DE");
-		content.addProperty("content", "Content for language tag de-DE");
+		content.getFields().put("name", createStringField("Name for language tag de-DE"));
+		content.getFields().put("filename", createStringField("dummy-content.de.html"));
+		content.getFields().put("teaser", createStringField("Dummy teaser for de-DE"));
+		content.getFields().put("content", createStringField("Content for language tag de-DE"));
 		content.setSchema(schemaReference);
 		content.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		write(content);
 
 		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
 		contentUpdate.setUuid(getUUID());
-		NodeFieldContainer updateFields = new NodeFieldContainer();
-		updateFields.put("filename", getStringField("index-renamed.en.html"));
+
+		contentUpdate.getFields().put("filename", createStringField("index-renamed.en.html"));
 		write(contentUpdate);
 
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
 
-		NodeFieldContainer fields = new NodeFieldContainer();
-		fields.put("name", getStringField("English name"));
-		fields.put("filename", getStringField("index.en.html"));
-		fields.put("content", getStringField("English content"));
-		fields.put("title", getStringField("English title"));
-		fields.put("teaser", getStringField("English teaser"));
-		contentCreate.setFields(fields);
+		Map<String, Field> fields = contentCreate.getFields();
+		fields.put("name", createStringField("English name"));
+		fields.put("filename", createStringField("index.en.html"));
+		fields.put("content", createStringField("English content"));
+		fields.put("title", createStringField("English title"));
+		fields.put("teaser", createStringField("English teaser"));
 
 		contentCreate.setSchema(schemaReference);
 		write(contentCreate);
@@ -304,10 +302,11 @@ public class Generator {
 		NodeResponse content2 = new NodeResponse();
 		content2.setUuid(getUUID());
 		content2.setCreator(getUser());
-		content2.addProperty("name", "Name for language tag en");
-		content2.addProperty("filename", "dummy-content.en.html");
-		content2.addProperty("teaser", "Dummy teaser for en");
-		content2.addProperty("content", "Content for language tag en");
+
+		content2.getFields().put("name", createStringField("Name for language tag en"));
+		content2.getFields().put("filename", createStringField("dummy-content.en.html"));
+		content2.getFields().put("teaser", createStringField("Dummy teaser for en"));
+		content2.getFields().put("content", createStringField("Content for language tag en"));
 		content2.setSchema(schemaReference);
 		content2.setPermissions("READ", "CREATE");
 
@@ -319,10 +318,6 @@ public class Generator {
 
 	}
 
-	private StringField getStringField(String string) {
-		StringField field = new StringFieldImpl();
-		return field;
-	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
 
@@ -405,7 +400,7 @@ public class Generator {
 
 	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {
 		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
-		ObjectMapper mapper = JsonUtils.getMapper();
+		ObjectMapper mapper = JsonUtil.getMapper();
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 		writeJsonSchema(object.getClass());
 	}

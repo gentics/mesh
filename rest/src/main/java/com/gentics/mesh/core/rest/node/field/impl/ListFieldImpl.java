@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.node.field.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.response.FieldTypes;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 

@@ -26,13 +26,13 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.service.MeshNodeService;
 import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.rest.tag.request.TagUpdateRequest;
-import com.gentics.mesh.core.rest.tag.response.TagListResponse;
-import com.gentics.mesh.core.rest.tag.response.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.TagVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
-import com.gentics.mesh.util.JsonUtils;
 
 public class TagVerticleTest extends AbstractRestVerticleTest {
 
@@ -62,7 +62,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags", 200, "OK");
-		TagListResponse restResponse = JsonUtils.readValue(response, TagListResponse.class);
+		TagListResponse restResponse = JsonUtil.readValue(response, TagListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The response did not contain the correct amount of items", data().getTags().size(), restResponse.getData().size());
@@ -74,7 +74,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtils.readValue(response, TagListResponse.class);
+			restResponse = JsonUtil.readValue(response, TagListResponse.class);
 			int expectedItemsCount = perPage;
 			// The last page should only list 5 items
 			if (page == 3) {
@@ -123,7 +123,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
 		System.out.println(response);
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		TagResponse restTag = JsonUtil.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
 	}
 
@@ -134,7 +134,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=de", 200, "OK");
-		TagResponse restTag = JsonUtils.readValue(response, TagResponse.class);
+		TagResponse restTag = JsonUtil.readValue(response, TagResponse.class);
 		test.assertTag(tag, restTag);
 		assertNotNull(restTag.getFields().getName());
 		assertEquals("Vehicle", restTag.getFields().getName());
@@ -162,7 +162,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// 1. Read the current tag in english
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		TagResponse tagResponse = JsonUtils.readValue(response, TagResponse.class);
+		TagResponse tagResponse = JsonUtil.readValue(response, TagResponse.class);
 		System.out.println(response);
 		String name = tag.getName();
 		assertNotNull("The name of the tag should be loaded.", name);
@@ -178,19 +178,19 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// 3. Send the request to the server
 		// TODO test with no ?lang query parameter
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
 		System.out.println(response);
 
-		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
+		test.assertTag(tag, JsonUtil.readValue(response, TagResponse.class));
 
 		// 4. read the tag again and verify that it was changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
 		System.out.println(response);
 
-		tagResponse = JsonUtils.readValue(response, TagResponse.class);
+		tagResponse = JsonUtil.readValue(response, TagResponse.class);
 		assertEquals(request.getName(), tagResponse.getFields().getName());
-		test.assertTag(tag, JsonUtils.readValue(response, TagResponse.class));
+		test.assertTag(tag, JsonUtil.readValue(response, TagResponse.class));
 	}
 
 	@Test
@@ -210,7 +210,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 		// read the tag again and verify that it was not changed
 		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		TagResponse tagUpdateRequest = JsonUtils.readValue(response, TagResponse.class);
+		TagResponse tagUpdateRequest = JsonUtil.readValue(response, TagResponse.class);
 
 		String name = tag.getName();
 		assertEquals(name, tagUpdateRequest.getFields().getName());

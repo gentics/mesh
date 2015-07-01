@@ -32,11 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.common.response.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.util.JsonUtils;
+import com.gentics.mesh.json.JsonUtil;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
@@ -220,7 +220,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		Locale en = Locale.ENGLISH;
 		String message = i18n.get(en, i18nKey, i18nParams);
 		GenericMessageResponse responseObject = new GenericMessageResponse(message);
-		String json = JsonUtils.toJson(responseObject);
+		String json = JsonUtil.toJson(responseObject);
 		assertEquals("The response does not match.", json, response);
 	}
 

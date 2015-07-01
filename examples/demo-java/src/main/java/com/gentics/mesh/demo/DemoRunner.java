@@ -1,6 +1,6 @@
 package com.gentics.mesh.demo;
 
-import static com.gentics.mesh.util.DeploymentUtils.deployAndWait;
+import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 import io.vertx.core.json.JsonObject;
 
 import java.io.File;

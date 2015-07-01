@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.rest.project.response.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 
 public class ProjectImpl extends AbstractGenericNode implements Project {
 

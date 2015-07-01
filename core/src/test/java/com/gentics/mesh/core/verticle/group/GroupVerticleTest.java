@@ -27,14 +27,14 @@ import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.MeshUserService;
-import com.gentics.mesh.core.rest.group.request.GroupCreateRequest;
-import com.gentics.mesh.core.rest.group.request.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.group.response.GroupListResponse;
-import com.gentics.mesh.core.rest.group.response.GroupResponse;
+import com.gentics.mesh.core.rest.group.GroupCreateRequest;
+import com.gentics.mesh.core.rest.group.GroupListResponse;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.JsonUtils;
 
 public class GroupVerticleTest extends AbstractRestVerticleTest {
 
@@ -59,12 +59,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 
 		info.getRole().addPermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
 
 		String response = request(info, POST, "/api/v1/groups/", 200, "OK", requestJson);
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
 		assertNotNull("Group should have been created.", groupService.findByUUID(restGroup.getUuid()));
@@ -78,9 +78,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, POST, "/api/v1/groups/", 200, "OK", requestJson);
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
 		assertNotNull("Group should have been created.", groupService.findByUUID(restGroup.getUuid()));
@@ -97,7 +97,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 
 		info.getRole().addPermissions(info.getGroup(), CREATE_PERM);
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 
 		String response = request(info, POST, "/api/v1/groups/", 400, "Bad Request", requestJson);
 		expectMessageResponse("error_name_must_be_set", response);
@@ -110,7 +110,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 
 		GroupRoot root = data().getMeshRoot().getGroupRoot();
 		info.getRole().revokePermissions(root, CREATE_PERM);
@@ -141,14 +141,14 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		// Test default paging parameters
 		String response = request(info, GET, "/api/v1/groups/", 200, "OK");
-		GroupListResponse restResponse = JsonUtils.readValue(response, GroupListResponse.class);
+		GroupListResponse restResponse = JsonUtil.readValue(response, GroupListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + 3, 200, "OK");
-		restResponse = JsonUtils.readValue(response, GroupListResponse.class);
+		restResponse = JsonUtil.readValue(response, GroupListResponse.class);
 		assertEquals(perPage, restResponse.getData().size());
 
 		// created groups + test data group
@@ -163,7 +163,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		List<GroupResponse> allGroups = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtils.readValue(response, GroupListResponse.class);
+			restResponse = JsonUtil.readValue(response, GroupListResponse.class);
 			allGroups.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups + 1, allGroups.size());
@@ -191,7 +191,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 		String response = request(info, GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		test.assertGroup(group, JsonUtils.readValue(response, GroupResponse.class));
+		test.assertGroup(group, JsonUtil.readValue(response, GroupResponse.class));
 
 	}
 
@@ -224,8 +224,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(name);
 
-		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		GroupResponse restGroup = JsonUtils.readValue(response, GroupResponse.class);
+		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 200, "OK", JsonUtil.toJson(request));
+		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
 		Group reloadedGroup = groupService.findByUUID(restGroup.getUuid());
@@ -242,7 +242,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(name);
 
-		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtils.toJson(request));
+		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtil.toJson(request));
 		expectMessageResponse("error_name_must_be_set", response);
 
 		Group reloadedGroup = groupService.findByUUID(group.getUuid());
@@ -263,7 +263,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(alreadyUsedName);
 
-		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtils.toJson(request));
+		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtil.toJson(request));
 		expectMessageResponse("group_conflicting_name", response);
 
 		Group reloadedGroup = groupService.findByUUID(group.getUuid());
@@ -280,7 +280,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(name);
 
-		String response = request(info, PUT, "/api/v1/groups/bogus", 404, "Not Found", JsonUtils.toJson(request));
+		String response = request(info, PUT, "/api/v1/groups/bogus", 404, "Not Found", JsonUtil.toJson(request));
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
 		Group reloadedGroup = groupService.findByUUID(group.getUuid());

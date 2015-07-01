@@ -6,10 +6,9 @@ import java.io.IOException;
 
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.util.JsonUtils;
+import com.gentics.mesh.json.JsonUtil;
 
 public class SchemaContainerImpl extends AbstractGenericNode implements SchemaContainer {
 
@@ -57,7 +56,7 @@ public class SchemaContainerImpl extends AbstractGenericNode implements SchemaCo
 	public Schema getSchema() throws IOException {
 		Schema schema = getSchemaStorage().getSchema(getSchemaName());
 		if (schema == null) {
-			schema = JsonUtils.readValue(getJson(), SchemaImpl.class);
+			schema = JsonUtil.readValue(getJson(), SchemaImpl.class);
 			getSchemaStorage().addSchema(schema);
 		}
 		return schema;
@@ -67,7 +66,7 @@ public class SchemaContainerImpl extends AbstractGenericNode implements SchemaCo
 	@Override
 	public void setSchema(Schema schema) {
 		getSchemaStorage().addSchema(schema);
-		String json = JsonUtils.toJson(schema);
+		String json = JsonUtil.toJson(schema);
 		setJson(json);
 	}
 

@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.response.FieldTypes;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 
 public class SelectFieldSchemaImpl extends AbstractFieldSchema implements SelectFieldSchema {

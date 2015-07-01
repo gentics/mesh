@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
-import com.gentics.mesh.core.rest.common.response.FieldTypes;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.DateField;
 
 public class DateFieldImpl implements DateField {

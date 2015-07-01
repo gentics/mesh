@@ -25,13 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.rest.user.request.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.request.UserUpdateRequest;
-import com.gentics.mesh.core.rest.user.response.UserListResponse;
-import com.gentics.mesh.core.rest.user.response.UserResponse;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
-import com.gentics.mesh.util.JsonUtils;
 
 public class UserVerticleTest extends AbstractRestVerticleTest {
 
@@ -48,7 +48,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
-		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
+		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 
 		test.assertUser(user, restUser);
 		// TODO assert groups
@@ -78,7 +78,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
-		UserListResponse restResponse = JsonUtils.readValue(response, UserListResponse.class);
+		UserListResponse restResponse = JsonUtil.readValue(response, UserListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(14, restResponse.getData().size());
@@ -87,7 +87,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		int totalUsers = data().getUsers().size() + 1;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 		response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + 3, 200, "OK");
-		restResponse = JsonUtils.readValue(response, UserListResponse.class);
+		restResponse = JsonUtil.readValue(response, UserListResponse.class);
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
@@ -100,7 +100,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		List<UserResponse> allUsers = new ArrayList<>();
 		for (int page = 1; page < totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/users/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtils.readValue(response, UserListResponse.class);
+			restResponse = JsonUtil.readValue(response, UserListResponse.class);
 			allUsers.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
@@ -136,8 +136,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername("dummy_user_changed");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", JsonUtils.toJson(updateRequest));
-		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
+		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK", JsonUtil.toJson(updateRequest));
+		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(updateRequest, restUser);
 		Thread.sleep(1000);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -160,7 +160,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 200, "OK",
 				new ObjectMapper().writeValueAsString(updateRequest));
-		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
+		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(updateRequest, restUser);
 
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -326,7 +326,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
-		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
+		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(newUser, restUser);
 
 		MeshUser user = userService.findByUUID(restUser.getUuid());
@@ -351,7 +351,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
-		UserResponse restUser = JsonUtils.readValue(response, UserResponse.class);
+		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(newUser, restUser);
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/users/" + restUser.getUuid(), 200, "OK");

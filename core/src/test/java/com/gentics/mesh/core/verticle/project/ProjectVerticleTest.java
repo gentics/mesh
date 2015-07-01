@@ -27,13 +27,13 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.core.rest.project.request.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.request.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.project.response.ProjectListResponse;
-import com.gentics.mesh.core.rest.project.response.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.JsonUtils;
 
 public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
@@ -58,10 +58,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 
 		info.getRole().addPermissions(data().getProject().getRootNode(), CREATE_PERM);
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
-		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		ProjectResponse restProject = JsonUtil.readValue(response, ProjectResponse.class);
 
 		test.assertProject(request, restProject);
 		assertNotNull("The project should have been created.", projectService.findByName(name));
@@ -76,10 +76,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		request.setName(name);
 
 		info.getRole().addPermissions(data().getProject().getRootNode(), CREATE_PERM);
-		String requestJson = JsonUtils.toJson(request);
+		String requestJson = JsonUtil.toJson(request);
 
 		String response = request(info, HttpMethod.POST, "/api/v1/projects/", 200, "OK", requestJson);
-		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		ProjectResponse restProject = JsonUtil.readValue(response, ProjectResponse.class);
 		test.assertProject(request, restProject);
 
 		assertNotNull("The project should have been created.", projectService.findByName(name));
@@ -110,14 +110,14 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/", 200, "OK");
-		ProjectListResponse restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
+		ProjectListResponse restResponse = JsonUtil.readValue(response, ProjectListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + perPage + "&page=" + 3, 200, "OK");
-		restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
+		restResponse = JsonUtil.readValue(response, ProjectListResponse.class);
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra projects + dummy project
@@ -132,7 +132,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		List<ProjectResponse> allProjects = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
 			response = request(info, HttpMethod.GET, "/api/v1/projects/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtils.readValue(response, ProjectListResponse.class);
+			restResponse = JsonUtil.readValue(response, ProjectListResponse.class);
 			allProjects.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
@@ -165,7 +165,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.GET, "/api/v1/projects/" + project.getUuid(), 200, "OK");
 		System.out.println(response);
-		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		ProjectResponse restProject = JsonUtil.readValue(response, ProjectResponse.class);
 		test.assertProject(project, restProject);
 
 		List<String> permissions = Arrays.asList(restProject.getPermissions());
@@ -198,8 +198,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(project.getUuid());
 		request.setName("New Name");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 200, "OK", JsonUtils.toJson(request));
-		ProjectResponse restProject = JsonUtils.readValue(response, ProjectResponse.class);
+		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 200, "OK", JsonUtil.toJson(request));
+		ProjectResponse restProject = JsonUtil.readValue(response, ProjectResponse.class);
 		test.assertProject(request, restProject);
 
 		Project reloadedProject = projectService.findByUUID(project.getUuid());
@@ -216,7 +216,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden", JsonUtils.toJson(request));
+		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden", JsonUtil.toJson(request));
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
 
 		Project reloadedProject = projectService.findByUUID(project.getUuid());
