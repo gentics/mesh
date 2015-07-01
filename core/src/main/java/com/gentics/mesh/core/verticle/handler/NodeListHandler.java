@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -26,18 +26,18 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
-public class MeshNodeListHandler {
+public class NodeListHandler {
 
 	@Autowired
 	private TagService tagService;
 
 	@Autowired
-	private MeshNodeService contentService;
+	private NodeService contentService;
 
 	@Autowired
 	private RoutingContextService rcs;
 
-	public void handleListByTag(RoutingContext rc, MeshNodeListTagCallable clc) {
+	public void handleListByTag(RoutingContext rc, NodeListTagCallable clc) {
 		String projectName = rcs.getProjectName(rc);
 		MeshAuthUser requestUser = getUser(rc);
 
@@ -50,8 +50,8 @@ public class MeshNodeListHandler {
 			PagingInfo pagingInfo = getPagingInfo(rc);
 			TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 
-			Page<MeshNode> nodePage = clc.findNodes(projectName, tag, languageTags, pagingInfo);
-			for (MeshNode node : nodePage) {
+			Page<Node> nodePage = clc.findNodes(projectName, tag, languageTags, pagingInfo);
+			for (Node node : nodePage) {
 				listResponse.getData().add(node.transformToRest(info));
 			}
 			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
@@ -61,21 +61,21 @@ public class MeshNodeListHandler {
 		});
 	}
 
-	public void handleNodeList(RoutingContext rc, MeshNodeListNodeCallable clc) {
+	public void handleNodeList(RoutingContext rc, NodeListNodeCallable clc) {
 		String projectName = rcs.getProjectName(rc);
 		MeshAuthUser requestUser = getUser(rc);
 
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
-			MeshNode parentNode = rh.result();
+		rcs.loadObject(rc, "uuid", READ_PERM, Node.class, (AsyncResult<Node> rh) -> {
+			Node parentNode = rh.result();
 
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-			Page<MeshNode> nodePage = clc.findNodes(projectName, parentNode, languageTags, pagingInfo);
-			for (MeshNode node : nodePage) {
+			Page<Node> nodePage = clc.findNodes(projectName, parentNode, languageTags, pagingInfo);
+			for (Node node : nodePage) {
 				listResponse.getData().add(node.transformToRest(info));
 			}
 			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);

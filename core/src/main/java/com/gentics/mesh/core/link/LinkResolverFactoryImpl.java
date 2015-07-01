@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 
 /**
  * Factory which provides link resolvers
@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.service.MeshNodeService;
 public class LinkResolverFactoryImpl<T extends LinkResolver> implements LinkResolverFactory<AbstractLinkResolver> {
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 	
 	
 	private LinkResolverFactoryImpl() {

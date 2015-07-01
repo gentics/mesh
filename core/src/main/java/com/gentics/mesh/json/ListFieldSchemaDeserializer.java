@@ -9,21 +9,20 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.node.field.ListableField;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
-public class FieldSchemaDeserializer<T extends FieldSchema> extends JsonDeserializer<T> {
+public class ListFieldSchemaDeserializer extends JsonDeserializer<ListFieldSchema<? extends ListableField>> {
 
 	@Override
-	public T deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public ListFieldSchema<? extends ListableField> deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
 		ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
-		if (node.get("type") != null) {
-			String type = node.get("type").textValue();
-			FieldTypes ft = FieldTypes.valueByName(type);
-			return (T) mapper.convertValue(node, ft.getSchemaImplementationClazz());
-		}
+
+		System.out.println(node.asText());
+		System.out.println(node.get("listType").asText());
 		return null;
 	}
+
 }

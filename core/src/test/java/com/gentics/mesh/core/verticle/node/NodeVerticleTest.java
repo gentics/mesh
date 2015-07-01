@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -32,19 +32,19 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.MeshNodeVerticle;
+import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
-public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
+public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private MeshNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -75,7 +75,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNode() throws Exception {
 
-		MeshNode parentNode = data().getFolder("news");
+		Node parentNode = data().getFolder("news");
 		assertNotNull(parentNode);
 		assertNotNull(parentNode.getUuid());
 
@@ -117,7 +117,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(request, restNode);
 
-		MeshNode node = nodeService.findByUUID(restNode.getUuid());
+		Node node = nodeService.findByUUID(restNode.getUuid());
 		assertNotNull(node);
 		test.assertMeshNode(request, node);
 
@@ -189,9 +189,9 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodes() throws Exception {
-		MeshNode parentNode = data().getFolder("2015");
+		Node parentNode = data().getFolder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		MeshNode noPermNode = parentNode.create();
+		Node noPermNode = parentNode.create();
 		noPermNode.setCreator(info.getUser());
 		assertNotNull(noPermNode.getUuid());
 
@@ -259,7 +259,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUID() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -269,7 +269,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
-		MeshNode node = data().getFolder("products");
+		Node node = data().getFolder("products");
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de", 200, "OK");
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
@@ -282,7 +282,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -293,7 +293,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		//		try (Transaction tx = graphDb.beginTx()) {
 		info.getRole().revokePermissions(node, READ_PERM);
 		//			tx.success();
@@ -359,7 +359,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		//		fields.put("content", getStringField(newContent));
 		//		request.setFields(fields);
 
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		String json = JsonUtil.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
@@ -368,7 +368,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		//		assertEquals(newContent, restNode.getProperty("content"));
 
 		// TODO Reload and update
-		MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
+		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
 		assertEquals(newFilename, englishContainer.getString("displayName").getString());
 		assertEquals(newName, englishContainer.getString("name").getString());
 		assertEquals(newContent, englishContainer.getString("content").getString());
@@ -380,7 +380,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteNode() throws Exception {
 
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
 		expectMessageResponse("node_deleted", response, node.getUuid());
 		assertNull(nodeService.findByUUID(node.getUuid()));
@@ -391,7 +391,7 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 
 		String uuid = data().getFolder("2015").getUuid();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			MeshNode node = data().getFolder("2015");
+			Node node = data().getFolder("2015");
 			info.getRole().revokePermissions(node, DELETE_PERM);
 			tx.success();
 		}
@@ -400,10 +400,5 @@ public class MeshNodeVerticleTest extends AbstractRestVerticleTest {
 		expectMessageResponse("error_missing_perm", response, uuid);
 
 		assertNotNull(nodeService.findByUUID(uuid));
-	}
-
-	private static StringField getStringField(String string) {
-		StringField field = new StringFieldImpl();
-		return field;
 	}
 }

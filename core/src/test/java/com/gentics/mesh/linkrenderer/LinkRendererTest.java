@@ -11,9 +11,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;
 import com.gentics.mesh.core.link.LinkResolverFactory;
@@ -27,7 +27,7 @@ public class LinkRendererTest extends AbstractDBTest {
 	private LinkResolverFactory<LinkResolver> resolverFactory;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Before
 	public void setup() throws Exception {
@@ -39,16 +39,16 @@ public class LinkRendererTest extends AbstractDBTest {
 
 		Language german = data().getGerman();
 		Language english = data().getEnglish();
-		MeshNode parentNode = data().getFolder("2015");
+		Node parentNode = data().getFolder("2015");
 
 		// Create some dummy content
-		MeshNode content = parentNode.create();
-		MeshNodeFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
+		Node content = parentNode.create();
+		NodeFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
 		germanContainer.createString("displayName").setString("german name");
 		germanContainer.createString("name").setString("german.html");
 
-		MeshNode content2 = parentNode.create();
-		MeshNodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
+		Node content2 = parentNode.create();
+		NodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 

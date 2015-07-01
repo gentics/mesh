@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -43,7 +43,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	private TagService tagService;
 
 	@Autowired
-	private MeshNodeService contentService;
+	private NodeService contentService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {

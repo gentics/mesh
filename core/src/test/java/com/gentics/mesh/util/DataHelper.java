@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.RoleService;
 
@@ -25,13 +25,13 @@ public class DataHelper {
 	private RoleService roleService;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Autowired
 	private MeshUserService userService;
 
-	public MeshNode addNode(MeshNode parentNode, String name, Role role, Permission... perms) {
-		MeshNode node = parentNode.create();
+	public Node addNode(Node parentNode, String name, Role role, Permission... perms) {
+		Node node = parentNode.create();
 		for (Permission perm : perms) {
 			role.addPermissions(node, perm);
 		}

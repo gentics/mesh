@@ -102,8 +102,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			SchemaCreateRequest requestModel = fromJson(rc, SchemaCreateRequest.class);
-			Schema restSchema = requestModel.getSchema();
+			SchemaCreateRequest schema = fromJson(rc, SchemaCreateRequest.class);
 			
 //			if (StringUtils.isEmpty(requestModel.getName())) {
 //				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_name")));
@@ -140,7 +139,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
 				}
-				SchemaContainer schema = schemaCreated.result();
+				SchemaContainer schemaContainer = schemaCreated.result();
 //				rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 			});
 		});

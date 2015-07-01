@@ -3,13 +3,12 @@ package com.gentics.mesh.core.verticle.handler;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.paging.PagingInfo;
 
 @FunctionalInterface
-public interface TagListCallable {
+public interface NodeListNodeCallable {
 
-	Page<Tag> findTags(String projectName, Node node, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Node> findNodes(String projectName, Node parentNode, List<String> languageTags, PagingInfo pagingInfo);
 
 }

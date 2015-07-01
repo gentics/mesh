@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaField;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
-public class MeshNodeFieldContainerImpl extends AbstractFieldContainerImpl implements MeshNodeFieldContainer {
+public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implements NodeFieldContainer {
 
 	@Override
 	public MicroschemaField createMicroschema(String key) {

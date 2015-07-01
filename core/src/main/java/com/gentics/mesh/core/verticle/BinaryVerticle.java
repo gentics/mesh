@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.util.RoutingContextHelper;
 
@@ -47,8 +47,8 @@ public class BinaryVerticle extends AbstractProjectRestVerticle {
 		route("/:uuid").method(HttpMethod.POST).handler(rc -> {
 			MeshAuthUser user = RoutingContextHelper.getUser(rc);
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
-				MeshNode node = rh.result();
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, Node.class, (AsyncResult<Node> rh) -> {
+				Node node = rh.result();
 				Set<FileUpload> fileUploads = rc.fileUploads();
 				for (FileUpload ul : fileUploads) {
 					System.out.println(ul.fileName());

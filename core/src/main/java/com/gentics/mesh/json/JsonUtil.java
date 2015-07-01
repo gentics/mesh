@@ -19,10 +19,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.ListableField;
-import com.gentics.mesh.core.rest.node.field.MicroschemaListableField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -35,20 +35,37 @@ public final class JsonUtil {
 
 	protected static ObjectMapper mapper;
 
+	protected static ObjectMapper schemaMapper;
+
+	protected static ObjectMapper nodeMapper;
 	static {
-		mapper = new ObjectMapper();
-		mapper.setSerializationInclusion(Include.NON_NULL);
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		initMapper();
+		initNodeMapper();
+		initSchemaMapper();
+	}
 
+	private static void initSchemaMapper() {
+		schemaMapper = new ObjectMapper();
+		schemaMapper.setSerializationInclusion(Include.NON_NULL);
+		schemaMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		SimpleModule module = new SimpleModule();
-		module.addDeserializer(FieldSchema.class, new SchemaFieldDeserializer());
-		module.addDeserializer(ListableField.class, new FieldSchemaDeserializer<ListableField>());
-		module.addDeserializer(MicroschemaListableField.class, new FieldSchemaDeserializer<MicroschemaListableField>());
+		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
+		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
+		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
+		schemaMapper.registerModule(module);
+	}
 
+	private static void initNodeMapper() {
+		nodeMapper = new ObjectMapper();
+		nodeMapper.setSerializationInclusion(Include.NON_NULL);
+		nodeMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
+		// module.addDeserializer(MicroschemaListableField.class, new FieldDeserializer<MicroschemaListableField>());
 		module.addDeserializer(Map.class, new FieldMapDeserializer());
-		module.addSerializer(Field.class, new FieldSerializer<Field>());
+		// module.addSerializer(Field.class, new FieldSerializer<Field>());
 
-		mapper.registerModule(new SimpleModule("interfaceMapping") {
+		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;
 
 			@Override
@@ -57,17 +74,18 @@ public final class JsonUtil {
 			}
 		});
 
-		mapper.registerModule(module);
-
+		nodeMapper.registerModule(module);
 	}
 
-	public static ObjectMapper getMapper() {
-		return mapper;
+	private static void initMapper() {
+		mapper = new ObjectMapper();
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
-			//TODO don't use pretty printer in final version
+			// TODO don't use pretty printer in final version
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
@@ -92,12 +110,19 @@ public final class JsonUtil {
 
 			}
 		};
-		//
 		return mapper.reader(values).forType(valueType).readValue(content);
 	}
 
 	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
 		return mapper.readValue(content, valueType);
+	}
+
+	public static <T extends NodeResponse> T readNode(String json, Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
+		return nodeMapper.readValue(json, clazz);
+	}
+
+	public static <T extends Schema> T readSchema(String json, Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
+		return schemaMapper.readValue(json, clazz);
 	}
 
 	@SuppressWarnings("unchecked")

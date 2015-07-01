@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.ProjectService;
@@ -60,7 +60,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected GroupService groupService;
 
 	@Autowired
-	protected MeshNodeService nodeService;
+	protected NodeService nodeService;
 
 	@Autowired
 	protected TagService tagService;

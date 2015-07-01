@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.verticle.UserVerticle;
@@ -61,7 +61,7 @@ public abstract class AbstractDBTest {
 	protected GroupService groupService;
 
 	@Autowired
-	protected MeshNodeService nodeService;
+	protected NodeService nodeService;
 
 	@Autowired
 	protected RestAssert test;

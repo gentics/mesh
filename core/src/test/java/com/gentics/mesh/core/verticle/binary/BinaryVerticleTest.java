@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.verticle.BinaryVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -24,7 +24,7 @@ public class BinaryVerticleTest extends AbstractRestVerticleTest {
 	private BinaryVerticle verticle;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -33,7 +33,7 @@ public class BinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpload() throws Exception {
-		MeshNode node = data().getFolder("news");
+		Node node = data().getFolder("news");
 		info.getRole().addPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(10000);
 		String response = sendFileUploadRequest(buffer, "/api/v1/" + PROJECT_NAME + "/binaries/" + node.getUuid(), 200, "OK");

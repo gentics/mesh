@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.SelectField;
@@ -15,7 +15,7 @@ public class SelectFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testStringSelection() {
-		MeshNodeFieldContainer container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 
 		SelectField<StringField> field = container.createSelect("dummySelect");
 		field.addOption(new StringFieldImpl("test", null));

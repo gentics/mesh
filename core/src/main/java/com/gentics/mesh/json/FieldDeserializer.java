@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.node.field.Field;
 
-public class FieldSchemaDeserializer<T extends FieldSchema> extends JsonDeserializer<T> {
+public class FieldDeserializer<T extends Field> extends JsonDeserializer<T> {
 
 	@Override
 	public T deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
@@ -22,7 +22,7 @@ public class FieldSchemaDeserializer<T extends FieldSchema> extends JsonDeserial
 		if (node.get("type") != null) {
 			String type = node.get("type").textValue();
 			FieldTypes ft = FieldTypes.valueByName(type);
-			return (T) mapper.convertValue(node, ft.getSchemaImplementationClazz());
+			return (T) mapper.convertValue(node, ft.getFieldImplementationClass());
 		}
 		return null;
 	}

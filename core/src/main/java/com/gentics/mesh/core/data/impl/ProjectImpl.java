@@ -7,8 +7,8 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGF
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
@@ -49,12 +49,12 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 		linkOut(schemaRoot.getImpl(), HAS_SCHEMA_ROOT);
 	}
 
-	public MeshNode getRootNode() {
-		return out(HAS_ROOT_NODE).has(MeshNodeImpl.class).nextOrDefault(MeshNodeImpl.class, null);
+	public Node getRootNode() {
+		return out(HAS_ROOT_NODE).has(NodeImpl.class).nextOrDefault(NodeImpl.class, null);
 	}
 
-	public void setRootNode(MeshNode rootNode) {
-		linkOut((MeshNodeImpl) rootNode, HAS_ROOT_NODE);
+	public void setRootNode(Node rootNode) {
+		linkOut((NodeImpl) rootNode, HAS_ROOT_NODE);
 	}
 
 	public ProjectResponse transformToRest(MeshAuthUser user) {
@@ -72,10 +72,10 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 		return null;
 	}
 
-	public MeshNode getOrCreateRootNode() {
-		MeshNode rootNode = getRootNode();
+	public Node getOrCreateRootNode() {
+		Node rootNode = getRootNode();
 		if (rootNode == null) {
-			rootNode = getGraph().addFramedVertex(MeshNodeImpl.class);
+			rootNode = getGraph().addFramedVertex(NodeImpl.class);
 			setRootNode(rootNode);
 		}
 		return rootNode;

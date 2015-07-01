@@ -26,50 +26,55 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 public class FieldSerializer<T extends Field> extends JsonSerializer<T> {
 
 	@Override
 	public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
-		FieldTypes type = FieldTypes.valueByName(value.getType());
-		switch (type) {
-		case HTML:
-			HTMLField htmlField = (HTMLFieldImpl) value;
-			gen.writeString(htmlField.getHTML());
-			break;
-		case STRING:
-			StringField stringField = (StringFieldImpl) value;
-			gen.writeString(stringField.getText());
-			break;
-		case NUMBER:
-			NumberField numberField = (NumberFieldImpl) value;
-			gen.writeNumber(numberField.getNumber());
-			break;
-		case BOOLEAN:
-			BooleanField booleanField = (BooleanFieldImpl) value;
-			gen.writeBoolean(booleanField.getValue());
-			break;
-		case DATE:
-			DateField dateField = (DateFieldImpl) value;
-			gen.writeString(dateField.getDate());
-			break;
-		case NODE:
-			NodeField nodeField = (NodeFieldImpl) value;
-			//TODO impl
-			break;
-		case LIST:
-			ListField listField = (ListFieldImpl) value;
-			//TODO impl
-			break;
-		case SELECT:
-			SelectField selectField = (SelectFieldImpl) value;
-			//TODO impl
-			break;
-		case MICROSCHEMA:
-			MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
-			//TODO impl
-			break;
-		}
 
+		if (value instanceof FieldSchema) {
+			gen.writeObject(value);
+		} else {
+			FieldTypes type = FieldTypes.valueByName(value.getType());
+			switch (type) {
+			case HTML:
+				HTMLField htmlField = (HTMLFieldImpl) value;
+				gen.writeString(htmlField.getHTML());
+				break;
+			case STRING:
+				StringField stringField = (StringFieldImpl) value;
+				gen.writeString(stringField.getText());
+				break;
+			case NUMBER:
+				NumberField numberField = (NumberFieldImpl) value;
+				gen.writeNumber(numberField.getNumber());
+				break;
+			case BOOLEAN:
+				BooleanField booleanField = (BooleanFieldImpl) value;
+				gen.writeBoolean(booleanField.getValue());
+				break;
+			case DATE:
+				DateField dateField = (DateFieldImpl) value;
+				gen.writeString(dateField.getDate());
+				break;
+			case NODE:
+				NodeField nodeField = (NodeFieldImpl) value;
+				// TODO impl
+				break;
+			case LIST:
+				ListField listField = (ListFieldImpl) value;
+				// TODO impl
+				break;
+			case SELECT:
+				SelectField selectField = (SelectFieldImpl) value;
+				// TODO impl
+				break;
+			case MICROSCHEMA:
+				MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
+				// TODO impl
+				break;
+			}
+		}
 	}
 }

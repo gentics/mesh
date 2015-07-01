@@ -54,12 +54,9 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateSimpleSchema() throws HttpStatusCodeErrorException, Exception {
-
-		com.gentics.mesh.core.rest.schema.Schema restSchema = new SchemaImpl();
-		restSchema.setName("new schema name");
-
 		SchemaCreateRequest request = new SchemaCreateRequest();
-		request.setSchema(restSchema);
+
+		request.setName("new schema name");
 
 		//		request.getPropertyTypeSchemas().add(propertySchema);
 

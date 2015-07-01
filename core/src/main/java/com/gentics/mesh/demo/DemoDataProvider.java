@@ -22,7 +22,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -39,7 +39,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.ProjectService;
@@ -84,7 +84,7 @@ public class DemoDataProvider {
 	private LanguageService languageService;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Autowired
 	private TagService tagService;
@@ -118,8 +118,8 @@ public class DemoDataProvider {
 
 	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
-	private Map<String, MeshNode> folders = new HashMap<>();
-	private Map<String, MeshNode> contents = new HashMap<>();
+	private Map<String, Node> folders = new HashMap<>();
+	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
 	private Map<String, MeshUser> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
@@ -184,7 +184,7 @@ public class DemoDataProvider {
 			addContent(folders.get("2015"), "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 		}
 
-		MeshNode porsche911 = addContent(
+		Node porsche911 = addContent(
 				folders.get("products"),
 				"Porsche 911",
 				"997 is the internal designation for the Porsche 911 model manufactured and sold by German manufacturer Porsche between 2004 (as Model Year 2005) and 2012.",
@@ -192,7 +192,7 @@ public class DemoDataProvider {
 		porsche911.addTag(tags.get("vehicle"));
 		porsche911.addTag(tags.get("car"));
 
-		MeshNode nissanGTR = addContent(
+		Node nissanGTR = addContent(
 				folders.get("products"),
 				"Nissan GT-R",
 				"The Nissan GT-R is a 2-door 2+2 sports coupé produced by Nissan and first released in Japan in 2007",
@@ -202,7 +202,7 @@ public class DemoDataProvider {
 		nissanGTR.addTag(tags.get("car"));
 		nissanGTR.addTag(tags.get("green"));
 
-		MeshNode bmwM3 = addContent(
+		Node bmwM3 = addContent(
 				folders.get("products"),
 				"BMW M3",
 				"The BMW M3 (first launched in 1986) is a high-performance version of the BMW 3-Series, developed by BMW's in-house motorsport division, BMW M.",
@@ -212,7 +212,7 @@ public class DemoDataProvider {
 		bmwM3.addTag(tags.get("car"));
 		bmwM3.addTag(tags.get("blue"));
 
-		MeshNode concorde = addContent(
+		Node concorde = addContent(
 				folders.get("products"),
 				"Concorde",
 				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
@@ -222,7 +222,7 @@ public class DemoDataProvider {
 		concorde.addTag(tags.get("twinjet"));
 		concorde.addTag(tags.get("red"));
 
-		MeshNode boeing737 = addContent(
+		Node boeing737 = addContent(
 				folders.get("products"),
 				"Boeing 737",
 				"The Boeing 737 is a short- to medium-range twinjet narrow-body airliner. Originally developed as a shorter, lower-cost twin-engined airliner derived from Boeing's 707 and 727, the 737 has developed into a family of nine passenger models with a capacity of 85 to 215 passengers.",
@@ -231,7 +231,7 @@ public class DemoDataProvider {
 		boeing737.addTag(tags.get("plane"));
 		boeing737.addTag(tags.get("twinjet"));
 
-		MeshNode a300 = addContent(
+		Node a300 = addContent(
 				folders.get("products"),
 				"Airbus A300",
 				"The Airbus A300 is a short- to medium-range wide-body twin-engine jet airliner that was developed and manufactured by Airbus. Released in 1972 as the world's first twin-engined widebody, it was the first product of Airbus Industrie, a consortium of European aerospace manufacturers, now a subsidiary of Airbus Group.",
@@ -241,7 +241,7 @@ public class DemoDataProvider {
 		a300.addTag(tags.get("twinjet"));
 		a300.addTag(tags.get("red"));
 
-		MeshNode wrangler = addContent(
+		Node wrangler = addContent(
 				folders.get("products"),
 				"Jeep Wrangler",
 				"The Jeep Wrangler is a compact and mid-size (Wrangler Unlimited models) four-wheel drive off-road and sport utility vehicle (SUV), manufactured by American automaker Chrysler, under its Jeep marque – and currently in its third generation.",
@@ -249,17 +249,17 @@ public class DemoDataProvider {
 		wrangler.addTag(tags.get("vehicle"));
 		wrangler.addTag(tags.get("jeep"));
 
-		MeshNode volvo = addContent(folders.get("products"), "Volvo B10M",
+		Node volvo = addContent(folders.get("products"), "Volvo B10M",
 				"The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null, contentSchema);
 		volvo.addTag(tags.get("vehicle"));
 		volvo.addTag(tags.get("bus"));
 
-		MeshNode hondact90 = addContent(folders.get("products"), "Honda CT90",
+		Node hondact90 = addContent(folders.get("products"), "Honda CT90",
 				"The Honda CT90 was a small step-through motorcycle manufactured by Honda from 1966 to 1979.", null, contentSchema);
 		hondact90.addTag(tags.get("vehicle"));
 		hondact90.addTag(tags.get("motorcycle"));
 
-		MeshNode hondaNR = addContent(
+		Node hondaNR = addContent(
 				folders.get("products"),
 				"Honda NR",
 				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
@@ -273,18 +273,18 @@ public class DemoDataProvider {
 
 	private void addFolderStructure() {
 
-		MeshNode rootNode = project.getOrCreateRootNode();
+		Node rootNode = project.getOrCreateRootNode();
 		rootNode.setCreator(userInfo.getUser());
 		rootNode.addProject(project);
 
-		MeshNode news = addFolder(rootNode, "News", "Neuigkeiten");
-		MeshNode news2015 = addFolder(news, "2015", null);
+		Node news = addFolder(rootNode, "News", "Neuigkeiten");
+		Node news2015 = addFolder(news, "2015", null);
 		news2015.addTag(tags.get("car"));
 		news2015.addTag(tags.get("bike"));
 		news2015.addTag(tags.get("plane"));
 		news2015.addTag(tags.get("jeep"));
 
-		MeshNode news2014 = addFolder(news, "2014", null);
+		Node news2014 = addFolder(news, "2014", null);
 		addFolder(news2014, "March", null);
 
 		addFolder(rootNode, "Products", "Produkte");
@@ -508,18 +508,18 @@ public class DemoDataProvider {
 
 	}
 
-	public MeshNode addFolder(MeshNode rootNode, String englishName, String germanName) {
-		MeshNode folderNode = rootNode.create();
+	public Node addFolder(Node rootNode, String englishName, String germanName) {
+		Node folderNode = rootNode.create();
 		folderNode.setParentNode(rootNode);
 		folderNode.addProject(project);
 
 		if (germanName != null) {
-			MeshNodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
+			NodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
 			germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
 		}
 		if (englishName != null) {
-			MeshNodeFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
+			NodeFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
 			englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
@@ -551,10 +551,10 @@ public class DemoDataProvider {
 		return tag;
 	}
 
-	private MeshNode addContent(MeshNode parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
-		MeshNode node = parentNode.create();
+	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
+		Node node = parentNode.create();
 		if (englishContent != null) {
-			MeshNodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
+			NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
 			englishContainer.createString("name").setString(name + " english name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -563,7 +563,7 @@ public class DemoDataProvider {
 		}
 
 		if (germanContent != null) {
-			MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 			germanContainer.createString("name").setString(name + " german");
 			germanContainer.createString("title").setString(name + " english title");
 			germanContainer.createString("displayName").setString(name + " german");
@@ -613,7 +613,7 @@ public class DemoDataProvider {
 		return userInfo;
 	}
 
-	public MeshNode getFolder(String name) {
+	public Node getFolder(String name) {
 		return folders.get(name);
 	}
 
@@ -621,7 +621,7 @@ public class DemoDataProvider {
 		return tagFamilies.get(key);
 	}
 
-	public MeshNode getContent(String name) {
+	public Node getContent(String name) {
 		return contents.get(name);
 	}
 
@@ -637,11 +637,11 @@ public class DemoDataProvider {
 		return tags;
 	}
 
-	public Map<String, MeshNode> getContents() {
+	public Map<String, Node> getContents() {
 		return contents;
 	}
 
-	public Map<String, MeshNode> getFolders() {
+	public Map<String, Node> getFolders() {
 		return folders;
 	}
 

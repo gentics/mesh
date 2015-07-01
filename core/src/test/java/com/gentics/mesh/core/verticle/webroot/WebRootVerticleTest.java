@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
 import com.gentics.mesh.json.JsonUtil;
@@ -30,7 +30,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadFolderByPath() throws Exception {
 
-		MeshNode folder = data().getFolder("2015");
+		Node folder = data().getFolder("2015");
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/News/2015";
 		String response = request(info, GET, path, 200, "OK");
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
@@ -44,7 +44,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
-		MeshNode concordeNode = data().getContent("concorde");
+		Node concordeNode = data().getContent("concorde");
 		String response = request(info, GET, path, 200, "OK");
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(concordeNode, restNode);
@@ -61,7 +61,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "News/2015";
-		MeshNode newsFolder = data().getFolder("2015");
+		Node newsFolder = data().getFolder("2015");
 		System.out.println(newsFolder.getUuid());
 		info.getRole().revokePermissions(newsFolder, READ_PERM);
 

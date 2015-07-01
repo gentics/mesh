@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.node.field.nesting;
 
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.Field;
 import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 import com.gentics.mesh.core.data.node.field.basic.DateField;
@@ -14,7 +14,7 @@ public interface NestingField extends Field {
 
 	StringField getString(String key);
 
-	NodeField createNode(String key, MeshNode node);
+	NodeField createNode(String key, Node node);
 
 	DateField createDate(String key);
 

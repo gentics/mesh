@@ -11,39 +11,39 @@ import java.util.List;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
-import com.gentics.mesh.core.data.impl.MeshNodeFieldContainerImpl;
+import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
-import com.gentics.mesh.core.data.service.transformation.node.MeshNodeTransformationTask;
+import com.gentics.mesh.core.data.service.transformation.node.NodeTransformationTask;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.paging.PagingInfo;
 
-public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode {
+public class NodeImpl extends GenericFieldContainerNode implements Node {
 
 	public List<? extends Tag> getTags() {
 		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
 	}
 
 	@Override
-	public List<? extends MeshNodeFieldContainer> getFieldContainers() {
-		return out(HAS_FIELD_CONTAINER).has(MeshNodeFieldContainerImpl.class).toListExplicit(MeshNodeFieldContainerImpl.class);
+	public List<? extends NodeFieldContainer> getFieldContainers() {
+		return out(HAS_FIELD_CONTAINER).has(NodeFieldContainerImpl.class).toListExplicit(NodeFieldContainerImpl.class);
 	}
 
 	@Override
-	public MeshNodeFieldContainer getFieldContainer(Language language) {
-		return getFieldContainer(language, MeshNodeFieldContainerImpl.class);
+	public NodeFieldContainer getFieldContainer(Language language) {
+		return getFieldContainer(language, NodeFieldContainerImpl.class);
 	}
 
-	public MeshNodeFieldContainer getOrCreateFieldContainer(Language language) {
-		return getOrCreateFieldContainer(language, MeshNodeFieldContainerImpl.class);
+	public NodeFieldContainer getOrCreateFieldContainer(Language language) {
+		return getOrCreateFieldContainer(language, NodeFieldContainerImpl.class);
 	}
 
 	@Override
@@ -70,22 +70,22 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 		return getSchemaContainer().getSchema();
 	}
 
-	public List<? extends MeshNode> getChildren() {
-		return in(HAS_PARENT_NODE).has(MeshNodeImpl.class).toListExplicit(MeshNodeImpl.class);
+	public List<? extends Node> getChildren() {
+		return in(HAS_PARENT_NODE).has(NodeImpl.class).toListExplicit(NodeImpl.class);
 	}
 
-	public MeshNode getParentNode() {
-		return out(HAS_PARENT_NODE).has(MeshNodeImpl.class).nextOrDefault(MeshNodeImpl.class, null);
+	public Node getParentNode() {
+		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefault(NodeImpl.class, null);
 	}
 
-	public void setParentNode(MeshNode parent) {
+	public void setParentNode(Node parent) {
 		setLinkOut(parent.getImpl(), HAS_PARENT_NODE);
 	}
 
 	@Override
-	public MeshNode create() {
+	public Node create() {
 		// TODO check whether the mesh node is in fact a container node.
-		MeshNodeImpl node = getGraph().addFramedVertex(MeshNodeImpl.class);
+		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		node.setParentNode(this);
 		return node;
 	}
@@ -93,7 +93,7 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 	public NodeResponse transformToRest(TransformationInfo info) {
 
 		NodeResponse restContent = new NodeResponse();
-		MeshNodeTransformationTask task = new MeshNodeTransformationTask(this, info, restContent);
+		NodeTransformationTask task = new NodeTransformationTask(this, info, restContent);
 		TransformationPool.getPool().invoke(task);
 		return restContent;
 
@@ -129,7 +129,7 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 		// }
 	}
 
-	public Page<MeshNode> getChildren(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<Node> getChildren(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 
 		// if (languageTags == null || languageTags.size() == 0) {
 		// return findChildren(userUuid, projectName, parentNode, pr);
@@ -165,7 +165,7 @@ public class MeshNodeImpl extends GenericFieldContainerNode implements MeshNode 
 	}
 
 	@Override
-	public MeshNodeImpl getImpl() {
+	public NodeImpl getImpl() {
 		return this;
 	}
 

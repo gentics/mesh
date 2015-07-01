@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.impl.TagImpl;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
@@ -27,9 +27,9 @@ public interface Tag extends GenericNode {
 
 	TagResponse transformToRest(TransformationInfo info);
 
-	void removeNode(MeshNode node);
+	void removeNode(Node node);
 
-	List<? extends MeshNode> getNodes();
+	List<? extends Node> getNodes();
 
 	void remove();
 
@@ -37,5 +37,5 @@ public interface Tag extends GenericNode {
 
 	TagImpl getImpl();
 
-	Page<MeshNode> findTaggedNodes(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 }

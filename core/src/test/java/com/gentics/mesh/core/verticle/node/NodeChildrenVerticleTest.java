@@ -12,22 +12,22 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.MeshNodeVerticle;
+import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 
-public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
+public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private MeshNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Autowired
 	private DataHelper helper;
@@ -39,7 +39,7 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -52,7 +52,7 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
-		MeshNode node = data().getContent("boeing 737");
+		Node node = data().getContent("boeing 737");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -65,7 +65,7 @@ public class MeshNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeChildren() throws Exception {
-		MeshNode node = data().getFolder("news");
+		Node node = data().getFolder("news");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 

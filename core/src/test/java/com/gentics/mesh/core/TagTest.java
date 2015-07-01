@@ -19,11 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -44,7 +44,7 @@ public class TagTest extends AbstractDBTest {
 	private TagService tagService;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Before
 	public void setup() throws Exception {
@@ -99,10 +99,10 @@ public class TagTest extends AbstractDBTest {
 
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
-		MeshNode parentNode = data().getFolder("2015");
-		MeshNode node = parentNode.create();
+		Node parentNode = data().getFolder("2015");
+		Node node = parentNode.create();
 		Language german = languageService.findByLanguageTag("de");
-		MeshNodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+		NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
 		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 		germanContainer.createString("name").setString("german node name");
@@ -114,8 +114,8 @@ public class TagTest extends AbstractDBTest {
 		tag = tagService.findByUUID(tag.getUuid());
 
 		assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
-		MeshNode contentFromTag = tag.getNodes().iterator().next();
-		MeshNodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
+		Node contentFromTag = tag.getNodes().iterator().next();
+		NodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
 
 		assertNotNull(contentFromTag);
 		assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
@@ -135,10 +135,10 @@ public class TagTest extends AbstractDBTest {
 		TagFamily tagFamily = data().getTagFamily("basic");
 		Tag tag = tagFamily.create(TEST_TAG_NAME);
 
-		MeshNode node = data().getFolder("news");
+		Node node = data().getFolder("news");
 		node.addTag(tag);
 
-		MeshNode reloadedNode = nodeService.findByUUID(node.getUuid());
+		Node reloadedNode = nodeService.findByUUID(node.getUuid());
 		boolean found = false;
 		for (Tag currentTag : reloadedNode.getTags()) {
 			if (currentTag.getUuid().equals(tag.getUuid())) {

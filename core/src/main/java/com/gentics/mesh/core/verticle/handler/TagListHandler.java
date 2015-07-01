@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -39,8 +39,8 @@ public class TagListHandler {
 		TagListResponse listResponse = new TagListResponse();
 		List<String> languageTags = getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", READ_PERM, MeshNode.class, (AsyncResult<MeshNode> rh) -> {
-			MeshNode node = rh.result();
+		rcs.loadObject(rc, "uuid", READ_PERM, Node.class, (AsyncResult<Node> rh) -> {
+			Node node = rh.result();
 
 			PagingInfo pagingInfo = getPagingInfo(rc);
 

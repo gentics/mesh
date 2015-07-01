@@ -18,10 +18,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.demo.UserInfo;
@@ -52,13 +52,13 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermission() {
 		Role role = info.getRole();
-		MeshNode node = data().getContent("news overview");
+		Node node = data().getContent("news overview");
 		role.addPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
 		// node2
-		MeshNode parentNode = data().getFolder("2015");
-		MeshNode node2 = parentNode.create();
-		MeshNodeFieldContainer englishContainer = node2.getFieldContainer(data().getEnglish());
+		Node parentNode = data().getFolder("2015");
+		Node node2 = parentNode.create();
+		NodeFieldContainer englishContainer = node2.getFieldContainer(data().getEnglish());
 //		englishContainer.setI18nProperty("content", "Test");
 		role.addPermissions(node2, READ_PERM, DELETE_PERM);
 		role.addPermissions(node2, CREATE_PERM);
@@ -87,7 +87,7 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGrantPermissionTwice() {
 		Role role = info.getRole();
-		MeshNode node = data().getContent("news overview");
+		Node node = data().getContent("news overview");
 
 		role.addPermissions(node, CREATE_PERM);
 		role.addPermissions(node, CREATE_PERM);
@@ -103,14 +103,14 @@ public class RoleTest extends AbstractDBTest {
 	@Test
 	public void testGetPermissions() {
 		Role role = info.getRole();
-		MeshNode node = data().getContent("news overview");
+		Node node = data().getContent("news overview");
 		assertEquals(4, role.getPermissions(node).size());
 	}
 
 	@Test
 	public void testRevokePermission() {
 		Role role = info.getRole();
-		MeshNode node = data().getContent("news overview");
+		Node node = data().getContent("news overview");
 		role.revokePermissions(node, CREATE_PERM);
 
 		Set<Permission> permissions = role.getPermissions(node);

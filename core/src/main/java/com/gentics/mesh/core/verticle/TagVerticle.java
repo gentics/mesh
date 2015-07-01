@@ -38,7 +38,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.verticle.handler.MeshNodeListHandler;
+import com.gentics.mesh.core.verticle.handler.NodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.paging.PagingInfo;
@@ -62,7 +62,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private TagListHandler tagListHandler;
 
 	@Autowired
-	private MeshNodeListHandler nodeListHandler;
+	private NodeListHandler nodeListHandler;
 
 	public TagVerticle() {
 		super("tags");

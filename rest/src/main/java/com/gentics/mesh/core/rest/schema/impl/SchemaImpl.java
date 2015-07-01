@@ -13,9 +13,7 @@ public class SchemaImpl implements Schema {
 	private String displayField;
 	private boolean binary = false;
 	private boolean container = false;
-
 	private String meshVersion;
-
 	private String schemaVersion;
 	private Map<String, FieldSchema> fields = new HashMap<>();
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 import com.gentics.mesh.core.data.node.field.basic.DateField;
 import com.gentics.mesh.core.data.node.field.basic.HTMLField;
@@ -17,7 +17,7 @@ public interface FieldContainer extends BasicFieldContainer {
 
 	StringField createString(String key);
 
-	NodeField createNode(String key, MeshNode node);
+	NodeField createNode(String key, Node node);
 
 	DateField getDate(String key);
 

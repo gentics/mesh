@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagFieldContainer;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
@@ -26,8 +26,8 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
-	public List<? extends MeshNode> getNodes() {
-		return in(HAS_TAG).has(MeshNodeImpl.class).toListExplicit(MeshNodeImpl.class);
+	public List<? extends Node> getNodes() {
+		return in(HAS_TAG).has(NodeImpl.class).toListExplicit(NodeImpl.class);
 	}
 
 	public List<? extends TagFieldContainer> getFieldContainers() {
@@ -50,7 +50,7 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 		getOrCreateFieldContainer(getLanguageService().getTagDefaultLanguage()).setName(name);
 	}
 
-	public void removeNode(MeshNode node) {
+	public void removeNode(Node node) {
 		unlinkIn(node.getImpl(), HAS_TAG);
 	}
 
@@ -75,12 +75,12 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 		getVertex().remove();
 	}
 
-	public Page<MeshNode> findTaggedNodes(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
+	public Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		// findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
 		return null;
 	}
 
-	public Page<MeshNode> findTaggedNodes(MeshAuthUser requestUser, String projectName, TagImpl tag, List<String> languageTags,
+	public Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, TagImpl tag, List<String> languageTags,
 			PagingInfo pagingInfo) {
 		// String langFilter = getLanguageFilter("l");
 		// if (languageTags == null || languageTags.isEmpty()) {

@@ -12,9 +12,9 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -36,7 +36,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 public class RestAssert {
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Autowired
 	private LanguageService languageService;
@@ -107,7 +107,7 @@ public class RestAssert {
 
 	}
 
-	public void assertMeshNode(NodeCreateRequest request, MeshNode node) {
+	public void assertMeshNode(NodeCreateRequest request, Node node) {
 		assertNotNull(request);
 		assertNotNull(node);
 
@@ -121,7 +121,7 @@ public class RestAssert {
 		assertNotNull(node.getCreator());
 	}
 
-	public void assertMeshNode(MeshNode node, NodeResponse readValue) {
+	public void assertMeshNode(Node node, NodeResponse readValue) {
 		assertNotNull(node);
 		assertNotNull(readValue);
 		assertEquals(node.getUuid(), readValue.getUuid());

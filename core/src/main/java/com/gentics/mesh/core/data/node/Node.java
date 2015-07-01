@@ -8,20 +8,18 @@ import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.paging.PagingInfo;
 
-public interface MeshNode extends GenericNode {
+public interface Node extends GenericNode {
 
 	void addTag(Tag tag);
 
@@ -37,17 +35,17 @@ public interface MeshNode extends GenericNode {
 
 	void addProject(Project project);
 
-	void setParentNode(MeshNode parentNode);
+	void setParentNode(Node parentNode);
 
-	MeshNode create();
+	Node create();
 
-	MeshNodeFieldContainer getFieldContainer(Language language);
+	NodeFieldContainer getFieldContainer(Language language);
 
-	List<? extends MeshNode> getChildren();
+	List<? extends Node> getChildren();
 
 	List<? extends Tag> getTags();
 
-	MeshNodeFieldContainer getOrCreateFieldContainer(Language language);
+	NodeFieldContainer getOrCreateFieldContainer(Language language);
 
 	List<? extends FieldContainer> getFieldContainers();
 
@@ -55,9 +53,9 @@ public interface MeshNode extends GenericNode {
 
 	MeshUser getCreator();
 
-	MeshNodeImpl getImpl();
+	NodeImpl getImpl();
 
-	Page<MeshNode> getChildren(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Node> getChildren(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 
 	Page<Tag> getTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
 

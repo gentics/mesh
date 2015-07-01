@@ -16,22 +16,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.node.MeshNode;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.MeshNodeVerticle;
+import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 
-public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
+public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private MeshNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	@Autowired
-	private MeshNodeService nodeService;
+	private NodeService nodeService;
 
 	@Autowired
 	private DataHelper helper;
@@ -43,7 +43,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -57,7 +57,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddTagToNode() throws Exception {
 
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
 		assertFalse(node.getTags().contains(tag));
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
@@ -69,7 +69,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(node, UPDATE_PERM);
@@ -82,7 +82,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(tag, READ_PERM);
@@ -95,7 +95,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
 
 		assertTrue(node.getTags().contains(tag));
@@ -109,7 +109,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveBogusTagFromNode() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/bogus", 404, "Not Found");
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
@@ -117,7 +117,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
 		assertTrue(node.getTags().contains(tag));
 		info.getRole().revokePermissions(node, UPDATE_PERM);
@@ -130,7 +130,7 @@ public class MeshNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
-		MeshNode node = data().getFolder("2015");
+		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("bike");
 		assertTrue(node.getTags().contains(tag));
 		info.getRole().revokePermissions(tag, READ_PERM);

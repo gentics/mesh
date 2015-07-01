@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.node.field.impl.nesting;
 
 import com.gentics.mesh.core.data.generic.MeshEdge;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeField;
-import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 
 public class NodeFieldImpl extends MeshEdge implements NodeField {
 
@@ -18,8 +18,8 @@ public class NodeFieldImpl extends MeshEdge implements NodeField {
 	}
 
 	@Override
-	public MeshNode getNode() {
-		return inV().has(MeshNodeImpl.class).nextOrDefaultExplicit(MeshNodeImpl.class, null);
+	public Node getNode() {
+		return inV().has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 }

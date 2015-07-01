@@ -5,23 +5,23 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
-import com.gentics.mesh.core.data.impl.MeshNodeFieldContainerImpl;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.nesting.NodeFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.ListField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeField;
-import com.gentics.mesh.core.data.node.impl.MeshNodeImpl;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class ListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testStringList() {
-		MeshNodeFieldContainer container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 		ListField<StringField> list = container.createList("dummyList");
 		list.setListType(StringFieldImpl.class);
 
@@ -42,8 +42,8 @@ public class ListFieldTest extends AbstractDBTest {
 	@Test
 	public void testNodeList() {
 
-		MeshNode node = fg.addFramedVertex(MeshNodeImpl.class);
-		MeshNodeFieldContainer container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		Node node = fg.addFramedVertex(NodeImpl.class);
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 		ListField<NodeField> list = container.createList("dummyList");
 		list.setListType(NodeFieldImpl.class);
 		assertEquals(0, list.getList().size());
@@ -57,7 +57,7 @@ public class ListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testNumberList() {
-		MeshNodeFieldContainer container = fg.addFramedVertex(MeshNodeFieldContainerImpl.class);
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 		ListField<NumberField> list = container.createList("dummyList");
 		list.createNumber("1");
 		assertEquals(1, list.getList().size());

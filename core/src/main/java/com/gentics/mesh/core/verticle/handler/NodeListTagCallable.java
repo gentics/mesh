@@ -4,12 +4,12 @@ import java.util.List;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.paging.PagingInfo;
 
 @FunctionalInterface
-public interface MeshNodeListTagCallable {
+public interface NodeListTagCallable {
 
-	Page<MeshNode> findNodes(String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Node> findNodes(String projectName, Tag tag, List<String> languageTags, PagingInfo pagingInfo);
 
 }

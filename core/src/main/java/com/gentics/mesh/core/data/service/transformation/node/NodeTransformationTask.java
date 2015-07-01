@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshNodeFieldContainer;
 import com.gentics.mesh.core.data.MeshUser;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -32,28 +32,28 @@ import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
 
-public class MeshNodeTransformationTask extends RecursiveTask<Void> {
+public class NodeTransformationTask extends RecursiveTask<Void> {
 
 	private static final long serialVersionUID = -1480528776879617657L;
 
-	private static final Logger log = LoggerFactory.getLogger(MeshNodeTransformationTask.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeTransformationTask.class);
 
-	private MeshNode node;
+	private Node node;
 	private TransformationInfo info;
 	private NodeResponse restNode;
 	private int depth;
 
-	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, NodeResponse restNode, int depth) {
+	public NodeTransformationTask(Node node, TransformationInfo info, NodeResponse restNode, int depth) {
 		this.node = node;
 		this.info = info;
 		this.restNode = restNode;
 	}
 
-	public MeshNodeTransformationTask(MeshNode node, TransformationInfo info, NodeResponse restContent) {
+	public NodeTransformationTask(Node node, TransformationInfo info, NodeResponse restContent) {
 		this(node, info, restContent, 0);
 	}
 
-	private void resolveLinks(MeshNode node) throws InterruptedException, ExecutionException {
+	private void resolveLinks(Node node) throws InterruptedException, ExecutionException {
 		// TODO fix issues with generics - Maybe move the link replacer to a
 		// spring service
 		// TODO handle language
@@ -103,14 +103,14 @@ public class MeshNodeTransformationTask extends RecursiveTask<Void> {
 					// //TODO handle expand
 					List<String> children = new ArrayList<>();
 					// //TODO check permissions
-					for (MeshNode child : node.getChildren()) {
+					for (Node child : node.getChildren()) {
 						children.add(child.getUuid());
 					}
 					restNode.setContainer(true);
 					restNode.setChildren(children);
 				}
 
-				MeshNodeFieldContainer fieldContainer = null;
+				NodeFieldContainer fieldContainer = null;
 				for (String languageTag : info.getLanguageTags()) {
 					Language language = getLanguageService().findByLanguageTag(languageTag);
 					if (language == null) {

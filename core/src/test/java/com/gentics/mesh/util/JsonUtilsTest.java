@@ -1,7 +1,5 @@
 package com.gentics.mesh.util;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.Test;
 
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -14,10 +12,6 @@ public class JsonUtilsTest {
 		JsonUtil.toJson(new Loop());
 	}
 
-	@Test
-	public void testMapper() {
-		assertNotNull(JsonUtil.getMapper());
-	}
 }
 
 class Loop {

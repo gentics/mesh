@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIEL
 import java.util.List;
 
 import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 import com.gentics.mesh.core.data.node.field.basic.DateField;
 import com.gentics.mesh.core.data.node.field.basic.HTMLField;
@@ -47,7 +47,7 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 	}
 
 	@Override
-	public NodeField createNode(String key, MeshNode node) {
+	public NodeField createNode(String key, Node node) {
 		NodeFieldImpl field = getGraph().addFramedEdge(this, node.getImpl(), HAS_FIELD, NodeFieldImpl.class);
 		field.setFieldKey(key);
 		return field;

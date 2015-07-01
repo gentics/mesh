@@ -49,7 +49,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.AdminVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
-import com.gentics.mesh.core.verticle.MeshNodeVerticle;
+import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.core.verticle.RoleVerticle;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
@@ -106,7 +106,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(RoleVerticle.class);
 
 		addMandatoryVerticle(TagVerticle.class);
-		addMandatoryVerticle(MeshNodeVerticle.class);
+		addMandatoryVerticle(NodeVerticle.class);
 		addMandatoryVerticle(WebRootVerticle.class);
 
 		addMandatoryVerticle(ProjectVerticle.class);

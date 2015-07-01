@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshNodeService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshUserService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
@@ -23,7 +23,7 @@ public class MeshServicesTest extends AbstractDBTest {
 		assertNotNull(RoleService.getRoleService());
 		assertNotNull(I18NService.getI18n());
 		assertNotNull(LanguageService.getLanguageService());
-		assertNotNull(MeshNodeService.getNodeService());
+		assertNotNull(NodeService.getNodeService());
 		assertNotNull(SchemaContainerService.getSchemaService());
 		assertNotNull(TagService.getTagService());
 		assertNotNull(MeshUserService.getUserService());

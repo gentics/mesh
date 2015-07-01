@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.node.MeshNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.WebRootService;
@@ -69,13 +69,13 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			vertx.executeBlocking((Future<MeshNode> bch) -> {
+			vertx.executeBlocking((Future<Node> bch) -> {
 				Path nodePath = webrootService.findByProjectPath(rc, projectName, path);
 				PathSegment lastSegment = nodePath.getLast();
 
 				if (lastSegment != null) {
 
-					MeshNode node = fg.frameElement(lastSegment.getVertex(), MeshNode.class);
+					Node node = fg.frameElement(lastSegment.getVertex(), Node.class);
 					if (node == null) {
 						String message = i18n.get(rc, "node_not_found_for_path", path);
 						throw new EntityNotFoundException(message);
@@ -99,7 +99,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				}
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
-					MeshNode node = arh.result();
+					Node node = arh.result();
 					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 
 					rc.response().end(toJson(node.transformToRest(info)));
