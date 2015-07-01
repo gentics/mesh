@@ -92,6 +92,7 @@ public class RestModelTest extends AbstractDBTest {
 		Map<String, Field> fields = loadedRequest.getFields();
 		assertNotNull(fields);
 		assertNotNull(fields.get("name"));
+		assertEquals(StringFieldImpl.class.getName(), fields.get("name").getClass().getName());
 
 	}
 
