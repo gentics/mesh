@@ -5,9 +5,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -45,7 +43,7 @@ public class RoleService extends AbstractMeshGraphService<Role> {
 	}
 
 	public Role findByName(String name) {
-		return findByName(name, RoleImpl	.class);
+		return findByName(name, RoleImpl.class);
 	}
 
 	public List<? extends Role> findAll() {
@@ -65,32 +63,10 @@ public class RoleService extends AbstractMeshGraphService<Role> {
 	public void addCRUDPermissionOnRole(MeshAuthUser requestUser, MeshVertex node, Permission permission, GenericNode targetNode) {
 
 		// 1. Determine all roles that grant given permission
-		// Node userNode = neo4jTemplate.getPersistentState(user);
-		Vertex userNode = requestUser.getVertex();
-		Set<Role> roles = new HashSet<>();
-
-		// TODO use core blueprint api or gremlin traversal?
-		// for (Edge rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUT)
-		// .relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.IN)
-		// .relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUT).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-		// .traverse(userNode).relationships()) {
-		//
-		// if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getLabel())) {
-		// // Check whether this relation in fact targets our object we want to check
-		// boolean matchesTargetNode = rel.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == meshPermission.getTargetNode().getId();
-		// if (matchesTargetNode) {
-		// // Convert the api relationship to a framed edge
-		// GraphPermission perm = framedGraph.frame(rel, GraphPermission.class);
-		// if (meshPermission.implies(perm) == true) {
-		// // This permission is permitting. Add it to the list of roles
-		// roles.add(perm.getRole());
-		// }
-		// }
-		// }
-		// }
+		List<? extends Role> rolesThatGrantPermission = node.getImpl().in(permission.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 
 		// 2. Add CRUD permission to identified roles and target node
-		for (Role role : roles) {
+		for (Role role : rolesThatGrantPermission) {
 			role.addPermissions(targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 		}
 	}

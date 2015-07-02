@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.relationship.Permission;
@@ -69,7 +71,7 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 	 * Return all assigned groups.
 	 */
 	public List<? extends Group> getGroups() {
-		return out(HAS_USER).has(GroupImpl.class).toList(GroupImpl.class);
+		return out(HAS_USER).has(GroupImpl.class).toListExplicit(GroupImpl.class);
 
 		// public List<? extends Group> listAllGroups(User user) {
 		// // @Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
@@ -78,6 +80,11 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 		// return framedGraph.v().has(Group.class).mark().in(MEMBER_OF).has(User.class).has("uuid", user.getUuid()).back().toList(Group.class);
 		//
 		// }
+	}
+
+	@Override
+	public List<? extends Role> getRoles() {
+		return out(HAS_GROUP).out(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 	}
 
 	//
@@ -108,6 +115,7 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 	//
 	// }
 
+	@Override
 	public String[] getPermissionNames(MeshVertex node) {
 		Set<Permission> permissions = getPermissions(node);
 		String[] strings = new String[permissions.size()];
@@ -118,6 +126,7 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 		return strings;
 	}
 
+	@Override
 	public Set<Permission> getPermissions(MeshVertex node) {
 
 		Set<Permission> permissions = new HashSet<>();

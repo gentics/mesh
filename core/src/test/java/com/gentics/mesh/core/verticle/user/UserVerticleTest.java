@@ -351,6 +351,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
+		System.out.println(response);
 		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(newUser, restUser);
 

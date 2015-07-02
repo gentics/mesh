@@ -26,6 +26,8 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.impl.GroupImpl;
+import com.gentics.mesh.core.data.impl.MeshUserImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -56,8 +58,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> rh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, MeshUserImpl.class, (AsyncResult<MeshUser> rh) -> {
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					MeshUser user = trh.result();
 					UserResponse restUser = user.transformToRest();
@@ -83,6 +88,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 				bch.complete(listResponse);
 			}, arh -> {
+				if (arh.failed()) {
+					rc.fail(arh.cause());
+				}
 				UserListResponse list = arh.result();
 				rc.response().setStatusCode(200).end(toJson(list));
 			});
@@ -93,10 +101,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", DELETE_PERM, MeshUser.class, (AsyncResult<MeshUser> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, MeshUserImpl.class, (AsyncResult<MeshUser> rh) -> {
 				MeshUser user = rh.result();
 				user.delete();
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 			});
 		});
@@ -105,7 +116,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, MeshUser.class, (AsyncResult<MeshUser> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, MeshUserImpl.class, (AsyncResult<MeshUser> rh) -> {
 				MeshUser user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
@@ -138,6 +149,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 				fg.commit();
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				MeshUser user = trh.result();
 				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
 			});
@@ -172,7 +186,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			Future<MeshUser> userCreated = Future.future();
 			// Load the parent group for the user
-			rcs.loadObjectByUuid(rc, groupUuid, CREATE_PERM, Group.class, (AsyncResult<Group> rh) -> {
+			rcs.loadObjectByUuid(rc, groupUuid, CREATE_PERM, GroupImpl.class, (AsyncResult<Group> rh) -> {
 
 				Group parentGroup = rh.result();
 
@@ -182,15 +196,22 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				MeshUser user = parentGroup.createUser(requestModel.getUsername());
-				user.setFirstname(requestModel.getFirstname());
-				user.setLastname(requestModel.getLastname());
-				user.setEmailAddress(requestModel.getEmailAddress());
-				user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
-				user.addGroup(parentGroup);
-				roleService.addCRUDPermissionOnRole(requestUser, parentGroup, CREATE_PERM, user);
-				userCreated.complete(user);
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					MeshUser user = parentGroup.createUser(requestModel.getUsername());
+					user.setFirstname(requestModel.getFirstname());
+					user.setUsername(requestModel.getUsername());
+					user.setLastname(requestModel.getLastname());
+					user.setEmailAddress(requestModel.getEmailAddress());
+					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+					user.addGroup(parentGroup);
+					roleService.addCRUDPermissionOnRole(requestUser, parentGroup, CREATE_PERM, user);
+					userCreated.complete(user);
+					tx.success();
+				}
 			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
 				MeshUser user = userCreated.result();
 				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
 			});

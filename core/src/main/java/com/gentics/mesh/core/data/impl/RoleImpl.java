@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -39,8 +40,13 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 		return permissions;
 	}
 
+	@Override
+	public boolean hasPermission(Permission permission, Node node) {
+		return out(permission.label()).retain(node.getImpl()).hasNext();
+	}
+
 	public void addGroup(Group group) {
-		linkOut((GroupImpl) group, HAS_ROLE);
+		linkOut(group.getImpl(), HAS_ROLE);
 	}
 
 	public void addPermissions(MeshVertex node, Permission... permissions) {

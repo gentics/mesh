@@ -70,4 +70,6 @@ public class MeshAuthUserImpl extends MeshUserImpl implements ClusterSerializabl
 	public MeshAuthUserImpl getImpl() {
 		return this;
 	}
+
+
 }

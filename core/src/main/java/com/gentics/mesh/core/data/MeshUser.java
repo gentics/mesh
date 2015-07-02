@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.core.data.impl.MeshUserImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
@@ -43,5 +44,9 @@ public interface MeshUser extends GenericNode {
 	void delete();
 
 	MeshUserImpl getImpl();
+
+	List<? extends Role> getRoles();
+
+	Set<Permission> getPermissions(MeshVertex node);
 
 }

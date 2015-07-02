@@ -13,14 +13,15 @@ import io.vertx.ext.web.RoutingContext;
 
 import java.util.Set;
 
+import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -59,7 +60,7 @@ public class RoleTest extends AbstractDBTest {
 		Node parentNode = data().getFolder("2015");
 		Node node2 = parentNode.create();
 		NodeFieldContainer englishContainer = node2.getFieldContainer(data().getEnglish());
-//		englishContainer.setI18nProperty("content", "Test");
+		//		englishContainer.setI18nProperty("content", "Test");
 		role.addPermissions(node2, READ_PERM, DELETE_PERM);
 		role.addPermissions(node2, CREATE_PERM);
 		Set<Permission> permissions = role.getPermissions(node2);
@@ -141,6 +142,31 @@ public class RoleTest extends AbstractDBTest {
 		int nRolesAfter = root.getRoles().size();
 		assertEquals(nRolesBefore + 1, nRolesAfter);
 
+	}
+
+	@Test
+	public void testRoleAddCrudPermissions() {
+
+		MeshAuthUser requestUser = info.getUser().getImpl().reframe(MeshAuthUserImpl.class);
+		//userService.findMeshAuthUserByUsername(requestUser.getUsername())
+		Node parentNode = data().getFolder("2015");
+		assertNotNull(parentNode);
+
+		// Also assign create permissions on the parent object to other roles
+		for (Role role : data().getRoles().values()) {
+			role.addPermissions(parentNode, CREATE_PERM);
+		}
+
+		Node node = parentNode.create();
+		assertEquals(0, requestUser.getPermissions(node).size());
+		roleService.addCRUDPermissionOnRole(requestUser, parentNode, CREATE_PERM, node);
+		assertEquals(4, requestUser.getPermissions(node).size());
+
+		for (Role role : data().getRoles().values()) {
+			for (Permission permission : Permission.values()) {
+				assertTrue(role.hasPermission(permission, node));
+			}
+		}
 	}
 
 	@Test

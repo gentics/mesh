@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.impl.RoleImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
@@ -25,5 +26,7 @@ public interface Role extends GenericNode {
 	void addGroup(Group group);
 
 	void delete();
+
+	boolean hasPermission(Permission permission, Node node);
 
 }

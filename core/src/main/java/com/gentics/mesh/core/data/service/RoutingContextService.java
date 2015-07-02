@@ -43,17 +43,17 @@ public class RoutingContextService {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}
 
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Class<T> classOfT,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Class<? extends T> classOfT,
 			Handler<AsyncResult<T>> resultHandler) {
 		loadObjectByUuid(rc, uuid, null, permType, classOfT, resultHandler, null);
 	}
 
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Class<T> classOfT,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, Permission permType, Class<? extends T> classOfT,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		loadObjectByUuid(rc, uuid, null, permType, classOfT, resultHandler, transactionCompletedHandler);
 	}
 
-	public <T extends MeshVertex> T findByUUID(String projectName, String uuid, Class<T> classOfT) {
+	public <T extends MeshVertex> T findByUUID(String projectName, String uuid, Class<? extends T> classOfT) {
 		return fg.v().has("uuid", uuid).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName).back().nextOrDefault(classOfT, null);
 	}
 
@@ -61,7 +61,7 @@ public class RoutingContextService {
 		return fg.v().has("uuid", uuid).has(classOfT).nextOrDefault(classOfT, null);
 	}
 
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, Permission permType, Class<T> classOfT,
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, Permission permType, Class<? extends T> classOfT,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		if (StringUtils.isEmpty(uuid)) {
 			// TODO i18n, add info about uuid source?
@@ -115,7 +115,7 @@ public class RoutingContextService {
 	}
 
 	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, Permission permType,
-			Class<T> classOfT, Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
+			Class<? extends T> classOfT, Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
 		String uuid = rc.request().params().get(uuidParamName);
 		if (StringUtils.isEmpty(uuid)) {
 			rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing", uuidParamName)));
@@ -126,17 +126,17 @@ public class RoutingContextService {
 
 	}
 
-	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType, Class<T> classOfT,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType, Class<? extends T> classOfT,
 			Handler<AsyncResult<T>> resultHandler) {
 		loadObject(rc, uuidParamName, permType, classOfT, resultHandler, null);
 	}
 
 	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, String projectName, Permission permType,
-			Class<T> classOfT, Handler<AsyncResult<T>> resultHandler) {
+			Class<? extends T> classOfT, Handler<AsyncResult<T>> resultHandler) {
 		loadObject(rc, uuidParamName, projectName, permType, classOfT, resultHandler, null);
 	}
 
-	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType, Class<T> classOfT,
+	public <T extends MeshVertex> void loadObject(RoutingContext rc, String uuidParamName, Permission permType, Class<? extends T> classOfT,
 			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompleteHandler) {
 		loadObject(rc, uuidParamName, null, permType, classOfT, resultHandler, transactionCompleteHandler);
 	}
