@@ -11,11 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;

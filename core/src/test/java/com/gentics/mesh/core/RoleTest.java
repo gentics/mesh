@@ -13,14 +13,13 @@ import io.vertx.ext.web.RoutingContext;
 
 import java.util.Set;
 
-import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;

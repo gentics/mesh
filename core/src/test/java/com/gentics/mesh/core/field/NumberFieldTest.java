@@ -19,7 +19,7 @@ public class NumberFieldTest extends AbstractDBTest {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		NumberFieldImpl field = new NumberFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
-		assertEquals(null, container.getProperty("test-number"));
+		assertNull(container.getProperty("test-number"));
 		assertEquals(4, container.getPropertyKeys().size());
 		field.setNumber("dummy number");
 		assertEquals("dummy number", field.getNumber());

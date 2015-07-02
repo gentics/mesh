@@ -1,6 +1,5 @@
 package com.gentics.mesh.core;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
@@ -21,8 +20,8 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.data.service.TagService;
@@ -72,17 +71,12 @@ public class OGMTest {
 		System.out.println(root.getGroupRoot().getUuid());
 
 		SchemaContainer schema = schemaRoot.create("test");
-//		schema.setDescription("description");
 		schemaRoot.addSchemaContainer(schema);
 
 		schema = schemaService.findByName("test");
 		assertNotNull(schema);
-//		assertEquals("description", schema.getDescription());
 
 		root.getProjectRoot().addProject(project);
-		// tag.setSchema(schema);
-		// Schema loadedSchema = tag.getSchema();
-		// System.out.println(loadedSchema.getDescription());
 
 	}
 }

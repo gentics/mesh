@@ -20,8 +20,7 @@ public class BooleanFieldTest extends AbstractDBTest {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		BooleanFieldImpl field = new BooleanFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
-		assertEquals(null, container.getProperty("test-boolean"));
-		assertEquals(4, container.getPropertyKeys().size());
+		assertNull(container.getProperty("test-boolean"));
 		field.setBoolean(new Boolean(true));
 
 		assertEquals("true", container.getProperty("test-boolean"));

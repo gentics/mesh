@@ -56,7 +56,7 @@ public class SchemaContainerImpl extends AbstractGenericNode implements SchemaCo
 	public Schema getSchema() throws IOException {
 		Schema schema = getSchemaStorage().getSchema(getSchemaName());
 		if (schema == null) {
-			schema = JsonUtil.readValue(getJson(), SchemaImpl.class);
+			schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
 			getSchemaStorage().addSchema(schema);
 		}
 		return schema;

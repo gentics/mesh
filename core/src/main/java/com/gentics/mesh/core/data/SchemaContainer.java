@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
 
 public interface SchemaContainer extends GenericNode {
 

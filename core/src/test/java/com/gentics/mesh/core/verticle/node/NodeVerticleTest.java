@@ -29,14 +29,13 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.util.FieldUtil;
 
 public class NodeVerticleTest extends AbstractRestVerticleTest {
 
@@ -60,11 +59,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
 		request.setLanguage("BOGUS");
-		//		NodeFieldContainer fields = new NodeFieldContainer();
-		//		fields.put("name", getStringField("some name"));
-		//		fields.put("filename", getStringField("new-page.html"));
-		//		fields.put("content", getStringField("Blessed mealtime again!"));
-		//		request.setFields(fields);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
@@ -84,11 +82,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 
-		//		NodeFieldContainer fields = new NodeFieldContainer();
-		//		fields.put("name", getStringField("some name"));
-		//		fields.put("filename", getStringField("new-page.html"));
-		//		fields.put("content", getStringField("Blessed mealtime again!"));
-		//		request.setFields(fields);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		request.setParentNodeUuid(parentNode.getUuid());
 
@@ -104,11 +100,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 
-		//		NodeFieldContainer fields = new NodeFieldContainer();
-		//		fields.put("name", getStringField("some name"));
-		//		fields.put("filename", getStringField("new-page.html"));
-		//		fields.put("content", getStringField("Blessed mealtime again!"));
-		//		request.setFields(fields);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
@@ -141,11 +135,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("node");
 		request.setSchema(schemaReference);
-		//		NodeFieldContainer fields = new NodeFieldContainer();
-		//		fields.put("name", getStringField("some name"));
-		//		fields.put("filename", getStringField("new-page.html"));
-		//		fields.put("content", getStringField("Blessed mealtime again!"));
-		//		request.setFields(fields);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtil.toJson(request));
 		expectMessageResponse("node_missing_parentnode_field", response);
@@ -162,11 +154,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("node");
 		request.setSchema(schemaReference);
-		//		NodeFieldContainer fields = new NodeFieldContainer();
-		//		fields.put("name", getStringField("some name"));
-		//		fields.put("filename", getStringField("new-page.html"));
-		//		fields.put("content", getStringField("Blessed mealtime again!"));
-		//		request.setFields(fields);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
@@ -294,10 +284,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
 		Node node = data().getFolder("2015");
-		//		try (Transaction tx = graphDb.beginTx()) {
-		info.getRole().revokePermissions(node, READ_PERM);
-		//			tx.success();
-		//		}
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			info.getRole().revokePermissions(node, READ_PERM);
+			tx.success();
+		}
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, node.getUuid());
 	}
@@ -327,11 +317,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		final String newName = "english renamed name";
 		final String newContent = "english renamed content!";
 
-		//		NodeFieldContainer fields = new NodeFieldContainer();
-		//		fields.put("name", getStringField(newName));
-		//		fields.put("filename", getStringField(newFilename));
-		//		fields.put("content", getStringField(newContent));
-		//		request.setFields(fields);
+		request.getFields().put("name", FieldUtil.createStringField(newName));
+		request.getFields().put("filename", FieldUtil.createStringField(newFilename));
+		request.getFields().put("content", FieldUtil.createStringField(newContent));
 
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtil.toJson(request));
@@ -353,11 +341,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		final String newName = "english renamed name";
 		final String newContent = "english renamed content!";
 
-		//		NodeFieldContainer fields = new NodeFieldContainer();
-		//		fields.put("name", getStringField(newName));
-		//		fields.put("filename", getStringField(newFilename));
-		//		fields.put("content", getStringField(newContent));
-		//		request.setFields(fields);
+		request.getFields().put("name", FieldUtil.createStringField(newName));
+		request.getFields().put("filename", FieldUtil.createStringField(newFilename));
+		request.getFields().put("content", FieldUtil.createStringField(newContent));
 
 		Node node = data().getFolder("2015");
 		String json = JsonUtil.toJson(request);

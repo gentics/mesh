@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.service.transformation.tag;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
@@ -11,7 +10,6 @@ import java.util.function.Consumer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.data.service.transformation.UuidRestModelComparator;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 

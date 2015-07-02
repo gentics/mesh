@@ -19,8 +19,7 @@ public class DateFieldTest extends AbstractDBTest {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		DateFieldImpl field = new DateFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
-		assertEquals(null, container.getProperty("test-date"));
-		assertEquals(4, container.getPropertyKeys().size());
+		assertNull(container.getProperty("test-date"));
 		field.setDate("dummyDate");
 		assertEquals("dummyDate", container.getProperty("test-date"));
 		assertEquals(5, container.getPropertyKeys().size());
