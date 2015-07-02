@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.ext.web.RoutingContext;
 
@@ -29,10 +30,13 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	private UserInfo info;
 
+	private User user;
+
 	@Before
 	public void setup() throws Exception {
 		setupData();
 		info = data().getUserInfo();
+		user = info.getUser();
 	}
 
 	@Test
@@ -52,7 +56,6 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Test
 	public void testHasPermission() {
-		User user = info.getUser();
 		Language language = data().getEnglish();
 		assertTrue(user.hasPermission(language, READ_PERM));
 	}
@@ -73,7 +76,6 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGetPermissions() {
-		User user = info.getUser();
 		Language language = data().getEnglish();
 		String[] perms = { "CREATE_PERM", "UPDATE_PERM", "DELETE_PERM", "READ_PERM" };
 		String[] loadedPerms = user.getPermissionNames(language);
@@ -110,8 +112,8 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindByName() {
-		// TODO Auto-generated method stub
-
+		assertNull(userService.findByUsername("bogus"));
+		userService.findByUsername(user.getUsername());
 	}
 
 	@Test

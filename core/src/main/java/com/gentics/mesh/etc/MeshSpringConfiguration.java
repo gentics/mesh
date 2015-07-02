@@ -55,11 +55,17 @@ public class MeshSpringConfiguration {
 	private static MeshConfiguration configuration = null;
 
 	@Bean
-	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
+	public String graphProviderClassname() {
 
 		String className = configuration.getDatabaseProviderClass();
+		// className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
+		// className = "com.gentics.mesh.util.TinkerGraphDatabaseProviderImpl";
+		return className;
+	}
 
-		//className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
+	@Bean
+	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
+		String className = graphProviderClassname();
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
@@ -67,7 +73,7 @@ public class MeshSpringConfiguration {
 			return provider.getFramedGraph(settings);
 		} catch (Exception e) {
 			log.error("Could not load database provider class {" + className + "}. Maybe there is no such provider within the classpath.", e);
-			//TODO soft shutdown
+			// TODO soft shutdown
 			System.exit(10);
 		}
 		return null;
@@ -113,7 +119,7 @@ public class MeshSpringConfiguration {
 	@Bean
 	public MailClient mailClient() {
 		MailConfig config = new MailConfig();
-		//TODO configure mail client
+		// TODO configure mail client
 		config.setHostname("bogus");
 		config.setPort(587);
 		config.setStarttls(StartTLSOptions.REQUIRED);
@@ -124,7 +130,7 @@ public class MeshSpringConfiguration {
 	}
 
 	public CorsHandler corsHandler() {
-		//TODO make core configurable
+		// TODO make core configurable
 		CorsHandler corsHandler = CorsHandler.create("*");
 		// corsHandler.allowCredentials(true);
 		corsHandler.allowedMethod(HttpMethod.GET);
@@ -136,12 +142,12 @@ public class MeshSpringConfiguration {
 		return corsHandler;
 	}
 
-	//TODO maybe uploads should use a dedicated bodyhandler?
+	// TODO maybe uploads should use a dedicated bodyhandler?
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
 		BodyHandler handler = BodyHandler.create();
 		handler.setBodyLimit(MeshSpringConfiguration.getConfiguration().getFileUploadByteLimit());
-		//TODO check for windows issues 
+		// TODO check for windows issues
 		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
 		return handler;
 	}

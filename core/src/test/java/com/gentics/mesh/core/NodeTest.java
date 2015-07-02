@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.FieldContainer;
@@ -130,16 +131,18 @@ public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
+	@Ignore("nodes can not be located using the name")
 	public void testFindByName() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		// TODO Auto-generated method stub
-
+		Node newsNode = data().getContent("news overview");
+		Node node = nodeService.findByUUID(newsNode.getUuid());
+		assertNotNull(node);
+		assertEquals(newsNode.getUuid(), node.getUuid());
 	}
 
 	@Test

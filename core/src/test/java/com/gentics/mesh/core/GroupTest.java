@@ -14,10 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.GroupService;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -27,9 +29,14 @@ public class GroupTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Autowired
 	private GroupService groupService;
 
+	private Group group;
+	private MeshAuthUser requestUser;
+
 	@Before
 	public void setup() throws Exception {
 		setupData();
+		requestUser = data().getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
+		group = data().getUserInfo().getGroup();
 	}
 
 	@Test
@@ -84,22 +91,22 @@ public class GroupTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindByName() {
-		// TODO Auto-generated method stub
-
+		assertNotNull(groupService.findByName("guests"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		// TODO Auto-generated method stub
-
+		assertNotNull(groupService.findByUUID(group.getUuid()));
 	}
 
 	@Test
 	@Override
 	public void testTransformation() {
-		// TODO Auto-generated method stub
-
+		GroupResponse response = group.transformToRest(requestUser);
+		assertNotNull(response);
+		assertEquals(group.getUuid(), response.getUuid());
+		assertEquals(group.getName(), response.getName());
 	}
 
 	@Test
@@ -147,8 +154,8 @@ public class GroupTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		group.setName("changed");
+		assertEquals("changed", group.getName());
 	}
 
 	@Test

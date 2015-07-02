@@ -26,9 +26,12 @@ public class SchemaTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Autowired
 	private SchemaStorage schemaStorage;
 
+	private SchemaContainer schemaContainer;
+
 	@Before
 	public void setup() throws Exception {
 		setupData();
+		data().getSchemaContainer("content");
 	}
 
 	@Test
@@ -89,9 +92,8 @@ public class SchemaTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDelete() {
-		SchemaContainer schema = data().getSchemaContainer("content");
-		String uuid = schema.getUuid();
-		schema.delete();
+		String uuid = schemaContainer.getUuid();
+		schemaContainer.delete();
 		assertNull(schemaContainerService.findByUUID(uuid));
 
 		// UserInfo info = data().getUserInfo();

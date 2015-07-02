@@ -9,7 +9,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 public abstract class ThreadedTransactionalGraphWrapper implements TransactionalGraph, ThreadedTransactionalGraph, ResettableGraph {
 
-	TransactionalGraph graph;
+	protected TransactionalGraph graph;
 
 	@Override
 	public Features getFeatures() {
