@@ -524,7 +524,12 @@ public class DemoDataProvider {
 			englishContainer.createString("name").setString(englishName);
 		}
 		folderNode.setCreator(userInfo.getUser());
+		folderNode.setCreationTimestamp(System.currentTimeMillis());
 		folderNode.setSchemaContainer(schemaContainers.get("folder"));
+
+		folderNode.setEditor(userInfo.getUser());
+		folderNode.setLastEditedTimestamp(System.currentTimeMillis());
+
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
 			throw new RuntimeException("Key for folder empty");
 		}
@@ -573,6 +578,11 @@ public class DemoDataProvider {
 		// TODO maybe set project should be done inside the save?
 		node.addProject(project);
 		node.setCreator(userInfo.getUser());
+		node.setCreationTimestamp(System.currentTimeMillis());
+
+		node.setEditor(userInfo.getUser());
+		node.setLastEditedTimestamp(System.currentTimeMillis());
+
 		node.setSchemaContainer(schema);
 		// node.setOrder(42);
 		node.setParentNode(parentNode);

@@ -14,4 +14,16 @@ public interface GenericNode extends MeshVertex {
 
 	List<? extends Project> getProjects();
 
+	MeshUser getEditor();
+
+	Long getLastEditedTimestamp();
+
+	void setLastEditedTimestamp(long timestamp);
+
+	void setEditor(MeshUser user);
+
+	void setCreationTimestamp(long timestamp);
+
+	Long getCreationTimestamp();
+
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -134,6 +135,21 @@ public final class JsonUtil {
 			throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
 		}
 
+	}
+
+	public static ObjectMapper getMapper() {
+		return mapper;
+	}
+
+	public static String writeNodeJson(NodeResponse response) {
+		try {
+			return nodeMapper.writeValueAsString(response);
+		} catch (IOException e) {
+			// TODO i18n
+			String message = "Could not generate json from object";
+			// TODO 500?
+			throw new HttpStatusCodeErrorException(500, message, e);
+		}
 	}
 
 }

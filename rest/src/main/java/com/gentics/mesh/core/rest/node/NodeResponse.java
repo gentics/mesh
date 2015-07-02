@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
 public class NodeResponse extends AbstractRestModel {
@@ -33,7 +33,7 @@ public class NodeResponse extends AbstractRestModel {
 
 	private String parentNodeUuid;
 
-	private List<TagResponse> tags = new ArrayList<>();
+	private List<TagReference> tags = new ArrayList<>();
 
 	private ProjectResponse project;
 
@@ -60,7 +60,7 @@ public class NodeResponse extends AbstractRestModel {
 		this.parentNodeUuid = parentNodeUuid;
 	}
 
-	public List<TagResponse> getTags() {
+	public List<TagReference> getTags() {
 		return tags;
 	}
 

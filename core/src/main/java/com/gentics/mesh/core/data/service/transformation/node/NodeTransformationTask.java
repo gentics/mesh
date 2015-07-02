@@ -20,9 +20,9 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.data.service.transformation.tag.TagTraversalConsumer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -96,6 +96,13 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 				if (creator != null) {
 					restNode.setCreator(creator.transformToRest());
 				}
+				MeshUser editor = node.getEditor();
+				if (editor != null) {
+					restNode.setEditor(editor.transformToRest());
+				}
+
+				restNode.setEdited(node.getLastEditedTimestamp() == null ? 0 : node.getLastEditedTimestamp());
+				restNode.setCreated(node.getCreationTimestamp() == null ? 0 : node.getCreationTimestamp());
 
 				/* Load the children */
 				if (node.getSchema().isContainer()) {
@@ -138,11 +145,10 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 			}
 
 			if (depth < 2) {
-				TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, depth, restNode, tasks);
-				// TODO replace this with iterator handling
-				node.getTags().spliterator().forEachRemaining(tagConsumer);
+				for (Tag tag : node.getTags()) {
+					restNode.getTags().add(tag.tansformToTagReference(info));
+				}
 			}
-
 			tasks.forEach(action -> action.join());
 		} catch (IOException e) {
 			// TODO handle error - we need to tell our caller

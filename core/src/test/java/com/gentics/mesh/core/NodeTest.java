@@ -16,6 +16,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
@@ -84,8 +85,22 @@ public class NodeTest extends AbstractDBTest {
 
 	@Test
 	public void testCreateNode() {
+		MeshUser user = data().getUserInfo().getUser();
 		Node parentNode = data().getFolder("2015");
 		Node node = parentNode.create();
+		node.setCreator(user);
+		long ts = System.currentTimeMillis();
+		node.setCreationTimestamp(ts);
+		node.setEditor(user);
+		node.setLastEditedTimestamp(ts);
+		Long editedTimestamp = node.getLastEditedTimestamp();
+		assertNotNull(editedTimestamp);
+		assertEquals(ts, editedTimestamp.longValue());
+		Long creationTimeStamp = node.getCreationTimestamp();
+		assertNotNull(creationTimeStamp);
+		assertEquals(ts, creationTimeStamp.longValue());
+		assertEquals(user, node.getCreator());
+		assertEquals(user, node.getEditor());
 		Language english = data().getEnglish();
 		Language german = data().getGerman();
 

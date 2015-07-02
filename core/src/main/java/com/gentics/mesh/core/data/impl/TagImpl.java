@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
@@ -80,8 +81,7 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 		return null;
 	}
 
-	public Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, TagImpl tag, List<String> languageTags,
-			PagingInfo pagingInfo) {
+	public Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, TagImpl tag, List<String> languageTags, PagingInfo pagingInfo) {
 		// String langFilter = getLanguageFilter("l");
 		// if (languageTags == null || languageTags.isEmpty()) {
 		// langFilter = "";
@@ -103,6 +103,14 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 		// parameters.put("tag", tag);
 		// return queryService.query(query, countQuery, parameters, pagingInfo, MeshNode.class);
 		return null;
+	}
+
+	@Override
+	public TagReference tansformToTagReference(TransformationInfo info) {
+		TagReference reference = new TagReference();
+		reference.setUuid(getUuid());
+		reference.setName(getName());
+		return reference;
 	}
 
 	@Override

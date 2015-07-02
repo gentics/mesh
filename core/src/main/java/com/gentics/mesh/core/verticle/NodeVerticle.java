@@ -40,6 +40,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.NodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
@@ -235,7 +236,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 				}
 				Node node = trh.result();
 				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-				rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
+				rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(node.transformToRest(info)));
 			});
 
 		});

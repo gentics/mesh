@@ -6,6 +6,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.paging.PagingInfo;
 
@@ -24,6 +25,8 @@ public interface Tag extends GenericNode {
 	void addProject(Project project);
 
 	void setCreator(MeshUser user);
+
+	TagReference tansformToTagReference(TransformationInfo info);
 
 	TagResponse transformToRest(TransformationInfo info);
 

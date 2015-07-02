@@ -24,6 +24,7 @@ public class MeshRelationships {
 	// Misc
 	public static final String LINKED = "LINKED";
 	public static final String HAS_CREATOR = "HAS_CREATOR";
+	public static final String HAS_EDITOR = "HAS_EDITOR";
 	public static final String PARENT_OF = "PARENT_OF";
 	public static final String HAS_LOCALIZED_TAGS = "HAS_LOCALIZED_TAGS";
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";

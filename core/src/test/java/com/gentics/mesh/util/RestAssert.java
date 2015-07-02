@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -259,7 +260,7 @@ public class RestAssert {
 			return false;
 		}
 
-		for (TagResponse restTag : restNode.getTags()) {
+		for (TagReference restTag : restNode.getTags()) {
 			if (tag.getUuid().equals(restTag.getUuid())) {
 				return true;
 			}

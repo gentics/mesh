@@ -48,7 +48,6 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 
 	@Override
 	public void addTag(Tag tag) {
-		// addFramedEdge(HAS_TAG, tag);
 		linkOut(tag.getImpl(), HAS_TAG);
 	}
 
@@ -98,8 +97,6 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 		return restContent;
 
 	}
-
-	
 
 	public Page<Tag> getTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
 		return null;
