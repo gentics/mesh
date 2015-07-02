@@ -2,9 +2,11 @@ package com.gentics.mesh.verticle.tagcloud;
 
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import com.gentics.mesh.tagcloud.model.TagCloudResult;
 
-
+@Component
 public class TagCloudService {
 
 	public List<TagCloudResult> getTagCloudInfo() {
