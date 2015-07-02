@@ -12,14 +12,14 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -27,7 +27,7 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public class NodeTest extends AbstractDBTest {
+public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Before
 	public void setup() throws Exception {
@@ -84,7 +84,110 @@ public class NodeTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testCreateNode() {
+	@Override
+	public void testFindAll() throws InvalidArgumentException {
+
+		List<String> languageTags = new ArrayList<>();
+		languageTags.add("de");
+
+		RoutingContext rc = getMockedRoutingContext("");
+		MeshAuthUser requestUser = getUser(rc);
+		Page<? extends Node> page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
+		// There are nodes that are only available in english
+		assertEquals(data().getNodeCount(), page.getTotalElements());
+		assertEquals(10, page.getSize());
+
+		languageTags.add("en");
+		page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 15));
+		assertEquals(data().getNodeCount(), page.getTotalElements());
+		assertEquals(15, page.getSize());
+
+	}
+
+	@Test
+	public void testMeshNodeFields() {
+		Node newsNode = data().getContent("news overview");
+		Language german = data().getGerman();
+		NodeFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
+
+		// TODO add some fields
+
+	}
+
+	@Test
+	@Override
+	public void testFindAllVisible() throws InvalidArgumentException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testRootNode() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testFindByName() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testFindByUUID() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testTransformation() {
+		RoutingContext rc = getMockedRoutingContext("");
+		MeshAuthUser requestUser = getUser(rc);
+		List<String> languageTags = new ArrayList<>();
+		languageTags.add("en");
+		Node newsNode = data().getContent("porsche 911");
+		TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+		NodeResponse response = newsNode.transformToRest(info);
+		assertNotNull(response);
+		System.out.println(JsonUtil.toJson(response));
+
+	}
+
+	@Test
+	@Override
+	public void testCreateDelete() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCRUDPermissions() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testPermissionsOnObject() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testRead() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCreate() {
 		User user = data().getUserInfo().getUser();
 		Node parentNode = data().getFolder("2015");
 		Node node = parentNode.create();
@@ -122,48 +225,47 @@ public class NodeTest extends AbstractDBTest {
 		String text = container.getString("content").getString();
 		assertNotNull(text);
 		assertEquals("english content", text);
-	}
-
-	@Test
-	public void testFindAll() throws InvalidArgumentException {
-
-		List<String> languageTags = new ArrayList<>();
-		languageTags.add("de");
-
-		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
-		Page<? extends Node> page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
-		// There are nodes that are only available in english
-		assertEquals(data().getNodeCount(), page.getTotalElements());
-		assertEquals(10, page.getSize());
-
-		languageTags.add("en");
-		page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 15));
-		assertEquals(data().getNodeCount(), page.getTotalElements());
-		assertEquals(15, page.getSize());
 
 	}
 
 	@Test
-	public void testTransformToRest() {
-		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
-		List<String> languageTags = new ArrayList<>();
-		languageTags.add("en");
-		Node newsNode = data().getContent("porsche 911");
-		TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-		NodeResponse response = newsNode.transformToRest(info);
-		assertNotNull(response);
-		System.out.println(JsonUtil.toJson(response));
+	@Override
+	public void testDelete() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testUpdate() {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Test
-	public void testMeshNodeFields() {
-		Node newsNode = data().getContent("news overview");
-		Language german = data().getGerman();
-		NodeFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
+	@Override
+	public void testReadPermission() {
+		// TODO Auto-generated method stub
 
-		//TODO add some fields
+	}
+
+	@Test
+	@Override
+	public void testDeletePermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdatePermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCreatePermission() {
+		// TODO Auto-generated method stub
 
 	}
 

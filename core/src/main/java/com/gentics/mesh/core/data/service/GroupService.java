@@ -39,7 +39,7 @@ public class GroupService extends AbstractMeshGraphService<Group> {
 		return fg.v().has(GroupImpl.class).toListExplicit(GroupImpl.class);
 	}
 
-	public Page<? extends Group> findAllVisible(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Group> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		// return groupRepository.findAll(requestUser, new MeshPageRequest(pagingInfo));
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return visibleGroup ORDER BY visibleGroup.name",

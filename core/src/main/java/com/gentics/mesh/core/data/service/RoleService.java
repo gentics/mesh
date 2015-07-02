@@ -41,12 +41,15 @@ public class RoleService extends AbstractMeshGraphService<Role> {
 		return instance;
 	}
 
-	public Role findByName(String name) {
-		return findByName(name, RoleImpl.class);
+	public List<? extends Role> findAll() {
+		return fg.v().has(RoleImpl.class).toListExplicit(RoleImpl.class);
 	}
 
-	public List<? extends Role> findAll() {
-
+	public Page<? extends Role> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+		// TODO filter for permissions
+		VertexTraversal<?, ?, ?> traversal = fg.v().has(RoleImpl.class);
+		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(RoleImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, RoleImpl.class);
 		// public Page<Role> findAll(String userUuid, Pageable pageable) {
 		// // @Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
 		//
@@ -54,10 +57,7 @@ public class RoleService extends AbstractMeshGraphService<Role> {
 		// return null;
 		// }
 		// TODO filter for permissions?
-		return fg.v().has(RoleImpl.class).toListExplicit(RoleImpl.class);
 	}
-
-	// public void addCRUDPermissionOnRole(MeshAuthUser requestUser, GroupRoot groupRoot, Permission createPerm, Group group) {
 
 	public void addCRUDPermissionOnRole(MeshAuthUser requestUser, MeshVertex node, Permission permission, GenericNode targetNode) {
 
@@ -70,11 +70,8 @@ public class RoleService extends AbstractMeshGraphService<Role> {
 		}
 	}
 
-	public Page<? extends Role> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
-		// TODO filter for permissions
-		VertexTraversal<?, ?, ?> traversal = fg.v().has(RoleImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(RoleImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, RoleImpl.class);
+	public Role findByName(String name) {
+		return findByName(name, RoleImpl.class);
 	}
 
 	@Override

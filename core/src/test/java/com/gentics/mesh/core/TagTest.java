@@ -16,13 +16,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -32,7 +32,7 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public class TagTest extends AbstractDBTest {
+public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	private static Logger log = LoggerFactory.getLogger(TagTest.class);
 
@@ -49,19 +49,6 @@ public class TagTest extends AbstractDBTest {
 	@Before
 	public void setup() throws Exception {
 		setupData();
-	}
-
-	@Test
-	public void testTagCreation() {
-		TagFamily tagFamily = data().getTagFamily("basic");
-		Tag tag = tagFamily.create(GERMAN_NAME);
-		assertNotNull(tag);
-		String uuid = tag.getUuid();
-		tag = tagService.findByUUID(uuid);
-		assertNotNull("The folder could not be found.", tag);
-		String name = tag.getName();
-		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-		assertEquals(10, tagFamily.getTags().size());
 	}
 
 	@Test
@@ -150,6 +137,7 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
+	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
@@ -167,7 +155,50 @@ public class TagTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testTransformToRest() {
+	@Override
+	public void testFindAllVisible() throws InvalidArgumentException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testRootNode() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testFindByName() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testFindByUUID() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCreate() {
+		TagFamily tagFamily = data().getTagFamily("basic");
+		Tag tag = tagFamily.create(GERMAN_NAME);
+		assertNotNull(tag);
+		String uuid = tag.getUuid();
+		tag = tagService.findByUUID(uuid);
+		assertNotNull("The folder could not be found.", tag);
+		String name = tag.getName();
+		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
+		assertEquals(10, tagFamily.getTags().size());
+	}
+
+	@Test
+	@Override
+	public void testTransformation() {
 		Tag tag = data().getTag("red");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 		List<String> languageTags = new ArrayList<>();
@@ -188,13 +219,79 @@ public class TagTest extends AbstractDBTest {
 		}
 		// assertEquals(2, response.getChildTags().size());
 		// assertEquals(4, response.getPerms().length);
+
 	}
 
 	@Test
-	public void testTagDeletion() {
+	@Override
+	public void testCreateDelete() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCRUDPermissions() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testPermissionsOnObject() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testRead() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testDelete() {
 		Tag tag = data().getTag("red");
 		String uuid = tag.getUuid();
 		tag.remove();
 		assertNull(tagService.findByUUID(uuid));
+
+	}
+
+	@Test
+	@Override
+	public void testUpdate() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testReadPermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testDeletePermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdatePermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCreatePermission() {
+		// TODO Auto-generated method stub
+
 	}
 }

@@ -290,7 +290,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 				Page<? extends Group> groupPage;
 				try {
-					groupPage = groupService.findAllVisible(requestUser, pagingInfo);
+					groupPage = groupService.findAll(requestUser, pagingInfo);
 					for (Group group : groupPage) {
 						listResponse.getData().add(group.transformToRest(requestUser));
 					}

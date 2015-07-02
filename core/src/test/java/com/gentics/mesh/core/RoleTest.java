@@ -9,8 +9,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -24,12 +26,13 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public class RoleTest extends AbstractDBTest {
+public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	private UserInfo info;
 
@@ -40,7 +43,8 @@ public class RoleTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testCreation() {
+	@Override
+	public void testCreate() {
 		final String roleName = "test";
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		Role role = root.create(roleName);
@@ -59,7 +63,7 @@ public class RoleTest extends AbstractDBTest {
 		Node parentNode = data().getFolder("2015");
 		Node node2 = parentNode.create();
 		NodeFieldContainer englishContainer = node2.getFieldContainer(data().getEnglish());
-		//		englishContainer.setI18nProperty("content", "Test");
+		// englishContainer.setI18nProperty("content", "Test");
 		role.addPermissions(node2, READ_PERM, DELETE_PERM);
 		role.addPermissions(node2, CREATE_PERM);
 		Set<Permission> permissions = role.getPermissions(node2);
@@ -130,8 +134,9 @@ public class RoleTest extends AbstractDBTest {
 
 	}
 
+	@Override
 	@Test
-	public void testRoleRoot() {
+	public void testRootNode() {
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		int nRolesBefore = root.getRoles().size();
 
@@ -147,7 +152,7 @@ public class RoleTest extends AbstractDBTest {
 	public void testRoleAddCrudPermissions() {
 
 		MeshAuthUser requestUser = info.getUser().getImpl().reframe(MeshAuthUserImpl.class);
-		//userService.findMeshAuthUserByUsername(requestUser.getUsername())
+		// userService.findMeshAuthUserByUsername(requestUser.getUsername())
 		Node parentNode = data().getFolder("2015");
 		assertNotNull(parentNode);
 
@@ -181,5 +186,111 @@ public class RoleTest extends AbstractDBTest {
 		Page<? extends Role> roles = info.getGroup().getRoles(requestUser, new PagingInfo(1, 10));
 		assertEquals(2, roles.getSize());
 		// assertEquals(2, roles.getTotalElements());
+	}
+
+	@Test
+	@Override
+	public void testFindAllVisible() throws InvalidArgumentException {
+		RoutingContext rc = getMockedRoutingContext("");
+		MeshAuthUser requestUser = getUser(rc);
+		Page<? extends Role> page = roleService.findAll(requestUser, new PagingInfo(1, 10));
+		assertEquals(data().getUsers().size(), page.getTotalElements());
+		assertEquals(10, page.getSize());
+
+		page = roleService.findAll(requestUser, new PagingInfo(1, 15));
+		assertEquals(data().getUsers().size(), page.getTotalElements());
+		assertEquals(15, page.getSize());
+	}
+
+	@Test
+	@Override
+	public void testFindByName() {
+		fail("not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testFindByUUID() {
+		fail("not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testTransformation() {
+		fail("not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testCreateDelete() {
+		fail("not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testCRUDPermissions() {
+		fail("not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testPermissionsOnObject() {
+		fail("not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testFindAll() throws InvalidArgumentException {
+		List<? extends Role> roles = roleService.findAll();
+		assertNotNull(roles);
+		assertEquals(data().getRoles().size(), roles.size());
+	}
+
+	@Test
+	@Override
+	public void testRead() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testDelete() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdate() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testReadPermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testDeletePermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdatePermission() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testCreatePermission() {
+		// TODO Auto-generated method stub
+
 	}
 }
