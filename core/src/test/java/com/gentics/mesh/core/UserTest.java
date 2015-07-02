@@ -17,7 +17,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.demo.UserInfo;
@@ -25,7 +25,7 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public class MeshUserTest extends AbstractDBTest {
+public class UserTest extends AbstractDBTest {
 
 	private UserInfo info;
 
@@ -44,13 +44,13 @@ public class MeshUserTest extends AbstractDBTest {
 		final String PASSWDHASH = "RANDOM";
 
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		MeshUser user = userRoot.create(USERNAME);
+		User user = userRoot.create(USERNAME);
 		user.setEmailAddress(EMAIL);
 		user.setFirstname(FIRSTNAME);
 		user.setLastname(LASTNAME);
 		user.setPasswordHash(PASSWDHASH);
 
-		MeshUser reloadedUser = userService.findByUUID(user.getUuid());
+		User reloadedUser = userService.findByUUID(user.getUuid());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 		assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -74,7 +74,7 @@ public class MeshUserTest extends AbstractDBTest {
 
 	@Test
 	public void testHasPermission() {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		Language language = data().getEnglish();
 
 		assertTrue(user.hasPermission(language, READ_PERM));
@@ -82,7 +82,7 @@ public class MeshUserTest extends AbstractDBTest {
 
 	@Test
 	public void testGetPermissions() {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		Language language = data().getEnglish();
 		String[] perms = { "CREATE_PERM", "UPDATE_PERM", "DELETE_PERM", "READ_PERM" };
 		String[] loadedPerms = user.getPermissionNames(language);
@@ -95,7 +95,7 @@ public class MeshUserTest extends AbstractDBTest {
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		MeshUser extraUser = userRoot.create("extraUser");
+		User extraUser = userRoot.create("extraUser");
 		Group group = info.getGroup();
 		Role role = info.getRole();
 		group.addUser(extraUser);
@@ -104,7 +104,7 @@ public class MeshUserTest extends AbstractDBTest {
 
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = getUser(rc);
-		Page<? extends MeshUser> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
+		Page<? extends User> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 		assertEquals(2, userPage.getTotalElements());
 	}

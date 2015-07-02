@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -61,7 +61,7 @@ public class RestAssert {
 		assertNotNull(restGroup.getUuid());
 	}
 
-	public void assertUser(MeshUser user, UserResponse restUser) {
+	public void assertUser(User user, UserResponse restUser) {
 		assertNotNull("The user must not be null.", user);
 		assertNotNull("The restuser must not be null", restUser);
 		//		user = neo4jTemplate.fetch(user);

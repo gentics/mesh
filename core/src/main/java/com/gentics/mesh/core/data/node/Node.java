@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -31,7 +31,7 @@ public interface Node extends GenericNode {
 
 	void setSchemaContainer(SchemaContainer schema);
 
-	void setCreator(MeshUser user);
+	void setCreator(User user);
 
 	void addProject(Project project);
 
@@ -51,7 +51,7 @@ public interface Node extends GenericNode {
 
 	NodeResponse transformToRest(TransformationInfo info);
 
-	MeshUser getCreator();
+	User getCreator();
 
 	NodeImpl getImpl();
 

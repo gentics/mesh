@@ -8,7 +8,7 @@ import java.util.List;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.Permission;
@@ -30,16 +30,16 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 		setProperty(NAME_KEY, name);
 	}
 
-	public List<? extends MeshUser> getUsers() {
-		return in(HAS_USER).has(MeshUserImpl.class).toListExplicit(MeshUserImpl.class);
+	public List<? extends User> getUsers() {
+		return in(HAS_USER).has(UserImpl.class).toListExplicit(UserImpl.class);
 	}
 
-	public void addUser(MeshUser user) {
+	public void addUser(User user) {
 		// TODO use link method
-		user.getImpl().addFramedEdge(HAS_USER, this, MeshUserImpl.class);
+		user.getImpl().addFramedEdge(HAS_USER, this, UserImpl.class);
 	}
 
-	public void removeUser(MeshUser user) {
+	public void removeUser(User user) {
 		unlinkIn(user.getImpl(), HAS_USER);
 	}
 
@@ -62,7 +62,7 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 	}
 
 	// TODO add java handler
-	public boolean hasUser(MeshUser user) {
+	public boolean hasUser(User user) {
 		// TODO this is not optimal - research a better way
 		return in(HAS_USER).toList(RoleImpl.class).contains(user);
 	}
@@ -70,7 +70,7 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 	/**
 	 * Get all users within this group that are visible for the given user.
 	 */
-	public Page<? extends MeshUser> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username",
@@ -81,10 +81,10 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 
 		// VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
 		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label())
-				.has(MeshUserImpl.class);
+				.has(UserImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label())
-				.has(MeshUserImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, MeshUserImpl.class);
+				.has(UserImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, UserImpl.class);
 	}
 
 	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
@@ -129,8 +129,8 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 
 	}
 
-	public MeshUser createUser(String username) {
-		MeshUserImpl user = getGraph().addFramedVertex(MeshUserImpl.class);
+	public User createUser(String username) {
+		UserImpl user = getGraph().addFramedVertex(UserImpl.class);
 		// TODO also add user to userroot
 		addUser(user);
 		return user;

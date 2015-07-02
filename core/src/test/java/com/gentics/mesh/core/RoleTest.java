@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
@@ -75,7 +75,7 @@ public class RoleTest extends AbstractDBTest {
 
 	@Test
 	public void testIsPermitted() throws Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		long start = System.currentTimeMillis();
 		int nRuns = 200000;
 		for (int i = 0; i < nRuns; i++) {
@@ -126,7 +126,7 @@ public class RoleTest extends AbstractDBTest {
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 
 		info.getRole().revokePermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(data().getMeshRoot(), CREATE_PERM));
 
 	}

@@ -23,7 +23,7 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -41,7 +41,7 @@ import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.MeshUserService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
@@ -72,7 +72,7 @@ public class DemoDataProvider {
 	private FramedTransactionalGraph fg;
 
 	@Autowired
-	private MeshUserService userService;
+	private UserService userService;
 
 	@Autowired
 	private MeshRootService rootService;
@@ -121,7 +121,7 @@ public class DemoDataProvider {
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
-	private Map<String, MeshUser> users = new HashMap<>();
+	private Map<String, User> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
 	private Map<String, Group> groups = new HashMap<>();
 
@@ -320,7 +320,7 @@ public class DemoDataProvider {
 		String password = "test123";
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 
-		MeshUser user = root.getUserRoot().create(username);
+		User user = root.getUserRoot().create(username);
 		user.setUuid("UUIDOFUSER1");
 		user.setPassword(password);
 		log.info("Creating user with username: " + username + " and password: " + password);
@@ -366,7 +366,7 @@ public class DemoDataProvider {
 
 		// Extra User
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			MeshUser user = userRoot.create("guest_" + i);
+			User user = userRoot.create("guest_" + i);
 			// userService.setPassword(user, "guestpw" + i);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
@@ -655,7 +655,7 @@ public class DemoDataProvider {
 		return folders;
 	}
 
-	public Map<String, MeshUser> getUsers() {
+	public Map<String, User> getUsers() {
 		return users;
 	}
 

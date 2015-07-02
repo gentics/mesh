@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -44,7 +44,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 200, "OK");
@@ -57,10 +57,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUIDWithNoPermission() throws Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
-		info.getRole().revokePermissions(user, READ_PERM);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			info.getRole().revokePermissions(user, READ_PERM);
+			tx.success();
+		}
 
 		String response = request(info, HttpMethod.GET, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
@@ -70,14 +73,19 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllUsers() throws Exception {
 		UserRoot root = data().getMeshRoot().getUserRoot();
 
-		MeshUser user3 = root.create("testuser_3");
-		user3.setLastname("should_not_be_listed");
-		user3.setFirstname("should_not_be_listed");
-		user3.setEmailAddress("should_not_be_listed");
-		info.getGroup().addUser(user3);
+		String username = "testuser_3";
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			User user3 = root.create(username);
+			user3.setLastname("should_not_be_listed");
+			user3.setFirstname("should_not_be_listed");
+			user3.setEmailAddress("should_not_be_listed");
+			info.getGroup().addUser(user3);
+			tx.success();
+		}
 
 		// Test default paging parameters
 		String response = request(info, HttpMethod.GET, "/api/v1/users/", 200, "OK");
+		System.out.println(response);
 		UserListResponse restResponse = JsonUtil.readValue(response, UserListResponse.class);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
@@ -106,7 +114,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
 
 		// Verify that user3 is not part of the response
-		final String extra3Username = user3.getUsername();
+		final String extra3Username = username;
 		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
@@ -128,7 +136,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUser() throws Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setUuid(user.getUuid());
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -142,7 +150,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Thread.sleep(1000);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			assertNull("The user node should have been updated and thus no user should be found.", userService.findByUsername(user.getUsername()));
-			MeshUser reloadedUser = userService.findByUsername("dummy_user_changed");
+			User reloadedUser = userService.findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -153,7 +161,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
@@ -164,9 +172,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		test.assertUser(updateRequest, restUser);
 
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			MeshUser reloadedUser = userService.findByUsername(user.getUsername());
-			System.out.println(oldHash);
-			System.out.println(reloadedUser.getPasswordHash());
+			User reloadedUser = userService.findByUsername(user.getUsername());
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 			assertEquals(user.getUsername(), reloadedUser.getUsername());
 			assertEquals(user.getFirstname(), reloadedUser.getFirstname());
@@ -177,9 +183,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
-		info.getRole().revokePermissions(user, UPDATE_PERM);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			info.getRole().revokePermissions(user, UPDATE_PERM);
+			tx.success();
+		}
 		UserUpdateRequest restUser = new UserUpdateRequest();
 		restUser.setPassword("new_password");
 
@@ -187,13 +196,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 				new ObjectMapper().writeValueAsString(restUser));
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
 
-		MeshUser reloadedUser = userService.findByUUID(user.getUuid());
+		User reloadedUser = userService.findByUUID(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 	}
 
 	@Test
 	public void testUpdateUserWithNoPermission() throws Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		String oldHash = user.getPasswordHash();
 		info.getRole().revokePermissions(user, UPDATE_PERM);
 
@@ -208,7 +217,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 				new ObjectMapper().writeValueAsString(updatedUser));
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
 
-		MeshUser reloadedUser = userService.findByUUID(user.getUuid());
+		User reloadedUser = userService.findByUUID(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 		assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -216,18 +225,21 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		MeshUser conflictingUser = userRoot.create("existing_username");
-		info.getGroup().addUser(conflictingUser);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			User conflictingUser = userRoot.create("existing_username");
+			info.getGroup().addUser(conflictingUser);
+			tx.success();
+		}
 
-		UserUpdateRequest newUser = new UserUpdateRequest();
-		newUser.setUsername("existing_username");
-		newUser.setUuid(user.getUuid());
+		UserUpdateRequest request = new UserUpdateRequest();
+		request.setUsername("existing_username");
+		request.setUuid(user.getUuid());
 
-		String requestJson = new ObjectMapper().writeValueAsString(newUser);
+		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, HttpMethod.PUT, "/api/v1/users/" + user.getUuid(), 409, "Conflict", requestJson);
 		expectMessageResponse("user_conflicting_username", response);
 
@@ -240,7 +252,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		MeshUser conflictingUser = userRoot.create("existing_username");
+		User conflictingUser = userRoot.create("existing_username");
 		info.getGroup().addUser(conflictingUser);
 		// Add update permission to group in order to create the user in that group
 		info.getRole().addPermissions(info.getGroup(), CREATE_PERM);
@@ -329,7 +341,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(newUser, restUser);
 
-		MeshUser user = userService.findByUUID(restUser.getUuid());
+		User user = userService.findByUUID(restUser.getUuid());
 		test.assertUser(user, restUser);
 
 	}
@@ -351,7 +363,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String requestJson = new ObjectMapper().writeValueAsString(newUser);
 		String response = request(info, HttpMethod.POST, "/api/v1/users/", 200, "OK", requestJson);
-		System.out.println(response);
 		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(newUser, restUser);
 
@@ -371,7 +382,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	// Delete tests
 	@Test
 	public void testDeleteUserByUUID() throws Exception {
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		expectMessageResponse("user_deleted", response, user.getUuid());
 		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
@@ -381,15 +392,20 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		MeshUser user = userRoot.create("extraUser");
-		info.getRole().addPermissions(user, UPDATE_PERM);
-		info.getRole().addPermissions(user, CREATE_PERM);
-		info.getRole().addPermissions(user, READ_PERM);
-		assertNotNull(user.getUuid());
+		String uuid;
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			User user = userRoot.create("extraUser");
+			uuid = user.getUuid();
+			assertNotNull(uuid);
+			info.getRole().addPermissions(user, UPDATE_PERM);
+			info.getRole().addPermissions(user, CREATE_PERM);
+			info.getRole().addPermissions(user, READ_PERM);
+			tx.success();
+		}
 
-		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, user.getUuid());
-		assertNotNull("The user should not have been deleted", userService.findByUUID(user.getUuid()));
+		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + uuid, 403, "Forbidden");
+		expectMessageResponse("error_missing_perm", response, uuid);
+		assertNotNull("The user should not have been deleted", userService.findByUUID(uuid));
 	}
 
 	@Test
@@ -402,13 +418,17 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		MeshUser extraUser = userRoot.create("extraUser");
-		String uuid = extraUser.getUuid();
-		info.getRole().addPermissions(extraUser, DELETE_PERM);
-		assertNotNull(extraUser.getUuid());
+		String uuid;
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			User extraUser = userRoot.create("extraUser");
+			uuid = extraUser.getUuid();
+			info.getRole().addPermissions(extraUser, DELETE_PERM);
+			assertNotNull(extraUser.getUuid());
+			tx.success();
+		}
 
-		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + extraUser.getUuid(), 200, "OK");
-		expectMessageResponse("user_deleted", response, extraUser.getUuid());
+		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + uuid, 200, "OK");
+		expectMessageResponse("user_deleted", response, uuid);
 		assertNull("The user should have been deleted", userService.findByUUID(uuid));
 	}
 

@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.core.data.impl.MeshUserImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
-public interface MeshUser extends GenericNode {
+public interface User extends GenericNode {
 
 	String getUsername();
 
@@ -43,7 +43,7 @@ public interface MeshUser extends GenericNode {
 
 	void delete();
 
-	MeshUserImpl getImpl();
+	UserImpl getImpl();
 
 	List<? extends Role> getRoles();
 

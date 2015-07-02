@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -64,7 +64,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 					restTag.setTagFamilyReference(tagFamilyReference);
 				}
 
-				MeshUser creator = tag.getCreator();
+				User creator = tag.getCreator();
 				if (creator != null) {
 					restTag.setCreator(creator.transformToRest());
 				}

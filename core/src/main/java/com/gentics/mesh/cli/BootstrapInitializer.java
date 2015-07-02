@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -37,7 +37,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.MeshUserService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
@@ -77,7 +77,7 @@ public class BootstrapInitializer {
 	private MeshRootService rootService;
 
 	@Autowired
-	private MeshUserService userService;
+	private UserService userService;
 
 	@Autowired
 	private GroupService groupService;
@@ -342,7 +342,7 @@ public class BootstrapInitializer {
 		initLanguages(languageRoot);
 
 		// Verify that an admin user exists
-		MeshUser adminUser = userService.findByUsername("admin");
+		User adminUser = userService.findByUsername("admin");
 		if (adminUser == null) {
 			adminUser = userRoot.create("admin");
 			System.out.println("Enter admin password:");

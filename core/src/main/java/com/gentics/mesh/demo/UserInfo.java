@@ -1,17 +1,17 @@
 package com.gentics.mesh.demo;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Role;
 
 public class UserInfo {
 
-	private MeshUser user;
+	private User user;
 	private Group group;
 	private Role role;
 	private String password;
 
-	public UserInfo(MeshUser user, Group group, Role role, String password) {
+	public UserInfo(User user, Group group, Role role, String password) {
 		this.user = user;
 		this.group = group;
 		this.role = role;
@@ -22,7 +22,7 @@ public class UserInfo {
 		this.role = role;
 	}
 
-	public void setUser(MeshUser user) {
+	public void setUser(User user) {
 		this.user = user;
 	}
 
@@ -38,7 +38,7 @@ public class UserInfo {
 		return role;
 	}
 
-	public MeshUser getUser() {
+	public User getUser() {
 		return user;
 	}
 

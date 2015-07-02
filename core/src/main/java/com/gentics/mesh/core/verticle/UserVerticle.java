@@ -25,9 +25,9 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
-import com.gentics.mesh.core.data.impl.MeshUserImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -58,13 +58,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", READ_PERM, MeshUserImpl.class, (AsyncResult<MeshUser> rh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, UserImpl.class, (AsyncResult<User> rh) -> {
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
 				}
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					MeshUser user = trh.result();
+					User user = trh.result();
 					UserResponse restUser = user.transformToRest();
 					tx.success();
 					rc.response().setStatusCode(200).end(toJson(restUser));
@@ -81,12 +81,21 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			vertx.executeBlocking((Future<UserListResponse> bch) -> {
 				UserListResponse listResponse = new UserListResponse();
 
-				Page<MeshUser> userPage = userService.findAllVisible(requestUser, pagingInfo);
-				for (MeshUser currentUser : userPage) {
-					listResponse.getData().add(currentUser.transformToRest());
+				Page<? extends User> userPage;
+				try {
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						userPage = userService.findAllVisible(requestUser, pagingInfo);
+						for (User currentUser : userPage) {
+							listResponse.getData().add(currentUser.transformToRest());
+						}
+						tx.success();
+					}
+					RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
+					bch.complete(listResponse);
+				} catch (Exception e) {
+					bch.fail(e);
 				}
-				RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
-				bch.complete(listResponse);
+
 			}, arh -> {
 				if (arh.failed()) {
 					rc.fail(arh.cause());
@@ -101,9 +110,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", DELETE_PERM, MeshUserImpl.class, (AsyncResult<MeshUser> rh) -> {
-				MeshUser user = rh.result();
-				user.delete();
+			rcs.loadObject(rc, "uuid", DELETE_PERM, UserImpl.class, (AsyncResult<User> rh) -> {
+				User user = rh.result();
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					user.delete();
+					tx.success();
+				}
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
@@ -116,8 +128,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, MeshUserImpl.class, (AsyncResult<MeshUser> rh) -> {
-				MeshUser user = rh.result();
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, UserImpl.class, (AsyncResult<User> rh) -> {
+				User user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -152,7 +164,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
 				}
-				MeshUser user = trh.result();
+				User user = trh.result();
 				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
 			});
 
@@ -184,7 +196,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
-			Future<MeshUser> userCreated = Future.future();
+			Future<User> userCreated = Future.future();
 			// Load the parent group for the user
 			rcs.loadObjectByUuid(rc, groupUuid, CREATE_PERM, GroupImpl.class, (AsyncResult<Group> rh) -> {
 
@@ -197,7 +209,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					MeshUser user = parentGroup.createUser(requestModel.getUsername());
+					User user = parentGroup.createUser(requestModel.getUsername());
 					user.setFirstname(requestModel.getFirstname());
 					user.setUsername(requestModel.getUsername());
 					user.setLastname(requestModel.getLastname());
@@ -212,7 +224,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
 				}
-				MeshUser user = userCreated.result();
+				User user = userCreated.result();
 				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
 			});
 

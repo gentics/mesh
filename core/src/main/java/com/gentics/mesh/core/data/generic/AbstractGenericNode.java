@@ -7,9 +7,9 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_EDIT
 import java.util.List;
 
 import com.gentics.mesh.core.data.GenericNode;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.impl.MeshUserImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 
 public abstract class AbstractGenericNode extends MeshVertexImpl implements GenericNode {
@@ -30,12 +30,12 @@ public abstract class AbstractGenericNode extends MeshVertexImpl implements Gene
 	}
 
 	@Override
-	public MeshUser getCreator() {
-		return out(HAS_CREATOR).has(MeshUserImpl.class).nextOrDefault(MeshUserImpl.class, null);
+	public User getCreator() {
+		return out(HAS_CREATOR).has(UserImpl.class).nextOrDefault(UserImpl.class, null);
 	}
 
 	@Override
-	public void setCreator(MeshUser user) {
+	public void setCreator(User user) {
 		outE(HAS_CREATOR).removeAll();
 		linkOut(user.getImpl(), HAS_CREATOR);
 	}
@@ -51,12 +51,12 @@ public abstract class AbstractGenericNode extends MeshVertexImpl implements Gene
 	}
 
 	@Override
-	public MeshUser getEditor() {
-		return out(HAS_EDITOR).has(MeshUserImpl.class).nextOrDefaultExplicit(MeshUserImpl.class, null);
+	public User getEditor() {
+		return out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 	@Override
-	public void setEditor(MeshUser user) {
+	public void setEditor(User user) {
 		//TODO replace with setlinkout
 		outE(HAS_EDITOR).removeAll();
 		linkOut(user.getImpl(), HAS_EDITOR);

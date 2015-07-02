@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class MeshAuthUserImpl extends MeshUserImpl implements ClusterSerializable, User, MeshAuthUser {
+public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, User, MeshAuthUser {
 
 	@Override
 	public JsonObject principal() {

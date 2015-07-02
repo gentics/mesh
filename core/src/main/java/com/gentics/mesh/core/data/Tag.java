@@ -18,13 +18,13 @@ public interface Tag extends GenericNode {
 
 	List<? extends TagFieldContainer> getFieldContainers();
 
-	MeshUser getCreator();
+	User getCreator();
 
 	TagFamily getTagFamilyRoot();
 
 	void addProject(Project project);
 
-	void setCreator(MeshUser user);
+	void setCreator(User user);
 
 	TagReference tansformToTagReference(TransformationInfo info);
 

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
@@ -19,7 +19,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 public class ProjectService extends AbstractMeshGraphService<Project> {
 
 	@Autowired
-	protected MeshUserService userService;
+	protected UserService userService;
 
 	public Project findByName(String name) {
 		return findByName(name, ProjectImpl.class);
@@ -30,7 +30,7 @@ public class ProjectService extends AbstractMeshGraphService<Project> {
 		return fg.v().has(ProjectImpl.class).toListExplicit(ProjectImpl.class);
 	}
 
-	public Page<? extends Project> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Project> findAllVisible(User requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return project ORDER BY project.name",
 		// countQuery =

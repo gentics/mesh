@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.service.MeshUserService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
@@ -26,7 +26,7 @@ public class MeshAuthProvider implements AuthProvider {
 	private static final Logger log = LoggerFactory.getLogger(MeshAuthProvider.class);
 
 	@Autowired
-	private MeshUserService userService;
+	private UserService userService;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;

@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.GroupService;
@@ -29,13 +29,13 @@ public class GroupTest extends AbstractDBTest {
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
 
-		MeshUser user = userRoot.create("testuser");
+		User user = userRoot.create("testuser");
 		Group group = groupRoot.create("test group");
 		group.addUser(user);
 
 		assertEquals("The group should contain one member.", 1, group.getUsers().size());
 
-		MeshUser userOfGroup = group.getUsers().iterator().next();
+		User userOfGroup = group.getUsers().iterator().next();
 		assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 	}
 

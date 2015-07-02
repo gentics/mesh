@@ -10,7 +10,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.impl.GroupImpl;
-import com.gentics.mesh.core.data.impl.MeshUserImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -46,8 +46,8 @@ public class GroupService extends AbstractMeshGraphService<Group> {
 		// countQuery =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(visibleGroup:Group) where id(requestUser) = {0} and perm.`permissions-read` = true return count(visibleGroup)")
 		// Page<Group> findAll(User requestUser, Pageable pageable);
-		VertexTraversal<?, ?, ?> traversal = fg.v().has(MeshUserImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(MeshUserImpl.class);
+		VertexTraversal<?, ?, ?> traversal = fg.v().has(UserImpl.class);
+		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(UserImpl.class);
 		Page<? extends Group> groups = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, GroupImpl.class);
 
 		return groups;

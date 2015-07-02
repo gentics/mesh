@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
@@ -92,11 +92,11 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 					restNode.setSchema(schemaReference);
 				}
 				/* Load the creator information */
-				MeshUser creator = node.getCreator();
+				User creator = node.getCreator();
 				if (creator != null) {
 					restNode.setCreator(creator.transformToRest());
 				}
-				MeshUser editor = node.getEditor();
+				User editor = node.getEditor();
 				if (editor != null) {
 					restNode.setEditor(editor.transformToRest());
 				}

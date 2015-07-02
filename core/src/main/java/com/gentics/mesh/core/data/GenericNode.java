@@ -4,9 +4,9 @@ import java.util.List;
 
 public interface GenericNode extends MeshVertex {
 
-	void setCreator(MeshUser user);
+	void setCreator(User user);
 
-	MeshUser getCreator();
+	User getCreator();
 
 	void removeProject(Project project);
 
@@ -14,13 +14,13 @@ public interface GenericNode extends MeshVertex {
 
 	List<? extends Project> getProjects();
 
-	MeshUser getEditor();
+	User getEditor();
 
 	Long getLastEditedTimestamp();
 
 	void setLastEditedTimestamp(long timestamp);
 
-	void setEditor(MeshUser user);
+	void setEditor(User user);
 
 	void setCreationTimestamp(long timestamp);
 

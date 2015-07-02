@@ -13,16 +13,17 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.util.BlueprintTransaction;
 
 @Configurable
-public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
+public class UserImpl extends AbstractGenericNode implements User {
 
 	public static String FIRSTNAME_KEY = "firstname";
 
@@ -235,6 +236,7 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 
 	public void delete() {
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
+		outE(HAS_GROUP).removeAll();
 		getVertex().remove();
 	}
 
@@ -248,7 +250,7 @@ public class MeshUserImpl extends AbstractGenericNode implements MeshUser {
 	}
 
 	@Override
-	public MeshUserImpl getImpl() {
+	public UserImpl getImpl() {
 		return this;
 	}
 

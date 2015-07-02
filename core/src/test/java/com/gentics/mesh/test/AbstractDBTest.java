@@ -16,13 +16,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.NodeService;
-import com.gentics.mesh.core.data.service.MeshUserService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
@@ -55,7 +55,7 @@ public abstract class AbstractDBTest {
 	protected UserVerticle userVerticle;
 
 	@Autowired
-	protected MeshUserService userService;
+	protected UserService userService;
 
 	@Autowired
 	protected GroupService groupService;
@@ -90,7 +90,7 @@ public abstract class AbstractDBTest {
 
 	protected RoutingContext getMockedRoutingContext(String query) {
 
-		MeshUser user = data().getUserInfo().getUser();
+		User user = data().getUserInfo().getUser();
 
 		RoutingContext rc = mock(RoutingContext.class);
 		Session session = mock(Session.class);

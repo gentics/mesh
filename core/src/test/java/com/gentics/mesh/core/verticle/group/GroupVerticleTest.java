@@ -23,10 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.MeshUserService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -45,7 +45,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	private GroupService groupService;
 
 	@Autowired
-	private MeshUserService userService;
+	private UserService userService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -114,7 +114,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		GroupRoot root = data().getMeshRoot().getGroupRoot();
 		info.getRole().revokePermissions(root, CREATE_PERM);
-		MeshUser user = info.getUser();
+		User user = info.getUser();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
 
 		String response = request(info, POST, "/api/v1/groups/", 403, "Forbidden", requestJson);

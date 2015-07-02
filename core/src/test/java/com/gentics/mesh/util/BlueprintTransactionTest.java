@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -56,7 +56,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		MeshUser user = data().getUserInfo().getUser();
+		User user = data().getUserInfo().getUser();
 
 		Runnable task2 = () -> {
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {

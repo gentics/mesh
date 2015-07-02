@@ -23,13 +23,12 @@ import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Vertex;
 
 @Component
 public class RoleService extends AbstractMeshGraphService<Role> {
 
 	@Autowired
-	private MeshUserService userService;
+	private UserService userService;
 
 	public static RoleService instance;
 
@@ -73,8 +72,8 @@ public class RoleService extends AbstractMeshGraphService<Role> {
 
 	public Page<? extends Role> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 		// TODO filter for permissions
-		VertexTraversal traversal = fg.v().has(RoleImpl.class);
-		VertexTraversal countTraversal = fg.v().has(RoleImpl.class);
+		VertexTraversal<?, ?, ?> traversal = fg.v().has(RoleImpl.class);
+		VertexTraversal<?, ?, ?> countTraversal = fg.v().has(RoleImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, RoleImpl.class);
 	}
 

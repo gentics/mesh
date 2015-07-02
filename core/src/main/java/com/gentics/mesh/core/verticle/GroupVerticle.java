@@ -25,7 +25,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -145,10 +145,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				vertx.executeBlocking((Future<UserListResponse> bch) -> {
 					UserListResponse listResponse = new UserListResponse();
 					Group group = grh.result();
-					Page<? extends MeshUser> userPage;
+					Page<? extends User> userPage;
 					try {
 						userPage = group.getVisibleUsers(requestUser, pagingInfo);
-						for (MeshUser user : userPage) {
+						for (User user : userPage) {
 							listResponse.getData().add(user.transformToRest());
 						}
 						RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
@@ -174,9 +174,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "userUuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> urh) -> {
+				rcs.loadObject(rc, "userUuid", READ_PERM, User.class, (AsyncResult<User> urh) -> {
 					Group group = grh.result();
-					MeshUser user = urh.result();
+					User user = urh.result();
 					group.addUser(requestUser);
 					//group = groupService.save(group);
 					}, trh -> {
@@ -194,9 +194,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 
 			rcs.loadObject(rc, "groupUuid", UPDATE_PERM, Group.class, (AsyncResult<Group> grh) -> {
-				rcs.loadObject(rc, "userUuid", READ_PERM, MeshUser.class, (AsyncResult<MeshUser> urh) -> {
+				rcs.loadObject(rc, "userUuid", READ_PERM, User.class, (AsyncResult<User> urh) -> {
 					Group group = grh.result();
-					MeshUser user = urh.result();
+					User user = urh.result();
 					group.removeUser(user);
 					//groupService.save(group);
 

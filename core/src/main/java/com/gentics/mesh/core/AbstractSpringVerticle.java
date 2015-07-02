@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.MeshUserService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
@@ -42,7 +42,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected I18NService i18n;
 
 	@Autowired
-	protected MeshUserService userService;
+	protected UserService userService;
 
 	@Autowired
 	protected LanguageService languageService;

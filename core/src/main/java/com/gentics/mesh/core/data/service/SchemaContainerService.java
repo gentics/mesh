@@ -11,9 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.MeshUser;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.impl.MeshUserImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.paging.PagingInfo;
 
@@ -44,7 +44,7 @@ public class SchemaContainerService extends AbstractMeshGraphService<SchemaConta
 		return null;
 	}
 
-	public Page<SchemaContainer> findAll(MeshUserImpl requestUser, Pageable pageable) {
+	public Page<SchemaContainer> findAll(UserImpl requestUser, Pageable pageable) {
 		// @Query(value =
 		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(schema:ObjectSchema) where id(requestUser) = {0} and perm.`permissions-read` = true return schema ORDER BY schema.name",
 		// countQuery =
@@ -52,7 +52,7 @@ public class SchemaContainerService extends AbstractMeshGraphService<SchemaConta
 		return null;
 	}
 
-	public Page<SchemaContainer> findAllVisible(MeshUser requestUser, PagingInfo pagingInfo) {
+	public Page<SchemaContainer> findAllVisible(User requestUser, PagingInfo pagingInfo) {
 		// return findAll(requestUser, new MeshPageRequest(pagingInfo));
 		return null;
 	}
