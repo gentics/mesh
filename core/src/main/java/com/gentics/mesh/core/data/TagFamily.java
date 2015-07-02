@@ -20,7 +20,7 @@ public interface TagFamily extends MeshVertex {
 
 	void addTag(Tag tag);
 
-	List<Tag> getTags();
+	List<? extends Tag> getTags();
 
 	TagFamilyImpl getImpl();
 }

@@ -26,8 +26,8 @@ public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
 		setProperty("description", description);
 	}
 
-	public List<Tag> getTags() {
-		return (List<Tag>) out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
+	public List<? extends Tag> getTags() {
+		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
 	}
 
 	public void addTag(Tag tag) {
