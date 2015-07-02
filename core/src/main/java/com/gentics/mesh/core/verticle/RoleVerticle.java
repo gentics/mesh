@@ -25,6 +25,8 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.impl.GroupImpl;
+import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
@@ -55,7 +57,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", DELETE_PERM, Role.class, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, RoleImpl.class, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				role.delete();
 			}, trh -> {
@@ -66,7 +68,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, Role.class, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, RoleImpl.class, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 
@@ -86,7 +88,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			rcs.loadObject(rc, "uuid", READ_PERM, Role.class, (AsyncResult<Role> rh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, RoleImpl.class, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
 				RoleResponse restRole = role.transformToRest();
 				rc.response().setStatusCode(200).end(toJson(restRole));
@@ -145,7 +147,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 			Future<Role> roleCreated = Future.future();
-			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, Group.class, (AsyncResult<Group> rh) -> {
+			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, GroupImpl.class, (AsyncResult<Group> rh) -> {
 				Group parentGroup = rh.result();
 				Role role = parentGroup.createRole(requestModel.getName());
 				role.addGroup(parentGroup);

@@ -64,6 +64,6 @@ public class MeshShiroUserTest extends AbstractDBTest {
 
 	@Test
 	public void testAuthentication() {
-
+		fail("Not yet implemented");
 	}
 }

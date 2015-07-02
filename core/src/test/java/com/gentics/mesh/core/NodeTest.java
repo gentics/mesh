@@ -1,15 +1,14 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -17,23 +16,19 @@ import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RoutingContextHelper;
 
-public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-	}
+public class NodeTest extends AbstractBasicObjectTest {
 
 	/**
 	 * Test linking two contents
@@ -92,7 +87,7 @@ public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
 		languageTags.add("de");
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		Page<? extends Node> page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are nodes that are only available in english
 		assertEquals(data().getNodeCount(), page.getTotalElements());
@@ -118,14 +113,20 @@ public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
+		List<String> languageTags = new ArrayList<>();
+		languageTags.add("de");
+		languageTags.add("en");
+		Page<? extends Node> page = nodeService.findAll(getRequestUser(), PROJECT_NAME, languageTags, new PagingInfo(1, 25));
+		assertNotNull(page);
 
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
-		// TODO Auto-generated method stub
+		Project project = data().getProject();
+		Node root = project.getRootNode();
+		assertNotNull(root);
 
 	}
 
@@ -149,7 +150,7 @@ public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformation() {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("en");
 		Node newsNode = data().getContent("porsche 911");
@@ -163,29 +164,28 @@ public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		// TODO Auto-generated method stub
-
+		Node folder = getFolder();
+		Node subNode = folder.create();
+		assertNotNull(subNode.getUuid());
+		subNode.delete();
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testPermissionsOnObject() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Test
@@ -234,42 +234,36 @@ public class NodeTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 }

@@ -5,27 +5,24 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import org.junit.Before;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public class ProjectTest extends AbstractDBTest implements BasicObjectTestcases {
+public class ProjectTest extends AbstractBasicObjectTest {
 
 	@Autowired
 	private ProjectService projectService;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-	}
 
 	@Test
 	@Override
@@ -48,6 +45,7 @@ public class ProjectTest extends AbstractDBTest implements BasicObjectTestcases 
 			tx.success();
 		}
 		assertNull(projectService.findByUUID(uuid));
+		//TODO assert on tag families of the project
 	}
 
 	@Test
@@ -55,7 +53,7 @@ public class ProjectTest extends AbstractDBTest implements BasicObjectTestcases 
 	public void testRootNode() {
 		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
 		int nProjectsBefore = projectRoot.getProjects().size();
-		Project project = projectRoot.create("test1234556");
+		assertNotNull(projectRoot.create("test1234556"));
 		int nProjectsAfter = projectRoot.getProjects().size();
 		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}
@@ -63,32 +61,40 @@ public class ProjectTest extends AbstractDBTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		fail("not yet implemented");
+		Page<? extends Project> page = projectService.findAllVisible(getRequestUser(), new PagingInfo(1, 25));
+		assertNotNull(page);
 	}
 
 	@Test
 	@Override
 	public void testFindAll() {
-		fail("not yet implemented");
+		List<? extends Project> projects = projectService.findAll();
+		assertNotNull(projects);
+		assertEquals(1, projects.size());
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		fail("not yet implemented");
+		assertNull(projectService.findByName("bogus"));
+		assertNotNull(projectService.findByName("dummy"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		fail("not yet implemented");
+		assertNotNull(projectService.findByUUID(data().getProject().getUuid()));
+		assertNull(projectService.findByUUID("bogus"));
 	}
-
 
 	@Test
 	@Override
 	public void testTransformation() {
-		fail("not yet implemented");
+		Project project = data().getProject();
+		ProjectResponse response = project.transformToRest(getRequestUser());
+		assertNotNull(response);
+		assertEquals(project.getName(), response.getName());
+		assertEquals(project.getUuid(), response.getUuid());
 	}
 
 	@Test
@@ -111,38 +117,32 @@ public class ProjectTest extends AbstractDBTest implements BasicObjectTestcases 
 
 	@Override
 	public void testRead() {
-		// TODO Auto-generated method stub
-		
+		fail("not yet implemented");
 	}
 
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-		
+		fail("not yet implemented");
 	}
 
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-		
+		fail("not yet implemented");
 	}
 
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-		
+		fail("not yet implemented");
 	}
 
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-		
+		fail("not yet implemented");
 	}
 
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-		
+		fail("not yet implemented");
 	}
 
 }

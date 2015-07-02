@@ -1,43 +1,31 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RoutingContextHelper;
 
-public class GroupTest extends AbstractDBTest implements BasicObjectTestcases {
+public class GroupTest extends AbstractBasicObjectTest {
 
 	@Autowired
 	private GroupService groupService;
-
-	private Group group;
-	private MeshAuthUser requestUser;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-		requestUser = data().getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
-		group = data().getUserInfo().getGroup();
-	}
 
 	@Test
 	public void testUserGroup() {
@@ -58,7 +46,7 @@ public class GroupTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		Page<? extends Group> page = groupService.findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
@@ -97,93 +85,83 @@ public class GroupTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		assertNotNull(groupService.findByUUID(group.getUuid()));
+		assertNotNull(groupService.findByUUID(getGroup().getUuid()));
 	}
 
 	@Test
 	@Override
 	public void testTransformation() {
-		GroupResponse response = group.transformToRest(requestUser);
+		GroupResponse response = getGroup().transformToRest(getRequestUser());
 		assertNotNull(response);
-		assertEquals(group.getUuid(), response.getUuid());
-		assertEquals(group.getName(), response.getName());
+		assertEquals(getGroup().getUuid(), response.getUuid());
+		assertEquals(getGroup().getName(), response.getName());
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testPermissionsOnObject() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		group.setName("changed");
-		assertEquals("changed", group.getName());
+		getGroup().setName("changed");
+		assertEquals("changed", getGroup().getName());
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 }

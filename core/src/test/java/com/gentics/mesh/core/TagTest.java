@@ -1,10 +1,6 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -12,7 +8,6 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,17 +17,17 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RoutingContextHelper;
 
-public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
+public class TagTest extends AbstractBasicObjectTest {
 
 	private static Logger log = LoggerFactory.getLogger(TagTest.class);
 
@@ -45,11 +40,6 @@ public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Autowired
 	private NodeService nodeService;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-	}
 
 	@Test
 	public void testTagFamilyTagCreation() {
@@ -142,7 +132,7 @@ public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 
 		Page<? extends Tag> tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(12, tagPage.getTotalElements());
@@ -157,29 +147,25 @@ public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -207,7 +193,7 @@ public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
 		int depth = 3;
 
 		RoutingContext rc = getMockedRoutingContext("lang=de,en");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		for (int i = 0; i < 100; i++) {
 			long start = System.currentTimeMillis();
 			TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
@@ -225,29 +211,25 @@ public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testPermissionsOnObject() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -263,35 +245,30 @@ public class TagTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 }

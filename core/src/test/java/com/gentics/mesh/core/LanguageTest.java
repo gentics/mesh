@@ -3,30 +3,24 @@ package com.gentics.mesh.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public class LanguageTest extends AbstractDBTest implements BasicObjectTestcases {
+public class LanguageTest extends AbstractBasicObjectTest {
 
 	@Autowired
 	private LanguageService languageService;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-	}
 
 	@Test
 	@Override
@@ -47,8 +41,7 @@ public class LanguageTest extends AbstractDBTest implements BasicObjectTestcases
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -95,29 +88,25 @@ public class LanguageTest extends AbstractDBTest implements BasicObjectTestcases
 	@Test
 	@Override
 	public void testCreateDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testPermissionsOnObject() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -138,43 +127,37 @@ public class LanguageTest extends AbstractDBTest implements BasicObjectTestcases
 	@Test
 	@Override
 	public void testDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 }

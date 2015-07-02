@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
+import java.io.IOException;
+
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface BasicObjectTestcases {
@@ -14,9 +16,9 @@ public interface BasicObjectTestcases {
 
 	void testFindByUUID();
 
-	void testRead();
+	void testRead() throws IOException;
 
-	void testCreate();
+	void testCreate() throws IOException;
 
 	void testDelete();
 

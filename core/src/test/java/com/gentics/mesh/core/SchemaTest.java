@@ -1,38 +1,29 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
-import org.junit.Before;
+import java.io.IOException;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public class SchemaTest extends AbstractDBTest implements BasicObjectTestcases {
+public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Autowired
 	private SchemaContainerService schemaContainerService;
 
 	@Autowired
 	private SchemaStorage schemaStorage;
-
-	private SchemaContainer schemaContainer;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-		data().getSchemaContainer("content");
-	}
 
 	@Test
 	@Override
@@ -78,26 +69,25 @@ public class SchemaTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-
+		List<? extends SchemaContainer> schemaContainers = schemaContainerService.findAll();
+		assertNotNull(schemaContainers);
+		assertEquals(4, schemaContainers.size());
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		// TODO Auto-generated method stub
-
+		String uuid = getSchemaContainer().getUuid();
+		assertNull(schemaContainerService.findByUUID(uuid));
 	}
 
 	@Test
 	@Override
 	public void testDelete() {
-		String uuid = schemaContainer.getUuid();
-		schemaContainer.delete();
+		String uuid = getSchemaContainer().getUuid();
+		getSchemaContainer().delete();
 		assertNull(schemaContainerService.findByUUID(uuid));
 
-		// UserInfo info = data().getUserInfo();
-		// ObjectSchema schema = data().getContentSchema();
 		// try (Transaction tx = graphDb.beginTx()) {
 		// roleService.revokePermission(info.getRole(), schema, PermissionType.DELETE);
 		// objectSchemaService.deleteByUUID(schema.getUuid());
@@ -109,78 +99,68 @@ public class SchemaTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testTransformation() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testPermissionsOnObject() {
-		// TODO Auto-generated method stub
+		fail("Not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testRead() throws IOException {
+		assertNotNull(getSchemaContainer().getSchema());
 
 	}
 
 	@Test
 	@Override
-	public void testRead() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Test
-	@Override
-	public void testCreate() {
-		// TODO Auto-generated method stub
-
+	public void testCreate() throws IOException {
+		assertNotNull(getSchemaContainer().getSchema());
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 }

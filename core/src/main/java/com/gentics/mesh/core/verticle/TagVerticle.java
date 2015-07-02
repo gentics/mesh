@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -100,7 +101,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, TagImpl.class, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
@@ -166,7 +167,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			rcs.loadObject(rc, "uuid", READ_PERM, Tag.class, (AsyncResult<Tag> trh) -> {
+			rcs.loadObject(rc, "uuid", READ_PERM, TagImpl.class, (AsyncResult<Tag> trh) -> {
 				Tag tag = trh.result();
 				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 
@@ -213,7 +214,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
+			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, TagImpl.class, (AsyncResult<Tag> rh) -> {
 				Tag tag = rh.result();
 				//				DelegatingFramedThreadedTransactionalGraph dfttg = (DelegatingFramedThreadedTransactionalGraph)tag.getGraph();
 				//				dfttg.newTransaction();

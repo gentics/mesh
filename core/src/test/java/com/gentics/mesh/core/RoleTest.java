@@ -4,10 +4,10 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
@@ -15,7 +15,6 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -26,26 +25,18 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RoutingContextHelper;
 
-public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
-
-	private UserInfo info;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-		info = data().getUserInfo();
-	}
+public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
 	public void testCreate() {
-		final String roleName = "test";
+		String roleName = "test";
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		Role role = root.create(roleName);
 		role = roleService.findByUUID(role.getUuid());
@@ -55,7 +46,7 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGrantPermission() {
-		Role role = info.getRole();
+		Role role = getRole();
 		Node node = data().getContent("news overview");
 		role.addPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
@@ -78,7 +69,7 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Test
 	public void testIsPermitted() throws Exception {
-		User user = info.getUser();
+		User user = getUser();
 		long start = System.currentTimeMillis();
 		int nRuns = 200000;
 		for (int i = 0; i < nRuns; i++) {
@@ -90,7 +81,7 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGrantPermissionTwice() {
-		Role role = info.getRole();
+		Role role = getRole();
 		Node node = data().getContent("news overview");
 
 		role.addPermissions(node, CREATE_PERM);
@@ -106,14 +97,14 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGetPermissions() {
-		Role role = info.getRole();
+		Role role = getRole();
 		Node node = data().getContent("news overview");
 		assertEquals(4, role.getPermissions(node).size());
 	}
 
 	@Test
 	public void testRevokePermission() {
-		Role role = info.getRole();
+		Role role = getRole();
 		Node node = data().getContent("news overview");
 		role.revokePermissions(node, CREATE_PERM);
 
@@ -128,14 +119,14 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 
-		info.getRole().revokePermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
-		User user = info.getUser();
+		getRole().revokePermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
+		User user = getUser();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(data().getMeshRoot(), CREATE_PERM));
 
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testRootNode() {
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		int nRolesBefore = root.getRoles().size();
@@ -151,7 +142,7 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	public void testRoleAddCrudPermissions() {
 
-		MeshAuthUser requestUser = info.getUser().getImpl().reframe(MeshAuthUserImpl.class);
+		MeshAuthUser requestUser = getUser().getImpl().reframe(MeshAuthUserImpl.class);
 		// userService.findMeshAuthUserByUsername(requestUser.getUsername())
 		Node parentNode = data().getFolder("2015");
 		assertNotNull(parentNode);
@@ -178,12 +169,12 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole");
-		info.getGroup().addRole(extraRole);
-		info.getRole().addPermissions(extraRole, READ_PERM);
+		getGroup().addRole(extraRole);
+		getRole().addPermissions(extraRole, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
-		Page<? extends Role> roles = info.getGroup().getRoles(requestUser, new PagingInfo(1, 10));
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		Page<? extends Role> roles = getGroup().getRoles(requestUser, new PagingInfo(1, 10));
 		assertEquals(2, roles.getSize());
 		// assertEquals(2, roles.getTotalElements());
 	}
@@ -192,7 +183,7 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		Page<? extends Role> page = roleService.findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
@@ -205,19 +196,26 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindByName() {
-		fail("not yet implemented");
+		assertNotNull(roleService.findByName(getRole().getName()));
+		assertNull(roleService.findByName("bogus"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		fail("not yet implemented");
+		assertNotNull(roleService.findByUUID(getRole().getUuid()));
+		assertNull(roleService.findByUUID("bogus"));
 	}
 
 	@Test
 	@Override
 	public void testTransformation() {
-		fail("not yet implemented");
+		Role role = getRole();
+		RoleResponse restModel = role.transformToRest();
+		assertNotNull(restModel);
+
+		assertEquals(role.getName(), restModel.getName());
+		assertEquals(role.getUuid(), restModel.getUuid());
 	}
 
 	@Test
@@ -249,48 +247,46 @@ public class RoleTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testRead() {
-		// TODO Auto-generated method stub
+		fail("Not yet implemented");
 
 	}
 
 	@Test
 	@Override
 	public void testDelete() {
-		// TODO Auto-generated method stub
-
+		Role role = getRole();
+		String uuid = role.getUuid();
+		role.delete();
+		assertNull(roleService.findByUUID(uuid));
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
+	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 }

@@ -27,6 +27,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -62,7 +63,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 
 				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
@@ -144,7 +145,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				rcs.loadObject(rc, "uuid", READ_PERM, Project.class, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "uuid", READ_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
 					if (rh.failed()) {
 						rc.fail(rh.cause());
 					}
@@ -186,7 +187,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", DELETE_PERM, Project.class, (AsyncResult<Project> rh) -> {
+			rcs.loadObject(rc, "uuid", DELETE_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 				String name = project.getName();
 				routerStorage.removeProjectRouter(name);

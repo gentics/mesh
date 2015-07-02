@@ -1,17 +1,16 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.Arrays;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
@@ -20,24 +19,12 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.paging.PagingInfo;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RoutingContextHelper;
 
-public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
-
-	private UserInfo info;
-
-	private User user;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-		info = data().getUserInfo();
-		user = info.getUser();
-	}
+public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testCreatedUser() {
@@ -57,14 +44,14 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	public void testHasPermission() {
 		Language language = data().getEnglish();
-		assertTrue(user.hasPermission(language, READ_PERM));
+		assertTrue(getUser().hasPermission(language, READ_PERM));
 	}
 
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		Page<? extends User> page = userService.findAllVisible(requestUser, new PagingInfo(1, 10));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
@@ -78,7 +65,7 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 	public void testGetPermissions() {
 		Language language = data().getEnglish();
 		String[] perms = { "CREATE_PERM", "UPDATE_PERM", "DELETE_PERM", "READ_PERM" };
-		String[] loadedPerms = user.getPermissionNames(language);
+		String[] loadedPerms = getUser().getPermissionNames(language);
 		Arrays.sort(perms);
 		Arrays.sort(loadedPerms);
 		assertArrayEquals("Permissions do not match", perms, loadedPerms);
@@ -89,14 +76,14 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser");
-		Group group = info.getGroup();
-		Role role = info.getRole();
+		Group group = getGroup();
+		Role role = getRole();
 		group.addUser(extraUser);
 
 		role.addPermissions(extraUser, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		Page<? extends User> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 		assertEquals(2, userPage.getTotalElements());
@@ -105,57 +92,50 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
 		assertNull(userService.findByUsername("bogus"));
-		userService.findByUsername(user.getUsername());
+		userService.findByUsername(getUser().getUsername());
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testTransformation() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testPermissionsOnObject() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -186,42 +166,36 @@ public class UserTest extends AbstractDBTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 }
