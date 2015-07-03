@@ -16,14 +16,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.NodeService;
-import com.gentics.mesh.core.data.service.UserService;
-import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -36,14 +32,12 @@ import com.tinkerpop.blueprints.Vertex;
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class AbstractDBTest {
 
+	
 	@Autowired
-	protected LanguageService languageService;
+	protected BootstrapInitializer boot;
 
 	@Autowired
 	private DemoDataProvider dataProvider;
-
-	@Autowired
-	protected RoleService roleService;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;
@@ -53,15 +47,6 @@ public abstract class AbstractDBTest {
 
 	@Autowired
 	protected UserVerticle userVerticle;
-
-	@Autowired
-	protected UserService userService;
-
-	@Autowired
-	protected GroupService groupService;
-
-	@Autowired
-	protected NodeService nodeService;
 
 	@Autowired
 	protected RestAssert test;

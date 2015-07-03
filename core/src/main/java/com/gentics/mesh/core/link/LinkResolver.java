@@ -2,7 +2,7 @@ package com.gentics.mesh.core.link;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.data.service.NodeService;
+import com.gentics.mesh.core.data.root.NodeRoot;
 
 /**
  * This class will resolve mesh link placeholders.
@@ -12,15 +12,15 @@ import com.gentics.mesh.core.data.service.NodeService;
  */
 public class LinkResolver extends AbstractLinkResolver {
 
-	private NodeService nodeService;
+	private NodeRoot nodeRoot;
 
 	public LinkResolver() {
 		super(null);
 	}
 
-	public LinkResolver(String text, NodeService nodeRepository) {
+	public LinkResolver(String text, NodeRoot nodeRoot) {
 		super(text);
-		this.nodeService = nodeRepository;
+		this.nodeRoot = nodeRoot;
 	}
 
 	@Override

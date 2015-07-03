@@ -8,7 +8,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,15 +37,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.NodeService;
-import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.core.data.service.RoleService;
-import com.gentics.mesh.core.data.service.SchemaContainerService;
-import com.gentics.mesh.core.data.service.TagService;
-import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -67,37 +57,13 @@ public class DemoDataProvider {
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
-	private static SecureRandom random = new SecureRandom();
+	// private static SecureRandom random = new SecureRandom();
 
 	@Autowired
 	private FramedTransactionalGraph fg;
 
 	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private MeshRootService rootService;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private LanguageService languageService;
-
-	@Autowired
-	private NodeService nodeService;
-
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private RoleService roleService;
-
-	@Autowired
-	private ProjectService projectService;
-
-	@Autowired
-	private SchemaContainerService schemaService;
+	private BootstrapInitializer rootService;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;
@@ -141,9 +107,9 @@ public class DemoDataProvider {
 		roles.clear();
 		groups.clear();
 
-		english = languageService.findByLanguageTag("en");
-		german = languageService.findByLanguageTag("de");
-		root = rootService.findRoot();
+		english = rootService.languageRoot().findByLanguageTag("en");
+		german = rootService.languageRoot().findByLanguageTag("de");
+		root = rootService.meshRoot();
 		addUserGroupRoleProject(multiplicator);
 		addSchemaContainers();
 		addTagFamilies();
@@ -328,6 +294,13 @@ public class DemoDataProvider {
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEmailAddress(email);
+
+		user.setCreator(user);
+		user.setCreationTimestamp(System.currentTimeMillis());
+
+		user.setEditor(user);
+		user.setLastEditedTimestamp(System.currentTimeMillis());
+
 		users.put(username, user);
 
 		String roleName = username + "_role";
@@ -372,18 +345,21 @@ public class DemoDataProvider {
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
 			user.setEmailAddress("guest_" + i + "@spam.gentics.com");
+			setCreatorEditor(user);
 			guests.addUser(user);
 			users.put(user.getUsername(), user);
 		}
 		// Extra Groups
 		for (int i = 0; i < 12 * multiplicator; i++) {
 			Group group = groupRoot.create("extra_group_" + i);
+			setCreatorEditor(group);
 			groups.put(group.getName(), group);
 		}
 
 		// Extra Roles
 		for (int i = 0; i < 12 * multiplicator; i++) {
 			Role role = roleRoot.create("extra_role_" + i);
+			setCreatorEditor(role);
 			roles.put(role.getName(), role);
 		}
 	}
@@ -419,17 +395,17 @@ public class DemoDataProvider {
 	private void addBootstrapSchemas() {
 
 		// folder
-		SchemaContainer folderSchemaContainer = schemaService.findByName("folder");
+		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
 		folderSchemaContainer.addProject(project);
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = schemaService.findByName("content");
+		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
 		contentSchemaContainer.addProject(project);
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
-		SchemaContainer binaryContentSchemaContainer = schemaService.findByName("binary-content");
+		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
 		binaryContentSchemaContainer.addProject(project);
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
@@ -582,7 +558,7 @@ public class DemoDataProvider {
 		}
 		// TODO maybe set project should be done inside the save?
 		node.addProject(project);
-		
+
 		setCreatorEditor(node);
 
 		node.setSchemaContainer(schema);
@@ -678,7 +654,7 @@ public class DemoDataProvider {
 	}
 
 	public int getNodeCount() {
-		return folders.size() + contents.size() + root.getProjectRoot().getProjects().size();
+		return folders.size() + contents.size() + root.getProjectRoot().findAll().size();
 	}
 
 }

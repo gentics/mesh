@@ -2,17 +2,11 @@ package com.gentics.mesh.core;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.gentics.mesh.core.data.service.TagFamilyService;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public class TagFamilyTest extends AbstractBasicObjectTest {
 	
-	@Autowired
-	TagFamilyService tagFamilyService;
-
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		// TODO Auto-generated method stub

@@ -6,15 +6,14 @@ import static org.junit.Assert.assertNotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -37,10 +36,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 public class RestAssert {
 
 	@Autowired
-	private NodeService nodeService;
-
-	@Autowired
-	private LanguageService languageService;
+	private BootstrapInitializer boot;
 
 	public void assertGroup(Group group, GroupResponse restGroup) {
 		assertEquals(group.getUuid(), restGroup.getUuid());

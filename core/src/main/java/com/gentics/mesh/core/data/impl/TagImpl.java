@@ -3,10 +3,10 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
-import static com.gentics.mesh.core.data.service.LanguageService.getLanguageService;
 
 import java.util.List;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -44,11 +44,11 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 	}
 
 	public String getName() {
-		return getFieldContainer(getLanguageService().getTagDefaultLanguage()).getName();
+		return getFieldContainer(BootstrapInitializer.getRootService().languageRoot().getTagDefaultLanguage()).getName();
 	}
 
 	public void setName(String name) {
-		getOrCreateFieldContainer(getLanguageService().getTagDefaultLanguage()).setName(name);
+		getOrCreateFieldContainer(BootstrapInitializer.getRootService().languageRoot().getTagDefaultLanguage()).setName(name);
 	}
 
 	public void removeNode(Node node) {

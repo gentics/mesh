@@ -12,9 +12,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.service.TagService;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.verticle.NodeNotFoundException;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -28,7 +27,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	private MeshSpringConfiguration config;
 
 	@Autowired
-	private TagService tagService;
+	private TagRoot tagRoot;
 
 	@Autowired
 	private Neo4jGenericContentUtils genericContentUtils;
@@ -54,14 +53,14 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 		return mapper.writeValueAsString(navigation);
 	}
 
-//	/**
-//	 * Returns the mesh auth service which can be used to authenticate resources.
-//	 * 
-//	 * @return
-//	 */
-//	protected MeshAuthServiceImpl getAuthService() {
-//		return config.authService();
-//	}
+	// /**
+	// * Returns the mesh auth service which can be used to authenticate resources.
+	// *
+	// * @return
+	// */
+	// protected MeshAuthServiceImpl getAuthService() {
+	// return config.authService();
+	// }
 
 	/**
 	 * Returns a content navigation.
@@ -90,13 +89,13 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 	// getAuthService().hasPermission(session.getLoginID(), new MeshPermission(object, PermissionType.READ), resultHandler);
 	// }
 
-//	/**
-//	 * Wrapper for the permission checks. Check whether the given object can be viewed by the user.
-//	 * 
-//	 * @param object
-//	 * @return true, when the user can view the object. Otherwise false.
-//	 */
-//	public boolean canView(GenericNode object) {
-//		return getAuthService().hasPermission(session.id(), new MeshPermission(object, PermissionType.READ));
-//	}
+	// /**
+	// * Wrapper for the permission checks. Check whether the given object can be viewed by the user.
+	// *
+	// * @param object
+	// * @return true, when the user can view the object. Otherwise false.
+	// */
+	// public boolean canView(GenericNode object) {
+	// return getAuthService().hasPermission(session.id(), new MeshPermission(object, PermissionType.READ));
+	// }
 }

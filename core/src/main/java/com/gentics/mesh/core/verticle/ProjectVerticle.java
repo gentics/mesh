@@ -28,7 +28,6 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -44,6 +43,7 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectVerticle.class);
+
 
 	protected ProjectVerticle() {
 		super("projects");
@@ -70,7 +70,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 				// Check for conflicting project name
 					if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
-						if (projectService.findByName(requestModel.getName()) != null) {
+						if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name")));
 							return;
 						}
@@ -91,7 +91,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 
 			// TODO also create a default object schema for the project. Move this into service class
-			// ObjectSchema defaultContentSchema = objectSchemaService.findByName(, name)
+			// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(, name)
 			ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
 			MeshAuthUser requestUser = getUser(rc);
 
@@ -101,19 +101,18 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			}
 
 			Future<Project> projectCreated = Future.future();
-			MeshRoot meshRoot = meshRootService.findRoot();
-// TODO replace rcs.hasPerm with requestUser.isAuthorised
-//			requestUser.isAuthorised(meshRoot.getProjectRoot(), CREATE_PERM, rh-> {
-//				
-//			});
-			
-			rcs.hasPermission(rc, meshRoot.getProjectRoot(), CREATE_PERM, rh -> {
-				if (projectService.findByName(requestModel.getName()) != null) {
+			// TODO replace rcs.hasPerm with requestUser.isAuthorised
+			// requestUser.isAuthorised(meshRoot.getProjectRoot(), CREATE_PERM, rh-> {
+			//
+			// });
+
+			rcs.hasPermission(rc, boot.projectRoot(), CREATE_PERM, rh -> {
+				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
 					return;
 				}
 
-				ProjectRoot projectRoot = meshRoot.getProjectRoot();
+				ProjectRoot projectRoot = boot.projectRoot();
 				Project project = projectRoot.create(requestModel.getName());
 				project.setCreator(requestUser);
 
@@ -121,7 +120,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
+					requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project);
 					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?
@@ -164,7 +163,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				ProjectListResponse listResponse = new ProjectListResponse();
 				Page<? extends Project> projectPage;
 				try {
-					projectPage = projectService.findAllVisible(requestUser, pagingInfo);
+					projectPage = boot.projectRoot().findAllVisible(requestUser, pagingInfo);
 					for (Project project : projectPage) {
 						listResponse.getData().add(project.transformToRest(requestUser));
 					}

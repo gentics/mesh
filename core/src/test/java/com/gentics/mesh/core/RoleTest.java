@@ -39,7 +39,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		String roleName = "test";
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
 		Role role = root.create(roleName);
-		role = roleService.findByUUID(role.getUuid());
+		role = boot.roleRoot().findByUUID(role.getUuid());
 		assertNotNull(role);
 		assertEquals(roleName, role.getName());
 	}
@@ -129,12 +129,12 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testRootNode() {
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
-		int nRolesBefore = root.getRoles().size();
+		int nRolesBefore = root.findAll().size();
 
 		final String roleName = "test2";
 		Role role = root.create(roleName);
 		assertNotNull(role);
-		int nRolesAfter = root.getRoles().size();
+		int nRolesAfter = root.findAll().size();
 		assertEquals(nRolesBefore + 1, nRolesAfter);
 
 	}
@@ -143,7 +143,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testRoleAddCrudPermissions() {
 
 		MeshAuthUser requestUser = getUser().getImpl().reframe(MeshAuthUserImpl.class);
-		// userService.findMeshAuthUserByUsername(requestUser.getUsername())
+		// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 		Node parentNode = data().getFolder("2015");
 		assertNotNull(parentNode);
 
@@ -184,11 +184,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
-		Page<? extends Role> page = roleService.findAll(requestUser, new PagingInfo(1, 10));
+		Page<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
-		page = roleService.findAll(requestUser, new PagingInfo(1, 15));
+		page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 15));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 	}
@@ -196,15 +196,15 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		assertNotNull(roleService.findByName(getRole().getName()));
-		assertNull(roleService.findByName("bogus"));
+		assertNotNull(boot.roleRoot().findByName(getRole().getName()));
+		assertNull(boot.roleRoot().findByName("bogus"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		assertNotNull(roleService.findByUUID(getRole().getUuid()));
-		assertNull(roleService.findByUUID("bogus"));
+		assertNotNull(boot.roleRoot().findByUUID(getRole().getUuid()));
+		assertNull(boot.roleRoot().findByUUID("bogus"));
 	}
 
 	@Test
@@ -239,7 +239,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		List<? extends Role> roles = roleService.findAll();
+		List<? extends Role> roles = boot.roleRoot().findAll();
 		assertNotNull(roles);
 		assertEquals(data().getRoles().size(), roles.size());
 	}
@@ -257,7 +257,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = getRole();
 		String uuid = role.getUuid();
 		role.delete();
-		assertNull(roleService.findByUUID(uuid));
+		assertNull(boot.roleRoot().findByUUID(uuid));
 	}
 
 	@Test

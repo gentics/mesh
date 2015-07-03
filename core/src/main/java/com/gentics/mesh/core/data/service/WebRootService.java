@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.error.EntityNotFoundException;
@@ -22,16 +23,16 @@ import com.tinkerpop.blueprints.Vertex;
 public class WebRootService {
 
 	private static Logger log = LoggerFactory.getLogger(WebRootService.class);
-
+	
 	@Autowired
-	private ProjectService projectService;
+	private BootstrapInitializer boot;
 
 	@Autowired
 	private I18NService i18nService;
 
 	public Path findByProjectPath(RoutingContext rc, String projectName, String path) {
 		String parts[] = path.split("/");
-		Project project = projectService.findByName(projectName);
+		Project project = boot.projectRoot().findByName(projectName);
 
 		Path nodePath = new Path();
 
@@ -79,12 +80,12 @@ public class WebRootService {
 
 		for (Edge rel : node.getEdges(Direction.IN, MeshRelationships.HAS_PARENT_NODE)) {
 			Vertex nextHop = rel.getVertex(Direction.IN);
-//			String languageTag = getI18nPropertyLanguageTag(nextHop, SchemaContainer.NAME_KEYWORD, i18nTagName);
-//			if (languageTag != null) {
-//				foundNode.set(nextHop);
-//				path.addSegment(new PathSegment(nextHop, languageTag));
-//				break;
-//			}
+			// String languageTag = getI18nPropertyLanguageTag(nextHop, SchemaContainer.NAME_KEYWORD, i18nTagName);
+			// if (languageTag != null) {
+			// foundNode.set(nextHop);
+			// path.addSegment(new PathSegment(nextHop, languageTag));
+			// break;
+			// }
 		}
 
 		return foundNode.get();

@@ -21,8 +21,6 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -37,12 +35,6 @@ extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupVerticle groupsVerticle;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private UserService userService;
 
 	@Autowired
 	private DataHelper helper;

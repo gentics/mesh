@@ -2,25 +2,29 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP;
 
-import java.util.List;
-
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 
-public class GroupRootImpl extends MeshVertexImpl implements GroupRoot {
+public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
 	// TODO unique node
 
-	public List<? extends Group> getGroups() {
-		return out(HAS_GROUP).has(GroupImpl.class).toList(GroupImpl.class);
+	protected Class<? extends Group> getPersistanceClass() {
+		return GroupImpl.class;
 	}
 
-	public void addGroup(GroupImpl group) {
-		linkOut(group, HAS_GROUP);
+	@Override
+	protected String getRootLabel() {
+		return HAS_GROUP;
 	}
 
+	@Override
+	public void addGroup(Group group) {
+		linkOut(group.getImpl(), HAS_GROUP);
+	}
+
+	@Override
 	public Group create(String name) {
 		GroupImpl group = getGraph().addFramedVertex(GroupImpl.class);
 		group.setName(name);

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
@@ -14,25 +13,13 @@ import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class AtomicTagTest extends AbstractDBTest {
 
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private LanguageService languageService;
-
-	@Autowired
-	private MeshRootService rootService;
-
 	@Test
 	public void testTagCreation() {
-		MeshRoot meshRoot = rootService.create();
+		MeshRoot meshRoot = boot.createMeshRoot();
 		LanguageRoot languageRoot = meshRoot.createLanguageRoot();
 		assertNotNull(languageRoot);
 		Language language = languageRoot.create("Deutsch", "de");
@@ -50,7 +37,7 @@ public class AtomicTagTest extends AbstractDBTest {
 		tag.setName("renamed tag");
 		assertEquals("renamed tag", tag.getName());
 
-		Tag reloadedTag = tagService.findByUUID(uuid);
+		Tag reloadedTag = boot.tagRoot().findByUUID(uuid);
 		assertNotNull(reloadedTag);
 		assertNotNull(reloadedTag.getFieldContainers());
 		assertEquals(1, reloadedTag.getFieldContainers().size());

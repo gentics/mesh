@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -21,8 +20,7 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.NodeService;
-import com.gentics.mesh.core.data.service.TagService;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -35,15 +33,11 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	private static Logger log = LoggerFactory.getLogger(TagTest.class);
 
+	private TagRoot tagRoot = boot.tagRoot();
+
 	public static final String GERMAN_NAME = "test german name";
 
 	public static final String ENGLISH_NAME = "test english name";
-
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private NodeService nodeService;
 
 	@Test
 	public void testTagFamilyTagCreation() {
@@ -75,14 +69,14 @@ public class TagTest extends AbstractBasicObjectTest {
 		TagFamily root = data().getTagFamily("basic");
 		Tag tag = root.create(ENGLISH_NAME);
 		String uuid = tag.getUuid();
-		tag = tagService.findByUUID(uuid);
+		tag = tagRoot.findByUUID(uuid);
 		assertNotNull(tag);
 
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
 		Node parentNode = data().getFolder("2015");
 		Node node = parentNode.create();
-		Language german = languageService.findByLanguageTag("de");
+		Language german = boot.languageRoot().findByLanguageTag("de");
 		NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
 		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
@@ -92,7 +86,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		node.addTag(tag);
 
 		// 4. Reload the tag and inspect the tagged nodes
-		tag = tagService.findByUUID(tag.getUuid());
+		tag = tagRoot.findByUUID(tag.getUuid());
 
 		assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
 		Node contentFromTag = tag.getNodes().iterator().next();
@@ -119,7 +113,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Node node = data().getFolder("news");
 		node.addTag(tag);
 
-		Node reloadedNode = nodeService.findByUUID(node.getUuid());
+		Node reloadedNode = boot.nodeRoot().findByUUID(node.getUuid());
 		boolean found = false;
 		for (Tag currentTag : reloadedNode.getTags()) {
 			if (currentTag.getUuid().equals(tag.getUuid())) {
@@ -138,12 +132,12 @@ public class TagTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 
-		Page<? extends Tag> tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
+		Page<? extends Tag> tagPage = tagRoot.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 10));
 		assertEquals(12, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 
 		languageTags.add("en");
-		tagPage = tagService.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 14));
+		tagPage = tagRoot.findProjectTags(requestUser, "dummy", languageTags, new PagingInfo(1, 14));
 		assertEquals(data().getTags().size(), tagPage.getTotalElements());
 		assertEquals(12, tagPage.getSize());
 	}
@@ -164,18 +158,18 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByName() {
 		Tag tag = data().getTag("car");
-		assertNotNull(tagService.findByName("dummy", tag.getName()));
-		assertNull(tagService.findByName("bogus", tag.getName()));
-		assertNull(tagService.findByName("dummy", "bogus"));
-		assertNull(tagService.findByName("bogus", "bogus"));
+		assertNotNull(tagRoot.findByName("dummy", tag.getName()));
+		assertNull(tagRoot.findByName("bogus", tag.getName()));
+		assertNull(tagRoot.findByName("dummy", "bogus"));
+		assertNull(tagRoot.findByName("bogus", "bogus"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
 		Tag tag = data().getTag("car");
-		assertNotNull(tagService.findByUUID(tag.getUuid()));
-		assertNull(tagService.findByUUID("bogus"));
+		assertNotNull(tagRoot.findByUUID(tag.getUuid()));
+		assertNull(tagRoot.findByUUID("bogus"));
 	}
 
 	@Test
@@ -185,7 +179,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag tag = tagFamily.create(GERMAN_NAME);
 		assertNotNull(tag);
 		String uuid = tag.getUuid();
-		tag = tagService.findByUUID(uuid);
+		tag = tagRoot.findByUUID(uuid);
 		assertNotNull("The folder could not be found.", tag);
 		String name = tag.getName();
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
@@ -255,7 +249,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag tag = data().getTag("red");
 		String uuid = tag.getUuid();
 		tag.remove();
-		assertNull(tagService.findByUUID(uuid));
+		assertNull(tagRoot.findByUUID(uuid));
 
 	}
 

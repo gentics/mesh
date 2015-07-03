@@ -1,41 +1,34 @@
-package com.gentics.mesh.core.data.service;
+package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 
 import java.util.List;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.impl.TagImpl;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-@Component
-public class TagService extends AbstractMeshGraphService<Tag> {
+public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
-	private static final Logger log = LoggerFactory.getLogger(TagService.class);
-
-	public static TagService instance;
-
-	@PostConstruct
-	public void setup() {
-		instance = this;
+	@Override
+	protected Class<? extends Tag> getPersistanceClass() {
+		return TagImpl.class;
 	}
 
-	public static TagService getTagService() {
-		return instance;
+	@Override
+	protected String getRootLabel() {
+		return HAS_TAG;
 	}
 
+	@Override
 	public Page<? extends Tag> findProjectTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
 
@@ -79,19 +72,12 @@ public class TagService extends AbstractMeshGraphService<Tag> {
 	// return filter;
 	// }
 
+	@Override
 	public Tag findByName(String projectName, String name) {
 		// TODO filter by i18n properties, projectname
-		return findByName(name, TagImpl.class);
+		return findByNameAndProject(projectName, name);
 	}
 
-	@Override
-	public List<? extends Tag> findAll() {
-		return fg.v().has(TagImpl.class).toListExplicit(TagImpl.class);
-	}
 
-	@Override
-	public Tag findByUUID(String uuid) {
-		return findByUUID(uuid, TagImpl.class);
-	}
 
 }

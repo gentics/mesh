@@ -9,31 +9,28 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public class LanguageTest extends AbstractBasicObjectTest {
 
-	@Autowired
-	private LanguageService languageService;
+	private LanguageRoot languageRoot = boot.languageRoot();
 
 	@Test
 	@Override
 	public void testRootNode() {
 		LanguageRoot languageRoot = data().getMeshRoot().getLanguageRoot();
 
-		int nLanguagesBefore = languageRoot.getLanguages().size();
+		int nLanguagesBefore = languageRoot.findAll().size();
 
 		final String languageName = "klingon";
 		final String languageTag = "tlh";
 		Language lang = languageRoot.create(languageName, languageTag);
 
-		int nLanguagesAfter = languageRoot.getLanguages().size();
+		int nLanguagesAfter = languageRoot.findAll().size();
 		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 
 	}
@@ -47,7 +44,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		List<? extends Language> languages = languageService.findAll();
+		List<? extends Language> languages = languageRoot.findAll();
 		assertEquals(182, languages.size());
 
 	}
@@ -55,13 +52,13 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		Language language = languageService.findByName("German");
+		Language language = languageRoot.findByName("German");
 		assertNotNull(language);
 		assertEquals("German", language.getName());
 		assertEquals("Deutsch", language.getNativeName());
 		assertEquals("de", language.getLanguageTag());
 
-		language = languageService.findByName("bogus");
+		language = languageRoot.findByName("bogus");
 		assertNull(language);
 
 	}
@@ -69,12 +66,12 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		Language language = languageService.findByName("German");
+		Language language = languageRoot.findByName("German");
 
-		Language foundLanguage = languageService.findByUUID(language.getUuid());
+		Language foundLanguage = languageRoot.findByUUID(language.getUuid());
 		assertNotNull(foundLanguage);
 
-		foundLanguage = languageService.findByUUID("bogus");
+		foundLanguage = languageRoot.findByUUID("bogus");
 		assertNull(foundLanguage);
 
 	}
@@ -117,11 +114,11 @@ public class LanguageTest extends AbstractBasicObjectTest {
 		final String languageName = "klingon";
 		Language lang = languageRoot.create(languageName, languageTag);
 
-		lang = languageService.findByName(languageName);
+		lang = languageRoot.findByName(languageName);
 		assertNotNull(lang);
 		assertEquals(languageName, lang.getName());
 
-		assertNotNull(languageService.findByLanguageTag(languageTag));
+		assertNotNull(languageRoot.findByLanguageTag(languageTag));
 	}
 
 	@Test

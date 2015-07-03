@@ -106,7 +106,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					Group group = grh.result();
 					Role role = rrh.result();
 					group.addRole(role);
-					// group = groupService.save(group);
+					// group = groupRoot.save(group);
 
 					}, trh -> {
 						if (trh.failed()) {
@@ -127,7 +127,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					Group group = grh.result();
 					Role role = rrh.result();
 					group.removeRole(role);
-					// group = groupService.save(group);
+					// group = groupRoot.save(group);
 					}, trh -> {
 						if (trh.failed()) {
 							rc.fail(trh.cause());
@@ -181,7 +181,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					Group group = grh.result();
 					User user = urh.result();
 					group.addUser(requestUser);
-					// group = groupService.save(group);
+					// group = groupRoot.save(group);
 					}, trh -> {
 						if (trh.failed()) {
 							rc.fail(trh.cause());
@@ -201,7 +201,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					Group group = grh.result();
 					User user = urh.result();
 					group.removeUser(user);
-					// groupService.save(group);
+					// groupRoot.save(group);
 
 					}, trh -> {
 						if (trh.failed()) {
@@ -245,7 +245,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				}
 
 				if (!group.getName().equals(requestModel.getName())) {
-					Group groupWithSameName = groupService.findByName(requestModel.getName());
+					Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 					if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name")));
 						return;
@@ -293,7 +293,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 				Page<? extends Group> groupPage;
 				try {
-					groupPage = groupService.findAll(requestUser, pagingInfo);
+					groupPage = boot.groupRoot().findAll(requestUser, pagingInfo);
 					for (Group group : groupPage) {
 						listResponse.getData().add(group.transformToRest(requestUser));
 					}
@@ -325,7 +325,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 			Future<Group> groupCreated = Future.future();
 
-			MeshRoot root = meshRootService.findRoot();
+			MeshRoot root = boot.meshRoot();
 			GroupRoot groupRoot = root.getGroupRoot();
 			rcs.hasPermission(rc, groupRoot, CREATE_PERM, rh -> {
 				Group group = groupRoot.create(requestModel.getName());

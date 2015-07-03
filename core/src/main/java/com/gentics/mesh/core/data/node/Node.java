@@ -61,4 +61,6 @@ public interface Node extends GenericNode {
 
 	void delete();
 
+	void createLink(Node node);
+
 }

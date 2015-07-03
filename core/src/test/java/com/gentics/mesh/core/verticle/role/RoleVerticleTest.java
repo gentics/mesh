@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -41,9 +40,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private RoleVerticle rolesVerticle;
-
-	@Autowired
-	private GroupService groupService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -88,7 +84,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		// Add needed permission to group
 		info.getRole().revokePermissions(info.getGroup(), CREATE_PERM);
-		// roleService.revokePermission(info.getRole(), data().getMeshRoot().getRoleRoot(), CREATE);
+		// roleRoot.revokePermission(info.getRole(), data().getMeshRoot().getRoleRoot(), CREATE);
 
 		String requestJson = JsonUtil.toJson(request);
 		String response = request(info, POST, "/api/v1/roles/", 403, "Forbidden", requestJson);
@@ -273,7 +269,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(extraRole.getUuid(), restRole.getUuid());
 
 		// Check that the extra role was updated as expected
-		Role reloadedRole = roleService.findByUUID(extraRole.getUuid());
+		Role reloadedRole = roleRoot.findByUUID(extraRole.getUuid());
 		assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 	}
 
@@ -289,7 +285,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		// Check that the role was updated
-		Role reloadedRole = roleService.findByUUID(role.getUuid());
+		Role reloadedRole = boot.roleRoot().findByUUID(role.getUuid());
 		assertEquals(restRole.getName(), reloadedRole.getName());
 
 	}
@@ -305,14 +301,14 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, DELETE, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
 		expectMessageResponse("role_deleted", response, extraRole.getUuid());
-		assertNull("The user should have been deleted", roleService.findByUUID(extraRole.getUuid()));
+		assertNull("The user should have been deleted", roleRoot.findByUUID(extraRole.getUuid()));
 	}
 
 	@Test
 	public void testDeleteRoleByUUIDWithMissingPermission() throws Exception {
 		String response = request(info, DELETE, "/api/v1/roles/" + info.getRole().getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, info.getRole().getUuid());
-		assertNotNull("The role should not have been deleted", roleService.findByUUID(info.getRole().getUuid()));
+		assertNotNull("The role should not have been deleted", boot.roleRoot().findByUUID(info.getRole().getUuid()));
 	}
 
 }

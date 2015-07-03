@@ -1,17 +1,21 @@
 package com.gentics.mesh.core.data.root;
 
-import java.util.List;
-
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
 
-public interface UserRoot extends MeshVertex {
+public interface UserRoot extends RootVertex<User> {
 
 	User create(String username);
 
-	List<? extends User> getUsers();
-
 	UserRootImpl getImpl();
+
+	MeshAuthUser findMeshAuthUserByUsername(String username);
+
+	User findByUsername(String username);
+
+	void removeUser(User user);
+
+	void addUser(User user);
 
 }

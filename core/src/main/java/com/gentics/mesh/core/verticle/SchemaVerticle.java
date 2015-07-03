@@ -69,8 +69,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					//TODO add simple message or return schema?
-					//rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+					// TODO add simple message or return schema?
+					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 					});
 			});
 
@@ -90,7 +90,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					//					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 					});
 			});
 		});
@@ -104,43 +104,43 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 			SchemaCreateRequest schema = fromJson(rc, SchemaCreateRequest.class);
 
-			//			if (StringUtils.isEmpty(requestModel.getName())) {
-			//				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_name")));
-			//				return;
-			//			}
+			// if (StringUtils.isEmpty(requestModel.getName())) {
+			// rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_name")));
+			// return;
+			// }
 
-			//			if (StringUtils.isEmpty(requestModel.getProjectUuid())) {
-			//				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_project_uuid")));
-			//				return;
-			//			}
+			// if (StringUtils.isEmpty(requestModel.getProjectUuid())) {
+			// rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_project_uuid")));
+			// return;
+			// }
 
 			Future<SchemaContainer> schemaCreated = Future.future();
-			//			rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
+			// rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
 			rcs.loadObjectByUuid(rc, null, CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
 				Project project = srh.result();
 				SchemaContainerRoot root = project.getSchemaRoot();
-				//SchemaContainer schema = root.create(requestModel.getName());
-				//				schema.setDescription(requestModel.getDescription());
-					//				schema.setDisplayName(requestModel.getDisplayName());
-					//
-					//				for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
-					//					// TODO validate field?
-					//					PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
-					//					String key = restPropSchema.getKey();
-					//					BasicPropertyType propSchema = schema.createBasicPropertyTypeSchema(key, type);
-					//					propSchema.setDescription(restPropSchema.getDesciption());
-					//					propSchema.setType(type);
-					//					schema.addPropertyTypeSchema(propSchema);
-					//				}
-					//				schema.addProject(project);
-					//				roleService.addCRUDPermissionOnRole(requestUser, project, CREATE_PERM, schema);
-					//				schemaCreated.complete(schema);
+				// SchemaContainer schema = root.create(requestModel.getName());
+				// schema.setDescription(requestModel.getDescription());
+				// schema.setDisplayName(requestModel.getDisplayName());
+				//
+				// for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
+				// // TODO validate field?
+				// PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
+				// String key = restPropSchema.getKey();
+				// BasicPropertyType propSchema = schema.createBasicPropertyTypeSchema(key, type);
+				// propSchema.setDescription(restPropSchema.getDesciption());
+				// propSchema.setType(type);
+				// schema.addPropertyTypeSchema(propSchema);
+				// }
+				// schema.addProject(project);
+				// roleService.addCRUDPermissionOnRole(requestUser, project, CREATE_PERM, schema);
+				// schemaCreated.complete(schema);
 				}, trh -> {
 					if (trh.failed()) {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schemaContainer = schemaCreated.result();
-					//				rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 				});
 		});
 
@@ -161,18 +161,18 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
 					return;
 				}
-				
-				schemaContainer.setSchema(requestModel);
-//				if (!schema.getName().equals(requestModel.getName())) {
-//					schema.setName(requestModel.getName());
-//				}
 
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
-				}
-				SchemaContainer schema = trh.result();
-				//				rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+				schemaContainer.setSchema(requestModel);
+				// if (!schema.getName().equals(requestModel.getName())) {
+				// schema.setName(requestModel.getName());
+				// }
+
+				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
+					SchemaContainer schema = trh.result();
+					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 				});
 
 		});
@@ -186,7 +186,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				schema.delete();
 			}, trh -> {
 				SchemaContainer schema = trh.result();
-				//				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", schema.getName()))));
+				// rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", schema.getName()))));
 				});
 		});
 
@@ -206,7 +206,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					//					rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
 					});
 			}
 		});
@@ -217,19 +217,25 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			PagingInfo pagingInfo = getPagingInfo(rc);
 			vertx.executeBlocking((Future<SchemaListResponse> bch) -> {
 				SchemaListResponse listResponse = new SchemaListResponse();
-				Page<SchemaContainer> schemaPage = schemaService.findAllVisible(requestUser, pagingInfo);
-				for (SchemaContainer schema : schemaPage) {
-					//					listResponse.getData().add(schema.transformToRest(requestUser));
+				Page<? extends SchemaContainer> schemaPage;
+				try {
+					schemaPage = boot.schemaContainerRoot().findAll(requestUser, pagingInfo);
+					for (SchemaContainer schema : schemaPage) {
+						// listResponse.getData().add(schema.transformToRest(requestUser));
 				}
 				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
 				bch.complete(listResponse);
-			}, rh -> {
-				if (rh.failed()) {
-					rc.fail(rh.cause());
-				}
-				SchemaListResponse listResponse = rh.result();
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
+			} catch (Exception e) {
+				bch.fail(e);
+			}
+
+		}, rh -> {
+			if (rh.failed()) {
+				rc.fail(rh.cause());
+			}
+			SchemaListResponse listResponse = rh.result();
+			rc.response().setStatusCode(200).end(toJson(listResponse));
+		}	);
 
 		});
 

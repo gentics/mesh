@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.NodeService;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -42,8 +42,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private NodeVerticle verticle;
 
-	@Autowired
-	private NodeService nodeService;
+	private NodeRoot nodeRoot = boot.nodeRoot();
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -111,7 +110,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(request, restNode);
 
-		Node node = nodeService.findByUUID(restNode.getUuid());
+		Node node = nodeRoot.findByUUID(restNode.getUuid());
 		assertNotNull(node);
 		test.assertMeshNode(request, node);
 
@@ -265,8 +264,8 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
 		test.assertMeshNode(node, restNode);
 
-		//		assertNull(restNode.getProperties());
-		//		assertEquals("Produkte", restNode.getProperty("name"));
+		// assertNull(restNode.getProperties());
+		// assertEquals("Produkte", restNode.getProperty("name"));
 	}
 
 	@Test
@@ -324,9 +323,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtil.toJson(request));
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
-		//		assertEquals(newFilename, restNode.getProperty("filename"));
-		//		assertEquals(newName, restNode.getProperty("name"));
-		//		assertEquals(newContent, restNode.getProperty("content"));
+		// assertEquals(newFilename, restNode.getProperty("filename"));
+		// assertEquals(newName, restNode.getProperty("name"));
+		// assertEquals(newContent, restNode.getProperty("content"));
 		// TODO verify that the node got updated
 
 	}
@@ -349,9 +348,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		String json = JsonUtil.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
-		//		assertEquals(newFilename, restNode.getProperty("displayName"));
-		//		assertEquals(newName, restNode.getProperty("name"));
-		//		assertEquals(newContent, restNode.getProperty("content"));
+		// assertEquals(newFilename, restNode.getProperty("displayName"));
+		// assertEquals(newName, restNode.getProperty("name"));
+		// assertEquals(newContent, restNode.getProperty("content"));
 
 		// TODO Reload and update
 		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
@@ -369,7 +368,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		Node node = data().getFolder("2015");
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
 		expectMessageResponse("node_deleted", response, node.getUuid());
-		assertNull(nodeService.findByUUID(node.getUuid()));
+		assertNull(nodeRoot.findByUUID(node.getUuid()));
 	}
 
 	@Test
@@ -385,6 +384,6 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + uuid, 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, uuid);
 
-		assertNotNull(nodeService.findByUUID(uuid));
+		assertNotNull(nodeRoot.findByUUID(uuid));
 	}
 }

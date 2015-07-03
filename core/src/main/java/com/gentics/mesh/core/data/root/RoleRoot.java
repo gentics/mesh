@@ -1,17 +1,22 @@
 package com.gentics.mesh.core.data.root;
 
-import java.util.List;
-
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
+import com.gentics.mesh.paging.PagingInfo;
+import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface RoleRoot extends MeshVertex {
+public interface RoleRoot extends RootVertex<Role> {
 
 	Role create(String name);
 
-	List<? extends Role> getRoles();
-
 	RoleRootImpl getImpl();
+
+	Page<? extends Role> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
+
+	void addRole(Role role);
+
+	void removeRole(Role role);
 
 }

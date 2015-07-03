@@ -20,8 +20,6 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.error.EntityNotFoundException;
@@ -35,12 +33,6 @@ import com.gentics.mesh.path.PathSegment;
 public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(WebRootVerticle.class);
-
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private LanguageService languageService;
 
 	@Autowired
 	private WebRootService webrootService;

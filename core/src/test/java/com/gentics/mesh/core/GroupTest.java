@@ -8,14 +8,12 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -23,9 +21,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RoutingContextHelper;
 
 public class GroupTest extends AbstractBasicObjectTest {
-
-	@Autowired
-	private GroupService groupService;
 
 	@Test
 	public void testUserGroup() {
@@ -47,11 +42,11 @@ public class GroupTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
-		Page<? extends Group> page = groupService.findAll(requestUser, new PagingInfo(1, 10));
+		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
-		page = groupService.findAll(requestUser, new PagingInfo(1, 15));
+		page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 15));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 	}
@@ -59,7 +54,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() {
-		List<? extends Group> groups = groupService.findAll();
+		List<? extends Group> groups = boot.groupRoot().findAll();
 		assertNotNull(groups);
 		assertEquals(data().getGroups().size(), groups.size());
 	}
@@ -68,24 +63,24 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Override
 	public void testRootNode() {
 		GroupRoot root = data().getMeshRoot().getGroupRoot();
-		int nGroupsBefore = root.getGroups().size();
+		int nGroupsBefore = root.findAll().size();
 		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
 		assertNotNull(groupRoot.create("test group2"));
 
-		int nGroupsAfter = root.getGroups().size();
+		int nGroupsAfter = root.findAll().size();
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		assertNotNull(groupService.findByName("guests"));
+		assertNotNull(boot.groupRoot().findByName("guests"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		assertNotNull(groupService.findByUUID(getGroup().getUuid()));
+		assertNotNull(boot.groupRoot().findByUUID(getGroup().getUuid()));
 	}
 
 	@Test

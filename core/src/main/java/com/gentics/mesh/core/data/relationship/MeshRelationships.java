@@ -9,6 +9,9 @@ public class MeshRelationships {
 	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
 	public static final String HAS_PROJECT = "HAS_PROJECT";
 
+	// Nodes
+	public static final String HAS_NODE = "HAS_NODE";
+
 	// Groups/User/Role
 	public static final String HAS_GROUP_ROOT = "HAS_GROUP_ROOT";
 	public static final String HAS_USER = "HAS_USER";
@@ -43,6 +46,7 @@ public class MeshRelationships {
 	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
 
 	// Roots
+	public static final String HAS_NODE_ROOT = "HAS_NODE_ROOT";
 	public static final String HAS_ROLE_ROOT = "HAS_ROLE_ROOT";
 	public static final String HAS_USER_ROOT = "HAS_USER_ROOT";
 	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";

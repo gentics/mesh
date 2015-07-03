@@ -1,19 +1,17 @@
 package com.gentics.mesh.core.data.root;
 
-import java.util.List;
-
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 
-public interface SchemaContainerRoot extends MeshVertex {
+public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
 	SchemaContainer create(String name);
 
 	void addSchemaContainer(SchemaContainer schema);
 
-	List<? extends SchemaContainer> getSchemaContainers();
-
 	SchemaContainerRootImpl getImpl();
+
+	SchemaContainer findByName(String projectName, String name);
+
 
 }

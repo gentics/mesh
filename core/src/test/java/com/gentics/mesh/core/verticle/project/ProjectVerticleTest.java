@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -37,11 +36,10 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
-	private ProjectVerticle projectVerticle;
+	private ProjectRoot projectRoot = boot.projectRoot();
 
 	@Autowired
-	private ProjectService projectService;
+	private ProjectVerticle projectVerticle;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -64,7 +62,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectResponse restProject = JsonUtil.readValue(response, ProjectResponse.class);
 
 		test.assertProject(request, restProject);
-		assertNotNull("The project should have been created.", projectService.findByName(name));
+		assertNotNull("The project should have been created.", projectRoot.findByName(name));
 
 	}
 
@@ -82,7 +80,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectResponse restProject = JsonUtil.readValue(response, ProjectResponse.class);
 		test.assertProject(request, restProject);
 
-		assertNotNull("The project should have been created.", projectService.findByName(name));
+		assertNotNull("The project should have been created.", projectRoot.findByName(name));
 
 		response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + restProject.getUuid(), 200, "OK");
 		expectMessageResponse("project_deleted", response, restProject.getName());
@@ -202,7 +200,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectResponse restProject = JsonUtil.readValue(response, ProjectResponse.class);
 		test.assertProject(request, restProject);
 
-		Project reloadedProject = projectService.findByUUID(project.getUuid());
+		Project reloadedProject = projectRoot.findByUUID(project.getUuid());
 		assertEquals("New Name", reloadedProject.getName());
 	}
 
@@ -219,7 +217,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden", JsonUtil.toJson(request));
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
 
-		Project reloadedProject = projectService.findByUUID(project.getUuid());
+		Project reloadedProject = projectRoot.findByUUID(project.getUuid());
 		Assert.assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());
 	}
 
@@ -234,7 +232,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 200, "OK");
 		expectMessageResponse("project_deleted", response, project.getName());
-		assertNull("The project should have been deleted", projectService.findByUUID(project.getUuid()));
+		assertNull("The project should have been deleted", projectRoot.findByUUID(project.getUuid()));
 
 		// TODO check for removed routers?
 	}
@@ -247,7 +245,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/projects/" + project.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, project.getUuid());
-		assertNotNull("The project should not have been deleted", projectService.findByUUID(project.getUuid()));
+		assertNotNull("The project should not have been deleted", projectRoot.findByUUID(project.getUuid()));
 	}
 
 }

@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.NodeVerticle;
@@ -25,9 +24,6 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
-
-	@Autowired
-	private NodeService nodeService;
 
 	@Autowired
 	private DataHelper helper;

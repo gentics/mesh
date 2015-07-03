@@ -36,17 +36,17 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testPageLinks() {
 		Node folder = data().getFolder("2015");
-		Node content = folder.create();
-		Node content2 = folder.create();
+		Node node = folder.create();
+		Node node2 = folder.create();
 
-		NodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(data().getEnglish());
+		NodeFieldContainer englishContainer = node2.getOrCreateFieldContainer(data().getEnglish());
 		englishContainer.createString("content").setString("english content");
 		englishContainer.createString("name").setString("english.html");
 
-		NodeFieldContainer englishContainer2 = content.getOrCreateFieldContainer(data().getGerman());
+		NodeFieldContainer englishContainer2 = node.getOrCreateFieldContainer(data().getGerman());
 		englishContainer2.createString("content").setString("english2 content");
 		englishContainer2.createString("name").setString("english2.html");
-		nodeService.createLink(content, content2);
+		node.createLink(node2);
 
 		// TODO verify that link relation has been created
 		// TODO render content and resolve links
@@ -88,13 +88,13 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
-		Page<? extends Node> page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
+		Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
 		// There are nodes that are only available in english
 		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = nodeService.findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 15));
+		page = boot.nodeRoot().findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 15));
 		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 
@@ -116,7 +116,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		languageTags.add("en");
-		Page<? extends Node> page = nodeService.findAll(getRequestUser(), PROJECT_NAME, languageTags, new PagingInfo(1, 25));
+		Page<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), PROJECT_NAME, languageTags, new PagingInfo(1, 25));
 		assertNotNull(page);
 
 	}
@@ -141,7 +141,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() {
 		Node newsNode = data().getContent("news overview");
-		Node node = nodeService.findByUUID(newsNode.getUuid());
+		Node node = boot.nodeRoot().findByUUID(newsNode.getUuid());
 		assertNotNull(node);
 		assertEquals(newsNode.getUuid(), node.getUuid());
 	}
@@ -185,7 +185,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		
+
 	}
 
 	@Test

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -62,6 +63,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private NodeListHandler nodeListHandler;
+	
+	@Autowired
+	private BootstrapInitializer boot;
+	
 
 	public NodeVerticle() {
 		super("nodes");
@@ -171,7 +176,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 					return;
 				} else {
 
-					SchemaContainer schema = schemaService.findByName(requestModel.getSchema().getName());
+					SchemaContainer schema = boot.schemaContainerRoot().findByName(requestModel.getSchema().getName());
 					if (schema == null) {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getName())));
 						return;
@@ -182,7 +187,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 				node.setCreator(requestUser);
 
-				Project project = projectService.findByName(projectName);
+				Project project = boot.projectRoot().findByName(projectName);
 				node.addProject(project);
 
 				//				for (Entry<String, Field> entry : requestModel.getFields().entrySet()) {
@@ -193,7 +198,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 					//				/* Add the i18n properties to the newly created tag */
 					//				for (String languageTag : requestModel.getProperties().keySet()) {
 					//					Map<String, String> i18nProperties = requestModel.getProperties();
-					//					Language language = languageService.findByLanguageTag(languageTag);
+					//					Language language = languageRoot.findByLanguageTag(languageTag);
 					//					if (language == null) {
 					//						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
 					//						return;
@@ -257,7 +262,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 				Page<? extends Node> nodePage;
 				try {
 					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-					nodePage = nodeService.findAll(requestUser, projectName, languageTags, pagingInfo);
+					nodePage = boot.nodeRoot().findAll(requestUser, projectName, languageTags, pagingInfo);
 					for (Node node : nodePage) {
 						listResponse.getData().add(node.transformToRest(info));
 					}
@@ -317,7 +322,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 					// Iterate through all properties and update the changed
 					// ones
 					//					for (String languageTag : request.getProperties().keySet()) {
-					//						Language language = languageService.findByLanguageTag(languageTag);
+					//						Language language = languageRoot.findByLanguageTag(languageTag);
 					//						if (language != null) {
 					//							languageTags.add(languageTag);
 					//							Map<String, String> properties = request.getProperties();

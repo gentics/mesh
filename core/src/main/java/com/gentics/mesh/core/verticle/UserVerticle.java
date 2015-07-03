@@ -85,7 +85,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				Page<? extends User> userPage;
 				try {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						userPage = userService.findAllVisible(requestUser, pagingInfo);
+						userPage = boot.userRoot().findAll(requestUser, pagingInfo);
 						for (User currentUser : userPage) {
 							listResponse.getData().add(currentUser.transformToRest());
 						}
@@ -135,7 +135,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
-						if (userService.findByUsername(requestModel.getUsername()) != null) {
+						if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
 							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username")));
 							return;
 						}
@@ -203,7 +203,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 				Group parentGroup = rh.result();
 
-				if (userService.findByUsername(requestModel.getUsername()) != null) {
+				if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
 					String message = i18n.get(rc, "user_conflicting_username");
 					rc.fail(new HttpStatusCodeErrorException(409, message));
 					return;

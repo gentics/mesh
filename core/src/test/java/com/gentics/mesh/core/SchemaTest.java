@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.JsonUtil;
@@ -26,35 +25,34 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public class SchemaTest extends AbstractBasicObjectTest {
 
-	@Autowired
-	private SchemaContainerService schemaContainerService;
-
+	
+	private SchemaContainerRoot schemaContainerRoot = boot.schemaContainerRoot();
 	@Autowired
 	private SchemaStorage schemaStorage;
 
 	@Test
 	@Override
 	public void testFindByName() {
-		SchemaContainer schema = schemaContainerService.findByName(PROJECT_NAME, "content");
+		SchemaContainer schema = schemaContainerRoot.findByName(PROJECT_NAME, "content");
 		assertNotNull(schema);
 		// assertEquals("content", schema.getName());
-		assertNull(schemaContainerService.findByName(PROJECT_NAME, "content1235"));
+		assertNull(schemaContainerRoot.findByName(PROJECT_NAME, "content1235"));
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
 		SchemaContainerRoot root = data().getMeshRoot().getSchemaContainerRoot();
-		int nSchemasBefore = root.getSchemaContainers().size();
+		int nSchemasBefore = root.findAll().size();
 		assertNotNull(root.create("test1235"));
-		int nSchemasAfter = root.getSchemaContainers().size();
+		int nSchemasAfter = root.findAll().size();
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);
 	}
 
 	@Test
 	public void testDefaultSchema() {
 		SchemaContainerRoot root = data().getMeshRoot().getSchemaContainerRoot();
-		assertEquals(4, root.getSchemaContainers().size());
+		assertEquals(4, root.findAll().size());
 	}
 
 	@Test
@@ -76,7 +74,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		List<? extends SchemaContainer> schemaContainers = schemaContainerService.findAll();
+		List<? extends SchemaContainer> schemaContainers = schemaContainerRoot.findAll();
 		assertNotNull(schemaContainers);
 		assertEquals(4, schemaContainers.size());
 	}
@@ -85,7 +83,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() {
 		String uuid = getSchemaContainer().getUuid();
-		assertNull(schemaContainerService.findByUUID(uuid));
+		assertNull(schemaContainerRoot.findByUUID(uuid));
 	}
 
 	@Test
@@ -93,14 +91,14 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		String uuid = getSchemaContainer().getUuid();
 		getSchemaContainer().delete();
-		assertNull(schemaContainerService.findByUUID(uuid));
+		assertNull(schemaContainerRoot.findByUUID(uuid));
 
 		// try (Transaction tx = graphDb.beginTx()) {
-		// roleService.revokePermission(info.getRole(), schema, PermissionType.DELETE);
-		// objectSchemaService.deleteByUUID(schema.getUuid());
+		// roleRoot.revokePermission(info.getRole(), schema, PermissionType.DELETE);
+		// objectSchemaRoot.deleteByUUID(schema.getUuid());
 		// tx.success();
 		// }
-		// assertNotNull(objectSchemaService.findOne(schema.getId()));
+		// assertNotNull(objectSchemaRoot.findOne(schema.getId()));
 	}
 
 	@Test
@@ -122,7 +120,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
 		newContainer.delete();
-		assertNull(schemaContainerService.findByUUID(uuid));
+		assertNull(schemaContainerRoot.findByUUID(uuid));
 	}
 
 	@Test

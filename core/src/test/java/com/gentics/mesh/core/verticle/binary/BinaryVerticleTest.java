@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.verticle.BinaryVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -22,9 +21,6 @@ public class BinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private BinaryVerticle verticle;
-
-	@Autowired
-	private NodeService nodeService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {

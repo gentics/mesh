@@ -148,7 +148,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			rcs.loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, TagFamily.class, (AsyncResult<TagFamily> rh) -> {
 				TagFamily tagFamily = rh.result();
 				Tag newTag = tagFamily.create(requestModel.getName());
-				Project project = projectService.findByName(projectName);
+				Project project = boot.projectRoot().findByName(projectName);
 				newTag.addProject(project);
 				tagCreated.complete(newTag);
 			}, trh -> {
@@ -186,7 +186,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				Page<? extends Tag> tagPage;
 				try {
-					tagPage = tagService.findProjectTags(requestUser, projectName, languageTags, pagingInfo);
+					tagPage = boot.tagRoot().findProjectTags(requestUser, projectName, languageTags, pagingInfo);
 					for (Tag tag : tagPage) {
 						TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 

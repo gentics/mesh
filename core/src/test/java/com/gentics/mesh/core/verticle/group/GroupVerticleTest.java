@@ -25,8 +25,6 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -40,12 +38,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupVerticle groupsVerticle;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private UserService userService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -67,7 +59,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		assertNotNull("Group should have been created.", groupService.findByUUID(restGroup.getUuid()));
+		assertNotNull("Group should have been created.", boot.groupRoot().findByUUID(restGroup.getUuid()));
 	}
 
 	@Test
@@ -83,7 +75,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		assertNotNull("Group should have been created.", groupService.findByUUID(restGroup.getUuid()));
+		assertNotNull("Group should have been created.", boot.groupRoot().findByUUID(restGroup.getUuid()));
 
 		// Now delete the group
 		response = request(info, DELETE, "/api/v1/groups/" + restGroup.getUuid(), 200, "OK", requestJson);
@@ -228,7 +220,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
 		test.assertGroup(request, restGroup);
 
-		Group reloadedGroup = groupService.findByUUID(restGroup.getUuid());
+		Group reloadedGroup = boot.groupRoot().findByUUID(restGroup.getUuid());
 		assertEquals("The group should have been updated", name, reloadedGroup.getName());
 	}
 
@@ -245,7 +237,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtil.toJson(request));
 		expectMessageResponse("error_name_must_be_set", response);
 
-		Group reloadedGroup = groupService.findByUUID(group.getUuid());
+		Group reloadedGroup = boot.groupRoot().findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -266,7 +258,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtil.toJson(request));
 		expectMessageResponse("group_conflicting_name", response);
 
-		Group reloadedGroup = groupService.findByUUID(group.getUuid());
+		Group reloadedGroup = groupRoot.findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -283,7 +275,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, PUT, "/api/v1/groups/bogus", 404, "Not Found", JsonUtil.toJson(request));
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
-		Group reloadedGroup = groupService.findByUUID(group.getUuid());
+		Group reloadedGroup = boot.groupRoot().findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -296,7 +288,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid(), 200, "OK");
 		expectMessageResponse("group_deleted", response, group.getUuid());
-		assertNull("The group should have been deleted", groupService.findByUUID(group.getUuid()));
+		assertNull("The group should have been deleted", boot.groupRoot().findByUUID(group.getUuid()));
 	}
 
 	@Test
@@ -309,7 +301,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, group.getUuid());
-		assertNotNull("The group should not have been deleted", groupService.findByUUID(group.getUuid()));
+		assertNotNull("The group should not have been deleted", boot.groupRoot().findByUUID(group.getUuid()));
 	}
 
 }

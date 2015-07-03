@@ -48,14 +48,18 @@ public class UserImpl extends AbstractGenericNode implements User {
 	}
 
 	@Override
+	public void deactivate() {
+		outE(HAS_GROUP).removeAll();
+		disable();
+	}
+
+	@Override
 	public void enable() {
-		System.out.println("enable");
 		setProperty(ENABLED_FLAG, true);
 	}
 
 	@Override
 	public boolean isEnabled() {
-		System.out.println(getProperty(ENABLED_FLAG));
 		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG));
 	}
 
@@ -219,7 +223,7 @@ public class UserImpl extends AbstractGenericNode implements User {
 	public void setPasswordHash(String hash) {
 		setProperty(PASSWORD_HASH_KEY, hash);
 	}
-	
+
 	@Override
 	public void addCRUDPermissionOnRole(MeshVertex node, Permission permission, GenericNode targetNode) {
 
@@ -280,12 +284,6 @@ public class UserImpl extends AbstractGenericNode implements User {
 	// }
 	// return false;
 	// }
-
-	@Override
-	public void deactivate() {
-		outE(HAS_GROUP).removeAll();
-		disable();
-	}
 
 	@Override
 	public void delete() {

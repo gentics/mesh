@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -16,15 +17,11 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.NodeService;
-import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.core.data.service.SchemaContainerService;
-import com.gentics.mesh.core.data.service.TagService;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.test.SpringTestConfiguration;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
@@ -32,26 +29,11 @@ import com.gentics.mesh.test.SpringTestConfiguration;
 public class OGMTest {
 
 	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private SchemaContainerService schemaService;
-
-	@Autowired
-	private ProjectService projectService;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private NodeService nodeService;
-
-	@Autowired
-	private MeshRootService meshRootService;
+	private BootstrapInitializer boot;
 
 	@Test
 	public void testOGM() {
-		MeshRoot root = meshRootService.create();
+		MeshRoot root = boot.createMeshRoot();
 		GroupRoot groupRoot = root.createGroupRoot();
 		ProjectRoot projectRoot = root.createProjectRoot();
 
@@ -73,7 +55,7 @@ public class OGMTest {
 		SchemaContainer schema = schemaRoot.create("test");
 		schemaRoot.addSchemaContainer(schema);
 
-		schema = schemaService.findByName("test");
+		schema = schemaRoot.findByName("test");
 		assertNotNull(schema);
 
 		root.getProjectRoot().addProject(project);

@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.NodeService;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;
 import com.gentics.mesh.core.link.LinkResolverFactory;
@@ -27,7 +27,7 @@ public class LinkRendererTest extends AbstractDBTest {
 	private LinkResolverFactory<LinkResolver> resolverFactory;
 
 	@Autowired
-	private NodeService nodeService;
+	private NodeRoot nodeRoot;
 
 	@Before
 	public void setup() throws Exception {

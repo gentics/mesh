@@ -12,13 +12,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
-import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -29,10 +28,7 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 public class NodeListHandler {
 
 	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private NodeService contentService;
+	private BootstrapInitializer boot;
 
 	@Autowired
 	private RoutingContextService rcs;

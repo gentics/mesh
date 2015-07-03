@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,25 +24,21 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.UserService;
-import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.core.data.service.RoleService;
-import com.gentics.mesh.core.data.service.SchemaContainerService;
+import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -64,6 +61,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.syncleus.ferma.FramedGraph;
 
 @Component
 public class BootstrapInitializer {
@@ -75,25 +73,21 @@ public class BootstrapInitializer {
 	private MeshConfiguration configuration;
 
 	@Autowired
-	private MeshRootService rootService;
+	private SchemaStorage schemaStorage;
+
+	private static BootstrapInitializer instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static BootstrapInitializer getRootService() {
+		return instance;
+	}
 
 	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private RoleService roleService;
-
-	@Autowired
-	private ProjectService projectService;
-
-	@Autowired
-	private LanguageService languageService;
-
-	@Autowired
-	private SchemaContainerService schemaService;
+	private FramedGraph fg;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
@@ -120,6 +114,47 @@ public class BootstrapInitializer {
 
 	private void addMandatoryVerticle(Class<? extends AbstractVerticle> clazz) {
 		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
+	}
+
+	public MeshRoot meshRoot() {
+		return fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+	}
+
+	public MeshRoot createMeshRoot() {
+		MeshRootImpl root = fg.addFramedVertex(MeshRootImpl.class);
+		return root;
+	}
+
+	public SchemaContainerRoot schemaContainerRoot() {
+		return meshRoot().getSchemaContainerRoot();
+	}
+
+	public RoleRoot roleRoot() {
+		return meshRoot().getRoleRoot();
+	}
+
+	public TagRoot tagRoot() {
+		return meshRoot().getTagRoot();
+	}
+
+	public NodeRoot nodeRoot() {
+		return meshRoot().getNodeRoot();
+	}
+
+	public UserRoot userRoot() {
+		return meshRoot().getUserRoot();
+	}
+
+	public GroupRoot groupRoot() {
+		return meshRoot().getGroupRoot();
+	}
+
+	public LanguageRoot languageRoot() {
+		return meshRoot().getLanguageRoot();
+	}
+
+	public ProjectRoot projectRoot() {
+		return meshRoot().getProjectRoot();
 	}
 
 	/**
@@ -193,7 +228,7 @@ public class BootstrapInitializer {
 	 * @throws InvalidNameException
 	 */
 	private void initProjects() throws InvalidNameException {
-		for (Project project : projectService.findAll()) {
+		for (Project project : projectRoot().findAll()) {
 			routerStorage.addProjectRouter(project.getName());
 			log.info("Initalized project {" + project.getName() + "}");
 		}
@@ -220,12 +255,18 @@ public class BootstrapInitializer {
 	 * @throws JsonParseException
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
-		MeshRoot meshRoot = rootService.findRoot();
+		MeshRoot meshRoot = meshRoot();
 		if (meshRoot == null) {
-			meshRoot = rootService.create();
+			meshRoot = createMeshRoot();
 			log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
 		}
 		MeshRootImpl.setInstance(meshRoot);
+
+		NodeRoot nodeRoot = meshRoot.getNodeRoot();
+		if (nodeRoot == null) {
+			nodeRoot = meshRoot.createNodeRoot();
+			log.info("Stored node root {" + nodeRoot.getUuid() + "}");
+		}
 
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		if (languageRoot == null) {
@@ -265,7 +306,7 @@ public class BootstrapInitializer {
 		}
 
 		// Content
-		SchemaContainer contentSchemaContainer = schemaService.findByName("content");
+		SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");
 		if (contentSchemaContainer == null) {
 			Schema schema = new SchemaImpl();
 			schema.setName("content");
@@ -293,7 +334,7 @@ public class BootstrapInitializer {
 		}
 
 		// Folder
-		SchemaContainer folderSchemaContainer = schemaService.findByName("folder");
+		SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder");
 		if (folderSchemaContainer == null) {
 			Schema schema = new SchemaImpl();
 			schema.setName("folder");
@@ -314,7 +355,7 @@ public class BootstrapInitializer {
 		}
 
 		// Binary content for images and other downloads
-		SchemaContainer binarySchemaContainer = schemaService.findByName("binary-content");
+		SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content");
 		if (binarySchemaContainer == null) {
 
 			Schema schema = new SchemaImpl();
@@ -344,9 +385,15 @@ public class BootstrapInitializer {
 		initLanguages(languageRoot);
 
 		// Verify that an admin user exists
-		User adminUser = userService.findByUsername("admin");
+		User adminUser = userRoot.findByUsername("admin");
 		if (adminUser == null) {
 			adminUser = userRoot.create("admin");
+
+			adminUser.setCreator(adminUser);
+			adminUser.setCreationTimestamp(System.currentTimeMillis());
+			adminUser.setEditor(adminUser);
+			adminUser.setLastEditedTimestamp(System.currentTimeMillis());
+
 			System.out.println("Enter admin password:");
 			// Scanner scanIn = new Scanner(System.in);
 			// String pw = scanIn.nextLine();
@@ -357,18 +404,20 @@ public class BootstrapInitializer {
 			log.info("Stored admin user");
 		}
 
-		Group adminGroup = groupService.findByName("admin");
+		Group adminGroup = groupRoot.findByName("admin");
 		if (adminGroup == null) {
 			adminGroup = groupRoot.create("admin");
 			adminGroup.addUser(adminUser);
 			log.info("Stored admin group");
 		}
 
-		Role adminRole = roleService.findByName("admin");
+		Role adminRole = roleRoot.findByName("admin");
 		if (adminRole == null) {
 			adminRole = roleRoot.create("admin");
 			adminGroup.addRole(adminRole);
 		}
+
+		schemaStorage.init();
 
 	}
 
@@ -385,7 +434,7 @@ public class BootstrapInitializer {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = languageService.findByName(languageName);
+			Language language = languageRoot().findByName(languageName);
 			if (language == null) {
 				language = rootNode.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
@@ -396,4 +445,5 @@ public class BootstrapInitializer {
 		long diff = System.currentTimeMillis() - start;
 		log.info("Handling languages took: " + diff + " [ms]");
 	}
+
 }

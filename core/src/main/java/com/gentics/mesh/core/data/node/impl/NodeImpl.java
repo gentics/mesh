@@ -57,6 +57,14 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 		unlinkOut(tag.getImpl(), HAS_TAG);
 	}
 
+	@Override
+	public void createLink(Node to) {
+		// TODO maybe extract information about link start and end to speedup rendering of page with links
+		// Linked link = new Linked(this, page);
+		// this.links.add(link);
+	}
+
+
 	public void setSchemaContainer(SchemaContainer schema) {
 		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
 	}

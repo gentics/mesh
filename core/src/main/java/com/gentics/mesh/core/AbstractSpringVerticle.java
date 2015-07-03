@@ -4,17 +4,9 @@ import io.vertx.core.AbstractVerticle;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.service.GroupService;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.NodeService;
-import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.UserService;
-import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
-import com.gentics.mesh.core.data.service.SchemaContainerService;
-import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
@@ -30,40 +22,16 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected MeshSpringConfiguration springConfiguration;
 
 	@Autowired
-	protected MeshRootService meshRootService;
-
-	@Autowired
 	protected RouterStorage routerStorage;
 
 	@Autowired
 	protected RoutingContextService rcs;
 
 	@Autowired
+	protected BootstrapInitializer boot;
+
+	@Autowired
 	protected I18NService i18n;
-
-	@Autowired
-	protected UserService userService;
-
-	@Autowired
-	protected LanguageService languageService;
-
-	@Autowired
-	protected RoleService roleService;
-
-	@Autowired
-	protected SchemaContainerService schemaService;
-
-	@Autowired
-	protected ProjectService projectService;
-
-	@Autowired
-	protected GroupService groupService;
-
-	@Autowired
-	protected NodeService nodeService;
-
-	@Autowired
-	protected TagService tagService;
 
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;

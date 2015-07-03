@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 
@@ -34,14 +35,13 @@ public class SchemaStorage {
 	}
 
 	@Autowired
-	private SchemaContainerService schemaService;
+	private BootstrapInitializer boot;
 
 	private Map<String, Schema> schemas = new HashMap<>();
 
-	@PostConstruct
 	public void init() {
 		//Iterate over all schemas and load them into the storage
-		for (SchemaContainer container : schemaService.findAll()) {
+		for (SchemaContainer container : boot.schemaContainerRoot().findAll()) {
 			try {
 				Schema restSchema = container.getSchema();
 				schemas.put(restSchema.getName(), restSchema);

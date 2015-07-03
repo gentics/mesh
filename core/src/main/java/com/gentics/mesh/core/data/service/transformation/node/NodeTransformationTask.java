@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.service.transformation.node;
 
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
-import static com.gentics.mesh.core.data.service.LanguageService.getLanguageService;
 import io.vertx.core.impl.ConcurrentHashSet;
 
 import java.io.IOException;
@@ -18,10 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -119,7 +119,7 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 
 				NodeFieldContainer fieldContainer = null;
 				for (String languageTag : info.getLanguageTags()) {
-					Language language = getLanguageService().findByLanguageTag(languageTag);
+					Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 					if (language == null) {
 						throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "error_language_not_found", languageTag));
 					}

@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -16,9 +15,6 @@ import com.gentics.mesh.test.AbstractDBTest;
 
 public class BootstrapInitializerTest extends AbstractDBTest {
 
-	@Autowired
-	private BootstrapInitializer bootstrapInitializer;
-
 	@Before
 	public void setup() throws Exception {
 		setupData();
@@ -26,8 +22,8 @@ public class BootstrapInitializerTest extends AbstractDBTest {
 
 	@Test
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
-		bootstrapInitializer.initLanguages(data().getMeshRoot().getLanguageRoot());
-		Language language = languageService.findByLanguageTag("xh");
+		boot.initLanguages(data().getMeshRoot().getLanguageRoot());
+		Language language = boot.languageRoot().findByLanguageTag("xh");
 		assertNotNull(language);
 		assertEquals("Xhosa", language.getName());
 		assertEquals("isiXhosa", language.getNativeName());

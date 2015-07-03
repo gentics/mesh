@@ -22,8 +22,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.service.ProjectService;
-import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -37,12 +35,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private SchemaVerticle objectSchemaVerticle;
-
-	@Autowired
-	private SchemaContainerService schemaService;
-
-	@Autowired
-	private ProjectService projectService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -64,7 +56,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(request, restSchemaResponse);
 
 		SchemaResponse responseObject = JsonUtil.readValue(response, SchemaResponse.class);
-		SchemaContainer schema = schemaService.findByUUID(responseObject.getUuid());
+		SchemaContainer schema = boot.schemaContainerRoot().findByUUID(responseObject.getUuid());
 		//		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		//		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 		//		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
@@ -89,7 +81,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		//		test.assertSchema(request, restSchema);
 		//
 		//		// Verify that the object was created
-		//		Schema schema = schemaService.findByUUID(restSchema.getUuid());
+		//		Schema schema = schemaRoot.findByUUID(restSchema.getUuid());
 		//		test.assertSchema(schema, restSchema);
 		//		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 		//
@@ -201,7 +193,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
 		//		assertEquals(request.getName(), restSchema.getName());
 
-		SchemaContainer reloaded = schemaService.findByUUID(schema.getUuid());
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
 		//		assertEquals("The name should have been updated", "new-name", reloaded.getName());
 
 	}
@@ -217,7 +209,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + "bogus", 404, "Not Found", JsonUtil.toJson(request));
 		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
-		SchemaContainer reloaded = schemaService.findByUUID(schema.getUuid());
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
 		//		assertEquals("The name should not have been changed.", schema.getName(), reloaded.getName());
 
 	}
@@ -231,7 +223,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		System.out.println(response);
 		//		expectMessageResponse("schema_deleted", response, schema.getName());
 
-		SchemaContainer reloaded = schemaService.findByUUID(schema.getUuid());
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
 		assertNull("The schema should have been deleted.", reloaded);
 	}
 
@@ -241,7 +233,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		String json = "error";
 		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
-		SchemaContainer reloaded = schemaService.findByUUID(schema.getUuid());
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
 		assertNotNull("The schema should not have been deleted.", reloaded);
 
 	}

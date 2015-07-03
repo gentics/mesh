@@ -5,6 +5,10 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 
 public interface MeshRoot extends MeshVertex {
 
+	static MeshRoot getInstance() {
+		return MeshRootImpl.getInstance();
+	}
+
 	RoleRoot getRoleRoot();
 
 	GroupRoot getGroupRoot();
@@ -33,8 +37,26 @@ public interface MeshRoot extends MeshVertex {
 
 	MeshRootImpl getImpl();
 
-	static MeshRoot getInstance() {
-		return MeshRootImpl.getInstance();
-	}
+	NodeRoot getNodeRoot();
+
+	NodeRoot createNodeRoot();
+
+	void setNodeRoot(NodeRoot nodeRoot);
+
+	void setUserRoot(UserRoot userRoot);
+
+	void setRoleRoot(RoleRoot roleRoot);
+
+	void setSchemaRoot(SchemaContainerRoot schemaRoot);
+
+	void setLanguageRoot(LanguageRoot languageRoot);
+
+	TagRoot getTagRoot();
+
+	TagRoot createTagRoot();
+
+	void setProjectRoot(ProjectRoot projectRoot);
+
+	void setTagRoot(TagRoot tagRoot);
 
 }

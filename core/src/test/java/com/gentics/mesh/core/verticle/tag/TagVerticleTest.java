@@ -24,8 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.service.NodeService;
-import com.gentics.mesh.core.data.service.TagService;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -38,12 +36,6 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private TagVerticle tagVerticle;
-
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private NodeService contentService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -225,7 +217,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
 		expectMessageResponse("tag_deleted", response, uuid);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNull("The tag should have been deleted", tagService.findByUUID(uuid));
+			assertNull("The tag should have been deleted", boot.tagRoot().findByUUID(uuid));
 		}
 	}
 
@@ -237,7 +229,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, tag.getUuid());
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNotNull("The tag should not have been deleted", tagService.findByUUID(tag.getUuid()));
+			assertNotNull("The tag should not have been deleted", boot.tagRoot().findByUUID(tag.getUuid()));
 		}
 	}
 

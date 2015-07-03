@@ -14,8 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
@@ -26,7 +26,7 @@ public class MeshAuthProvider implements AuthProvider {
 	private static final Logger log = LoggerFactory.getLogger(MeshAuthProvider.class);
 
 	@Autowired
-	private UserService userService;
+	private BootstrapInitializer boot;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
@@ -45,7 +45,7 @@ public class MeshAuthProvider implements AuthProvider {
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				user = userService.findMeshAuthUserByUsername(username);
+				user = boot.userRoot().findMeshAuthUserByUsername(username);
 				tx.success();
 			}
 			if (user != null) {

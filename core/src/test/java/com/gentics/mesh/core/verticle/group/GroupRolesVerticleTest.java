@@ -17,8 +17,6 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.service.GroupService;
-import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -30,12 +28,6 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupVerticle groupsVerticle;
-
-	@Autowired
-	private GroupService groupService;
-
-	@Autowired
-	private UserService userService;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {

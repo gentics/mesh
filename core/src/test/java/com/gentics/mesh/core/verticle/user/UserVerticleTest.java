@@ -149,8 +149,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		test.assertUser(updateRequest, restUser);
 		Thread.sleep(1000);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNull("The user node should have been updated and thus no user should be found.", userService.findByUsername(user.getUsername()));
-			User reloadedUser = userService.findByUsername("dummy_user_changed");
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(user.getUsername()));
+			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -172,7 +172,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		test.assertUser(updateRequest, restUser);
 
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			User reloadedUser = userService.findByUsername(user.getUsername());
+			User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 			assertEquals(user.getUsername(), reloadedUser.getUsername());
 			assertEquals(user.getFirstname(), reloadedUser.getFirstname());
@@ -196,7 +196,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 				new ObjectMapper().writeValueAsString(restUser));
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
 
-		User reloadedUser = userService.findByUUID(user.getUuid());
+		User reloadedUser = boot.userRoot().findByUUID(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 	}
 
@@ -217,7 +217,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 				new ObjectMapper().writeValueAsString(updatedUser));
 		expectMessageResponse("error_missing_perm", response, user.getUuid());
 
-		User reloadedUser = userService.findByUUID(user.getUuid());
+		User reloadedUser = boot.userRoot().findByUUID(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 		assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -341,7 +341,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = JsonUtil.readValue(response, UserResponse.class);
 		test.assertUser(newUser, restUser);
 
-		User user = userService.findByUUID(restUser.getUuid());
+		User user = boot.userRoot().findByUUID(restUser.getUuid());
 		test.assertUser(user, restUser);
 
 	}
@@ -385,7 +385,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 200, "OK");
 		expectMessageResponse("user_deleted", response, user.getUuid());
-		assertNull("The user should have been deleted", userService.findByUUID(user.getUuid()));
+		assertNull("The user should have been deleted", boot.userRoot().findByUUID(user.getUuid()));
 	}
 
 	@Test
@@ -405,7 +405,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + uuid, 403, "Forbidden");
 		expectMessageResponse("error_missing_perm", response, uuid);
-		assertNotNull("The user should not have been deleted", userService.findByUUID(uuid));
+		assertNotNull("The user should not have been deleted", userRoot.findByUUID(uuid));
 	}
 
 	@Test
@@ -429,7 +429,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + uuid, 200, "OK");
 		expectMessageResponse("user_deleted", response, uuid);
-		assertNull("The user should have been deleted", userService.findByUUID(uuid));
+		assertNull("The user should have been deleted", userRoot.findByUUID(uuid));
 	}
 
 	@Test

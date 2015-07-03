@@ -30,26 +30,26 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 		int e = i.incrementAndGet();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			assertNotNull(root.create("testuser" + e));
-			assertNotNull(userService.findByUsername("testuser" + e));
+			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
-		assertNotNull(userService.findByUsername("testuser" + e));
+		assertNotNull(boot.userRoot().findByUsername("testuser" + e));
 
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 				assertNotNull(root.create("testuser" + u));
-				assertNotNull(userService.findByUsername("testuser" + u));
+				assertNotNull(boot.userRoot().findByUsername("testuser" + u));
 				tx.failure();
 			}
-			assertNull(userService.findByUsername("testuser" + u));
+			assertNull(boot.userRoot().findByUsername("testuser" + u));
 
 		};
 		Thread t = new Thread(task);
 		t.start();
 		t.join();
 
-		assertNull(userService.findByUsername("testuser" + u));
+		assertNull(boot.userRoot().findByUsername("testuser" + u));
 		System.out.println("RUN: " + i.get());
 
 	}
@@ -61,19 +61,19 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 		Runnable task2 = () -> {
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 				user.setUsername("test2");
-				assertNotNull(userService.findByUsername("test2"));
+				assertNotNull(boot.userRoot().findByUsername("test2"));
 				tx.success();
 			}
-			assertNotNull(userService.findByUsername("test2"));
+			assertNotNull(boot.userRoot().findByUsername("test2"));
 
 			Runnable task = () -> {
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					user.setUsername("test3");
-					assertNotNull(userService.findByUsername("test3"));
+					assertNotNull(boot.userRoot().findByUsername("test3"));
 					tx.failure();
 				}
-				assertNotNull(userService.findByUsername("test2"));
-				assertNull(userService.findByUsername("test3"));
+				assertNotNull(boot.userRoot().findByUsername("test2"));
+				assertNull(boot.userRoot().findByUsername("test3"));
 
 			};
 			Thread t = new Thread(task);
@@ -87,8 +87,8 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 		Thread t2 = new Thread(task2);
 		t2.start();
 		t2.join();
-		assertNull(userService.findByUsername("test3"));
-		assertNotNull(userService.findByUsername("test2"));
+		assertNull(boot.userRoot().findByUsername("test3"));
+		assertNotNull(boot.userRoot().findByUsername("test2"));
 
 	}
 }

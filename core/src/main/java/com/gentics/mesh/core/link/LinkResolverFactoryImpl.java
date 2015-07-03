@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.gentics.mesh.core.data.service.NodeService;
+import com.gentics.mesh.cli.BootstrapInitializer;
 
 /**
  * Factory which provides link resolvers
@@ -18,16 +18,15 @@ import com.gentics.mesh.core.data.service.NodeService;
 public class LinkResolverFactoryImpl<T extends LinkResolver> implements LinkResolverFactory<AbstractLinkResolver> {
 
 	@Autowired
-	private NodeService nodeService;
-	
-	
+	private BootstrapInitializer boot;
+
 	private LinkResolverFactoryImpl() {
 	}
-	
+
 	@Override
 	public AbstractLinkResolver createLinkResolver(String link) {
 		// TODO replace class with prototype spring DI
-		return new LinkResolver(link, nodeService);
+		return new LinkResolver(link, boot.nodeRoot());
 	}
 
 }

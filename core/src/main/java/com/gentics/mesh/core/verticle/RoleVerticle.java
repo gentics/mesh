@@ -73,7 +73,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 
 				if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
-					if (roleService.findByName(requestModel.getName()) != null) {
+					if (boot.roleRoot().findByName(requestModel.getName()) != null) {
 						rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name")));
 						return;
 					}
@@ -106,7 +106,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				RoleListResponse listResponse = new RoleListResponse();
 				Page<? extends Role> rolePage;
 				try {
-					rolePage = roleService.findAll(requestUser, pagingInfo);
+					rolePage = boot.roleRoot().findAll(requestUser, pagingInfo);
 					for (Role role : rolePage) {
 						listResponse.getData().add(role.transformToRest());
 					}
@@ -142,7 +142,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
-			if (roleService.findByName(requestModel.getName()) != null) {
+			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
 				rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name")));
 				return;
 			}
