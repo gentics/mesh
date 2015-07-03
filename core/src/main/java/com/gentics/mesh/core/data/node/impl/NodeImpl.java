@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import java.io.IOException;
 import java.util.List;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -64,7 +65,6 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 		// this.links.add(link);
 	}
 
-
 	public void setSchemaContainer(SchemaContainer schema) {
 		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
 	}
@@ -92,8 +92,7 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 
 	@Override
 	public Node create() {
-		// TODO check whether the mesh node is in fact a container node.
-		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
+		Node node = BootstrapInitializer.getBoot().nodeRoot().create();
 		node.setParentNode(this);
 		return node;
 	}

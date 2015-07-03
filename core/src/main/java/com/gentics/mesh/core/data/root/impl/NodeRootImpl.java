@@ -28,6 +28,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return HAS_NODE;
 	}
 
+	public void addNode(Node node) {
+		linkOut(node.getImpl(), HAS_NODE);
+	}
+
 	@Override
 	public Page<? extends Node> findAll(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
@@ -38,6 +42,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
 		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 		return nodePage;
+	}
+
+	@Override
+	public Node create() {
+		// TODO check whether the mesh node is in fact a container node.
+		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
+		addNode(node);
+		return node;
 	}
 
 }

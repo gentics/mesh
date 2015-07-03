@@ -44,11 +44,11 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 	}
 
 	public String getName() {
-		return getFieldContainer(BootstrapInitializer.getRootService().languageRoot().getTagDefaultLanguage()).getName();
+		return getFieldContainer(BootstrapInitializer.getBoot().languageRoot().getTagDefaultLanguage()).getName();
 	}
 
 	public void setName(String name) {
-		getOrCreateFieldContainer(BootstrapInitializer.getRootService().languageRoot().getTagDefaultLanguage()).setName(name);
+		getOrCreateFieldContainer(BootstrapInitializer.getBoot().languageRoot().getTagDefaultLanguage()).setName(name);
 	}
 
 	public void removeNode(Node node) {

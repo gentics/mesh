@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
@@ -19,7 +20,13 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public class ProjectTest extends AbstractBasicObjectTest {
 
-	private ProjectRoot projectRoot = boot.projectRoot();
+	private ProjectRoot projectRoot;
+
+	@Before
+	public void setup() throws Exception {
+		super.setup();
+		projectRoot = boot.projectRoot();
+	}
 
 	@Test
 	@Override

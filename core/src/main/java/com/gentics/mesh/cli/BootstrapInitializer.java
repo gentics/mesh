@@ -82,7 +82,7 @@ public class BootstrapInitializer {
 		instance = this;
 	}
 
-	public static BootstrapInitializer getRootService() {
+	public static BootstrapInitializer getBoot() {
 		return instance;
 	}
 

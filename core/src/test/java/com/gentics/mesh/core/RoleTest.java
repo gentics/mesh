@@ -70,13 +70,10 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testIsPermitted() throws Exception {
 		User user = getUser();
-		long start = System.currentTimeMillis();
-		int nRuns = 200000;
+		int nRuns = 2000;
 		for (int i = 0; i < nRuns; i++) {
 			user.hasPermission(data().getFolder("news"), READ_PERM);
 		}
-		long dur = System.currentTimeMillis() - start;
-		System.out.println("Duration: " + dur / (double) nRuns);
 	}
 
 	@Test
@@ -122,7 +119,6 @@ public class RoleTest extends AbstractBasicObjectTest {
 		getRole().revokePermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
 		User user = getUser();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(data().getMeshRoot(), CREATE_PERM));
-
 	}
 
 	@Test
@@ -248,7 +244,6 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testRead() {
 		fail("Not yet implemented");
-
 	}
 
 	@Test

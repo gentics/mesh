@@ -13,4 +13,6 @@ public interface NodeRoot extends RootVertex<Node> {
 	Page<? extends Node> findAll(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException;
 
+	Node create();
+
 }
