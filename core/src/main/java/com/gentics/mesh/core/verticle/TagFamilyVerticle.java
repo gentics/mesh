@@ -1,10 +1,22 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static io.vertx.core.http.HttpMethod.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.ext.web.Route;
+
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.impl.TagFamilyImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.json.JsonUtil;
 
 @Component
 @Scope("singleton")
@@ -24,22 +36,47 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addDeleteHandler() {
-		// TODO Auto-generated method stub
-		
+		Route deleteRoute = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
+		deleteRoute.handler(rc -> {
+
+		});
 	}
 
 	private void addReadHandler() {
-		// TODO Auto-generated method stub
-		
+		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
+		readRoute.handler(rc -> {
+			String projectName = rcs.getProjectName(rc);
+			MeshAuthUser requestUser = getUser(rc);
+
+			rcs.loadObject(rc, "uuid", projectName, READ_PERM, TagFamilyImpl.class, (AsyncResult<TagFamily> rh) -> {
+			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
+				TagFamily tagFamily = trh.result();
+				rc.response().setStatusCode(200).end(JsonUtil.toJson(tagFamily.transformToRest(requestUser)));
+			});
+
+		});
+
+		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
+		readAllRoute.handler(rc -> {
+
+		});
+
 	}
 
 	private void addCreateHandler() {
-		// TODO Auto-generated method stub
-		
+		Route createRoute = route().method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		createRoute.handler(rc -> {
+
+		});
 	}
 
 	private void addUpdateHandler() {
-		// TODO Auto-generated method stub
-		
+		Route updateRoute = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		updateRoute.handler(rc -> {
+
+		});
 	}
 }

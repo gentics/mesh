@@ -3,6 +3,7 @@ package com.gentics.mesh.core;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -18,7 +19,10 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -105,25 +109,39 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		fail("Not yet implemented");
+		String uuid = getUser().getUuid();
+		assertNotNull(userService.findByUUID(uuid));
 	}
 
 	@Test
 	@Override
 	public void testTransformation() {
-		fail("Not yet implemented");
+		UserResponse restUser = getUser().transformToRest();
+		assertNotNull(restUser);
+		assertEquals(getUser().getUsername(), restUser.getUsername());
+		assertEquals(getUser().getUuid(), restUser.getUuid());
+		assertEquals(getUser().getLastname(), restUser.getLastname());
+		assertEquals(getUser().getFirstname(), restUser.getFirstname());
+		assertEquals(getUser().getEmailAddress(), restUser.getEmailAddress());
+		assertEquals(1, restUser.getGroups().size());
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() {
-		fail("Not yet implemented");
+		MeshRoot root = getMeshRoot();
+		User user = root.getUserRoot().create("Anton");
+		user.delete();
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("Not yet implemented");
+		MeshRoot root = getMeshRoot();
+		User user = root.getUserRoot().create("Anton");
+		assertFalse(user.hasPermission(user, Permission.CREATE_PERM));
+		user.addCRUDPermissionOnRole(root.getUserRoot(), Permission.CREATE_PERM, user);
+		assertTrue(user.hasPermission(user, Permission.CREATE_PERM));
 	}
 
 	@Test
@@ -153,6 +171,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		user.setFirstname(FIRSTNAME);
 		user.setLastname(LASTNAME);
 		user.setPasswordHash(PASSWDHASH);
+		assertTrue(user.isEnabled());
 
 		User reloadedUser = userService.findByUUID(user.getUuid());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
@@ -166,7 +185,10 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		fail("Not yet implemented");
+		User user = getUser();
+		assertTrue(user.isEnabled());
+		user.delete();
+		assertFalse(user.isEnabled());
 	}
 
 	@Test
@@ -184,7 +206,12 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("Not yet implemented");
+		User user = getUser();
+		assertEquals(1, user.getGroupCount());
+		assertTrue(user.isEnabled());
+		user.delete();
+		assertFalse(user.isEnabled());
+		assertEquals(0, user.getGroupCount());
 	}
 
 	@Test

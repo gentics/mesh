@@ -7,7 +7,6 @@ import java.io.IOException;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
 public class SchemaContainerImpl extends AbstractGenericNode implements SchemaContainer {
@@ -36,6 +35,7 @@ public class SchemaContainerImpl extends AbstractGenericNode implements SchemaCo
 
 	@Override
 	public void delete() {
+		//TODO should all references be updated to a new fallback schema?
 		getElement().remove();
 	}
 
@@ -56,7 +56,7 @@ public class SchemaContainerImpl extends AbstractGenericNode implements SchemaCo
 	public Schema getSchema() throws IOException {
 		Schema schema = getSchemaStorage().getSchema(getSchemaName());
 		if (schema == null) {
-			schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
+			schema = JsonUtil.readSchema(getJson());
 			getSchemaStorage().addSchema(schema);
 		}
 		return schema;

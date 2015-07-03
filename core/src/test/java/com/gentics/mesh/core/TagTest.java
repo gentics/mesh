@@ -1,6 +1,10 @@
 package com.gentics.mesh.core;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -159,13 +163,19 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		fail("Not yet implemented");
+		Tag tag = data().getTag("car");
+		assertNotNull(tagService.findByName("dummy", tag.getName()));
+		assertNull(tagService.findByName("bogus", tag.getName()));
+		assertNull(tagService.findByName("dummy", "bogus"));
+		assertNull(tagService.findByName("bogus", "bogus"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		fail("Not yet implemented");
+		Tag tag = data().getTag("car");
+		assertNotNull(tagService.findByUUID(tag.getUuid()));
+		assertNull(tagService.findByUUID("bogus"));
 	}
 
 	@Test
@@ -217,7 +227,6 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("Not yet implemented");
 	}
 
 	@Test
@@ -229,7 +238,15 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		fail("Not yet implemented");
+		Tag tag = data().getTag("car");
+
+		assertEquals("Car", tag.getName());
+		assertNotNull(tag.getCreationTimestamp());
+		assertNotNull(tag.getLastEditedTimestamp());
+		assertNotNull(tag.getEditor());
+		assertNotNull(tag.getCreator());
+		assertNotNull(tag.getTagFamily());
+
 	}
 
 	@Test

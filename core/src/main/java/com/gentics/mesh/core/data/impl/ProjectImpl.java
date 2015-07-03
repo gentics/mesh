@@ -32,7 +32,7 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 
 	public void setTagFamilyRoot(TagFamilyRoot root) {
 		outE(HAS_TAGFAMILY_ROOT).removeAll();
-		linkOut((TagFamilyRootImpl) root, HAS_TAGFAMILY_ROOT);
+		linkOut(root.getImpl(), HAS_TAGFAMILY_ROOT);
 	}
 
 	public TagFamilyRoot createTagFamilyRoot() {
@@ -54,7 +54,7 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 	}
 
 	public void setRootNode(Node rootNode) {
-		linkOut((NodeImpl) rootNode, HAS_ROOT_NODE);
+		linkOut(rootNode.getImpl(), HAS_ROOT_NODE);
 	}
 
 	public ProjectResponse transformToRest(MeshAuthUser user) {

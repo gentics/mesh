@@ -121,7 +121,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					routerStorage.addProjectRouter(project.getName());
 					String msg = "Registered project {" + project.getName() + "}";
 					log.info(msg);
-					roleService.addCRUDPermissionOnRole(requestUser, meshRoot, CREATE_PERM, project);
+					requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
 					projectCreated.complete(project);
 				} catch (Exception e) {
 					// TODO should we really fail here?

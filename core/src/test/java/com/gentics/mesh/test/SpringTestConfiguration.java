@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.util.TinkerGraphDatabaseProviderImpl;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -15,7 +16,7 @@ public class SpringTestConfiguration {
 
 	@Bean
 	public String graphProviderClassname() {
-		return "com.gentics.mesh.util.TinkerGraphDatabaseProviderImpl";
+		return TinkerGraphDatabaseProviderImpl.class.getName();
 	}
 
 	@PostConstruct

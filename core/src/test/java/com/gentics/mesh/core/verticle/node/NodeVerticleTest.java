@@ -254,7 +254,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		test.assertMeshNode(node, JsonUtil.readValue(response, NodeResponse.class));
+		test.assertMeshNode(node, JsonUtil.readNode(response, NodeResponse.class, node.getSchema()));
 	}
 
 	@Test

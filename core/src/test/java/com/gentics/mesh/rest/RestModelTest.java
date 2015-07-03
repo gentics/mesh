@@ -100,7 +100,7 @@ public class RestModelTest extends AbstractDBTest {
 		assertEquals("content", info.getSchema().getName());
 
 		// Deserialize NodeCreateRequest using the schema info
-		NodeCreateRequest loadedRequest = JsonUtil.readValue(json, NodeCreateRequest.class, schema);
+		NodeCreateRequest loadedRequest = JsonUtil.readNode(json, NodeCreateRequest.class, schema);
 		Map<String, Field> fields = loadedRequest.getFields();
 		assertNotNull(fields);
 		assertNotNull(fields.get("name"));
@@ -162,7 +162,7 @@ public class RestModelTest extends AbstractDBTest {
 		System.out.println(json);
 
 		// Deserialize the object
-		SchemaCreateRequest loadedRequest = JsonUtil.readSchema(json, SchemaCreateRequest.class);
+		SchemaCreateRequest loadedRequest = JsonUtil.readSchema(json);
 		assertNotNull(loadedRequest);
 
 		// Serialize the object

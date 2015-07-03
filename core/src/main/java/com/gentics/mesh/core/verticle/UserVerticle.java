@@ -76,6 +76,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+
 			MeshAuthUser requestUser = getUser(rc);
 			PagingInfo pagingInfo = getPagingInfo(rc);
 			vertx.executeBlocking((Future<UserListResponse> bch) -> {
@@ -216,7 +217,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					user.setEmailAddress(requestModel.getEmailAddress());
 					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 					user.addGroup(parentGroup);
-					roleService.addCRUDPermissionOnRole(requestUser, parentGroup, CREATE_PERM, user);
+					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 					userCreated.complete(user);
 					tx.success();
 				}

@@ -95,7 +95,7 @@ public final class JsonUtil {
 		}
 	}
 
-	public static <T> T readValue(String content, Class<T> valueType, final Schema schema) throws IOException, JsonParseException,
+	public static <T> T readNode(String json, Class<T> valueType, final Schema schema) throws IOException, JsonParseException,
 			JsonMappingException {
 
 		InjectableValues values = new InjectableValues() {
@@ -110,7 +110,7 @@ public final class JsonUtil {
 
 			}
 		};
-		return mapper.reader(values).forType(valueType).readValue(content);
+		return nodeMapper.reader(values).forType(valueType).readValue(json);
 	}
 
 	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
@@ -120,9 +120,9 @@ public final class JsonUtil {
 	public static <T extends NodeResponse> T readNode(String json, Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
 		return nodeMapper.readValue(json, clazz);
 	}
-
-	public static <T extends Schema> T readSchema(String json, Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
-		return schemaMapper.readValue(json, clazz);
+	
+	public static <T extends Schema> T readSchema(String json) throws JsonParseException, JsonMappingException, IOException {
+		return (T) schemaMapper.readValue(json, SchemaImpl.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -150,5 +150,9 @@ public final class JsonUtil {
 			throw new HttpStatusCodeErrorException(500, message, e);
 		}
 	}
+
+
+
+	
 
 }

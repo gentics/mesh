@@ -1,7 +1,12 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,10 +15,12 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -98,20 +105,35 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() {
-		fail("Not yet implemented");
+	public void testTransformation() throws IOException {
+		SchemaContainer container = getSchemaContainer();
+		Schema schema = container.getSchema();
+		assertNotNull(schema);
+		String json = JsonUtil.toJson(schema);
+		assertNotNull(json);
+		Schema deserializedSchema = JsonUtil.readSchema(json);
+		assertNotNull(deserializedSchema);
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() {
-		fail("Not yet implemented");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		assertNotNull(newContainer);
+		String uuid = newContainer.getUuid();
+		newContainer.delete();
+		assertNull(schemaContainerService.findByUUID(uuid));
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("Not yet implemented");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		assertFalse(getRole().hasPermission(Permission.CREATE_PERM, newContainer));
+		getRequestUser().addCRUDPermissionOnRole(getMeshRoot().getSchemaContainerRoot(), Permission.CREATE_PERM, newContainer);
+		assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
+				getRole().hasPermission(Permission.CREATE_PERM, newContainer));
+
 	}
 
 	@Test

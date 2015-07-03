@@ -37,7 +37,6 @@ public class WebRootService {
 
 		// Traverse the graph and buildup the result path while doing so
 		Vertex currentVertex = project.getRootNode().getVertex();
-		//		Node currentNode = neo4jTemplate.getPersistentState(project.getRootNode());
 		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i];
 

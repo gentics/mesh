@@ -12,7 +12,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -80,8 +82,7 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
 
 		// VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
-		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label())
-				.has(UserImpl.class);
+		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(UserImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label())
 				.has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, UserImpl.class);
@@ -130,8 +131,9 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 	}
 
 	public User createUser(String username) {
-		UserImpl user = getGraph().addFramedVertex(UserImpl.class);
-		// TODO also add user to userroot
+		//UserImpl user = getGraph().addFramedVertex(UserImpl.class);
+		MeshRoot root = MeshRoot.getInstance();
+		User user = root.getUserRoot().create(username);
 		addUser(user);
 		return user;
 	}

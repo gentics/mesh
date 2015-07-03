@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
 public interface TagFamily extends MeshVertex {
 
@@ -23,4 +24,6 @@ public interface TagFamily extends MeshVertex {
 	List<? extends Tag> getTags();
 
 	TagFamilyImpl getImpl();
+
+	TagFamilyResponse transformToRest(MeshAuthUser requestUser);
 }

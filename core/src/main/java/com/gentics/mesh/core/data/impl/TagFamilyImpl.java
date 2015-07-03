@@ -4,9 +4,11 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
 public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
 
@@ -31,11 +33,11 @@ public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
 	}
 
 	public void addTag(Tag tag) {
-		linkOut((TagImpl) tag, HAS_TAG);
+		linkOut(tag.getImpl(), HAS_TAG);
 	}
 
 	public void removeTag(Tag tag) {
-		unlinkOut((TagImpl) tag, HAS_TAG);
+		unlinkOut(tag.getImpl(), HAS_TAG);
 		// TODO delete tag node?!
 	}
 
@@ -49,6 +51,14 @@ public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
 	@Override
 	public TagFamilyImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public TagFamilyResponse transformToRest(MeshAuthUser requestUser) {
+		TagFamilyResponse response = new TagFamilyResponse();
+		response.setUuid(getUuid());
+		response.setName(getName());
+		return response;
 	}
 
 }

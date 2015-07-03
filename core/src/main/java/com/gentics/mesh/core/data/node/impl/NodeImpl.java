@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.node.NodeTransformationTask;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
 
 public class NodeImpl extends GenericFieldContainerNode implements Node {
@@ -89,6 +90,12 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 		return node;
 	}
 
+	@Override
+	public String getNodeResponseJson(TransformationInfo info) {
+		return JsonUtil.writeNodeJson(transformToRest(info));
+	}
+
+	@Override
 	public NodeResponse transformToRest(TransformationInfo info) {
 
 		NodeResponse restContent = new NodeResponse();

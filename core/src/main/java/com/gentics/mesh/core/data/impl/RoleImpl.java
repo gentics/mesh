@@ -6,12 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -41,7 +41,7 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 	}
 
 	@Override
-	public boolean hasPermission(Permission permission, Node node) {
+	public boolean hasPermission(Permission permission, GenericNode node) {
 		return out(permission.label()).retain(node.getImpl()).hasNext();
 	}
 

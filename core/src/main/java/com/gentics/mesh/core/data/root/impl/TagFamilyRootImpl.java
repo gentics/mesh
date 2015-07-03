@@ -18,16 +18,19 @@ public class TagFamilyRootImpl extends MeshVertexImpl implements TagFamilyRoot {
 		return tagFamily;
 	}
 
-	public List<? extends TagFamilyImpl> getTagFamilies() {
+	@Override
+	public List<? extends TagFamily> getTagFamilies() {
 		return out(HAS_TAG_FAMILY).has(TagFamilyImpl.class).toListExplicit(TagFamilyImpl.class);
 	}
 
-	private void addTagFamily(TagFamilyImpl tagFamily) {
-		linkOut(tagFamily, HAS_TAG_FAMILY);
+	@Override
+	public void addTagFamily(TagFamily tagFamily) {
+		linkOut(tagFamily.getImpl(), HAS_TAG_FAMILY);
 	}
 
-	public void removeTagFamily(TagFamilyImpl tagFamily) {
-		unlinkOut(tagFamily, HAS_TAG_FAMILY);
+	@Override
+	public void removeTagFamily(TagFamily tagFamily) {
+		unlinkOut(tagFamily.getImpl(), HAS_TAG_FAMILY);
 	}
 
 	@Override

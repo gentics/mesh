@@ -28,6 +28,7 @@ public class UserRootImpl extends MeshVertexImpl implements UserRoot {
 	public User create(String username) {
 		UserImpl user = getGraph().addFramedVertex(UserImpl.class);
 		user.setUsername(username);
+		user.enable();
 		addUser(user);
 		return user;
 	}

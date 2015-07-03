@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
 import com.gentics.mesh.core.data.service.MeshRootService;
@@ -224,6 +225,7 @@ public class BootstrapInitializer {
 			meshRoot = rootService.create();
 			log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
 		}
+		MeshRootImpl.setInstance(meshRoot);
 
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		if (languageRoot == null) {

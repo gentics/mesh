@@ -11,8 +11,7 @@ public interface UserRoot extends MeshVertex {
 	User create(String username);
 
 	List<? extends User> getUsers();
-	
-	UserRootImpl getImpl();
 
+	UserRootImpl getImpl();
 
 }

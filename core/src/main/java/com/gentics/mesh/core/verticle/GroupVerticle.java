@@ -329,7 +329,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			GroupRoot groupRoot = root.getGroupRoot();
 			rcs.hasPermission(rc, groupRoot, CREATE_PERM, rh -> {
 				Group group = groupRoot.create(requestModel.getName());
-				roleService.addCRUDPermissionOnRole(requestUser, root.getGroupRoot(), CREATE_PERM, group);
+				requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
 				groupCreated.complete(group);
 			}, tch -> {
 				if (tch.failed()) {

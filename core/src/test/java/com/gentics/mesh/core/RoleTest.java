@@ -154,7 +154,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		Node node = parentNode.create();
 		assertEquals(0, requestUser.getPermissions(node).size());
-		roleService.addCRUDPermissionOnRole(requestUser, parentNode, CREATE_PERM, node);
+		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 		assertEquals(4, requestUser.getPermissions(node).size());
 
 		for (Role role : data().getRoles().values()) {

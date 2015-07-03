@@ -151,7 +151,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				Group parentGroup = rh.result();
 				Role role = parentGroup.createRole(requestModel.getName());
 				role.addGroup(parentGroup);
-				roleService.addCRUDPermissionOnRole(requestUser, parentGroup, CREATE_PERM, role);
+				requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
 				roleCreated.complete(role);
 			}, trh -> {
 				if (trh.failed()) {

@@ -33,4 +33,8 @@ public interface MeshRoot extends MeshVertex {
 
 	MeshRootImpl getImpl();
 
+	static MeshRoot getInstance() {
+		return MeshRootImpl.getInstance();
+	}
+
 }

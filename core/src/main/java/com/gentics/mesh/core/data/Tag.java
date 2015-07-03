@@ -18,13 +18,9 @@ public interface Tag extends GenericNode {
 
 	List<? extends TagFieldContainer> getFieldContainers();
 
-	User getCreator();
-
-	TagFamily getTagFamilyRoot();
+	TagFamily getTagFamily();
 
 	void addProject(Project project);
-
-	void setCreator(User user);
 
 	TagReference tansformToTagReference(TransformationInfo info);
 

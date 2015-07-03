@@ -20,16 +20,17 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -39,13 +40,13 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.GroupService;
 import com.gentics.mesh.core.data.service.LanguageService;
-import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.MeshRootService;
-import com.gentics.mesh.core.data.service.UserService;
+import com.gentics.mesh.core.data.service.NodeService;
 import com.gentics.mesh.core.data.service.ProjectService;
 import com.gentics.mesh.core.data.service.RoleService;
 import com.gentics.mesh.core.data.service.SchemaContainerService;
 import com.gentics.mesh.core.data.service.TagService;
+import com.gentics.mesh.core.data.service.UserService;
 import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -523,12 +524,8 @@ public class DemoDataProvider {
 			englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
-		folderNode.setCreator(userInfo.getUser());
-		folderNode.setCreationTimestamp(System.currentTimeMillis());
 		folderNode.setSchemaContainer(schemaContainers.get("folder"));
-
-		folderNode.setEditor(userInfo.getUser());
-		folderNode.setLastEditedTimestamp(System.currentTimeMillis());
+		setCreatorEditor(folderNode);
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
 			throw new RuntimeException("Key for folder empty");
@@ -541,6 +538,14 @@ public class DemoDataProvider {
 		return folderNode;
 	}
 
+	private void setCreatorEditor(GenericNode node) {
+		node.setCreator(userInfo.getUser());
+		node.setCreationTimestamp(System.currentTimeMillis());
+
+		node.setEditor(userInfo.getUser());
+		node.setLastEditedTimestamp(System.currentTimeMillis());
+	}
+
 	public Tag addTag(String name) {
 		return addTag(name, getTagFamily("demo"));
 	}
@@ -551,7 +556,7 @@ public class DemoDataProvider {
 		}
 		Tag tag = tagFamily.create(name);
 		tag.addProject(project);
-		tag.setCreator(userInfo.getUser());
+		setCreatorEditor(tag);
 		tags.put(name.toLowerCase(), tag);
 		return tag;
 	}
@@ -577,11 +582,8 @@ public class DemoDataProvider {
 		}
 		// TODO maybe set project should be done inside the save?
 		node.addProject(project);
-		node.setCreator(userInfo.getUser());
-		node.setCreationTimestamp(System.currentTimeMillis());
-
-		node.setEditor(userInfo.getUser());
-		node.setLastEditedTimestamp(System.currentTimeMillis());
+		
+		setCreatorEditor(node);
 
 		node.setSchemaContainer(schema);
 		// node.setOrder(42);

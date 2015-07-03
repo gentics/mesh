@@ -31,8 +31,6 @@ public interface Node extends GenericNode {
 
 	void setSchemaContainer(SchemaContainer schema);
 
-	void setCreator(User user);
-
 	void addProject(Project project);
 
 	void setParentNode(Node parentNode);
@@ -50,6 +48,8 @@ public interface Node extends GenericNode {
 	List<? extends FieldContainer> getFieldContainers();
 
 	NodeResponse transformToRest(TransformationInfo info);
+
+	String getNodeResponseJson(TransformationInfo info);
 
 	User getCreator();
 

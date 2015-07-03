@@ -55,7 +55,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 				restTag.setPermissions(requestUser.getPermissionNames(tag));
 				restTag.setUuid(tag.getUuid());
 
-				TagFamily tagFamily = tag.getTagFamilyRoot();
+				TagFamily tagFamily = tag.getTagFamily();
 
 				if (tagFamily != null) {
 					TagFamilyReference tagFamilyReference = new TagFamilyReference();

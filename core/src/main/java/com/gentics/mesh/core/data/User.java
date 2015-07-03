@@ -49,4 +49,16 @@ public interface User extends GenericNode {
 
 	Set<Permission> getPermissions(MeshVertex node);
 
+	long getGroupCount();
+
+	void disable();
+
+	boolean isEnabled();
+
+	void enable();
+
+	void deactivate();
+
+	void addCRUDPermissionOnRole(MeshVertex node, Permission permission, GenericNode targetNode);
+
 }

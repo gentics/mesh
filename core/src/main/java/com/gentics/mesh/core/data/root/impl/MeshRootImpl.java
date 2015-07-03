@@ -18,6 +18,16 @@ import com.gentics.mesh.core.data.root.UserRoot;
 
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
+	private static MeshRoot instance;
+
+	public static MeshRoot getInstance() {
+		return instance;
+	}
+
+	public static void setInstance(MeshRoot meshRoot) {
+		instance = meshRoot;
+	}
+
 	public UserRoot getUserRoot() {
 		return out(HAS_USER_ROOT).has(UserRootImpl.class).nextOrDefault(UserRootImpl.class, null);
 	}
