@@ -11,6 +11,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,10 +26,16 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public class SchemaTest extends AbstractBasicObjectTest {
 
-	
-	private SchemaContainerRoot schemaContainerRoot = boot.schemaContainerRoot();
 	@Autowired
 	private SchemaStorage schemaStorage;
+
+	private SchemaContainerRoot schemaContainerRoot;
+
+	@Before
+	public void setup() throws Exception {
+		super.setup();
+		schemaContainerRoot = boot.schemaContainerRoot();
+	}
 
 	@Test
 	@Override

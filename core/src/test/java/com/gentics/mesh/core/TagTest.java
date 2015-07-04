@@ -12,6 +12,7 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Language;
@@ -33,11 +34,17 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	private static Logger log = LoggerFactory.getLogger(TagTest.class);
 
-	private TagRoot tagRoot = boot.tagRoot();
+	private TagRoot tagRoot;
 
 	public static final String GERMAN_NAME = "test german name";
 
 	public static final String ENGLISH_NAME = "test english name";
+
+	@Before
+	public void setup() throws Exception {
+		super.setup();
+		tagRoot = boot.tagRoot();
+	}
 
 	@Test
 	public void testTagFamilyTagCreation() {

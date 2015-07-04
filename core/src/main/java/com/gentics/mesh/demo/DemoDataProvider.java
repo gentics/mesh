@@ -57,8 +57,6 @@ public class DemoDataProvider {
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
-	// private static SecureRandom random = new SecureRandom();
-
 	@Autowired
 	private FramedTransactionalGraph fg;
 
@@ -286,34 +284,39 @@ public class DemoDataProvider {
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
 
 		String password = "test123";
-		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
+		log.info("Creating user with username: " + username + " and password: " + password);
 
+		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 		User user = root.getUserRoot().create(username);
 		user.setUuid("UUIDOFUSER1");
 		user.setPassword(password);
-		log.info("Creating user with username: " + username + " and password: " + password);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEmailAddress(email);
 
 		user.setCreator(user);
 		user.setCreationTimestamp(System.currentTimeMillis());
-
 		user.setEditor(user);
 		user.setLastEditedTimestamp(System.currentTimeMillis());
-
 		users.put(username, user);
 
 		String roleName = username + "_role";
 		Role role = root.getRoleRoot().create(roleName);
-
 		role.addPermissions(role, READ_PERM);
+		role.setCreator(user);
+		role.setCreationTimestamp(System.currentTimeMillis());
+		role.setEditor(user);
+		role.setLastEditedTimestamp(System.currentTimeMillis());
 		roles.put(roleName, role);
 
 		String groupName = username + "_group";
 		Group group = root.getGroupRoot().create(groupName);
 		group.addUser(user);
 		group.addRole(role);
+		group.setCreator(user);
+		group.setCreationTimestamp(System.currentTimeMillis());
+		group.setEditor(user);
+		group.setLastEditedTimestamp(System.currentTimeMillis());
 		groups.put(groupName, group);
 
 		UserInfo userInfo = new UserInfo(user, group, role, password);

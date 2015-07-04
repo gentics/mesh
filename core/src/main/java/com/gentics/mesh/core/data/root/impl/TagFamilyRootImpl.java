@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_FAMILY;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -20,9 +21,14 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	@Override
 	public TagFamily create(String name) {
+
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
 		tagFamily.setName(name);
 		addTagFamily(tagFamily);
+		TagFamilyRoot root = BootstrapInitializer.getBoot().tagFamilyRoot();
+		if (!root.equals(this)) {
+			root.addTagFamily(tagFamily);
+		}
 		return tagFamily;
 	}
 

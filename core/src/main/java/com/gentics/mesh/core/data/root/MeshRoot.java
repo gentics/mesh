@@ -59,4 +59,10 @@ public interface MeshRoot extends MeshVertex {
 
 	void setTagRoot(TagRoot tagRoot);
 
+	TagFamilyRoot getTagFamilyRoot();
+
+	void setTagFamilyRoot(TagFamilyRoot root);
+
+	TagFamilyRoot createTagFamilyRoot();
+
 }

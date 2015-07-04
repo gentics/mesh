@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -99,6 +100,7 @@ public class BootstrapInitializer {
 	private static GroupRoot groupRoot;
 	private static NodeRoot nodeRoot;
 	private static TagRoot tagRoot;
+	private static TagFamilyRoot tagFamilyRoot;
 	private static LanguageRoot languageRoot;
 	private static RoleRoot roleRoot;
 	private static UserRoot userRoot;
@@ -174,6 +176,18 @@ public class BootstrapInitializer {
 			tagRoot = findTagRoot();
 		}
 		return tagRoot;
+	}
+
+	public TagFamilyRoot findTagFamilyRoot() {
+		return meshRoot().getTagFamilyRoot();
+	}
+
+	public TagFamilyRoot tagFamilyRoot() {
+		if (tagFamilyRoot == null) {
+			tagFamilyRoot = findTagFamilyRoot();
+		}
+		return tagFamilyRoot;
+
 	}
 
 	public NodeRoot findNodeRoot() {
@@ -352,6 +366,18 @@ public class BootstrapInitializer {
 		if (nodeRoot == null) {
 			nodeRoot = meshRoot.createNodeRoot();
 			log.info("Stored node root {" + nodeRoot.getUuid() + "}");
+		}
+
+		TagRoot tagRoot = meshRoot.getTagRoot();
+		if (tagRoot == null) {
+			tagRoot = meshRoot.createTagRoot();
+			log.info("Stored tag root {" + tagRoot.getUuid() + "}");
+		}
+
+		TagFamilyRoot tagFamilyRoot = meshRoot.getTagFamilyRoot();
+		if (tagFamilyRoot == null) {
+			tagFamilyRoot = meshRoot.createTagFamilyRoot();
+			log.info("Stored tag family root {" + tagFamilyRoot.getUuid() + "}");
 		}
 
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();

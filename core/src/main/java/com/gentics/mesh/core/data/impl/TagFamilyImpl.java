@@ -4,10 +4,12 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 
 import java.util.List;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
 public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
@@ -45,6 +47,8 @@ public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		addTag(tag);
+		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();
+		tagRoot.addTag(tag);
 		return tag;
 	}
 

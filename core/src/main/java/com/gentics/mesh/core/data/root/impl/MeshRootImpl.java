@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PROJECT_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER_ROOT;
 
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 
@@ -107,7 +109,13 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		TagRootImpl tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
 		setTagRoot(tagRoot);
 		return tagRoot;
+	}
 
+	@Override
+	public TagFamilyRoot createTagFamilyRoot() {
+		TagFamilyRoot tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
+		setTagFamilyRoot(tagFamilyRoot);
+		return tagFamilyRoot;
 	}
 
 	@Override
@@ -125,6 +133,16 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public void setNodeRoot(NodeRoot nodeRoot) {
 		linkOut(nodeRoot.getImpl(), HAS_NODE_ROOT);
+	}
+
+	@Override
+	public void setTagFamilyRoot(TagFamilyRoot root) {
+		linkOut(root.getImpl(), HAS_TAGFAMILY_ROOT);
+	}
+
+	@Override
+	public TagFamilyRoot getTagFamilyRoot() {
+		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
 	}
 
 	@Override

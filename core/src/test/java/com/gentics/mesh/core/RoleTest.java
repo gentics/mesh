@@ -243,7 +243,15 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		fail("Not yet implemented");
+		Role role = getRole();
+		assertEquals("joe1_role", role.getName());
+		assertNotNull(role.getUuid());
+
+		assertNotNull(role.getCreationTimestamp());
+		assertNotNull(role.getCreator());
+
+		assertNotNull(role.getEditor());
+		assertNotNull(role.getLastEditedTimestamp());
 	}
 
 	@Test

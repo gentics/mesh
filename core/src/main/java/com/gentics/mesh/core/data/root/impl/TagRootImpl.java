@@ -9,6 +9,7 @@ import java.util.List;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.paging.PagingInfo;
@@ -85,7 +86,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	@Override
 	public Tag findByName(String projectName, String name) {
 		// TODO filter by i18n container name field, projectname
-		return findByNameAndProject(projectName, name);
+		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).mark().has(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
+				.has("name", projectName).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 }
