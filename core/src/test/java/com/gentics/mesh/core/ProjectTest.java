@@ -65,7 +65,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		Page<? extends Project> page = projectRoot.findAllVisible(getRequestUser(), new PagingInfo(1, 25));
+		Page<? extends Project> page = projectRoot.findAll(getRequestUser(), new PagingInfo(1, 25));
 		assertNotNull(page);
 	}
 

@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LANGUAGE;
 
-import java.util.List;
-
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
@@ -23,7 +21,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 
 	@Override
 	public void addLanguage(Language language) {
-		linkOut(language.getImpl(), HAS_LANGUAGE);
+		addItem(language);
 	}
 
 	// TODO add unique index
@@ -35,11 +33,6 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 		language.setLanguageTag(languageTag);
 		addLanguage(language);
 		return language;
-	}
-
-	@Override
-	public LanguageRootImpl getImpl() {
-		return this;
 	}
 
 	/**

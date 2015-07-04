@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
-
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,7 +22,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public void addSchemaContainer(SchemaContainer schema) {
-		linkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
+		addItem(schema);
+	}
+
+	@Override
+	public void removeSchemaContainer(SchemaContainer schemaContainer) {
+		removeItem(schemaContainer);
 	}
 
 	@Override
@@ -39,17 +41,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	// TODO unique index
 
 	@Override
-	public SchemaContainerRootImpl getImpl() {
-		return this;
-	}
-
-	@Override
 	public SchemaContainer findByName(String projectName, String name) {
 		if (StringUtils.isEmpty(projectName) || StringUtils.isEmpty(name)) {
 			throw new NullPointerException("name or project name null");
 		}
-		return out(HAS_SCHEMA_CONTAINER).has("name", name).has(SchemaContainerImpl.class).mark().out(ASSIGNED_TO_PROJECT).has("name", projectName)
-				.back().nextOrDefault(SchemaContainerImpl.class, null);
+		return findByNameAndProject(projectName, name);
 	}
 
 }

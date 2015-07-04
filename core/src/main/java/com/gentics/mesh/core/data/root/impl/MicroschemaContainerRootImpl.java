@@ -18,4 +18,20 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		return HAS_SCHEMA_CONTAINER;
 	}
 
+	@Override
+	public void addMicroschema(MicroschemaContainer container) {
+		addItem(container);
+	}
+
+	@Override
+	public void removeMicroschema(MicroschemaContainer container) {
+		removeItem(container);
+	}
+
+	@Override
+	public MicroschemaContainer create(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

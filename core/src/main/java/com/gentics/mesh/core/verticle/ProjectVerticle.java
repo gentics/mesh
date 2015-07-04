@@ -163,7 +163,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				ProjectListResponse listResponse = new ProjectListResponse();
 				Page<? extends Project> projectPage;
 				try {
-					projectPage = boot.projectRoot().findAllVisible(requestUser, pagingInfo);
+					projectPage = boot.projectRoot().findAll(requestUser, pagingInfo);
 					for (Project project : projectPage) {
 						listResponse.getData().add(project.transformToRest(requestUser));
 					}

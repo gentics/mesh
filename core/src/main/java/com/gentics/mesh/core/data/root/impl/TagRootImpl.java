@@ -29,6 +29,16 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
+	public void addTag(Tag tag) {
+		addItem(tag);
+	}
+
+	@Override
+	public void removeTag(Tag tag) {
+		removeTag(tag);
+	}
+
+	@Override
 	public Page<? extends Tag> findProjectTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
 
@@ -74,10 +84,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public Tag findByName(String projectName, String name) {
-		// TODO filter by i18n properties, projectname
+		// TODO filter by i18n container name field, projectname
 		return findByNameAndProject(projectName, name);
 	}
-
-
 
 }

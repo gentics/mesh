@@ -28,8 +28,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return HAS_NODE;
 	}
 
+	@Override
 	public void addNode(Node node) {
-		linkOut(node.getImpl(), HAS_NODE);
+		addItem(node);
+	}
+
+	@Override
+	public void removeNode(Node node) {
+		removeItem(node);
 	}
 
 	@Override

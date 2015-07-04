@@ -22,12 +22,12 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public void addUser(User user) {
-		linkOut(user.getImpl(), HAS_USER);
+		addItem(user);
 	}
 
 	@Override
 	public void removeUser(User user) {
-		unlinkOut(user.getImpl(), HAS_USER);
+		removeItem(user);
 	}
 
 	// TODO unique index
@@ -37,7 +37,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		UserImpl user = getGraph().addFramedVertex(UserImpl.class);
 		user.setUsername(username);
 		user.enable();
-		addUser(user);
+		addItem(user);
 		return user;
 	}
 
@@ -49,11 +49,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		return out(HAS_USER).has(UserImpl.class).has(UserImpl.USERNAME_KEY, username).nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
-	}
-
-	@Override
-	public UserRootImpl getImpl() {
-		return this;
 	}
 
 }

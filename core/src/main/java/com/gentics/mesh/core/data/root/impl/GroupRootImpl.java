@@ -21,7 +21,12 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 	@Override
 	public void addGroup(Group group) {
-		linkOut(group.getImpl(), HAS_GROUP);
+		addItem(group);
+	}
+
+	@Override
+	public void removeGroup(Group group) {
+		removeItem(group);
 	}
 
 	@Override
@@ -30,11 +35,6 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		group.setName(name);
 		addGroup(group);
 		return group;
-	}
-
-	@Override
-	public GroupRootImpl getImpl() {
-		return this;
 	}
 
 }

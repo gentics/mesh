@@ -74,6 +74,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
+		System.out.println(boot.groupRoot().getClass().getName());
 		assertNotNull(boot.groupRoot().findByName("guests"));
 	}
 

@@ -96,6 +96,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
+		BootstrapInitializer.clearReferenceCache();
 		bootstrapInitializer.initMandatoryData();
 
 		schemaContainers.clear();

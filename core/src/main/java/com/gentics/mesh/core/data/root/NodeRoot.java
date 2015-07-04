@@ -15,4 +15,8 @@ public interface NodeRoot extends RootVertex<Node> {
 
 	Node create();
 
+	void addNode(Node node);
+	
+	void removeNode(Node node);
+
 }

@@ -80,6 +80,7 @@ public class BootstrapInitializer {
 	@PostConstruct
 	public void setup() {
 		instance = this;
+		clearReferenceCache();
 	}
 
 	public static BootstrapInitializer getBoot() {
@@ -94,6 +95,16 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private RouterStorage routerStorage;
+
+	private static GroupRoot groupRoot;
+	private static NodeRoot nodeRoot;
+	private static TagRoot tagRoot;
+	private static LanguageRoot languageRoot;
+	private static RoleRoot roleRoot;
+	private static UserRoot userRoot;
+	private static SchemaContainerRoot schemaContainerRoot;
+	private static ProjectRoot projectRoot;
+	private static MeshRoot meshRoot;
 
 	public BootstrapInitializer() {
 		addMandatoryVerticle(UserVerticle.class);
@@ -116,45 +127,120 @@ public class BootstrapInitializer {
 		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
 	}
 
-	public MeshRoot meshRoot() {
-		return fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-	}
-
 	public MeshRoot createMeshRoot() {
 		MeshRootImpl root = fg.addFramedVertex(MeshRootImpl.class);
 		return root;
 	}
 
-	public SchemaContainerRoot schemaContainerRoot() {
+	public MeshRoot findMeshRoot() {
+		return fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+	}
+
+	public MeshRoot meshRoot() {
+		if (meshRoot == null) {
+			meshRoot = findMeshRoot();
+		}
+		return meshRoot;
+	}
+
+	public SchemaContainerRoot findSchemaContainerRoot() {
 		return meshRoot().getSchemaContainerRoot();
 	}
 
-	public RoleRoot roleRoot() {
+	public SchemaContainerRoot schemaContainerRoot() {
+		if (schemaContainerRoot == null) {
+			schemaContainerRoot = findSchemaContainerRoot();
+		}
+		return schemaContainerRoot;
+	}
+
+	public RoleRoot findRoleRoot() {
 		return meshRoot().getRoleRoot();
 	}
 
-	public TagRoot tagRoot() {
+	public RoleRoot roleRoot() {
+		if (roleRoot == null) {
+			roleRoot = findRoleRoot();
+		}
+		return roleRoot;
+	}
+
+	public TagRoot findTagRoot() {
 		return meshRoot().getTagRoot();
 	}
 
-	public NodeRoot nodeRoot() {
+	public TagRoot tagRoot() {
+		if (tagRoot == null) {
+			tagRoot = findTagRoot();
+		}
+		return tagRoot;
+	}
+
+	public NodeRoot findNodeRoot() {
 		return meshRoot().getNodeRoot();
 	}
 
-	public UserRoot userRoot() {
+	public NodeRoot nodeRoot() {
+		if (nodeRoot == null) {
+			nodeRoot = findNodeRoot();
+		}
+		return nodeRoot;
+	}
+
+	public UserRoot findUserRoot() {
 		return meshRoot().getUserRoot();
 	}
 
-	public GroupRoot groupRoot() {
+	public UserRoot userRoot() {
+		if (userRoot == null) {
+			return findUserRoot();
+		}
+		return userRoot;
+	}
+
+	public GroupRoot findGroupRoot() {
 		return meshRoot().getGroupRoot();
 	}
 
-	public LanguageRoot languageRoot() {
+	public GroupRoot groupRoot() {
+		if (groupRoot == null) {
+			groupRoot = findGroupRoot();
+		}
+		return groupRoot;
+	}
+
+	public LanguageRoot findLanguageRoot() {
 		return meshRoot().getLanguageRoot();
 	}
 
-	public ProjectRoot projectRoot() {
+	public LanguageRoot languageRoot() {
+		if (languageRoot == null) {
+			languageRoot = findLanguageRoot();
+		}
+		return languageRoot;
+	}
+
+	public ProjectRoot findProjectRoot() {
 		return meshRoot().getProjectRoot();
+	}
+
+	public ProjectRoot projectRoot() {
+		if (projectRoot == null) {
+			projectRoot = findProjectRoot();
+		}
+		return projectRoot;
+	}
+
+	public static void clearReferenceCache() {
+		projectRoot = null;
+		tagRoot = null;
+		roleRoot = null;
+		meshRoot = null;
+		groupRoot = null;
+		userRoot = null;
+		nodeRoot = null;
+		schemaContainerRoot = null;
+		languageRoot = null;
 	}
 
 	/**

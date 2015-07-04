@@ -21,6 +21,14 @@ public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVerte
 
 	abstract protected String getRootLabel();
 
+	protected void addItem(T item) {
+		linkOut(item.getImpl(), getRootLabel());
+	}
+
+	protected void removeItem(T item) {
+		unlinkOut(item.getImpl(), getRootLabel());
+	}
+
 	@Override
 	public List<? extends T> findAll() {
 		return out(getRootLabel()).has(getPersistanceClass()).toListExplicit(getPersistanceClass());
@@ -37,11 +45,42 @@ public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVerte
 	}
 
 	protected T findByNameAndProject(String projectName, String name) {
-		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).mark().has(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).has("name" , projectName).nextOrDefaultExplicit(getPersistanceClass(), null);
+		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).mark().has(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
+				.has("name", projectName).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	@Override
 	public Page<? extends T> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+
+		// @Override
+		// public Page<? extends Role> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+		// // TODO filter for permissions
+		// VertexTraversal<?, ?, ?> traversal = out(HAS_ROLE).has(RoleImpl.class);
+		// VertexTraversal<?, ?, ?> countTraversal = out(HAS_ROLE).has(RoleImpl.class);
+		// return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, RoleImpl.class);
+		// // public Page<Role> findAll(String userUuid, Pageable pageable) {
+		// // // @Query(value = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + "return role ORDER BY role.name",
+		// //
+		// // // countQuery = MATCH_PERMISSION_ON_ROLE + " WHERE " + FILTER_USER_PERM + " return count(role)")
+		// // return null;
+		// // }
+		// // TODO filter for permissions?
+		// }
+		// @Override
+		// public Page<? extends Project> findAllVisible(User requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+		// // @Query(value =
+		// //
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return project ORDER BY project.name",
+		// // countQuery =
+		// //
+		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(project:Project) where id(requestUser) = {0} and perm.`permissions-read` = true return count(project)")
+		// // TODO check whether it is faster to use meshroot for starting the traversal
+		// VertexTraversal<?, ?, ?> traversal = out(HAS_PROJECT).has(ProjectImpl.class);
+		// VertexTraversal<?, ?, ?> countTraversal = out(HAS_PROJECT).has(ProjectImpl.class);
+		//
+		// return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, ProjectImpl.class);
+		//
+		// }
 		// @Override
 		// public Page<SchemaContainer> findAll(UserImpl requestUser, Pageable pageable) {
 		// // @Query(value =
@@ -77,4 +116,9 @@ public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVerte
 
 		return items;
 	}
+
+//	@Override
+//	public MeshVertexImpl getImpl() {
+//		return super.getImpl();
+//	}
 }
