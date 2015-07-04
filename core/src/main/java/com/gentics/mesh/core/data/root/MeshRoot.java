@@ -65,4 +65,10 @@ public interface MeshRoot extends MeshVertex {
 
 	TagFamilyRoot createTagFamilyRoot();
 
+	MicroschemaContainerRoot getMicroschemaContainerRoot();
+
+	void setMicroschemaContainerRoot(MicroschemaContainerRoot root);
+
+	MicroschemaContainerRoot createMicroschemaContainerRoot();
+
 }

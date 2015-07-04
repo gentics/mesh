@@ -3,11 +3,15 @@ package com.gentics.mesh.core;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.constraints.AssertTrue;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -184,7 +188,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testRead() {
+	public void testRead() throws IOException {
+		Node node = data().getFolder("2015");
+		assertTrue(node.getSchema().isContainer());
 
 	}
 

@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -17,7 +18,13 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public class LanguageTest extends AbstractBasicObjectTest {
 
-	private LanguageRoot languageRoot = boot.languageRoot();
+	private LanguageRoot languageRoot;
+
+	@Before
+	public void setup() throws Exception {
+		super.setup();
+		languageRoot = boot.languageRoot();
+	}
 
 	@Test
 	@Override
@@ -103,7 +110,13 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		fail("Not yet implemented");
+		Language language = data().getEnglish();
+		assertNotNull(language.getName());
+		assertEquals("English", language.getName());
+		assertNotNull(language.getNativeName());
+		assertEquals("English", language.getNativeName());
+		assertNotNull(language.getLanguageTag());
+		assertEquals("en", language.getLanguageTag());
 	}
 
 	@Test

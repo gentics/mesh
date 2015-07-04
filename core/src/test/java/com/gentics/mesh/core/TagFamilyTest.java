@@ -15,12 +15,12 @@ import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public class TagFamilyTest extends AbstractBasicObjectTest {
+	
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		TagFamilyRoot root = getMeshRoot().getTagFamilyRoot();
 		root.findAll(getRequestUser(), new PagingInfo(1, 10));
-
 	}
 
 	@Test

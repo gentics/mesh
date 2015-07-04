@@ -42,21 +42,25 @@ public class GroupTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
-		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 10));
-		assertEquals(data().getUsers().size(), page.getTotalElements());
-		assertEquals(10, page.getSize());
+		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 19));
 
-		page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 15));
-		assertEquals(data().getUsers().size(), page.getTotalElements());
-		assertEquals(15, page.getSize());
+		assertEquals(data().getGroups().size(), page.getTotalElements());
+		assertEquals(data().getGroups().size(), page.getSize());
+
+		page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 3));
+		assertEquals(data().getGroups().size(), page.getTotalElements());
+		assertEquals(3, page.getSize());
 	}
 
 	@Test
 	@Override
 	public void testFindAll() {
 		List<? extends Group> groups = boot.groupRoot().findAll();
-		assertNotNull(groups);
+		for (Group group : groups) {
+			System.out.println("G: " + group.getName());
+		}
 		assertEquals(data().getGroups().size(), groups.size());
+
 	}
 
 	@Test
@@ -114,7 +118,11 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		fail("Not yet implemented");
+		Group group = getGroup();
+		assertEquals("joe1_group", group.getName());
+		assertNotNull(group.getUsers());
+		assertEquals(1, group.getUsers().size());
+		assertNotNull(group.getUuid());
 	}
 
 	@Test

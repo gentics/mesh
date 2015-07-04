@@ -109,6 +109,8 @@ public class DemoDataProvider {
 		english = rootService.languageRoot().findByLanguageTag("en");
 		german = rootService.languageRoot().findByLanguageTag("de");
 		root = rootService.meshRoot();
+
+		addBootstrappedData();
 		addUserGroupRoleProject(multiplicator);
 		addSchemaContainers();
 		addTagFamilies();
@@ -127,6 +129,18 @@ public class DemoDataProvider {
 		log.info("Groups:   " + groups.size());
 		log.info("Roles:    " + roles.size());
 		fg.commit();
+	}
+
+	private void addBootstrappedData() {
+		for (Group group : root.getGroupRoot().findAll()) {
+			groups.put(group.getName(), group);
+		}
+		for (User user : root.getUserRoot().findAll()) {
+			users.put(user.getUsername(), user);
+		}
+		for (Role role : root.getRoleRoot().findAll()) {
+			roles.put(role.getName(), role);
+		}
 	}
 
 	private void addContents(int multiplicator) {

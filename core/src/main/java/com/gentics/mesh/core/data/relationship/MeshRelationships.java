@@ -47,6 +47,7 @@ public class MeshRelationships {
 	// Roots
 	public static final String HAS_NODE_ROOT = "HAS_NODE_ROOT";
 	public static final String HAS_TAGFAMILY_ROOT = "HAS_TAGFAMILY_ROOT";
+	public static final String HAS_MICROSCHEMA_ROOT = "HAS_MICROSCHEMA_ROOT";
 	public static final String HAS_ROLE_ROOT = "HAS_ROLE_ROOT";
 	public static final String HAS_USER_ROOT = "HAS_USER_ROOT";
 	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";

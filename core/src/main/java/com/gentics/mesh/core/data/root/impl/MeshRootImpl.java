@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LANGUAGE_ROOT;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PROJECT_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE_ROOT;
@@ -14,6 +15,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -190,6 +192,23 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		LanguageRootImpl languageRoot = getGraph().addFramedVertex(LanguageRootImpl.class);
 		setLanguageRoot(languageRoot);
 		return languageRoot;
+	}
+
+	@Override
+	public MicroschemaContainerRoot createMicroschemaContainerRoot() {
+		MicroschemaContainerRootImpl microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
+		setMicroschemaContainerRoot(microschemaContainerRoot);
+		return microschemaContainerRoot;
+	}
+
+	@Override
+	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
+		return out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class).nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
+	}
+
+	@Override
+	public void setMicroschemaContainerRoot(MicroschemaContainerRoot root) {
+		linkOut(root.getImpl(), HAS_MICROSCHEMA_ROOT);
 	}
 
 }

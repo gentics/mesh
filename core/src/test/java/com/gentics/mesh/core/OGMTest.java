@@ -17,11 +17,9 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.test.SpringTestConfiguration;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
