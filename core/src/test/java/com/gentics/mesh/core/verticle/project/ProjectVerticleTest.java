@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,10 +37,16 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
-	private ProjectRoot projectRoot = boot.projectRoot();
+	private ProjectRoot projectRoot;
 
 	@Autowired
 	private ProjectVerticle projectVerticle;
+
+	@Before
+	public void setup() throws Exception {
+		super.setupVerticleTest();
+		projectRoot = boot.projectRoot();
+	}
 
 	@Override
 	public AbstractRestVerticle getVerticle() {

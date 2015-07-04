@@ -550,7 +550,6 @@ public class BootstrapInitializer {
 			if (language == null) {
 				language = rootNode.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
-				rootNode.addLanguage(language);
 				log.debug("Added language {" + languageTag + " / " + languageName + "}");
 			}
 		}

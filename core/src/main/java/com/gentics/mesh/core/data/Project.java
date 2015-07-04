@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -33,4 +35,10 @@ public interface Project extends GenericNode {
 	TagFamilyRoot createTagFamilyRoot();
 
 	void setTagFamilyRoot(TagFamilyRoot tagFamilyRoot);
+
+	List<? extends Language> getLanguages();
+
+	void removeLanguage(Language language);
+
+	void addLanguage(Language language);
 }

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.gentics.mesh.core.data.GenericNode;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
@@ -60,7 +60,7 @@ public class UserImpl extends AbstractGenericNode implements User {
 
 	@Override
 	public boolean isEnabled() {
-		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG));
+		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG).toString());
 	}
 
 	@Override

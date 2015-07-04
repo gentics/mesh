@@ -212,7 +212,7 @@ public class TagTest extends AbstractBasicObjectTest {
 			assertNotNull(response);
 			long dur = System.currentTimeMillis() - start;
 			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
-			System.out.println(JsonUtil.toJson(response));
+			JsonUtil.toJson(response);
 		}
 		// assertEquals(2, response.getChildTags().size());
 		// assertEquals(4, response.getPerms().length);
