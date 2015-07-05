@@ -50,7 +50,7 @@ public final class TraversalHelper {
 		int totalPages = count / pageSize;
 
 		// Internally the page size was reduced. We need to increment it now that we are finished.
-		return new Page<T>(list, count, ++page, totalPages, list.size());
+		return new Page<T>(list, count, ++page, ++totalPages, list.size());
 
 	}
 

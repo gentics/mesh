@@ -1,6 +1,7 @@
 package com.gentics.mesh.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -152,7 +154,18 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		fail("Not yet implemented");
+		Page<? extends Tag> page = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
+		assertNotNull(page);
+
+		int nTags = 0;
+		for (Tag tag : page) {
+			assertNotNull(tag.getName());
+			nTags++;
+		}
+		assertEquals(data().getTags().size(), nTags);
+		assertEquals(data().getTags().size(), page.getTotalElements());
+		assertEquals(1, page.getNumber());
+		assertEquals(1, page.getTotalPages());
 	}
 
 	@Test
@@ -165,6 +178,9 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByName() {
 		Tag tag = data().getTag("car");
+		Tag foundTag = tagRoot.findByName("Car");
+		assertNotNull(foundTag);
+		assertEquals("Car", foundTag.getName());
 		assertNotNull(tagRoot.findByName("dummy", tag.getName()));
 		assertNull(tagRoot.findByName("bogus", tag.getName()));
 		assertNull(tagRoot.findByName("dummy", "bogus"));
@@ -222,12 +238,18 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		fail("Not yet implemented");
+		TagFamily tagFamily = data().getTagFamily("basic");
+		Tag tag = tagFamily.create("someTag");
+		String uuid = tag.getUuid();
+		assertNotNull(tagRoot.findByUUID(uuid));
+		tag.delete();
+		assertNull(tagRoot.findByUUID(uuid));
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -257,36 +279,47 @@ public class TagTest extends AbstractBasicObjectTest {
 		String uuid = tag.getUuid();
 		tag.remove();
 		assertNull(tagRoot.findByUUID(uuid));
-
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		fail("Not yet implemented");
+		Tag tag = data().getTag("red");
+		tag.setName("Blue");
+		assertEquals("Blue", tag.getName());
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.READ_PERM);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.DELETE_PERM);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.UPDATE_PERM);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.CREATE_PERM);
 	}
+
+	private void testPermission(Permission perm) {
+		Tag tag = data().getTag("red");
+		assertTrue(getRole().hasPermission(perm, tag));
+		assertTrue(getRequestUser().hasPermission(tag, perm));
+		getRole().revokePermissions(tag, perm);
+		assertFalse(getRole().hasPermission(perm, tag));
+		assertFalse(getRequestUser().hasPermission(tag, perm));
+	}
+
 }

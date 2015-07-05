@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.*;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 
 import java.util.List;
@@ -82,12 +81,16 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	// String filter = " " + field + ".languageTag IN {languageTags} ";
 	// return filter;
 	// }
+	
+	@Override
+	public Tag findByName(String name) {
+		return out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().nextOrDefaultExplicit(TagImpl.class, null);
+	}
 
 	@Override
 	public Tag findByName(String projectName, String name) {
-		// TODO filter by i18n container name field, projectname
-		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).mark().has(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
-				.has("name", projectName).nextOrDefaultExplicit(getPersistanceClass(), null);
+		return out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().mark().out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
+				.has("name", projectName).back().nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
 }

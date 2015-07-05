@@ -68,7 +68,7 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 	}
 
 	public TagFamily getTagFamily() {
-		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
+		return in(HAS_TAG).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
 	}
 
 	public void delete() {
