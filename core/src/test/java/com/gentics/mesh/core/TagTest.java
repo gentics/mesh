@@ -249,7 +249,12 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("Not yet implemented");
+		TagFamily tagFamily = data().getTagFamily("basic");
+		Tag tag = tagFamily.create("someTag");
+		assertTrue(getUser().hasPermission(tagFamily, Permission.READ_PERM));
+		assertFalse(getUser().hasPermission(tag, Permission.READ_PERM));
+		getRequestUser().addCRUDPermissionOnRole(tagFamily, Permission.CREATE_PERM, tag);
+		assertTrue(getUser().hasPermission(tag, Permission.READ_PERM));
 	}
 
 	@Test

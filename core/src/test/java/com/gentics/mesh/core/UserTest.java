@@ -64,7 +64,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 		page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 15));
 		assertEquals(data().getUsers().size(), page.getTotalElements());
-		assertEquals(15, page.getSize());
+		assertEquals(data().getUsers().size(), page.getSize());
 	}
 
 	@Test
