@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,7 +43,13 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private NodeVerticle verticle;
 
-	private NodeRoot nodeRoot = boot.nodeRoot();
+	private NodeRoot nodeRoot;
+
+	@Before
+	public void setup() throws Exception {
+		super.setupVerticleTest();
+		nodeRoot = boot.nodeRoot();
+	}
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
