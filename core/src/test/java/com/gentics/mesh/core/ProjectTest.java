@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.paging.PagingInfo;
@@ -104,7 +105,13 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		fail("not yet implemented");
+		Project project = getMeshRoot().getProjectRoot().create("newProject");
+		assertNotNull(project);
+		String uuid = project.getUuid();
+		assertNotNull(getMeshRoot().getProjectRoot().findByUUID(uuid));
+		project.delete();
+		//TODO check for attached nodes
+		assertNull(getMeshRoot().getProjectRoot().findByUUID(uuid));
 	}
 
 	@Test
@@ -113,34 +120,50 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		fail("not yet implemented");
 	}
 
+	@Test
 	@Override
 	public void testRead() {
-		fail("not yet implemented");
+		Project project = getProject();
+		assertNotNull(project.getName());
+		assertEquals("dummy", project.getName());
+		assertNotNull(project.getRootNode());
+		assertNotNull(project.getLanguages());
+		assertEquals(2, project.getLanguages().size());
+		assertEquals(3, project.getSchemaRoot().findAll().size());
 	}
 
+	@Test
 	@Override
 	public void testUpdate() {
 		fail("not yet implemented");
 	}
 
+	@Test
 	@Override
 	public void testReadPermission() {
-		fail("not yet implemented");
+		Project newProject = getMeshRoot().getProjectRoot().create("newProject");
+		testPermission(Permission.READ_PERM, newProject);
 	}
 
+	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("not yet implemented");
+		Project newProject = getMeshRoot().getProjectRoot().create("newProject");
+		testPermission(Permission.DELETE_PERM, newProject);
 	}
 
+	@Test
 	@Override
 	public void testUpdatePermission() {
-		fail("not yet implemented");
+		Project newProject = getMeshRoot().getProjectRoot().create("newProject");
+		testPermission(Permission.UPDATE_PERM, newProject);
 	}
 
+	@Test
 	@Override
 	public void testCreatePermission() {
-		fail("not yet implemented");
+		Project newProject = getMeshRoot().getProjectRoot().create("newProject");
+		testPermission(Permission.CREATE_PERM, newProject);
 	}
 
 }

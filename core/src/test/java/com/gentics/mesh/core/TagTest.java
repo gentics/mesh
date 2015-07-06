@@ -291,34 +291,29 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(Permission.READ_PERM);
+		Tag tag = data().getTag("red");
+		testPermission(Permission.READ_PERM, tag);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(Permission.DELETE_PERM);
+		Tag tag = data().getTag("red");
+		testPermission(Permission.DELETE_PERM, tag);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(Permission.UPDATE_PERM);
+		Tag tag = data().getTag("red");
+		testPermission(Permission.UPDATE_PERM, tag);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(Permission.CREATE_PERM);
-	}
-
-	private void testPermission(Permission perm) {
 		Tag tag = data().getTag("red");
-		assertTrue(getRole().hasPermission(perm, tag));
-		assertTrue(getRequestUser().hasPermission(tag, perm));
-		getRole().revokePermissions(tag, perm);
-		assertFalse(getRole().hasPermission(perm, tag));
-		assertFalse(getRequestUser().hasPermission(tag, perm));
+		testPermission(Permission.CREATE_PERM, tag);
 	}
 
 }

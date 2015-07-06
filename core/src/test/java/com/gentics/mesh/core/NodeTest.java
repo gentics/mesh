@@ -2,7 +2,9 @@ package com.gentics.mesh.core;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
@@ -24,6 +26,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -177,7 +181,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("Not yet implemented");
+		Node node = getFolder().create();
+		assertFalse(getUser().hasPermission(node, Permission.CREATE_PERM));
+		getUser().addCRUDPermissionOnRole(getFolder(), Permission.CREATE_PERM, node);
+		assertTrue(getUser().hasPermission(node, Permission.CREATE_PERM));
 	}
 
 	@Test
@@ -234,36 +241,47 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		fail("Not yet implemented");
+		Node node = getContent();
+		String uuid = node.getUuid();
+		assertNotNull(getMeshRoot().getNodeRoot().findByUUID(uuid));
+		node.delete();
+		//TODO check for attached subnodes
+		assertNull(getMeshRoot().getNodeRoot().findByUUID(uuid));
 	}
 
+	@Test
 	@Override
 	public void testUpdate() {
-		fail("Not yet implemented");
+		Node node = getContent();
+		User newUser = getMeshRoot().getUserRoot().create("newUser");
+		assertEquals(getUser().getUuid(), node.getCreator().getUuid());
+		node.setCreator(newUser);
+		assertEquals(newUser, node.getCreator().getUuid());
+		//TODO update other fields
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.READ_PERM, getContent());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.DELETE_PERM, getContent());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.UPDATE_PERM, getContent());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.CREATE_PERM, getContent());
 	}
 
 }

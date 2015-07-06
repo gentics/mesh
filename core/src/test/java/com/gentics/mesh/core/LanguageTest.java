@@ -12,6 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -35,11 +36,10 @@ public class LanguageTest extends AbstractBasicObjectTest {
 
 		final String languageName = "klingon";
 		final String languageTag = "tlh";
-		Language lang = languageRoot.create(languageName, languageTag);
+		assertNotNull(languageRoot.create(languageName, languageTag));
 
 		int nLanguagesAfter = languageRoot.findAll().size();
 		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
-
 	}
 
 	@Test
@@ -53,7 +53,6 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		List<? extends Language> languages = languageRoot.findAll();
 		assertEquals(182, languages.size());
-
 	}
 
 	@Test
@@ -85,22 +84,21 @@ public class LanguageTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	@Ignore("Languages are not transformable to rest")
 	public void testTransformation() {
+		fail("implement me");
 	}
 
 	@Test
 	@Override
+	@Ignore("Languages can not be dynamically created")
 	public void testCreateDelete() {
-		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
+	@Ignore("Languages can not be dynamically created")
 	public void testCRUDPermissions() {
-		fail("Not yet implemented");
 	}
-
 
 	@Test
 	@Override
@@ -131,38 +129,42 @@ public class LanguageTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
+	@Ignore("Languages can not be deleted")
 	public void testDelete() {
-		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
+	@Ignore("Languages can not be updated")
 	public void testUpdate() {
-		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		fail("Not yet implemented");
+		Language language = data().getEnglish();
+		testPermission(Permission.READ_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("Not yet implemented");
+		Language language = data().getEnglish();
+		testPermission(Permission.DELETE_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		fail("Not yet implemented");
+		Language language = data().getEnglish();
+		testPermission(Permission.UPDATE_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		fail("Not yet implemented");
+		Language language = data().getEnglish();
+		testPermission(Permission.CREATE_PERM, language);
 	}
 
 }

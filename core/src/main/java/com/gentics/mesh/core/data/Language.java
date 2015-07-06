@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.impl.LanguageImpl;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 
 public interface Language extends GenericNode {
 

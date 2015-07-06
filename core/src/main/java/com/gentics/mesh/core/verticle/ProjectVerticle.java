@@ -44,7 +44,6 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectVerticle.class);
 
-
 	protected ProjectVerticle() {
 		super("projects");
 	}
@@ -56,6 +55,25 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+		addLanguagesHandler();
+	}
+
+	private void addLanguagesHandler() {
+		//TODO Add method that allows assigning languages from and to the project
+		Route createRoute = route("/:projectUuid/languages").method(POST).produces(APPLICATION_JSON);
+		createRoute.handler(rc -> {
+
+		});
+
+		Route deleteRoute = route("/:projectUuid/languages").method(DELETE).produces(APPLICATION_JSON);
+		deleteRoute.handler(rc -> {
+
+		});
+
+		Route getRoute = route("/:projectUuid/languages").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+
+		});
 	}
 
 	private void addUpdateHandler() {

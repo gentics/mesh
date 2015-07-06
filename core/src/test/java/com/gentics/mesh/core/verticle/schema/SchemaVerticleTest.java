@@ -34,11 +34,11 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private SchemaVerticle objectSchemaVerticle;
+	private SchemaVerticle schemaVerticle;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
-		return objectSchemaVerticle;
+		return schemaVerticle;
 	}
 
 	// Create Tests

@@ -1,11 +1,14 @@
 package com.gentics.mesh.core;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -14,64 +17,55 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testDelete() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -107,21 +101,24 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformation() throws IOException {
 		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() {
 		// TODO Auto-generated method stub
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
+		MicroschemaContainerRoot root = getMeshRoot().getMicroschemaContainerRoot();
+		MicroschemaContainer container = root.create("newContainer");
+		assertFalse(getUser().hasPermission(container, Permission.CREATE_PERM));
+		getUser().addCRUDPermissionOnRole(root, Permission.CREATE_PERM, container);
+		assertTrue(getUser().hasPermission(container, Permission.CREATE_PERM));
 	}
 
 }
