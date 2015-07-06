@@ -426,6 +426,18 @@ public class BootstrapInitializer {
 			schema.setMeshVersion(Mesh.getVersion());
 			schema.setSchemaVersion("1.0.0");
 
+			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+			nameFieldSchema.setName("name");
+			nameFieldSchema.setLabel("Name");
+			nameFieldSchema.setText("Enter the name here");
+			schema.addField("name", nameFieldSchema);
+
+			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
+			filenameFieldSchema.setName("filename");
+			filenameFieldSchema.setLabel("Filename");
+			filenameFieldSchema.setText("Enter the filename here");
+			schema.addField("filename", filenameFieldSchema);
+
 			StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 			titleFieldSchema.setName("title");
 			titleFieldSchema.setLabel("Title");

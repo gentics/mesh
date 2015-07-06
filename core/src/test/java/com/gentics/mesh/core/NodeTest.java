@@ -166,7 +166,6 @@ public class NodeTest extends AbstractBasicObjectTest {
 		NodeResponse response = newsNode.transformToRest(info);
 		assertNotNull(response);
 		System.out.println(JsonUtil.toJson(response));
-
 	}
 
 	@Test

@@ -5,6 +5,7 @@ import io.vertx.core.impl.ConcurrentHashSet;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -131,7 +132,9 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 				}
 
 				if (fieldContainer == null) {
-					throw new HttpStatusCodeErrorException(400, "Could not find any field for one of the languagetags that were specified.");
+					//"Could not find any field for one of the languagetags that were specified."
+					String langInfo = getLanguageInfo(info.getLanguageTags());
+					throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "node_no_language_found", langInfo));
 				}
 
 				for (Entry<String, ? extends FieldSchema> fieldEntry : schema.getFields().entrySet()) {
@@ -157,5 +160,19 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 		}
 
 		return null;
+	}
+
+	private String getLanguageInfo(List<String> languageTags) {
+		Iterator<String> it = languageTags.iterator();
+
+		String langInfo = "[";
+		while (it.hasNext()) {
+			langInfo += it.next();
+			if (it.hasNext()) {
+				langInfo += ",";
+			}
+		}
+		langInfo += "]";
+		return langInfo;
 	}
 }

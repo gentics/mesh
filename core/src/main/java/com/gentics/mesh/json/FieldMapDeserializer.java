@@ -1,5 +1,8 @@
 package com.gentics.mesh.json;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +42,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 
 public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 
+	private static final Logger log = LoggerFactory.getLogger(FieldMapDeserializer.class);
+
 	@Override
 	public Map<String, Field> deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		Schema schema = (Schema) ctxt.findInjectableValue("schema", null, null);
@@ -50,7 +55,11 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 			Entry<String, JsonNode> currentEntry = it.next();
 			String fieldKey = currentEntry.getKey();
 			FieldSchema fieldSchema = schema.getFields().get(fieldKey);
-			addField(map, fieldKey, fieldSchema, currentEntry.getValue());
+			if (fieldSchema != null) {
+				addField(map, fieldKey, fieldSchema, currentEntry.getValue());
+			} else {
+				log.error("Can't handle field {" + fieldKey + "} within json. The schema {" + schema.getName() + "} does not specify this key.");
+			}
 		}
 		return map;
 	}

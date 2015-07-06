@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
@@ -33,14 +32,18 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.verticle.handler.NodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -63,10 +66,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private NodeListHandler nodeListHandler;
-	
+
 	@Autowired
 	private BootstrapInitializer boot;
-	
 
 	public NodeVerticle() {
 		super("nodes");
@@ -157,73 +159,72 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
-			NodeCreateRequest requestModel = fromJson(rc, NodeCreateRequest.class);
-
-			if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
+			String body = rc.getBodyAsString();
+			SchemaReferenceInfo schemaInfo;
+			try {
+				schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
+			} catch (Exception e) {
+				rc.fail(e);
 				return;
 			}
 
-			Future<Node> contentCreated = Future.future();
+			if (schemaInfo.getSchema() == null || StringUtils.isEmpty(schemaInfo.getSchema().getName()) || StringUtils.isEmpty(schemaInfo.getSchema().getUuid())) {
+				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
+				return;
+			}
 
-			rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, CREATE_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
+			rcs.loadObjectByUuid(rc, schemaInfo.getSchema().getUuid(), Permission.READ_PERM, SchemaContainerImpl.class, (
+					AsyncResult<SchemaContainer> rh) -> {
 
-				Node parentNode = rh.result();
-				Node node = parentNode.create();
+				SchemaContainer schemaContainer = rh.result();
 
-				if (requestModel.getSchema() == null || StringUtils.isEmpty(requestModel.getSchema().getName())) {
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
-					return;
-				} else {
+				/*
+				 * SchemaContainer schema = boot.schemaContainerRoot().findByName(requestModel.getSchema().getName()); if (schema == null) { rc.fail(new
+				 * HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema() .getName()))); return; }
+				 */
 
-					SchemaContainer schema = boot.schemaContainerRoot().findByName(requestModel.getSchema().getName());
-					if (schema == null) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema().getName())));
+				try {
+					Schema schema = schemaContainer.getSchema();
+					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schema);
+					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
 						return;
-					} else {
-						node.setSchemaContainer(schema);
 					}
+
+					Future<Node> contentCreated = Future.future();
+
+					rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, CREATE_PERM, NodeImpl.class, (AsyncResult<Node> rhp) -> {
+
+						Node parentNode = rhp.result();
+						Node node = parentNode.create();
+
+						node.setSchemaContainer(schemaContainer);
+
+						node.setCreator(requestUser);
+
+						Project project = boot.projectRoot().findByName(projectName);
+						node.addProject(project);
+
+						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+
+						/* Assign the content to the tag and save the tag */
+						//rootTagForContent.(content);
+
+							contentCreated.complete(node);
+						}, trh -> {
+							if (trh.failed()) {
+								rc.fail(trh.cause());
+							}
+							Node node = contentCreated.result();
+							TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+							rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
+						});
+				} catch (Exception e) {
+					rc.fail(e);
+					return;
 				}
 
-				node.setCreator(requestUser);
-
-				Project project = boot.projectRoot().findByName(projectName);
-				node.addProject(project);
-
-				//				for (Entry<String, Field> entry : requestModel.getFields().entrySet()) {
-				//					String key = entry.getKey();
-				//					Field property = entry.getValue();
-				//				}
-
-					//				/* Add the i18n properties to the newly created tag */
-					//				for (String languageTag : requestModel.getProperties().keySet()) {
-					//					Map<String, String> i18nProperties = requestModel.getProperties();
-					//					Language language = languageRoot.findByLanguageTag(languageTag);
-					//					if (language == null) {
-					//						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-					//						return;
-					//					}
-					//
-					//					I18NProperties tagProps = node.getOrCreateI18nProperties(language);
-					//					for (Map.Entry<String, String> entry : i18nProperties.entrySet()) {
-					//						tagProps.setProperty(entry.getKey(), entry.getValue());
-					//					}
-					//				}
-
-					requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-
-					/* Assign the content to the tag and save the tag */
-					//				rootTagForContent.(content);
-
-					contentCreated.complete(node);
-				}, trh -> {
-					if (trh.failed()) {
-						rc.fail(trh.cause());
-					}
-					Node node = contentCreated.result();
-					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-					rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
-				});
+			});
 
 		});
 	}

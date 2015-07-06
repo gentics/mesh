@@ -30,6 +30,8 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.HTMLField;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.error.HttpStatusCodeErrorException;
@@ -64,6 +66,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
+		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
 		request.setLanguage("BOGUS");
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
@@ -73,7 +76,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtil.toJson(request));
-		expectMessageResponse("error_language_not_found", response, "english");
+		expectMessageResponse("node_no_language_found", response, "[en]");
 	}
 
 	@Test
@@ -158,7 +161,8 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("node");
+		schemaReference.setName("content");
+		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
@@ -318,6 +322,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
+		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		final String newFilename = "new-name.html";
 		final String newName = "english renamed name";
@@ -329,12 +334,22 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtil.toJson(request));
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
-		// assertEquals(newFilename, restNode.getProperty("filename"));
-		// assertEquals(newName, restNode.getProperty("name"));
-		// assertEquals(newContent, restNode.getProperty("content"));
+		NodeResponse restNode = JsonUtil.readNode(response, NodeResponse.class, data().getSchemaContainer("content").getSchema());
+		assertNotNull(restNode);
+		assertEquals(newFilename, ((StringField)restNode.getFields().get("filename")).getText());
+		assertEquals(newName, ((StringField)restNode.getFields().get("name")).getText());
+		assertEquals(newContent, ((HTMLField)restNode.getFields().get("content")).getHTML());
 		// TODO verify that the node got updated
-
+	}
+	
+	@Test
+	public void testUpdateNodeWithExtraField() {
+		
+	}
+	
+	@Test
+	public void testUpdateNodeWithMissingField() {
+		
 	}
 
 	@Test
@@ -355,10 +370,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		String json = JsonUtil.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
-		// assertEquals(newFilename, restNode.getProperty("displayName"));
-		// assertEquals(newName, restNode.getProperty("name"));
-		// assertEquals(newContent, restNode.getProperty("content"));
-
+		assertEquals(newFilename, ((StringField)restNode.getFields().get("filename")).getText());
+		assertEquals(newName, ((StringField)restNode.getFields().get("name")).getText());
+		assertEquals(newContent, ((HTMLField)restNode.getFields().get("content")).getHTML());
+		
 		// TODO Reload and update
 		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
 		assertEquals(newFilename, englishContainer.getString("displayName").getString());
