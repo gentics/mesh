@@ -2,6 +2,7 @@ package com.gentics.mesh.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -37,6 +38,7 @@ import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.MeshRestClient;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
@@ -53,7 +55,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private static final Integer DEV_TIMEOUT_SECONDS = 100000;
 
-	private HttpClient client;
+	private MeshRestClient client;
 
 	private AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
 
@@ -63,16 +65,20 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@Autowired
 	private RouterStorage routerStorage;
-
+	
 	@Before
 	public void setupVerticleTest() throws Exception {
 		setupData();
 		info = data().getUserInfo();
 		port = com.gentics.mesh.test.TestUtil.getRandomPort();
 		vertx = springConfig.vertx();
-		client = vertx.createHttpClient(new HttpClientOptions());
-		latch = new CountDownLatch(1);
-		throwable.set(null);
+
+		client = new MeshRestClient("localhost", getPort());
+		client.setLogin(info.getUser().getUsername(), info.getPassword());
+		
+//		client = vertx.createHttpClient(new HttpClientOptions());
+//		latch = new CountDownLatch(1);
+//		throwable.set(null);
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
@@ -100,7 +106,20 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	public int getPort() {
 		return port;
 	}
+	
+	public MeshRestClient getClient() {
+		return client;
+	}
 
+	protected void latchFor(Future<?> response) throws InterruptedException {
+		CountDownLatch latch = new CountDownLatch(1);
+		response.setHandler(rh -> {
+			latch.countDown();
+		});
+		latch.await(50, TimeUnit.SECONDS);
+	}
+
+	
 	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
 		return request(info, method, path, statusCode, statusMessage, null);
 	}
@@ -147,7 +166,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected String request(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction, Consumer<HttpClientResponse> responseAction,
 			int statusCode, String statusMessage) throws Exception {
-		return request(client, method, port, path, requestAction, responseAction, statusCode, statusMessage);
+		return request(null, method, port, path, requestAction, responseAction, statusCode, statusMessage);
 	}
 
 	protected String request(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,

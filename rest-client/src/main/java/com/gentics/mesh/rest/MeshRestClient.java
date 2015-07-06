@@ -91,17 +91,16 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagResponse> findTag(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<TagResponse> findTagByUuid(String projectName, String uuid) {
+		return handleRequest("/" + projectName + "/tags/" + uuid, TagResponse.class);
 	}
 
 	@Override
-	public Future<TagResponse> updateTag(TagUpdateRequest tagUpdateRequest) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<TagResponse> updateTag(String projectName, String uuid, TagUpdateRequest tagUpdateRequest) {
+		return handleRequest("/" + projectName + "/tags/" + uuid , TagResponse.class, tagUpdateRequest);
 	}
 
+	
 	@Override
 	public Future<GenericMessageResponse> deleteTag(String uuid) {
 		// TODO Auto-generated method stub
@@ -317,49 +316,49 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	//
-	//	@Override
-	//	public Future<TagResponse> createTag(TagCreateRequest tagCreateRequest) {
-	//		Future<TagResponse> future = Future.future();
+	// @Override
+	// public Future<TagResponse> createTag(TagCreateRequest tagCreateRequest) {
+	// Future<TagResponse> future = Future.future();
 	//
-	//		Map<String, String> extraHeaders = new HashMap<>();
-	//		Buffer buffer = Buffer.buffer();
-	//		buffer.appendString(JsonUtil.toJson(tagCreateRequest));
-	//		extraHeaders.put("content-length", String.valueOf(buffer.length()));
-	//		extraHeaders.put("content-type", "application/json");
+	// Map<String, String> extraHeaders = new HashMap<>();
+	// Buffer buffer = Buffer.buffer();
+	// buffer.appendString(JsonUtil.toJson(tagCreateRequest));
+	// extraHeaders.put("content-length", String.valueOf(buffer.length()));
+	// extraHeaders.put("content-type", "application/json");
 	//
-	//		HttpClientRequest request = client.post(BASEURI + "/project/tags", rh -> {
-	//			rh.bodyHandler(bh -> {
-	//				if (rh.statusCode() == 200) {
-	//					String json = bh.toString();
-	//					try {
-	//						TagResponse tagResponse = JsonUtil.readValue(json, TagResponse.class);
-	//						future.complete(tagResponse);
-	//					} catch (Exception e) {
-	//						future.fail(e);
-	//					}
-	//				} else {
-	//					future.fail("Could not fetch tag:" + rh.statusCode());
-	//				}
-	//			});
-	//		});
+	// HttpClientRequest request = client.post(BASEURI + "/project/tags", rh -> {
+	// rh.bodyHandler(bh -> {
+	// if (rh.statusCode() == 200) {
+	// String json = bh.toString();
+	// try {
+	// TagResponse tagResponse = JsonUtil.readValue(json, TagResponse.class);
+	// future.complete(tagResponse);
+	// } catch (Exception e) {
+	// future.fail(e);
+	// }
+	// } else {
+	// future.fail("Could not fetch tag:" + rh.statusCode());
+	// }
+	// });
+	// });
 	//
-	//		return future;
-	//	}
+	// return future;
+	// }
 	//
-	//	@Override
-	//	public Future<TagResponse> findTag(String uuid) {
-	//		Future<TagResponse> future = Future.future();
-	//		HttpClientRequest request = client.get(BASEURI + "/tags", rh -> {
-	//			rh.bodyHandler(bh -> {
+	// @Override
+	// public Future<TagResponse> findTag(String uuid) {
+	// Future<TagResponse> future = Future.future();
+	// HttpClientRequest request = client.get(BASEURI + "/tags", rh -> {
+	// rh.bodyHandler(bh -> {
 	//
-	//			});
-	//			System.out.println("Received response with status code " + rh.statusCode());
-	//		});
+	// });
+	// System.out.println("Received response with status code " + rh.statusCode());
+	// });
 	//
-	//		request.exceptionHandler(e -> {
-	//			System.out.println("Received exception: " + e.getMessage());
-	//			e.printStackTrace();
-	//		});
-	//		return future;
-	//	}
+	// request.exceptionHandler(e -> {
+	// System.out.println("Received exception: " + e.getMessage());
+	// e.printStackTrace();
+	// });
+	// return future;
+	// }
 }

@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		TagFamily basicTagFamily = data().getTagFamily("basic");
 		Tag noPermTag = basicTagFamily.create("noPermTag");
-		//TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
+		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 		noPermTag.addProject(data().getProject());
 		assertNotNull(noPermTag.getUuid());
 
@@ -109,14 +110,11 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadTagByUUID() throws Exception {
-
 		Tag tag = data().getTag("red");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
-		System.out.println(response);
-		TagResponse restTag = JsonUtil.readValue(response, TagResponse.class);
-		test.assertTag(tag, restTag);
+		Future<TagResponse> response = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		latchFor(response);
+		test.assertTag(tag, response.result());
 	}
 
 	@Test
@@ -152,13 +150,17 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(tag.getUuid());
 		request.setName("new Name");
 
+		Future<TagResponse> response = getClient().updateTag(request);
+		latchFor(response);
+		;
+
 		// 1. Read the current tag in english
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		TagResponse tagResponse = JsonUtil.readValue(response, TagResponse.class);
-		System.out.println(response);
+		// String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
+		// TagResponse tagResponse = JsonUtil.readValue(response, TagResponse.class);
+		// System.out.println(response);
 		String name = tag.getName();
 		assertNotNull("The name of the tag should be loaded.", name);
-		String restName = tagResponse.getFields().getName();
+		String restName = response.result().getFields().getName();
 		assertNotNull("The tag name must be set.", restName);
 		assertEquals(name, restName);
 
@@ -171,18 +173,23 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// 3. Send the request to the server
 		// TODO test with no ?lang query parameter
 		String requestJson = JsonUtil.toJson(request);
-		response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
-		System.out.println(response);
+		Future<TagResponse> updatedTagFut = getClient().updateTag(tagUpdateRequest);
+		latchFor(updatedTagFut);
+		TagResponse tag2 = updatedTagFut.result();
+		// response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
+		// System.out.println(response);
 
-		test.assertTag(tag, JsonUtil.readValue(response, TagResponse.class));
+		test.assertTag(tag, tag2);
 
 		// 4. read the tag again and verify that it was changed
-		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		System.out.println(response);
-
-		tagResponse = JsonUtil.readValue(response, TagResponse.class);
-		assertEquals(request.getName(), tagResponse.getFields().getName());
-		test.assertTag(tag, JsonUtil.readValue(response, TagResponse.class));
+		Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		// response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
+		// System.out.println(response);
+		latchFor(reloadedTagFut);
+		TagResponse reloadedTag = reloadedTagFut.result();
+		// tagResponse = JsonUtil.readValue(response, TagResponse.class);
+		assertEquals(request.getName(), reloadedTag.getFields().getName());
+		test.assertTag(tag, reloadedTag);
 	}
 
 	@Test

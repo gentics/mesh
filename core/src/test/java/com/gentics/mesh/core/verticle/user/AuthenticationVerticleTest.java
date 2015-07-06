@@ -50,12 +50,5 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(user.getUuid(), me.getUuid());
 	}
 
-	private void latchFor(Future<?> response) throws InterruptedException {
-		CountDownLatch latch = new CountDownLatch(1);
-		response.setHandler(rh -> {
-			latch.countDown();
-		});
-		latch.await(20, TimeUnit.SECONDS);
-	}
 
 }
