@@ -1,4 +1,4 @@
-package com.gentics.mesh.error;
+package com.gentics.mesh.core.rest.error;
 
 public class HttpStatusCodeErrorException extends RuntimeException {
 

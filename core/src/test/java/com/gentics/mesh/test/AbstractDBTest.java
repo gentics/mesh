@@ -45,8 +45,7 @@ public abstract class AbstractDBTest {
 	@Autowired
 	protected FramedThreadedTransactionalGraph fg;
 
-	@Autowired
-	protected UserVerticle userVerticle;
+
 
 	@Autowired
 	protected RestAssert test;

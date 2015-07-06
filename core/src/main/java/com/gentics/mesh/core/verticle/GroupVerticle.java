@@ -33,12 +33,13 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
@@ -316,7 +317,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-			GroupCreateRequest requestModel = fromJson(rc, GroupCreateRequest.class);
+			GroupCreateRequest requestModel = JsonUtil.fromJson(rc, GroupCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));

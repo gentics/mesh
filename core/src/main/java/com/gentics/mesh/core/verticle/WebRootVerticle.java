@@ -22,8 +22,8 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 

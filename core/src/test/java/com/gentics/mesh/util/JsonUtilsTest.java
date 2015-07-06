@@ -2,7 +2,7 @@ package com.gentics.mesh.util;
 
 import org.junit.Test;
 
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.json.JsonUtil;
 
 public class JsonUtilsTest {

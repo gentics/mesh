@@ -15,7 +15,7 @@ import java.util.Map;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshConfiguration;
 import com.gentics.mesh.paging.PagingInfo;

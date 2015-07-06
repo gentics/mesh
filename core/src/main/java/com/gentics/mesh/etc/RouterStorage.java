@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.http.LocaleContextDataHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
 

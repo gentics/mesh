@@ -36,12 +36,13 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.NodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
-import com.gentics.mesh.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -228,7 +229,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 						rc.fail(trh.cause());
 					}
 					String uuid = rc.request().params().get("uuid");
-					rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
+					rc.response().setStatusCode(200).end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
 				});
 		});
 	}

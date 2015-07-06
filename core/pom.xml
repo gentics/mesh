@@ -31,10 +31,15 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>mesh-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>mesh-rest-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-orientdb</artifactId>
