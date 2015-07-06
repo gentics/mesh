@@ -1,0 +1,24 @@
+package com.gentics.mesh.rest.method;
+
+import io.vertx.core.Future;
+
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+
+public interface UserClientMethods {
+
+	Future<UserResponse> findUserByUuid(String uuid);
+
+	Future<UserResponse> findUserByUsername(String username);
+
+	Future<UserListResponse> findUsers();
+
+	Future<UserResponse> createUser(UserCreateRequest userCreateRequest);
+
+	Future<UserResponse> updateUser(UserUpdateRequest userUpdateRequest);
+
+	Future<GenericMessageResponse> deleteUser(String uuid);
+}

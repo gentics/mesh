@@ -15,13 +15,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 

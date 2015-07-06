@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
@@ -17,7 +18,6 @@ import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RoutingContextHelper;

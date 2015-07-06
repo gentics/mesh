@@ -3,7 +3,6 @@ package com.gentics.mesh.rest;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 
@@ -17,12 +16,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 
-public class MeshRestClient {
-
-	public static final String BASEURI = "/api/v1";
-	public static final int DEFAULT_PORT = 8080;
-
-	private HttpClient client;
+public class MeshRestClient extends AbstractMeshRestClient {
 
 	public MeshRestClient(String host) {
 		this(host, DEFAULT_PORT);
@@ -35,21 +29,33 @@ public class MeshRestClient {
 		client = Vertx.vertx().createHttpClient(options);
 	}
 
+	@Override
 	public Future<UserResponse> login(String username, String password) {
 		Future<UserResponse> future = Future.future();
 		String authStringEnc = username + ":" + password;
 		byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
 
 		HttpClientRequest request = client.get(BASEURI + "/auth/me", rh -> {
-			rh.bodyHandler(bh -> {
-				String json = bh.toString();
-				try {
-					UserResponse response = JsonUtil.readValue(json, UserResponse.class);
-					future.complete(response);
-				} catch (Exception e) {
-					future.fail(e);
-				}
-			});
+
+			if (rh.statusCode() == 200) {
+				String cookie = rh.headers().get("Set-Cookie");
+
+				rh.bodyHandler(bh -> {
+					String json = bh.toString();
+					try {
+						UserResponse response = JsonUtil.readValue(json, UserResponse.class);
+
+						future.complete(response);
+					} catch (Exception e) {
+						future.fail(e);
+					}
+				});
+			} else {
+				rh.bodyHandler(bh -> {
+
+					future.fail("Login failed: " + bh.toString());
+				});
+			}
 		});
 		request.headers().add("Authorization", "Basic " + new String(authEncBytes));
 		request.headers().add("Accept", "application/json");
@@ -57,6 +63,7 @@ public class MeshRestClient {
 		return future;
 	}
 
+	@Override
 	public Future<TagResponse> createTag(TagCreateRequest tagCreateRequest) {
 		Future<TagResponse> future = Future.future();
 
@@ -85,6 +92,7 @@ public class MeshRestClient {
 		return future;
 	}
 
+	@Override
 	public Future<TagResponse> findTag(String uuid) {
 		Future<TagResponse> future = Future.future();
 		HttpClientRequest request = client.get(BASEURI + "/tags", rh -> {

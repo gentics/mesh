@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGF
 
 import java.util.List;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.data.service.transformation.TransformationPool;
 import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.paging.PagingInfo;
 
 public class TagImpl extends GenericFieldContainerNode implements Tag {
 

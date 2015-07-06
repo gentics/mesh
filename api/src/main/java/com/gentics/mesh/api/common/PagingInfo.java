@@ -1,6 +1,5 @@
-package com.gentics.mesh.paging;
+package com.gentics.mesh.api.common;
 
-import com.gentics.mesh.util.SortOrder;
 
 public class PagingInfo {
 

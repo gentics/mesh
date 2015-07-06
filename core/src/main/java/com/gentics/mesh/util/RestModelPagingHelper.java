@@ -1,9 +1,9 @@
 package com.gentics.mesh.util;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
-import com.gentics.mesh.paging.PagingInfo;
 
 public final class RestModelPagingHelper {
 

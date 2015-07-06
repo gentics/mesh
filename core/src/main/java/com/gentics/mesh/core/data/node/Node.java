@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node;
 import java.io.IOException;
 import java.util.List;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.GenericNode;
@@ -17,7 +18,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.paging.PagingInfo;
 
 public interface Node extends GenericNode {
 

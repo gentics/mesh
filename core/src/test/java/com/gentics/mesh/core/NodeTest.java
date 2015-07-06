@@ -18,6 +18,7 @@ import javax.validation.constraints.AssertTrue;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -31,7 +32,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RoutingContextHelper;

@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
-import com.gentics.mesh.paging.PagingInfo;
 
 public class RestModelPagingHelperTest {
 

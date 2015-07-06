@@ -16,6 +16,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RoutingContextHelper;

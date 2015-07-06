@@ -1,14 +1,15 @@
 package com.gentics.mesh.util;
 
-import static com.gentics.mesh.util.SortOrder.DESCENDING;
-import static com.gentics.mesh.util.SortOrder.UNSORTED;
+import static com.gentics.mesh.api.common.SortOrder.DESCENDING;
+import static com.gentics.mesh.api.common.SortOrder.UNSORTED;
 
 import java.util.List;
 
+import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.generic.MeshEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.paging.PagingInfo;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;

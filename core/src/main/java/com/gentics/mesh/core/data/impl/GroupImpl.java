@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER
 
 import java.util.List;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -15,7 +16,6 @@ import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;

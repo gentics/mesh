@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface Group extends GenericNode {

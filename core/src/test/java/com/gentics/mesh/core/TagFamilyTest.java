@@ -8,9 +8,9 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
