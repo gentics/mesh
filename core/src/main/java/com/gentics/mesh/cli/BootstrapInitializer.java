@@ -471,7 +471,7 @@ public class BootstrapInitializer {
 		if (binarySchemaContainer == null) {
 
 			Schema schema = new SchemaImpl();
-			schema.setName("folder");
+			schema.setName("binary-content");
 			schema.setDisplayField("name");
 			schema.setMeshVersion(Mesh.getVersion());
 			schema.setSchemaVersion("1.0.0");

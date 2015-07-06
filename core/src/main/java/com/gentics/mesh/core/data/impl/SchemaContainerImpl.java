@@ -65,6 +65,7 @@ public class SchemaContainerImpl extends AbstractGenericNode implements SchemaCo
 
 	@Override
 	public void setSchema(Schema schema) {
+		getSchemaStorage().removeSchema(schema.getName());
 		getSchemaStorage().addSchema(schema);
 		String json = JsonUtil.toJson(schema);
 		setJson(json);

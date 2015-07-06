@@ -86,7 +86,8 @@ public final class JsonUtil {
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
 			// TODO don't use pretty printer in final version
-			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			//return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			return mapper.writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";
@@ -95,8 +96,7 @@ public final class JsonUtil {
 		}
 	}
 
-	public static <T> T readNode(String json, Class<T> valueType, final Schema schema) throws IOException, JsonParseException,
-			JsonMappingException {
+	public static <T> T readNode(String json, Class<T> valueType, final Schema schema) throws IOException, JsonParseException, JsonMappingException {
 
 		InjectableValues values = new InjectableValues() {
 
@@ -120,7 +120,7 @@ public final class JsonUtil {
 	public static <T extends NodeResponse> T readNode(String json, Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
 		return nodeMapper.readValue(json, clazz);
 	}
-	
+
 	public static <T extends Schema> T readSchema(String json) throws JsonParseException, JsonMappingException, IOException {
 		return (T) schemaMapper.readValue(json, SchemaImpl.class);
 	}
@@ -150,9 +150,5 @@ public final class JsonUtil {
 			throw new HttpStatusCodeErrorException(500, message, e);
 		}
 	}
-
-
-
-	
 
 }

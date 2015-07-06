@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -24,16 +25,16 @@ public class SelectFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeSelection() {
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	public void testNumberSelection() {
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	public void testBooleanSelection() {
-
+		fail("Not yet implemented");
 	}
 }

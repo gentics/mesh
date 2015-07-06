@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -66,7 +67,7 @@ public class ListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testBooleanList() {
-
+		fail("Not yet implemented");
 	}
 
 }
