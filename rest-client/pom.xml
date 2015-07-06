@@ -20,7 +20,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest</artifactId>
+			<artifactId>mesh-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

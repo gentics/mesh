@@ -8,10 +8,10 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 
 public interface AuthClientMethods {
 
-	Future<UserResponse> login(String username, String password);
+	Future<UserResponse> login();
 
 	Future<UserResponse> me();
 
-	Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recusive);
+	Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive);
 
 }

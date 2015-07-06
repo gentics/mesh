@@ -2,6 +2,7 @@ package com.gentics.mesh.rest.method;
 
 import io.vertx.core.Future;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -14,12 +15,14 @@ public interface NodeClientMethods {
 
 	Future<NodeResponse> createNode(NodeCreateRequest nodeCreateRequest);
 
-	Future<NodeListResponse> findNodes(String projectName, String name);
-
-	Future<NodeListResponse> findNodes();
-
-	Future<TagListResponse> findTagsForNode(String nodeUuid);
-
 	Future<GenericMessageResponse> deleteNode(String uuid);
+
+	Future<NodeListResponse> findNodes(String projectName, PagingInfo pagingInfo);
+
+	// Relations
+
+	Future<TagListResponse> findTagsForNode(String nodeUuid, PagingInfo pagingInfo);
+
+	Future<NodeListResponse> findNodeChildren(String parentNodeUuid, PagingInfo pagingInfo);
 
 }

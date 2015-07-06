@@ -2,6 +2,7 @@ package com.gentics.mesh.rest.method;
 
 import io.vertx.core.Future;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -12,7 +13,7 @@ public interface GroupClientMethods {
 
 	Future<GroupResponse> findGroupByUuid(String uuid);
 
-	Future<GroupListResponse> findGroups();
+	Future<GroupListResponse> findGroups(PagingInfo pagingInfo);
 
 	Future<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest);
 

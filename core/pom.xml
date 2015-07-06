@@ -22,11 +22,6 @@
 		<!-- Internal dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-rest</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-git</artifactId>
 			<version>${project.version}</version>
 		</dependency>
