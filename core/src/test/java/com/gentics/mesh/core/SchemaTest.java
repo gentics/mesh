@@ -90,7 +90,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() {
 		String uuid = getSchemaContainer().getUuid();
-		assertNull(schemaContainerRoot.findByUUID(uuid));
+		assertNotNull(schemaContainerRoot.findByUUID(uuid));
 	}
 
 	@Test

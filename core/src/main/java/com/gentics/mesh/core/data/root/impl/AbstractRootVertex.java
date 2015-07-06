@@ -45,8 +45,8 @@ public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVerte
 	}
 
 	protected T findByNameAndProject(String projectName, String name) {
-		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).mark().has(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
-				.has("name", projectName).nextOrDefaultExplicit(getPersistanceClass(), null);
+		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).mark().out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
+				.has("name", projectName).back().nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	@Override
