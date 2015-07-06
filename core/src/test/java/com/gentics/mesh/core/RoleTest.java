@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.paging.PagingInfo;
@@ -223,13 +224,12 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("not yet implemented");
-	}
-
-	@Test
-	@Override
-	public void testPermissionsOnObject() {
-		fail("not yet implemented");
+		MeshRoot root = getMeshRoot();
+		Role role = root.getRoleRoot().create("SuperUser");
+		assertFalse(getUser().hasPermission(role, Permission.CREATE_PERM));
+		getUser().addCRUDPermissionOnRole(root.getUserRoot(), Permission.CREATE_PERM, role);
+		assertTrue(getUser().hasPermission(role, Permission.CREATE_PERM));
+	
 	}
 
 	@Test
@@ -272,24 +272,24 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.READ_PERM, getRole());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.DELETE_PERM, getRole());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.UPDATE_PERM, getRole());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.CREATE_PERM, getRole());
 	}
 }

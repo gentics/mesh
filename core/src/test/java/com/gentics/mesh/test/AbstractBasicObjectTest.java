@@ -1,7 +1,11 @@
 package com.gentics.mesh.test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 
+import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -10,6 +14,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 
@@ -54,6 +59,15 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 
 	public SchemaContainer getSchemaContainer() {
 		return data().getSchemaContainer("content");
+	}
+
+	protected void testPermission(Permission perm, GenericNode node) {
+		getRole().addPermissions(node, perm);
+		assertTrue(getRole().hasPermission(perm, node));
+		assertTrue(getRequestUser().hasPermission(node, perm));
+		getRole().revokePermissions(node, perm);
+		assertFalse(getRole().hasPermission(perm, node));
+		assertFalse(getRequestUser().hasPermission(node, perm));
 	}
 
 }

@@ -113,12 +113,6 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		fail("not yet implemented");
 	}
 
-	@Test
-	@Override
-	public void testPermissionsOnObject() {
-		fail("not yet implemented");
-	}
-
 	@Override
 	public void testRead() {
 		fail("not yet implemented");

@@ -2,6 +2,7 @@ package com.gentics.mesh.core;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
@@ -12,6 +13,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -111,12 +113,6 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testPermissionsOnObject() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Override
 	public void testRead() {
 		Group group = getGroup();
 		assertEquals("joe1_group", group.getName());
@@ -128,13 +124,21 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		fail("Not yet implemented");
+		Group group = getMeshRoot().getGroupRoot().create("newGroup");
+		assertNotNull(group);
+		assertEquals("newGroup", group.getName());
 	}
 
 	@Test
 	@Override
 	public void testDelete() {
-		fail("Not yet implemented");
+		Group group = getMeshRoot().getGroupRoot().create("newGroup");
+		assertNotNull(group);
+		assertEquals("newGroup", group.getName());
+		String uuid = group.getUuid();
+		//TODO add users to group?
+		group.delete();
+		assertNull(getMeshRoot().getGroupRoot().findByUUID(uuid));
 	}
 
 	@Test
@@ -147,25 +151,25 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.READ_PERM, getGroup());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.DELETE_PERM, getGroup());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.UPDATE_PERM, getGroup());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		fail("Not yet implemented");
+		testPermission(Permission.CREATE_PERM, getGroup());
 	}
 
 }

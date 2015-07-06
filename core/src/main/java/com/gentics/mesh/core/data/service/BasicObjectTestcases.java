@@ -12,7 +12,7 @@ public interface BasicObjectTestcases {
 
 	void testRootNode();
 
-	void testFindByName();
+	void testFindByName() throws IOException;
 
 	void testFindByUUID();
 
@@ -22,7 +22,7 @@ public interface BasicObjectTestcases {
 
 	void testDelete();
 
-	void testUpdate();
+	void testUpdate() throws IOException;
 
 	void testReadPermission();
 
@@ -37,7 +37,5 @@ public interface BasicObjectTestcases {
 	void testCreateDelete();
 
 	void testCRUDPermissions();
-
-	void testPermissionsOnObject();
 
 }

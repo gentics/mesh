@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.paging.PagingInfo;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -39,10 +40,10 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByName() {
-		SchemaContainer schema = schemaContainerRoot.findByName(PROJECT_NAME, "content");
-		assertNotNull(schema);
-		// assertEquals("content", schema.getName());
+	public void testFindByName() throws IOException {
+		SchemaContainer schemaContainer = schemaContainerRoot.findByName(PROJECT_NAME, "content");
+		assertNotNull(schemaContainer);
+		assertEquals("content", schemaContainer.getSchema().getName());
 		assertNull(schemaContainerRoot.findByName(PROJECT_NAME, "content1235"));
 	}
 
@@ -74,8 +75,8 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-
+		Page<? extends SchemaContainer> page = schemaContainerRoot.findAll(getRequestUser(), new PagingInfo(1, 25));
+		assertNotNull(page);
 	}
 
 	@Test
@@ -99,13 +100,6 @@ public class SchemaTest extends AbstractBasicObjectTest {
 		String uuid = getSchemaContainer().getUuid();
 		getSchemaContainer().delete();
 		assertNull(schemaContainerRoot.findByUUID(uuid));
-
-		// try (Transaction tx = graphDb.beginTx()) {
-		// roleRoot.revokePermission(info.getRole(), schema, PermissionType.DELETE);
-		// objectSchemaRoot.deleteByUUID(schema.getUuid());
-		// tx.success();
-		// }
-		// assertNotNull(objectSchemaRoot.findOne(schema.getId()));
 	}
 
 	@Test
@@ -143,12 +137,6 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testPermissionsOnObject() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Override
 	public void testRead() throws IOException {
 		assertNotNull(getSchemaContainer().getSchema());
 
@@ -162,32 +150,42 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testUpdate() {
-		fail("Not yet implemented");
+	public void testUpdate() throws IOException {
+		SchemaContainer schemaContainer = schemaContainerRoot.findByName(PROJECT_NAME, "content");
+		Schema schema = schemaContainer.getSchema();
+		schema.setName("changed");
+		schemaContainer.setSchema(schema);
+		assertEquals("changed", schemaContainer.getSchema().getName());
+		schemaContainer.setSchemaName("changed2");
+		assertEquals("changed2", schemaContainer.getSchemaName());
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		fail("Not yet implemented");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		testPermission(Permission.READ_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		fail("Not yet implemented");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		testPermission(Permission.DELETE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		fail("Not yet implemented");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		testPermission(Permission.UPDATE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		fail("Not yet implemented");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		testPermission(Permission.CREATE_PERM, newContainer);
 	}
 
 }

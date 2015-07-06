@@ -101,11 +101,6 @@ public class LanguageTest extends AbstractBasicObjectTest {
 		fail("Not yet implemented");
 	}
 
-	@Test
-	@Override
-	public void testPermissionsOnObject() {
-		fail("Not yet implemented");
-	}
 
 	@Test
 	@Override

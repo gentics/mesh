@@ -259,12 +259,6 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testPermissionsOnObject() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Override
 	public void testRead() {
 		Tag tag = data().getTag("car");
 

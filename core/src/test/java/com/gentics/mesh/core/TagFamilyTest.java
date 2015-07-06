@@ -139,11 +139,6 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 
 	}
 
-	@Test
-	@Override
-	public void testPermissionsOnObject() {
-		// TODO Auto-generated method stub
 
-	}
 
 }

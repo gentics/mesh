@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -75,29 +77,30 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		// TODO Auto-generated method stub
-
+		MicroschemaContainer microschema = getMeshRoot().getMicroschemaContainerRoot().create("someNewContainer");
+		testPermission(Permission.READ_PERM, microschema);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		// TODO Auto-generated method stub
+		MicroschemaContainer microschema = getMeshRoot().getMicroschemaContainerRoot().create("someNewContainer");
+		testPermission(Permission.DELETE_PERM, microschema);
 
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		// TODO Auto-generated method stub
-
+		MicroschemaContainer microschema = getMeshRoot().getMicroschemaContainerRoot().create("someNewContainer");
+		testPermission(Permission.UPDATE_PERM, microschema);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		// TODO Auto-generated method stub
-
+		MicroschemaContainer microschema = getMeshRoot().getMicroschemaContainerRoot().create("someNewContainer");
+		testPermission(Permission.CREATE_PERM, microschema);
 	}
 
 	@Test
@@ -117,13 +120,6 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Test
-	@Override
-	public void testPermissionsOnObject() {
 		// TODO Auto-generated method stub
 
 	}

@@ -1,9 +1,6 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -150,15 +147,6 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testPermissionsOnObject() {
-		User user = getMeshRoot().getUserRoot().create("Anton");
-		assertFalse(getUser().hasPermission(user, READ_PERM));
-		getRole().addPermissions(user, READ_PERM);
-		assertTrue(getUser().hasPermission(user, READ_PERM));
-	}
-
-	@Test
-	@Override
 	public void testRead() {
 		User user = getUser();
 		assertEquals("joe1", user.getUsername());
@@ -253,35 +241,27 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		User user = getMeshRoot().getUserRoot().create("Anton");
-		assertFalse(getUser().hasPermission(user, READ_PERM));
-		getRole().addPermissions(user, READ_PERM);
-		assertTrue(getUser().hasPermission(user, READ_PERM));
+		testPermission(Permission.READ_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
 		User user = getMeshRoot().getUserRoot().create("Anton");
-		assertFalse(getUser().hasPermission(user, DELETE_PERM));
-		getRole().addPermissions(user, DELETE_PERM);
-		assertTrue(getUser().hasPermission(user, DELETE_PERM));
+		testPermission(Permission.DELETE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
 		User user = getMeshRoot().getUserRoot().create("Anton");
-		assertFalse(getUser().hasPermission(user, UPDATE_PERM));
-		getRole().addPermissions(user, UPDATE_PERM);
-		assertTrue(getUser().hasPermission(user, UPDATE_PERM));
+		testPermission(Permission.UPDATE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
 		User user = getMeshRoot().getUserRoot().create("Anton");
-		assertFalse(getUser().hasPermission(user, CREATE_PERM));
-		getRole().addPermissions(user, CREATE_PERM);
-		assertTrue(getUser().hasPermission(user, CREATE_PERM));
+		testPermission(Permission.CREATE_PERM, user);
 	}
 }

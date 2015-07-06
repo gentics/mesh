@@ -182,12 +182,6 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testPermissionsOnObject() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Override
 	public void testRead() throws IOException {
 		Node node = data().getFolder("2015");
 		assertTrue(node.getSchema().isContainer());
