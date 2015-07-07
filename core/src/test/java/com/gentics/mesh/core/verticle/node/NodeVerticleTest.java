@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 
 import java.util.ArrayList;
@@ -22,17 +23,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.HTMLField;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.json.JsonUtil;
@@ -44,6 +49,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
+
+	@Autowired
+	private ServerSchemaStorage schemaStorage;
 
 	private NodeRoot nodeRoot;
 
@@ -176,11 +184,18 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 	// Read tests
 
+	/**
+	 * Test default paging parameters
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testReadNodesDefaultPaging() throws Exception {
-		// Test default paging parameters
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK");
-		NodeListResponse restResponse = JsonUtil.readValue(response, NodeListResponse.class);
+
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, null);
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse restResponse = future.result();
 		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
@@ -246,8 +261,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNodesWithoutPermissions() throws Exception {
 
 		// TODO add node that has no perms and check the response
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/", 200, "OK");
-		NodeListResponse restResponse = JsonUtil.readValue(response, NodeListResponse.class);
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo());
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse restResponse = future.result();
 
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 25, nElements);
@@ -259,24 +276,34 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUID() throws Exception {
+
+		getClient().getClientSchemaStorage().addSchema(data().getSchemaContainer("folder").getSchema());
+
 		Node node = data().getFolder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		test.assertMeshNode(node, JsonUtil.readNode(response, NodeResponse.class, node.getSchema()));
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		test.assertMeshNode(node, future.result());
 	}
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
+		getClient().getClientSchemaStorage().addSchema(data().getSchemaContainer("folder").getSchema());
 		Node node = data().getFolder("products");
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de", 200, "OK");
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("de");
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
 		test.assertMeshNode(node, restNode);
 
-		// assertNull(restNode.getProperties());
-		// assertEquals("Produkte", restNode.getProperty("name"));
+		String nameText = ((StringFieldImpl) restNode.getFields().get("name")).getText();
+		assertEquals("Produkte", nameText);
 	}
 
 	@Test
@@ -286,8 +313,12 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=blabla,edgsdg", 400, "Bad Request");
-		expectMessageResponse("error_language_not_found", response, "blabla");
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("blabla", "edgsdg");
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
+		latchFor(future);
+		expectException(future, 400, "Bad Request", "error_language_not_found", "blabla");
 
 	}
 
@@ -334,22 +365,23 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
 				JsonUtil.toJson(request));
-		NodeResponse restNode = JsonUtil.readNode(response, NodeResponse.class, data().getSchemaContainer("content").getSchema());
+
+		NodeResponse restNode = JsonUtil.readNode(response, NodeResponse.class, schemaStorage);
 		assertNotNull(restNode);
-		assertEquals(newFilename, ((StringField)restNode.getFields().get("filename")).getText());
-		assertEquals(newName, ((StringField)restNode.getFields().get("name")).getText());
-		assertEquals(newContent, ((HTMLField)restNode.getFields().get("content")).getHTML());
+		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
+		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getText());
+		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
 		// TODO verify that the node got updated
 	}
-	
+
 	@Test
 	public void testUpdateNodeWithExtraField() {
-		
+
 	}
-	
+
 	@Test
 	public void testUpdateNodeWithMissingField() {
-		
+
 	}
 
 	@Test
@@ -370,10 +402,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		String json = JsonUtil.toJson(request);
 		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
 		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
-		assertEquals(newFilename, ((StringField)restNode.getFields().get("filename")).getText());
-		assertEquals(newName, ((StringField)restNode.getFields().get("name")).getText());
-		assertEquals(newContent, ((HTMLField)restNode.getFields().get("content")).getHTML());
-		
+		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
+		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getText());
+		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
+
 		// TODO Reload and update
 		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
 		assertEquals(newFilename, englishContainer.getString("displayName").getString());

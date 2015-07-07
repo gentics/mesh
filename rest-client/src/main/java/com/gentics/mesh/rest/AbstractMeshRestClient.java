@@ -1,16 +1,17 @@
 package com.gentics.mesh.rest;
 
 import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import org.apache.commons.codec.binary.Base64;
 
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
-import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.method.AuthClientMethods;
 import com.gentics.mesh.rest.method.GroupClientMethods;
 import com.gentics.mesh.rest.method.NodeClientMethods;
@@ -77,17 +78,20 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		this.clientSchemaStorage = clientSchemaStorage;
 	}
 
-	protected Future<TagResponse> handleRequest(String string, Class<TagResponse> class1, TagUpdateRequest tagUpdateRequest) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> ClassOfT, AbstractRestModel requestModel) {
 
-	
-	protected <T extends AbstractRestModel> Future<T> handleRequest(String path, Class<T> ClassOfT) {
-		MeshResponseHandler<T> handler = new MeshResponseHandler<>(ClassOfT);
+		Buffer buffer = Buffer.buffer();
+		if (requestModel != null) {
+			String json = JsonUtil.toJson(requestModel);
+			buffer.appendString(json);
+			System.out.println(json);
+		}
+		MeshResponseHandler<T> handler = new MeshResponseHandler<>(ClassOfT, this);
 
 		String uri = BASEURI + path;
-		HttpClientRequest request = client.get(uri, handler);
+		
+		HttpClientRequest request = client.request(method, uri, handler);
+//		HttpClientRequest request = client.get(uri, handler);
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
@@ -99,8 +103,18 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		}
 		request.headers().add("Authorization", "Basic " + authEnc);
 		request.headers().add("Accept", "application/json");
+		if (buffer.length() != 0) {
+			request.headers().add("content-length", String.valueOf(buffer.length()));
+			request.headers().add("content-type", "application/json");
+			request.write(buffer);
+		}
+
 		request.end();
 		return handler.getFuture();
 
+	}
+
+	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> ClassOfT) {
+		return handleRequest(method, path, ClassOfT, null);
 	}
 }

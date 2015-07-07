@@ -4,15 +4,11 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.PUT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +17,11 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -54,8 +51,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags", 200, "OK");
-		TagListResponse restResponse = JsonUtil.readValue(response, TagListResponse.class);
+		Future<TagListResponse> listFut = getClient().findTags(PROJECT_NAME, new PagingInfo());
+		latchFor(listFut);
+		TagListResponse restResponse = listFut.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The response did not contain the correct amount of items", data().getTags().size(), restResponse.getData().size());
@@ -66,8 +64,9 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtil.readValue(response, TagListResponse.class);
+			Future<TagListResponse> tagPageFut = getClient().findTags(PROJECT_NAME, new PagingInfo(page, perPage));
+			latchFor(tagPageFut);
+			restResponse = tagPageFut.result();
 			int expectedItemsCount = perPage;
 			// The last page should only list 5 items
 			if (page == 3) {
@@ -91,18 +90,27 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + 0, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
+		Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(-1, perPage));
+		latchFor(pageFuture);
+		expectException(pageFuture, 400, "Bad Request", "error_invalid_paging_parameters");
+
+		pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(0, perPage));
+		latchFor(pageFuture);
+		expectException(pageFuture, 400, "Bad Request", "error_invalid_paging_parameters");
+
+		pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(1, 0));
+		latchFor(pageFuture);
+		expectException(pageFuture, 400, "Bad Request", "error_invalid_paging_parameters");
+
+		pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(1, -1));
+		latchFor(pageFuture);
+		expectException(pageFuture, 400, "Bad Request", "error_invalid_paging_parameters");
 
 		perPage = 25;
 		totalPages = (int) Math.ceil(totalTags / (double) perPage);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/tags?per_page=" + perPage + "&page=" + 4242, 200, "OK");
+		pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(4242, perPage));
+		latchFor(pageFuture);
+		String response = JsonUtil.toJson(pageFuture.result());
 		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":" + totalPages + ",\"total_count\":" + totalTags
 				+ "}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
@@ -118,77 +126,50 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagByUUIDWithLanguageParameter() throws Exception {
-
-		Tag tag = data().getTag("vehicle");
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=de", 200, "OK");
-		TagResponse restTag = JsonUtil.readValue(response, TagResponse.class);
-		test.assertTag(tag, restTag);
-		assertNotNull(restTag.getFields().getName());
-		assertEquals("Vehicle", restTag.getFields().getName());
-	}
-
-	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
-
 		Tag tag = data().getTag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 		info.getRole().revokePermissions(tag, READ_PERM);
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, tag.getUuid());
+		Future<TagResponse> loadedTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		latchFor(loadedTagFut);
+		expectException(loadedTagFut, 403, "Forbidden", "error_missing_perm", tag.getUuid());
 	}
 
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
 
 		Tag tag = data().getTag("vehicle");
-		// Create an tag update request
-		TagUpdateRequest request = new TagUpdateRequest();
-		request.setUuid(tag.getUuid());
-		request.setName("new Name");
 
-		Future<TagResponse> response = getClient().updateTag(request);
-		latchFor(response);
-		;
-
-		// 1. Read the current tag in english
-		// String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
-		// TagResponse tagResponse = JsonUtil.readValue(response, TagResponse.class);
-		// System.out.println(response);
+		// 1. Read the current tag
+		Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		latchFor(readTagFut);
 		String name = tag.getName();
 		assertNotNull("The name of the tag should be loaded.", name);
-		String restName = response.result().getFields().getName();
+		String restName = readTagFut.result().getFields().getName();
 		assertNotNull("The tag name must be set.", restName);
 		assertEquals(name, restName);
 
-		// 2. Setup the request object
+		// 2. Update the tag
+		TagUpdateRequest request = new TagUpdateRequest();
+		request.setUuid(tag.getUuid());
+		request.getFields().setName("new Name");
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		final String newName = "new Name";
-		tagUpdateRequest.setName(newName);
-		assertEquals(newName, tagUpdateRequest.getName());
+		tagUpdateRequest.getFields().setName(newName);
+		assertEquals(newName, tagUpdateRequest.getFields().getName());
 
 		// 3. Send the request to the server
-		// TODO test with no ?lang query parameter
-		String requestJson = JsonUtil.toJson(request);
-		Future<TagResponse> updatedTagFut = getClient().updateTag(tagUpdateRequest);
+		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
 		latchFor(updatedTagFut);
 		TagResponse tag2 = updatedTagFut.result();
-		// response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK", requestJson);
-		// System.out.println(response);
-
 		test.assertTag(tag, tag2);
 
 		// 4. read the tag again and verify that it was changed
 		Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
-		// response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		// System.out.println(response);
 		latchFor(reloadedTagFut);
 		TagResponse reloadedTag = reloadedTagFut.result();
-		// tagResponse = JsonUtil.readValue(response, TagResponse.class);
-		assertEquals(request.getName(), reloadedTag.getFields().getName());
+		assertEquals(request.getFields().getName(), reloadedTag.getFields().getName());
 		test.assertTag(tag, reloadedTag);
 	}
 
@@ -201,28 +182,31 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setUuid(tag.getUuid());
-		request.setName("new Name");
+		request.getFields().setName("new Name");
 
-		String requestJson = new ObjectMapper().writeValueAsString(request);
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden", requestJson);
-		expectMessageResponse("error_missing_perm", response, tag.getUuid());
+		//String requestJson = new ObjectMapper().writeValueAsString(request);
+		Future<TagResponse> tagUpdateFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), request);
+		latchFor(tagUpdateFut);
+		expectException(tagUpdateFut, 403, "Forbidden", "error_missing_perm", tag.getUuid());
 
+		//	
 		// read the tag again and verify that it was not changed
-		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid() + "?lang=en", 200, "OK");
-		TagResponse tagUpdateRequest = JsonUtil.readValue(response, TagResponse.class);
-
+		Future<TagResponse> tagReloadFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		latchFor(tagReloadFut);
+		assertTrue(tagReloadFut.succeeded());
+		TagResponse loadedTag = tagReloadFut.result();
 		String name = tag.getName();
-		assertEquals(name, tagUpdateRequest.getFields().getName());
+		assertEquals(name, loadedTag.getFields().getName());
 	}
 
 	// Delete Tests
 	@Test
 	public void testDeleteTagByUUID() throws Exception {
-
 		Tag tag = data().getTag("vehicle");
 		String uuid = tag.getUuid();
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 200, "OK");
-		expectMessageResponse("tag_deleted", response, uuid);
+		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
+		latchFor(messageFut);
+		expectMessageResponse("tag_deleted", messageFut.result(), uuid);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			assertNull("The tag should have been deleted", boot.tagRoot().findByUUID(uuid));
 		}
@@ -230,11 +214,12 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
-
 		Tag tag = data().getTag("vehicle");
+		String uuid = tag.getUuid();
 		info.getRole().revokePermissions(tag, DELETE_PERM);
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/tags/" + tag.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, tag.getUuid());
+		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
+		latchFor(messageFut);
+		expectException(messageFut, 403, "Forbidden", "error_missing_perm", tag.getUuid());
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			assertNotNull("The tag should not have been deleted", boot.tagRoot().findByUUID(tag.getUuid()));
 		}

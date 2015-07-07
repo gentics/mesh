@@ -107,12 +107,12 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 
-				if (StringUtils.isEmpty(requestModel.getName())) {
+				if (StringUtils.isEmpty(requestModel.getFields().getName())) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
 					return;
 				}
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					tag.setName(requestModel.getName());
+					tag.setName(requestModel.getFields().getName());
 					tx.success();
 				}
 				TransformationInfo info = new TransformationInfo(requestUser, null, rc);
@@ -139,7 +139,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
 
-			if (StringUtils.isEmpty(requestModel.getName())) {
+			if (StringUtils.isEmpty(requestModel.getFields().getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
 				return;
 			}
@@ -148,7 +148,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 
 			rcs.loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, TagFamily.class, (AsyncResult<TagFamily> rh) -> {
 				TagFamily tagFamily = rh.result();
-				Tag newTag = tagFamily.create(requestModel.getName());
+				Tag newTag = tagFamily.create(requestModel.getFields().getName());
 				Project project = boot.projectRoot().findByName(projectName);
 				newTag.addProject(project);
 				tagCreated.complete(newTag);
@@ -201,6 +201,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			}, arh -> {
 				if (arh.failed()) {
 					rc.fail(arh.cause());
+					return;
 				}
 				TagListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));

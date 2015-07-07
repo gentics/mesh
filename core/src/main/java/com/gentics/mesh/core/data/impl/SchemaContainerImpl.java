@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.service.SchemaStorage.getSchemaStorage;
+import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
 
 import java.io.IOException;
 

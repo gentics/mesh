@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.verticle.user;
 
-import static org.junit.Assert.*;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import io.vertx.core.Future;
 
 import org.junit.Test;

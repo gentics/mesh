@@ -6,17 +6,17 @@ public class TagUpdateRequest extends AbstractRestModel {
 
 	private TagFamilyReference tagFamilyReference;
 
-	private String name;
+	private TagFieldContainer fields = new TagFieldContainer();
 
 	public TagUpdateRequest() {
 	}
 
-	public String getName() {
-		return name;
+	public TagFieldContainer getFields() {
+		return fields;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setFields(TagFieldContainer fields) {
+		this.fields = fields;
 	}
 
 	public TagFamilyReference getTagFamilyReference() {

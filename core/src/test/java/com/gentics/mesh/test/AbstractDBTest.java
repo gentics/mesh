@@ -20,7 +20,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.RestAssert;
@@ -32,7 +31,6 @@ import com.tinkerpop.blueprints.Vertex;
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class AbstractDBTest {
 
-	
 	@Autowired
 	protected BootstrapInitializer boot;
 
@@ -44,8 +42,6 @@ public abstract class AbstractDBTest {
 
 	@Autowired
 	protected FramedThreadedTransactionalGraph fg;
-
-
 
 	@Autowired
 	protected RestAssert test;

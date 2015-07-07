@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
+import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -33,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.FieldUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 public class RestModelTest extends AbstractDBTest {
@@ -73,7 +76,9 @@ public class RestModelTest extends AbstractDBTest {
 		schema.setBinary(false);
 		schema.setContainer(false);
 
-		// request
+		ClientSchemaStorage schemaStorage = new ClientSchemaStorage();
+		schemaStorage.addSchema(schema);
+
 		NodeCreateRequest request = new NodeCreateRequest();
 
 		request.setSchema(new SchemaReference("content", UUIDUtil.randomUUID()));
@@ -100,12 +105,40 @@ public class RestModelTest extends AbstractDBTest {
 		assertEquals("content", info.getSchema().getName());
 
 		// Deserialize NodeCreateRequest using the schema info
-		NodeCreateRequest loadedRequest = JsonUtil.readNode(json, NodeCreateRequest.class, schema);
+		NodeCreateRequest loadedRequest = JsonUtil.readNode(json, NodeCreateRequest.class, schemaStorage);
 		Map<String, Field> fields = loadedRequest.getFields();
 		assertNotNull(fields);
 		assertNotNull(fields.get("name"));
 		assertEquals(StringFieldImpl.class.getName(), fields.get("name").getClass().getName());
 
+	}
+
+	@Test
+	public void testNodeList() throws IOException {
+		setupData();
+		Schema folderSchema = data().getSchemaContainer("folder").getSchema();
+		Schema contentSchema = data().getSchemaContainer("content").getSchema();
+
+		NodeResponse folder = new NodeResponse();
+		folder.setSchema(new SchemaReference(folderSchema.getName(), null));
+		folder.getFields().put("name", FieldUtil.createStringField("folder name"));
+//		folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
+
+		NodeResponse content = new NodeResponse();
+		content.setSchema(new SchemaReference(contentSchema.getName(), null));
+		content.getFields().put("name", FieldUtil.createStringField("content name"));
+		content.getFields().put("content", FieldUtil.createStringField("some content"));
+
+		SchemaStorage storage = new ClientSchemaStorage();
+		storage.addSchema(folderSchema);
+		storage.addSchema(contentSchema);
+
+		NodeListResponse list = new NodeListResponse();
+		list.getData().add(folder);
+		list.getData().add(content);
+		String json = JsonUtil.toJson(list);
+		NodeListResponse deserializedList = JsonUtil.readNodeList(json, storage);
+		System.out.println(json);
 	}
 
 	@Test

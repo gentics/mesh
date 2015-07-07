@@ -73,8 +73,8 @@ public class RestAssert {
 	public void assertTag(Tag tag, TagResponse restTag) {
 		//		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
 		assertEquals(tag.getUuid(), restTag.getUuid());
-//		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
-//		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
+		//		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
+		//		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
 	}
 
 	/**
@@ -85,16 +85,16 @@ public class RestAssert {
 	 */
 	public void assertMeshNode(NodeCreateRequest request, NodeResponse restNode) {
 
-//		for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {
-//			String value = request.getParentNodeUuid();
-//			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
-//					restNode.getProperty(entry.getKey()));
-//
-//		}
+		//		for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {
+		//			String value = request.getParentNodeUuid();
+		//			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
+		//					restNode.getProperty(entry.getKey()));
+		//
+		//		}
 
 		String schemaName = request.getSchema().getName();
 		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restNode.getSchema().getName());
-//		assertEquals(request.getOrder(), restNode.getOrder());
+		//		assertEquals(request.getOrder(), restNode.getOrder());
 		String tagUuid = request.getParentNodeUuid();
 		// TODO how to match the parent tag?
 
@@ -108,11 +108,11 @@ public class RestAssert {
 		assertNotNull(request);
 		assertNotNull(node);
 
-//		for (Entry<String, String> entry : request.getProperties().entrySet()) {
-////			Language language = languageService.findByLanguageTag(languageTag);
-//			String propValue = node.getI18nProperties(language).getProperty(entry.getKey());
-//			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
-//		}
+		//		for (Entry<String, String> entry : request.getProperties().entrySet()) {
+		////			Language language = languageService.findByLanguageTag(languageTag);
+		//			String propValue = node.getI18nProperties(language).getProperty(entry.getKey());
+		//			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
+		//		}
 
 		assertNotNull(node.getUuid());
 		assertNotNull(node.getCreator());
@@ -122,18 +122,15 @@ public class RestAssert {
 		assertNotNull(node);
 		assertNotNull(readValue);
 		assertEquals(node.getUuid(), readValue.getUuid());
-
-		//		assertEquals(node.getOrder(), readValue.getOrder());
 		assertNotNull(readValue.getPermissions());
 
 		SchemaContainer schema = node.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
-//		assertEquals(schema.getName(), readValue.getSchema().getName());
-//		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
-
+		assertEquals(schema.getSchemaName(), readValue.getSchema().getName());
+		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
 		assertNotNull(readValue.getCreator());
 
-		// TODO match properties
+		// TODO match fields
 
 	}
 
@@ -182,18 +179,18 @@ public class RestAssert {
 	public void assertSchema(SchemaContainer schema, SchemaResponse restSchema) {
 		assertNotNull(schema);
 		assertNotNull(restSchema);
-//		assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
-//		assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
-//		assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
+		//		assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
+		//		assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
+		//		assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
 		// TODO verify other fields
 	}
 
 	public void assertSchema(SchemaCreateRequest request, SchemaResponse restSchema) {
 		assertNotNull(request);
 		assertNotNull(restSchema);
-//		assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
-//		assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
-//		assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
+		//		assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
+		//		assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
+		//		assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
 		// TODO assert for schema properties
 	}
 

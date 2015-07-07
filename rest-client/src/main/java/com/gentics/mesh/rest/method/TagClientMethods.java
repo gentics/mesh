@@ -18,7 +18,7 @@ public interface TagClientMethods {
 
 	Future<TagResponse> updateTag(String projectName, String uuid, TagUpdateRequest tagUpdateRequest);
 
-	Future<GenericMessageResponse> deleteTag(String uuid);
+	Future<GenericMessageResponse> deleteTag(String projectName, String uuid);
 
 	Future<TagListResponse> findTags(String projectName, PagingInfo pagingInfo);
 

@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -66,6 +67,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private NodeListHandler nodeListHandler;
+
+	@Autowired
+	private ServerSchemaStorage schemaStorage;
 
 	@Autowired
 	private BootstrapInitializer boot;
@@ -168,7 +172,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 				return;
 			}
 
-			if (schemaInfo.getSchema() == null || StringUtils.isEmpty(schemaInfo.getSchema().getName()) || StringUtils.isEmpty(schemaInfo.getSchema().getUuid())) {
+			if (schemaInfo.getSchema() == null || StringUtils.isEmpty(schemaInfo.getSchema().getName())
+					|| StringUtils.isEmpty(schemaInfo.getSchema().getUuid())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
 				return;
 			}
@@ -185,7 +190,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 				try {
 					Schema schema = schemaContainer.getSchema();
-					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schema);
+					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
 					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
 						return;
@@ -319,7 +324,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 				Node content = rh.result();
 
 				try {
-					NodeUpdateRequest request = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, content.getSchema());
+					NodeUpdateRequest request = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);
 					// Iterate through all properties and update the changed
 					// ones
 					//					for (String languageTag : request.getProperties().keySet()) {

@@ -1,12 +1,13 @@
 package com.gentics.mesh.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
@@ -34,11 +35,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.MeshRestClient;
+import com.gentics.mesh.rest.MeshRestClientHttpException;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
@@ -65,7 +69,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@Autowired
 	private RouterStorage routerStorage;
-	
+
 	@Before
 	public void setupVerticleTest() throws Exception {
 		setupData();
@@ -75,10 +79,10 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(info.getUser().getUsername(), info.getPassword());
-		
-//		client = vertx.createHttpClient(new HttpClientOptions());
-//		latch = new CountDownLatch(1);
-//		throwable.set(null);
+
+		//		client = vertx.createHttpClient(new HttpClientOptions());
+		//		latch = new CountDownLatch(1);
+		//		throwable.set(null);
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
@@ -106,20 +110,19 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	public int getPort() {
 		return port;
 	}
-	
+
 	public MeshRestClient getClient() {
 		return client;
 	}
 
-	protected void latchFor(Future<?> response) throws InterruptedException {
+	protected void latchFor(Future<?> future) throws InterruptedException {
 		CountDownLatch latch = new CountDownLatch(1);
-		response.setHandler(rh -> {
+		future.setHandler(rh -> {
 			latch.countDown();
 		});
 		latch.await(50, TimeUnit.SECONDS);
 	}
 
-	
 	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
 		return request(info, method, path, statusCode, statusMessage, null);
 	}
@@ -235,6 +238,13 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
+	protected void expectMessageResponse(String i18nKey, GenericMessageResponse response, String... i18nParams) {
+		Locale en = Locale.ENGLISH;
+		String message = i18n.get(en, i18nKey, i18nParams);
+		assertEquals("The response message does not match.", message, response.getMessage());
+	}
+
+	//TODO remove me
 	protected void expectMessageResponse(String i18nKey, String response, String... i18nParams) {
 		Locale en = Locale.ENGLISH;
 		String message = i18n.get(en, i18nKey, i18nParams);
@@ -243,4 +253,27 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertEquals("The response does not match.", json, response);
 	}
 
+	protected void expectException(Future<?> future, int statusCode, String statusMessage, String bodyMessageI18nKey, String... i18nParams) {
+		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
+		assertNotNull(future.cause());
+		Locale en = Locale.ENGLISH;
+
+		if (future.cause() instanceof MeshRestClientHttpException) {
+			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
+			assertEquals(statusCode, exception.getStatusCode());
+			assertEquals(statusMessage, exception.getMessage());
+			assertNotNull(exception.getResponseMessage());
+			String message = i18n.get(en, bodyMessageI18nKey, i18nParams);
+			assertEquals(message, exception.getResponseMessage().getMessage());
+		} else {
+			future.cause().printStackTrace();
+			fail("Unhandled exception");
+		}
+
+	}
+
+	protected void assertSuccess(Future<?> future) {
+		assertTrue("The future failed with error {" + (future.cause() == null ? "Unknown error" : future.cause().getMessage()) + "}",
+				future.succeeded());
+	}
 }

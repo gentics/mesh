@@ -39,7 +39,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.service.SchemaStorage;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -74,7 +74,7 @@ public class BootstrapInitializer {
 	private MeshConfiguration configuration;
 
 	@Autowired
-	private SchemaStorage schemaStorage;
+	private ServerSchemaStorage schemaStorage;
 
 	private static BootstrapInitializer instance;
 

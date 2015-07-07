@@ -1,6 +1,5 @@
 package com.gentics.mesh.api.common;
 
-
 public class PagingInfo {
 
 	private int page;
@@ -13,6 +12,15 @@ public class PagingInfo {
 		this.perPage = perPage;
 		this.sortBy = sortBy;
 		this.order = order;
+	}
+
+	public PagingInfo() {
+		this(1);
+	}
+
+	public PagingInfo(int page) {
+		//TODO use reference for default page size
+		this(page, 25);
 	}
 
 	public PagingInfo(int page, int perPage) {

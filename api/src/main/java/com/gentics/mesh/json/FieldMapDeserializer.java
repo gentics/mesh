@@ -1,5 +1,6 @@
 package com.gentics.mesh.json;
 
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -38,7 +39,7 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
 public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 
@@ -46,7 +47,9 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 
 	@Override
 	public Map<String, Field> deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-		Schema schema = (Schema) ctxt.findInjectableValue("schema", null, null);
+		
+		System.out.println("map deserializer");
+		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
 		Iterator<Entry<String, JsonNode>> it = node.fields();
@@ -54,11 +57,14 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		while (it.hasNext()) {
 			Entry<String, JsonNode> currentEntry = it.next();
 			String fieldKey = currentEntry.getKey();
-			FieldSchema fieldSchema = schema.getFields().get(fieldKey);
+			String schemaName = (String) ctxt.getAttribute("schemaName");
+			System.out.println("Found: " + schemaName);
+			FieldSchema fieldSchema = schemaStorage.getSchema(schemaName).getFields().get(fieldKey);
 			if (fieldSchema != null) {
 				addField(map, fieldKey, fieldSchema, currentEntry.getValue());
 			} else {
-				log.error("Can't handle field {" + fieldKey + "} within json. The schema {" + schema.getName() + "} does not specify this key.");
+				log.error("Can't handle field {" + fieldKey + "} within json. The schema {" + schemaName + "} does not specify this key.");
+				throw new IOException("Can't handle field {" + fieldKey + "}");
 			}
 		}
 		return map;

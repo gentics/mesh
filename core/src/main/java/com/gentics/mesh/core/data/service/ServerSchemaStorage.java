@@ -16,21 +16,22 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
 @Component
 @Scope(value = "singleton")
-public class SchemaStorage {
+public class ServerSchemaStorage implements SchemaStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(SchemaStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorage.class);
 
-	public static SchemaStorage instance;
+	public static ServerSchemaStorage instance;
 
 	@PostConstruct
 	public void setup() {
 		instance = this;
 	}
 
-	public static SchemaStorage getSchemaStorage() {
+	public static ServerSchemaStorage getSchemaStorage() {
 		return instance;
 	}
 
@@ -52,22 +53,27 @@ public class SchemaStorage {
 		}
 	}
 
+	@Override
 	public void clear() {
 		schemas.clear();
 	}
 
+	@Override
 	public int size() {
 		return schemas.size();
 	}
 
+	@Override
 	public Schema getSchema(String name) {
 		return schemas.get(name);
 	}
 
+	@Override
 	public void removeSchema(String name) {
 		schemas.remove(name);
 	}
 
+	@Override
 	public void addSchema(Schema schema) {
 		if (schemas.containsKey(schema.getName())) {
 			log.error("Schema " + schema.getName() + " is already stored.");

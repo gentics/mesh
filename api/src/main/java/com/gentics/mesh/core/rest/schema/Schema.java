@@ -8,6 +8,7 @@ public interface Schema {
 
 	public void setMeshVersion(String meshVersion);
 
+	//TODO the user should not version the schema
 	public String getSchemaVersion();
 
 	public void setSchemaVersion(String version);

@@ -7,24 +7,29 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 
 public final class JsonUtil {
-
 
 	protected static ObjectMapper mapper;
 
@@ -55,8 +60,18 @@ public final class JsonUtil {
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		// module.addDeserializer(MicroschemaListableField.class, new FieldDeserializer<MicroschemaListableField>());
+		//module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
 		module.addDeserializer(Map.class, new FieldMapDeserializer());
 		// module.addSerializer(Field.class, new FieldSerializer<Field>());
+
+		module.setDeserializerModifier(new BeanDeserializerModifier() {
+			@Override
+			public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
+				if (beanDesc.getBeanClass() == NodeResponse.class)
+					return new NodeResponseDeserializer(deserializer);
+				return deserializer;
+			}
+		});
 
 		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;
@@ -89,18 +104,18 @@ public final class JsonUtil {
 		}
 	}
 
-	public static <T> T readNode(String json, Class<T> valueType, final Schema schema) throws IOException, JsonParseException, JsonMappingException {
+	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage) throws IOException, JsonParseException,
+			JsonMappingException {
 
 		InjectableValues values = new InjectableValues() {
 
 			@Override
 			public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) {
-				if (valueId.toString().equalsIgnoreCase("schema")) {
-					return schema;
+				if (valueId.toString().equalsIgnoreCase("schema_storage")) {
+					return schemaStorage;
 				} else {
 					return null;
 				}
-
 			}
 		};
 		return nodeMapper.reader(values).forType(valueType).readValue(json);
@@ -143,6 +158,22 @@ public final class JsonUtil {
 			// TODO 500?
 			throw new HttpStatusCodeErrorException(500, message, e);
 		}
+	}
+
+	public static NodeListResponse readNodeList(String json, SchemaStorage storage) throws JsonParseException, JsonMappingException, IOException {
+
+		InjectableValues values = new InjectableValues() {
+
+			@Override
+			public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) {
+				if (valueId.toString().equalsIgnoreCase("schema_storage")) {
+					return storage;
+				} else {
+					return null;
+				}
+			}
+		};
+		return nodeMapper.reader(values).forType(NodeListResponse.class).readValue(json);
 	}
 
 }

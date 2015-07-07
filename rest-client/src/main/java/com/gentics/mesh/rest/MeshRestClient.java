@@ -1,5 +1,8 @@
 package com.gentics.mesh.rest;
 
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
@@ -14,6 +17,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
@@ -49,9 +53,13 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<NodeResponse> findNodeByUuid(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<NodeResponse> findNodeByUuid(String projectName, String uuid, NodeRequestParameters parameters) {
+		String uri = "/" + projectName + "/nodes/" + uuid;
+		if (parameters != null) {
+			uri += parameters.getQuery();
+		}
+		System.out.println(uri);
+		return handleRequest(GET, uri, NodeResponse.class);
 	}
 
 	@Override
@@ -68,8 +76,11 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<NodeListResponse> findNodes(String projectName, PagingInfo pagingInfo) {
-		// TODO Auto-generated method stub
-		return null;
+		String params = "";
+		if (pagingInfo != null) {
+			params += "?per_page=" + pagingInfo.getPerPage() + "&page=" + pagingInfo.getPage();
+		}
+		return handleRequest(GET, "/" + projectName + "/nodes" + params, NodeListResponse.class);
 	}
 
 	@Override
@@ -92,25 +103,23 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<TagResponse> findTagByUuid(String projectName, String uuid) {
-		return handleRequest("/" + projectName + "/tags/" + uuid, TagResponse.class);
+		return handleRequest(GET, "/" + projectName + "/tags/" + uuid, TagResponse.class);
 	}
 
 	@Override
 	public Future<TagResponse> updateTag(String projectName, String uuid, TagUpdateRequest tagUpdateRequest) {
-		return handleRequest("/" + projectName + "/tags/" + uuid , TagResponse.class, tagUpdateRequest);
+		return handleRequest(PUT, "/" + projectName + "/tags/" + uuid, TagResponse.class, tagUpdateRequest);
 	}
 
-	
 	@Override
-	public Future<GenericMessageResponse> deleteTag(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<GenericMessageResponse> deleteTag(String projectName, String uuid) {
+		return handleRequest(DELETE, "/" + projectName + "/tags/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<TagListResponse> findTags(String projectName, PagingInfo pagingInfo) {
-		// TODO Auto-generated method stub
-		return null;
+		String params = "?per_page=" + pagingInfo.getPerPage() + "&page=" + pagingInfo.getPage();
+		return handleRequest(GET, "/" + projectName + "/tags" + params, TagListResponse.class);
 	}
 
 	@Override
@@ -290,7 +299,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	@Override
 	public Future<UserResponse> login() {
 
-		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class);
+		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
 		meshHandler.handle(rh -> {
 			if (rh.statusCode() == 200) {
 				setCookie(rh.headers().get("Set-Cookie"));
@@ -306,13 +315,18 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<UserResponse> me() {
-		return handleRequest(BASEURI + "auth/me", UserResponse.class);
+		return handleRequest(GET, BASEURI + "auth/me", UserResponse.class);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Future<NodeResponse> findNodeByUuid(String projectName, String uuid) {
+		return findNodeByUuid(projectName, uuid, null);
 	}
 
 	//
