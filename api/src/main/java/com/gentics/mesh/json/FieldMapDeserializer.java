@@ -49,6 +49,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 	public Map<String, Field> deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		
 		System.out.println("map deserializer");
+		String schemaName =(String) ctxt.findInjectableValue("schemaName", null, null);
 		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
@@ -57,7 +58,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		while (it.hasNext()) {
 			Entry<String, JsonNode> currentEntry = it.next();
 			String fieldKey = currentEntry.getKey();
-			String schemaName = (String) ctxt.getAttribute("schemaName");
+//			String schemaName = (String) ctxt.getAttribute("schemaName");
 			System.out.println("Found: " + schemaName);
 			FieldSchema fieldSchema = schemaStorage.getSchema(schemaName).getFields().get(fieldKey);
 			if (fieldSchema != null) {

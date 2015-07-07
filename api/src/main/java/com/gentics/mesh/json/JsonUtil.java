@@ -3,20 +3,17 @@ package com.gentics.mesh.json;
 import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -36,6 +33,9 @@ public final class JsonUtil {
 	protected static ObjectMapper schemaMapper;
 
 	protected static ObjectMapper nodeMapper;
+
+	protected static Map<String, Object> valuesMap = new HashMap<>();
+
 	static {
 		initMapper();
 		initNodeMapper();
@@ -60,18 +60,9 @@ public final class JsonUtil {
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		// module.addDeserializer(MicroschemaListableField.class, new FieldDeserializer<MicroschemaListableField>());
-		//module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
+		// module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
 		module.addDeserializer(Map.class, new FieldMapDeserializer());
 		// module.addSerializer(Field.class, new FieldSerializer<Field>());
-
-		module.setDeserializerModifier(new BeanDeserializerModifier() {
-			@Override
-			public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
-				if (beanDesc.getBeanClass() == NodeResponse.class)
-					return new NodeResponseDeserializer(deserializer);
-				return deserializer;
-			}
-		});
 
 		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;
@@ -94,7 +85,7 @@ public final class JsonUtil {
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
 			// TODO don't use pretty printer in final version
-			//return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			// return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 			return mapper.writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
@@ -107,18 +98,24 @@ public final class JsonUtil {
 	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage) throws IOException, JsonParseException,
 			JsonMappingException {
 
+		valuesMap.put("schema_storage", schemaStorage);
+		return nodeMapper.reader(getInjectableValues()).forType(valueType).readValue(json);
+	}
+
+	public static InjectableValues getInjectableValues() {
+
 		InjectableValues values = new InjectableValues() {
 
 			@Override
 			public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) {
-				if (valueId.toString().equalsIgnoreCase("schema_storage")) {
-					return schemaStorage;
-				} else {
-					return null;
+				if (valuesMap.containsKey(valueId.toString())) {
+					return valuesMap.get(valueId.toString());
 				}
+				return null;
 			}
 		};
-		return nodeMapper.reader(values).forType(valueType).readValue(json);
+		return values;
+
 	}
 
 	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
@@ -139,7 +136,7 @@ public final class JsonUtil {
 			String body = rc.getBodyAsString();
 			return (T) mapper.readValue(body, classOfT);
 		} catch (Exception e) {
-			//throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
+			// throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
 			throw new HttpStatusCodeErrorException(400, "Error while parsing json.", e);
 		}
 
@@ -160,20 +157,14 @@ public final class JsonUtil {
 		}
 	}
 
-	public static NodeListResponse readNodeList(String json, SchemaStorage storage) throws JsonParseException, JsonMappingException, IOException {
+	public static NodeListResponse readNodeList(String json, SchemaStorage schemaStorage) throws JsonParseException, JsonMappingException, IOException {
+		valuesMap.put("schema_storage", schemaStorage);
+		ObjectMapper nodeListMapper = new ObjectMapper();
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
+		nodeListMapper.registerModule(module);
+		return nodeListMapper.reader(getInjectableValues()).forType(NodeListResponse.class).readValue(json);
 
-		InjectableValues values = new InjectableValues() {
-
-			@Override
-			public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) {
-				if (valueId.toString().equalsIgnoreCase("schema_storage")) {
-					return storage;
-				} else {
-					return null;
-				}
-			}
-		};
-		return nodeMapper.reader(values).forType(NodeListResponse.class).readValue(json);
 	}
 
 }
