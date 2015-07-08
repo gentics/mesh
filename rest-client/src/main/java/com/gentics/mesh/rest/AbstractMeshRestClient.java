@@ -85,20 +85,15 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		if (requestModel != null) {
 			String json = JsonUtil.toJson(requestModel);
 			buffer.appendString(json);
-			System.out.println(json);
 		}
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(ClassOfT, this);
 
 		String uri = BASEURI + path;
 
 		HttpClientRequest request = client.request(method, uri, handler);
-		//		HttpClientRequest request = client.get(uri, handler);
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
-		System.out.println(path);
-		System.out.println(getCookie());
-		System.out.println(authEnc);
 		if (getCookie() != null) {
 			request.headers().add("Cookie", getCookie());
 		}

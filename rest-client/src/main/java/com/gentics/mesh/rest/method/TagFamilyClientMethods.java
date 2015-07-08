@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 
 public interface TagFamilyClientMethods {
 
-	Future<TagFamilyResponse> findTagFamilyByUuid(String uuid);
+	Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid);
 
 	Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingInfo pagingInfo);
 

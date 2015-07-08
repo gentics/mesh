@@ -1,12 +1,34 @@
 package com.gentics.mesh.core.data.impl;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaFieldImpl;
+import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaField;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.HTMLField;
+import com.gentics.mesh.core.rest.node.field.ListField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.SelectField;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HTMLFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -14,8 +36,10 @@ import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.error.MeshSchemaException;
 
 public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implements NodeFieldContainer {
 
@@ -25,6 +49,71 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		field.setFieldKey(key);
 		linkOut(field, MeshRelationships.HAS_FIELD);
 		return field;
+	}
+
+	@Override
+	public void setFieldFromRest(Map<String, Field> fields, Schema schema) throws MeshSchemaException {
+
+		for (Entry<String, ? extends FieldSchema> entry : schema.getFields().entrySet()) {
+			String key = entry.getKey();
+			Field field = fields.get(key);
+			if (field == null) {
+				throw new MeshSchemaException("Could not find value for schema field with key {" + key + "}");
+			}
+			fields.remove(key);
+
+			FieldTypes type = FieldTypes.valueByName(field.getType());
+			switch (type) {
+			case HTML:
+				HTMLField htmlField = (HTMLFieldImpl) field;
+				createHTML(key).setHTML(htmlField.getHTML());
+				break;
+			case STRING:
+				StringField stringField = (StringFieldImpl) field;
+				createString(key).setString(stringField.getText());
+				break;
+			case NUMBER:
+				NumberField numberField = (NumberFieldImpl) field;
+				createNumber(key).setNumber(numberField.getNumber());
+				break;
+			case BOOLEAN:
+				BooleanField booleanField = (BooleanFieldImpl) field;
+				createBoolean(key).setBoolean(booleanField.getValue());
+				break;
+			case DATE:
+				DateField dateField = (DateFieldImpl) field;
+				createDate(key).setDate(dateField.getDate());
+				break;
+			case NODE:
+				NodeField nodeField = (NodeFieldImpl) field;
+				Node node = BootstrapInitializer.getBoot().nodeRoot().findByUUID(nodeField.getUuid());
+				//TODO check node permissions
+				createNode(key, node);
+				break;
+			case LIST:
+				ListField restListField = (ListFieldImpl) field;
+				com.gentics.mesh.core.data.node.field.nesting.ListField<ListableField> listField = createList(key);
+				break;
+			case SELECT:
+				SelectField restSelectField = (SelectFieldImpl) field;
+				com.gentics.mesh.core.data.node.field.nesting.SelectField<ListableField> selectField = createSelect(key);
+				// TODO impl
+				break;
+			case MICROSCHEMA:
+				com.gentics.mesh.core.rest.node.field.MicroschemaField restMicroschemaField = (com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl) field;
+				MicroschemaField microschemaField = createMicroschema(key);
+				// TODO impl
+				break;
+			}
+
+		}
+		String extraFields = "";
+		for (String key : fields.keySet()) {
+			extraFields += "[" + key + "]";
+		}
+		if (!StringUtils.isEmpty(extraFields)) {
+			throw new MeshSchemaException("The following fields were not specified within the {" + schema.getName() + "} schema: " + extraFields);
+		}
 	}
 
 	@Override
@@ -70,7 +159,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 
 		if (FieldTypes.LIST.equals(type)) {
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
-			//			String listType = listFielSchema.getListType();
+			// String listType = listFielSchema.getListType();
 		}
 		if (FieldTypes.SELECT.equals(type)) {
 			SelectFieldSchema selectFieldSchema = (SelectFieldSchema) fieldSchema;

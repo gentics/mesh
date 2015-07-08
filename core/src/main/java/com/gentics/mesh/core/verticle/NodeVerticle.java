@@ -29,7 +29,9 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
@@ -50,6 +52,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.verticle.handler.NodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 /**
@@ -60,7 +63,7 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 @SpringVerticle
 public class NodeVerticle extends AbstractProjectRestVerticle {
 
-	//	private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
+	// private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
 
 	@Autowired
 	private TagListHandler tagListHandler;
@@ -105,8 +108,14 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-			tagListHandler.handle(rc, (projectName, node, languageTags, pagingInfo) -> {
-				return node.getTags(requestUser, projectName, languageTags, pagingInfo);
+			tagListHandler.handle(rc, (projectName, node, pagingInfo) -> {
+				try {
+					return node.getTags(requestUser, projectName, pagingInfo);
+				} catch (Exception e) {
+					// TODO Handle error
+					e.printStackTrace();
+					return null;
+				}
 			});
 		});
 
@@ -163,7 +172,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// handler
 	// TODO load the schema and set the reference to the tag
 	private void addCreateHandler() {
-		Route route = route("/").method(POST);
+		Route route = route("/").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
@@ -204,32 +213,53 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 					Future<Node> contentCreated = Future.future();
 
-					rcs.loadObjectByUuid(rc, requestModel.getParentNodeUuid(), projectName, CREATE_PERM, NodeImpl.class, (AsyncResult<Node> rhp) -> {
+					rcs.loadObjectByUuid(
+							rc,
+							requestModel.getParentNodeUuid(),
+							projectName,
+							CREATE_PERM,
+							NodeImpl.class,
+							(AsyncResult<Node> rhp) -> {
 
-						Node parentNode = rhp.result();
-						Node node = parentNode.create();
+								Node parentNode = rhp.result();
+								try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+									Node node = parentNode.create();
+									node.setSchemaContainer(schemaContainer);
+									node.setCreator(requestUser);
+									Project project = boot.projectRoot().findByName(projectName);
+									node.addProject(project);
+									requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+									Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+									if (language == null) {
+										// TODO i18n
+										contentCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
+												requestModel.getLanguage())));
+										return;
+									} else {
+										NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+										try {
+											container.setFieldFromRest(requestModel.getFields(), schema);
+										} catch (Exception e) {
+											contentCreated.fail(e);
+											return;
+										}
+									}
+									tx.success();
+									contentCreated.complete(node);
+								}
 
-						node.setSchemaContainer(schemaContainer);
-
-						node.setCreator(requestUser);
-
-						Project project = boot.projectRoot().findByName(projectName);
-						node.addProject(project);
-
-						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-
-						/* Assign the content to the tag and save the tag */
-						//rootTagForContent.(content);
-
-							contentCreated.complete(node);
-						}, trh -> {
-							if (trh.failed()) {
-								rc.fail(trh.cause());
-							}
-							Node node = contentCreated.result();
-							TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-							rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
-						});
+							}, trh -> {
+								if (trh.failed()) {
+									rc.fail(trh.cause());
+								}
+								if (contentCreated.failed()) {
+									rc.fail(contentCreated.cause());
+									return;
+								}
+								Node node = contentCreated.result();
+								TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+								rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
+							});
 				} catch (Exception e) {
 					rc.fail(e);
 					return;
@@ -243,25 +273,32 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// TODO filter by project name
 	// TODO filtering
 	private void addReadHandler() {
+
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-			MeshAuthUser requestUser = getUser(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
+			String uuid = rc.request().params().get("uuid");
 
-			rcs.loadObject(rc, "uuid", projectName, READ_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
-				}
-				Node node = trh.result();
-				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-				rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
-			});
+			if (StringUtils.isEmpty(uuid)) {
+				rc.next();
+			} else {
 
+				String projectName = rcs.getProjectName(rc);
+				MeshAuthUser requestUser = getUser(rc);
+				List<String> languageTags = getSelectedLanguageTags(rc);
+
+				rcs.loadObject(rc, "uuid", projectName, READ_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
+				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
+					Node node = trh.result();
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+					rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
+				});
+			}
 		});
 
-		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
+		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
@@ -286,11 +323,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			}, arh -> {
 				if (arh.failed()) {
 					rc.fail(arh.cause());
+					return;
 				}
 				NodeListResponse listResponse = arh.result();
 				rc.response().setStatusCode(200).end(toJson(listResponse));
 			});
 		});
+
 	}
 
 	// TODO filter project name
@@ -300,7 +339,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
 				Node node = rh.result();
-				node.delete();
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					node.delete();
+					tx.success();
+				}
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
@@ -332,39 +374,39 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 					NodeUpdateRequest request = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);
 					// Iterate through all properties and update the changed
 					// ones
-					//					for (String languageTag : request.getProperties().keySet()) {
-					//						Language language = languageRoot.findByLanguageTag(languageTag);
-					//						if (language != null) {
-					//							languageTags.add(languageTag);
-					//							Map<String, String> properties = request.getProperties();
-					//							if (properties != null) {
-					//								I18NProperties i18nProperties = content.getI18nProperties(language);
-					//								for (Map.Entry<String, String> set : properties.entrySet()) {
-					//									String key = set.getKey();
-					//									String value = set.getValue();
-					//									String i18nValue = i18nProperties.getProperty(key);
-					//									/*
-					//									 * Tag does not have the value so lets create it
-					//									 */
-					//									if (i18nValue == null) {
-					//										i18nProperties.setProperty(key, value);
-					//									} else {
-					//										/*
-					//										 * Lets compare and update if the value has changed
-					//										 */
-					//										if (!value.equals(i18nValue)) {
-					//											i18nProperties.setProperty(key, value);
-					//										}
-					//									}
-					//								}
+					// for (String languageTag : request.getProperties().keySet()) {
+					// Language language = languageRoot.findByLanguageTag(languageTag);
+					// if (language != null) {
+					// languageTags.add(languageTag);
+					// Map<String, String> properties = request.getProperties();
+					// if (properties != null) {
+					// I18NProperties i18nProperties = content.getI18nProperties(language);
+					// for (Map.Entry<String, String> set : properties.entrySet()) {
+					// String key = set.getKey();
+					// String value = set.getValue();
+					// String i18nValue = i18nProperties.getProperty(key);
+					// /*
+					// * Tag does not have the value so lets create it
+					// */
+					// if (i18nValue == null) {
+					// i18nProperties.setProperty(key, value);
+					// } else {
+					// /*
+					// * Lets compare and update if the value has changed
+					// */
+					// if (!value.equals(i18nValue)) {
+					// i18nProperties.setProperty(key, value);
+					// }
+					// }
+					// }
 					//
-					//							}
-					//						} else {
-					//							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-					//							return;
-					//						}
+					// }
+					// } else {
+					// rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
+					// return;
+					// }
 					//
-					//					}
+					// }
 				} catch (IOException e) {
 					rc.fail(e);
 					return;

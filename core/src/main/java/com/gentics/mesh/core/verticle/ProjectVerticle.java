@@ -157,11 +157,11 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			MeshAuthUser requestUser = getUser(rc);
 
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
+				MeshAuthUser requestUser = getUser(rc);
 				rcs.loadObject(rc, "uuid", READ_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
 					if (rh.failed()) {
 						rc.fail(rh.cause());

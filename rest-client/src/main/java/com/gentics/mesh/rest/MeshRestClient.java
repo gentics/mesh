@@ -84,18 +84,6 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		return handleRequest(GET, "/" + projectName + "/nodes" + getQuery(parameters), NodeListResponse.class);
 	}
 
-	private String getQuery(QueryParameterProvider... parameters) {
-		StringBuilder builder = new StringBuilder();
-		for (QueryParameterProvider provider : parameters) {
-			builder.append(provider.getQueryParameters());
-		}
-		if (builder.length() > 0) {
-			return "?" + builder.toString();
-		} else {
-			return "";
-		}
-	}
-
 	@Override
 	public Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters) {
 		return handleRequest(GET, "/" + projectName + "/nodes/" + nodeUuid + "/tags" + getQuery(parameters), TagListResponse.class);
@@ -103,14 +91,12 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, QueryParameterProvider... parameters) {
-		// String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");
-		return null;
+		return handleRequest(GET, "/" + projectName + "/nodes/" + parentNodeUuid + "/chilren" + getQuery(parameters), NodeListResponse.class);
 	}
 
 	@Override
 	public Future<TagResponse> createTag(String projectName, TagCreateRequest tagCreateRequest) {
-		// TODO Auto-generated method stub
-		return null;
+		return handleRequest(POST, "/" + projectName + "/tags", TagResponse.class, tagCreateRequest);
 	}
 
 	@Override
@@ -133,9 +119,9 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		return handleRequest(GET, "/" + projectName + "/tags" + getQuery(parameters), TagListResponse.class);
 	}
 
+	// TODO can we actually do this?
 	@Override
 	public Future<TagResponse> findTagByName(String projectName, String name) {
-		//TODO can we actually do this?
 		return handleRequest(GET, "/" + projectName + "/tags/" + name, TagResponse.class);
 	}
 
@@ -146,8 +132,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<ProjectResponse> findProjectByUuid(String uuid) {
-		String uri = "/projects/" + uuid;
-		return handleRequest(GET, uri, ProjectResponse.class);
+		return handleRequest(GET, "/projects/" + uuid, ProjectResponse.class);
 	}
 
 	@Override
@@ -157,14 +142,12 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return handleRequest(POST, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
 	}
 
 	@Override
 	public Future<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return handleRequest(DELETE, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
 	}
 
 	@Override
@@ -183,21 +166,18 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagFamilyResponse> findTagFamilyByUuid(String uuid) {
-		//		return handleRequest(GET, "/" + , TagFamilyResponse.class)		
-		return null;
+	public Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid) {
+		return handleRequest(GET, "/" + projectName + "/tagFamilies/" + uuid, TagFamilyResponse.class);
 	}
 
 	@Override
 	public Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingInfo pagingInfo) {
-		// TODO Auto-generated method stub
-		return null;
+		return handleRequest(GET, "/" + projectName + "/tagFamilies", TagFamilyListResponse.class);
 	}
 
 	@Override
 	public Future<TagFamilyResponse> createTagFamily(String projectName, TagFamilyCreateRequest tagFamilyCreateRequest) {
-		// TODO Auto-generated method stub
-		return null;
+		return handleRequest(POST, "/" + projectName + "/tagFamilies", TagFamilyResponse.class, tagFamilyCreateRequest);
 	}
 
 	@Override
@@ -222,33 +202,27 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest) {
-		// TODO Auto-generated method stub
-		//		String response = request(info, POST, "/api/v1/groups/", 200, "OK", requestJson);
-		return null;
+		return handleRequest(POST, "/groups", GroupResponse.class, groupCreateRequest);
 	}
 
 	@Override
 	public Future<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest) {
-		String uri = "/groups/" + uuid;
-		return handleRequest(PUT, uri, GroupResponse.class, groupUpdateRequest);
+		return handleRequest(PUT, "/groups/" + uuid, GroupResponse.class, groupUpdateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteGroup(String uuid) {
-		String uri = "/groups/" + uuid;
-		return handleRequest(DELETE, uri, GenericMessageResponse.class);
+		return handleRequest(DELETE, "/groups/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<UserResponse> findUserByUuid(String uuid) {
-		String uri = "/users/" + uuid;
-		return handleRequest(GET, uri, UserResponse.class);
+		return handleRequest(GET, "/users/" + uuid, UserResponse.class);
 	}
 
 	@Override
 	public Future<UserResponse> findUserByUsername(String username) {
-		// TODO Auto-generated method stub
-		return null;
+		return handleRequest(GET, "/users/" + username, UserResponse.class);
 	}
 
 	@Override
@@ -292,31 +266,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<UserResponse> login() {
-
-		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
-		meshHandler.handle(rh -> {
-			if (rh.statusCode() == 200) {
-				setCookie(rh.headers().get("Set-Cookie"));
-			}
-		});
-		HttpClientRequest request = client.get(BASEURI + "/auth/me", meshHandler);
-		request.headers().add("Authorization", "Basic " + authEnc);
-		request.headers().add("Accept", "application/json");
-		request.end();
-		return meshHandler.getFuture();
-
-	}
-
-	@Override
 	public Future<UserResponse> me() {
 		return handleRequest(GET, BASEURI + "auth/me", UserResponse.class);
-	}
-
-	@Override
-	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -379,8 +330,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<NodeResponse> webroot(String projectName, String path) {
-		return handleRequest(GET, "/" + projectName + "/webroot/" + path, NodeResponse.class);
+	public Future<NodeResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/" + projectName + "/webroot/" + path + getQuery(parameters), NodeResponse.class);
 	}
 
 	@Override
@@ -390,8 +341,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<SchemaResponse> addSchemaToProject(String schemaUuid, String projectUuid) {
-		// String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
-		return null;
+		return handleRequest(POST, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
 	}
 
 	@Override
@@ -402,6 +352,29 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	@Override
 	public Future<SchemaResponse> removeSchemaFromProject(String schemaUuid, String projectUuid) {
 		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
+	}
+
+	@Override
+	public Future<UserResponse> login() {
+
+		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
+		meshHandler.handle(rh -> {
+			if (rh.statusCode() == 200) {
+				setCookie(rh.headers().get("Set-Cookie"));
+			}
+		});
+		HttpClientRequest request = client.get(BASEURI + "/auth/me", meshHandler);
+		request.headers().add("Authorization", "Basic " + authEnc);
+		request.headers().add("Accept", "application/json");
+		request.end();
+		return meshHandler.getFuture();
+
+	}
+
+	@Override
+	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	//
@@ -450,4 +423,16 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	// });
 	// return future;
 	// }
+
+	private String getQuery(QueryParameterProvider... parameters) {
+		StringBuilder builder = new StringBuilder();
+		for (QueryParameterProvider provider : parameters) {
+			builder.append(provider.getQueryParameters());
+		}
+		if (builder.length() > 0) {
+			return "?" + builder.toString();
+		} else {
+			return "";
+		}
+	}
 }

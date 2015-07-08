@@ -17,6 +17,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
@@ -40,13 +41,13 @@ public class NodeListHandler {
 		NodeListResponse listResponse = new NodeListResponse();
 		List<String> languageTags = getSelectedLanguageTags(rc);
 
-		rcs.loadObject(rc, "uuid", READ_PERM, Tag.class, (AsyncResult<Tag> rh) -> {
+		rcs.loadObject(rc, "uuid", READ_PERM, TagImpl.class, (AsyncResult<Tag> rh) -> {
 			Tag tag = rh.result();
 
 			PagingInfo pagingInfo = getPagingInfo(rc);
 			TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 
-			Page<Node> nodePage = clc.findNodes(projectName, tag, languageTags, pagingInfo);
+			Page<? extends Node> nodePage = clc.findNodes(projectName, tag, languageTags, pagingInfo);
 			for (Node node : nodePage) {
 				listResponse.getData().add(node.transformToRest(info));
 			}
@@ -70,7 +71,7 @@ public class NodeListHandler {
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-			Page<Node> nodePage = clc.findNodes(projectName, parentNode, languageTags, pagingInfo);
+			Page<? extends Node> nodePage = clc.findNodes(projectName, parentNode, languageTags, pagingInfo);
 			for (Node node : nodePage) {
 				listResponse.getData().add(node.transformToRest(info));
 			}

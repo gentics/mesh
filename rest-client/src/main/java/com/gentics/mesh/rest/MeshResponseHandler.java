@@ -37,9 +37,10 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
 				try {
-					if (isNodeListClass(classOfT)) {
-
-					} else if (isNodeClass(classOfT)) {
+//					if () {
+//
+//					} else
+						if (isNodeClass(classOfT) || isNodeListClass(classOfT)) {
 						SchemaReferenceInfo info = JsonUtil.readValue(json, SchemaReferenceInfo.class);
 //						String schemaName = info.getSchema().getName();
 						//TODO should we check whether the schema exists upfront?

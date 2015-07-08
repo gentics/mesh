@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
@@ -62,6 +63,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(info.getUser().getUsername(), info.getPassword());
+		for (SchemaContainer container : data().getSchemaContainers().values()) {
+			getClient().getClientSchemaStorage().addSchema(container.getSchema());
+		}
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 

@@ -2,12 +2,9 @@ package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
-import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.ext.web.RoutingContext;
-
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,6 +15,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -37,16 +35,14 @@ public class TagListHandler {
 		MeshAuthUser requestUser = getUser(rc);
 		String projectName = rcs.getProjectName(rc);
 		TagListResponse listResponse = new TagListResponse();
-		List<String> languageTags = getSelectedLanguageTags(rc);
-
-		rcs.loadObject(rc, "uuid", READ_PERM, Node.class, (AsyncResult<Node> rh) -> {
+		rcs.loadObject(rc, "uuid", READ_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
 			Node node = rh.result();
 
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
-			Page<Tag> tagPage = tlc.findTags(projectName, node, languageTags, pagingInfo);
+			Page<? extends Tag> tagPage = tlc.findTags(projectName, node, pagingInfo);
 			for (Tag tag : tagPage) {
-				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+				TransformationInfo info = new TransformationInfo(requestUser, null, rc);
 				listResponse.getData().add(tag.transformToRest(info));
 			}
 			RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);

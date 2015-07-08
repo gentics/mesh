@@ -9,7 +9,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.generic.MeshEdge;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -66,7 +66,7 @@ public final class TraversalHelper {
 	}
 
 	public static void debug(VertexTraversal<?, ?, ?> traversal) {
-		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
+		for (AbstractMeshVertex v : traversal.toListExplicit(AbstractMeshVertex.class)) {
 			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
 
 		}

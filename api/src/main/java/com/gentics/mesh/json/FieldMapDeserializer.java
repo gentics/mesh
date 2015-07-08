@@ -60,8 +60,6 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		while (it.hasNext()) {
 			Entry<String, JsonNode> currentEntry = it.next();
 			String fieldKey = currentEntry.getKey();
-			//			String schemaName = (String) ctxt.getAttribute("schemaName");
-			System.out.println("Found: " + schemaName);
 			Schema schema = schemaStorage.getSchema(schemaName);
 			if (schema == null) {
 				throw new IOException("Can't find schema {" + schemaName + "} within the schema storage.");
@@ -106,22 +104,22 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 			break;
 		case SELECT:
 			SelectField selectField = new SelectFieldImpl();
-			//TODO impl
+			// TODO impl
 			break;
 		case LIST:
 			ListField listField = new ListFieldImpl();
-			//TODO impl
+			// TODO impl
 			break;
 		case NODE:
 			NodeField nodeField = new NodeFieldImpl();
-			//TODO impl
+			// TODO impl
 			break;
 		case MICROSCHEMA:
 			MicroschemaField MicroschemaField = new MicroschemaFieldImpl();
-			//TODO impl
+			// TODO impl
 			break;
 		default:
-			//TODO handle unknown type situation
+			// TODO handle unknown type situation
 			break;
 		}
 	}

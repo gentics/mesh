@@ -8,11 +8,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
-public class TagFamilyImpl extends MeshVertexImpl implements TagFamily {
+public class TagFamilyImpl extends AbstractMeshVertex implements TagFamily {
 
 	public String getName() {
 		return getProperty("name");

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -81,7 +82,11 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 				restNode.setPermissions(requestUser.getPermissionNames(node));
 				restNode.setUuid(node.getUuid());
 
-				Schema schema = node.getSchema();
+				SchemaContainer container = node.getSchemaContainer();
+				if (container == null) {
+					throw new HttpStatusCodeErrorException(400, "The schema for node {" + node.getUuid() + "} could not be found.");
+				}
+				Schema schema = container.getSchema();
 				if (schema == null) {
 					throw new HttpStatusCodeErrorException(400, "The schema for node {" + node.getUuid() + "} could not be found.");
 				}
@@ -132,7 +137,7 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 				}
 
 				if (fieldContainer == null) {
-					//"Could not find any field for one of the languagetags that were specified."
+					// "Could not find any field for one of the languagetags that were specified."
 					String langInfo = getLanguageInfo(info.getLanguageTags());
 					throw new HttpStatusCodeErrorException(400, getI18n().get(info.getRoutingContext(), "node_no_language_found", langInfo));
 				}

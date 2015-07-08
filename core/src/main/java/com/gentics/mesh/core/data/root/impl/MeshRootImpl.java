@@ -11,7 +11,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGF
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER_ROOT;
 
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 
-public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
+public class MeshRootImpl extends AbstractMeshVertex implements MeshRoot {
 
 	private static MeshRoot instance;
 

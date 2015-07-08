@@ -9,7 +9,7 @@ import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
-public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
+public abstract class AbstractMeshVertex extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	protected void init() {
@@ -49,7 +49,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public MeshVertexImpl getImpl() {
+	public AbstractMeshVertex getImpl() {
 		return this;
 	}
 }

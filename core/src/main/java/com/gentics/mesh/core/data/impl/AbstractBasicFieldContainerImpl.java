@@ -4,10 +4,10 @@ import java.util.Map;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
 
-public abstract class AbstractBasicFieldContainerImpl extends MeshVertexImpl implements BasicFieldContainer {
+public abstract class AbstractBasicFieldContainerImpl extends AbstractMeshVertex implements BasicFieldContainer {
 
 	public static final String I18N_PREFIX = "i18n-";
 

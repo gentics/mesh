@@ -41,15 +41,16 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNodeTags() throws Exception {
 		Node node = data().getFolder("2015");
 		assertNotNull(node);
+		System.out.println(node.getUuid());
 		assertNotNull(node.getUuid());
-
+		assertNotNull(node.getSchemaContainer());
+		
 		Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		TagListResponse tagList = future.result();
 		assertEquals(4, tagList.getData().size());
 		assertEquals(4, tagList.getMetainfo().getTotalCount());
-
 	}
 
 	@Test

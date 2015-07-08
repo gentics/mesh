@@ -27,6 +27,9 @@ import com.gentics.mesh.core.data.service.transformation.node.NodeTransformation
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.TraversalHelper;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class NodeImpl extends GenericFieldContainerNode implements Node {
 
@@ -70,7 +73,7 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 	}
 
 	public SchemaContainer getSchemaContainer() {
-		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefault(SchemaContainerImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
@@ -83,7 +86,7 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 	}
 
 	public Node getParentNode() {
-		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefault(NodeImpl.class, null);
+		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	public void setParentNode(Node parent) {
@@ -112,8 +115,13 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 
 	}
 
-	public Page<Tag> getTags(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		return null;
+	public Page<? extends Tag> getTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo) throws InvalidArgumentException {
+		
+		//TODO filter permissions
+		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
+		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
+		Page<? extends Tag> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
+		return items;
 		// public Page<Tag> findTags(String userUuid, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
 		// // String langFilter = getLanguageFilter("l");
 		// // if (languageTags == null || languageTags.isEmpty()) {

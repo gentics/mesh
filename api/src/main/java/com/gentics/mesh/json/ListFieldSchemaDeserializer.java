@@ -19,9 +19,8 @@ public class ListFieldSchemaDeserializer extends JsonDeserializer<ListFieldSchem
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
 		ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
-
-		System.out.println(node.asText());
-		System.out.println(node.get("listType").asText());
+//		System.out.println(node.asText());
+//		System.out.println(node.get("listType").asText());
 		return null;
 	}
 
