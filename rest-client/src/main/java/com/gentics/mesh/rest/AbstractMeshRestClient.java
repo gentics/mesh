@@ -10,7 +10,6 @@ import io.vertx.core.logging.LoggerFactory;
 
 import org.apache.commons.codec.binary.Base64;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.method.AuthClientMethods;
 import com.gentics.mesh.rest.method.GroupClientMethods;
@@ -80,7 +79,7 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		this.clientSchemaStorage = clientSchemaStorage;
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> ClassOfT, AbstractRestModel requestModel) {
+	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> ClassOfT, Object requestModel) {
 
 		Buffer buffer = Buffer.buffer();
 		if (requestModel != null) {

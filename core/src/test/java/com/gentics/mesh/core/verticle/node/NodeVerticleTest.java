@@ -370,7 +370,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogusUUID");
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 	}
 

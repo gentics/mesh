@@ -1,6 +1,8 @@
 package com.gentics.mesh.api.common;
 
-public class PagingInfo {
+import com.gentics.mesh.core.rest.node.QueryParameterProvider;
+
+public class PagingInfo implements QueryParameterProvider {
 
 	private int page;
 	private int perPage;
@@ -41,6 +43,12 @@ public class PagingInfo {
 
 	public SortOrder getOrder() {
 		return order;
+	}
+
+	@Override
+	public String getQueryParameters() {
+		//TODO add the other parameters as well
+		return "page=" + page + "&per_page=" + perPage;
 	}
 
 }

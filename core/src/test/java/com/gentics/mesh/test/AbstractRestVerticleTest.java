@@ -111,96 +111,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		latch.await(50, TimeUnit.SECONDS);
 	}
 
-	//	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage) throws Exception {
-	//		return request(info, method, path, statusCode, statusMessage, null);
-	//	}
-	//
-	//	public String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, String requestBody) throws Exception {
-	//
-	//		if (requestBody != null) {
-	//			Map<String, String> extraHeaders = new HashMap<>();
-	//			Buffer buffer = Buffer.buffer();
-	//			buffer.appendString(requestBody);
-	//			extraHeaders.put("content-length", String.valueOf(buffer.length()));
-	//			extraHeaders.put("content-type", "application/json");
-	//			return request(info, method, path, statusCode, statusMessage, buffer, extraHeaders);
-	//		} else {
-	//			return request(info, method, path, statusCode, statusMessage, null, null);
-	//		}
-	//	}
-
-	//	protected String request(UserInfo info, HttpMethod method, String path, int statusCode, String statusMessage, Buffer requestBuffer,
-	//			Map<String, String> extraHeaders) throws Exception {
-	//		// Reset the latch etc.
-	//		latch = new CountDownLatch(1);
-	//		throwable.set(null);
-	//
-	//		Thread.sleep(100);
-	//
-	//		Consumer<HttpClientRequest> requestAction = request -> {
-	//			String authStringEnc = info.getUser().getUsername() + ":" + info.getPassword();
-	//			byte[] authEncBytes = Base64.encodeBase64(authStringEnc.getBytes());
-	//			request.headers().add("Authorization", "Basic " + new String(authEncBytes));
-	//			request.headers().add("Accept", "application/json");
-	//			if (extraHeaders != null) {
-	//				for (Entry<String, String> entry : extraHeaders.entrySet()) {
-	//					request.headers().set(entry.getKey(), entry.getValue());
-	//				}
-	//			}
-	//			if (requestBuffer != null) {
-	//				request.write(requestBuffer);
-	//			}
-	//		};
-	//		return request(method, path, requestAction, null, statusCode, statusMessage);
-	//
-	//	}
-	//
-	//	protected String request(HttpMethod method, String path, Consumer<HttpClientRequest> requestAction, Consumer<HttpClientResponse> responseAction,
-	//			int statusCode, String statusMessage) throws Exception {
-	//		return request(null, method, port, path, requestAction, responseAction, statusCode, statusMessage);
-	//	}
-
-	//	protected String request(HttpClient client, HttpMethod method, int port, String path, Consumer<HttpClientRequest> requestAction,
-	//			Consumer<HttpClientResponse> responseAction, int statusCode, String statusMessage) throws Exception {
-	//
-	//		AtomicReference<String> responseBody = new AtomicReference<String>(null);
-	//		HttpClientRequest req = client.request(method, port, "localhost", path, resp -> {
-	//			blockingAssertEquals("The response status code did not match the expected one.", statusCode, resp.statusCode());
-	//			blockingAssertEquals("The reponse status message did not match.", statusMessage, resp.statusMessage());
-	//			if (responseAction != null) {
-	//				responseAction.accept(resp);
-	//			}
-	//			resp.bodyHandler(buff -> {
-	//				responseBody.set(buff.toString());
-	//				latch.countDown();
-	//			});
-	//		});
-	//		if (requestAction != null) {
-	//			requestAction.accept(req);
-	//		}
-	//		req.end();
-	//		awaitCompletion();
-	//		return responseBody.get();
-	//	}
-
-	/**
-	 * Wait for the completion and latching of all latches. Check any thrown exception.
-	 * 
-	 * @throws InterruptedException
-	 * @throws AssertionError
-	 * @throws UnknownHostException
-	 */
-	private void awaitCompletion() throws InterruptedException, AssertionError, UnknownHostException {
-
-		int timeout = getTimeout();
-		boolean allLatchesFree = latch.await(timeout, TimeUnit.SECONDS);
-		if (throwable.get() != null) {
-			throw (AssertionError) throwable.get();
-		} else if (!allLatchesFree) {
-			fail("Timeout of {" + timeout + "} seconds reached.");
-		}
-	}
-
 	public int getTimeout() throws UnknownHostException {
 		int timeout = DEV_TIMEOUT_SECONDS;
 		if (TestUtil.isHost("jenkins.office")) {
@@ -208,17 +118,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 		log.info("Using test timeout of {" + timeout + "} seconds for host {" + TestUtil.getHostname() + "}");
 		return timeout;
-	}
-
-	private void blockingAssertEquals(String message, Object expected, Object actual) {
-		try {
-			assertEquals(message, expected, actual);
-		} catch (AssertionError e) {
-			// Only store the first encountered exception
-			if (throwable.get() == null) {
-				throwable.set(e);
-			}
-		}
 	}
 
 	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
@@ -232,15 +131,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		String message = i18n.get(en, i18nKey, i18nParams);
 		assertEquals("The response message does not match.", message, responseFuture.result().getMessage());
 	}
-
-	//TODO remove me
-	//	protected void expectMessageResponse(String i18nKey, String response, String... i18nParams) {
-	//		Locale en = Locale.ENGLISH;
-	//		String message = i18n.get(en, i18nKey, i18nParams);
-	//		GenericMessageResponse responseObject = new GenericMessageResponse(message);
-	//		String json = JsonUtil.toJson(responseObject);
-	//		assertEquals("The response does not match.", json, response);
-	//	}
 
 	protected void expectException(Future<?> future, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());

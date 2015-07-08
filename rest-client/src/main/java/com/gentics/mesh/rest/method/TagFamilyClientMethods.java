@@ -15,10 +15,10 @@ public interface TagFamilyClientMethods {
 
 	Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingInfo pagingInfo);
 
-	Future<TagFamilyResponse> createTagFamily(String project, TagFamilyCreateRequest tagFamilyCreateRequest);
+	Future<TagFamilyResponse> createTagFamily(String projectName, TagFamilyCreateRequest tagFamilyCreateRequest);
 
-	Future<GenericMessageResponse> deleteTagFamily(String uuid);
+	Future<GenericMessageResponse> deleteTagFamily(String projectName, String uuid);
 	
-	Future<TagFamilyResponse> updateTagFamily(TagFamilyUpdateRequest tagFamilyUpdateRequest);
+	Future<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest tagFamilyUpdateRequest);
 
 }
