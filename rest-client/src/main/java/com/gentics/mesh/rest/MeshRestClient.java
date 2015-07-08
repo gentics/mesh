@@ -251,23 +251,23 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<RoleListResponse> findRoles(PagingInfo pagingInfo) {
-		return handleRequest(GET, "/roles", RoleListResponse.class);
+	public Future<RoleListResponse> findRoles(QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/roles" + getQuery(parameters), RoleListResponse.class);
 	}
 
 	@Override
 	public Future<RoleResponse> createRole(RoleCreateRequest roleCreateRequest) {
-		return handleRequest(POST, "/roles", RoleResponse.class);
+		return handleRequest(POST, "/roles", RoleResponse.class, roleCreateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteRole(String uuid) {
-		return handleRequest(DELETE, "/roles", GenericMessageResponse.class);
+		return handleRequest(DELETE, "/roles/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<UserResponse> me() {
-		return handleRequest(GET, BASEURI + "auth/me", UserResponse.class);
+		return handleRequest(GET, "/auth/me", UserResponse.class);
 	}
 
 	@Override

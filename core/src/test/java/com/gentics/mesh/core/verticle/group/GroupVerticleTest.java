@@ -82,8 +82,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		// Now delete the group
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid());
-		latchFor(future);
-		assertSuccess(future);
+		latchFor(deleteFuture);
+		assertSuccess(deleteFuture);
 		expectMessageResponse("group_deleted", deleteFuture, restGroup.getUuid());
 	}
 

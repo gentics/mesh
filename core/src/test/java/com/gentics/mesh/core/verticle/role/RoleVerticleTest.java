@@ -211,7 +211,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		// Role with no permission
 		info.getGroup().addRole(noPermRole);
 		// Test default paging parameters
-		Future<RoleListResponse> future = getClient().findRoles(new PagingInfo());
+		Future<RoleListResponse> future = getClient().findRoles();
 		latchFor(future);
 		assertSuccess(future);
 		RoleListResponse restResponse = future.result();
