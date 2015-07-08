@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
@@ -59,7 +60,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addLanguagesHandler() {
-		//TODO Add method that allows assigning languages from and to the project
+		// TODO Add method that allows assigning languages from and to the project
 		Route createRoute = route("/:projectUuid/languages").method(POST).produces(APPLICATION_JSON);
 		createRoute.handler(rc -> {
 
@@ -130,25 +131,29 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					return;
 				}
 
-				ProjectRoot projectRoot = boot.projectRoot();
-				Project project = projectRoot.create(requestModel.getName());
-				project.setCreator(requestUser);
-
-				try {
-					routerStorage.addProjectRouter(project.getName());
-					String msg = "Registered project {" + project.getName() + "}";
-					log.info(msg);
-					requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project);
-					projectCreated.complete(project);
-				} catch (Exception e) {
-					// TODO should we really fail here?
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage")));
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					ProjectRoot projectRoot = boot.projectRoot();
+					Project project = projectRoot.create(requestModel.getName());
+					project.setCreator(requestUser);
+					try {
+						routerStorage.addProjectRouter(project.getName());
+						String msg = "Registered project {" + project.getName() + "}";
+						log.info(msg);
+						requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project);
+						tx.success();
+						projectCreated.complete(project);
+					} catch (Exception e) {
+						// TODO should we really fail here?
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage"), e));
+					tx.failure();
 					return;
 				}
-			}, trh -> {
-				Project project = projectCreated.result();
-				rc.response().end(toJson(project.transformToRest(requestUser)));
-			});
+			}
+
+		}, trh -> {
+			Project project = projectCreated.result();
+			rc.response().end(toJson(project.transformToRest(requestUser)));
+		}	);
 
 		});
 	}

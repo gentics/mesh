@@ -98,7 +98,7 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 		// log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
 		// }
 		// return projectResponse;
-		return null;
+		return projectResponse;
 	}
 
 	@Override
