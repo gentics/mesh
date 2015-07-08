@@ -69,7 +69,6 @@
 
 	<modules>
 		<module>api</module>
-		<module>rest</module>
 		<module>rest-client</module>
 		<module>databases</module>
 		<module>git</module>
