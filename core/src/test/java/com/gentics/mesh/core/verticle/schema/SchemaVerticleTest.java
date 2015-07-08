@@ -51,10 +51,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateSimpleSchema() throws HttpStatusCodeErrorException, Exception {
 		SchemaCreateRequest request = new SchemaCreateRequest();
-
 		request.setName("new schema name");
-
-		//		request.getPropertyTypeSchemas().add(propertySchema);
 
 		Future<SchemaResponse> future = getClient().createSchema(request);
 		latchFor(future);
@@ -63,7 +60,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(request, restSchemaResponse);
 		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUUID(restSchemaResponse.getUuid());
 		assertNotNull(schemaContainer);
-		//		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
+		assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getSchemaName());
 		//		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 		//		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
@@ -72,9 +69,9 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateDeleteSimpleSchema() throws HttpStatusCodeErrorException, Exception {
 
-		//		SchemaCreateRequest request = new SchemaCreateRequest();
+		SchemaCreateRequest request = new SchemaCreateRequest();
 		//		request.setDescription("new description");
-		//		request.setName("new schema name");
+		request.setName("new schema name");
 		//		request.setProjectUuid(data().getProject().getUuid());
 		//		PropertyTypeSchemaResponse propertySchema = new PropertyTypeSchemaResponse();
 		//		propertySchema.setKey("extra-content");
@@ -82,17 +79,22 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		//		propertySchema.setDescription("Some extra content");
 		//		request.getPropertyTypeSchemas().add(propertySchema);
 		//
-		//		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtils.toJson(request));
-		//		SchemaResponse restSchema = JsonUtils.readValue(response, SchemaResponse.class);
-		//		test.assertSchema(request, restSchema);
-		//
-		//		// Verify that the object was created
-		//		Schema schema = schemaRoot.findByUUID(restSchema.getUuid());
+		Future<SchemaResponse> createFuture = getClient().createSchema(request);
+		latchFor(createFuture);
+		assertSuccess(createFuture);
+		SchemaResponse restSchema = createFuture.result();
+		test.assertSchema(request, restSchema);
+
+		// Verify that the object was created
+		SchemaContainer schemaContainer = data().getMeshRoot().getSchemaContainerRoot().findByUUID(restSchema.getUuid());
+		assertNotNull(schemaContainer);
 		//		test.assertSchema(schema, restSchema);
 		//		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
-		//
-		//		response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + restSchema.getUuid(), 200, "OK");
-		//		expectMessageResponse("schema_deleted", response, restSchema.getName());
+
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid());
+		latchFor(deleteFuture);
+		assertSuccess(deleteFuture);
+		expectMessageResponse("schema_deleted", deleteFuture, restSchema.getName());
 
 	}
 
@@ -176,12 +178,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
 
-		SchemaContainer schema = data().getSchemaContainer("content");
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
+		SchemaContainer schemaContainer = data().getSchemaContainer("content");
+		Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
-		test.assertSchema(schema, restSchema);
+		test.assertSchema(schemaContainer, restSchema);
 	}
 
 	@Test

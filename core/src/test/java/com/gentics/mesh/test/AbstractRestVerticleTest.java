@@ -17,7 +17,6 @@ import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -49,10 +48,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private MeshRestClient client;
 
-	private AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
-
-	private CountDownLatch latch;
-
 	protected UserInfo info;
 
 	@Autowired
@@ -67,10 +62,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(info.getUser().getUsername(), info.getPassword());
-
-		//		client = vertx.createHttpClient(new HttpClientOptions());
-		//		latch = new CountDownLatch(1);
-		//		throwable.set(null);
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
@@ -103,12 +94,12 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return client;
 	}
 
-	protected void latchFor(Future<?> future) throws InterruptedException {
+	protected void latchFor(Future<?> future) throws InterruptedException, UnknownHostException {
 		CountDownLatch latch = new CountDownLatch(1);
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
-		latch.await(50, TimeUnit.SECONDS);
+		latch.await(getTimeout(), TimeUnit.SECONDS);
 	}
 
 	public int getTimeout() throws UnknownHostException {
@@ -152,6 +143,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void assertSuccess(Future<?> future) {
+		if (future.cause() != null) {
+			future.cause().printStackTrace();
+		}
 		assertTrue("The future failed with error {" + (future.cause() == null ? "Unknown error" : future.cause().getMessage()) + "}",
 				future.succeeded());
 	}

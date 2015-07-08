@@ -1,6 +1,5 @@
 package com.gentics.mesh.json;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -39,6 +38,7 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
 public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
@@ -47,9 +47,11 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 
 	@Override
 	public Map<String, Field> deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-		
-		System.out.println("map deserializer");
-		String schemaName =(String) ctxt.findInjectableValue("schemaName", null, null);
+
+		String schemaName = (String) ctxt.findInjectableValue("schemaName", null, null);
+		if (schemaName == null) {
+			throw new IOException("It is not possible to deserialize the field map because the schemaName could not be extracted.");
+		}
 		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
@@ -58,14 +60,17 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		while (it.hasNext()) {
 			Entry<String, JsonNode> currentEntry = it.next();
 			String fieldKey = currentEntry.getKey();
-//			String schemaName = (String) ctxt.getAttribute("schemaName");
+			//			String schemaName = (String) ctxt.getAttribute("schemaName");
 			System.out.println("Found: " + schemaName);
+			Schema schema = schemaStorage.getSchema(schemaName);
+			if (schema == null) {
+				throw new IOException("Can't find schema {" + schemaName + "} within the schema storage.");
+			}
 			FieldSchema fieldSchema = schemaStorage.getSchema(schemaName).getFields().get(fieldKey);
 			if (fieldSchema != null) {
 				addField(map, fieldKey, fieldSchema, currentEntry.getValue());
 			} else {
-				log.error("Can't handle field {" + fieldKey + "} within json. The schema {" + schemaName + "} does not specify this key.");
-				throw new IOException("Can't handle field {" + fieldKey + "}");
+				throw new IOException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
 			}
 		}
 		return map;

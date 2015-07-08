@@ -17,8 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -28,18 +29,19 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 
 public final class JsonUtil {
 
-	protected static ObjectMapper mapper;
+	protected static ObjectMapper defaultMapper;
 
 	protected static ObjectMapper schemaMapper;
 
 	protected static ObjectMapper nodeMapper;
 
+	//TODO danger danger - This will cause trouble when doing multithreaded deserialisation!
 	protected static Map<String, Object> valuesMap = new HashMap<>();
 
 	static {
-		initMapper();
 		initNodeMapper();
 		initSchemaMapper();
+		initDefaultMapper();
 	}
 
 	private static void initSchemaMapper() {
@@ -62,6 +64,7 @@ public final class JsonUtil {
 		// module.addDeserializer(MicroschemaListableField.class, new FieldDeserializer<MicroschemaListableField>());
 		// module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
 		module.addDeserializer(Map.class, new FieldMapDeserializer());
+		//		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
 		// module.addSerializer(Field.class, new FieldSerializer<Field>());
 
 		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
@@ -76,17 +79,26 @@ public final class JsonUtil {
 		nodeMapper.registerModule(module);
 	}
 
-	private static void initMapper() {
-		mapper = new ObjectMapper();
-		mapper.setSerializationInclusion(Include.NON_NULL);
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	private static void initDefaultMapper() {
+		defaultMapper = new ObjectMapper();
+		defaultMapper.setSerializationInclusion(Include.NON_NULL);
+		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, valuesMap, NodeResponse.class));
+		module.addDeserializer(NodeCreateRequest.class, new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, valuesMap,
+				NodeCreateRequest.class));
+		module.addDeserializer(NodeUpdateRequest.class, new DelegagingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, valuesMap,
+				NodeUpdateRequest.class));
+		defaultMapper.registerModule(module);
+
 	}
 
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
 			// TODO don't use pretty printer in final version
 			// return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
-			return mapper.writeValueAsString(obj);
+			return defaultMapper.writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";
@@ -97,9 +109,8 @@ public final class JsonUtil {
 
 	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage) throws IOException, JsonParseException,
 			JsonMappingException {
-
 		valuesMap.put("schema_storage", schemaStorage);
-		return nodeMapper.reader(getInjectableValues()).forType(valueType).readValue(json);
+		return defaultMapper.reader(getInjectableValues()).forType(valueType).readValue(json);
 	}
 
 	public static InjectableValues getInjectableValues() {
@@ -119,22 +130,18 @@ public final class JsonUtil {
 	}
 
 	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
-		return mapper.readValue(content, valueType);
+		return defaultMapper.readValue(content, valueType);
 	}
 
-	public static <T extends NodeResponse> T readNode(String json, Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
-		return nodeMapper.readValue(json, clazz);
-	}
-
-	public static <T extends Schema> T readSchema(String json) throws JsonParseException, JsonMappingException, IOException {
-		return (T) schemaMapper.readValue(json, SchemaImpl.class);
+	public static <T extends Schema> T readSchema(String json, Class<T> classOfT) throws JsonParseException, JsonMappingException, IOException {
+		return (T) schemaMapper.readValue(json, classOfT);
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> T fromJson(RoutingContext rc, Class<?> classOfT) throws HttpStatusCodeErrorException {
 		try {
 			String body = rc.getBodyAsString();
-			return (T) mapper.readValue(body, classOfT);
+			return (T) defaultMapper.readValue(body, classOfT);
 		} catch (Exception e) {
 			// throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
 			throw new HttpStatusCodeErrorException(400, "Error while parsing json.", e);
@@ -143,7 +150,7 @@ public final class JsonUtil {
 	}
 
 	public static ObjectMapper getMapper() {
-		return mapper;
+		return defaultMapper;
 	}
 
 	public static String writeNodeJson(NodeResponse response) {
@@ -155,15 +162,6 @@ public final class JsonUtil {
 			// TODO 500?
 			throw new HttpStatusCodeErrorException(500, message, e);
 		}
-	}
-
-	public static NodeListResponse readNodeList(String json, SchemaStorage schemaStorage) throws JsonParseException, JsonMappingException, IOException {
-		valuesMap.put("schema_storage", schemaStorage);
-		ObjectMapper nodeListMapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
-		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
-		nodeListMapper.registerModule(module);
-		return nodeListMapper.reader(getInjectableValues()).forType(NodeListResponse.class).readValue(json);
 	}
 
 }

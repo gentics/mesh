@@ -229,7 +229,7 @@ public class Generator {
 		schema.setUuid(getUUID());
 		//		schema.setDescription("Description of the schema");
 		//		schema.setName("extended-content");
-		schema.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		schema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		//		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
 		//		prop.setDescription("Html Content");
 		//		prop.setKey("content");

@@ -201,7 +201,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodesDefaultPaging() throws Exception {
 
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, null);
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME);
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();

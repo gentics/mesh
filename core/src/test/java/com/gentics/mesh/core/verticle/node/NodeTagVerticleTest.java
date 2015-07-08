@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -13,7 +14,6 @@ import io.vertx.core.Future;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
@@ -43,7 +43,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new PagingInfo());
+		Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		TagListResponse tagList = future.result();
@@ -58,7 +58,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
 		assertFalse(node.getTags().contains(tag));
-		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
@@ -74,7 +74,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(node, UPDATE_PERM);
 
-		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		assertFalse(node.getTags().contains(tag));
@@ -87,7 +87,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(tag, READ_PERM);
 
-		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 		assertFalse(node.getTags().contains(tag));
@@ -99,7 +99,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getTag("bike");
 
 		assertTrue(node.getTags().contains(tag));
-		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
@@ -113,7 +113,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveBogusTagFromNode() throws Exception {
 		Node node = data().getFolder("2015");
 
-		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), "bogus", new NodeRequestParameters());
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), "bogus");
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}

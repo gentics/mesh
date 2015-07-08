@@ -8,10 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -40,21 +42,26 @@ import com.gentics.mesh.util.UUIDUtil;
 
 public class RestModelTest extends AbstractDBTest {
 
+	@Autowired
+	private ServerSchemaStorage schemaStorage;
+
 	@Test
-	public void testNodeResponse() {
+	public void testNodeResponse() throws JsonParseException, JsonMappingException, IOException {
+		
+		schemaStorage.addSchema(getDummySchema());
 		NodeResponse response = new NodeResponse();
 		StringField stringField = new StringFieldImpl();
 		stringField.setText("some text");
 		response.getFields().put("name", stringField);
+		response.setSchema(new SchemaReference("content", UUIDUtil.randomUUID()));
+		String json = JsonUtil.toJson(response);
+		assertNotNull(json);
 
-		System.out.println(JsonUtil.toJson(response));
-
+		NodeResponse deserializedResponse = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		assertNotNull(deserializedResponse);
 	}
 
-	@Test
-	public void testNodeCreateRequest() throws JsonParseException, JsonMappingException, IOException {
-
-		// schema
+	private Schema getDummySchema() {
 		Schema schema = new SchemaImpl();
 		schema.setName("content");
 		schema.setDisplayField("title");
@@ -75,9 +82,14 @@ public class RestModelTest extends AbstractDBTest {
 
 		schema.setBinary(false);
 		schema.setContainer(false);
+		return schema;
+	}
+	@Test
+	public void testNodeCreateRequest() throws JsonParseException, JsonMappingException, IOException {
 
+		// schema
 		ClientSchemaStorage schemaStorage = new ClientSchemaStorage();
-		schemaStorage.addSchema(schema);
+		schemaStorage.addSchema(getDummySchema());
 
 		NodeCreateRequest request = new NodeCreateRequest();
 
@@ -122,7 +134,7 @@ public class RestModelTest extends AbstractDBTest {
 		NodeResponse folder = new NodeResponse();
 		folder.setSchema(new SchemaReference(folderSchema.getName(), null));
 		folder.getFields().put("name", FieldUtil.createStringField("folder name"));
-//		folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
+		//		folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
 
 		NodeResponse content = new NodeResponse();
 		content.setSchema(new SchemaReference(contentSchema.getName(), null));
@@ -137,8 +149,8 @@ public class RestModelTest extends AbstractDBTest {
 		list.getData().add(folder);
 		list.getData().add(content);
 		String json = JsonUtil.toJson(list);
-		NodeListResponse deserializedList = JsonUtil.readNodeList(json, storage);
-		System.out.println(json);
+		NodeListResponse deserializedList = JsonUtil.readNode(json, NodeListResponse.class, storage);
+		assertNotNull(deserializedList);
 	}
 
 	@Test
@@ -195,7 +207,7 @@ public class RestModelTest extends AbstractDBTest {
 		System.out.println(json);
 
 		// Deserialize the object
-		SchemaCreateRequest loadedRequest = JsonUtil.readSchema(json);
+		SchemaCreateRequest loadedRequest = JsonUtil.readSchema(json, SchemaCreateRequest.class);
 		assertNotNull(loadedRequest);
 
 		// Serialize the object

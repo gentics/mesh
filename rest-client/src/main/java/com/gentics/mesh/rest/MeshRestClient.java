@@ -81,7 +81,6 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<NodeListResponse> findNodes(String projectName, QueryParameterProvider... parameters) {
-
 		return handleRequest(GET, "/" + projectName + "/nodes" + getQuery(parameters), NodeListResponse.class);
 	}
 
@@ -98,8 +97,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, PagingInfo pagingInfo) {
-		return handleRequest(GET, "/" + projectName + "/nodes/" + nodeUuid + "/tags", TagListResponse.class);
+	public Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/" + projectName + "/nodes/" + nodeUuid + "/tags" + getQuery(parameters), TagListResponse.class);
 	}
 
 	@Override
@@ -130,9 +129,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagListResponse> findTags(String projectName, PagingInfo pagingInfo) {
-		String params = "?per_page=" + pagingInfo.getPerPage() + "&page=" + pagingInfo.getPage();
-		return handleRequest(GET, "/" + projectName + "/tags" + params, TagListResponse.class);
+	public Future<TagListResponse> findTags(String projectName, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/" + projectName + "/tags" + getQuery(parameters), TagListResponse.class);
 	}
 
 	@Override
@@ -363,7 +361,6 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<SchemaResponse> createSchema(SchemaCreateRequest request) {
-		//String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtil.toJson(request));
 		return handleRequest(POST, "/schemas", SchemaResponse.class, request);
 	}
 

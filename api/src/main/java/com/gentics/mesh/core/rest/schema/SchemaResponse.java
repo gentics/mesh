@@ -12,17 +12,17 @@ public class SchemaResponse extends SchemaImpl {
 
 	private String uuid;
 
-	private String[] perms = {};
+	private String[] permissions = {};
 
 	public SchemaResponse() {
 	}
 
-	public String[] getPerms() {
-		return perms;
+	public String[] getPermissions() {
+		return permissions;
 	}
 
-	public void setPerms(String... perms) {
-		this.perms = perms;
+	public void setPermissions(String... permissions) {
+		this.permissions = permissions;
 	}
 
 	public List<ProjectResponse> getProjects() {

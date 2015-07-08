@@ -122,6 +122,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 					Tag tag = srh.result();
 					node.addTag(tag);
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					Node node = rh.result();
 					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 					rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
@@ -143,6 +146,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 					Tag tag = srh.result();
 					node.removeTag(tag);
 				}, trh -> {
+					if (trh.failed()) {
+						rc.fail(trh.cause());
+					}
 					Node node = rh.result();
 					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
 					rc.response().setStatusCode(200).end(node.getNodeResponseJson(info));
@@ -277,7 +283,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 				} catch (Exception e) {
 					bch.fail(e);
 				}
-
 			}, arh -> {
 				if (arh.failed()) {
 					rc.fail(arh.cause());
