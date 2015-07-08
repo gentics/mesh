@@ -2,8 +2,9 @@ package com.gentics.mesh.core.verticle.webroot;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static io.vertx.core.http.HttpMethod.GET;
-import io.vertx.core.http.HttpMethod;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import io.vertx.core.Future;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class WebRootVerticleTest extends AbstractRestVerticleTest {
@@ -29,56 +29,69 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	public void testReadFolderByPath() throws Exception {
 
 		Node folder = data().getFolder("2015");
-		String path = "/api/v1/" + PROJECT_NAME + "/webroot/News/2015";
-		String response = request(info, GET, path, 200, "OK");
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+		String path = "/News/2015";
+
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
 		test.assertMeshNode(folder, restNode);
-//		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
-//				restNode.getProperties());
-//		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
-//				restNode.getProperties());
+		//		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
+		//				restNode.getProperties());
+		//		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
+		//				restNode.getProperties());
 	}
 
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
 		Node concordeNode = data().getContent("concorde");
-		String response = request(info, GET, path, 200, "OK");
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+
 		test.assertMeshNode(concordeNode, restNode);
-//		assertNotNull(restNode.getProperties());
+		//		assertNotNull(restNode.getProperties());
 
 	}
 
 	@Test
 	public void testReadFolderWithBogusPath() throws Exception {
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/blub", 404, "Not Found");
-		expectMessageResponse("node_not_found_for_path", response, "blub");
+		String path = "/blub";
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_not_found_for_path", "blub");
 	}
 
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "News/2015";
 		Node newsFolder = data().getFolder("2015");
-		System.out.println(newsFolder.getUuid());
 		info.getRole().revokePermissions(newsFolder, READ_PERM);
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + englishPath, 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, newsFolder.getUuid());
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, englishPath);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", newsFolder.getUuid());
 	}
 
 	@Test
 	public void testReadContentByInvalidPath() throws Exception {
 		String invalidPath = "News/2015/no-valid-content.html";
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + invalidPath, 404, "Not Found");
-		expectMessageResponse("node_not_found_for_path", response, invalidPath);
+
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, invalidPath);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
 
 	@Test
 	public void testReadContentByInvalidPath2() throws Exception {
 		String invalidPath = "News/no-valid-folder/no-valid-content.html";
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + invalidPath, 404, "Not Found");
-		expectMessageResponse("node_not_found_for_path", response, invalidPath);
+
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, invalidPath);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
 
 }

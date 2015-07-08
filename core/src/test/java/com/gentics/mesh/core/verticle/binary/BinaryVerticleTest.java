@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.binary;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.test.core.TestUtils;
 
 import java.util.HashMap;
@@ -53,7 +52,8 @@ public class BinaryVerticleTest extends AbstractRestVerticleTest {
 		extraHeaders.put("content-length", String.valueOf(buffer.length()));
 		extraHeaders.put("content-type", "multipart/form-data; boundary=" + boundary);
 
-		return request(info, HttpMethod.POST, path, statusCode, statusMessage, buffer, extraHeaders);
+//		return request(info, HttpMethod.POST, path, statusCode, statusMessage, buffer, extraHeaders);
+		return null;
 
 	}
 }

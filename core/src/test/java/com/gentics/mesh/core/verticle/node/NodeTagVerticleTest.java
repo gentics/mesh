@@ -1,26 +1,26 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.core.Future;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.NodeVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 
@@ -43,8 +43,10 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags", 200, "OK");
-		TagListResponse tagList = JsonUtil.readValue(response, TagListResponse.class);
+		Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new PagingInfo());
+		latchFor(future);
+		assertSuccess(future);
+		TagListResponse tagList = future.result();
 		assertEquals(4, tagList.getData().size());
 		assertEquals(4, tagList.getMetainfo().getTotalCount());
 
@@ -56,8 +58,10 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		Node node = data().getFolder("2015");
 		Tag tag = data().getTag("red");
 		assertFalse(node.getTags().contains(tag));
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
 		assertTrue(test.containsTag(restNode, tag));
 		assertTrue(node.getTags().contains(tag));
 		// TODO check for properties of the nested tag
@@ -70,9 +74,9 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(node, UPDATE_PERM);
 
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, node.getUuid());
-
+		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		assertFalse(node.getTags().contains(tag));
 	}
 
@@ -83,9 +87,9 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(tag, READ_PERM);
 
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, tag.getUuid());
-
+		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 		assertFalse(node.getTags().contains(tag));
 	}
 
@@ -95,8 +99,10 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = data().getTag("bike");
 
 		assertTrue(node.getTags().contains(tag));
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
 		assertFalse(test.containsTag(restNode, tag));
 		assertFalse(node.getTags().contains(tag));
 		// TODO check for properties of the nested tag
@@ -107,8 +113,9 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveBogusTagFromNode() throws Exception {
 		Node node = data().getFolder("2015");
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/bogus", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), "bogus", new NodeRequestParameters());
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -118,9 +125,9 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertTrue(node.getTags().contains(tag));
 		info.getRole().revokePermissions(node, UPDATE_PERM);
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, node.getUuid());
-
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		assertTrue("The tag should not be removed from the node", node.getTags().contains(tag));
 	}
 
@@ -131,10 +138,9 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertTrue(node.getTags().contains(tag));
 		info.getRole().revokePermissions(tag, READ_PERM);
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, tag.getUuid());
-
-		// FramedVertexSet<Tag> tagSet = new FramedVertexSet<>(framedGraph, node.getTags(), Tag.class);
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 		assertTrue("The tag should not have been removed from the node", node.getTags().contains(tag));
 	}
 

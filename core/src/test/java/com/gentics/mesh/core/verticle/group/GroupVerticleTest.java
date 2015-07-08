@@ -4,15 +4,15 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +21,12 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -51,12 +53,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		String requestJson = JsonUtil.toJson(request);
-
 		info.getRole().addPermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
 
-		String response = request(info, POST, "/api/v1/groups/", 200, "OK", requestJson);
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
+		Future<GroupResponse> future = getClient().createGroup(request);
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
 		assertNotNull("Group should have been created.", boot.groupRoot().findByUUID(restGroup.getUuid()));
@@ -70,29 +72,30 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 
-		String requestJson = JsonUtil.toJson(request);
-		String response = request(info, POST, "/api/v1/groups/", 200, "OK", requestJson);
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
+		Future<GroupResponse> future = getClient().createGroup(request);
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
 		assertNotNull("Group should have been created.", boot.groupRoot().findByUUID(restGroup.getUuid()));
 
 		// Now delete the group
-		response = request(info, DELETE, "/api/v1/groups/" + restGroup.getUuid(), 200, "OK", requestJson);
-
-		expectMessageResponse("group_deleted", response, restGroup.getUuid());
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("group_deleted", deleteFuture, restGroup.getUuid());
 	}
 
 	@Test
 	public void testCreateGroupWithMissingName() throws Exception {
 
 		GroupCreateRequest request = new GroupCreateRequest();
-
 		info.getRole().addPermissions(info.getGroup(), CREATE_PERM);
-		String requestJson = JsonUtil.toJson(request);
 
-		String response = request(info, POST, "/api/v1/groups/", 400, "Bad Request", requestJson);
-		expectMessageResponse("error_name_must_be_set", response);
+		Future<GroupResponse> future = getClient().createGroup(request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
 	}
 
@@ -109,8 +112,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
 
-		String response = request(info, POST, "/api/v1/groups/", 403, "Forbidden", requestJson);
-		expectMessageResponse("error_missing_perm", response, root.getUuid());
+		Future<GroupResponse> future = getClient().createGroup(request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", root.getUuid());
 
 	}
 
@@ -132,15 +136,20 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		int totalGroups = nGroups + data().getGroups().size();
 
 		// Test default paging parameters
-		String response = request(info, GET, "/api/v1/groups/", 200, "OK");
-		GroupListResponse restResponse = JsonUtil.readValue(response, GroupListResponse.class);
+		Future<GroupListResponse> future = getClient().findGroups(new PagingInfo());
+		latchFor(future);
+		assertSuccess(future);
+		GroupListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
-		response = request(info, GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + 3, 200, "OK");
-		restResponse = JsonUtil.readValue(response, GroupListResponse.class);
+		future = getClient().findGroups(new PagingInfo(3, perPage));
+		latchFor(future);
+		assertSuccess(future);
+		restResponse = future.result();
+
 		assertEquals(perPage, restResponse.getData().size());
 
 		// created groups + test data group
@@ -154,8 +163,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		List<GroupResponse> allGroups = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			response = request(info, GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtil.readValue(response, GroupListResponse.class);
+			Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingInfo(page, perPage));
+			latchFor(pageFuture);
+			assertSuccess(pageFuture);
+			restResponse = pageFuture.result();
 			allGroups.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups + 1, allGroups.size());
@@ -166,14 +177,23 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		response = request(info, GET, "/api/v1/groups/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, GET, "/api/v1/groups/?per_page=0&page=" + 1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, GET, "/api/v1/groups/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
+		future = getClient().findGroups(new PagingInfo(-1, perPage));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		response = request(info, GET, "/api/v1/groups/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
+		future = getClient().findGroups(new PagingInfo(1, 0));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		future = getClient().findGroups(new PagingInfo(1, -1));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		future = getClient().findGroups(new PagingInfo(4242, 1));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		String response = JsonUtil.toJson(future.result());
 		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":36}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
@@ -182,8 +202,11 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testReadGroupByUUID() throws Exception {
 		Group group = info.getGroup();
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
-		String response = request(info, GET, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		test.assertGroup(group, JsonUtil.readValue(response, GroupResponse.class));
+
+		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		test.assertGroup(group, future.result());
 
 	}
 
@@ -194,15 +217,18 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().revokePermissions(group, READ_PERM);
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
-		String response = request(info, GET, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
+
+		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 	}
 
 	@Test
 	public void testReadGroupWithBogusUUID() throws Exception {
 		final String bogusUuid = "sadgasdasdg";
-		String response = request(info, GET, "/api/v1/groups/" + bogusUuid, 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, bogusUuid);
+		Future<GroupResponse> future = getClient().findGroupByUuid(bogusUuid);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	// Update Tests
@@ -216,8 +242,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(name);
 
-		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 200, "OK", JsonUtil.toJson(request));
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
+		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
 		Group reloadedGroup = boot.groupRoot().findByUUID(restGroup.getUuid());
@@ -234,8 +262,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(name);
 
-		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtil.toJson(request));
-		expectMessageResponse("error_name_must_be_set", response);
+		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
 		Group reloadedGroup = boot.groupRoot().findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
@@ -255,8 +284,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(alreadyUsedName);
 
-		String response = request(info, PUT, "/api/v1/groups/" + group.getUuid(), 400, "Bad Request", JsonUtil.toJson(request));
-		expectMessageResponse("group_conflicting_name", response);
+		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "group_conflicting_name");
 
 		Group reloadedGroup = groupRoot.findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
@@ -272,8 +302,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(group.getUuid());
 		request.setName(name);
 
-		String response = request(info, PUT, "/api/v1/groups/bogus", 404, "Not Found", JsonUtil.toJson(request));
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
+		Future<GroupResponse> future = getClient().updateGroup("bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
 		Group reloadedGroup = boot.groupRoot().findByUUID(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
@@ -284,23 +315,26 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteGroupByUUID() throws Exception {
 		Group group = info.getGroup();
-		assertNotNull(group.getUuid());
-
-		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid(), 200, "OK");
-		expectMessageResponse("group_deleted", response, group.getUuid());
-		assertNull("The group should have been deleted", boot.groupRoot().findByUUID(group.getUuid()));
+		String uuid = group.getUuid();
+		assertNotNull(uuid);
+		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("group_deleted", future, uuid);
+		assertNull("The group should have been deleted", boot.groupRoot().findByUUID(uuid));
 	}
 
 	@Test
 	public void testDeleteGroupByUUIDWithMissingPermission() throws Exception {
 		Group group = info.getGroup();
-		assertNotNull(group.getUuid());
-
+		String uuid = group.getUuid();
+		assertNotNull(uuid);
 		// Don't allow delete
 		info.getRole().revokePermissions(group, DELETE_PERM);
 
-		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
+		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 		assertNotNull("The group should not have been deleted", boot.groupRoot().findByUUID(group.getUuid()));
 	}
 

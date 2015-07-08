@@ -1,12 +1,13 @@
 package com.gentics.mesh.core.verticle.group;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.core.http.HttpMethod;
+import io.vertx.core.Future;
 
 import java.util.Iterator;
 
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
@@ -45,8 +45,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
 		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.GET, "/api/v1/groups/" + uuid + "/roles", 200, "OK");
-		RoleListResponse roleList = JsonUtil.readValue(response, RoleListResponse.class);
+		Future<RoleListResponse> future = getClient().findRolesForGroup(uuid);
+		latchFor(future);
+		assertSuccess(future);
+		RoleListResponse roleList = future.result();
 		assertEquals(2, roleList.getMetainfo().getTotalCount());
 		assertEquals(2, roleList.getData().size());
 
@@ -66,8 +68,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
+		Future<GroupResponse> future = getClient().addRoleToGroup(uuid, extraRole.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
 		assertTrue(restGroup.getRoles().contains("extraRole"));
 
 		Group group = info.getGroup();
@@ -79,8 +83,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testAddBogusRoleToGroup() throws Exception {
 		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + "bogus", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
+		Future<GroupResponse> future = getClient().addRoleToGroup(uuid, "bogus");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -90,8 +95,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 		assertEquals(1, info.getGroup().getRoles().size());
 		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, extraRole.getUuid());
+		Future<GroupResponse> future = getClient().addRoleToGroup(uuid, extraRole.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", extraRole.getUuid());
 
 		Group group = info.getGroup();
 		assertEquals(1, group.getRoles().size());
@@ -105,10 +111,12 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		info.getGroup().addRole(extraRole);
 		info.getRole().addPermissions(extraRole, READ_PERM);
 		assertEquals(2, info.getGroup().getRoles().size());
-
 		String uuid = info.getGroup().getUuid();
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
+
+		Future<GroupResponse> future = getClient().removeRoleFromGroup(uuid, extraRole.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
 		assertFalse(restGroup.getRoles().contains("extraRole"));
 		Group group = info.getGroup();
 		assertEquals(1, group.getRoles().size());
@@ -123,9 +131,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Role extraRole = root.create("extraRole");
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		System.out.println(response);
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
+		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), extraRole.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
 		test.assertGroup(group, restGroup);
 
 		assertTrue("Role should be assigned to group.", group.hasRole(extraRole));
@@ -135,21 +144,21 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
 		Group group = info.getGroup();
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
-
 		Role extraRole = root.create("extraRole");
-
 		info.getRole().revokePermissions(group, UPDATE_PERM);
 
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
+		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), extraRole.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 		assertFalse("Role should not be assigned to group.", group.hasRole(extraRole));
 	}
 
 	@Test
 	public void testAddRoleToGroupWithBogusRoleUUID() throws Exception {
 		Group group = info.getGroup();
-		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + group.getUuid() + "/roles/bogus", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
+		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), "bogus");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	// Group Role Testcases - DELETE / Remove
@@ -168,8 +177,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(extraRole, READ_PERM);
 		info.getRole().addPermissions(group, UPDATE_PERM);
 
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
+		Future<GroupResponse> future = getClient().removeRoleFromGroup(group.getUuid(), extraRole.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
 		test.assertGroup(group, restGroup);
 		assertFalse("Role should now no longer be assigned to group.", group.hasRole(extraRole));
 	}
@@ -183,8 +194,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		group.addRole(extraRole);
 		info.getRole().revokePermissions(group, UPDATE_PERM);
 
-		String response = request(info, HttpMethod.DELETE, "/api/v1/groups/" + group.getUuid() + "/roles/" + extraRole.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
+		Future<GroupResponse> future = getClient().removeRoleFromGroup(group.getUuid(), extraRole.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 		assertTrue("Role should be stil assigned to group.", group.hasRole(extraRole));
 	}
 }

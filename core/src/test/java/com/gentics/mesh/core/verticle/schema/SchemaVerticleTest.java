@@ -4,12 +4,16 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.core.http.HttpMethod;
+import static org.junit.Assert.fail;
+import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,18 +21,19 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class SchemaVerticleTest extends AbstractRestVerticleTest {
@@ -51,12 +56,13 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		//		request.getPropertyTypeSchemas().add(propertySchema);
 
-		String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtil.toJson(request));
-		SchemaResponse restSchemaResponse = JsonUtil.readValue(response, SchemaResponse.class);
+		Future<SchemaResponse> future = getClient().createSchema(request);
+		latchFor(future);
+		assertSuccess(future);
+		SchemaResponse restSchemaResponse = future.result();
 		test.assertSchema(request, restSchemaResponse);
-
-		SchemaResponse responseObject = JsonUtil.readValue(response, SchemaResponse.class);
-		SchemaContainer schema = boot.schemaContainerRoot().findByUUID(responseObject.getUuid());
+		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUUID(restSchemaResponse.getUuid());
+		assertNotNull(schemaContainer);
 		//		assertEquals("Name does not match with the requested name", request.getName(), schema.getName());
 		//		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 		//		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
@@ -105,15 +111,19 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		// Don't grant permissions to no perm schema
 
 		// Test default paging parameters
-		String response = request(info, HttpMethod.GET, "/api/v1/schemas/", 200, "OK");
-		SchemaListResponse restResponse = JsonUtil.readValue(response, SchemaListResponse.class);
+		Future<SchemaListResponse> future = getClient().findSchemas(new PagingInfo());
+		latchFor(future);
+		assertSuccess(future);
+		SchemaListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
-		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + 2, 200, "OK");
-		restResponse = JsonUtil.readValue(response, SchemaListResponse.class);
+		future = getClient().findSchemas(new PagingInfo(2, perPage));
+		latchFor(future);
+		assertSuccess(future);
+		restResponse = future.result();
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra schemas + default schema
@@ -127,8 +137,11 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		List<SchemaResponse> allSchemas = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtil.readValue(response, SchemaListResponse.class);
+			Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingInfo(page, perPage));
+			latchFor(pageFuture);
+			assertSuccess(pageFuture);
+
+			restResponse = pageFuture.result();
 			allSchemas.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all schemas were loaded when loading all pages.", totalSchemas, allSchemas.size());
@@ -139,15 +152,23 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		//				.collect(Collectors.toList());
 		//		assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
-		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + perPage + "&page=" + -1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + 0 + "&page=" + 1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + -1 + "&page=" + 1, 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
+		future = getClient().findSchemas(new PagingInfo(-1, perPage));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		response = request(info, HttpMethod.GET, "/api/v1/schemas/?per_page=" + 25 + "&page=" + 4242, 200, "OK");
-		SchemaListResponse list = JsonUtil.readValue(response, SchemaListResponse.class);
+		future = getClient().findSchemas(new PagingInfo(1, 0));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		future = getClient().findSchemas(new PagingInfo(1, -1));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		future = getClient().findSchemas(new PagingInfo(4242, 25));
+		latchFor(future);
+		assertSuccess(future);
+
+		SchemaListResponse list = future.result();
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 	}
@@ -156,8 +177,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testReadSchemaByUUID() throws Exception {
 
 		SchemaContainer schema = data().getSchemaContainer("content");
-		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
-		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
+		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
 	}
 
@@ -170,14 +193,16 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(schema, CREATE_PERM);
 		info.getRole().revokePermissions(schema, READ_PERM);
 
-		String response = request(info, HttpMethod.GET, "/api/v1/schemas/" + schema.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, schema.getUuid());
+		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 	}
 
 	@Test
 	public void testReadSchemaByInvalidUUID() throws Exception {
-		String response = request(info, HttpMethod.GET, "/api/v1/schemas/bogus", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
+		Future<SchemaResponse> future = getClient().findSchemaByUuid("bogus");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	// Update Tests
@@ -189,8 +214,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		request.setUuid(schema.getUuid());
 		request.setName("new-name");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + schema.getUuid(), 200, "OK", JsonUtil.toJson(request));
-		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
+		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		SchemaResponse restSchema = future.result();
 		//		assertEquals(request.getName(), restSchema.getName());
 
 		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
@@ -202,15 +229,17 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateSchemaByBogusUUID() throws HttpStatusCodeErrorException, Exception {
 		SchemaContainer schema = data().getSchemaContainer("content");
 
+		String oldName = schema.getSchemaName();
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setUuid("bogus");
 		request.setName("new-name");
 
-		String response = request(info, HttpMethod.PUT, "/api/v1/schemas/" + "bogus", 404, "Not Found", JsonUtil.toJson(request));
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
+		Future<SchemaResponse> future = getClient().updateSchema("bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
 		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
-		//		assertEquals("The name should not have been changed.", schema.getName(), reloaded.getName());
+		assertEquals("The name should not have been changed.", oldName, reloaded.getSchemaName());
 
 	}
 
@@ -219,9 +248,11 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteSchemaByUUID() throws Exception {
 		SchemaContainer schema = data().getSchemaContainer("content");
-		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
-		System.out.println(response);
-		//		expectMessageResponse("schema_deleted", response, schema.getName());
+
+		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("schema_deleted", future, schema.getSchemaName());
 
 		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
 		assertNull("The schema should have been deleted.", reloaded);
@@ -229,9 +260,13 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	public void testDeleteSchemaWithMissingPermission() throws Exception {
 		SchemaContainer schema = data().getSchemaContainer("content");
-		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid(), 200, "OK");
+		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+
+		fail("unspecified test");
 		String json = "error";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		SchemaContainer reloaded = boot.schemaContainerRoot().findByUUID(schema.getUuid());
 		assertNotNull("The schema should not have been deleted.", reloaded);
@@ -250,8 +285,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(schema, READ_PERM);
 		info.getRole().addPermissions(extraProject, UPDATE_PERM);
 
-		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
-		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
+		Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
 
 		// Reload the schema and check for expected changes
@@ -269,9 +306,9 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(schema, READ_PERM);
 		info.getRole().addPermissions(project, READ_PERM);
 
-		String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 403,
-				"Forbidden");
-		expectMessageResponse("error_missing_perm", response, extraProject.getUuid());
+		Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", extraProject.getUuid());
 
 		// Reload the schema and check for expected changes
 		assertFalse("The schema should not have been added to the extra project", schema.getProjects().contains(extraProject));
@@ -285,8 +322,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Project project = data().getProject();
 		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
 
-		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 200, "OK");
-		SchemaResponse restSchema = JsonUtil.readValue(response, SchemaResponse.class);
+		Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
 
 		final String removedProjectName = project.getName();
@@ -305,9 +344,9 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		// Revoke update perms on the project
 		info.getRole().revokePermissions(project, UPDATE_PERM);
-
-		String response = request(info, HttpMethod.DELETE, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + project.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, project.getUuid());
+		Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
 
 		// Reload the schema and check for expected changes
 		assertTrue("The schema should still be listed for the project.", schema.getProjects().contains(project));

@@ -1,19 +1,16 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +26,7 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -40,7 +38,6 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.NodeVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.FieldUtil;
@@ -83,8 +80,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtil.toJson(request));
-		expectMessageResponse("node_no_language_found", response, "[en]");
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_no_language_found", "[en]");
 	}
 
 	@Test
@@ -105,8 +103,11 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		request.setParentNodeUuid(parentNode.getUuid());
 
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK", JsonUtil.toJson(request));
-		test.assertMeshNode(request, JsonUtil.readValue(response, NodeResponse.class));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(request, restNode);
 
 	}
 
@@ -124,8 +125,11 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		// Create node
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 200, "OK", JsonUtil.toJson(request));
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+
 		test.assertMeshNode(request, restNode);
 
 		Node node = nodeRoot.findByUUID(restNode.getUuid());
@@ -133,14 +137,17 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		test.assertMeshNode(request, node);
 
 		// Load the node again
-		response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + restNode.getUuid(), 200, "OK");
-		restNode = JsonUtil.readValue(response, NodeResponse.class);
+		future = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		restNode = future.result();
 		test.assertMeshNode(node, restNode);
 
 		// Delete the node
-		response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + restNode.getUuid(), 200, "OK");
-		expectMessageResponse("node_deleted", response, restNode.getUuid());
-
+		Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode.getUuid());
+		latchFor(deleteFut);
+		assertSuccess(deleteFut);
+		expectMessageResponse("node_deleted", deleteFut, restNode.getUuid());
 		assertNull("The node should have been deleted.", node);
 
 	}
@@ -156,8 +163,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 400, "Bad Request", JsonUtil.toJson(request));
-		expectMessageResponse("node_missing_parentnode_field", response);
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_missing_parentnode_field");
 
 	}
 
@@ -178,8 +186,9 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
-		String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes", 403, "Forbidden", JsonUtil.toJson(request));
-		expectMessageResponse("error_missing_perm", response, data().getFolder("news").getUuid());
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", data().getFolder("news").getUuid());
 	}
 
 	// Read tests
@@ -211,8 +220,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(noPermNode.getUuid());
 
 		int perPage = 11;
-		String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=" + perPage + "&page=" + 3, 200, "OK");
-		NodeListResponse restResponse = JsonUtil.readValue(response, NodeListResponse.class);
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(3, perPage));
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse restResponse = future.result();
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Nodes + permitted node
@@ -226,8 +237,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		List<NodeResponse> allNodes = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtil.readValue(response, NodeListResponse.class);
+			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(page, perPage));
+			latchFor(pageFuture);
+			assertSuccess(pageFuture);
+			restResponse = pageFuture.result();
 			allNodes.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalNodes, allNodes.size());
@@ -238,17 +251,26 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=25&page=-1", 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=25&page=0", 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=0&page=1", 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=-1&page=1", 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
+		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(-1, 25));
+		latchFor(pageFuture);
+		expectException(pageFuture, BAD_REQUEST, "Bad Request", "error_invalid_paging_parameters");
 
-		response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/nodes/?per_page=25&page=4242", 200, "OK");
-		NodeListResponse list = JsonUtil.readValue(response, NodeListResponse.class);
+		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(0, 25));
+		latchFor(pageFuture);
+		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, 0));
+		latchFor(pageFuture);
+		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, -1));
+		latchFor(pageFuture);
+		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(4242, 25));
+		latchFor(pageFuture);
+		assertSuccess(pageFuture);
+		NodeListResponse list = pageFuture.result();
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 		assertEquals(25, list.getMetainfo().getPerPage());
@@ -318,7 +340,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
 		latchFor(future);
-		expectException(future, 400, "Bad Request", "error_language_not_found", "blabla");
+		expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
 
 	}
 
@@ -329,21 +351,27 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 			info.getRole().revokePermissions(node, READ_PERM);
 			tx.success();
 		}
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, node.getUuid());
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 	}
 
 	@Test
 	public void testReadNodeByBogusUUID() throws Exception {
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/bogusUUID", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogusUUID");
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, "bogusUUID");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogusUUID");
 	}
 
 	@Test
 	public void testReadNodeByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + uuid, 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, uuid);
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogusUUID");
+
 	}
 
 	// Update
@@ -363,25 +391,26 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField(newFilename));
 		request.getFields().put("content", FieldUtil.createStringField(newContent));
 
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + data().getFolder("2015").getUuid() + "?lang=de,en", 200, "OK",
-				JsonUtil.toJson(request));
-
-		NodeResponse restNode = JsonUtil.readNode(response, NodeResponse.class, schemaStorage);
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("de", "en");
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, data().getFolder("2015").getUuid(), request, parameters);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
 		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
 		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getText());
 		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
-		// TODO verify that the node got updated
 	}
 
 	@Test
 	public void testUpdateNodeWithExtraField() {
-
+		fail("Not yet implemented");
 	}
 
 	@Test
 	public void testUpdateNodeWithMissingField() {
-
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -399,9 +428,15 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("content", FieldUtil.createStringField(newContent));
 
 		Node node = data().getFolder("2015");
-		String json = JsonUtil.toJson(request);
-		String response = request(info, PUT, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "?lang=de,en", 200, "OK", json);
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("de", "en");
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
+		latchFor(future);
+		assertSuccess(future);
+
+		NodeResponse restNode = future.result();
+
 		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
 		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getText());
 		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
@@ -420,9 +455,13 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteNode() throws Exception {
 
 		Node node = data().getFolder("2015");
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		expectMessageResponse("node_deleted", response, node.getUuid());
-		assertNull(nodeRoot.findByUUID(node.getUuid()));
+		String uuid = node.getUuid();
+		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
+		latchFor(future);
+		assertSuccess(future);
+
+		expectMessageResponse("node_deleted", future, uuid);
+		assertNull(nodeRoot.findByUUID(uuid));
 	}
 
 	@Test
@@ -435,9 +474,10 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + uuid, 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, uuid);
+		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
+		latchFor(future);
 
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		assertNotNull(nodeRoot.findByUUID(uuid));
 	}
 }

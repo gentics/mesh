@@ -17,8 +17,16 @@ public interface GroupClientMethods {
 
 	Future<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest);
 
-	Future<GroupResponse> updateGroup(GroupUpdateRequest groupUpdateRequest);
+	Future<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest);
 
 	Future<GenericMessageResponse> deleteGroup(String uuid);
+
+	Future<GroupResponse> addUserToGroup(String groupUuid, String userUuid);
+
+	Future<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid);
+
+	Future<GroupResponse> addRoleToGroup(String groupUuid, String roleUuid);
+
+	Future<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid);
 
 }

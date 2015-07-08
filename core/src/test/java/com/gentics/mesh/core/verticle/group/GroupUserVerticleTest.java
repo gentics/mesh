@@ -3,13 +3,14 @@ package com.gentics.mesh.core.verticle.group;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import io.vertx.core.Future;
 
 import java.util.Iterator;
 
@@ -17,6 +18,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
@@ -25,7 +27,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 
@@ -52,10 +53,12 @@ extends AbstractRestVerticleTest {
 		User extraUser = userRoot.create("extraUser");
 		info.getGroup().addUser(extraUser);
 		info.getRole().addPermissions(extraUser, READ_PERM);
-
 		String uuid = info.getGroup().getUuid();
-		String response = request(info, GET, "/api/v1/groups/" + uuid + "/users", 200, "OK");
-		UserListResponse userList = JsonUtil.readValue(response, UserListResponse.class);
+
+		Future<UserListResponse> future = getClient().findUsersOfGroup(uuid, new PagingInfo());
+		latchFor(future);
+		assertSuccess(future);
+		UserListResponse userList = future.result();
 		assertEquals(2, userList.getMetainfo().getTotalCount());
 		assertEquals(2, userList.getData().size());
 		Iterator<UserResponse> userIt = userList.getData().iterator();
@@ -69,9 +72,10 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		User extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
-		String response = request(info, POST, "/api/v1/groups/bogus/users/" + extraUser.getUuid(), 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
 
+		Future<GroupResponse> future = getClient().addUserToGroup("bogus", extraUser.getUuid());
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -79,10 +83,12 @@ extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		User extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
-		String response = request(info, POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
-		test.assertGroup(group, restGroup);
 
+		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
+		test.assertGroup(group, restGroup);
 		assertTrue("User should be member of the group.", group.hasUser(extraUser));
 	}
 
@@ -94,9 +100,9 @@ extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(extraUser, READ_PERM);
 		info.getRole().revokePermissions(group, UPDATE_PERM);
 
-		String response = request(info, POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
-
+		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
 	}
 
@@ -107,9 +113,9 @@ extends AbstractRestVerticleTest {
 		User extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, DELETE_PERM);
 
-		String response = request(info, POST, "/api/v1/groups/" + group.getUuid() + "/users/" + extraUser.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, extraUser.getUuid());
-
+		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", extraUser.getUuid());
 		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
 	}
 
@@ -120,9 +126,9 @@ extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 
 		info.getRole().revokePermissions(group, UPDATE_PERM);
-
-		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, group.getUuid());
+		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 
 		assertTrue("User should still be a member of the group.", group.hasUser(user));
 	}
@@ -132,10 +138,12 @@ extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		Group group = info.getGroup();
 
-		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 200, "OK");
-		GroupResponse restGroup = JsonUtil.readValue(response, GroupResponse.class);
-		test.assertGroup(group, restGroup);
+		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());
+		latchFor(future);
+		assertSuccess(future);
 
+		GroupResponse restGroup = future.result();
+		test.assertGroup(group, restGroup);
 		assertFalse("User should not be member of the group.", group.hasUser(user));
 	}
 
@@ -150,9 +158,9 @@ extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		Group group = info.getGroup();
 
-		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 400, "Bad Request");
-		String json = "error-user-last-group";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error-user-last-group");
 		assertTrue("User should still be member of the group.", group.hasUser(user));
 	}
 
@@ -161,9 +169,9 @@ extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		Group group = info.getGroup();
 
-		String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid() + "/users/bogus", 404, "Not Found");
-		expectMessageResponse("object_not_found_for_uuid", response, "bogus");
-
+		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), "bogus");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		assertTrue("User should still be member of the group.", group.hasUser(user));
 	}
 }

@@ -1,22 +1,23 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
-import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.core.Future;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.NodeVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 
@@ -39,8 +40,10 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 		assertTrue(restNode.getChildren().size() > 5);
@@ -52,8 +55,10 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid(), 200, "OK");
-		NodeResponse restNode = JsonUtil.readValue(response, NodeResponse.class);
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
 		test.assertMeshNode(node, restNode);
 		assertFalse(restNode.isContainer());
 		assertNull(restNode.getChildren());
@@ -66,8 +71,12 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
-		String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");
-		NodeListResponse nodeList = JsonUtil.readValue(response, NodeListResponse.class);
+
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingInfo(), new NodeRequestParameters());
+		latchFor(future);
+		assertSuccess(future);
+
+		NodeListResponse nodeList = future.result();
 		assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 		assertEquals(expectedItemsInPage, nodeList.getData().size());
 	}

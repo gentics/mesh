@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -12,7 +11,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 
 public interface TagClientMethods {
 
-	Future<TagResponse> createTag(TagCreateRequest tagCreateRequest);
+	Future<TagResponse> createTag(String projectName, TagCreateRequest tagCreateRequest);
 
 	Future<TagResponse> findTagByUuid(String projectName, String uuid);
 
@@ -23,8 +22,8 @@ public interface TagClientMethods {
 	Future<TagListResponse> findTags(String projectName, PagingInfo pagingInfo);
 
 	//TODO keep this?
-	Future<TagResponse> findTagByName(String name);
+	Future<TagResponse> findTagByName(String projectName, String name);
 
-	Future<NodeListResponse> findNodesForTag(String tagUuid);
+	Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, PagingInfo pagingInfo);
 
 }

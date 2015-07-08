@@ -2,7 +2,10 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static io.vertx.core.http.HttpMethod.*;
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
 import io.vertx.ext.web.Route;
 
@@ -14,8 +17,6 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.json.JsonUtil;
 
 @Component

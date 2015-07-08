@@ -22,7 +22,7 @@ public interface ProjectClientMethods {
 
 	Future<ProjectResponse> createProject(ProjectCreateRequest projectCreateRequest);
 
-	Future<ProjectResponse> updateProject(ProjectUpdateRequest projectUpdateRequest);
+	Future<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest);
 
 	Future<GenericMessageResponse> deleteProject(String uuid);
 }

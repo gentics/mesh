@@ -4,29 +4,31 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import io.vertx.core.Future;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -54,9 +56,11 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setName("new_role");
 		request.setGroupUuid(info.getGroup().getUuid());
 
-		String requestJson = JsonUtil.toJson(request);
-		String response = request(info, POST, "/api/v1/roles/", 200, "OK", requestJson);
-		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		assertSuccess(future);
+
+		RoleResponse restRole = future.result();
 		test.assertRole(request, restRole);
 	}
 
@@ -66,13 +70,17 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setName("new_role");
 		request.setGroupUuid(info.getGroup().getUuid());
 
-		String requestJson = JsonUtil.toJson(request);
-		String response = request(info, POST, "/api/v1/roles/", 200, "OK", requestJson);
-		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
+		Future<RoleResponse> createFuture = getClient().createRole(request);
+		latchFor(createFuture);
+		assertSuccess(createFuture);
+
+		RoleResponse restRole = createFuture.result();
 		test.assertRole(request, restRole);
 
-		response = request(info, DELETE, "/api/v1/roles/" + restRole.getUuid(), 200, "OK");
-		expectMessageResponse("role_deleted", response, restRole.getUuid());
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid());
+		latchFor(deleteFuture);
+		assertSuccess(deleteFuture);
+		expectMessageResponse("role_deleted", deleteFuture, restRole.getUuid());
 
 	}
 
@@ -86,26 +94,26 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().revokePermissions(info.getGroup(), CREATE_PERM);
 		// roleRoot.revokePermission(info.getRole(), data().getMeshRoot().getRoleRoot(), CREATE);
 
-		String requestJson = JsonUtil.toJson(request);
-		String response = request(info, POST, "/api/v1/roles/", 403, "Forbidden", requestJson);
-		expectMessageResponse("error_missing_perm", response, info.getGroup().getUuid());
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", info.getGroup().getUuid());
 	}
 
 	@Test
+	@Ignore("We can't test this using the rest client")
 	public void testCreateRoleWithBogusJson() throws Exception {
-		String requestJson = "bogus text";
-		String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
-		expectMessageResponse("error_parse_request_json_error", response);
+		//		String requestJson = "bogus text";
+		//		String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
+		//		expectMessageResponse("error_parse_request_json_error", response);
 	}
 
 	@Test
 	public void testCreateRoleWithNoGroupId() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-
-		String requestJson = JsonUtil.toJson(request);
-		String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
-		expectMessageResponse("role_missing_parentgroup_field", response);
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "role_missing_parentgroup_field");
 
 	}
 
@@ -114,9 +122,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setGroupUuid(info.getGroup().getUuid());
 
-		String requestJson = JsonUtil.toJson(request);
-		String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
-		expectMessageResponse("error_name_must_be_set", response);
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 	}
 
 	// Read tests
@@ -127,8 +135,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Role role = info.getRole();
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 
-		String response = request(info, GET, "/api/v1/roles/" + role.getUuid(), 200, "OK");
-		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
+		Future<RoleResponse> future = getClient().findRoleByUuid(role.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		RoleResponse restRole = future.result();
 		test.assertRole(role, restRole);
 	}
 
@@ -143,8 +153,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 		info.getRole().addPermissions(extraRole, READ_PERM);
 
-		String response = request(info, GET, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
-		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
+		Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		RoleResponse restRole = future.result();
 		test.assertRole(extraRole, restRole);
 
 	}
@@ -162,8 +174,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 
-		String response = request(info, GET, "/api/v1/roles/" + extraRole.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, extraRole.getUuid());
+		Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", extraRole.getUuid());
+
 	}
 
 	@Test
@@ -173,9 +187,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 		role.revokePermissions(role, READ_PERM);
 
-		String response = request(info, GET, "/api/v1/roles/" + role.getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, role.getUuid());
-
+		Future<RoleResponse> future = getClient().findRoleByUuid(role.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", role.getUuid());
 	}
 
 	@Test
@@ -197,16 +211,18 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		// Role with no permission
 		info.getGroup().addRole(noPermRole);
 		// Test default paging parameters
-		String response = request(info, GET, "/api/v1/roles/", 200, "OK");
-		RoleListResponse restResponse = JsonUtil.readValue(response, RoleListResponse.class);
+		Future<RoleListResponse> future = getClient().findRoles(new PagingInfo());
+		latchFor(future);
+		assertSuccess(future);
+		RoleListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
 		int page = 1;
-		response = request(info, GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + page, 200, "OK");
-		restResponse = JsonUtil.readValue(response, RoleListResponse.class);
+		future = getClient().findRoles(new PagingInfo(page, perPage));
+		restResponse = future.result();
 		assertEquals("The amount of items for page {" + page + "} does not match the expected amount.", 11, restResponse.getData().size());
 
 		// created roles + test data role
@@ -225,8 +241,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		List<RoleResponse> allRoles = new ArrayList<>();
 		for (page = 1; page <= totalPages; page++) {
-			response = request(info, GET, "/api/v1/roles/?per_page=" + perPage + "&page=" + page, 200, "OK");
-			restResponse = JsonUtil.readValue(response, RoleListResponse.class);
+			Future<RoleListResponse> pageFuture = getClient().findRoles(new PagingInfo(page, perPage));
+			latchFor(pageFuture);
+			assertSuccess(pageFuture);
+			restResponse = pageFuture.result();
 			allRoles.addAll(restResponse.getData());
 		}
 		assertEquals("Somehow not all roles were loaded when loading all pages.", totalRoles, allRoles.size());
@@ -237,14 +255,22 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		response = request(info, GET, "/api/v1/roles/?per_page=" + perPage + "&page=-1", 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, GET, "/api/v1/roles/?per_page=0&page=1", 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
-		response = request(info, GET, "/api/v1/roles/?per_page=-1&page=1", 400, "Bad Request");
-		expectMessageResponse("error_invalid_paging_parameters", response);
+		future = getClient().findRoles(new PagingInfo(-1, perPage));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		response = request(info, GET, "/api/v1/roles/?per_page=25&page=" + 4242, 200, "OK");
+		future = getClient().findRoles(new PagingInfo(1, 0));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		future = getClient().findRoles(new PagingInfo(1, -1));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+
+		future = getClient().findRoles(new PagingInfo(4242, 25));
+		latchFor(future);
+		assertSuccess(future);
+		String response = JsonUtil.toJson(future.result());
 		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":35}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
@@ -263,8 +289,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		request.setName("renamed role");
 		request.setUuid(extraRole.getUuid());
 
-		String response = request(info, PUT, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK", JsonUtil.toJson(request));
-		RoleResponse restRole = JsonUtil.readValue(response, RoleResponse.class);
+		Future<RoleResponse> future = getClient().updateRole(extraRole.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		RoleResponse restRole = future.result();
 		assertEquals(request.getName(), restRole.getName());
 		assertEquals(extraRole.getUuid(), restRole.getUuid());
 
@@ -280,9 +308,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		RoleUpdateRequest restRole = new RoleUpdateRequest();
 		restRole.setName("renamed role");
 
-		String response = request(info, PUT, "/api/v1/roles/" + role.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restRole));
-		String json = "?";
-		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		Future<RoleResponse> future = getClient().updateRole(role.getUuid(), restRole);
+		latchFor(future);
+		assertSuccess(future);
+		fail("Undefined assertion");
 
 		// Check that the role was updated
 		Role reloadedRole = boot.roleRoot().findByUUID(role.getUuid());
@@ -299,15 +328,18 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		info.getGroup().addRole(extraRole);
 		info.getRole().addPermissions(extraRole, DELETE_PERM);
 
-		String response = request(info, DELETE, "/api/v1/roles/" + extraRole.getUuid(), 200, "OK");
-		expectMessageResponse("role_deleted", response, extraRole.getUuid());
+		Future<GenericMessageResponse> future = getClient().deleteRole(extraRole.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("role_deleted", future, extraRole.getUuid());
 		assertNull("The user should have been deleted", roleRoot.findByUUID(extraRole.getUuid()));
 	}
 
 	@Test
 	public void testDeleteRoleByUUIDWithMissingPermission() throws Exception {
-		String response = request(info, DELETE, "/api/v1/roles/" + info.getRole().getUuid(), 403, "Forbidden");
-		expectMessageResponse("error_missing_perm", response, info.getRole().getUuid());
+		Future<GenericMessageResponse> future = getClient().deleteRole(info.getRole().getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", info.getRole().getUuid());
 		assertNotNull("The role should not have been deleted", boot.roleRoot().findByUUID(info.getRole().getUuid()));
 	}
 

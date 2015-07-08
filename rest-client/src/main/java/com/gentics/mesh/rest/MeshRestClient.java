@@ -2,11 +2,13 @@ package com.gentics.mesh.rest;
 
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -19,6 +21,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -26,6 +29,11 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -63,15 +71,18 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<NodeResponse> createNode(NodeCreateRequest nodeCreateRequest) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest) {
+		return handleRequest(POST, "/" + projectName + "/nodes", NodeResponse.class, nodeCreateRequest);
 	}
 
 	@Override
-	public Future<GenericMessageResponse> deleteNode(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, NodeRequestParameters parameters) {
+		return handleRequest(PUT, "/" + projectName + "/nodes/" + uuid, NodeResponse.class, nodeUpdateRequest);
+	}
+
+	@Override
+	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid) {
+		return handleRequest(DELETE, "/" + projectName + "/nodes/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
@@ -84,19 +95,20 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagListResponse> findTagsForNode(String nodeUuid, PagingInfo pagingInfo) {
+	public Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, PagingInfo pagingInfo) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Future<NodeListResponse> findNodeChildren(String parentNodeUuid, PagingInfo pagingInfo) {
-		// TODO Auto-generated method stub
+	public Future<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, PagingInfo pagingInfo,
+			NodeRequestParameters parameters) {
+		// String response = request(info, GET, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/children", 200, "OK");
 		return null;
 	}
 
 	@Override
-	public Future<TagResponse> createTag(TagCreateRequest tagCreateRequest) {
+	public Future<TagResponse> createTag(String projectName, TagCreateRequest tagCreateRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -123,13 +135,13 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagResponse> findTagByName(String name) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<TagResponse> findTagByName(String projectName, String name) {
+		//TODO can we actually do this?
+		return handleRequest(GET, "/" + projectName + "/tags/" + name, TagResponse.class);
 	}
 
 	@Override
-	public Future<NodeListResponse> findNodesForTag(String tagUuid) {
+	public Future<NodeListResponse> findNodesForTag(String projectName, String tagUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -165,7 +177,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<ProjectResponse> updateProject(ProjectUpdateRequest projectUpdateRequest) {
+	public Future<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -221,18 +233,19 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	@Override
 	public Future<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest) {
 		// TODO Auto-generated method stub
+		//		String response = request(info, POST, "/api/v1/groups/", 200, "OK", requestJson);
 		return null;
 	}
 
 	@Override
-	public Future<GroupResponse> updateGroup(GroupUpdateRequest groupUpdateRequest) {
+	public Future<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteGroup(String uuid) {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub		response = request(info, DELETE, "/api/v1/groups/" + restGroup.getUuid(), 200, "OK", requestJson);
 		return null;
 	}
 
@@ -261,7 +274,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<UserResponse> updateUser(UserUpdateRequest userUpdateRequest) {
+	public Future<UserResponse> updateUser(String uuid, UserUpdateRequest userUpdateRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -286,7 +299,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<RoleResponse> createRole(RoleCreateRequest roleCreateRequest) {
-		// TODO Auto-generated method stub
+		// TODO Auto		String response = request(info, POST, "/api/v1/roles/", 200, "OK", requestJson);
 		return null;
 	}
 
@@ -327,6 +340,109 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	@Override
 	public Future<NodeResponse> findNodeByUuid(String projectName, String uuid) {
 		return findNodeByUuid(projectName, uuid, null);
+	}
+
+	@Override
+	public Future<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, NodeRequestParameters nodeRequestParameters) {
+		//String response = request(info, POST, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
+		return null;
+	}
+
+	@Override
+	public Future<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, NodeRequestParameters nodeRequestParameters) {
+		//String response = request(info, DELETE, "/api/v1/" + PROJECT_NAME + "/nodes/" + node.getUuid() + "/tags/" + tag.getUuid(), 200, "OK");
+		return null;
+	}
+
+	@Override
+	public Future<UserListResponse> findUsersOfGroup(String groupUuid, PagingInfo pagingInfo) {
+		// 		String response = request(info, GET, "/api/v1/groups/" + uuid + "/users", 200, "OK");
+		return null;
+	}
+
+	@Override
+	public Future<GroupResponse> addUserToGroup(String groupUuid, String userUuid) {
+		//		String response = request(info, POST, "/api/v1/groups/bogus/users/" + extraUser.getUuid(), 404, "Not Found");
+		return null;
+	}
+
+	@Override
+	public Future<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid) {
+		// String response = request(info, DELETE, "/api/v1/groups/" + group.getUuid() + "/users/" + user.getUuid(), 403, "Forbidden");
+
+		return null;
+	}
+
+	@Override
+	public Future<RoleListResponse> findRolesForGroup(String groupUuid) {
+		//String response = request(info, HttpMethod.GET, "/api/v1/groups/" + uuid + "/roles", 200, "OK");
+		return null;
+	}
+
+	@Override
+	public Future<GroupResponse> addRoleToGroup(String groupUuid, String roleUuid) {
+		// TODO 		String response = request(info, HttpMethod.POST, "/api/v1/groups/" + uuid + "/roles/" + extraRole.getUuid(), 200, "OK");
+		return null;
+	}
+
+	@Override
+	public Future<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<SchemaResponse> createSchema(SchemaCreateRequest request) {
+		//String response = request(info, HttpMethod.POST, "/api/v1/schemas/", 200, "OK", JsonUtil.toJson(request));
+		return null;
+	}
+
+	public Future<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole) {
+		// TODO Auto-generated method stub
+		//		String response = request(info, PUT, "/api/v1/roles/" + role.getUuid(), 200, "OK", new ObjectMapper().writeValueAsString(restRole));
+		return null;
+	}
+
+	@Override
+	public Future<SchemaResponse> findSchemaByUuid(String uuid) {
+		return null;
+
+	}
+
+	@Override
+	public Future<SchemaResponse> updateSchema(String uuid, SchemaUpdateRequest request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<NodeResponse> webroot(String projectName, String path) {
+		//String response = request(info, HttpMethod.GET, "/api/v1/" + PROJECT_NAME + "/webroot/" + invalidPath, 404, "Not Found");
+		return null;
+	}
+
+	@Override
+	public Future<GenericMessageResponse> deleteSchema(String uuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<SchemaResponse> addSchemaToProject(String schemaUuid, String projectUuid) {
+		// String response = request(info, HttpMethod.POST, "/api/v1/schemas/" + schema.getUuid() + "/projects/" + extraProject.getUuid(), 200, "OK");
+		return null;
+	}
+
+	@Override
+	public Future<SchemaListResponse> findSchemas(PagingInfo pagingInfo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<SchemaResponse> removeSchemaFromProject(String schemaUuid, String projectUuid) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	//

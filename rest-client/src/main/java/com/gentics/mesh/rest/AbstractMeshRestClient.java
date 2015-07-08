@@ -17,12 +17,14 @@ import com.gentics.mesh.rest.method.GroupClientMethods;
 import com.gentics.mesh.rest.method.NodeClientMethods;
 import com.gentics.mesh.rest.method.ProjectClientMethods;
 import com.gentics.mesh.rest.method.RoleClientMethods;
+import com.gentics.mesh.rest.method.SchemaClientMethods;
 import com.gentics.mesh.rest.method.TagClientMethods;
 import com.gentics.mesh.rest.method.TagFamilyClientMethods;
 import com.gentics.mesh.rest.method.UserClientMethods;
+import com.gentics.mesh.rest.method.WebRootClientMethods;
 
 public abstract class AbstractMeshRestClient implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods,
-		GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods {
+		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
 
@@ -89,9 +91,9 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(ClassOfT, this);
 
 		String uri = BASEURI + path;
-		
+
 		HttpClientRequest request = client.request(method, uri, handler);
-//		HttpClientRequest request = client.get(uri, handler);
+		//		HttpClientRequest request = client.get(uri, handler);
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}

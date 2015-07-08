@@ -19,7 +19,10 @@ public interface UserClientMethods {
 
 	Future<UserResponse> createUser(UserCreateRequest userCreateRequest);
 
-	Future<UserResponse> updateUser(UserUpdateRequest userUpdateRequest);
+	Future<UserResponse> updateUser(String uuid, UserUpdateRequest userUpdateRequest);
 
 	Future<GenericMessageResponse> deleteUser(String uuid);
+
+	Future<UserListResponse> findUsersOfGroup(String groupUuid, PagingInfo pagingInfo);
+
 }

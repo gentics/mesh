@@ -164,7 +164,6 @@ public final class JsonUtil {
 		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
 		nodeListMapper.registerModule(module);
 		return nodeListMapper.reader(getInjectableValues()).forType(NodeListResponse.class).readValue(json);
-
 	}
 
 }
