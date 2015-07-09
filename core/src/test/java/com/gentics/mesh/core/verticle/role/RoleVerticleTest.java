@@ -273,7 +273,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		String response = JsonUtil.toJson(future.result());
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":35}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":36}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;

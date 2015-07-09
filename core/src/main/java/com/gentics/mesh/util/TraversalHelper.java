@@ -48,7 +48,7 @@ public final class TraversalHelper {
 
 		List<? extends T> list = traversal.range(low, upper).toListExplicit(classOfT);
 
-		int totalPages = count / pageSize;
+		int totalPages = (int) Math.ceil(count / (double) pageSize);
 		// Cap totalpages to 1
 		if (totalPages == 0) {
 			totalPages = 1;
