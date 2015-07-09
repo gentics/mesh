@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshConfiguration;
-import com.gentics.mesh.util.TinkerGraphDatabaseProviderImpl;
+import com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })

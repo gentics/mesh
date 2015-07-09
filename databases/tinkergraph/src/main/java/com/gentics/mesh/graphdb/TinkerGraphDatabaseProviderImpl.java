@@ -1,4 +1,4 @@
-package com.gentics.mesh.util;
+package com.gentics.mesh.graphdb;
 
 import io.vertx.core.json.JsonObject;
 

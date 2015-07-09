@@ -347,6 +347,8 @@ public class DemoDataProvider {
 
 		project = root.getProjectRoot().create(PROJECT_NAME);
 		project.setCreator(userInfo.getUser());
+		project.addLanguage(getEnglish());
+		project.addLanguage(getGerman());
 
 		// Guest Group / Role
 		Role guestRole = root.getRoleRoot().create("guest_role");
@@ -426,6 +428,10 @@ public class DemoDataProvider {
 		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
 		binaryContentSchemaContainer.addProject(project);
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
+
+		project.getSchemaRoot().addSchemaContainer(getSchemaContainer("folder"));
+		project.getSchemaRoot().addSchemaContainer(getSchemaContainer("content"));
+		project.getSchemaRoot().addSchemaContainer(getSchemaContainer("binary-content"));
 
 	}
 
@@ -510,12 +516,12 @@ public class DemoDataProvider {
 
 		if (germanName != null) {
 			NodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
-//			germanContainer.createString("displayName").setString(germanName);
+			//			germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
 		}
 		if (englishName != null) {
 			NodeFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
-//			englishContainer.createString("displayName").setString(englishName);
+			//			englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
 		SchemaContainer schemaContainer = schemaContainers.get("folder");

@@ -35,13 +35,7 @@
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-orientdb</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-neo4j</artifactId> 
-			<version>${project.version}</version> </dependency> -->
+
 		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -191,6 +185,12 @@
 		</dependency>
 
 		<!-- Test dependencies -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tinkergraph</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>

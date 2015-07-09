@@ -41,4 +41,5 @@ public interface Project extends GenericNode {
 	void removeLanguage(Language language);
 
 	void addLanguage(Language language);
+
 }
