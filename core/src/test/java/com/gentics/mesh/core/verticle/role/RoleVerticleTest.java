@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
@@ -312,8 +313,14 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		Future<RoleResponse> future = getClient().updateRole(role.getUuid(), restRole);
 		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", role.getUuid());
+
+		// Add the missing permission and try again
+		info.getRole().addPermissions(info.getRole(), Permission.UPDATE_PERM);
+
+		future = getClient().updateRole(role.getUuid(), restRole);
+		latchFor(future);
 		assertSuccess(future);
-		fail("Undefined assertion");
 
 		// Check that the role was updated
 		Role reloadedRole = boot.roleRoot().findByUUID(role.getUuid());
