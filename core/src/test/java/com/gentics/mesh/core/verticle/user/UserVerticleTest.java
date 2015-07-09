@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -97,16 +98,21 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		// Test default paging parameters
-		Future<UserListResponse> future = getClient().findUsers(new PagingInfo());
+		Future<UserListResponse> future = getClient().findUsers();
 		latchFor(future);
 		assertSuccess(future);
 		UserListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		System.out.println(data().getUsers().size());
+
+		for (UserResponse user : future.result().getData()) {
+			System.out.println(user.getUsername());
+		}
 		assertEquals(14, restResponse.getData().size());
 
 		int perPage = 2;
-		int totalUsers = data().getUsers().size() + 1;
+		int totalUsers = data().getUsers().size();
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 		future = getClient().findUsers(new PagingInfo(3, perPage));
 		latchFor(future);
@@ -421,12 +427,15 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteUserByUUID() throws Exception {
 		User user = info.getUser();
-
-		Future<GenericMessageResponse> future = getClient().deleteUser(user.getUuid());
+		assertTrue(user.isEnabled());
+		String uuid = user.getUuid();
+		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("user_deleted", future, user.getUuid());
-		assertNull("The user should have been deleted", boot.userRoot().findByUUID(user.getUuid()));
+		expectMessageResponse("user_deleted", future, uuid);
+		User loadedUser = boot.userRoot().findByUUID(uuid);
+		assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
+		assertFalse(user.isEnabled());
 	}
 
 	@Test
@@ -465,16 +474,26 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			User extraUser = userRoot.create("extraUser");
 			uuid = extraUser.getUuid();
+			extraUser.addGroup(info.getGroup());
 			info.getRole().addPermissions(extraUser, DELETE_PERM);
 			assertNotNull(extraUser.getUuid());
 			tx.success();
 		}
+		User user = userRoot.findByUUID(uuid);
+
+		assertEquals(1, user.getGroupCount());
+		assertEquals(1, user.getGroups().size());
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid);
-		assertNull("The user should have been deleted", userRoot.findByUUID(uuid));
+		// Check whether the user was correctly disabled
+		user = userRoot.findByUUID(uuid);
+		assertNotNull(user);
+		assertEquals(0, user.getGroupCount());
+		assertEquals(0, user.getGroups().size());
+		assertFalse("The user should have been disabled", user.isEnabled());
 	}
 
 	@Test

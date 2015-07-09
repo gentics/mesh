@@ -222,6 +222,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		int perPage = 11;
 		int page = 1;
 		future = getClient().findRoles(new PagingInfo(page, perPage));
+		latchFor(future);
+		assertSuccess(future);
 		restResponse = future.result();
 		assertEquals("The amount of items for page {" + page + "} does not match the expected amount.", 11, restResponse.getData().size());
 

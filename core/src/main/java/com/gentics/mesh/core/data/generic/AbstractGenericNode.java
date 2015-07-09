@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 
-public abstract class AbstractGenericNode extends AbstractMeshVertex implements GenericNode {
+public abstract class AbstractGenericNode extends MeshVertexImpl implements GenericNode {
 
 	@Override
 	public List<? extends ProjectImpl> getProjects() {

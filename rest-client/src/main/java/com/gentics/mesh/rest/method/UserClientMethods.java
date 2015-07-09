@@ -2,8 +2,8 @@ package com.gentics.mesh.rest.method;
 
 import io.vertx.core.Future;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -15,7 +15,7 @@ public interface UserClientMethods {
 
 	Future<UserResponse> findUserByUsername(String username);
 
-	Future<UserListResponse> findUsers(PagingInfo pagingInfo);
+	Future<UserListResponse> findUsers(QueryParameterProvider... parameters);
 
 	Future<UserResponse> createUser(UserCreateRequest userCreateRequest);
 
@@ -23,6 +23,6 @@ public interface UserClientMethods {
 
 	Future<GenericMessageResponse> deleteUser(String uuid);
 
-	Future<UserListResponse> findUsersOfGroup(String groupUuid, PagingInfo pagingInfo);
+	Future<UserListResponse> findUsersOfGroup(String groupUuid, QueryParameterProvider... parameters);
 
 }

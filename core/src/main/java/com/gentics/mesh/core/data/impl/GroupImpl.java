@@ -139,6 +139,7 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 
 	public Role createRole(String name) {
 		RoleImpl role = getGraph().addFramedVertex(RoleImpl.class);
+		role.setName(name);
 		// Add role also to role root
 		addRole(role);
 		return role;

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -14,6 +14,6 @@ public interface MeshVertex {
 
 	Element getElement();
 
-	AbstractMeshVertex getImpl();
+	MeshVertexImpl getImpl();
 
 }

@@ -18,11 +18,11 @@ public class HTMLFieldTest extends AbstractDBTest {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		HTMLFieldImpl field = new HTMLFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
-		assertNull( container.getProperty("test-html"));
+		assertNull(container.getProperty("test-html"));
 		field.setHTML("dummy HTML");
 		assertEquals("dummy HTML", field.getHTML());
 		assertEquals("dummy HTML", container.getProperty("test-html"));
-		assertEquals(5, container.getPropertyKeys().size());
+		assertEquals(3, container.getPropertyKeys().size());
 		field.setHTML(null);
 		assertNull(field.getHTML());
 		assertNull(container.getProperty("test-html"));

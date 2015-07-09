@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -486,7 +486,7 @@ public class DemoDataProvider {
 				continue;
 			}
 
-			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), AbstractMeshVertex.class);
+			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 			role.addPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 
 			// GraphPermission perm = role.addPermissions();

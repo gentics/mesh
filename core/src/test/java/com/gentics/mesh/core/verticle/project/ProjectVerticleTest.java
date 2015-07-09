@@ -173,12 +173,12 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findProjects(new PagingInfo(-1, perPage));
+		future = getClient().findProjects(new PagingInfo(4242, 25));
 		latchFor(future);
 		assertSuccess(future);
 
 		String response = JsonUtil.toJson(future.result());
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":5,\"total_count\":143}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}

@@ -1,12 +1,15 @@
 package com.gentics.mesh.core.data.relationship;
 
 public enum Permission {
-	CREATE_PERM("HAS_CREATE_PERMISSION"), READ_PERM("HAS_READ_PERMISSION"), UPDATE_PERM("HAS_UPDATE_PERMISSION"), DELETE_PERM("HAS_DELETE_PERMISSION");
+	CREATE_PERM("HAS_CREATE_PERMISSION", "create"), READ_PERM("HAS_READ_PERMISSION", "read"), UPDATE_PERM("HAS_UPDATE_PERMISSION", "update"), DELETE_PERM(
+			"HAS_DELETE_PERMISSION", "delete");
 
 	private String label;
+	private String humanName;
 
-	Permission(String label) {
+	Permission(String label, String humanName) {
 		this.label = label;
+		this.humanName = humanName;
 	}
 
 	public static String[] labels() {
@@ -31,6 +34,10 @@ public enum Permission {
 			}
 		}
 		return null;
+	}
+
+	public String getHumanName() {
+		return humanName;
 	}
 
 	@Override

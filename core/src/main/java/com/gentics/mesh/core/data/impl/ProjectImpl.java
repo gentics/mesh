@@ -91,13 +91,7 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 		projectResponse.setUuid(getUuid());
 		projectResponse.setName(getName());
 		projectResponse.setPermissions(user.getPermissionNames(this));
-
-		// if (rootNode != null) {
-		// projectResponse.setRootNodeUuid(rootNode.getUuid());
-		// } else {
-		// log.info("Inconsistency detected. Project {" + project.getUuid() + "} has no root node.");
-		// }
-		// return projectResponse;
+		projectResponse.setRootNodeUuid(getRootNode().getUuid());
 		return projectResponse;
 	}
 

@@ -158,7 +158,7 @@ public class UserImpl extends AbstractGenericNode implements User {
 		String[] strings = new String[permissions.size()];
 		Iterator<Permission> it = permissions.iterator();
 		for (int i = 0; i < permissions.size(); i++) {
-			strings[i] = it.next().name();
+			strings[i] = it.next().getHumanName();
 		}
 		return strings;
 	}

@@ -2,8 +2,8 @@ package com.gentics.mesh.rest.method;
 
 import io.vertx.core.Future;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -13,7 +13,7 @@ public interface ProjectClientMethods {
 
 	Future<ProjectResponse> findProjectByUuid(String uuid);
 
-	Future<ProjectListResponse> findProjects(PagingInfo pagingInfo);
+	Future<ProjectListResponse> findProjects(QueryParameterProvider... parameters);
 
 	// TODO use language tag instead?
 	Future<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid);

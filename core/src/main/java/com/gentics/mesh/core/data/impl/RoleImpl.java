@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -33,7 +33,7 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 
 	public Set<Permission> getPermissions(MeshVertex node) {
 		Set<Permission> permissions = new HashSet<>();
-		Set<? extends String> labels = outE(Permission.labels()).mark().inV().retain((AbstractMeshVertex) node).back().label().toSet();
+		Set<? extends String> labels = outE(Permission.labels()).mark().inV().retain((MeshVertexImpl) node).back().label().toSet();
 		for (String label : labels) {
 			permissions.add(Permission.valueOfLabel(label));
 		}
@@ -51,7 +51,7 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 
 	public void addPermissions(MeshVertex node, Permission... permissions) {
 		for (Permission permission : permissions) {
-			addFramedEdge(permission.label(), (AbstractMeshVertex) node);
+			addFramedEdge(permission.label(), (MeshVertexImpl) node);
 		}
 	}
 
@@ -90,7 +90,7 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 
 		for (Permission permission : permissions) {
 			// System.out.println(inE(permission.label()).mark().outV().retain(node).back().next().getLabel());
-			outE(permission.label()).mark().inV().retain((AbstractMeshVertex) node).back().removeAll();
+			outE(permission.label()).mark().inV().retain((MeshVertexImpl) node).back().removeAll();
 			// System.out.println(outE(permission.label()).mark().inV().retain(node).back().next().getLabel());
 		}
 	}

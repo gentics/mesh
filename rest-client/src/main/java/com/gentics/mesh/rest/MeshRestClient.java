@@ -136,8 +136,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<ProjectListResponse> findProjects(PagingInfo pagingInfo) {
-		return handleRequest(GET, "/projects", ProjectListResponse.class);
+	public Future<ProjectListResponse> findProjects(QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/projects" + getQuery(parameters), ProjectListResponse.class);
 	}
 
 	@Override
@@ -226,8 +226,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<UserListResponse> findUsers(PagingInfo pagingInfo) {
-		return handleRequest(GET, "/users", UserListResponse.class);
+	public Future<UserListResponse> findUsers(QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/users" + getQuery(parameters), UserListResponse.class);
 	}
 
 	@Override
@@ -281,8 +281,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<UserListResponse> findUsersOfGroup(String groupUuid, PagingInfo pagingInfo) {
-		return handleRequest(GET, "/groups/" + groupUuid + "/users", UserListResponse.class);
+	public Future<UserListResponse> findUsersOfGroup(String groupUuid, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/groups/" + groupUuid + "/users" + getQuery(parameters), UserListResponse.class);
 	}
 
 	@Override

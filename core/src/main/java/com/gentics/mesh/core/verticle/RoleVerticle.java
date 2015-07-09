@@ -34,6 +34,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
@@ -149,10 +150,13 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			Future<Role> roleCreated = Future.future();
 			rcs.loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, GroupImpl.class, (AsyncResult<Group> rh) -> {
 				Group parentGroup = rh.result();
-				Role role = parentGroup.createRole(requestModel.getName());
-				role.addGroup(parentGroup);
-				requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
-				roleCreated.complete(role);
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					Role role = parentGroup.createRole(requestModel.getName());
+					role.addGroup(parentGroup);
+					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
+					tx.success();
+					roleCreated.complete(role);
+				}
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
