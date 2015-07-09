@@ -37,8 +37,4 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 		this.springConfiguration = config;
 	}
 
-	public RoutingContextService getRcs() {
-		return rcs;
-	}
-
 }

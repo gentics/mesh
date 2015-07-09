@@ -11,6 +11,7 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.demo.verticle.CustomerVerticle;
 import com.gentics.mesh.etc.ConfigurationLoader;
 import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -35,8 +36,8 @@ public class DemoRunner {
 			// deployAndWait(vertx, AuthenticationVerticle.class);
 			// deployAndWait(vertx, NavigationVerticle.class);
 			// deployAndWait(vertx, TagCloudVerticle.class);
-			// deployAndWait(vertx, StaticContentVerticle.class);
-			// deployAndWait(vertx, AdminGUIVerticle.class);
+//			deployAndWait(vertx, config, StaticContentVerticle.class);
+			deployAndWait(vertx, config, AdminGUIVerticle.class);
 		});
 		// // DeploymentOptions options = new DeploymentOptions();
 		// // vertx.deployVerticle("service:com.gentics.vertx:mesh-rest-navigation:0.1.0-SNAPSHOT",options, dh -> {
@@ -49,8 +50,8 @@ public class DemoRunner {
 
 		// Setup custom config to enable neo4j web console
 		MeshConfiguration config = ConfigurationLoader.createOrloadConfiguration();
-//		config.getNeo4jConfiguration().setMode("gui");
-//		config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
+		// config.getNeo4jConfiguration().setMode("gui");
+		// config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
 		mesh.run(config);
 
 	}

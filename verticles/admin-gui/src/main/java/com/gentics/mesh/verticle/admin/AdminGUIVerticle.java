@@ -1,25 +1,46 @@
 package com.gentics.mesh.verticle.admin;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
 
+import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
-public class AdminGUIVerticle extends AbstractVerticle {
+import com.gentics.mesh.core.AbstractSpringVerticle;
+
+@Component
+@Scope("singleton")
+@SpringVerticle
+public class AdminGUIVerticle extends AbstractSpringVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIVerticle.class);
+	protected HttpServer server;
 
 	@Override
 	public void start() throws Exception {
-		Router router = Router.router(vertx);
 
-//		StaticServer webJarServer = StaticServer.staticServer("META-INF/resources/webjars");
-//		StaticServer staticContentServer = StaticServer.staticServer();
-//		router.route("/angularjs").handler(webJarServer);
-//		router.route().handler(staticContentServer);
+		Router staticRouter = Router.router(vertx);
+		staticRouter.route("/*").handler(StaticHandler.create("META-INF/resources/webjars/mesh-ui/0.1.0-SNAPSHOT").setIndexPage("index.html"));
+		routerStorage.getRootRouter().mountSubRouter("/mesh-ui", staticRouter);
+
+		routerStorage.getRootRouter().route("/*").handler(rc -> {
+			rc.response().setStatusCode(302);
+			rc.response().headers().set("Location", "/mesh-ui/");
+			rc.response().end();
+		});
+		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
+		server.requestHandler(routerStorage.getRootRouter()::accept);
+		server.listen();
+
+		// StaticServer webJarServer = StaticServer.staticServer("META-INF/resources/webjars");
+		// StaticServer staticContentServer = StaticServer.staticServer();
+		// router.route("/angularjs").handler(webJarServer);
+		// router.route().handler(staticContentServer);
 
 		// // All other requests handled by template engine
 		// TemplateEngine engine = HandlebarsTemplateEngine.create();
@@ -41,9 +62,9 @@ public class AdminGUIVerticle extends AbstractVerticle {
 		// });
 		//
 		// router.route().handler(TemplateHandler.templateHandler(engine, "templates/post", "text/html"));
-		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8081));
-		server.requestHandler(router::accept);
-		server.listen();
+		// HttpServer server = vertx.createHttpServer(new HttpServerOptions().setPort(8081));
+		// server.requestHandler(router::accept);
+		// server.listen();
 
 	}
 
