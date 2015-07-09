@@ -66,7 +66,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 
 				User creator = tag.getCreator();
 				if (creator != null) {
-					restTag.setCreator(creator.transformToRest());
+					restTag.setCreator(creator.transformToRest(requestUser));
 				}
 
 				restTag.getFields().setName(tag.getName());

@@ -158,12 +158,12 @@ public class Generator {
 		RoleResponse role = new RoleResponse();
 		role.setName("Admin role");
 		role.setUuid(getUUID());
-		role.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		role.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		write(role);
 
 		RoleResponse role2 = new RoleResponse();
 		role2.setName("Reader role");
-		role2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		role2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		role2.setUuid(getUUID());
 
 		RoleListResponse roleList = new RoleListResponse();
@@ -324,14 +324,14 @@ public class Generator {
 		GroupResponse group = new GroupResponse();
 		group.setUuid(getUUID());
 		group.setName("Admin Group");
-		group.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		group.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 
 		write(group);
 
 		GroupResponse group2 = new GroupResponse();
 		group2.setUuid(getUUID());
 		group2.setName("Editor Group");
-		group2.setPerms("READ", "UPDATE", "DELETE", "CREATE");
+		group2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 
 		GroupListResponse groupList = new GroupListResponse();
 		groupList.getData().add(group);

@@ -18,8 +18,6 @@ public interface Role extends GenericNode {
 
 	void setName(String name);
 
-	RoleResponse transformToRest();
-
 	RoleImpl getImpl();
 
 	void addGroup(Group group);
@@ -27,5 +25,7 @@ public interface Role extends GenericNode {
 	void delete();
 
 	boolean hasPermission(Permission permission, GenericNode node);
+
+	RoleResponse transformToRest(MeshAuthUser requestUser);
 
 }

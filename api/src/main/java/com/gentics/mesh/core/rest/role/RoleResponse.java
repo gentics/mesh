@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 public class RoleResponse extends AbstractRestModel {
 
 	private String name;
-	private String[] perms = {};
+	private String[] permissions = {};
 
 	private List<GroupResponse> groups = new ArrayList<>();
 
@@ -24,12 +24,12 @@ public class RoleResponse extends AbstractRestModel {
 		this.name = name;
 	}
 
-	public String[] getPerms() {
-		return perms;
+	public String[] getPermissions() {
+		return permissions;
 	}
 
-	public void setPerms(String... perms) {
-		this.perms = perms;
+	public void setPermissions(String... permissions) {
+		this.permissions = permissions;
 	}
 
 	public List<GroupResponse> getGroups() {

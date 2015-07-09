@@ -58,6 +58,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+
 			rcs.loadObject(rc, "uuid", READ_PERM, UserImpl.class, (AsyncResult<User> rh) -> {
 			}, trh -> {
 				if (trh.failed()) {
@@ -65,7 +66,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				}
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					User user = trh.result();
-					UserResponse restUser = user.transformToRest();
+					UserResponse restUser = user.transformToRest(getUser(rc));
 					tx.success();
 					rc.response().setStatusCode(200).end(toJson(restUser));
 				}
@@ -87,7 +88,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 						userPage = boot.userRoot().findAll(requestUser, pagingInfo);
 						for (User currentUser : userPage) {
-							listResponse.getData().add(currentUser.transformToRest());
+							listResponse.getData().add(currentUser.transformToRest(requestUser));
 						}
 						tx.success();
 					}
@@ -158,15 +159,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 					}
 					tx.success();
-//					fg.commit();
 				}
-//				fg.commit();
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
 				}
 				User user = trh.result();
-				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
+				rc.response().setStatusCode(200).end(toJson(user.transformToRest(getUser(rc))));
 			});
 
 		});
@@ -226,7 +225,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					rc.fail(trh.cause());
 				}
 				User user = userCreated.result();
-				rc.response().setStatusCode(200).end(toJson(user.transformToRest()));
+				rc.response().setStatusCode(200).end(toJson(user.transformToRest(requestUser)));
 			});
 
 		});

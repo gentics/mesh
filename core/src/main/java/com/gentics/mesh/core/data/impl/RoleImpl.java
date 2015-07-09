@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
@@ -70,7 +71,8 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 	// }
 	// }
 
-	public RoleResponse transformToRest() {
+	@Override
+	public RoleResponse transformToRest(MeshAuthUser requestUser) {
 
 		RoleResponse restRole = new RoleResponse();
 		restRole.setUuid(getUuid());
@@ -82,6 +84,8 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 			restGroup.setUuid(group.getUuid());
 			restRole.getGroups().add(restGroup);
 		}
+		
+		restRole.setPermissions(requestUser.getPermissionNames(this));
 
 		return restRole;
 	}

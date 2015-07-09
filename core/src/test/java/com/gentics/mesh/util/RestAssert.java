@@ -139,7 +139,7 @@ public class RestAssert {
 		assertNotNull(restRole);
 		assertEquals(role.getName(), restRole.getName());
 		assertEquals(role.getUuid(), restRole.getUuid());
-		assertNotNull(restRole.getPerms());
+		assertNotNull(restRole.getPermissions());
 		assertNotNull(restRole.getGroups());
 	}
 

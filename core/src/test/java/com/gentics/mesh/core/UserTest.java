@@ -117,7 +117,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() {
-		UserResponse restUser = getUser().transformToRest();
+		UserResponse restUser = getUser().transformToRest(getRequestUser());
 		assertNotNull(restUser);
 		assertEquals(getUser().getUsername(), restUser.getUsername());
 		assertEquals(getUser().getUuid(), restUser.getUuid());

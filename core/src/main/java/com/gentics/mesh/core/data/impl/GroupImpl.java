@@ -112,6 +112,8 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 			}
 		}
 
+		restGroup.setPermissions(user.getPermissionNames(this));
+		
 		// // Set<Group> children = groupRepository.findChildren(group);
 		// Set<Group> children = group.getGroups();
 		// for (Group childGroup : children) {

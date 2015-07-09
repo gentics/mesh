@@ -208,7 +208,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformation() {
 		Role role = getRole();
-		RoleResponse restModel = role.transformToRest();
+		RoleResponse restModel = role.transformToRest(getRequestUser());
 		assertNotNull(restModel);
 
 		assertEquals(role.getName(), restModel.getName());

@@ -50,7 +50,7 @@ public class MeshAuthProvider implements AuthProvider {
 			}
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
-				//TODO check whether user is enabled
+				//TODO check if user is enabled
 				boolean hashMatches = false;
 				if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
 					log.debug("The account password hash or token password string are invalid.");

@@ -17,6 +17,7 @@ import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
@@ -56,11 +57,7 @@ public class MeshSpringConfiguration {
 
 	@Bean
 	public String graphProviderClassname() {
-
-		String className = configuration.getDatabaseProviderClass();
-		// className = "com.gentics.mesh.graphdb.Neo4jDatabaseProviderImpl";
-		// className = "com.gentics.mesh.util.TinkerGraphDatabaseProviderImpl";
-		return className;
+		return configuration.getDatabaseProviderClass();
 	}
 
 	@Bean
@@ -109,6 +106,11 @@ public class MeshSpringConfiguration {
 	@Bean
 	public AuthHandler authHandler() {
 		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
+	}
+
+	@Bean
+	public UserSessionHandler userSessionHandler() {
+		return UserSessionHandler.create(authProvider());
 	}
 
 	@Bean

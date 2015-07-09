@@ -78,7 +78,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					try {
 						rolePage = group.getRoles(requestUser, pagingInfo);
 						for (Role role : rolePage) {
-							listResponse.getData().add(role.transformToRest());
+							listResponse.getData().add(role.transformToRest(getUser(rc)));
 						}
 						// TODO fix paging
 						// RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
@@ -153,7 +153,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					try {
 						userPage = group.getVisibleUsers(requestUser, pagingInfo);
 						for (User user : userPage) {
-							listResponse.getData().add(user.transformToRest());
+							listResponse.getData().add(user.transformToRest(requestUser));
 						}
 						RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
 

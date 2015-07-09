@@ -100,11 +100,11 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 				/* Load the creator information */
 				User creator = node.getCreator();
 				if (creator != null) {
-					restNode.setCreator(creator.transformToRest());
+					restNode.setCreator(creator.transformToRest(requestUser));
 				}
 				User editor = node.getEditor();
 				if (editor != null) {
-					restNode.setEditor(editor.transformToRest());
+					restNode.setEditor(editor.transformToRest(requestUser));
 				}
 
 				restNode.setEdited(node.getLastEditedTimestamp() == null ? 0 : node.getLastEditedTimestamp());

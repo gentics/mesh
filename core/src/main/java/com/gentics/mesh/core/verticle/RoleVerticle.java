@@ -82,7 +82,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				}
 			}, trh -> {
 				Role role = trh.result();
-				rc.response().setStatusCode(200).end(toJson(role.transformToRest()));
+				rc.response().setStatusCode(200).end(toJson(role.transformToRest(getUser(rc))));
 			});
 		});
 	}
@@ -91,7 +91,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(GET).handler(rc -> {
 			rcs.loadObject(rc, "uuid", READ_PERM, RoleImpl.class, (AsyncResult<Role> rh) -> {
 				Role role = rh.result();
-				RoleResponse restRole = role.transformToRest();
+				RoleResponse restRole = role.transformToRest(getUser(rc));
 				rc.response().setStatusCode(200).end(toJson(restRole));
 			});
 		});
@@ -109,7 +109,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				try {
 					rolePage = boot.roleRoot().findAll(requestUser, pagingInfo);
 					for (Role role : rolePage) {
-						listResponse.getData().add(role.transformToRest());
+						listResponse.getData().add(role.transformToRest(getUser(rc)));
 					}
 					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
 
@@ -162,7 +162,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					rc.fail(trh.cause());
 				}
 				Role role = roleCreated.result();
-				rc.response().setStatusCode(200).end(toJson(role.transformToRest()));
+				rc.response().setStatusCode(200).end(toJson(role.transformToRest(getUser(rc))));
 			});
 
 		});

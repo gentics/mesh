@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -177,26 +178,18 @@ public class UserImpl extends AbstractGenericNode implements User {
 
 	@Override
 	public boolean hasPermission(MeshVertex node, Permission permission) {
-		// TraversalHelper.debug(out(HAS_USER).in(HAS_ROLE).outE(permission.label()).inV());
-		// System.out.println(out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node).back().next().getLabel());
-		// System.out.println("-----");
-		// try {
-		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).back().hasNext();
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// return false;
+		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
 	@Override
-	public UserResponse transformToRest() {
+	public UserResponse transformToRest(MeshAuthUser requestUser) {
 		UserResponse restUser = new UserResponse();
 		restUser.setUuid(getUuid());
 		restUser.setUsername(getUsername());
 		restUser.setEmailAddress(getEmailAddress());
 		restUser.setFirstname(getFirstname());
 		restUser.setLastname(getLastname());
-
+		restUser.setPermissions(requestUser.getPermissionNames(this));
 		for (Group group : getGroups()) {
 			restUser.addGroup(group.getName());
 		}

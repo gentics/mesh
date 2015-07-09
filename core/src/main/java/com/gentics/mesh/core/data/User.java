@@ -35,7 +35,7 @@ public interface User extends GenericNode {
 
 	String[] getPermissionNames(MeshVertex vertex);
 
-	UserResponse transformToRest();
+	UserResponse transformToRest(MeshAuthUser requestUser);
 
 	List<? extends Group> getGroups();
 
