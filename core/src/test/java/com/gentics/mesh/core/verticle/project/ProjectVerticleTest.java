@@ -178,7 +178,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		String response = JsonUtil.toJson(future.result());
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":5,\"total_count\":143}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 
 	}
@@ -250,7 +250,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		Future<ProjectResponse> future = getClient().updateProject(project.getUuid(), request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm");
+		expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
 
 		Project reloadedProject = projectRoot.findByUUID(project.getUuid());
 		assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());

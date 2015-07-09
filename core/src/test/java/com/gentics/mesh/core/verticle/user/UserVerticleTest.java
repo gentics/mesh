@@ -171,6 +171,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateUser() throws Exception {
 		User user = info.getUser();
+		String username = user.getUsername();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setUuid(user.getUuid());
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -186,7 +187,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		test.assertUser(updateRequest, restUser);
 		Thread.sleep(1000);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(user.getUsername()));
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());

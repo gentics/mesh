@@ -158,9 +158,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
 					}
 					tx.success();
-					fg.commit();
+//					fg.commit();
 				}
-				fg.commit();
+//				fg.commit();
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());

@@ -1,8 +1,10 @@
 package com.gentics.mesh.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
@@ -16,6 +18,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -102,13 +105,22 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		fail("Not yet implemented");
+		Group group = getMeshRoot().getGroupRoot().create("newGroup");
+		assertNotNull(group);
+		String uuid = group.getUuid();
+		group.delete();
+		assertNull(getMeshRoot().getGroupRoot().findByUUID(uuid));
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("Not yet implemented");
+		MeshRoot root = getMeshRoot();
+		User user = getUser();
+		Group group = root.getGroupRoot().create("newGroup");
+		assertFalse(user.hasPermission(group, Permission.CREATE_PERM));
+		user.addCRUDPermissionOnRole(root.getGroupRoot(), Permission.CREATE_PERM, group);
+		assertTrue(user.hasPermission(group, Permission.CREATE_PERM));
 	}
 
 	@Test
