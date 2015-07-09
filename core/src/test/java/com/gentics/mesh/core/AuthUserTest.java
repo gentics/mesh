@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 
-public class MeshShiroUserTest extends AbstractDBTest {
+public class AuthUserTest extends AbstractDBTest {
 
 	protected UserInfo info;
 

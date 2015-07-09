@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.verticle.NodeNotFoundException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -25,9 +24,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
 	private MeshSpringConfiguration config;
-
-	@Autowired
-	private TagRoot tagRoot;
 
 	@Autowired
 	private Neo4jGenericContentUtils genericContentUtils;
