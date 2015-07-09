@@ -25,6 +25,9 @@ public class AtomicTagTest extends AbstractDBTest {
 		Language language = languageRoot.create("Deutsch", "de");
 		Language english = languageRoot.create("English", "en");
 
+		meshRoot.createTagFamilyRoot();
+		meshRoot.createTagRoot();
+
 		ProjectRoot projectRoot = meshRoot.createProjectRoot();
 		Project project = projectRoot.create("dummy");
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();

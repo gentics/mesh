@@ -182,11 +182,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		Page<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 10));
-		assertEquals(data().getUsers().size(), page.getTotalElements());
+		assertEquals(data().getRoles().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 15));
-		assertEquals(data().getUsers().size(), page.getTotalElements());
+		assertEquals(data().getRoles().size(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 	}
 
