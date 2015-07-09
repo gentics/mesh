@@ -15,4 +15,5 @@ public class MicroschemaVerticleTest extends AbstractRestVerticleTest {
 	public AbstractRestVerticle getVerticle() {
 		return microschemaVerticle;
 	}
+	
 }

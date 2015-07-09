@@ -218,7 +218,15 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		fail("not yet implemented");
+		String roleName = "test";
+		RoleRoot root = data().getMeshRoot().getRoleRoot();
+
+		Role role = root.create(roleName);
+		String uuid = role.getUuid();
+		assertNotNull(boot.roleRoot().findByUUID(uuid));
+		role.delete();
+		assertNull(boot.roleRoot().findByUUID(uuid));
+
 	}
 
 	@Test
@@ -229,7 +237,6 @@ public class RoleTest extends AbstractBasicObjectTest {
 		assertFalse(getUser().hasPermission(role, Permission.CREATE_PERM));
 		getUser().addCRUDPermissionOnRole(root.getUserRoot(), Permission.CREATE_PERM, role);
 		assertTrue(getUser().hasPermission(role, Permission.CREATE_PERM));
-	
 	}
 
 	@Test
@@ -266,7 +273,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		fail("Not yet implemented");
+		Role role = getRole();
+		role.setName("newName");
+		assertEquals("newName", role.getName());
+		//		assertEquals(1,role.getProjects());
+		//TODO test project assignments
 	}
 
 	@Test

@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -105,6 +106,7 @@ public class BootstrapInitializer {
 	private static RoleRoot roleRoot;
 	private static UserRoot userRoot;
 	private static SchemaContainerRoot schemaContainerRoot;
+	private static MicroschemaContainerRoot microschemaContainerRoot;
 	private static ProjectRoot projectRoot;
 	private static MeshRoot meshRoot;
 
@@ -154,6 +156,17 @@ public class BootstrapInitializer {
 			schemaContainerRoot = findSchemaContainerRoot();
 		}
 		return schemaContainerRoot;
+	}
+
+	public MicroschemaContainerRoot findMicroschemaContainerRoot() {
+		return meshRoot().getMicroschemaContainerRoot();
+	}
+
+	public MicroschemaContainerRoot microschemaContainerRoot() {
+		if (microschemaContainerRoot == null) {
+			microschemaContainerRoot = findMicroschemaContainerRoot();
+		}
+		return microschemaContainerRoot;
 	}
 
 	public RoleRoot findRoleRoot() {

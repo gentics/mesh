@@ -282,7 +282,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm");
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		assertNotNull("The project should not have been deleted", projectRoot.findByUUID(uuid));
 	}
 

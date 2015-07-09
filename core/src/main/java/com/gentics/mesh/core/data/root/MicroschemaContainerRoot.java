@@ -7,7 +7,7 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	void addMicroschema(MicroschemaContainer container);
 
 	void removeMicroschema(MicroschemaContainer container);
-	
+
 	MicroschemaContainer create(String name);
 
 }

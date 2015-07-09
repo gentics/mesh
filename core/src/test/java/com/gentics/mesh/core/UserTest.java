@@ -75,7 +75,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	public void testGetPermissions() {
 		Language language = data().getEnglish();
-		String[] perms = { "CREATE_PERM", "UPDATE_PERM", "DELETE_PERM", "READ_PERM" };
+		String[] perms = { "create", "update", "delete", "read" };
 		String[] loadedPerms = getUser().getPermissionNames(language);
 		Arrays.sort(perms);
 		Arrays.sort(loadedPerms);

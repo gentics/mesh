@@ -1,8 +1,10 @@
 package com.gentics.mesh.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
@@ -12,7 +14,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -117,7 +121,11 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		fail("not yet implemented");
+		MeshRoot root = getMeshRoot();
+		Project project = root.getProjectRoot().create("TestProject");
+		assertFalse(getUser().hasPermission(project, Permission.CREATE_PERM));
+		getUser().addCRUDPermissionOnRole(root.getProjectRoot(), Permission.CREATE_PERM, project);
+		assertTrue(getUser().hasPermission(project, Permission.CREATE_PERM));
 	}
 
 	@Test
@@ -135,7 +143,12 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		fail("not yet implemented");
+		Project project = getProject();
+		project.setName("new Name");
+		assertEquals("new Name", project.getName());
+
+		//TODO test root nodes
+
 	}
 
 	@Test

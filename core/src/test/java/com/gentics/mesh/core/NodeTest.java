@@ -251,7 +251,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		User newUser = getMeshRoot().getUserRoot().create("newUser");
 		assertEquals(getUser().getUuid(), node.getCreator().getUuid());
 		node.setCreator(newUser);
-		assertEquals(newUser, node.getCreator().getUuid());
+		assertEquals(newUser.getUuid(), node.getCreator().getUuid());
 		//TODO update other fields
 	}
 
