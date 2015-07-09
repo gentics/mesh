@@ -47,7 +47,7 @@ public class RestModelTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeResponse() throws JsonParseException, JsonMappingException, IOException {
-		
+
 		schemaStorage.addSchema(getDummySchema());
 		NodeResponse response = new NodeResponse();
 		StringField stringField = new StringFieldImpl();
@@ -84,6 +84,7 @@ public class RestModelTest extends AbstractDBTest {
 		schema.setContainer(false);
 		return schema;
 	}
+
 	@Test
 	public void testNodeCreateRequest() throws JsonParseException, JsonMappingException, IOException {
 
@@ -204,7 +205,7 @@ public class RestModelTest extends AbstractDBTest {
 
 		// Serialize the object
 		String json = JsonUtil.toJson(schemaCreateRequest);
-		System.out.println(json);
+		assertNotNull(json);
 
 		// Deserialize the object
 		SchemaCreateRequest loadedRequest = JsonUtil.readSchema(json, SchemaCreateRequest.class);
@@ -213,7 +214,6 @@ public class RestModelTest extends AbstractDBTest {
 		// Serialize the object
 		String json2 = JsonUtil.toJson(loadedRequest);
 		assertEquals(json, json2);
-		System.out.println(json2);
 
 	}
 

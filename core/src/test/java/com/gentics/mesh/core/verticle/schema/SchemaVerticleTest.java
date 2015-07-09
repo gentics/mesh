@@ -29,10 +29,12 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -106,14 +108,18 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		SchemaContainerRoot schemaRoot = data().getMeshRoot().getSchemaContainerRoot();
 		final int nSchemas = 22;
 		SchemaContainer noPermSchema = schemaRoot.create("no_perm_schema");
+		Schema dummySchema = new SchemaImpl();
+		dummySchema.setName("dummy");
+		noPermSchema.setSchema(dummySchema);
 		for (int i = 0; i < nSchemas; i++) {
 			SchemaContainer extraSchema = schemaRoot.create("extra_schema_" + i);
+			extraSchema.setSchema(dummySchema);
 			info.getRole().addPermissions(extraSchema, READ_PERM);
 		}
 		// Don't grant permissions to no perm schema
 
 		// Test default paging parameters
-		Future<SchemaListResponse> future = getClient().findSchemas(new PagingInfo());
+		Future<SchemaListResponse> future = getClient().findSchemas();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse restResponse = future.result();

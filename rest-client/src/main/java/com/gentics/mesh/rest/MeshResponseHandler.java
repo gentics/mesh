@@ -11,8 +11,10 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
+import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 
 public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
@@ -37,20 +39,18 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
 				try {
-//					if () {
-//
-//					} else
-						if (isNodeClass(classOfT) || isNodeListClass(classOfT)) {
-						SchemaReferenceInfo info = JsonUtil.readValue(json, SchemaReferenceInfo.class);
-//						String schemaName = info.getSchema().getName();
-						//TODO should we check whether the schema exists upfront?
-						SchemaStorage schemaStorage = client.getClientSchemaStorage();
-						//						if (schema == null) {
-						//							future.fail("Schema {" + schemaName + "} could not be found. This schema is needed to deserialize the response.");
-						//						} else {
-						T restObj = JsonUtil.readNode(json, classOfT, schemaStorage);
+					if (isSchemaClass(classOfT)) {
+						T restObj = JsonUtil.readSchema(json, classOfT);
 						future.complete(restObj);
-						//						}
+					} else if (isNodeClass(classOfT) || isNodeListClass(classOfT)) {
+						//	SchemaReferenceInfo info = JsonUtil.readValue(json, SchemaReferenceInfo.class);
+						//	String schemaName = info.getSchema().getName();
+						//TODO should we check whether the schema exists upfront?
+						//	if (schema == null) {
+						//		future.fail("Schema {" + schemaName + "} could not be found. This schema is needed to deserialize the response.");
+						//	} else {
+						T restObj = JsonUtil.readNode(json, classOfT, client.getClientSchemaStorage());
+						future.complete(restObj);
 					} else {
 						T restObj = JsonUtil.readValue(json, classOfT);
 						future.complete(restObj);
@@ -83,6 +83,14 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
 	private boolean isNodeListClass(Class<?> clazz) {
 		if (clazz.isAssignableFrom(NodeListResponse.class)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isSchemaClass(Class<?> clazz) {
+		if (clazz.isAssignableFrom(SchemaResponse.class) || clazz.isAssignableFrom(SchemaCreateRequest.class)
+				|| clazz.isAssignableFrom(SchemaUpdateRequest.class) || clazz.isAssignableFrom(SchemaListResponse.class)) {
 			return true;
 		}
 		return false;

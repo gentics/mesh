@@ -133,7 +133,7 @@ public final class JsonUtil {
 		return defaultMapper.readValue(content, valueType);
 	}
 
-	public static <T extends Schema> T readSchema(String json, Class<T> classOfT) throws JsonParseException, JsonMappingException, IOException {
+	public static <T> T readSchema(String json, Class<T> classOfT) throws JsonParseException, JsonMappingException, IOException {
 		return (T) schemaMapper.readValue(json, classOfT);
 	}
 

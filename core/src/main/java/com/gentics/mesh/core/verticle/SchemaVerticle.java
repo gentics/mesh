@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
+import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
@@ -26,14 +27,16 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
@@ -62,8 +65,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
-				rcs.loadObject(rc, "schemaUuid", READ_PERM, SchemaContainer.class, (AsyncResult<SchemaContainer> srh) -> {
+			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "schemaUuid", READ_PERM, SchemaContainerImpl.class, (AsyncResult<SchemaContainer> srh) -> {
 					Project project = rh.result();
 					SchemaContainer schema = srh.result();
 					schema.addProject(project);
@@ -73,7 +76,11 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					}
 					SchemaContainer schema = trh.result();
 					// TODO add simple message or return schema?
-					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+						try {
+							rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+						} catch (Exception e) {
+							rc.fail(e);
+						}
 					});
 			});
 
@@ -83,8 +90,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, Project.class, (AsyncResult<Project> rh) -> {
-				rcs.loadObject(rc, "schemaUuid", READ_PERM, SchemaContainer.class, (AsyncResult<SchemaContainer> srh) -> {
+			rcs.loadObject(rc, "projectUuid", UPDATE_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
+				rcs.loadObject(rc, "schemaUuid", READ_PERM, SchemaContainerImpl.class, (AsyncResult<SchemaContainer> srh) -> {
 					SchemaContainer schema = srh.result();
 					Project project = rh.result();
 					schema.removeProject(project);
@@ -93,8 +100,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
-					});
+					try {
+						rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+					} catch (Exception e) {
+						rc.fail(e);
+					}
+				});
 			});
 		});
 	}
@@ -111,9 +122,10 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 			SchemaContainerRoot root = boot.schemaContainerRoot();
-			if (requestUser.hasPermission(root, Permission.CREATE_PERM)) {
+			if (requestUser.hasPermission(root, CREATE_PERM)) {
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					SchemaContainer container = root.create(schema.getName());
+					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
 					container.setSchema(schema);
 					try {
 						SchemaResponse response = container.transformToRest(requestUser);
@@ -171,7 +183,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, SchemaContainer.class, (AsyncResult<SchemaContainer> srh) -> {
+			rcs.loadObject(rc, "uuid", UPDATE_PERM, SchemaContainerImpl.class, (AsyncResult<SchemaContainer> srh) -> {
 				SchemaContainer schemaContainer = srh.result();
 				SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
 
@@ -184,13 +196,17 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				// if (!schema.getName().equals(requestModel.getName())) {
 				// schema.setName(requestModel.getName());
 				// }
-
+				//TODO handle request
 				}, trh -> {
 					if (trh.failed()) {
 						rc.fail(trh.cause());
 					}
 					SchemaContainer schema = trh.result();
-					// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+					try {
+						rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+					} catch (Exception e) {
+						rc.fail(e);
+					}
 				});
 
 		});
@@ -199,13 +215,23 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", DELETE_PERM, SchemaContainer.class, (AsyncResult<SchemaContainer> srh) -> {
+			Future<String> future = Future.future();
+			rcs.loadObject(rc, "uuid", DELETE_PERM, SchemaContainerImpl.class, (AsyncResult<SchemaContainer> srh) -> {
 				SchemaContainer schema = srh.result();
+				String schemaName = schema.getSchemaName();
 				schema.delete();
+				future.complete(schemaName);
 			}, trh -> {
-				SchemaContainer schema = trh.result();
-				// rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", schema.getName()))));
-				});
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				} else if (future.failed()) {
+					rc.fail(future.cause());
+					return;
+				} else {
+					rc.response().setStatusCode(200)
+							.end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "schema_deleted", future.result()))));
+				}
+			});
 		});
 
 	}
@@ -218,7 +244,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				rcs.loadObject(rc, "uuid", READ_PERM, SchemaContainer.class, (AsyncResult<SchemaContainer> srh) -> {
+				rcs.loadObject(rc, "uuid", READ_PERM, SchemaContainerImpl.class, (AsyncResult<SchemaContainer> srh) -> {
 				}, trh -> {
 					if (trh.failed()) {
 						rc.fail(trh.cause());
@@ -243,21 +269,21 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				try {
 					schemaPage = boot.schemaContainerRoot().findAll(requestUser, pagingInfo);
 					for (SchemaContainer schema : schemaPage) {
-						// listResponse.getData().add(schema.transformToRest(requestUser));
+						listResponse.getData().add(schema.transformToRest(requestUser));
+					}
+					RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
+					bch.complete(listResponse);
+				} catch (Exception e) {
+					bch.fail(e);
 				}
-				RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
-				bch.complete(listResponse);
-			} catch (Exception e) {
-				bch.fail(e);
-			}
 
-		}, rh -> {
-			if (rh.failed()) {
-				rc.fail(rh.cause());
-			}
-			SchemaListResponse listResponse = rh.result();
-			rc.response().setStatusCode(200).end(toJson(listResponse));
-		}	);
+			}, rh -> {
+				if (rh.failed()) {
+					rc.fail(rh.cause());
+				}
+				SchemaListResponse listResponse = rh.result();
+				rc.response().setStatusCode(200).end(toJson(listResponse));
+			});
 
 		});
 

@@ -345,8 +345,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaListResponse> findSchemas(PagingInfo pagingInfo) {
-		return handleRequest(GET, "/schemas", SchemaListResponse.class);
+	public Future<SchemaListResponse> findSchemas(QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/schemas" + getQuery(parameters), SchemaListResponse.class);
 	}
 
 	@Override
