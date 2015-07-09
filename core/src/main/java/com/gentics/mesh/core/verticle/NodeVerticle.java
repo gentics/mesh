@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.verticle.handler.NodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -238,7 +239,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 									} else {
 										NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 										try {
-											container.setFieldFromRest(requestModel.getFields(), schema);
+											container.setFieldFromRest(rc, requestModel.getFields(), schema);
 										} catch (Exception e) {
 											contentCreated.fail(e);
 											return;
@@ -367,58 +368,52 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, READ_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
-				Node content = rh.result();
-
-				try {
-					NodeUpdateRequest request = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);
-					// Iterate through all properties and update the changed
-					// ones
-					// for (String languageTag : request.getProperties().keySet()) {
-					// Language language = languageRoot.findByLanguageTag(languageTag);
-					// if (language != null) {
-					// languageTags.add(languageTag);
-					// Map<String, String> properties = request.getProperties();
-					// if (properties != null) {
-					// I18NProperties i18nProperties = content.getI18nProperties(language);
-					// for (Map.Entry<String, String> set : properties.entrySet()) {
-					// String key = set.getKey();
-					// String value = set.getValue();
-					// String i18nValue = i18nProperties.getProperty(key);
-					// /*
-					// * Tag does not have the value so lets create it
-					// */
-					// if (i18nValue == null) {
-					// i18nProperties.setProperty(key, value);
-					// } else {
-					// /*
-					// * Lets compare and update if the value has changed
-					// */
-					// if (!value.equals(i18nValue)) {
-					// i18nProperties.setProperty(key, value);
-					// }
-					// }
-					// }
-					//
-					// }
-					// } else {
-					// rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", languageTag)));
-					// return;
-					// }
-					//
-					// }
-				} catch (IOException e) {
-					rc.fail(e);
+			NodeUpdateRequest requestModel;
+			try {
+				requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);
+				if(StringUtils.isEmpty(requestModel.getLanguage())) {
+					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_set")));
 					return;
 				}
+			} catch (Exception e1) {
+				rc.fail(e1);
+				return;
+			}
 
+			
+			rcs.loadObject(rc, "uuid", projectName, READ_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
+
+				Node node = rh.result();
+				try {
+					Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+					if (language == null) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
+						return;
+					}
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+						Schema schema = node.getSchema();
+						try {
+							container.setFieldFromRest(rc, requestModel.getFields(), schema);
+						} catch (MeshSchemaException e) {
+							tx.failure();
+							/* TODO i18n */
+							throw new HttpStatusCodeErrorException(400, e.getMessage());
+						}
+						tx.success();
+					}
+
+				} catch (IOException e) {
+					rc.fail(e);
+				}
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
+				} else {
+					Node node = trh.result();
+					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
+					rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
 				}
-				Node node = trh.result();
-				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-				rc.response().setStatusCode(200).end(toJson(node.transformToRest(info)));
 			});
 
 		});

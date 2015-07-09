@@ -2,8 +2,8 @@ package com.gentics.mesh.core.rest.node.field;
 
 public interface StringField extends ListableField, MicroschemaListableField {
 
-	String getText();
+	String getString();
 
-	void setText(String text);
+	void setString(String string);
 
 }

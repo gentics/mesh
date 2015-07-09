@@ -5,15 +5,15 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.MicroschemaListableField;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaListableFieldSchema;
 
 public class MicroschemaFieldSchemaImpl extends AbstractFieldSchema implements MicroschemaFieldSchema {
 
 	@JsonProperty("allow")
 	private String[] allowedMicroSchemas;
 
-	private List<MicroschemaListableFieldSchema> defaultValues = new ArrayList<>();
+	private List<? extends MicroschemaListableField> defaultValues = new ArrayList<>();
 
 	@Override
 	public String[] getAllowedMicroSchemas() {
@@ -31,7 +31,7 @@ public class MicroschemaFieldSchemaImpl extends AbstractFieldSchema implements M
 	}
 
 	@Override
-	public List<MicroschemaListableFieldSchema> getFields() {
+	public List<? extends MicroschemaListableField> getFields() {
 		return defaultValues;
 	}
 

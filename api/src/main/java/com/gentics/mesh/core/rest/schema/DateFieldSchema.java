@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.core.rest.node.field.DateField;
 
-public interface DateFieldSchema extends DateField, MicroschemaListableFieldSchema {
+public interface DateFieldSchema extends MicroschemaListableFieldSchema {
 
+	void setDate(String date);
+
+	String getDate();
 }

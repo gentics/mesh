@@ -39,25 +39,4 @@ public class GenericFieldContainerNode extends AbstractGenericNode {
 		return container;
 	}
 
-	// public void addI18nProperties(I18NFieldContainer properties) {
-	// linkOut(properties, HAS_I18N_PROPERTIES);
-	// Translated edge = addFramedEdge(HAS_I18N_PROPERTIES, properties, Translated.class);
-	// edge.setLanguageTag(properties.getLanguage().getLanguageTag());
-	// }
-	//
-
-	// public void setI18NProperty(Language language, String name, String value) {
-	// I18NFieldContainer properties = getOrCreateI18nProperties(language);
-	// properties.setProperty(name, value);
-	// }
-
-	// public String getI18nProperty(Language language, String key) {
-	// I18NFieldContainer properties = getI18nProperties(language);
-	// if (properties == null) {
-	// return null;
-	// } else {
-	// return properties.getProperty(key);
-	// }
-	// }
-
 }

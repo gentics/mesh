@@ -333,7 +333,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(node, restNode);
 
-		String nameText = ((StringFieldImpl) restNode.getFields().get("name")).getText();
+		String nameText = ((StringFieldImpl) restNode.getFields().get("name")).getString();
 		assertEquals("Produkte", nameText);
 	}
 
@@ -387,29 +387,35 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
+		Node node = data().getFolder("2015");
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("content");
-		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
+		schemaReference.setName("folder");
+		schemaReference.setUuid(data().getSchemaContainer("folder").getUuid());
 		request.setSchema(schemaReference);
-		final String newFilename = "new-name.html";
-		final String newName = "english renamed name";
-		final String newContent = "english renamed content!";
+		request.setLanguage("en");
 
+		assertEquals("2015", node.getFieldContainer(data().getEnglish()).getString("name").getString());
+
+		final String newName = "english renamed name";
 		request.getFields().put("name", FieldUtil.createStringField(newName));
-		request.getFields().put("filename", FieldUtil.createStringField(newFilename));
-		request.getFields().put("content", FieldUtil.createStringField(newContent));
+		//		final String newFilename = "new-name.html";
+		//		request.getFields().put("filename", FieldUtil.createStringField(newFilename));
+		//		final String newContent = "english renamed content!";
+		//		request.getFields().put("content", FieldUtil.createStringField(newContent));
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de", "en");
-		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, data().getFolder("2015").getUuid(), request, parameters);
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
-		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
-		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getText());
-		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
+		//		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
+		assertEquals(newName, node.getFieldContainer(data().getEnglish()).getString("name").getString());
+		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getString());
+
+		//		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
 	}
 
 	@Test
@@ -485,8 +491,8 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		NodeResponse restNode = future.result();
 
-		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
-		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getText());
+		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getString());
+		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getString());
 		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
 
 		// TODO Reload and update

@@ -84,7 +84,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 			break;
 		case STRING:
 			StringField stringField = new StringFieldImpl();
-			stringField.setText(jsonNode.textValue());
+			stringField.setString(jsonNode.textValue());
 			map.put(fieldKey, stringField);
 			break;
 		case NUMBER:

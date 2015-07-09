@@ -72,7 +72,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 					// ignored
 				}
 
-				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));
+				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage() , responseMessage));
 			});
 		}
 		if (handler != null) {

@@ -442,25 +442,25 @@ public class BootstrapInitializer {
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("name");
 			nameFieldSchema.setLabel("Name");
-			nameFieldSchema.setText("Enter the name here");
+			nameFieldSchema.setString("Enter the name here");
 			schema.addField("name", nameFieldSchema);
 
 			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
 			filenameFieldSchema.setName("filename");
 			filenameFieldSchema.setLabel("Filename");
-			filenameFieldSchema.setText("Enter the filename here");
+			filenameFieldSchema.setString("Enter the filename here");
 			schema.addField("filename", filenameFieldSchema);
 
 			StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 			titleFieldSchema.setName("title");
 			titleFieldSchema.setLabel("Title");
-			titleFieldSchema.setText("Enter the title here");
+			titleFieldSchema.setString("Enter the title here");
 			schema.addField("title", titleFieldSchema);
 
 			HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
 			titleFieldSchema.setName("content");
 			titleFieldSchema.setLabel("Content");
-			titleFieldSchema.setText("Enter your text here");
+			titleFieldSchema.setString("Enter your text here");
 			schema.addField("content", contentFieldSchema);
 
 			schema.setBinary(false);

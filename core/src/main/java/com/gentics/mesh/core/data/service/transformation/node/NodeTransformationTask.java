@@ -122,6 +122,7 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 					restNode.setContainer(true);
 					restNode.setChildren(children);
 				}
+				//TODO set language and all languages
 
 				NodeFieldContainer fieldContainer = null;
 				for (String languageTag : info.getLanguageTags()) {

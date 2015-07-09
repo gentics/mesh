@@ -5,16 +5,16 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 
 public class StringFieldImpl implements StringField {
 
-	private String text;
+	private String string;
 
 	@Override
-	public String getText() {
-		return text;
+	public String getString() {
+		return string;
 	}
 
 	@Override
-	public void setText(String text) {
-		this.text = text;
+	public void setString(String text) {
+		this.string = text;
 	}
 
 	@Override

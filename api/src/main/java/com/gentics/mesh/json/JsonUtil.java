@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -65,7 +66,7 @@ public final class JsonUtil {
 		// module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
 		module.addDeserializer(Map.class, new FieldMapDeserializer());
 		//		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
-		// module.addSerializer(Field.class, new FieldSerializer<Field>());
+
 
 		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;
@@ -83,8 +84,10 @@ public final class JsonUtil {
 		defaultMapper = new ObjectMapper();
 		defaultMapper.setSerializationInclusion(Include.NON_NULL);
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+		
 		SimpleModule module = new SimpleModule();
+		
+		module.addSerializer(Field.class, new FieldSerializer<Field>());
 		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, valuesMap, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class, new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, valuesMap,
 				NodeCreateRequest.class));
@@ -109,6 +112,7 @@ public final class JsonUtil {
 
 	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage) throws IOException, JsonParseException,
 			JsonMappingException {
+		System.out.println(json);
 		valuesMap.put("schema_storage", schemaStorage);
 		return defaultMapper.reader(getInjectableValues()).forType(valueType).readValue(json);
 	}

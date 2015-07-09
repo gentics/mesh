@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -51,7 +52,7 @@ public class RestModelTest extends AbstractDBTest {
 		schemaStorage.addSchema(getDummySchema());
 		NodeResponse response = new NodeResponse();
 		StringField stringField = new StringFieldImpl();
-		stringField.setText("some text");
+		stringField.setString("some text");
 		response.getFields().put("name", stringField);
 		response.setSchema(new SchemaReference("content", UUIDUtil.randomUUID()));
 		String json = JsonUtil.toJson(response);
@@ -71,13 +72,13 @@ public class RestModelTest extends AbstractDBTest {
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
 		titleFieldSchema.setLabel("Title");
-		titleFieldSchema.setText("Enter the title here");
+		titleFieldSchema.setString("Enter the title here");
 		schema.addField("title", titleFieldSchema);
 
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
 		nameFieldSchema.setLabel("Name");
-		nameFieldSchema.setText("Enter the name here");
+		nameFieldSchema.setString("Enter the name here");
 		schema.addField("name", nameFieldSchema);
 
 		schema.setBinary(false);
@@ -99,11 +100,11 @@ public class RestModelTest extends AbstractDBTest {
 		request.setParentNodeUuid(UUIDUtil.randomUUID());
 
 		StringField stringField = new StringFieldImpl();
-		stringField.setText("some text");
+		stringField.setString("some text");
 		request.getFields().put("name", stringField);
 
 		StringField titleField = new StringFieldImpl();
-		titleField.setText("The awesome title");
+		titleField.setString("The awesome title");
 		request.getFields().put("title", titleField);
 
 		// Serialize the NodeCreateRequest
@@ -122,6 +123,7 @@ public class RestModelTest extends AbstractDBTest {
 		Map<String, Field> fields = loadedRequest.getFields();
 		assertNotNull(fields);
 		assertNotNull(fields.get("name"));
+		assertNotNull(((StringField)fields.get("name")).getString());
 		assertEquals(StringFieldImpl.class.getName(), fields.get("name").getClass().getName());
 
 	}
@@ -153,6 +155,7 @@ public class RestModelTest extends AbstractDBTest {
 		NodeListResponse deserializedList = JsonUtil.readNode(json, NodeListResponse.class, storage);
 		assertNotNull(deserializedList);
 	}
+	
 
 	@Test
 	public void testSchema() throws JsonParseException, JsonMappingException, IOException {

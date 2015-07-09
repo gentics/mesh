@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import io.vertx.ext.web.RoutingContext;
+
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -12,7 +14,9 @@ import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaField;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -52,7 +56,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 	}
 
 	@Override
-	public void setFieldFromRest(Map<String, Field> fields, Schema schema) throws MeshSchemaException {
+	public void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException {
 
 		for (Entry<String, ? extends FieldSchema> entry : schema.getFields().entrySet()) {
 			String key = entry.getKey();
@@ -70,7 +74,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				break;
 			case STRING:
 				StringField stringField = (StringFieldImpl) field;
-				createString(key).setString(stringField.getText());
+				createString(key).setString(stringField.getString());
 				break;
 			case NUMBER:
 				NumberField numberField = (NumberFieldImpl) field;
@@ -112,7 +116,8 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			extraFields += "[" + key + "]";
 		}
 		if (!StringUtils.isEmpty(extraFields)) {
-			throw new MeshSchemaException("The following fields were not specified within the {" + schema.getName() + "} schema: " + extraFields);
+			throw new HttpStatusCodeErrorException(400, I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
+			//throw new MeshSchemaException("The following fields were not specified within the {" + schema.getName() + "} schema: " + extraFields);
 		}
 	}
 
@@ -127,11 +132,12 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		if (FieldTypes.STRING.equals(type)) {
 			StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
+			//TODO validate found fields has same type as schema 
 			com.gentics.mesh.core.data.node.field.basic.StringField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl(
 					fieldKey, this);
 			StringFieldImpl stringField = new StringFieldImpl();
 			String text = graphStringField.getString();
-			stringField.setText(text == null ? "" : text);
+			stringField.setString(text == null ? "" : text);
 			return stringField;
 		}
 

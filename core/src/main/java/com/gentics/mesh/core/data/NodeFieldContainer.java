@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import io.vertx.ext.web.RoutingContext;
+
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -11,5 +13,5 @@ public interface NodeFieldContainer extends FieldContainer, MicroschemaFieldCont
 
 	Field getRestField(String fieldKey, FieldSchema fieldSchema);
 
-	void setFieldFromRest(Map<String, Field> fields, Schema schema) throws MeshSchemaException;
+	void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
 }

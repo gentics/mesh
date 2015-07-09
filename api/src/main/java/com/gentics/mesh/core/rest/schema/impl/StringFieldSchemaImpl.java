@@ -8,12 +8,12 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 	String defaultValue;
 
 	@Override
-	public String getText() {
+	public String getString() {
 		return defaultValue;
 	}
 
 	@Override
-	public void setText(String text) {
+	public void setString(String text) {
 		this.defaultValue = text;
 	}
 	

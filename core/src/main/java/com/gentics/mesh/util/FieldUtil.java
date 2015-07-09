@@ -9,13 +9,13 @@ public final class FieldUtil {
 
 	public static StringFieldSchema createStringFieldSchema(String defaultString) {
 		StringFieldSchema fieldSchema = new StringFieldSchemaImpl();
-		fieldSchema.setText(defaultString);
+		fieldSchema.setString(defaultString);
 		return fieldSchema;
 	}
 
 	public static StringField createStringField(String string) {
 		StringField field = new StringFieldImpl();
-		field.setText(string);
+		field.setString(string);
 		return field;
 	}
 

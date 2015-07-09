@@ -34,7 +34,8 @@ public class FieldSerializer<T extends Field> extends JsonSerializer<T> {
 	public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
 
 		if (value instanceof FieldSchema) {
-			gen.writeObject(value);
+			//gen.writeObject(value);
+			return;
 		} else {
 			FieldTypes type = FieldTypes.valueByName(value.getType());
 			switch (type) {
@@ -44,7 +45,7 @@ public class FieldSerializer<T extends Field> extends JsonSerializer<T> {
 				break;
 			case STRING:
 				StringField stringField = (StringFieldImpl) value;
-				gen.writeString(stringField.getText());
+				gen.writeString(stringField.getString());
 				break;
 			case NUMBER:
 				NumberField numberField = (NumberFieldImpl) value;

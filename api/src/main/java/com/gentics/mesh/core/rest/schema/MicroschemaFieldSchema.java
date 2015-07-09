@@ -1,12 +1,15 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.core.rest.node.field.MicroschemaField;
+import java.util.List;
 
-public interface MicroschemaFieldSchema extends MicroschemaField, FieldSchema {
+import com.gentics.mesh.core.rest.node.field.MicroschemaListableField;
+
+public interface MicroschemaFieldSchema extends FieldSchema {
 
 	String[] getAllowedMicroSchemas();
 
 	void setAllowedMicroSchemas(String[] allowedMicroSchemas);
 
+	List<? extends MicroschemaListableField> getFields();
 
 }

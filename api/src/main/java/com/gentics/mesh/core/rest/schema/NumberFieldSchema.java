@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.core.rest.node.field.NumberField;
 
-public interface NumberFieldSchema extends NumberField, MicroschemaListableFieldSchema {
+public interface NumberFieldSchema extends MicroschemaListableFieldSchema {
+
+	String getNumber();
+
+	void setNumber(String number);
 
 	void setStep(Float step);
 
