@@ -73,17 +73,10 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 	 */
 	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 
-		// @Query(value =
-		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return user ORDER BY user.username",
-		// countQuery =
-		// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(user:User) MATCH (user)-[:MEMBER_OF]-(group:Group) where id(group) = {1} AND requestUser.uuid = {0} and perm.`permissions-read` = true return count(user)")
-		// Page<User> findByGroup(String userUuid, Group group, Pageable pageable);
-		// return findByGroup(userUuid, group, new MeshPageRequest(pagingInfo));
-
-		// VertexTraversal traversal = requestUser.in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.getLabel()).has(MeshUser.class);
-		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label()).has(UserImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().in(HAS_USER).out(HAS_ROLE).out(Permission.READ_PERM.label())
-				.has(UserImpl.class);
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(Permission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back().has(UserImpl.class);
+		VertexTraversal<?, ?, ?> countTraversal = in(HAS_USER).mark().in(Permission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back().has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, UserImpl.class);
 	}
 

@@ -42,15 +42,17 @@ public class ListFieldImpl<T extends ListableField> extends AbstractComplexField
 	@Override
 	public List<? extends T> getList() {
 		Class<?> type = getListType();
-		System.out.println(type.getName());
+		if (type == null) {
+			throw new RuntimeException("Invalid type detected. List type was not set");
+		}
 		if (type.isAssignableFrom(NestingField.class)) {
 			return (List<? extends T>) out(HAS_FIELD).toListExplicit(type);
-		} else if(type.isAssignableFrom(NodeFieldImpl.class)) {
+		} else if (type.isAssignableFrom(NodeFieldImpl.class)) {
 			return (List<? extends T>) outE(HAS_FIELD).toListExplicit(type);
-		} else if(BasicField.class.isAssignableFrom(type)) {
+		} else if (BasicField.class.isAssignableFrom(type)) {
 			List<? extends T> list = new ArrayList<>();
-			for(String key : getPropertyKeys()) {
-				System.out.println("Values: "  + key + " " + getProperty(key));
+			for (String key : getPropertyKeys()) {
+				System.out.println("Values: " + key + " " + getProperty(key));
 			}
 			return list;
 		} else {

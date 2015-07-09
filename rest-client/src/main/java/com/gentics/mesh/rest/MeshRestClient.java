@@ -196,8 +196,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<GroupListResponse> findGroups(PagingInfo pagingInfo) {
-		return handleRequest(GET, "/groups", GroupListResponse.class);
+	public Future<GroupListResponse> findGroups(QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/groups" + getQuery(parameters), GroupListResponse.class);
 	}
 
 	@Override

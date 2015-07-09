@@ -136,7 +136,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		int totalGroups = nGroups + data().getGroups().size();
 
 		// Test default paging parameters
-		Future<GroupListResponse> future = getClient().findGroups(new PagingInfo());
+		Future<GroupListResponse> future = getClient().findGroups();
 		latchFor(future);
 		assertSuccess(future);
 		GroupListResponse restResponse = future.result();
@@ -159,7 +159,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
 				totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		assertEquals(totalGroups + 1, restResponse.getMetainfo().getTotalCount());
+		assertEquals(totalGroups, restResponse.getMetainfo().getTotalCount());
 
 		List<GroupResponse> allGroups = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
@@ -169,7 +169,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			restResponse = pageFuture.result();
 			allGroups.addAll(restResponse.getData());
 		}
-		assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups + 1, allGroups.size());
+		assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups, allGroups.size());
 
 		// Verify that extra group is not part of the response
 		final String extraGroupName = extraGroupWithNoPerm.getName();
@@ -191,10 +191,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		future = getClient().findGroups(new PagingInfo(4242, 1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		assertSuccess(future);
 
 		String response = JsonUtil.toJson(future.result());
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":2,\"total_count\":36}}";
+		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":1,\"page_count\":36,\"total_count\":36}}";
 		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
 	}
 
@@ -207,7 +207,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		test.assertGroup(group, future.result());
-
 	}
 
 	@Test

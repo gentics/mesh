@@ -2,15 +2,17 @@ package com.gentics.mesh.core.field;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
+import com.gentics.mesh.core.data.node.field.impl.basic.BooleanFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.nesting.NodeFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.ListField;
@@ -37,12 +39,10 @@ public class ListFieldTest extends AbstractDBTest {
 		ListField<StringField> loadedList = container.getList("dummyList");
 		assertNotNull(loadedList);
 		assertEquals(2, loadedList.getList().size());
-
 	}
 
 	@Test
 	public void testNodeList() {
-
 		Node node = fg.addFramedVertex(NodeImpl.class);
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 		ListField<NodeField> list = container.createList("dummyList");
@@ -62,12 +62,23 @@ public class ListFieldTest extends AbstractDBTest {
 		ListField<NumberField> list = container.createList("dummyList");
 		list.createNumber("1");
 		assertEquals(1, list.getList().size());
+	}
+
+	@Test
+	@Ignore("Not yet implemented")
+	public void testMixedList() {
 
 	}
 
 	@Test
 	public void testBooleanList() {
-		fail("Not yet implemented");
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
+		ListField<BooleanField> list = container.createList("dummyList");
+		list.setListType(BooleanFieldImpl.class);
+		list.createBoolean("A");
+		list.createBoolean("B");
+		list.createBoolean("C");
+		assertEquals(3, list.getList().size());
 	}
 
 }

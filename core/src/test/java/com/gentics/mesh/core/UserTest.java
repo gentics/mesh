@@ -132,7 +132,10 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testCreateDelete() {
 		MeshRoot root = getMeshRoot();
 		User user = root.getUserRoot().create("Anton");
+		assertNotNull(user);
+		String uuid = user.getUuid();
 		user.delete();
+		assertNull(root.getUserRoot().findByUUID(uuid));
 	}
 
 	@Test
