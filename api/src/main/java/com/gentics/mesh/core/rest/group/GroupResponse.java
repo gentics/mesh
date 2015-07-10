@@ -3,15 +3,13 @@ package com.gentics.mesh.core.rest.group;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 
-public class GroupResponse extends AbstractRestModel {
+public class GroupResponse extends AbstractGenericNodeRestModel {
 
 	private String name;
 
 	private List<String> roles = new ArrayList<>();
-
-	private String[] permissions = {};
 
 	public GroupResponse() {
 	}
@@ -30,14 +28,6 @@ public class GroupResponse extends AbstractRestModel {
 
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
-	}
-
-	public String[] getPermissions() {
-		return permissions;
-	}
-
-	public void setPermissions(String... permissions) {
-		this.permissions = permissions;
 	}
 
 }

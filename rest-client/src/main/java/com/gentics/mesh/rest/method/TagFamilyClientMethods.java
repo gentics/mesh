@@ -4,6 +4,7 @@ import io.vertx.core.Future;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -20,5 +21,7 @@ public interface TagFamilyClientMethods {
 	Future<GenericMessageResponse> deleteTagFamily(String projectName, String uuid);
 	
 	Future<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest tagFamilyUpdateRequest);
+
+	Future<TagFamilyListResponse> findTagFamilies(String projectName, QueryParameterProvider... parameters);
 
 }

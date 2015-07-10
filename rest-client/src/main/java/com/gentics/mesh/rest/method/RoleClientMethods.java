@@ -18,5 +18,5 @@ public interface RoleClientMethods {
 
 	Future<GenericMessageResponse> deleteRole(String uuid);
 
-	Future<RoleListResponse> findRolesForGroup(String groupUuid);
+	Future<RoleListResponse> findRolesForGroup(String groupUuid, QueryParameterProvider... parameter);
 }

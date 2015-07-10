@@ -74,10 +74,10 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	public void testFindByUUID() {
 		Language language = languageRoot.findByName("German");
 
-		Language foundLanguage = languageRoot.findByUUID(language.getUuid());
+		Language foundLanguage = languageRoot.findByUuid(language.getUuid());
 		assertNotNull(foundLanguage);
 
-		foundLanguage = languageRoot.findByUUID("bogus");
+		foundLanguage = languageRoot.findByUuid("bogus");
 		assertNull(foundLanguage);
 
 	}

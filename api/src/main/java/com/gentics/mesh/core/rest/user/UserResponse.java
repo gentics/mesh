@@ -3,9 +3,9 @@ package com.gentics.mesh.core.rest.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 
-public class UserResponse extends AbstractRestModel {
+public class UserResponse extends AbstractGenericNodeRestModel {
 
 	private String lastname;
 
@@ -16,8 +16,6 @@ public class UserResponse extends AbstractRestModel {
 	private String emailAddress;
 
 	private List<String> groups = new ArrayList<>();
-
-	private String[] permissions = {};
 
 	public UserResponse() {
 	}
@@ -64,14 +62,6 @@ public class UserResponse extends AbstractRestModel {
 
 	public void addGroup(String name) {
 		this.groups.add(name);
-	}
-
-	public String[] getPermissions() {
-		return permissions;
-	}
-
-	public void setPermissions(String... permissions) {
-		this.permissions = permissions;
 	}
 
 }

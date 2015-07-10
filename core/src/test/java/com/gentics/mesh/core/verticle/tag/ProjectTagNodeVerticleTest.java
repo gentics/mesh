@@ -6,13 +6,13 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
-import com.gentics.mesh.core.verticle.TagVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class TagNodeVerticleTest extends AbstractRestVerticleTest {
+public class ProjectTagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private TagVerticle tagVerticle;
+	private ProjectTagVerticle tagVerticle;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {

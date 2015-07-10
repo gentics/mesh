@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
@@ -24,11 +24,11 @@ import com.gentics.mesh.util.RoutingContextHelper;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class BinaryVerticle extends AbstractProjectRestVerticle {
+public class ProjectBinaryVerticle extends AbstractProjectRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(BinaryVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectBinaryVerticle.class);
 
-	public BinaryVerticle() {
+	public ProjectBinaryVerticle() {
 		super("binaries");
 	}
 

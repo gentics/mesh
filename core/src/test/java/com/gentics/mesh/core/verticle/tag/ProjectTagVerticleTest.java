@@ -27,14 +27,14 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.verticle.TagVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
-public class TagVerticleTest extends AbstractRestVerticleTest {
+public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private TagVerticle tagVerticle;
+	private ProjectTagVerticle tagVerticle;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {
@@ -52,7 +52,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters
-		Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, new PagingInfo());
+		Future<TagListResponse> future = getClient().findTags(PROJECT_NAME);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -217,7 +217,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNull("The tag should have been deleted", boot.tagRoot().findByUUID(uuid));
+			assertNull("The tag should have been deleted", boot.tagRoot().findByUuid(uuid));
 		}
 	}
 
@@ -230,7 +230,7 @@ public class TagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", tag.getUuid());
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNotNull("The tag should not have been deleted", boot.tagRoot().findByUUID(tag.getUuid()));
+			assertNotNull("The tag should not have been deleted", boot.tagRoot().findByUuid(tag.getUuid()));
 		}
 	}
 

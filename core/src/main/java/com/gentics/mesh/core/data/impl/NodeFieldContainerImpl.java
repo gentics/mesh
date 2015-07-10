@@ -90,7 +90,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				break;
 			case NODE:
 				NodeField nodeField = (NodeFieldImpl) field;
-				Node node = BootstrapInitializer.getBoot().nodeRoot().findByUUID(nodeField.getUuid());
+				Node node = BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid());
 				//TODO check node permissions
 				createNode(key, node);
 				break;

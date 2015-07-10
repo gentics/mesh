@@ -13,13 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractRestVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.verticle.BinaryVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectBinaryVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class BinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private BinaryVerticle verticle;
+	private ProjectBinaryVerticle verticle;
 
 	@Override
 	public AbstractRestVerticle getVerticle() {

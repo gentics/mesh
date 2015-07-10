@@ -91,7 +91,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() {
 		String uuid = getSchemaContainer().getUuid();
-		assertNotNull(schemaContainerRoot.findByUUID(uuid));
+		assertNotNull(schemaContainerRoot.findByUuid(uuid));
 	}
 
 	@Test
@@ -99,7 +99,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		String uuid = getSchemaContainer().getUuid();
 		getSchemaContainer().delete();
-		assertNull(schemaContainerRoot.findByUUID(uuid));
+		assertNull(schemaContainerRoot.findByUuid(uuid));
 	}
 
 	@Test
@@ -121,7 +121,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
 		newContainer.delete();
-		assertNull(schemaContainerRoot.findByUUID(uuid));
+		assertNull(schemaContainerRoot.findByUuid(uuid));
 	}
 
 	@Test

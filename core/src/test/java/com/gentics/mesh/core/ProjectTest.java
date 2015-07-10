@@ -53,7 +53,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 			project.delete();
 			tx.success();
 		}
-		assertNull(projectRoot.findByUUID(uuid));
+		assertNull(projectRoot.findByUuid(uuid));
 		// TODO assert on tag families of the project
 	}
 
@@ -92,8 +92,8 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		assertNotNull(projectRoot.findByUUID(data().getProject().getUuid()));
-		assertNull(projectRoot.findByUUID("bogus"));
+		assertNotNull(projectRoot.findByUuid(data().getProject().getUuid()));
+		assertNull(projectRoot.findByUuid("bogus"));
 	}
 
 	@Test
@@ -112,10 +112,10 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = getMeshRoot().getProjectRoot().create("newProject");
 		assertNotNull(project);
 		String uuid = project.getUuid();
-		assertNotNull(getMeshRoot().getProjectRoot().findByUUID(uuid));
+		assertNotNull(getMeshRoot().getProjectRoot().findByUuid(uuid));
 		project.delete();
 		//TODO check for attached nodes
-		assertNull(getMeshRoot().getProjectRoot().findByUUID(uuid));
+		assertNull(getMeshRoot().getProjectRoot().findByUuid(uuid));
 	}
 
 	@Test

@@ -56,26 +56,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
-		addLanguagesHandler();
 	}
 
-	private void addLanguagesHandler() {
-		// TODO Add method that allows assigning languages from and to the project
-		Route createRoute = route("/:projectUuid/languages").method(POST).produces(APPLICATION_JSON);
-		createRoute.handler(rc -> {
-
-		});
-
-		Route deleteRoute = route("/:projectUuid/languages").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> {
-
-		});
-
-		Route getRoute = route("/:projectUuid/languages").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
-
-		});
-	}
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);

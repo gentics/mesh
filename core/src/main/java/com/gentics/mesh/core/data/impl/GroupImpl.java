@@ -58,14 +58,11 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 
 	// TODO add java handler
 	public boolean hasRole(Role role) {
-		// TODO this is not optimal - research a better way
-		return in(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class).contains(role);
+		return in(HAS_ROLE).retain(role.getImpl()).hasNext();
 	}
 
-	// TODO add java handler
 	public boolean hasUser(User user) {
-		// TODO this is not optimal - research a better way
-		return in(HAS_USER).toList(RoleImpl.class).contains(user);
+		return in(HAS_USER).retain(user.getImpl()).hasNext();
 	}
 
 	/**
@@ -90,18 +87,16 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 
 	}
 
-	// TODO handle depth
-	public GroupResponse transformToRest(MeshAuthUser user) {
+	// TODO handle depth?
+	public GroupResponse transformToRest(MeshAuthUser requestUser) {
 		GroupResponse restGroup = new GroupResponse();
-		restGroup.setUuid(getUuid());
+		fillRest(restGroup, requestUser);
 		restGroup.setName(getName());
 
 		// for (User user : group.getUsers()) {
-		// user = neo4jTemplate.fetch(user);
 		// String name = user.getUsername();
 		// if (name != null) {
 		// restGroup.getUsers().add(name);
-		// }
 		// }
 		// Collections.sort(restGroup.getUsers());
 
@@ -112,8 +107,6 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 			}
 		}
 
-		restGroup.setPermissions(user.getPermissionNames(this));
-		
 		// // Set<Group> children = groupRepository.findChildren(group);
 		// Set<Group> children = group.getGroups();
 		// for (Group childGroup : children) {

@@ -5,27 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.UserResponse;
 
-public class NodeResponse extends AbstractRestModel {
+public class NodeResponse extends AbstractGenericNodeRestModel {
 
 	private boolean published;
 
 	private String language;
 	private List<String> availableLanguages;
-
-	private String[] permissions = {};
-
-	private UserResponse creator;
-	private long created;
-
-	private UserResponse editor;
-	private long edited;
 
 	private String path;
 
@@ -140,22 +131,6 @@ public class NodeResponse extends AbstractRestModel {
 		return fields;
 	}
 
-	public UserResponse getCreator() {
-		return creator;
-	}
-
-	public void setCreator(UserResponse author) {
-		this.creator = author;
-	}
-
-	public String[] getPermissions() {
-		return permissions;
-	}
-
-	public void setPermissions(String... permissions) {
-		this.permissions = permissions;
-	}
-
 	public String getLanguage() {
 		return language;
 	}
@@ -170,30 +145,6 @@ public class NodeResponse extends AbstractRestModel {
 
 	public void setAvailableLanguages(List<String> availableLanguages) {
 		this.availableLanguages = availableLanguages;
-	}
-
-	public long getCreated() {
-		return created;
-	}
-
-	public void setCreated(long created) {
-		this.created = created;
-	}
-
-	public UserResponse getEditor() {
-		return editor;
-	}
-
-	public void setEditor(UserResponse editor) {
-		this.editor = editor;
-	}
-
-	public long getEdited() {
-		return edited;
-	}
-
-	public void setEdited(long edited) {
-		this.edited = edited;
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
 public interface User extends GenericNode {
@@ -59,6 +60,8 @@ public interface User extends GenericNode {
 
 	void deactivate();
 
-	void addCRUDPermissionOnRole(MeshVertex node, Permission permission, GenericNode targetNode);
+	void addCRUDPermissionOnRole(MeshVertex node, Permission permission, MeshVertex targetNode);
+
+	UserReference transformToUserReference();
 
 }

@@ -20,14 +20,14 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.NodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 
 public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private NodeVerticle verticle;
+	private ProjectNodeVerticle verticle;
 
 	@Autowired
 	private DataHelper helper;

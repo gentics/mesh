@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
@@ -56,9 +56,9 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class TagVerticle extends AbstractProjectRestVerticle {
+public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(TagVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectTagVerticle.class);
 
 	@Autowired
 	private TagListHandler tagListHandler;
@@ -66,7 +66,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private NodeListHandler nodeListHandler;
 
-	public TagVerticle() {
+	public ProjectTagVerticle() {
 		super("tags");
 	}
 
@@ -181,16 +181,14 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 
-			List<String> languageTags = getSelectedLanguageTags(rc);
 			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
 				TagListResponse listResponse = new TagListResponse();
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				Page<? extends Tag> tagPage;
 				try {
-					tagPage = boot.tagRoot().findProjectTags(requestUser, projectName, languageTags, pagingInfo);
+					tagPage = boot.tagRoot().findProjectTags(requestUser, projectName, pagingInfo);
 					for (Tag tag : tagPage) {
-						TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-
+						TransformationInfo info = new TransformationInfo(requestUser, null, rc);
 						listResponse.getData().add(tag.transformToRest(info));
 					}
 					RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
@@ -217,21 +215,18 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, TagImpl.class, (AsyncResult<Tag> rh) -> {
-				Tag tag = rh.result();
-				//				DelegatingFramedThreadedTransactionalGraph dfttg = (DelegatingFramedThreadedTransactionalGraph)tag.getGraph();
-				//				dfttg.newTransaction();
-				//				tag = tagService.findByUUID(tag.getUuid());
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						tag.delete();
-						tx.success();
-					}
-				}, trh -> {
-					if (trh.failed()) {
-						rc.fail(trh.cause());
-					}
-					String uuid = rc.request().params().get("uuid");
-					rc.response().setStatusCode(200).end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
-				});
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					Tag tag = rh.result();
+					tag.delete();
+					tx.success();
+				}
+			}, trh -> {
+				if (trh.failed()) {
+					rc.fail(trh.cause());
+				}
+				String uuid = rc.request().params().get("uuid");
+				rc.response().setStatusCode(200).end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
+			});
 		});
 	}
 

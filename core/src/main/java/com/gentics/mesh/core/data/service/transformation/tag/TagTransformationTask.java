@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
 
@@ -66,7 +67,7 @@ public class TagTransformationTask extends RecursiveTask<Void> {
 
 				User creator = tag.getCreator();
 				if (creator != null) {
-					restTag.setCreator(creator.transformToRest(requestUser));
+					restTag.setCreator(creator.transformToUserReference());
 				}
 
 				restTag.getFields().setName(tag.getName());

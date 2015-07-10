@@ -43,7 +43,7 @@ public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVerte
 	}
 
 	@Override
-	public T findByUUID(String uuid) {
+	public T findByUuid(String uuid) {
 		return out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 

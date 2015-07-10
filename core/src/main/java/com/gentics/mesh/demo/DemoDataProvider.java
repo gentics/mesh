@@ -401,10 +401,13 @@ public class DemoDataProvider {
 		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic");
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
+		setCreatorEditor(basicTagFamily.getImpl());
 
 		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors");
-		basicTagFamily.setDescription("Description for color tag family");
+		colorTagFamily.setDescription("Description for color tag family");
+		setCreatorEditor(colorTagFamily.getImpl());
 		tagFamilies.put("colors", colorTagFamily);
+		
 	}
 
 	private void addSchemaContainers() {
@@ -680,6 +683,10 @@ public class DemoDataProvider {
 
 	public int getNodeCount() {
 		return folders.size() + contents.size() + root.getProjectRoot().findAll().size();
+	}
+
+	public Map<String, TagFamily> getTagFamilies() {
+		return tagFamilies;
 	}
 
 }

@@ -49,13 +49,14 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.AdminVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
-import com.gentics.mesh.core.verticle.NodeVerticle;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.core.verticle.RoleVerticle;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
-import com.gentics.mesh.core.verticle.TagVerticle;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -115,8 +116,9 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(GroupVerticle.class);
 		addMandatoryVerticle(RoleVerticle.class);
 
-		addMandatoryVerticle(TagVerticle.class);
-		addMandatoryVerticle(NodeVerticle.class);
+		addMandatoryVerticle(ProjectTagVerticle.class);
+		addMandatoryVerticle(ProjectNodeVerticle.class);
+		addMandatoryVerticle(ProjectTagFamilyVerticle.class);
 		addMandatoryVerticle(WebRootVerticle.class);
 
 		addMandatoryVerticle(ProjectVerticle.class);

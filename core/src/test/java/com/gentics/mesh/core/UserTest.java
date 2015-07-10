@@ -111,7 +111,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() {
 		String uuid = getUser().getUuid();
-		assertNotNull(boot.userRoot().findByUUID(uuid));
+		assertNotNull(boot.userRoot().findByUuid(uuid));
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		String uuid = user.getUuid();
 		user.delete();
-		assertNull(root.getUserRoot().findByUUID(uuid));
+		assertNull(root.getUserRoot().findByUuid(uuid));
 	}
 
 	@Test
@@ -183,7 +183,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		user.setPasswordHash(PASSWDHASH);
 		assertTrue(user.isEnabled());
 
-		User reloadedUser = userRoot.findByUUID(user.getUuid());
+		User reloadedUser = userRoot.findByUuid(user.getUuid());
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 		assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());

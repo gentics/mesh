@@ -145,7 +145,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() {
 		Node newsNode = data().getContent("news overview");
-		Node node = boot.nodeRoot().findByUUID(newsNode.getUuid());
+		Node node = boot.nodeRoot().findByUuid(newsNode.getUuid());
 		assertNotNull(node);
 		assertEquals(newsNode.getUuid(), node.getUuid());
 	}
@@ -238,10 +238,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		Node node = getContent();
 		String uuid = node.getUuid();
-		assertNotNull(getMeshRoot().getNodeRoot().findByUUID(uuid));
+		assertNotNull(getMeshRoot().getNodeRoot().findByUuid(uuid));
 		node.delete();
 		//TODO check for attached subnodes
-		assertNull(getMeshRoot().getNodeRoot().findByUUID(uuid));
+		assertNull(getMeshRoot().getNodeRoot().findByUuid(uuid));
 	}
 
 	@Test

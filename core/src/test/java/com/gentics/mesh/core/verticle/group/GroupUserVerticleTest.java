@@ -83,6 +83,7 @@ extends AbstractRestVerticleTest {
 		Group group = info.getGroup();
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		User extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
+		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
 
 		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
 		latchFor(future);
@@ -124,6 +125,7 @@ extends AbstractRestVerticleTest {
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
 		User user = info.getUser();
 		Group group = info.getGroup();
+		assertTrue("User should be a member of the group.", group.hasUser(user));
 
 		info.getRole().revokePermissions(group, UPDATE_PERM);
 		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());

@@ -5,7 +5,7 @@ import io.vertx.ext.web.Router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.verticle.NodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 
 /**
  * A mesh project rest verticle is a verticle that provides rest endpoints for all registered projects. The router for this verticle will automatically be
@@ -16,7 +16,7 @@ import com.gentics.mesh.core.verticle.NodeVerticle;
  */
 public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectNodeVerticle.class);
 
 	protected AbstractProjectRestVerticle(String basePath) {
 		super(basePath);

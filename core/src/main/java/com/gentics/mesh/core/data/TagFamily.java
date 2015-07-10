@@ -2,10 +2,13 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
+import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface TagFamily extends MeshVertex {
+public interface TagFamily extends GenericNode {
 
 	String getName();
 
@@ -23,7 +26,11 @@ public interface TagFamily extends MeshVertex {
 
 	List<? extends Tag> getTags();
 
-	TagFamilyImpl getImpl();
+	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 	TagFamilyResponse transformToRest(MeshAuthUser requestUser);
+
+	void delete();
+
+	TagFamilyImpl getImpl();
 }

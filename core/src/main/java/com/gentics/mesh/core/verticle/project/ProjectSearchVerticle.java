@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.verticle.project;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
@@ -9,9 +9,9 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class SearchVerticle extends AbstractProjectRestVerticle {
+public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 
-	public SearchVerticle() {
+	public ProjectSearchVerticle() {
 		super("search");
 	}
 

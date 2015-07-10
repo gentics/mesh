@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
@@ -62,7 +62,7 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class NodeVerticle extends AbstractProjectRestVerticle {
+public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 	// private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
 
@@ -78,7 +78,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private BootstrapInitializer boot;
 
-	public NodeVerticle() {
+	public ProjectNodeVerticle() {
 		super("nodes");
 	}
 

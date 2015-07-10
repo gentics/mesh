@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.tag;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 
-public class TagFamilyResponse extends AbstractRestModel {
+public class TagFamilyResponse extends AbstractGenericNodeRestModel {
 
 	private String name;
 

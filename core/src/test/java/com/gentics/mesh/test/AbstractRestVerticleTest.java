@@ -61,12 +61,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		port = com.gentics.mesh.test.TestUtil.getRandomPort();
 		vertx = springConfig.vertx();
 
-		client = new MeshRestClient("localhost", getPort());
-		client.setLogin(info.getUser().getUsername(), info.getPassword());
-		for (SchemaContainer container : data().getSchemaContainers().values()) {
-			getClient().getClientSchemaStorage().addSchema(container.getSchema());
-		}
-
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
 		AbstractRestVerticle verticle = getVerticle();
@@ -78,6 +72,11 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		verticle.init(vertx, context);
 		verticle.start();
 		verticle.registerEndPoints();
+		client = new MeshRestClient("localhost", getPort());
+		client.setLogin(info.getUser().getUsername(), info.getPassword());
+		for (SchemaContainer container : data().getSchemaContainers().values()) {
+			getClient().getClientSchemaStorage().addSchema(container.getSchema());
+		}
 
 	}
 

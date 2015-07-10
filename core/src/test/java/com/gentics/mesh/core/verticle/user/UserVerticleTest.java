@@ -236,7 +236,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-		User reloadedUser = boot.userRoot().findByUUID(user.getUuid());
+		User reloadedUser = boot.userRoot().findByUuid(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 	}
 
@@ -257,7 +257,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-		User reloadedUser = boot.userRoot().findByUUID(user.getUuid());
+		User reloadedUser = boot.userRoot().findByUuid(user.getUuid());
 		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 		assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -382,7 +382,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = future.result();
 		test.assertUser(newUser, restUser);
 
-		User user = boot.userRoot().findByUUID(restUser.getUuid());
+		User user = boot.userRoot().findByUuid(restUser.getUuid());
 		test.assertUser(user, restUser);
 
 	}
@@ -434,7 +434,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid);
-		User loadedUser = boot.userRoot().findByUUID(uuid);
+		User loadedUser = boot.userRoot().findByUuid(uuid);
 		assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
 		assertFalse(user.isEnabled());
 	}
@@ -457,7 +457,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		assertNotNull("The user should not have been deleted", userRoot.findByUUID(uuid));
+		assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid));
 	}
 
 	@Test
@@ -480,7 +480,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			assertNotNull(extraUser.getUuid());
 			tx.success();
 		}
-		User user = userRoot.findByUUID(uuid);
+		User user = userRoot.findByUuid(uuid);
 
 		assertEquals(1, user.getGroupCount());
 		assertEquals(1, user.getGroups().size());
@@ -490,7 +490,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid);
 		// Check whether the user was correctly disabled
-		user = userRoot.findByUUID(uuid);
+		user = userRoot.findByUuid(uuid);
 		assertNotNull(user);
 		assertEquals(0, user.getGroupCount());
 		assertEquals(0, user.getGroups().size());

@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.node.field.HTMLField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.NodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.FieldUtil;
@@ -47,7 +47,7 @@ import com.gentics.mesh.util.FieldUtil;
 public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private NodeVerticle verticle;
+	private ProjectNodeVerticle verticle;
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
@@ -138,7 +138,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		test.assertMeshNode(request, restNode);
 
-		Node node = nodeRoot.findByUUID(restNode.getUuid());
+		Node node = nodeRoot.findByUuid(restNode.getUuid());
 		assertNotNull(node);
 		test.assertMeshNode(request, node);
 
@@ -154,7 +154,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		latchFor(deleteFut);
 		assertSuccess(deleteFut);
 		expectMessageResponse("node_deleted", deleteFut, restNode.getUuid());
-		assertNull("The node should have been deleted.", data().getMeshRoot().getNodeRoot().findByUUID(restNode.getUuid()));
+		assertNull("The node should have been deleted.", data().getMeshRoot().getNodeRoot().findByUuid(restNode.getUuid()));
 
 	}
 
@@ -183,9 +183,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().revokePermissions(data().getFolder("news"), CREATE_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("content");
-		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
+		SchemaReference schemaReference = new SchemaReference("content", data().getSchemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
@@ -515,7 +513,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		expectMessageResponse("node_deleted", future, uuid);
-		assertNull(nodeRoot.findByUUID(uuid));
+		assertNull(nodeRoot.findByUuid(uuid));
 	}
 
 	@Test
@@ -532,6 +530,6 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		assertNotNull(nodeRoot.findByUUID(uuid));
+		assertNotNull(nodeRoot.findByUuid(uuid));
 	}
 }

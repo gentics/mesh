@@ -8,10 +8,6 @@ public interface GenericNode extends MeshVertex {
 
 	User getCreator();
 
-	void removeProject(Project project);
-
-	void addProject(Project project);
-
 	List<? extends Project> getProjects();
 
 	User getEditor();

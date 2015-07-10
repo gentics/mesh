@@ -7,13 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -26,6 +29,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -71,6 +75,7 @@ public class RestAssert {
 	}
 
 	public void assertTag(Tag tag, TagResponse restTag) {
+		assertGenericNode(tag, restTag);
 		//		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
 		assertEquals(tag.getUuid(), restTag.getUuid());
 		//		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
@@ -119,27 +124,34 @@ public class RestAssert {
 	}
 
 	public void assertMeshNode(Node node, NodeResponse readValue) {
-		assertNotNull(node);
-		assertNotNull(readValue);
-		assertEquals(node.getUuid(), readValue.getUuid());
-		assertNotNull(readValue.getPermissions());
-
+		assertGenericNode(node, readValue);
 		SchemaContainer schema = node.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getSchemaName(), readValue.getSchema().getName());
 		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
-		assertNotNull(readValue.getCreator());
 
 		// TODO match fields
 
 	}
 
+	public void assertGenericNode(GenericNode node, AbstractGenericNodeRestModel model) {
+		assertNotNull(node);
+		assertNotNull(model);
+		assertNotNull("UUID field was not set in the rest response.", model.getUuid());
+		assertEquals("The uuids should not be different", node.getUuid(), model.getUuid());
+		assertNotNull("Permissions field was not set in the rest response.", model.getPermissions());
+		assertNotNull("Creator field was not set in the rest response.", model.getCreator());
+		assertNotNull("Editor field was not set in the rest response.", model.getEditor());
+
+		assertEquals(node.getEditor().getUsername(), model.getEditor().getName());
+		assertEquals(node.getEditor().getUuid(), model.getEditor().getUuid());
+		assertEquals(node.getCreator().getUsername(), model.getCreator().getName());
+		assertEquals(node.getCreator().getUuid(), model.getCreator().getUuid());
+	}
+
 	public void assertRole(Role role, RoleResponse restRole) {
-		assertNotNull(role);
-		assertNotNull(restRole);
+		assertGenericNode(role, restRole);
 		assertEquals(role.getName(), restRole.getName());
-		assertEquals(role.getUuid(), restRole.getUuid());
-		assertNotNull(restRole.getPermissions());
 		assertNotNull(restRole.getGroups());
 	}
 
@@ -160,13 +172,9 @@ public class RestAssert {
 	}
 
 	public void assertProject(Project project, ProjectResponse restProject) {
-		assertNotNull(project);
-		assertNotNull(restProject);
-		assertNotNull(restProject.getUuid());
-		assertNotNull(restProject.getPermissions());
+		assertGenericNode(project, restProject);
 		assertNotNull(restProject.getRootNodeUuid());
 		assertEquals(project.getName(), restProject.getName());
-		assertEquals(project.getUuid(), restProject.getUuid());
 	}
 
 	public void assertProject(ProjectUpdateRequest request, ProjectResponse restProject) {
@@ -177,6 +185,8 @@ public class RestAssert {
 	}
 
 	public void assertSchema(SchemaContainer schema, SchemaResponse restSchema) {
+		//TODO make schemas extends generic nodes?
+		//		assertGenericNode(schema, restSchema);
 		assertNotNull(schema);
 		assertNotNull(restSchema);
 		//		assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
@@ -259,5 +269,11 @@ public class RestAssert {
 			}
 		}
 		return false;
+	}
+
+	public void assertTagFamily(TagFamily tagFamily, TagFamilyResponse restTagFamily) {
+		assertGenericNode(tagFamily, restTagFamily);
+		assertNotNull("Name field was not set in the rest response.", restTagFamily.getName());
+
 	}
 }

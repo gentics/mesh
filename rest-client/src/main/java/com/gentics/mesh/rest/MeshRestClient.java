@@ -115,6 +115,11 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<TagFamilyListResponse> findTagFamilies(String projectName, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/" + projectName + "/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class);
+	}
+
+	@Override
 	public Future<TagListResponse> findTags(String projectName, QueryParameterProvider... parameters) {
 		return handleRequest(GET, "/" + projectName + "/tags" + getQuery(parameters), TagListResponse.class);
 	}
@@ -296,8 +301,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<RoleListResponse> findRolesForGroup(String groupUuid) {
-		return handleRequest(GET, "/groups/" + groupUuid + "/roles", RoleListResponse.class);
+	public Future<RoleListResponse> findRolesForGroup(String groupUuid, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/groups/" + groupUuid + "/roles" + getQuery(parameters), RoleListResponse.class);
 	}
 
 	@Override
@@ -435,4 +440,5 @@ public class MeshRestClient extends AbstractMeshRestClient {
 			return "";
 		}
 	}
+
 }

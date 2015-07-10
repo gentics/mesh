@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 
-public interface SchemaContainer extends GenericNode {
+public interface SchemaContainer extends GenericNode, ProjectNode {
 
 	public Schema getSchema() throws IOException;
 		

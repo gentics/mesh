@@ -10,7 +10,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface RootVertex<T extends MeshVertex> extends MeshVertex {
 
-	T findByUUID(String uuid);
+	T findByUuid(String uuid);
 
 	List<? extends T> findAll();
 

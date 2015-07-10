@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
 @Configurable
@@ -184,16 +185,23 @@ public class UserImpl extends AbstractGenericNode implements User {
 	@Override
 	public UserResponse transformToRest(MeshAuthUser requestUser) {
 		UserResponse restUser = new UserResponse();
-		restUser.setUuid(getUuid());
+		fillRest(restUser, requestUser);
 		restUser.setUsername(getUsername());
 		restUser.setEmailAddress(getEmailAddress());
 		restUser.setFirstname(getFirstname());
 		restUser.setLastname(getLastname());
-		restUser.setPermissions(requestUser.getPermissionNames(this));
 		for (Group group : getGroups()) {
 			restUser.addGroup(group.getName());
 		}
 		return restUser;
+	}
+
+	@Override
+	public UserReference transformToUserReference() {
+		UserReference reference = new UserReference();
+		reference.setName(getUsername());
+		reference.setUuid(getUuid());
+		return reference;
 	}
 
 	@Override
@@ -217,7 +225,7 @@ public class UserImpl extends AbstractGenericNode implements User {
 	}
 
 	@Override
-	public void addCRUDPermissionOnRole(MeshVertex node, Permission permission, GenericNode targetNode) {
+	public void addCRUDPermissionOnRole(MeshVertex node, Permission permission, MeshVertex targetNode) {
 
 		// 1. Determine all roles that grant given permission
 		List<? extends Role> rolesThatGrantPermission = node.getImpl().in(permission.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);

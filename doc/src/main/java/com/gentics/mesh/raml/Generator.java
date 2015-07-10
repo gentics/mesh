@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
@@ -271,7 +272,7 @@ public class Generator {
 
 		NodeResponse content = new NodeResponse();
 		content.setUuid(getUUID());
-		content.setCreator(getUser());
+		content.setCreator(getUserReference());
 		content.getFields().put("name", createStringField("Name for language tag de-DE"));
 		content.getFields().put("filename", createStringField("dummy-content.de.html"));
 		content.getFields().put("teaser", createStringField("Dummy teaser for de-DE"));
@@ -301,7 +302,7 @@ public class Generator {
 
 		NodeResponse content2 = new NodeResponse();
 		content2.setUuid(getUUID());
-		content2.setCreator(getUser());
+		content2.setCreator(getUserReference());
 
 		content2.getFields().put("name", createStringField("Name for language tag en"));
 		content2.getFields().put("filename", createStringField("dummy-content.en.html"));
@@ -317,7 +318,6 @@ public class Generator {
 		write(list);
 
 	}
-
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
 
@@ -384,6 +384,13 @@ public class Generator {
 		userCreate.setEmailAddress("j.doe@nowhere.com");
 		write(userCreate);
 
+	}
+
+	private UserReference getUserReference() {
+		UserReference reference = new UserReference();
+		reference.setUuid(getUUID());
+		reference.setName("jdoe42");
+		return reference;
 	}
 
 	private UserResponse getUser() {

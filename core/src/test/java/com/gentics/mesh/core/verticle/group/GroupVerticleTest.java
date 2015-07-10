@@ -61,7 +61,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		assertNotNull("Group should have been created.", boot.groupRoot().findByUUID(restGroup.getUuid()));
+		assertNotNull("Group should have been created.", boot.groupRoot().findByUuid(restGroup.getUuid()));
 	}
 
 	@Test
@@ -78,7 +78,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		assertNotNull("Group should have been created.", boot.groupRoot().findByUUID(restGroup.getUuid()));
+		assertNotNull("Group should have been created.", boot.groupRoot().findByUuid(restGroup.getUuid()));
 
 		// Now delete the group
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid());
@@ -247,7 +247,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		Group reloadedGroup = boot.groupRoot().findByUUID(restGroup.getUuid());
+		Group reloadedGroup = boot.groupRoot().findByUuid(restGroup.getUuid());
 		assertEquals("The group should have been updated", name, reloadedGroup.getName());
 	}
 
@@ -265,7 +265,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
-		Group reloadedGroup = boot.groupRoot().findByUUID(group.getUuid());
+		Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -287,7 +287,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "group_conflicting_name");
 
-		Group reloadedGroup = groupRoot.findByUUID(group.getUuid());
+		Group reloadedGroup = groupRoot.findByUuid(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -305,7 +305,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-		Group reloadedGroup = boot.groupRoot().findByUUID(group.getUuid());
+		Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid());
 		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
@@ -320,7 +320,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("group_deleted", future, uuid);
-		assertNull("The group should have been deleted", boot.groupRoot().findByUUID(uuid));
+		assertNull("The group should have been deleted", boot.groupRoot().findByUuid(uuid));
 	}
 
 	@Test
@@ -334,7 +334,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
-		assertNotNull("The group should not have been deleted", boot.groupRoot().findByUUID(group.getUuid()));
+		assertNotNull("The group should not have been deleted", boot.groupRoot().findByUuid(group.getUuid()));
 	}
 
 }

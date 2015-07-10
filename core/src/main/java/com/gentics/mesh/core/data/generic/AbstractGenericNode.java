@@ -7,12 +7,16 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_EDIT
 import java.util.List;
 
 import com.gentics.mesh.core.data.GenericNode;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.ProjectNode;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 
-public abstract class AbstractGenericNode extends MeshVertexImpl implements GenericNode {
+public abstract class AbstractGenericNode extends MeshVertexImpl implements GenericNode, ProjectNode {
 
 	@Override
 	public List<? extends ProjectImpl> getProjects() {
@@ -53,6 +57,25 @@ public abstract class AbstractGenericNode extends MeshVertexImpl implements Gene
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	protected void fillRest(AbstractGenericNodeRestModel model, MeshAuthUser requestUser) {
+		model.setUuid(getUuid());
+
+		User creator = getCreator();
+		if (creator != null) {
+			model.setCreator(creator.transformToUserReference());
+		} else {
+			//TODO throw error and log something
+		}
+
+		User editor = getEditor();
+		if (editor != null) {
+			model.setEditor(editor.transformToUserReference());
+		} else {
+			//TODO throw error and log something
+		}
+		model.setPermissions(requestUser.getPermissionNames(this));
 	}
 
 	@Override

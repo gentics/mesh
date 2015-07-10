@@ -75,8 +75,8 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 	public RoleResponse transformToRest(MeshAuthUser requestUser) {
 
 		RoleResponse restRole = new RoleResponse();
-		restRole.setUuid(getUuid());
 		restRole.setName(getName());
+		fillRest(restRole, requestUser);
 
 		for (Group group : getGroups()) {
 			GroupResponse restGroup = new GroupResponse();
@@ -84,8 +84,6 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 			restGroup.setUuid(group.getUuid());
 			restRole.getGroups().add(restGroup);
 		}
-		
-		restRole.setPermissions(requestUser.getPermissionNames(this));
 
 		return restRole;
 	}

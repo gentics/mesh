@@ -86,12 +86,11 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 	}
 
 	@Override
-	public ProjectResponse transformToRest(MeshAuthUser user) {
+	public ProjectResponse transformToRest(MeshAuthUser requestUser) {
 		ProjectResponse projectResponse = new ProjectResponse();
-		projectResponse.setUuid(getUuid());
 		projectResponse.setName(getName());
-		projectResponse.setPermissions(user.getPermissionNames(this));
 		projectResponse.setRootNodeUuid(getRootNode().getUuid());
+		fillRest(projectResponse, requestUser);
 		return projectResponse;
 	}
 
