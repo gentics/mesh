@@ -31,7 +31,9 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.ContainerNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -253,9 +255,9 @@ public class DemoDataProvider {
 
 	private void addFolderStructure() {
 
-		Node rootNode = project.getOrCreateRootNode();
+		RootNode rootNode = project.getOrCreateRootNode();
 		rootNode.setCreator(userInfo.getUser());
-		rootNode.addProject(project);
+		//		rootNode.addProject(project);
 
 		Node news = addFolder(rootNode, "News", "Neuigkeiten");
 		Node news2015 = addFolder(news, "2015", null);
@@ -407,7 +409,7 @@ public class DemoDataProvider {
 		colorTagFamily.setDescription("Description for color tag family");
 		setCreatorEditor(colorTagFamily.getImpl());
 		tagFamilies.put("colors", colorTagFamily);
-		
+
 	}
 
 	private void addSchemaContainers() {
@@ -512,7 +514,7 @@ public class DemoDataProvider {
 
 	}
 
-	public Node addFolder(Node rootNode, String englishName, String germanName) {
+	public Node addFolder(ContainerNode rootNode, String englishName, String germanName) {
 		Node folderNode = rootNode.create();
 		folderNode.setParentNode(rootNode);
 		folderNode.addProject(project);
@@ -682,7 +684,7 @@ public class DemoDataProvider {
 	}
 
 	public int getNodeCount() {
-		return folders.size() + contents.size() + root.getProjectRoot().findAll().size();
+		return folders.size() + contents.size();
 	}
 
 	public Map<String, TagFamily> getTagFamilies() {

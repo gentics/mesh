@@ -260,7 +260,7 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(-1, 25));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "Bad Request", "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
 		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(0, 25));
 		latchFor(pageFuture);

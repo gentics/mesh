@@ -12,7 +12,8 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.node.RootNode;
+import com.gentics.mesh.core.data.node.impl.RootNodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
@@ -76,12 +77,12 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 	}
 
 	@Override
-	public Node getRootNode() {
-		return out(HAS_ROOT_NODE).has(NodeImpl.class).nextOrDefault(NodeImpl.class, null);
+	public RootNode getRootNode() {
+		return out(HAS_ROOT_NODE).has(RootNodeImpl.class).nextOrDefault(RootNodeImpl.class, null);
 	}
 
 	@Override
-	public void setRootNode(Node rootNode) {
+	public void setRootNode(RootNode rootNode) {
 		linkOut(rootNode.getImpl(), HAS_ROOT_NODE);
 	}
 
@@ -95,10 +96,10 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 	}
 
 	@Override
-	public Node getOrCreateRootNode() {
-		Node rootNode = getRootNode();
+	public RootNode getOrCreateRootNode() {
+		RootNode rootNode = getRootNode();
 		if (rootNode == null) {
-			rootNode = getGraph().addFramedVertex(NodeImpl.class);
+			rootNode = getGraph().addFramedVertex(RootNodeImpl.class);
 			setRootNode(rootNode);
 		}
 		return rootNode;

@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -129,9 +130,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testRootNode() {
 		Project project = data().getProject();
-		Node root = project.getRootNode();
+		RootNode root = project.getRootNode();
 		assertNotNull(root);
-
 	}
 
 	@Test

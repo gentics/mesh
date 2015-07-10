@@ -3,16 +3,16 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
 public interface Project extends GenericNode {
 
-	Node getOrCreateRootNode();
+	RootNode getOrCreateRootNode();
 
-	Node getRootNode();
+	RootNode getRootNode();
 
 	TagFamilyRoot getTagFamilyRoot();
 
@@ -22,7 +22,7 @@ public interface Project extends GenericNode {
 
 	void setName(String name);
 
-	void setRootNode(Node rootNode);
+	void setRootNode(RootNode rootNode);
 
 	void delete();
 

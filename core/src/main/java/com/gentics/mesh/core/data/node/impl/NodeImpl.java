@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
+import com.gentics.mesh.core.data.node.ContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.data.service.transformation.TransformationPool;
@@ -89,7 +90,7 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
-	public void setParentNode(Node parent) {
+	public void setParentNode(ContainerNode parent) {
 		setLinkOut(parent.getImpl(), HAS_PARENT_NODE);
 	}
 
