@@ -132,20 +132,24 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testCreateDelete() {
 		MeshRoot root = getMeshRoot();
 		User user = root.getUserRoot().create("Anton");
+		assertTrue(user.isEnabled());
 		assertNotNull(user);
 		String uuid = user.getUuid();
 		user.delete();
-		assertNull(root.getUserRoot().findByUuid(uuid));
+		User foundUser = root.getUserRoot().findByUuid(uuid);
+		assertNotNull(foundUser);
+		assertFalse(foundUser.isEnabled());
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
 		MeshRoot root = getMeshRoot();
-		User user = root.getUserRoot().create("Anton");
-		assertFalse(user.hasPermission(user, Permission.CREATE_PERM));
-		user.addCRUDPermissionOnRole(root.getUserRoot(), Permission.CREATE_PERM, user);
-		assertTrue(user.hasPermission(user, Permission.CREATE_PERM));
+		User user = getUser();
+		User newUser = root.getUserRoot().create("Anton");
+		assertFalse(user.hasPermission(newUser, Permission.CREATE_PERM));
+		user.addCRUDPermissionOnRole(root.getUserRoot(), Permission.CREATE_PERM, newUser);
+		assertTrue(user.hasPermission(newUser, Permission.CREATE_PERM));
 	}
 
 	@Test
