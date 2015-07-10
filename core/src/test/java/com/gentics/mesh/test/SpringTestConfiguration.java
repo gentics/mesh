@@ -21,7 +21,10 @@ public class SpringTestConfiguration {
 
 	@PostConstruct
 	public void setup() {
-		MeshSpringConfiguration.setConfiguration(new MeshConfiguration());
+		MeshConfiguration config = new MeshConfiguration();
+		config.setDatabaseProviderClass(graphProviderClassname());
+		config.setHttpPort(TestUtil.getRandomPort());
+		MeshSpringConfiguration.setConfiguration(config);
 	}
 
 }

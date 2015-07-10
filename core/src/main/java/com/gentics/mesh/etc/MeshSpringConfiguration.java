@@ -23,6 +23,7 @@ import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
 
 import javax.annotation.PostConstruct;
+import javax.management.RuntimeErrorException;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -56,25 +57,18 @@ public class MeshSpringConfiguration {
 	private static MeshConfiguration configuration = null;
 
 	@Bean
-	public String graphProviderClassname() {
-		return configuration.getDatabaseProviderClass();
-	}
-
-	@Bean
 	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
-		String className = graphProviderClassname();
+		String className = configuration.getDatabaseProviderClass();
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
 			JsonObject settings = new JsonObject();
 			return provider.getFramedGraph(settings);
 		} catch (Exception e) {
-			log.error("Could not load database provider class {" + className + "}. Maybe there is no such provider within the classpath.", e);
-			// TODO soft shutdown
-			System.exit(10);
+			String msg = "Could not load database provider class {" + className + "}. Maybe there is no such provider within the classpath.";
+			log.error(msg, e);
+			throw new RuntimeException(msg, e);
 		}
-		return null;
-
 	}
 
 	public static MeshConfiguration getConfiguration() {

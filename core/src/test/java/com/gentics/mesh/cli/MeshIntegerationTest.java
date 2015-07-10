@@ -9,30 +9,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.MeshConfiguration;
 import com.gentics.mesh.test.AbstractIntegrationTest;
-import com.gentics.mesh.test.TestUtil;
 
 public class MeshIntegerationTest extends AbstractIntegrationTest {
 
 	@Test
 	public void testStartup() throws Exception {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
-		MeshConfiguration config = new MeshConfiguration();
-		config.setHttpPort(TestUtil.getRandomPort());
 
 		final Mesh mesh = Mesh.mesh();
 		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);
 		final AtomicBoolean meshStarted = new AtomicBoolean(false);
 		mesh.setCustomLoader((vertx) -> {
-			// deployAndWait(vertx, CustomerVerticle.class);
 			customLoaderInvoked.set(true);
 		});
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		new Thread(() -> {
 			try {
-				mesh.run(config, () -> {
+				mesh.run(() -> {
 					assertTrue("The custom loader was not invoked during the startup process", customLoaderInvoked.get());
 					meshStarted.set(true);
 					latch.countDown();

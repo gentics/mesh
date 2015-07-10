@@ -119,5 +119,9 @@ public class MeshConfiguration {
 	public String getDatabaseProviderClass() {
 		return databaseProviderClass;
 	}
+	
+	public void setDatabaseProviderClass(String databaseProviderClass) {
+		this.databaseProviderClass = databaseProviderClass;
+	}
 
 }
