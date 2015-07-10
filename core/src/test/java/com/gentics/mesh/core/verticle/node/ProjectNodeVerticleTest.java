@@ -44,7 +44,7 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.FieldUtil;
 
-public class NodeVerticleTest extends AbstractRestVerticleTest {
+public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectNodeVerticle verticle;
@@ -125,7 +125,6 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("title", FieldUtil.createStringField("Title"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
 
 		// Create node
@@ -135,7 +134,6 @@ public class NodeVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
-
 		test.assertMeshNode(request, restNode);
 
 		Node node = nodeRoot.findByUuid(restNode.getUuid());

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.verticle.project.ProjectBinaryVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class BinaryVerticleTest extends AbstractRestVerticleTest {
+public class ProjectBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectBinaryVerticle verticle;

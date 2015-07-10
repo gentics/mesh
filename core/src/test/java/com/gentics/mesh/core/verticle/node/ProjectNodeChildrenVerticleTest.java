@@ -21,7 +21,7 @@ import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.DataHelper;
 
-public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
+public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectNodeVerticle verticle;

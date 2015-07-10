@@ -227,6 +227,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 									Node node = parentNode.create();
 									node.setSchemaContainer(schemaContainer);
 									node.setCreator(requestUser);
+									node.setEditor(requestUser);
 									Project project = boot.projectRoot().findByName(projectName);
 									node.addProject(project);
 									requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
@@ -390,6 +391,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
 						return;
 					}
+					//TODO handle other fields, node.setEditor(requestUser); etc.
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 						NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 						Schema schema = node.getSchema();
