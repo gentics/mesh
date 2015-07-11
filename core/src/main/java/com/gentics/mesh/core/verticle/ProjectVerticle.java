@@ -63,7 +63,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-
+			String uuid = rc.request().params().get("uuid");
 			rcs.loadObject(rc, "uuid", UPDATE_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
 				Project project = rh.result();
 
@@ -172,7 +172,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					for (Project project : projectPage) {
 						listResponse.getData().add(project.transformToRest(requestUser));
 					}
-					RestModelPagingHelper.setPaging(listResponse, projectPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, projectPage);
 					bcr.complete(listResponse);
 
 				} catch (Exception e) {

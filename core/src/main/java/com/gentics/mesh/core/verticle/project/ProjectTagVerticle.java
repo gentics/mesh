@@ -191,7 +191,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 						TransformationInfo info = new TransformationInfo(requestUser, null, rc);
 						listResponse.getData().add(tag.transformToRest(info));
 					}
-					RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, tagPage);
 					bcr.complete(listResponse);
 				} catch (Exception e) {
 					bcr.fail(e);

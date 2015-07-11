@@ -80,7 +80,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 						TransformationInfo info = new TransformationInfo(requestUser, null, rc);
 						listResponse.getData().add(tag.transformToRest(info));
 					}
-					RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, tagPage);
 					rc.response().setStatusCode(200).end(toJson(listResponse));
 				} catch (Exception e) {
 					rc.fail(e);
@@ -133,7 +133,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 					for (TagFamily tagFamily : tagfamilyPage) {
 						listResponse.getData().add(tagFamily.transformToRest(requestUser));
 					}
-					RestModelPagingHelper.setPaging(listResponse, tagfamilyPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, tagfamilyPage);
 					bcr.complete(listResponse);
 				} catch (Exception e) {
 					bcr.fail(e);
@@ -194,15 +194,17 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			String uuid = rc.request().params().get("uuid");
 			Project project = boot.projectRoot().findByName(projectName);
 			TagFamilyRoot root = project.getTagFamilyRoot();
-			TagFamily tagFamily = root.findByUuid(uuid);
-			if (tagFamily == null) {
-				rc.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_name", requestModel.getName())));
-				return;
-			}
-			if (requestUser.hasPermission(tagFamily, UPDATE_PERM)) {
-				tagFamily.setName(requestModel.getName());
-			}
-			rc.response().end(JsonUtil.toJson(tagFamily.transformToRest(requestUser)));
+			root.findByUuid(uuid, rh -> {
+				TagFamily tagFamily = rh.result();	
+				if (tagFamily == null) {
+					rc.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_name", requestModel.getName())));
+					return;
+				}
+				if (requestUser.hasPermission(tagFamily, UPDATE_PERM)) {
+					tagFamily.setName(requestModel.getName());
+				}
+				rc.response().end(JsonUtil.toJson(tagFamily.transformToRest(requestUser)));
+			});
 
 		});
 	}

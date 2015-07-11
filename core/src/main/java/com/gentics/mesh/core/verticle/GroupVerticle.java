@@ -81,7 +81,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						for (Role role : rolePage) {
 							listResponse.getData().add(role.transformToRest(getUser(rc)));
 						}
-						RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+						RestModelPagingHelper.setPaging(listResponse, rolePage);
 						bch.complete(listResponse);
 					} catch (Exception e) {
 						bch.fail(e);
@@ -155,7 +155,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						for (User user : userPage) {
 							listResponse.getData().add(user.transformToRest(requestUser));
 						}
-						RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
+						RestModelPagingHelper.setPaging(listResponse, userPage);
 
 						bch.complete(listResponse);
 					} catch (Exception e) {
@@ -276,8 +276,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", READ_PERM, GroupImpl.class, (AsyncResult<Group> grh) -> {
-				Group group = grh.result();
+			rcs.loadObject(rc, "uuid", READ_PERM, GroupImpl.class, (AsyncResult<Group> grh) -> {  
 			}, trh -> {
 				if (trh.failed()) {
 					rc.fail(trh.cause());
@@ -304,7 +303,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					for (Group group : groupPage) {
 						listResponse.getData().add(group.transformToRest(requestUser));
 					}
-					RestModelPagingHelper.setPaging(listResponse, groupPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, groupPage);
 					glr.complete(listResponse);
 
 				} catch (Exception e) {

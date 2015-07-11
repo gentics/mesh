@@ -10,7 +10,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import io.vertx.core.Future;
 
 import java.io.IOException;
@@ -103,9 +102,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	@Ignore("We can't test this using the rest client")
 	public void testCreateRoleWithBogusJson() throws Exception {
-		//		String requestJson = "bogus text";
-		//		String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
-		//		expectMessageResponse("error_parse_request_json_error", response);
+		// String requestJson = "bogus text";
+		// String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
+		// expectMessageResponse("error_parse_request_json_error", response);
 	}
 
 	@Test
@@ -300,8 +299,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(extraRole.getUuid(), restRole.getUuid());
 
 		// Check that the extra role was updated as expected
-		Role reloadedRole = roleRoot.findByUuid(extraRole.getUuid());
-		assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
+		roleRoot.findByUuid(extraRole.getUuid(), rh -> {
+			Role reloadedRole = rh.result();
+			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
+		});
 	}
 
 	@Test
@@ -323,8 +324,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		// Check that the role was updated
-		Role reloadedRole = boot.roleRoot().findByUuid(role.getUuid());
-		assertEquals(restRole.getName(), reloadedRole.getName());
+		boot.roleRoot().findByUuid(role.getUuid(), rh -> {
+			Role reloadedRole = rh.result();
+			assertEquals(restRole.getName(), reloadedRole.getName());
+		});
 
 	}
 
@@ -341,7 +344,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_deleted", future, extraRole.getUuid());
-		assertNull("The user should have been deleted", roleRoot.findByUuid(extraRole.getUuid()));
+		roleRoot.findByUuid(extraRole.getUuid(), rh -> {
+			assertNull("The user should have been deleted", rh.result());
+		});
 	}
 
 	@Test
@@ -349,7 +354,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteRole(info.getRole().getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", info.getRole().getUuid());
-		assertNotNull("The role should not have been deleted", boot.roleRoot().findByUuid(info.getRole().getUuid()));
+		boot.roleRoot().findByUuid(info.getRole().getUuid(), rh -> {
+			assertNotNull("The role should not have been deleted", rh.result());
+		});
 	}
 
 }

@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -109,9 +110,15 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() {
+	public void testFindByUUID() throws InterruptedException {
 		String uuid = getUser().getUuid();
-		assertNotNull(boot.userRoot().findByUuid(uuid));
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.userRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+			assertEquals(uuid, rh.result().getUuid());
+			latch.countDown();
+		});
+		latch.await();
 	}
 
 	@Test
@@ -136,9 +143,11 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		String uuid = user.getUuid();
 		user.delete();
-		User foundUser = root.getUserRoot().findByUuid(uuid);
-		assertNotNull(foundUser);
-		assertFalse(foundUser.isEnabled());
+		root.getUserRoot().findByUuid(uuid, rh -> {
+			User foundUser = rh.result();
+			assertNotNull(foundUser);
+			assertFalse(foundUser.isEnabled());
+		});
 	}
 
 	@Test
@@ -187,12 +196,14 @@ public class UserTest extends AbstractBasicObjectTest {
 		user.setPasswordHash(PASSWDHASH);
 		assertTrue(user.isEnabled());
 
-		User reloadedUser = userRoot.findByUuid(user.getUuid());
-		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
-		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
-		assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
-		assertEquals("The email address did not match.", EMAIL, reloadedUser.getEmailAddress());
-		assertEquals("The password did not match.", PASSWDHASH, reloadedUser.getPasswordHash());
+		userRoot.findByUuid(user.getUuid(), rh -> {
+			User reloadedUser = rh.result();
+			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
+			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
+			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
+			assertEquals("The email address did not match.", EMAIL, reloadedUser.getEmailAddress());
+			assertEquals("The password did not match.", PASSWDHASH, reloadedUser.getPasswordHash());
+		});
 
 	}
 

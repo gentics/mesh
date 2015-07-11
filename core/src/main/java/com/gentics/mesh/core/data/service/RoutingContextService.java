@@ -61,8 +61,8 @@ public class RoutingContextService {
 		return fg.v().has("uuid", uuid).has(classOfT).nextOrDefault(classOfT, null);
 	}
 
-	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, Permission permType, Class<? extends T> classOfT,
-			Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
+	public <T extends MeshVertex> void loadObjectByUuid(RoutingContext rc, String uuid, String projectName, Permission permType,
+			Class<? extends T> classOfT, Handler<AsyncResult<T>> resultHandler, Handler<AsyncResult<T>> transactionCompletedHandler) {
 		if (StringUtils.isEmpty(uuid)) {
 			// TODO i18n, add info about uuid source?
 			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_uuid_must_be_specified"));
@@ -141,11 +141,10 @@ public class RoutingContextService {
 		loadObject(rc, uuidParamName, null, permType, classOfT, resultHandler, transactionCompleteHandler);
 	}
 
-
 	/**
 	 * Check the permission and throw an invalid permission exception when no matching permission could be found.
 	 */
-	//TODO move this to MeshAuthUser class
+	// TODO move this to MeshAuthUser class
 	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
 		MeshAuthUser requestUser = getUser(rc);

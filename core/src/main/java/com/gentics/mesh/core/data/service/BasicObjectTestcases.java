@@ -14,7 +14,7 @@ public interface BasicObjectTestcases {
 
 	void testFindByName() throws IOException;
 
-	void testFindByUUID();
+	void testFindByUUID() throws InterruptedException;
 
 	void testRead() throws IOException;
 

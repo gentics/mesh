@@ -60,11 +60,13 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		SchemaResponse restSchemaResponse = future.result();
 		test.assertSchema(request, restSchemaResponse);
-		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid());
-		assertNotNull(schemaContainer);
-		assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getSchemaName());
-		//		assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
-		//		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
+		boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
+			SchemaContainer schemaContainer = rh.result();
+			assertNotNull(schemaContainer);
+			assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getSchemaName());
+			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
+			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
+			});
 
 	}
 
@@ -72,14 +74,14 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateDeleteSimpleSchema() throws HttpStatusCodeErrorException, Exception {
 
 		SchemaCreateRequest request = new SchemaCreateRequest();
-		//		request.setDescription("new description");
+		// request.setDescription("new description");
 		request.setName("new schema name");
-		//		request.setProjectUuid(data().getProject().getUuid());
-		//		PropertyTypeSchemaResponse propertySchema = new PropertyTypeSchemaResponse();
-		//		propertySchema.setKey("extra-content");
-		//		propertySchema.setType("html");
-		//		propertySchema.setDescription("Some extra content");
-		//		request.getPropertyTypeSchemas().add(propertySchema);
+		// request.setProjectUuid(data().getProject().getUuid());
+		// PropertyTypeSchemaResponse propertySchema = new PropertyTypeSchemaResponse();
+		// propertySchema.setKey("extra-content");
+		// propertySchema.setType("html");
+		// propertySchema.setDescription("Some extra content");
+		// request.getPropertyTypeSchemas().add(propertySchema);
 		//
 		Future<SchemaResponse> createFuture = getClient().createSchema(request);
 		latchFor(createFuture);
@@ -88,10 +90,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(request, restSchema);
 
 		// Verify that the object was created
-		SchemaContainer schemaContainer = data().getMeshRoot().getSchemaContainerRoot().findByUuid(restSchema.getUuid());
-		assertNotNull(schemaContainer);
-		//		test.assertSchema(schema, restSchema);
-		//		assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
+		data().getMeshRoot().getSchemaContainerRoot().findByUuid(restSchema.getUuid(), rh -> {
+			SchemaContainer schemaContainer = rh.result();
+			assertNotNull(schemaContainer);
+		});
+		// test.assertSchema(schema, restSchema);
+		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid());
 		latchFor(deleteFuture);
@@ -155,10 +159,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("Somehow not all schemas were loaded when loading all pages.", totalSchemas, allSchemas.size());
 
 		// Verify that the no perm schema is not part of the response
-		//		final String noPermSchemaName = noPermSchema.getName();
-		//		List<SchemaResponse> filteredSchemaList = allSchemas.parallelStream().filter(restSchema -> restSchema.getName().equals(noPermSchemaName))
-		//				.collect(Collectors.toList());
-		//		assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
+		// final String noPermSchemaName = noPermSchema.getName();
+		// List<SchemaResponse> filteredSchemaList = allSchemas.parallelStream().filter(restSchema -> restSchema.getName().equals(noPermSchemaName))
+		// .collect(Collectors.toList());
+		// assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
 		future = getClient().findSchemas(new PagingInfo(-1, perPage));
 		latchFor(future);
@@ -226,10 +230,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
-		//		assertEquals(request.getName(), restSchema.getName());
+		// assertEquals(request.getName(), restSchema.getName());
 
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid());
-		//		assertEquals("The name should have been updated", "new-name", reloaded.getName());
+		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			SchemaContainer reloaded = rh.result();
+			// assertEquals("The name should have been updated", "new-name", reloaded.getName());
+			});
 
 	}
 
@@ -246,8 +252,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid());
-		assertEquals("The name should not have been changed.", oldName, reloaded.getSchemaName());
+		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			SchemaContainer reloaded = rh.result();
+			assertEquals("The name should not have been changed.", oldName, reloaded.getSchemaName());
+		});
 
 	}
 
@@ -262,8 +270,10 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("schema_deleted", future, schema.getSchemaName());
 
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid());
-		assertNull("The schema should have been deleted.", reloaded);
+		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			SchemaContainer reloaded = rh.result();
+			assertNull("The schema should have been deleted.", reloaded);
+		});
 	}
 
 	public void testDeleteSchemaWithMissingPermission() throws Exception {
@@ -274,10 +284,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		fail("unspecified test");
 		String json = "error";
-		//		assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
+		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid());
-		assertNotNull("The schema should not have been deleted.", reloaded);
+		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			SchemaContainer reloaded = rh.result();
+			assertNotNull("The schema should not have been deleted.", reloaded);
+		});
 
 	}
 

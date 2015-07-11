@@ -27,8 +27,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
-import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -73,7 +71,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		TagFamily basicTagFamily = data().getTagFamily("basic");
 		TagFamily noPermTagFamily = data().getProject().getTagFamilyRoot().create("noPermTagFamily");
 		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-		//noPermTag.addProject(data().getProject());
+		// noPermTag.addProject(data().getProject());
 		assertNotNull(noPermTagFamily.getUuid());
 
 		// Test default paging parameters
@@ -97,7 +95,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 			assertSuccess(future);
 			restResponse = tagPageFut.result();
 			int expectedItemsCount = perPage;
-			//Check the last page
+			// Check the last page
 			if (page == 3) {
 				expectedItemsCount = 4;
 			}
@@ -167,13 +165,17 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	public void testTagFamilyDeletionWithPerm() throws UnknownHostException, InterruptedException {
 		TagFamily basicTagFamily = data().getTagFamily("basic");
 		String uuid = basicTagFamily.getUuid();
-		assertNotNull(data().getProject().getTagFamilyRoot().findByUuid(uuid));
+		data().getProject().getTagFamilyRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());	
+		});
 
 		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 
-		assertNull(data().getProject().getTagFamilyRoot().findByUuid(uuid));
+		data().getProject().getTagFamilyRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
 
 	}
 
@@ -184,11 +186,15 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		Role role = data().getUserInfo().getRole();
 		role.revokePermissions(basicTagFamily, DELETE_PERM);
 
-		assertNotNull(data().getProject().getTagFamilyRoot().findByUuid(uuid));
+		data().getProject().getTagFamilyRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());	
+		});
 		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
-		assertNotNull(data().getProject().getTagFamilyRoot().findByUuid(uuid));
+		data().getProject().getTagFamilyRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());	
+		});
 	}
 
 	@Test

@@ -217,7 +217,9 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNull("The tag should have been deleted", boot.tagRoot().findByUuid(uuid));
+			boot.tagRoot().findByUuid(uuid, rh -> {
+				assertNull("The tag should have been deleted", rh.result());
+			});
 		}
 	}
 
@@ -230,7 +232,9 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", tag.getUuid());
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNotNull("The tag should not have been deleted", boot.tagRoot().findByUuid(tag.getUuid()));
+			boot.tagRoot().findByUuid(tag.getUuid(), rh -> {
+				assertNotNull("The tag should not have been deleted", rh.result());
+			});
 		}
 	}
 

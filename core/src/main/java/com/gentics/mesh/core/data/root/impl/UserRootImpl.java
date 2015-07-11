@@ -1,12 +1,17 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 
 public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 

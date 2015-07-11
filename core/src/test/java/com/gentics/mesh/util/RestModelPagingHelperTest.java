@@ -30,7 +30,7 @@ public class RestModelPagingHelperTest {
 		when(page.getNumberOfElements()).thenReturn(nTPTotalItems);
 		when(page.getTotalElements()).thenReturn(nTPPageSize);
 
-		RestModelPagingHelper.setPaging(response, page, info);
+		RestModelPagingHelper.setPaging(response, page);
 
 		assertNotNull(response.getMetainfo());
 		assertEquals(nTPCurrentPage, response.getMetainfo().getCurrentPage());

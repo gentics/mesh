@@ -97,12 +97,17 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return client;
 	}
 
-	protected void latchFor(Future<?> future) throws InterruptedException, UnknownHostException {
+	protected void latchFor(Future<?> future) {
 		CountDownLatch latch = new CountDownLatch(1);
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
-		latch.await(getTimeout(), TimeUnit.SECONDS);
+		try {
+			latch.await(getTimeout(), TimeUnit.SECONDS);
+		} catch (UnknownHostException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public int getTimeout() throws UnknownHostException {

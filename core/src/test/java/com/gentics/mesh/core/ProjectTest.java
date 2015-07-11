@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -14,7 +13,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -53,7 +51,9 @@ public class ProjectTest extends AbstractBasicObjectTest {
 			project.delete();
 			tx.success();
 		}
-		assertNull(projectRoot.findByUuid(uuid));
+		projectRoot.findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
 		// TODO assert on tag families of the project
 	}
 
@@ -92,8 +92,12 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		assertNotNull(projectRoot.findByUuid(data().getProject().getUuid()));
-		assertNull(projectRoot.findByUuid("bogus"));
+		projectRoot.findByUuid(data().getProject().getUuid(), rh -> {
+			assertNotNull(rh.result());
+		});
+		projectRoot.findByUuid("bogus", rh -> {
+			assertNull(rh.result());
+		});
 	}
 
 	@Test
@@ -112,10 +116,14 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = getMeshRoot().getProjectRoot().create("newProject");
 		assertNotNull(project);
 		String uuid = project.getUuid();
-		assertNotNull(getMeshRoot().getProjectRoot().findByUuid(uuid));
+		getMeshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+		});
 		project.delete();
-		//TODO check for attached nodes
-		assertNull(getMeshRoot().getProjectRoot().findByUuid(uuid));
+		// TODO check for attached nodes
+		getMeshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
 	}
 
 	@Test
@@ -147,7 +155,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		project.setName("new Name");
 		assertEquals("new Name", project.getName());
 
-		//TODO test root nodes
+		// TODO test root nodes
 
 	}
 

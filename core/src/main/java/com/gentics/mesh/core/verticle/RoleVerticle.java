@@ -111,7 +111,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					for (Role role : rolePage) {
 						listResponse.getData().add(role.transformToRest(getUser(rc)));
 					}
-					RestModelPagingHelper.setPaging(listResponse, rolePage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, rolePage);
 
 					bch.complete(listResponse);
 				} catch (Exception e) {

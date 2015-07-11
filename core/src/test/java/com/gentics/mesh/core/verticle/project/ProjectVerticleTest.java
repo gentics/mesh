@@ -234,8 +234,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectResponse restProject = future.result();
 		test.assertProject(request, restProject);
 
-		Project reloadedProject = projectRoot.findByUuid(project.getUuid());
-		assertEquals("New Name", reloadedProject.getName());
+		projectRoot.findByUuid(project.getUuid(), rh -> {
+			Project reloadedProject = rh.result();	
+			assertEquals("New Name", reloadedProject.getName());
+		});
 	}
 
 	@Test
@@ -252,8 +254,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
 
-		Project reloadedProject = projectRoot.findByUuid(project.getUuid());
-		assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());
+		projectRoot.findByUuid(project.getUuid(), rh -> {
+			Project reloadedProject = rh.result();	
+			assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());
+		});
 	}
 
 	// Delete Tests
@@ -269,7 +273,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("project_deleted", future, project.getName());
-		assertNull("The project should have been deleted", projectRoot.findByUuid(uuid));
+		projectRoot.findByUuid(uuid, rh -> {
+			assertNull("The project should have been deleted", rh.result());	
+		});
 
 		// TODO check for removed routers?
 	}
@@ -283,7 +289,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		assertNotNull("The project should not have been deleted", projectRoot.findByUuid(uuid));
+		projectRoot.findByUuid(uuid, rh -> {
+			assertNotNull("The project should not have been deleted", rh.result());	
+		});
 	}
 
 }

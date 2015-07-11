@@ -10,13 +10,15 @@ public class Page<T> implements Iterable<T> {
 	private int numberOfElements;
 	private int pageNumber;
 	private int totalPages;
+	private int perPage;
 
-	public Page(List<? extends T> wrappedList, int totalElements, int pageNumber, int totalPages, int numberOfElements) {
+	public Page(List<? extends T> wrappedList, int totalElements, int pageNumber, int totalPages, int numberOfElements, int perPage) {
 		this.wrappedList = wrappedList;
 		this.totalElements = totalElements;
 		this.pageNumber = pageNumber;
 		this.totalPages = totalPages;
 		this.numberOfElements = numberOfElements;
+		this.perPage = perPage;
 	}
 
 	@Override
@@ -42,5 +44,9 @@ public class Page<T> implements Iterable<T> {
 
 	public int getNumberOfElements() {
 		return numberOfElements;
+	}
+
+	public long getPerPage() {
+		return perPage;
 	}
 }

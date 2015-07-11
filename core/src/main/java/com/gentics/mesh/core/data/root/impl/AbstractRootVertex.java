@@ -4,6 +4,10 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 import java.util.List;
 
@@ -14,6 +18,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -43,8 +48,12 @@ public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVerte
 	}
 
 	@Override
-	public T findByUuid(String uuid) {
-		return out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null);
+	public AbstractRootVertex findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
+		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
+		vertx.executeBlocking(rh -> {
+			rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
+		}, resultHandler);
+		return this;
 	}
 
 	protected T findByNameAndProject(String projectName, String name) {
@@ -54,8 +63,10 @@ public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVerte
 
 	@Override
 	public Page<? extends T> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).has(getPersistanceClass()).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
-		VertexTraversal<?, ?, ?> countTraversal = out(getRootLabel()).has(getPersistanceClass()).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).has(getPersistanceClass()).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> countTraversal = out(getRootLabel()).has(getPersistanceClass()).mark().in(READ_PERM.label()).out(HAS_ROLE)
+				.in(HAS_USER).retain(requestUser.getImpl()).back();
 		Page<? extends T> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
 		return items;
 	}

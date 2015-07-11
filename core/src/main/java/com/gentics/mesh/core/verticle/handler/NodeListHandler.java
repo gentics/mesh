@@ -51,7 +51,7 @@ public class NodeListHandler {
 			for (Node node : nodePage) {
 				listResponse.getData().add(node.transformToRest(info));
 			}
-			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
+			RestModelPagingHelper.setPaging(listResponse, nodePage);
 
 		}, trh -> {
 			rc.response().setStatusCode(200).end(JsonUtil.toJson(listResponse));
@@ -75,7 +75,7 @@ public class NodeListHandler {
 			for (Node node : nodePage) {
 				listResponse.getData().add(node.transformToRest(info));
 			}
-			RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
+			RestModelPagingHelper.setPaging(listResponse, nodePage);
 
 		}, trh -> {
 			rc.response().setStatusCode(200).end(JsonUtil.toJson(listResponse));

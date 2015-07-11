@@ -45,7 +45,7 @@ public class TagListHandler {
 				TransformationInfo info = new TransformationInfo(requestUser, null, rc);
 				listResponse.getData().add(tag.transformToRest(info));
 			}
-			RestModelPagingHelper.setPaging(listResponse, tagPage, pagingInfo);
+			RestModelPagingHelper.setPaging(listResponse, tagPage);
 
 		}, trh -> {
 			rc.response().setStatusCode(200).end(JsonUtil.toJson(listResponse));

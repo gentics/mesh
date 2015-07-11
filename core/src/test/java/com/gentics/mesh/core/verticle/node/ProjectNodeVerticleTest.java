@@ -136,23 +136,26 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
-		Node node = nodeRoot.findByUuid(restNode.getUuid());
-		assertNotNull(node);
-		test.assertMeshNode(request, node);
+		nodeRoot.findByUuid(restNode.getUuid(), rh -> {
+			Node node = rh.result();
+			assertNotNull(node);
+			test.assertMeshNode(request, node);
+			// Load the node again
+			Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
+				latchFor(future2);
+				assertSuccess(future2);
+				NodeResponse restNode2 = future2.result();
+				test.assertMeshNode(node, restNode2);
 
-		// Load the node again
-		future = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
-		latchFor(future);
-		assertSuccess(future);
-		restNode = future.result();
-		test.assertMeshNode(node, restNode);
-
-		// Delete the node
-		Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode.getUuid());
-		latchFor(deleteFut);
-		assertSuccess(deleteFut);
-		expectMessageResponse("node_deleted", deleteFut, restNode.getUuid());
-		assertNull("The node should have been deleted.", data().getMeshRoot().getNodeRoot().findByUuid(restNode.getUuid()));
+				// Delete the node
+				Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
+				latchFor(deleteFut);
+				assertSuccess(deleteFut);
+				expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
+				data().getMeshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
+					assertNull("The node should have been deleted.", rh2.result());
+				});
+			});
 
 	}
 
@@ -395,10 +398,10 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		final String newName = "english renamed name";
 		request.getFields().put("name", FieldUtil.createStringField(newName));
-		//		final String newFilename = "new-name.html";
-		//		request.getFields().put("filename", FieldUtil.createStringField(newFilename));
-		//		final String newContent = "english renamed content!";
-		//		request.getFields().put("content", FieldUtil.createStringField(newContent));
+		// final String newFilename = "new-name.html";
+		// request.getFields().put("filename", FieldUtil.createStringField(newFilename));
+		// final String newContent = "english renamed content!";
+		// request.getFields().put("content", FieldUtil.createStringField(newContent));
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de", "en");
@@ -407,11 +410,11 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
-		//		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
+		// assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
 		assertEquals(newName, node.getFieldContainer(data().getEnglish()).getString("name").getString());
 		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getString());
 
-		//		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
+		// assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
 	}
 
 	@Test
@@ -511,7 +514,9 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		expectMessageResponse("node_deleted", future, uuid);
-		assertNull(nodeRoot.findByUuid(uuid));
+		nodeRoot.findByUuid(uuid, rh -> {
+			assertNull(rh.result());	
+		});
 	}
 
 	@Test
@@ -528,6 +533,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		assertNotNull(nodeRoot.findByUuid(uuid));
+		nodeRoot.findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());	
+		});
 	}
 }

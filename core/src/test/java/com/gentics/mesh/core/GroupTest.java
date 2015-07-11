@@ -90,7 +90,9 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		assertNotNull(boot.groupRoot().findByUuid(getGroup().getUuid()));
+		boot.groupRoot().findByUuid(getGroup().getUuid(), rh-> {
+			assertNotNull(rh.result());
+		});
 	}
 
 	@Test
@@ -109,7 +111,9 @@ public class GroupTest extends AbstractBasicObjectTest {
 		assertNotNull(group);
 		String uuid = group.getUuid();
 		group.delete();
-		assertNull(getMeshRoot().getGroupRoot().findByUuid(uuid));
+		getMeshRoot().getGroupRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
 	}
 
 	@Test
@@ -148,9 +152,11 @@ public class GroupTest extends AbstractBasicObjectTest {
 		assertNotNull(group);
 		assertEquals("newGroup", group.getName());
 		String uuid = group.getUuid();
-		//TODO add users to group?
+		// TODO add users to group?
 		group.delete();
-		assertNull(getMeshRoot().getGroupRoot().findByUuid(uuid));
+		getMeshRoot().getGroupRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
 	}
 
 	@Test

@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
@@ -39,10 +38,14 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testCreate() {
 		String roleName = "test";
 		RoleRoot root = data().getMeshRoot().getRoleRoot();
-		Role role = root.create(roleName);
-		role = boot.roleRoot().findByUuid(role.getUuid());
-		assertNotNull(role);
-		assertEquals(roleName, role.getName());
+		Role createdRole = root.create(roleName);
+		assertNotNull(createdRole);
+		String uuid = createdRole.getUuid();
+		boot.roleRoot().findByUuid(uuid, rh -> {
+			Role role = rh.result();
+			assertNotNull(role);
+			assertEquals(roleName, role.getName());
+		});
 	}
 
 	@Test
@@ -200,8 +203,12 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		assertNotNull(boot.roleRoot().findByUuid(getRole().getUuid()));
-		assertNull(boot.roleRoot().findByUuid("bogus"));
+		boot.roleRoot().findByUuid(getRole().getUuid(), rh -> {
+			assertNotNull(rh.result());
+		});
+		boot.roleRoot().findByUuid("bogus", rh -> {
+			assertNull(rh.result());
+		});
 	}
 
 	@Test
@@ -223,9 +230,13 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		Role role = root.create(roleName);
 		String uuid = role.getUuid();
-		assertNotNull(boot.roleRoot().findByUuid(uuid));
-		role.delete();
-		assertNull(boot.roleRoot().findByUuid(uuid));
+		boot.roleRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+			role.delete();
+			boot.roleRoot().findByUuid(uuid, rh2 -> {
+				assertNull(rh2.result());
+			});
+		});
 
 	}
 
@@ -267,7 +278,9 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = getRole();
 		String uuid = role.getUuid();
 		role.delete();
-		assertNull(boot.roleRoot().findByUuid(uuid));
+		boot.roleRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
 	}
 
 	@Test
@@ -276,8 +289,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = getRole();
 		role.setName("newName");
 		assertEquals("newName", role.getName());
-		//		assertEquals(1,role.getProjects());
-		//TODO test project assignments
+		// assertEquals(1,role.getProjects());
+		// TODO test project assignments
 	}
 
 	@Test

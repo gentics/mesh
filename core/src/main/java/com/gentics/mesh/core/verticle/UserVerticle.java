@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
@@ -58,17 +59,15 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", READ_PERM, UserImpl.class, (AsyncResult<User> rh) -> {
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
-				}
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					User user = trh.result();
-					UserResponse restUser = user.transformToRest(getUser(rc));
-					tx.success();
+			String uuid = rc.request().params().get("uuid");
+			boot.userRoot().findByUuid(uuid, rh -> {
+				if (requestUser.hasPermission(rh.result(), READ_PERM)) {
+					UserResponse restUser = rh.result().transformToRest(getUser(rc));
 					rc.response().setStatusCode(200).end(toJson(restUser));
+				} else {
+					rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", rh.result().getUuid())));
 				}
 			});
 		});
@@ -92,7 +91,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						}
 						tx.success();
 					}
-					RestModelPagingHelper.setPaging(listResponse, userPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, userPage);
 					bch.complete(listResponse);
 				} catch (Exception e) {
 					bch.fail(e);

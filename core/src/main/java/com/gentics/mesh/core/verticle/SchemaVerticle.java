@@ -271,7 +271,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					for (SchemaContainer schema : schemaPage) {
 						listResponse.getData().add(schema.transformToRest(requestUser));
 					}
-					RestModelPagingHelper.setPaging(listResponse, schemaPage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, schemaPage);
 					bch.complete(listResponse);
 				} catch (Exception e) {
 					bch.fail(e);

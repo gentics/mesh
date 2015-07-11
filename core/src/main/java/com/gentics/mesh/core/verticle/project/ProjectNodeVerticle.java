@@ -317,7 +317,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 					for (Node node : nodePage) {
 						listResponse.getData().add(node.transformToRest(info));
 					}
-					RestModelPagingHelper.setPaging(listResponse, nodePage, pagingInfo);
+					RestModelPagingHelper.setPaging(listResponse, nodePage);
 					bch.complete(listResponse);
 				} catch (Exception e) {
 					bch.fail(e);

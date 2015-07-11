@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
@@ -10,7 +13,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface RootVertex<T extends MeshVertex> extends MeshVertex {
 
-	T findByUuid(String uuid);
+	RootVertex findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler);
 
 	List<? extends T> findAll();
 

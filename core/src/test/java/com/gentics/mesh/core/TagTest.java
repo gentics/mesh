@@ -78,8 +78,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		TagFamily root = data().getTagFamily("basic");
 		Tag tag = root.create(ENGLISH_NAME);
 		String uuid = tag.getUuid();
-		tag = tagRoot.findByUuid(uuid);
-		assertNotNull(tag);
+		tagRoot.findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+		});
 
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
@@ -95,21 +96,22 @@ public class TagTest extends AbstractBasicObjectTest {
 		node.addTag(tag);
 
 		// 4. Reload the tag and inspect the tagged nodes
-		tag = tagRoot.findByUuid(tag.getUuid());
+		tagRoot.findByUuid(tag.getUuid(), rh -> {
+			Tag reloadedTag = rh.result();
+			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
+			Node contentFromTag = reloadedTag.getNodes().iterator().next();
+			NodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
 
-		assertEquals("The tag should have exactly one node.", 1, tag.getNodes().size());
-		Node contentFromTag = tag.getNodes().iterator().next();
-		NodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
+			assertNotNull(contentFromTag);
+			assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
+			String filename = fieldContainer.getString("displayName").getString();
+			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
-		assertNotNull(contentFromTag);
-		assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
-		String filename = fieldContainer.getString("displayName").getString();
-		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
-
-		// Remove the file/content and check whether the content was really removed
-		tag.removeNode(contentFromTag);
-		// TODO verify for removed node
-		assertEquals("The tag should not have any file.", 0, tag.getNodes().size());
+			// Remove the file/content and check whether the content was really removed
+				reloadedTag.removeNode(contentFromTag);
+				// TODO verify for removed node
+				assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
+			});
 
 	}
 
@@ -122,15 +124,17 @@ public class TagTest extends AbstractBasicObjectTest {
 		Node node = data().getFolder("news");
 		node.addTag(tag);
 
-		Node reloadedNode = boot.nodeRoot().findByUuid(node.getUuid());
-		boolean found = false;
-		for (Tag currentTag : reloadedNode.getTags()) {
-			if (currentTag.getUuid().equals(tag.getUuid())) {
-				found = true;
+		boot.nodeRoot().findByUuid(node.getUuid(), rh -> {
+			Node reloadedNode = rh.result();
+			boolean found = false;
+			for (Tag currentTag : reloadedNode.getTags()) {
+				if (currentTag.getUuid().equals(tag.getUuid())) {
+					found = true;
+				}
 			}
-		}
+			assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
+		});
 
-		assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
 	}
 
 	@Test
@@ -188,8 +192,12 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() {
 		Tag tag = data().getTag("car");
-		assertNotNull(tagRoot.findByUuid(tag.getUuid()));
-		assertNull(tagRoot.findByUuid("bogus"));
+		tagRoot.findByUuid(tag.getUuid(), rh -> {
+			assertNotNull(rh.result());	
+		});
+		tagRoot.findByUuid("bogus", rh-> {
+			assertNull(rh.result());	
+		});
 	}
 
 	@Test
@@ -199,11 +207,13 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag tag = tagFamily.create(GERMAN_NAME);
 		assertNotNull(tag);
 		String uuid = tag.getUuid();
-		tag = tagRoot.findByUuid(uuid);
-		assertNotNull("The folder could not be found.", tag);
-		String name = tag.getName();
-		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-		assertEquals(10, tagFamily.getTags().size());
+		tagRoot.findByUuid(uuid, rh -> {
+			Tag loadedTag = rh.result();
+			assertNotNull("The folder could not be found.", loadedTag);
+			String name = loadedTag.getName();
+			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
+			assertEquals(10, tagFamily.getTags().size());
+		});
 	}
 
 	@Test
@@ -238,9 +248,13 @@ public class TagTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = data().getTagFamily("basic");
 		Tag tag = tagFamily.create("someTag");
 		String uuid = tag.getUuid();
-		assertNotNull(tagRoot.findByUuid(uuid));
-		tag.delete();
-		assertNull(tagRoot.findByUuid(uuid));
+		tagRoot.findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());	
+			tag.delete();
+			tagRoot.findByUuid(uuid, rh2 -> {
+				assertNull(rh2.result());	
+			});
+		});
 	}
 
 	@Test
@@ -274,7 +288,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag tag = data().getTag("red");
 		String uuid = tag.getUuid();
 		tag.remove();
-		assertNull(tagRoot.findByUuid(uuid));
+		tagRoot.findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
 	}
 
 	@Test
