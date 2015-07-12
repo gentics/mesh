@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.RoutingContextService;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -42,8 +41,12 @@ public class TagListHandler {
 
 			Page<? extends Tag> tagPage = tlc.findTags(projectName, node, pagingInfo);
 			for (Tag tag : tagPage) {
-				TransformationInfo info = new TransformationInfo(requestUser, null, rc);
-				listResponse.getData().add(tag.transformToRest(info));
+				tag.transformToRest(requestUser, th -> {
+					if (th.failed()) {
+						rc.fail(rh.cause());
+					}
+					listResponse.getData().add(th.result());
+				});
 			}
 			RestModelPagingHelper.setPaging(listResponse, tagPage);
 

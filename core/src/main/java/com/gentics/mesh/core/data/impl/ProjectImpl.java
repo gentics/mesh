@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LANG
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
 
 import java.util.List;
 
@@ -11,13 +12,14 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.node.impl.RootNodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
 public class ProjectImpl extends AbstractGenericNode implements Project {
@@ -68,7 +70,7 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 
 	@Override
 	public SchemaContainerRoot getSchemaRoot() {
-		return out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefault(SchemaContainerRootImpl.class, null);
+		return out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
 	}
 
 	@Override
@@ -78,7 +80,12 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 
 	@Override
 	public RootNode getRootNode() {
-		return out(HAS_ROOT_NODE).has(RootNodeImpl.class).nextOrDefault(RootNodeImpl.class, null);
+		return out(HAS_ROOT_NODE).has(RootNodeImpl.class).nextOrDefaultExplicit(RootNodeImpl.class, null);
+	}
+
+	@Override
+	public TagRoot getTagRoot() {
+		return out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefaultExplicit(TagRootImpl.class, null);
 	}
 
 	@Override
@@ -103,7 +110,17 @@ public class ProjectImpl extends AbstractGenericNode implements Project {
 			setRootNode(rootNode);
 		}
 		return rootNode;
+	}
 
+	@Override
+	public TagRoot createTagRoot() {
+		TagRoot root = getGraph().addFramedVertex(TagRootImpl.class);
+		setTagRoot(root);
+		return root;
+	}
+
+	private void setTagRoot(TagRoot root) {
+		linkOut(root.getImpl(), HAS_TAG_ROOT);
 	}
 
 	@Override

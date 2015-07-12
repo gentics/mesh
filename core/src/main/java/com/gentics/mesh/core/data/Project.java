@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
 public interface Project extends GenericNode {
@@ -41,5 +42,9 @@ public interface Project extends GenericNode {
 	void removeLanguage(Language language);
 
 	void addLanguage(Language language);
+
+	TagRoot getTagRoot();
+
+	TagRoot createTagRoot();
 
 }

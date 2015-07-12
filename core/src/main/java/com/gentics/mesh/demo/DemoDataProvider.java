@@ -561,7 +561,8 @@ public class DemoDataProvider {
 			throw new RuntimeException("Name for tag empty");
 		}
 		Tag tag = tagFamily.create(name);
-		tag.addProject(project);
+		
+		project.getTagRoot().addTag(tag);
 		setCreatorEditor(tag);
 		tags.put(name.toLowerCase(), tag);
 		return tag;

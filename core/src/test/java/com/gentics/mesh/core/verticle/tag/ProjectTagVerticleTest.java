@@ -48,7 +48,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		TagFamily basicTagFamily = data().getTagFamily("basic");
 		Tag noPermTag = basicTagFamily.create("noPermTag");
 		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-		noPermTag.addProject(data().getProject());
+		data().getProject().getTagRoot().addTag(noPermTag);
 		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters

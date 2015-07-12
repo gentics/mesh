@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
@@ -20,11 +23,9 @@ public interface Tag extends GenericNode {
 
 	TagFamily getTagFamily();
 
-	void addProject(Project project);
-
 	TagReference tansformToTagReference(TransformationInfo info);
 
-	TagResponse transformToRest(TransformationInfo info);
+	Tag transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagResponse>> resultHandler);
 
 	void removeNode(Node node);
 

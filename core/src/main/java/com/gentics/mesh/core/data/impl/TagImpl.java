@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 import java.util.List;
 
@@ -14,14 +17,17 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagFieldContainer;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.data.service.transformation.TransformationPool;
-import com.gentics.mesh.core.data.service.transformation.tag.TagTransformationTask;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.util.BlueprintTransaction;
+import io.vertx.core.Vertx;
 
 public class TagImpl extends GenericFieldContainerNode implements Tag {
 
@@ -55,12 +61,67 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 		unlinkIn(node.getImpl(), HAS_TAG);
 	}
 
-	public TagResponse transformToRest(TransformationInfo info) {
+	@Override
+	public Tag transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagResponse>> resultHandler) {
+		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
+		vertx.executeBlocking(bc -> {
+			TagResponse restTag = new TagResponse();
 
-		TagResponse restTag = new TagResponse();
-		TagTransformationTask task = new TagTransformationTask(this, info, restTag);
-		TransformationPool.getPool().invoke(task);
-		return restTag;
+			try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
+					.getFramedThreadedTransactionalGraph())) {
+				restTag.setPermissions(requestUser.getPermissionNames(this));
+				restTag.setUuid(getUuid());
+
+				TagFamily tagFamily = getTagFamily();
+
+				if (tagFamily != null) {
+					TagFamilyReference tagFamilyReference = new TagFamilyReference();
+					tagFamilyReference.setName(tagFamily.getName());
+					tagFamilyReference.setUuid(tagFamily.getUuid());
+					restTag.setTagFamilyReference(tagFamilyReference);
+				}
+
+				User creator = getCreator();
+				if (creator != null) {
+					restTag.setCreator(creator.transformToUserReference());
+				}
+
+				User editor = getEditor();
+				if (editor != null) {
+					restTag.setEditor(editor.transformToUserReference());
+				}
+
+				restTag.getFields().setName(getName());
+				tx.success();
+			}
+
+			// if (currentDepth < info.getMaxDepth()) {
+			// }
+			// if (info.isIncludeTags()) {
+			// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
+			// tag.getTags().parallelStream().forEachOrdered(tagConsumer);
+			// } else {
+			// restTag.setTags(null);
+			// }
+			//
+			// if (info.isIncludeContents()) {
+			// ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, currentDepth, restTag, tasks);
+			// tag.getContents().parallelStream().forEachOrdered(contentConsumer);
+			// } else {
+			// restTag.setContents(null);
+			// }
+			//
+			// if (info.isIncludeChildTags()) {
+			// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
+			// tag.getChildTags().parallelStream().forEachOrdered(tagConsumer);
+			// } else {
+			// restTag.setChildTags(null);
+			// }
+
+				bc.complete(restTag);
+
+			}, resultHandler);
+		return this;
 	}
 
 	public void setTagFamilyRoot(TagFamily root) {

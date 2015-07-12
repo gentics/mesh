@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -70,15 +69,16 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
-			//TODO this is not checking for the project name and project relationship. We _need_ to fix this!
+			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
 			rcs.loadObject(rc, "uuid", READ_PERM, TagFamilyImpl.class, (AsyncResult<TagFamily> rh) -> {
 				TagFamily tagFamily = rh.result();
 				TagListResponse listResponse = new TagListResponse();
 				try {
 					Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
 					for (Tag tag : tagPage) {
-						TransformationInfo info = new TransformationInfo(requestUser, null, rc);
-						listResponse.getData().add(tag.transformToRest(info));
+						tag.transformToRest(requestUser, th -> {
+							listResponse.getData().add(th.result());
+						});
 					}
 					RestModelPagingHelper.setPaging(listResponse, tagPage);
 					rc.response().setStatusCode(200).end(toJson(listResponse));
@@ -195,7 +195,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			Project project = boot.projectRoot().findByName(projectName);
 			TagFamilyRoot root = project.getTagFamilyRoot();
 			root.findByUuid(uuid, rh -> {
-				TagFamily tagFamily = rh.result();	
+				TagFamily tagFamily = rh.result();
 				if (tagFamily == null) {
 					rc.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_name", requestModel.getName())));
 					return;

@@ -143,11 +143,11 @@ public class TagTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 
-		Page<? extends Tag> tagPage = tagRoot.findProjectTags(requestUser, "dummy", new PagingInfo(1, 10));
+		Page<? extends Tag> tagPage = tagRoot.findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(12, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 
-		tagPage = tagRoot.findProjectTags(requestUser, "dummy", new PagingInfo(1, 14));
+		tagPage = tagRoot.findAll(requestUser, new PagingInfo(1, 14));
 		assertEquals(data().getTags().size(), tagPage.getTotalElements());
 		assertEquals(12, tagPage.getSize());
 	}
@@ -193,10 +193,10 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testFindByUUID() {
 		Tag tag = data().getTag("car");
 		tagRoot.findByUuid(tag.getUuid(), rh -> {
-			assertNotNull(rh.result());	
+			assertNotNull(rh.result());
 		});
-		tagRoot.findByUuid("bogus", rh-> {
-			assertNull(rh.result());	
+		tagRoot.findByUuid("bogus", rh -> {
+			assertNull(rh.result());
 		});
 	}
 
@@ -230,12 +230,16 @@ public class TagTest extends AbstractBasicObjectTest {
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		for (int i = 0; i < 100; i++) {
 			long start = System.currentTimeMillis();
-			TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-			TagResponse response = tag.transformToRest(info);
-			assertNotNull(response);
-			long dur = System.currentTimeMillis() - start;
-			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
-			JsonUtil.toJson(response);
+			tag.transformToRest(requestUser, th -> {
+				if (th.failed()) {
+					rc.fail(th.cause());
+				}
+				TagResponse response = th.result();
+				assertNotNull(response);
+				long dur = System.currentTimeMillis() - start;
+				log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
+				JsonUtil.toJson(response);
+			});
 		}
 		// assertEquals(2, response.getChildTags().size());
 		// assertEquals(4, response.getPerms().length);
@@ -249,10 +253,10 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag tag = tagFamily.create("someTag");
 		String uuid = tag.getUuid();
 		tagRoot.findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());	
+			assertNotNull(rh.result());
 			tag.delete();
 			tagRoot.findByUuid(uuid, rh2 -> {
-				assertNull(rh2.result());	
+				assertNull(rh2.result());
 			});
 		});
 	}

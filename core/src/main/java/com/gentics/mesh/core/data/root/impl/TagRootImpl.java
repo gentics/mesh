@@ -38,34 +38,34 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		removeTag(tag);
 	}
 
-	@Override
-	public Page<? extends Tag> findProjectTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo)
-			throws InvalidArgumentException {
-
-		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(TagImpl.class).mark().out(ASSIGNED_TO_PROJECT)
-				.has("name", projectName).back();
-		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(TagImpl.class).mark()
-				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
-		// String langFilter = getLanguageFilter("l");
-		// if (languageTags == null || languageTags.isEmpty()) {
-		// langFilter = "";
-		// } else {
-		// langFilter += " AND ";
-		// }
-		// String baseQuery = PERMISSION_PATTERN_ON_TAG;
-		// baseQuery += TAG_PROJECT_PATTERN;
-		// baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + "AND " + PROJECT_FILTER;
-		//
-		// String query = baseQuery + " WITH p, tag " + ORDER_BY_NAME + " RETURN DISTINCT tag as n";
-		// String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
-		//
-		// Map<String, Object> parameters = new HashMap<>();
-		// parameters.put("languageTags", languageTags);
-		// parameters.put("projectName", projectName);
-		// parameters.put("userUuid", userUuid);
-		// return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
-	}
+//	@Override
+//	public Page<? extends Tag> findProjectTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo)
+//			throws InvalidArgumentException {
+//
+//		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(TagImpl.class).mark().out(ASSIGNED_TO_PROJECT)
+//				.has("name", projectName).back();
+//		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(TagImpl.class).mark()
+//				.out(ASSIGNED_TO_PROJECT).has("name", projectName).back();
+//		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
+//		// String langFilter = getLanguageFilter("l");
+//		// if (languageTags == null || languageTags.isEmpty()) {
+//		// langFilter = "";
+//		// } else {
+//		// langFilter += " AND ";
+//		// }
+//		// String baseQuery = PERMISSION_PATTERN_ON_TAG;
+//		// baseQuery += TAG_PROJECT_PATTERN;
+//		// baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + "AND " + PROJECT_FILTER;
+//		//
+//		// String query = baseQuery + " WITH p, tag " + ORDER_BY_NAME + " RETURN DISTINCT tag as n";
+//		// String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
+//		//
+//		// Map<String, Object> parameters = new HashMap<>();
+//		// parameters.put("languageTags", languageTags);
+//		// parameters.put("projectName", projectName);
+//		// parameters.put("userUuid", userUuid);
+//		// return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
+//	}
 
 	// static String PERMISSION_PATTERN_ON_TAG =
 	// "MATCH (requestUser:User)-[:MEMBER_OF]->(group:Group)<-[:HAS_ROLE]-(role:Role)-[perm:HAS_PERMISSION]->(tag:Tag)-[l:HAS_I18N_PROPERTIES]-(p:I18NProperties) ";

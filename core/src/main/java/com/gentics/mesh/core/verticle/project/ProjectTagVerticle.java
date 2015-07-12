@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
-import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -15,11 +14,10 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
-
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -35,7 +33,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagImpl;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -43,6 +40,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.NodeListHandler;
 import com.gentics.mesh.core.verticle.handler.TagListHandler;
+import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -100,25 +98,44 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			MeshAuthUser requestUser = getUser(rc);
 
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, TagImpl.class, (AsyncResult<Tag> rh) -> {
-				Tag tag = rh.result();
+			Project project = boot.projectRoot().findByName(projectName);
+			if (project == null) {
+				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
+				// TODO i18n error
+			} else {
+				String uuid = rc.request().params().get("uuid");
+				project.getTagRoot().findByUuid(uuid, rh -> {
+					if (rh.failed()) {
+						rc.fail(rh.cause());
+					} else {
+						MeshAuthUser requestUser = getUser(rc);
+						if (requestUser.hasPermission(rh.result(), UPDATE_PERM)) {
+							Tag tag = rh.result();
 
-				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
+							TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 
-				if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
-					return;
-				}
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					tag.setName(requestModel.getFields().getName());
-					tx.success();
-				}
-				TransformationInfo info = new TransformationInfo(requestUser, null, rc);
+							if (StringUtils.isEmpty(requestModel.getFields().getName())) {
+								rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
+								return;
+							}
+							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+								tag.setName(requestModel.getFields().getName());
+								tx.success();
+							}
 
-				rc.response().setStatusCode(200).end(toJson(tag.transformToRest(info)));
-			});
+							tag.transformToRest(requestUser, rh2 -> {
+								if (rh2.failed()) {
+									rc.fail(rh2.cause());
+								}
+								rc.response().setStatusCode(200).end(toJson(rh2.result()));
+							});
+						} else {
+							rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", uuid)));
+						}
+					}
+				});
+			}
 
 		});
 
@@ -134,8 +151,6 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
-
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
 
@@ -144,18 +159,22 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 				return;
 			}
 
-			//TODO check tag family reference for null
+			// TODO check tag family reference for null
 
 			rcs.loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, TagFamily.class, (AsyncResult<TagFamily> rh) -> {
 				TagFamily tagFamily = rh.result();
 				Tag newTag = tagFamily.create(requestModel.getFields().getName());
 				Project project = boot.projectRoot().findByName(projectName);
-				newTag.addProject(project);
+				project.getTagRoot().addTag(newTag);
 				tagCreated.complete(newTag);
 			}, trh -> {
 				Tag newTag = tagCreated.result();
-				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-				rc.response().setStatusCode(200).end(toJson(newTag.transformToRest(info)));
+				newTag.transformToRest(requestUser, rh -> {
+					if (rh.failed()) {
+						rc.fail(rh.cause());
+					}
+					rc.response().setStatusCode(200).end(toJson(rh.result()));
+				});
 			});
 
 		});
@@ -166,13 +185,14 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
-
 			rcs.loadObject(rc, "uuid", READ_PERM, TagImpl.class, (AsyncResult<Tag> trh) -> {
 				Tag tag = trh.result();
-				TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-
-				rc.response().setStatusCode(200).end(toJson(tag.transformToRest(info)));
+				tag.transformToRest(requestUser, th -> {
+					if (th.failed()) {
+						rc.fail(th.cause());
+					}
+					rc.response().setStatusCode(200).end(toJson(th.result()));
+				});
 			});
 		});
 
@@ -181,29 +201,47 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 			String projectName = rcs.getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 
-			vertx.executeBlocking((Future<TagListResponse> bcr) -> {
+			Project project = boot.projectRoot().findByName(projectName);
+			if (project == null) {
+				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
+				// TODO i18n error
+			} else {
 				TagListResponse listResponse = new TagListResponse();
 				PagingInfo pagingInfo = getPagingInfo(rc);
 				Page<? extends Tag> tagPage;
 				try {
-					tagPage = boot.tagRoot().findProjectTags(requestUser, projectName, pagingInfo);
-					for (Tag tag : tagPage) {
-						TransformationInfo info = new TransformationInfo(requestUser, null, rc);
-						listResponse.getData().add(tag.transformToRest(info));
-					}
+					tagPage = project.getTagRoot().findAll(requestUser, pagingInfo);
 					RestModelPagingHelper.setPaging(listResponse, tagPage);
-					bcr.complete(listResponse);
+
+					Handler<AsyncResult<Void>> completionHandler = v -> {
+						if (v.failed()) {
+							rc.fail(v.cause());
+						} else {
+							rc.response().setStatusCode(200).end(toJson(listResponse));
+						}
+					};
+
+					if (listResponse.getData().size() == tagPage.getSize()) {
+						completionHandler.handle(Future.succeededFuture());
+					}
+					for (Tag tag : tagPage) {
+						tag.transformToRest(requestUser, th -> {
+							if (th.failed()) {
+								completionHandler.handle(Future.failedFuture(th.cause()));
+							} else {
+								listResponse.getData().add(th.result());
+								if (listResponse.getData().size() == tagPage.getSize()) {
+									completionHandler.handle(Future.succeededFuture());
+								}
+							}
+						});
+
+					}
+
 				} catch (Exception e) {
-					bcr.fail(e);
+					rc.fail(e);
 				}
-			}, arh -> {
-				if (arh.failed()) {
-					rc.fail(arh.cause());
-					return;
-				}
-				TagListResponse listResponse = arh.result();
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
+			}
 
 		});
 
@@ -214,19 +252,28 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, DELETE_PERM, TagImpl.class, (AsyncResult<Tag> rh) -> {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					Tag tag = rh.result();
-					tag.delete();
-					tx.success();
-				}
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
-				}
+
+			Project project = boot.projectRoot().findByName(projectName);
+			if (project == null) {
+				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
+				// TODO i18n error
+			} else {
 				String uuid = rc.request().params().get("uuid");
-				rc.response().setStatusCode(200).end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
-			});
+				project.getTagRoot().findByUuid(uuid, rh -> {
+					if (rh.failed()) {
+						rc.fail(rh.cause());
+					} else {
+						MeshAuthUser requestUser = getUser(rc);
+						if (requestUser.hasPermission(rh.result(), DELETE_PERM)) {
+							rh.result().delete();
+							rc.response().setStatusCode(200).end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "tag_deleted", uuid))));
+						} else {
+							rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", uuid)));
+						}
+					}
+				});
+			}
+
 		});
 	}
 
