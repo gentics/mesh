@@ -1,19 +1,16 @@
 package com.gentics.mesh.core.data;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 
-public interface Tag extends GenericNode {
+public interface Tag extends GenericNode<TagResponse> {
 
 	void setName(String name);
 
@@ -23,9 +20,7 @@ public interface Tag extends GenericNode {
 
 	TagFamily getTagFamily();
 
-	TagReference tansformToTagReference(TransformationInfo info);
-
-	Tag transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagResponse>> resultHandler);
+	TagReference tansformToTagReference(TransformationParameters info);
 
 	void removeNode(Node node);
 

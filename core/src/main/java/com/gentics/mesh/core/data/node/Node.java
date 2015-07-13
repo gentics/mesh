@@ -12,14 +12,12 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface Node extends ContainerNode {
+public interface Node extends ContainerNode<NodeResponse> {
 
 	void addTag(Tag tag);
 
@@ -41,18 +39,16 @@ public interface Node extends ContainerNode {
 
 	List<? extends FieldContainer> getFieldContainers();
 
-	NodeResponse transformToRest(TransformationInfo info);
+	//TODO why do we need the projectname here?
+	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo);
 
-	String getNodeResponseJson(TransformationInfo info);
-
-	NodeImpl getImpl();
-
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
-
-	Page<? extends Tag> getTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo) throws InvalidArgumentException;
+	//TODO why do we need the projectname here?
+	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 	void delete();
 
 	void createLink(Node node);
+
+	NodeImpl getImpl();
 
 }

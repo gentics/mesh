@@ -10,7 +10,7 @@ import java.util.Map;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 
-public class TransformationInfo {
+public class TransformationParameters {
 
 	private MeshAuthUser requestUser;
 	private List<String> languageTags = new ArrayList<>();
@@ -18,7 +18,7 @@ public class TransformationInfo {
 	// Storage for object references
 	private Map<String, AbstractRestModel> objectReferences = new HashMap<>();
 
-	public TransformationInfo(MeshAuthUser requestUser, List<String> languageTags, RoutingContext rc) {
+	public TransformationParameters(MeshAuthUser requestUser, List<String> languageTags, RoutingContext rc) {
 		this.requestUser = requestUser;
 		this.languageTags = languageTags;
 		this.rc = rc;

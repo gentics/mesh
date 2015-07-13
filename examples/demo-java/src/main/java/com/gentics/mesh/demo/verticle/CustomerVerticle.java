@@ -1,8 +1,6 @@
 package com.gentics.mesh.demo.verticle;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -40,7 +38,6 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 
 	public CustomerVerticle() {
 		super("test");
-
 	}
 
 	@Override

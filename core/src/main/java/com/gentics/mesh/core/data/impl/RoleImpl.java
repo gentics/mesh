@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 
 import java.util.HashSet;
 import java.util.List;
@@ -14,10 +17,11 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
-public class RoleImpl extends AbstractGenericNode implements Role {
+public class RoleImpl extends AbstractGenericNode<RoleResponse> implements Role {
 
 	// TODO index on name
 	public String getName() {
@@ -42,7 +46,7 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 	}
 
 	@Override
-	public boolean hasPermission(Permission permission, GenericNode node) {
+	public boolean hasPermission(Permission permission, GenericNode<?> node) {
 		return out(permission.label()).retain(node.getImpl()).hasNext();
 	}
 
@@ -72,7 +76,7 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 	// }
 
 	@Override
-	public RoleResponse transformToRest(MeshAuthUser requestUser) {
+	public Role transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<RoleResponse>> handler, TransformationParameters... parameters) {
 
 		RoleResponse restRole = new RoleResponse();
 		restRole.setName(getName());
@@ -85,7 +89,8 @@ public class RoleImpl extends AbstractGenericNode implements Role {
 			restRole.getGroups().add(restGroup);
 		}
 
-		return restRole;
+		handler.handle(Future.succeededFuture(restRole));
+		return this;
 	}
 
 	public void revokePermissions(MeshVertex node, Permission... permissions) {

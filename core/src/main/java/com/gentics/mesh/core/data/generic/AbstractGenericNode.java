@@ -14,9 +14,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.common.AbstractRestModel;
 
-public abstract class AbstractGenericNode extends MeshVertexImpl implements GenericNode, ProjectNode {
+public abstract class AbstractGenericNode<T extends AbstractRestModel> extends MeshVertexImpl implements GenericNode<T>, ProjectNode {
 
 	@Override
 	public List<? extends ProjectImpl> getProjects() {

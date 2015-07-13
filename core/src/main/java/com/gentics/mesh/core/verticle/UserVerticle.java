@@ -12,7 +12,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.ext.web.Route;
 
@@ -23,21 +22,15 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.GroupImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.util.BlueprintTransaction;
-import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -61,13 +54,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			String uuid = rc.request().params().get("uuid");
-			boot.userRoot().findByUuid(uuid, rh -> {
-				if (requestUser.hasPermission(rh.result(), READ_PERM)) {
-					UserResponse restUser = rh.result().transformToRest(getUser(rc));
-					rc.response().setStatusCode(200).end(toJson(restUser));
-				} else {
-					rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", rh.result().getUuid())));
+			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					rh.result().transformToRest(getUser(rc), th -> {
+						rc.response().setStatusCode(200).end(toJson(rh.result()));
+					});
 				}
 			});
 		});
@@ -79,31 +70,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			MeshAuthUser requestUser = getUser(rc);
 			PagingInfo pagingInfo = getPagingInfo(rc);
-			vertx.executeBlocking((Future<UserListResponse> bch) -> {
-				UserListResponse listResponse = new UserListResponse();
 
-				Page<? extends User> userPage;
-				try {
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						userPage = boot.userRoot().findAll(requestUser, pagingInfo);
-						for (User currentUser : userPage) {
-							listResponse.getData().add(currentUser.transformToRest(requestUser));
-						}
-						tx.success();
-					}
-					RestModelPagingHelper.setPaging(listResponse, userPage);
-					bch.complete(listResponse);
-				} catch (Exception e) {
-					bch.fail(e);
+			loadObjects(rc, boot.userRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					rc.response().setStatusCode(200).end(toJson(rh.result()));
 				}
-
-			}, arh -> {
-				if (arh.failed()) {
-					rc.fail(arh.cause());
-				}
-				UserListResponse list = arh.result();
-				rc.response().setStatusCode(200).end(toJson(list));
-			});
+			}, new UserListResponse());
 		});
 	}
 
@@ -111,15 +83,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", DELETE_PERM, UserImpl.class, (AsyncResult<User> rh) -> {
+			loadObject(rc, "uuid", DELETE_PERM, boot.userRoot(), rh -> {
 				User user = rh.result();
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					user.delete();
 					tx.success();
-				}
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
 				}
 				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
 			});
@@ -129,7 +97,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, UserImpl.class, (AsyncResult<User> rh) -> {
+			loadObject(rc, "uuid", UPDATE_PERM, boot.userRoot(), rh -> {
 				User user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
@@ -159,12 +127,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					}
 					tx.success();
 				}
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
-				}
-				User user = trh.result();
-				rc.response().setStatusCode(200).end(toJson(user.transformToRest(getUser(rc))));
+				user.transformToRest(getUser(rc), th -> {
+					rc.response().setStatusCode(200).end(toJson(th.result()));
+				});
 			});
 
 		});
@@ -197,7 +162,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			Future<User> userCreated = Future.future();
 			// Load the parent group for the user
-			rcs.loadObjectByUuid(rc, groupUuid, CREATE_PERM, GroupImpl.class, (AsyncResult<Group> rh) -> {
+			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
 
 				Group parentGroup = rh.result();
 
@@ -219,12 +184,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					userCreated.complete(user);
 					tx.success();
 				}
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
-				}
 				User user = userCreated.result();
-				rc.response().setStatusCode(200).end(toJson(user.transformToRest(requestUser)));
+				user.transformToRest(requestUser, th -> {
+					rc.response().setStatusCode(200).end(toJson(th.result()));
+				});
 			});
 
 		});

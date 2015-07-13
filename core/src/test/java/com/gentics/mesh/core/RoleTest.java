@@ -13,6 +13,7 @@ import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -213,13 +214,18 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() {
+	public void testTransformation() throws InterruptedException {
 		Role role = getRole();
-		RoleResponse restModel = role.transformToRest(getRequestUser());
-		assertNotNull(restModel);
+		CountDownLatch latch = new CountDownLatch(1);
+		role.transformToRest(getRequestUser(), rh -> {
+			RoleResponse restModel = rh.result();
+			assertNotNull(restModel);
+			assertEquals(role.getName(), restModel.getName());
+			assertEquals(role.getUuid(), restModel.getUuid());
+			latch.countDown();
+		});
+		latch.await();
 
-		assertEquals(role.getName(), restModel.getName());
-		assertEquals(role.getUuid(), restModel.getUuid());
 	}
 
 	@Test

@@ -12,8 +12,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.ext.web.Route;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +26,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -65,12 +62,12 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addReadTagsHandler() {
 		Route route = route("/:tagFamilyUuid/tags").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
+			Project project = getProject(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
-			rcs.loadObject(rc, "uuid", READ_PERM, TagFamilyImpl.class, (AsyncResult<TagFamily> rh) -> {
+			loadObject(rc, "uuid", READ_PERM, project.getTagFamilyRoot(), rh -> {
 				TagFamily tagFamily = rh.result();
 				TagListResponse listResponse = new TagListResponse();
 				try {
@@ -93,7 +90,8 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route deleteRoute = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			rcs.loadObject(rc, "uuid", DELETE_PERM, TagFamilyImpl.class, (AsyncResult<TagFamily> rh) -> {
+			Project project = getProject(rc);
+			loadObject(rc, "uuid", DELETE_PERM, project.getTagFamilyRoot(), rh -> {
 				TagFamily tagFamily = rh.result();
 				tagFamily.delete();
 				String uuid = rc.request().params().get("uuid");
@@ -106,46 +104,22 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		readRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-			MeshAuthUser requestUser = getUser(rc);
-
-			rcs.loadObject(rc, "uuid", READ_PERM, TagFamilyImpl.class, (AsyncResult<TagFamily> rh) -> {
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
+			Project project = getProject(rc);
+			loadAndTransform(rc, "uuid", READ_PERM, project.getTagFamilyRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					rc.response().setStatusCode(200).end(JsonUtil.toJson(rh.result()));
 				}
-				TagFamily tagFamily = trh.result();
-				rc.response().setStatusCode(200).end(JsonUtil.toJson(tagFamily.transformToRest(requestUser)));
 			});
-
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-			MeshAuthUser requestUser = getUser(rc);
-			vertx.executeBlocking((Future<TagFamilyListResponse> bcr) -> {
-				TagFamilyListResponse listResponse = new TagFamilyListResponse();
-				PagingInfo pagingInfo = getPagingInfo(rc);
-				Page<? extends TagFamily> tagfamilyPage;
-				try {
-					tagfamilyPage = boot.projectRoot().findByName(projectName).getTagFamilyRoot().findAll(requestUser, pagingInfo);
-					for (TagFamily tagFamily : tagfamilyPage) {
-						listResponse.getData().add(tagFamily.transformToRest(requestUser));
-					}
-					RestModelPagingHelper.setPaging(listResponse, tagfamilyPage);
-					bcr.complete(listResponse);
-				} catch (Exception e) {
-					bcr.fail(e);
+			Project project = getProject(rc);
+			loadObjects(rc, project.getTagFamilyRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					rc.response().setStatusCode(200).end(toJson(rh.result()));
 				}
-			}, arh -> {
-				if (arh.failed()) {
-					rc.fail(arh.cause());
-					return;
-				}
-				TagFamilyListResponse listResponse = arh.result();
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
+			}, new TagFamilyListResponse());
 
 		});
 
@@ -154,7 +128,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addCreateHandler() {
 		Route createRoute = route().method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
+			String projectName = getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			TagFamilyCreateRequest requestModel = fromJson(rc, TagFamilyCreateRequest.class);
 
@@ -173,7 +147,9 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
 					tx.success();
 				}
-				rc.response().end(JsonUtil.toJson(tagFamily.transformToRest(requestUser)));
+				tagFamily.transformToRest(requestUser, th -> {
+					rc.response().end(JsonUtil.toJson(th.result()));	
+				});
 			} else {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", root.getUuid())));
 			}
@@ -183,7 +159,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addUpdateHandler() {
 		Route updateRoute = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		updateRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
+			String projectName = getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
 
@@ -203,7 +179,9 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 				if (requestUser.hasPermission(tagFamily, UPDATE_PERM)) {
 					tagFamily.setName(requestModel.getName());
 				}
-				rc.response().end(JsonUtil.toJson(tagFamily.transformToRest(requestUser)));
+				tagFamily.transformToRest(requestUser, th -> {
+					rc.response().end(JsonUtil.toJson(th.result()));
+				});
 			});
 
 		});

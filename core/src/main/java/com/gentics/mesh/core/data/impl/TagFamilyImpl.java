@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 
 import java.util.List;
 
@@ -11,14 +14,14 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class TagFamilyImpl extends AbstractGenericNode implements TagFamily {
+public class TagFamilyImpl extends AbstractGenericNode<TagFamilyResponse> implements TagFamily {
 
 	public String getName() {
 		return getProperty("name");
@@ -67,12 +70,13 @@ public class TagFamilyImpl extends AbstractGenericNode implements TagFamily {
 	}
 
 	@Override
-	public TagFamilyResponse transformToRest(MeshAuthUser requestUser) {
+	public TagFamily transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagFamilyResponse>> handler, TransformationParameters... parameters) {
 		TagFamilyResponse response = new TagFamilyResponse();
 		response.setName(getName());
 
 		fillRest(response, requestUser);
-		return response;
+		handler.handle(Future.succeededFuture(response));
+		return this;
 	}
 
 	@Override

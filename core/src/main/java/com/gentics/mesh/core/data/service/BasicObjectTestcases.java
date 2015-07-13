@@ -32,7 +32,7 @@ public interface BasicObjectTestcases {
 
 	void testCreatePermission();
 
-	void testTransformation() throws IOException;
+	void testTransformation() throws IOException, InterruptedException;
 
 	void testCreateDelete();
 

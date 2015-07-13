@@ -5,10 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -90,18 +90,23 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		boot.groupRoot().findByUuid(getGroup().getUuid(), rh-> {
+		boot.groupRoot().findByUuid(getGroup().getUuid(), rh -> {
 			assertNotNull(rh.result());
 		});
 	}
 
 	@Test
 	@Override
-	public void testTransformation() {
-		GroupResponse response = getGroup().transformToRest(getRequestUser());
-		assertNotNull(response);
-		assertEquals(getGroup().getUuid(), response.getUuid());
-		assertEquals(getGroup().getName(), response.getName());
+	public void testTransformation() throws InterruptedException {
+		CountDownLatch latch = new CountDownLatch(1);
+		getGroup().transformToRest(getRequestUser(), rh -> {
+			GroupResponse response = rh.result();
+			assertNotNull(response);
+			assertEquals(getGroup().getUuid(), response.getUuid());
+			assertEquals(getGroup().getName(), response.getName());
+			latch.countDown();
+		});
+		latch.await();
 	}
 
 	@Test

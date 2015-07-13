@@ -349,6 +349,7 @@ public class DemoDataProvider {
 
 		project = root.getProjectRoot().create(PROJECT_NAME);
 		project.setCreator(userInfo.getUser());
+		project.setEditor(userInfo.getUser());
 		project.addLanguage(getEnglish());
 		project.addLanguage(getGerman());
 

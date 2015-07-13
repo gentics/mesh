@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
@@ -13,17 +12,18 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public abstract class AbstractRootVertex<T extends MeshVertex> extends MeshVertexImpl implements RootVertex<T> {
+public abstract class AbstractRootVertex<T extends GenericNode<TR>, TR extends AbstractRestModel> extends MeshVertexImpl implements RootVertex<T, TR> {
 
 	abstract protected Class<? extends T> getPersistanceClass();
 

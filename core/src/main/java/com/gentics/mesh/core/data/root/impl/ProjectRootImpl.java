@@ -7,8 +7,9 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 
-public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
+public class ProjectRootImpl extends AbstractRootVertex<Project, ProjectResponse> implements ProjectRoot {
 
 	@Override
 	protected Class<? extends Project> getPersistanceClass() {

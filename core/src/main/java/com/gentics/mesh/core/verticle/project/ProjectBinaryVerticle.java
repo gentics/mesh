@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.json.JsonUtil.toJson;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.FileUpload;
 
@@ -16,9 +14,10 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RoutingContextHelper;
 
 @Component
@@ -47,14 +46,14 @@ public class ProjectBinaryVerticle extends AbstractProjectRestVerticle {
 	private void addFileuploadHandler() {
 		route("/:uuid").method(HttpMethod.POST).handler(rc -> {
 			MeshAuthUser user = RoutingContextHelper.getUser(rc);
-			String projectName = rcs.getProjectName(rc);
-			rcs.loadObject(rc, "uuid", projectName, UPDATE_PERM, NodeImpl.class, (AsyncResult<Node> rh) -> {
+			Project project = getProject(rc);
+			loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 				Node node = rh.result();
 				Set<FileUpload> fileUploads = rc.fileUploads();
 				for (FileUpload ul : fileUploads) {
 					System.out.println(ul.fileName());
 				}
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "binary_field_updated", node.getUuid()))));
+				rc.response().setStatusCode(200).end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "binary_field_updated", node.getUuid()))));
 			});
 		});
 	}

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface Group extends GenericNode {
+public interface Group extends GenericNode<GroupResponse> {
 
 	String getName();
 
@@ -29,8 +29,6 @@ public interface Group extends GenericNode {
 	Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
-
-	GroupResponse transformToRest(MeshAuthUser requestUser);
 
 	void removeRole(Role role);
 

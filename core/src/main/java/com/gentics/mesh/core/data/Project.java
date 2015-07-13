@@ -4,12 +4,13 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.RootNode;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
-public interface Project extends GenericNode {
+public interface Project extends GenericNode<ProjectResponse> {
 
 	RootNode getOrCreateRootNode();
 
@@ -27,10 +28,6 @@ public interface Project extends GenericNode {
 
 	void delete();
 
-	ProjectResponse transformToRest(MeshAuthUser requestUser);
-
-	ProjectImpl getImpl();
-
 	void setSchemaRoot(SchemaContainerRoot schemaRoot);
 
 	TagFamilyRoot createTagFamilyRoot();
@@ -47,4 +44,13 @@ public interface Project extends GenericNode {
 
 	TagRoot createTagRoot();
 
+	NodeRoot getNodeRoot();
+
+	NodeRoot createNodeRoot();
+
+	void setTagRoot(TagRoot root);
+
+	void setNodeRoot(NodeRoot root);
+
+	ProjectImpl getImpl();
 }

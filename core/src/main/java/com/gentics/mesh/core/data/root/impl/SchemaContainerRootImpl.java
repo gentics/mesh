@@ -7,8 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
 
-public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
+public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer, SchemaResponse> implements SchemaContainerRoot {
 
 	@Override
 	protected Class<? extends SchemaContainer> getPersistanceClass() {

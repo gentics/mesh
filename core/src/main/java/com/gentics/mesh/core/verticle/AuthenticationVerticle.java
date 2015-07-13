@@ -25,7 +25,9 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		route("/*").handler(springConfiguration.authHandler());
 		route("/me").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-			rc.response().end(JsonUtil.toJson(requestUser.transformToRest(requestUser)));
+			requestUser.transformToRest(requestUser, rh -> {
+				rc.response().end(JsonUtil.toJson(rh.result()));
+			});
 		});
 		route("/login").method(GET).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			//			GenericResponse<String> response = new GenericResponse<>();
@@ -34,5 +36,4 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 			});
 
 	}
-
 }

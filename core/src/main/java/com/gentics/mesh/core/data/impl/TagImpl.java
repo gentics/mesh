@@ -21,15 +21,14 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
-import io.vertx.core.Vertx;
 
-public class TagImpl extends GenericFieldContainerNode implements Tag {
+public class TagImpl extends GenericFieldContainerNode<TagResponse> implements Tag {
 
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
@@ -62,7 +61,7 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 	}
 
 	@Override
-	public Tag transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagResponse>> resultHandler) {
+	public Tag transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagResponse>> resultHandler, TransformationParameters... parameters) {
 		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
 		vertx.executeBlocking(bc -> {
 			TagResponse restTag = new TagResponse();
@@ -167,7 +166,7 @@ public class TagImpl extends GenericFieldContainerNode implements Tag {
 	}
 
 	@Override
-	public TagReference tansformToTagReference(TransformationInfo info) {
+	public TagReference tansformToTagReference(TransformationParameters info) {
 		TagReference reference = new TagReference();
 		reference.setUuid(getUuid());
 		reference.setName(getName());

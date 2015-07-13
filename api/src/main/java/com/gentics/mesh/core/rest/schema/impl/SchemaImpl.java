@@ -3,10 +3,11 @@ package com.gentics.mesh.core.rest.schema.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 
-public class SchemaImpl implements Schema {
+public class SchemaImpl extends AbstractRestModel implements Schema {
 
 	private String name;
 	private String description;

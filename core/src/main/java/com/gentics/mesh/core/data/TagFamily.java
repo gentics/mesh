@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface TagFamily extends GenericNode {
+public interface TagFamily extends GenericNode<TagFamilyResponse> {
 
 	String getName();
 
@@ -27,8 +27,6 @@ public interface TagFamily extends GenericNode {
 	List<? extends Tag> getTags();
 
 	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
-
-	TagFamilyResponse transformToRest(MeshAuthUser requestUser);
 
 	void delete();
 

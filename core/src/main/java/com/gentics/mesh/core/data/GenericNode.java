@@ -2,7 +2,9 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
-public interface GenericNode extends MeshVertex {
+import com.gentics.mesh.core.rest.common.AbstractRestModel;
+
+public interface GenericNode<T extends AbstractRestModel> extends MeshVertex, TransformableNode<T> {
 
 	void setCreator(User user);
 

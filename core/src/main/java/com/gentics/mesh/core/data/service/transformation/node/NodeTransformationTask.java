@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -41,17 +41,17 @@ public class NodeTransformationTask extends RecursiveTask<Void> {
 	private static final Logger log = LoggerFactory.getLogger(NodeTransformationTask.class);
 
 	private Node node;
-	private TransformationInfo info;
+	private TransformationParameters info;
 	private NodeResponse restNode;
 	private int depth;
 
-	public NodeTransformationTask(Node node, TransformationInfo info, NodeResponse restNode, int depth) {
+	public NodeTransformationTask(Node node, TransformationParameters info, NodeResponse restNode, int depth) {
 		this.node = node;
 		this.info = info;
 		this.restNode = restNode;
 	}
 
-	public NodeTransformationTask(Node node, TransformationInfo info, NodeResponse restContent) {
+	public NodeTransformationTask(Node node, TransformationParameters info, NodeResponse restContent) {
 		this(node, info, restContent, 0);
 	}
 

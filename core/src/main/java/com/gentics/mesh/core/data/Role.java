@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
-public interface Role extends GenericNode {
+public interface Role extends GenericNode<RoleResponse> {
 
 	void addPermissions(MeshVertex vertex, Permission... permissions);
 
@@ -24,8 +24,6 @@ public interface Role extends GenericNode {
 
 	void delete();
 
-	boolean hasPermission(Permission permission, GenericNode node);
-
-	RoleResponse transformToRest(MeshAuthUser requestUser);
+	boolean hasPermission(Permission permission, GenericNode<?> node);
 
 }

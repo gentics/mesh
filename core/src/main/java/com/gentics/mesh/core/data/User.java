@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
-public interface User extends GenericNode {
+public interface User extends GenericNode<UserResponse> {
 
 	String getUsername();
 
@@ -35,8 +35,6 @@ public interface User extends GenericNode {
 	boolean hasPermission(MeshVertex vertex, Permission permission);
 
 	String[] getPermissionNames(MeshVertex vertex);
-
-	UserResponse transformToRest(MeshAuthUser requestUser);
 
 	List<? extends Group> getGroups();
 

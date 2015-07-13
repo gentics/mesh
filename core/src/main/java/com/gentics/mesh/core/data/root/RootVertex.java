@@ -7,11 +7,13 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface RootVertex<T extends MeshVertex> extends MeshVertex {
+public interface RootVertex<T extends GenericNode<TR>, TR extends AbstractRestModel> extends MeshVertex {
 
 	RootVertex findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler);
 

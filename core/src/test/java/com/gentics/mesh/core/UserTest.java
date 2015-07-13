@@ -123,15 +123,20 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() {
-		UserResponse restUser = getUser().transformToRest(getRequestUser());
-		assertNotNull(restUser);
-		assertEquals(getUser().getUsername(), restUser.getUsername());
-		assertEquals(getUser().getUuid(), restUser.getUuid());
-		assertEquals(getUser().getLastname(), restUser.getLastname());
-		assertEquals(getUser().getFirstname(), restUser.getFirstname());
-		assertEquals(getUser().getEmailAddress(), restUser.getEmailAddress());
-		assertEquals(1, restUser.getGroups().size());
+	public void testTransformation() throws InterruptedException {
+		CountDownLatch latch = new CountDownLatch(1);
+		getUser().transformToRest(getRequestUser(), rh -> {
+			UserResponse restUser = rh.result();
+			assertNotNull(restUser);
+			assertEquals(getUser().getUsername(), restUser.getUsername());
+			assertEquals(getUser().getUuid(), restUser.getUuid());
+			assertEquals(getUser().getLastname(), restUser.getLastname());
+			assertEquals(getUser().getFirstname(), restUser.getFirstname());
+			assertEquals(getUser().getEmailAddress(), restUser.getEmailAddress());
+			assertEquals(1, restUser.getGroups().size());
+			latch.countDown();
+		});
+		latch.await();
 	}
 
 	@Test

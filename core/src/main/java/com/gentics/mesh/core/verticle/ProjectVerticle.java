@@ -6,13 +6,11 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.json.JsonUtil.toJson;
-import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.ext.web.Route;
 
@@ -23,12 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -36,7 +31,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
-import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -58,18 +52,17 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		addDeleteHandler();
 	}
 
-
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-			String uuid = rc.request().params().get("uuid");
-			rcs.loadObject(rc, "uuid", UPDATE_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
-				Project project = rh.result();
+			loadObject(rc, "uuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
 
-				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
+					Project project = rh.result();
+					ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 
-				// Check for conflicting project name
+					// Check for conflicting project name
 					if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
 						if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name")));
@@ -78,10 +71,13 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 						project.setName(requestModel.getName());
 					}
 
-				}, trh -> {
-					Project project = trh.result();
-					rc.response().setStatusCode(200).end(toJson(project.transformToRest(requestUser)));
-				});
+					project.transformToRest(requestUser, th -> {
+						if (hasSucceeded(rc, th)) {
+							rc.response().setStatusCode(200).end(toJson(th.result()));
+						}
+					});
+				}
+			});
 		});
 	}
 
@@ -110,32 +106,35 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			rcs.hasPermission(rc, boot.projectRoot(), CREATE_PERM, rh -> {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
-					return;
-				}
-
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					ProjectRoot projectRoot = boot.projectRoot();
-					Project project = projectRoot.create(requestModel.getName());
-					project.setCreator(requestUser);
-					try {
-						routerStorage.addProjectRouter(project.getName());
-						String msg = "Registered project {" + project.getName() + "}";
-						log.info(msg);
-						requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project);
-						tx.success();
-						projectCreated.complete(project);
-					} catch (Exception e) {
-						// TODO should we really fail here?
+				} else {
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						ProjectRoot projectRoot = boot.projectRoot();
+						Project project = projectRoot.create(requestModel.getName());
+						project.setCreator(requestUser);
+						try {
+							routerStorage.addProjectRouter(project.getName());
+							String msg = "Registered project {" + project.getName() + "}";
+							log.info(msg);
+							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project);
+							tx.success();
+							projectCreated.complete(project);
+						} catch (Exception e) {
+							// TODO should we really fail here?
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage"), e));
 					tx.failure();
 					return;
 				}
 			}
+		}
 
-		}, trh -> {
-			Project project = projectCreated.result();
-			rc.response().end(toJson(project.transformToRest(requestUser)));
-		}	);
+	}, trh -> {
+		Project project = projectCreated.result();
+		project.transformToRest(requestUser, th -> {
+			if (hasSucceeded(rc, th)) {
+				rc.response().end(toJson(th.result()));
+			}
+		});
+	}		);
 
 		});
 	}
@@ -148,60 +147,40 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				MeshAuthUser requestUser = getUser(rc);
-				rcs.loadObject(rc, "uuid", READ_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
-					if (rh.failed()) {
-						rc.fail(rh.cause());
+				loadObject(rc, "uuid", READ_PERM, boot.projectRoot(), rh -> {
+					if (hasSucceeded(rc, rh)) {
+						Project project = rh.result();
+						MeshAuthUser requestUser = getUser(rc);
+						project.transformToRest(requestUser, th -> {
+							if (hasSucceeded(rc, th)) {
+								rc.response().setStatusCode(200).end(toJson(th.result()));
+							}
+						});
 					}
-					Project project = rh.result();
-					rc.response().setStatusCode(200).end(toJson(project.transformToRest(requestUser)));
 				});
 			}
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-
-			PagingInfo pagingInfo = getPagingInfo(rc);
-			MeshAuthUser requestUser = getUser(rc);
-
-			vertx.executeBlocking((Future<ProjectListResponse> bcr) -> {
-				ProjectListResponse listResponse = new ProjectListResponse();
-				Page<? extends Project> projectPage;
-				try {
-					projectPage = boot.projectRoot().findAll(requestUser, pagingInfo);
-					for (Project project : projectPage) {
-						listResponse.getData().add(project.transformToRest(requestUser));
-					}
-					RestModelPagingHelper.setPaging(listResponse, projectPage);
-					bcr.complete(listResponse);
-
-				} catch (Exception e) {
-					bcr.fail(e);
+			loadObjects(rc, boot.projectRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					rc.response().setStatusCode(200).end(toJson(rh.result()));
 				}
-			}, arh -> {
-				if (arh.failed()) {
-					rc.fail(arh.cause());
-				}
-				ProjectListResponse listResponse = arh.result();
-				rc.response().setStatusCode(200).end(toJson(listResponse));
-			});
+			}, new ProjectListResponse());
 		});
 
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			rcs.loadObject(rc, "uuid", DELETE_PERM, ProjectImpl.class, (AsyncResult<Project> rh) -> {
-				Project project = rh.result();
-				String name = project.getName();
-				routerStorage.removeProjectRouter(name);
-				project.delete();
-			}, trh -> {
-				if (trh.failed()) {
-					rc.fail(trh.cause());
+			loadObject(rc, "uuid", DELETE_PERM, boot.projectRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Project project = rh.result();
+					String name = project.getName();
+					routerStorage.removeProjectRouter(name);
+					project.delete();
+					rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", name))));
 				}
-				String name = trh.result().getName();
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", name))));
 			});
 		});
 	}

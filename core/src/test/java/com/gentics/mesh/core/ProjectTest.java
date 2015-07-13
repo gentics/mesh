@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -102,12 +103,17 @@ public class ProjectTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() {
+	public void testTransformation() throws InterruptedException {
 		Project project = data().getProject();
-		ProjectResponse response = project.transformToRest(getRequestUser());
-		assertNotNull(response);
-		assertEquals(project.getName(), response.getName());
-		assertEquals(project.getUuid(), response.getUuid());
+		CountDownLatch latch = new CountDownLatch(1);
+		project.transformToRest(getRequestUser(), rh -> {
+			assertNotNull(rh.result());
+			ProjectResponse response = rh.result();
+			assertEquals(project.getName(), response.getName());
+			assertEquals(project.getUuid(), response.getUuid());
+			latch.countDown();
+		});
+		latch.await();
 	}
 
 	@Test

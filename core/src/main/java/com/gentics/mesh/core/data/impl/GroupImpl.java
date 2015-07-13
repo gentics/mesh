@@ -2,6 +2,9 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 
 import java.util.List;
 
@@ -14,12 +17,13 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class GroupImpl extends AbstractGenericNode implements Group {
+public class GroupImpl extends AbstractGenericNode<GroupResponse> implements Group {
 
 	public static final String NAME_KEY = "name";
 
@@ -88,7 +92,7 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 	}
 
 	// TODO handle depth?
-	public GroupResponse transformToRest(MeshAuthUser requestUser) {
+	public Group transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<GroupResponse>> handler, TransformationParameters... parameters) {
 		GroupResponse restGroup = new GroupResponse();
 		fillRest(restGroup, requestUser);
 		restGroup.setName(getName());
@@ -113,7 +117,9 @@ public class GroupImpl extends AbstractGenericNode implements Group {
 		// restGroup.getGroups().add(childGroup.getName());
 		// }
 
-		return restGroup;
+		handler.handle(Future.succeededFuture(restGroup));
+
+		return this;
 
 	}
 

@@ -5,17 +5,17 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 
 public class NodeTraversalConsumer implements Consumer<NodeImpl> {
 
-	private TransformationInfo info;
+	private TransformationParameters info;
 	private int currentDepth;
 	private TagResponse restTag;
 	private Set<ForkJoinTask<Void>> tasks;
 
-	public NodeTraversalConsumer(TransformationInfo info, int currentDepth, TagResponse restTag, Set<ForkJoinTask<Void>> tasks) {
+	public NodeTraversalConsumer(TransformationParameters info, int currentDepth, TagResponse restTag, Set<ForkJoinTask<Void>> tasks) {
 		this.info = info;
 		this.currentDepth = currentDepth;
 		this.restTag = restTag;

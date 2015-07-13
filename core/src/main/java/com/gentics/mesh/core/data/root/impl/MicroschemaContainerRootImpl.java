@@ -5,8 +5,9 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHE
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 
-public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
+public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer, MicroschemaResponse> implements MicroschemaContainerRoot {
 
 	@Override
 	protected Class<? extends MicroschemaContainer> getPersistanceClass() {

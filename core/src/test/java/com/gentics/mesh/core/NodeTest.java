@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -160,10 +160,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("en");
 		Node newsNode = data().getContent("porsche 911");
-		TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-		NodeResponse response = newsNode.transformToRest(info);
-		assertNotNull(response);
-		System.out.println(JsonUtil.toJson(response));
+		TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
+		newsNode.transformToRest(requestUser,rh -> {
+			NodeResponse response = rh.result();	
+			assertNotNull(response);
+			System.out.println(JsonUtil.toJson(response));
+		},info);
 	}
 
 	@Test

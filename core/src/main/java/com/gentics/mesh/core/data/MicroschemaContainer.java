@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
-public interface MicroschemaContainer extends GenericNode {
+import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
+
+public interface MicroschemaContainer extends GenericNode<MicroschemaResponse> {
 
 }

@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.relationship.Permission;
 public interface MeshAuthUser extends User, com.gentics.mesh.core.data.User {
 
 	MeshAuthUser isAuthorised(MeshVertex targetNode, Permission permission, Handler<AsyncResult<Boolean>> resultHandler);
-	
+
 	MeshAuthUserImpl getImpl();
 
 }

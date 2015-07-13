@@ -21,7 +21,7 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
@@ -57,7 +57,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String path = rc.request().params().get("param0");
-			String projectName = rcs.getProjectName(rc);
+			String projectName = getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			List<String> languageTags = getSelectedLanguageTags(rc);
 
@@ -92,10 +92,10 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
 					Node node = arh.result();
-					TransformationInfo info = new TransformationInfo(requestUser, languageTags, rc);
-
-					rc.response().end(toJson(node.transformToRest(info)));
-
+					TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
+					node.transformToRest(requestUser, th -> {
+						rc.response().end(toJson(info));
+					});
 				}
 			});
 

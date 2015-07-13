@@ -8,6 +8,9 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,7 +20,6 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -25,11 +27,12 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
 @Configurable
-public class UserImpl extends AbstractGenericNode implements User {
+public class UserImpl extends AbstractGenericNode<UserResponse> implements User{
 
 	public static final String FIRSTNAME_KEY = "firstname";
 
@@ -183,7 +186,7 @@ public class UserImpl extends AbstractGenericNode implements User {
 	}
 
 	@Override
-	public UserResponse transformToRest(MeshAuthUser requestUser) {
+	public User transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<UserResponse>> handler, TransformationParameters... parameters) {
 		UserResponse restUser = new UserResponse();
 		fillRest(restUser, requestUser);
 		restUser.setUsername(getUsername());
@@ -193,7 +196,8 @@ public class UserImpl extends AbstractGenericNode implements User {
 		for (Group group : getGroups()) {
 			restUser.addGroup(group.getName());
 		}
-		return restUser;
+		handler.handle(Future.succeededFuture(restUser));
+		return this;
 	}
 
 	@Override

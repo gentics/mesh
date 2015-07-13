@@ -1,9 +1,15 @@
 package com.gentics.mesh.core.data.impl;
 
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.generic.AbstractGenericNode;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
-public class LanguageImpl extends AbstractGenericNode implements Language {
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.generic.AbstractGenericNode;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
+
+public class LanguageImpl extends AbstractGenericNode<LanguageResponse> implements Language {
 
 	// TODO add index
 	@Override
@@ -35,7 +41,12 @@ public class LanguageImpl extends AbstractGenericNode implements Language {
 	public void setLanguageTag(String languageTag) {
 		setProperty("languageTag", languageTag);
 	}
-	
+
+	@Override
+	public Language transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<LanguageResponse>> handler, TransformationParameters... parameters) {
+		// TODO Auto-generated method stub
+		return this;
+	}
 	
 	@Override
 	public LanguageImpl getImpl() {

@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIEL
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
@@ -22,17 +25,14 @@ import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.ContainerNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.transformation.TransformationInfo;
-import com.gentics.mesh.core.data.service.transformation.TransformationPool;
-import com.gentics.mesh.core.data.service.transformation.node.NodeTransformationTask;
+import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class NodeImpl extends GenericFieldContainerNode implements Node {
+public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
 
 	public List<? extends Tag> getTags() {
 		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
@@ -101,23 +101,25 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 		return node;
 	}
 
-	@Override
-	public String getNodeResponseJson(TransformationInfo info) {
-		return JsonUtil.writeNodeJson(transformToRest(info));
-	}
+//	@Override
+//	public String getNodeResponseJson(TransformationInfo info) {
+//		return JsonUtil.writeNodeJson(transformToRest(info));
+//	}
 
 	@Override
-	public NodeResponse transformToRest(TransformationInfo info) {
+	public GenericNode transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<NodeResponse>> handler, TransformationParameters... parameters) {
 
 		NodeResponse restContent = new NodeResponse();
-		NodeTransformationTask task = new NodeTransformationTask(this, info, restContent);
-		TransformationPool.getPool().invoke(task);
-		return restContent;
+//		NodeTransformationTask task = new NodeTransformationTask(this, info, restContent);
+//		TransformationPool.getPool().invoke(task);
+//		handler.handle(Future.succeededFuture(restContent));
+		return this;
 
 	}
 
+	
 	public Page<? extends Tag> getTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo) throws InvalidArgumentException {
-		
+
 		//TODO filter permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
@@ -188,5 +190,18 @@ public class NodeImpl extends GenericFieldContainerNode implements Node {
 	public NodeImpl getImpl() {
 		return this;
 	}
+
+	@Override
+	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }

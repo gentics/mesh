@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
 
-public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
+public interface SchemaContainerRoot extends RootVertex<SchemaContainer, SchemaResponse> {
 
 	SchemaContainer create(String name);
 

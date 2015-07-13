@@ -21,7 +21,6 @@ import io.vertx.ext.web.Route;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -32,14 +31,11 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.verticle.handler.NodeListHandler;
-import com.gentics.mesh.core.verticle.handler.TagListHandler;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -57,12 +53,6 @@ import com.gentics.mesh.util.RestModelPagingHelper;
 public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectTagVerticle.class);
-
-	@Autowired
-	private TagListHandler tagListHandler;
-
-	@Autowired
-	private NodeListHandler nodeListHandler;
 
 	public ProjectTagVerticle() {
 		super("tags");
@@ -84,9 +74,12 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		getRoute.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
 
-			nodeListHandler.handleListByTag(rc, (projectName, tag, languageTags, pagingInfo) -> {
-				return tag.findTaggedNodes(requestUser, projectName, languageTags, pagingInfo);
-			});
+			Project project = getProject(rc);
+			loadObject(rc, "uuid", READ_PERM, project.getTagRoot(), rh -> {
+				Tag tag = rh.result();
+				//				tag.findTaggedNodes(requestUser, projectName, languageTags, pagingInfo);
+				});
+
 		});
 	}
 
@@ -97,9 +90,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
-
-			Project project = boot.projectRoot().findByName(projectName);
+			Project project = getProject(rc);
 			if (project == null) {
 				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
 				// TODO i18n error
@@ -149,7 +140,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
+			Project project = getProject(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
@@ -161,19 +152,15 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 
 			// TODO check tag family reference for null
 
-			rcs.loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, TagFamily.class, (AsyncResult<TagFamily> rh) -> {
+			loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
 				TagFamily tagFamily = rh.result();
 				Tag newTag = tagFamily.create(requestModel.getFields().getName());
-				Project project = boot.projectRoot().findByName(projectName);
 				project.getTagRoot().addTag(newTag);
 				tagCreated.complete(newTag);
-			}, trh -> {
-				Tag newTag = tagCreated.result();
-				newTag.transformToRest(requestUser, rh -> {
-					if (rh.failed()) {
-						rc.fail(rh.cause());
+				newTag.transformToRest(requestUser, th -> {
+					if (hasSucceeded(rc, th)) {
+						rc.response().setStatusCode(200).end(toJson(rh.result()));
 					}
-					rc.response().setStatusCode(200).end(toJson(rh.result()));
 				});
 			});
 
@@ -185,20 +172,22 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-			rcs.loadObject(rc, "uuid", READ_PERM, TagImpl.class, (AsyncResult<Tag> trh) -> {
-				Tag tag = trh.result();
-				tag.transformToRest(requestUser, th -> {
-					if (th.failed()) {
-						rc.fail(th.cause());
-					}
-					rc.response().setStatusCode(200).end(toJson(th.result()));
-				});
+			Project project = getProject(rc);
+			loadObject(rc, "uuid", READ_PERM, project.getTagRoot(), trh -> {
+				if (hasSucceeded(rc, trh)) {
+					Tag tag = trh.result();
+					tag.transformToRest(requestUser, th -> {
+						if (hasSucceeded(rc, th)) {
+							rc.response().setStatusCode(200).end(toJson(th.result()));
+						}
+					});
+				}
 			});
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
+			String projectName = getProjectName(rc);
 			MeshAuthUser requestUser = getUser(rc);
 
 			Project project = boot.projectRoot().findByName(projectName);
@@ -251,7 +240,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			String projectName = rcs.getProjectName(rc);
+			String projectName = getProjectName(rc);
 
 			Project project = boot.projectRoot().findByName(projectName);
 			if (project == null) {

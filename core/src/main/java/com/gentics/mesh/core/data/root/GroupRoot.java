@@ -4,9 +4,10 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface GroupRoot extends RootVertex<Group> {
+public interface GroupRoot extends RootVertex<Group, GroupResponse> {
 
 	Group create(String name);
 
