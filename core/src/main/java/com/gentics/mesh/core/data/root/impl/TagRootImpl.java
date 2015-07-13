@@ -1,20 +1,13 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.*;
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 
-import java.util.List;
-
-import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.TraversalHelper;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 
-public interface RootNode<T extends AbstractRestModel> extends ContainerNode<T> {
+public interface RootNode extends ContainerNode<NodeResponse> {
 
 }

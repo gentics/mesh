@@ -13,9 +13,9 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface RootVertex<T extends GenericNode<TR>, TR extends AbstractRestModel> extends MeshVertex {
+public interface RootVertex<T extends GenericNode<? extends AbstractRestModel>> extends MeshVertex {
 
-	RootVertex findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler);
+	RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler);
 
 	List<? extends T> findAll();
 

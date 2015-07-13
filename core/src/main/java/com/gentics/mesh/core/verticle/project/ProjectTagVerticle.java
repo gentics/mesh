@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
+import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -31,8 +32,10 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -67,17 +70,22 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		addDeleteHandler();
 
 		addTaggedNodesHandler();
+		if (log.isDebugEnabled()) {
+			log.debug("Registered tag verticle endpoints");
+		}
 	}
 
 	private void addTaggedNodesHandler() {
 		Route getRoute = route("/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
 
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", READ_PERM, project.getTagRoot(), rh -> {
 				Tag tag = rh.result();
-				//				tag.findTaggedNodes(requestUser, projectName, languageTags, pagingInfo);
+				Page<? extends Node> page = tag.findTaggedNodes(getUser(rc), getSelectedLanguageTags(rc), getPagingInfo(rc));
+				transformPage(rc,page, th -> {
+					rc.response().setStatusCode(200).end(JsonUtil.toJson(th.result()));
+				}, new NodeListResponse());
 				});
 
 		});
@@ -95,6 +103,9 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
 				// TODO i18n error
 			} else {
+				loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
+					
+				});
 				String uuid = rc.request().params().get("uuid");
 				project.getTagRoot().findByUuid(uuid, rh -> {
 					if (rh.failed()) {

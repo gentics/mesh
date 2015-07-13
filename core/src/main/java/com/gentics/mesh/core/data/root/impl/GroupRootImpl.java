@@ -5,9 +5,8 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROU
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.rest.group.GroupResponse;
 
-public class GroupRootImpl extends AbstractRootVertex<Group, GroupResponse> implements GroupRoot {
+public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
 	// TODO unique node
 

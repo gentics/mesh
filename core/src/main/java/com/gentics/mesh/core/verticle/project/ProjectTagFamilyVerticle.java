@@ -74,7 +74,9 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 					Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
 					for (Tag tag : tagPage) {
 						tag.transformToRest(requestUser, th -> {
-							listResponse.getData().add(th.result());
+							if (hasSucceeded(rc, th)) {
+								listResponse.getData().add(th.result());
+							}
 						});
 					}
 					RestModelPagingHelper.setPaging(listResponse, tagPage);
@@ -148,7 +150,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 					tx.success();
 				}
 				tagFamily.transformToRest(requestUser, th -> {
-					rc.response().end(JsonUtil.toJson(th.result()));	
+					rc.response().end(JsonUtil.toJson(th.result()));
 				});
 			} else {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", root.getUuid())));

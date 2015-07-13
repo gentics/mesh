@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.Page;
@@ -50,7 +49,6 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
-import com.gentics.mesh.util.RestModelPagingHelper;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -312,11 +310,6 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			Project project = getProject(rc);
-			MeshAuthUser requestUser = getUser(rc);
-
-			List<String> languageTags = getSelectedLanguageTags(rc);
-			PagingInfo pagingInfo = getPagingInfo(rc);
-
 			loadObjects(rc, project.getNodeRoot(), rh -> {
 				rc.response().setStatusCode(200).end(toJson(rh.result()));
 			}, new NodeListResponse());
@@ -351,10 +344,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-
-			List<String> languageTags = getSelectedLanguageTags(rc);
 			MeshAuthUser requestUser = getUser(rc);
-
 			NodeUpdateRequest requestModel;
 			try {
 				requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);

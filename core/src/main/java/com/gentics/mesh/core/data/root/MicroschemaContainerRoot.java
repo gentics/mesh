@@ -1,9 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 
-public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer, MicroschemaResponse> {
+public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer> {
 
 	void addMicroschema(MicroschemaContainer container);
 

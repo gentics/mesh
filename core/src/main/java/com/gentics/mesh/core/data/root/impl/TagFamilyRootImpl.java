@@ -6,9 +6,8 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
-public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily, TagFamilyResponse> implements TagFamilyRoot {
+public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {
 
 	@Override
 	protected Class<? extends TagFamily> getPersistanceClass() {

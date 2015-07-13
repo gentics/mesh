@@ -1,9 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
 
-public interface ProjectRoot extends RootVertex<Project, ProjectResponse> {
+public interface ProjectRoot extends RootVertex<Project> {
 
 	Project create(String projectName);
 

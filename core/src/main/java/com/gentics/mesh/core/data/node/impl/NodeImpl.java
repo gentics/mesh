@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.util.List;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
@@ -107,12 +107,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 //	}
 
 	@Override
-	public GenericNode transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<NodeResponse>> handler, TransformationParameters... parameters) {
+	public Node transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<NodeResponse>> handler, TransformationParameters... parameters) {
 
 		NodeResponse restContent = new NodeResponse();
 //		NodeTransformationTask task = new NodeTransformationTask(this, info, restContent);
 //		TransformationPool.getPool().invoke(task);
-//		handler.handle(Future.succeededFuture(restContent));
+		handler.handle(Future.succeededFuture(restContent));
 		return this;
 
 	}

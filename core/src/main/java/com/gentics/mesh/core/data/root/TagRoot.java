@@ -1,9 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.rest.tag.TagResponse;
 
-public interface TagRoot extends RootVertex<Tag, TagResponse> {
+public interface TagRoot extends RootVertex<Tag> {
 
 //	Page<? extends Tag> findProjectTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo)
 //			throws InvalidArgumentException;

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 
-public class RootNodeImpl extends AbstractGenericNode<NodeResponse> implements RootNode<NodeResponse> {
+public class RootNodeImpl extends AbstractGenericNode<NodeResponse> implements RootNode {
 
 	@Override
 	public List<? extends Node> getChildren() {

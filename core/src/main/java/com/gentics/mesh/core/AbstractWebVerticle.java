@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
@@ -95,7 +94,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	}
 
 	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void loadObjects(
-			RoutingContext rc, RootVertex<T,TR> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+			RoutingContext rc, RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		PagingInfo pagingInfo = getPagingInfo(rc);
 		MeshAuthUser requestUser = getUser(rc);
 		try {

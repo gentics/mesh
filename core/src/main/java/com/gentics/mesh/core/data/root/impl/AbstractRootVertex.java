@@ -23,7 +23,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public abstract class AbstractRootVertex<T extends GenericNode<TR>, TR extends AbstractRestModel> extends MeshVertexImpl implements RootVertex<T, TR> {
+public abstract class AbstractRootVertex<T extends GenericNode<? extends AbstractRestModel>> extends MeshVertexImpl implements RootVertex<T> {
 
 	abstract protected Class<? extends T> getPersistanceClass();
 
@@ -48,7 +48,7 @@ public abstract class AbstractRootVertex<T extends GenericNode<TR>, TR extends A
 	}
 
 	@Override
-	public AbstractRootVertex findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
+	public RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
 		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
 		vertx.executeBlocking(rh -> {
 			rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));

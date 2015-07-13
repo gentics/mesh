@@ -1,9 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.rest.role.RoleResponse;
 
-public interface RoleRoot extends RootVertex<Role, RoleResponse> {
+public interface RoleRoot extends RootVertex<Role> {
 
 	Role create(String name);
 

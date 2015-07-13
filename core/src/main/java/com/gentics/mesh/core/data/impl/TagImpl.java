@@ -136,12 +136,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 		getVertex().remove();
 	}
 
-	public Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-		// findTaggedNodes(userUuid, projectName, tag, languageTags, pagingInfo);
-		return null;
-	}
-
-	public Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, TagImpl tag, List<String> languageTags, PagingInfo pagingInfo) {
+	@Override
+	public Page<Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) {
 		// String langFilter = getLanguageFilter("l");
 		// if (languageTags == null || languageTags.isEmpty()) {
 		// langFilter = "";

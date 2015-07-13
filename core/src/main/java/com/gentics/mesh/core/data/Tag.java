@@ -32,5 +32,5 @@ public interface Tag extends GenericNode<TagResponse> {
 
 	TagImpl getImpl();
 
-	Page<Node> findTaggedNodes(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo);
+	Page<Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo);
 }

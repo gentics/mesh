@@ -6,9 +6,8 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
-public class LanguageRootImpl extends AbstractRootVertex<Language, LanguageResponse> implements LanguageRoot {
+public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
 	@Override
 	protected Class<LanguageImpl> getPersistanceClass() {
