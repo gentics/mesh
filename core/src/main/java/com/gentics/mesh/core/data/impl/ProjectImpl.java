@@ -153,6 +153,7 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 	public void delete() {
 		// TODO handle this correctly
 		getVertex().remove();
+		//TODO handle: 		routerStorage.removeProjectRouter(name);
 	}
 
 	@Override

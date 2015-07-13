@@ -40,10 +40,6 @@ public interface User extends GenericNode<UserResponse> {
 
 	void addGroup(Group parentGroup);
 
-	void delete();
-
-	UserImpl getImpl();
-
 	List<? extends Role> getRoles();
 
 	Set<Permission> getPermissions(MeshVertex node);
@@ -61,5 +57,7 @@ public interface User extends GenericNode<UserResponse> {
 	void addCRUDPermissionOnRole(MeshVertex node, Permission permission, MeshVertex targetNode);
 
 	UserReference transformToUserReference();
+
+	UserImpl getImpl();
 
 }

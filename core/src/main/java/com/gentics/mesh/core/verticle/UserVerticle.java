@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.json.JsonUtil.toJson;
-import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -20,12 +17,10 @@ import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -52,14 +47,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
 			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rh.result().transformToRest(getUser(rc), th -> {
-						rc.response().setStatusCode(200).end(toJson(rh.result()));
-					});
-				}
+				loadTransformAndReturn(rc, "uuid", READ_PERM, boot.userRoot());
 			});
 		});
 
@@ -67,30 +56,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-
-			MeshAuthUser requestUser = getUser(rc);
-			PagingInfo pagingInfo = getPagingInfo(rc);
-
-			loadObjects(rc, boot.userRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rc.response().setStatusCode(200).end(toJson(rh.result()));
-				}
-			}, new UserListResponse());
+			loadTransformAndResponde(rc, boot.userRoot(), new UserListResponse());
 		});
 	}
 
 	// TODO invalidate active sessions for this user
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			loadObject(rc, "uuid", DELETE_PERM, boot.userRoot(), rh -> {
-				User user = rh.result();
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					user.delete();
-					tx.success();
-				}
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "user_deleted", uuid))));
-			});
+			delete(rc, "uuid", "user_deleted", boot.userRoot());
 		});
 	}
 
@@ -127,9 +100,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					}
 					tx.success();
 				}
-				user.transformToRest(getUser(rc), th -> {
-					rc.response().setStatusCode(200).end(toJson(th.result()));
-				});
+				transformAndResponde(rc, user);
 			});
 
 		});
@@ -138,8 +109,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-
-			MeshAuthUser requestUser = getUser(rc);
 
 			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 			if (requestModel == null) {
@@ -165,29 +134,26 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
 
 				Group parentGroup = rh.result();
-
 				if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
 					String message = i18n.get(rc, "user_conflicting_username");
 					rc.fail(new HttpStatusCodeErrorException(409, message));
-					return;
+				} else {
+					MeshAuthUser requestUser = getUser(rc);
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						User user = parentGroup.createUser(requestModel.getUsername());
+						user.setFirstname(requestModel.getFirstname());
+						user.setUsername(requestModel.getUsername());
+						user.setLastname(requestModel.getLastname());
+						user.setEmailAddress(requestModel.getEmailAddress());
+						user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+						user.addGroup(parentGroup);
+						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
+						userCreated.complete(user);
+						tx.success();
+					}
+					User user = userCreated.result();
+					transformAndResponde(rc, user);
 				}
-
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					User user = parentGroup.createUser(requestModel.getUsername());
-					user.setFirstname(requestModel.getFirstname());
-					user.setUsername(requestModel.getUsername());
-					user.setLastname(requestModel.getLastname());
-					user.setEmailAddress(requestModel.getEmailAddress());
-					user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
-					user.addGroup(parentGroup);
-					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
-					userCreated.complete(user);
-					tx.success();
-				}
-				User user = userCreated.result();
-				user.transformToRest(requestUser, th -> {
-					rc.response().setStatusCode(200).end(toJson(th.result()));
-				});
 			});
 
 		});

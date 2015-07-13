@@ -12,5 +12,5 @@ public interface ContainerNode<T extends AbstractRestModel> extends GenericNode<
 	void setParentNode(ContainerNode<T> parentNode);
 
 	Node create();
-
+	
 }

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
@@ -29,7 +28,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -68,13 +66,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 
 			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
-				try{
-				Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-				transformPage(rc, rolePage, rh -> {
-					if (hasSucceeded(rc, rh)) {
-						rc.response().setStatusCode(200).end(toJson(rh.result()));
-					}
-				}, new RoleListResponse());
+				try {
+					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
+					transformPage(rc, rolePage, rh -> {
+						if (hasSucceeded(rc, rh)) {
+							rc.response().setStatusCode(200).end(toJson(rh.result()));
+						}
+					}, new RoleListResponse());
 				} catch (InvalidArgumentException e) {
 					rc.fail(e);
 				}
@@ -83,7 +81,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(rc, grh)) {
 					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
@@ -91,11 +88,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 							Group group = grh.result();
 							Role role = rrh.result();
 							group.addRole(role);
-							group.transformToRest(requestUser, th -> {
-								if (hasSucceeded(rc, th)) {
-									rc.response().setStatusCode(200).end(toJson(th.result()));
-								}
-							});
+							transformAndResponde(rc, role);
 						}
 					});
 				}
@@ -104,21 +97,15 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(rc, grh)) {
-					//TODO check whether the role is actually part of the group 
+					// TODO check whether the role is actually part of the group
 					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
 						if (hasSucceeded(rc, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
 							group.removeRole(role);
-							group.transformToRest(requestUser, th -> {
-								if (hasSucceeded(rc, th)) {
-									rc.response().setStatusCode(200).end(toJson(th.result()));
-								}
-							});
+							transformAndResponde(rc, group);
 						}
 					});
 
@@ -155,8 +142,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -166,19 +151,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						tx.success();
 					}
 					Group group = grh.result();
-					group.transformToRest(requestUser, rh -> {
-						if (hasSucceeded(rc, rh)) {
-							rc.response().setStatusCode(200).end(toJson(rh.result()));
-						}
-					});
+					transformAndResponde(rc, group);
 				});
 			});
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -188,11 +167,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						tx.success();
 					}
 					Group group = grh.result();
-					group.transformToRest(requestUser, rh -> {
-						if (hasSucceeded(rc, rh)) {
-							rc.response().setStatusCode(200).end(toJson(rh.result()));
-						}
-					});
+					transformAndResponde(rc, group);
 				});
 			});
 		});
@@ -200,15 +175,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			loadObject(rc, "uuid", DELETE_PERM, boot.groupRoot(), grh -> {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					Group group = grh.result();
-					group.delete();
-					tx.success();
-				}
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "group_deleted", uuid))));
-			});
+			delete(rc, "uuid", "group_deleted", boot.groupRoot());
 		});
 	}
 
@@ -216,31 +183,26 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
 			loadObject(rc, "uuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				Group group = grh.result();
-				GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
+				if (hasSucceeded(rc, grh)) {
+					Group group = grh.result();
+					GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
-				if (StringUtils.isEmpty(requestModel.getName())) {
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
-					return;
-				}
-
-				if (!group.getName().equals(requestModel.getName())) {
-					Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
-					if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name")));
+					if (StringUtils.isEmpty(requestModel.getName())) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
 						return;
 					}
-					group.setName(requestModel.getName());
-				}
 
-				group.transformToRest(requestUser, th -> {
-					if (hasSucceeded(rc, th)) {
-						rc.response().setStatusCode(200).end(toJson(th.result()));
+					if (!group.getName().equals(requestModel.getName())) {
+						Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
+						if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
+							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name")));
+							return;
+						}
+						group.setName(requestModel.getName());
 					}
-				});
+					transformAndResponde(rc, group);
+				}
 			});
 
 		});
@@ -249,30 +211,14 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
-			loadObject(rc, "uuid", READ_PERM, boot.groupRoot(), grh -> {
-				if (hasSucceeded(rc, grh)) {
-					Group group = grh.result();
-					group.transformToRest(requestUser, th -> {
-						if (hasSucceeded(rc, th)) {
-							rc.response().setStatusCode(200).end(toJson(th.result()));
-						}
-					});
-				}
-			});
+			loadTransformAndReturn(rc, "uuid", READ_PERM, boot.groupRoot());
 		});
 
 		/*
 		 * List all groups when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			PagingInfo pagingInfo = getPagingInfo(rc);
-			loadObjects(rc, boot.groupRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rc.response().setStatusCode(200).end(toJson(rh.result()));
-				}
-			}, new GroupListResponse());
+			loadTransformAndResponde(rc, boot.groupRoot(), new GroupListResponse());
 		});
 	}
 
@@ -298,13 +244,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			}, tch -> {
 				if (tch.failed()) {
 					rc.fail(tch.cause());
+				} else {
+					Group createdGroup = groupCreated.result();
+					transformAndResponde(rc, createdGroup);
 				}
-				Group createdGroup = groupCreated.result();
-				createdGroup.transformToRest(requestUser, th -> {
-					if (hasSucceeded(rc, th)) {
-						rc.response().setStatusCode(200).end(toJson(th.result()));
-					}
-				});
 			});
 
 		});

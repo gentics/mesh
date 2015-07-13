@@ -13,12 +13,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.RoutingContextHelper;
 
 @Component
 @Scope("singleton")
@@ -45,7 +43,6 @@ public class ProjectBinaryVerticle extends AbstractProjectRestVerticle {
 
 	private void addFileuploadHandler() {
 		route("/:uuid").method(HttpMethod.POST).handler(rc -> {
-			MeshAuthUser user = RoutingContextHelper.getUser(rc);
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 				Node node = rh.result();

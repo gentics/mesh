@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
@@ -47,9 +49,14 @@ public class LanguageImpl extends AbstractGenericNode<LanguageResponse> implemen
 		// TODO Auto-generated method stub
 		return this;
 	}
-	
+
 	@Override
 	public LanguageImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public void delete() {
+		throw new NotImplementedException();
 	}
 }

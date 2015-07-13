@@ -109,8 +109,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		String requestJson = JsonUtil.toJson(request);
-
 		GroupRoot root = data().getMeshRoot().getGroupRoot();
 		info.getRole().revokePermissions(root, CREATE_PERM);
 		User user = info.getUser();

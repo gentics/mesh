@@ -1,5 +1,7 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
@@ -23,10 +25,13 @@ import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RestModelPagingHelper;
 
@@ -93,8 +98,8 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		return route;
 	}
 
-	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void loadObjects(
-			RoutingContext rc, RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void loadObjects(RoutingContext rc,
+			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		PagingInfo pagingInfo = getPagingInfo(rc);
 		MeshAuthUser requestUser = getUser(rc);
 		try {
@@ -102,13 +107,38 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			for (T node : page) {
 				node.transformToRest(requestUser, rh -> {
 					listResponse.getData().add(rh.result());
-				});
+					// TODO handle async issue
+					});
 			}
 			RestModelPagingHelper.setPaging(listResponse, page);
 			handler.handle(Future.succeededFuture(listResponse));
 		} catch (InvalidArgumentException e) {
 			handler.handle(Future.failedFuture(e));
 		}
+	}
+
+	protected <T extends GenericNode<? extends AbstractRestModel>> void delete(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
+			RootVertex<T> root) {
+		loadObject(rc, "uuid", DELETE_PERM, root, rh -> {
+			if (hasSucceeded(rc, rh)) {
+				GenericNode<?> node = rh.result();
+				String uuid = node.getUuid();
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					node.delete();
+					tx.success();
+				}
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, uuid))));
+			}
+		});
+	}
+
+	protected <T extends GenericNode<? extends AbstractRestModel>> void loadTransformAndReturn(RoutingContext rc, String uuidParameterName,
+			Permission permission, RootVertex<T> root) {
+		loadAndTransform(rc, uuidParameterName, permission, root, rh -> {
+			if (hasSucceeded(rc, rh)) {
+				rc.response().setStatusCode(200).end(JsonUtil.toJson(rh.result()));
+			}
+		});
 	}
 
 	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
@@ -121,6 +151,23 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		}
 		RestModelPagingHelper.setPaging(listResponse, page);
 		handler.handle(Future.succeededFuture(listResponse));
+	}
+
+	protected <T extends GenericNode<TR>, TR extends AbstractRestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
+			AbstractListResponse<TR> listResponse) {
+		loadObjects(rc, root, rh -> {
+			if (hasSucceeded(rc, rh)) {
+				rc.response().setStatusCode(200).end(toJson(rh.result()));
+			}
+		}, listResponse);
+	}
+
+	protected <T extends AbstractRestModel> void transformAndResponde(RoutingContext rc, GenericNode<T> node) {
+		node.transformToRest(getUser(rc), th -> {
+			if (hasSucceeded(rc, th)) {
+				rc.response().setStatusCode(200).end(toJson(th.result()));
+			}
+		});
 	}
 
 	protected <T extends GenericNode<? extends AbstractRestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,

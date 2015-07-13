@@ -28,7 +28,5 @@ public interface TagFamily extends GenericNode<TagFamilyResponse> {
 
 	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
-	void delete();
-
 	TagFamilyImpl getImpl();
 }

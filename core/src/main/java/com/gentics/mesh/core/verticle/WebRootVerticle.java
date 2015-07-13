@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -24,6 +23,7 @@ import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -94,7 +94,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 					Node node = arh.result();
 					TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
 					node.transformToRest(requestUser, th -> {
-						rc.response().end(toJson(info));
+						rc.response().end(JsonUtil.toJson(info));
 					});
 				}
 			});

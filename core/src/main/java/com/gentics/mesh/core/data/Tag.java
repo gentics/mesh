@@ -28,8 +28,6 @@ public interface Tag extends GenericNode<TagResponse> {
 
 	void remove();
 
-	void delete();
-
 	TagImpl getImpl();
 
 	Page<Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo);

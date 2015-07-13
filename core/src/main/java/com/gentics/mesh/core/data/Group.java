@@ -40,6 +40,4 @@ public interface Group extends GenericNode<GroupResponse> {
 
 	GroupImpl getImpl();
 
-	void delete();
-
 }

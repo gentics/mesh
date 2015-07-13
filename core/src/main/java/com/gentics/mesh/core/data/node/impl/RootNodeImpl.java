@@ -41,4 +41,10 @@ public class RootNodeImpl extends AbstractGenericNode<NodeResponse> implements R
 		return null;
 	}
 
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

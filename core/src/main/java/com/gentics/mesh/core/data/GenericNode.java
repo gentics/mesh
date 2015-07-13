@@ -24,4 +24,6 @@ public interface GenericNode<T extends AbstractRestModel> extends MeshVertex, Tr
 
 	Long getCreationTimestamp();
 
+	void delete();
+
 }

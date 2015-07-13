@@ -26,8 +26,6 @@ public interface Project extends GenericNode<ProjectResponse> {
 
 	void setRootNode(RootNode rootNode);
 
-	void delete();
-
 	void setSchemaRoot(SchemaContainerRoot schemaRoot);
 
 	TagFamilyRoot createTagFamilyRoot();

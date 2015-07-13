@@ -1,11 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -22,11 +20,9 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
-import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
@@ -50,15 +46,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			loadObject(rc, "uuid", DELETE_PERM, boot.roleRoot(), rh -> {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					Role role = rh.result();
-					role.delete();
-					tx.success();
-				}
-				String uuid = rc.request().params().get("uuid");
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "role_deleted", uuid))));
-			});
+			delete(rc, "uuid", "role_deleted", boot.roleRoot());
 		});
 	}
 
@@ -76,12 +64,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						}
 						role.setName(requestModel.getName());
 					}
-					role.transformToRest(getUser(rc), th -> {
-						if (hasSucceeded(rc, th)) {
-							rc.response().setStatusCode(200).end(toJson(th.result()));
-						}
-					});
-
+					transformAndResponde(rc, role);
 				}
 			});
 		});
@@ -89,24 +72,14 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			loadObject(rc, "uuid", READ_PERM, boot.roleRoot(), rh -> {
-				Role role = rh.result();
-				role.transformToRest(getUser(rc), th -> {
-					RoleResponse restRole = th.result();
-					rc.response().setStatusCode(200).end(toJson(restRole));
-				});
-			});
+			loadTransformAndReturn(rc, "uuid", READ_PERM, boot.roleRoot());
 		});
 
 		/*
 		 * List all roles when no parameter was specified
 		 */
 		route("/").method(GET).handler(rc -> {
-			loadObjects(rc, boot.roleRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rc.response().setStatusCode(200).end(toJson(rh.result()));
-				}
-			}, new RoleListResponse());
+			loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
 		});
 	}
 
@@ -140,11 +113,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						roleCreated.complete(role);
 					}
 					Role role = roleCreated.result();
-					role.transformToRest(getUser(rc), th -> {
-						if (hasSucceeded(rc, th)) {
-							rc.response().setStatusCode(200).end(toJson(th.result()));
-						}
-					});
+					transformAndResponde(rc, role);
 				}
 			});
 		});

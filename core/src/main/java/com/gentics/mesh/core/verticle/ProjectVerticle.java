@@ -1,11 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -25,7 +23,6 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
@@ -55,7 +52,6 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
 			loadObject(rc, "uuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 
@@ -71,11 +67,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 						project.setName(requestModel.getName());
 					}
 
-					project.transformToRest(requestUser, th -> {
-						if (hasSucceeded(rc, th)) {
-							rc.response().setStatusCode(200).end(toJson(th.result()));
-						}
-					});
+					transformAndResponde(rc, project);
 				}
 			});
 		});
@@ -129,59 +121,30 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	}, trh -> {
 		Project project = projectCreated.result();
-		project.transformToRest(requestUser, th -> {
-			if (hasSucceeded(rc, th)) {
-				rc.response().end(toJson(th.result()));
-			}
-		});
+		transformAndResponde(rc, project);
 	}		);
 
 		});
 	}
 
 	private void addReadHandler() {
-
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				loadObject(rc, "uuid", READ_PERM, boot.projectRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
-						Project project = rh.result();
-						MeshAuthUser requestUser = getUser(rc);
-						project.transformToRest(requestUser, th -> {
-							if (hasSucceeded(rc, th)) {
-								rc.response().setStatusCode(200).end(toJson(th.result()));
-							}
-						});
-					}
-				});
+				loadTransformAndReturn(rc, "uuid", READ_PERM, boot.projectRoot());
 			}
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadObjects(rc, boot.projectRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rc.response().setStatusCode(200).end(toJson(rh.result()));
-				}
-			}, new ProjectListResponse());
+			loadTransformAndResponde(rc, boot.projectRoot(), new ProjectListResponse());
 		});
-
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "uuid", DELETE_PERM, boot.projectRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					Project project = rh.result();
-					String name = project.getName();
-					routerStorage.removeProjectRouter(name);
-					project.delete();
-					rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "project_deleted", name))));
-				}
-			});
+			delete(rc, "uuid", "project_deleted", boot.projectRoot());
 		});
 	}
 }

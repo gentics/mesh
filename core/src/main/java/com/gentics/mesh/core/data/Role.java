@@ -22,8 +22,6 @@ public interface Role extends GenericNode<RoleResponse> {
 
 	void addGroup(Group group);
 
-	void delete();
-
 	boolean hasPermission(Permission permission, GenericNode<?> node);
 
 }

@@ -45,7 +45,6 @@ public interface Node extends ContainerNode<NodeResponse> {
 	//TODO why do we need the projectname here?
 	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
-	void delete();
 
 	void createLink(Node node);
 

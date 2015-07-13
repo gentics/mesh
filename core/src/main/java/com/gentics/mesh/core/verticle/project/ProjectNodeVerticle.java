@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
@@ -37,7 +36,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -45,7 +43,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -103,9 +100,8 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					Node node = rh.result();
-					Page<? extends Tag> tagPage;
 					try {
-						tagPage = node.getTags(requestUser, getPagingInfo(rc));
+						Page<? extends Tag> tagPage = node.getTags(requestUser, getPagingInfo(rc));
 						transformPage(rc, tagPage, tlh -> {
 							rc.response().end(JsonUtil.toJson(tlh.result()));
 						}, new TagListResponse());
@@ -118,42 +114,20 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
-			List<String> languageTags = getSelectedLanguageTags(rc);
 			Project project = getProject(rc);
 			if (project == null) {
 				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
 				// TODO i18n error
 			} else {
-				String uuid = rc.request().params().get("uuid");
-				project.getNodeRoot().findByUuid(uuid, rh -> {
-					if (rh.failed()) {
-						rc.fail(rh.cause());
-					} else {
-						MeshAuthUser requestUser = getUser(rc);
-						if (requestUser.hasPermission(rh.result(), UPDATE_PERM)) {
-							Node node = rh.result();
-							String tagUuid = rc.request().params().get("tagUuid");
-							project.getTagRoot().findByUuid(tagUuid, trh -> {
-								if (trh.failed()) {
-									rc.fail(trh.cause());
-								} else {
-									if (requestUser.hasPermission(trh.result(), READ_PERM)) {
-										Tag tag = trh.result();
-										node.addTag(tag);
-										TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
-										node.transformToRest(requestUser, th -> {
-											rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(th.result()));
-										});
-									} else {
-										rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", tagUuid)));
-									}
-								}
-							});
-						} else {
-							rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", uuid)));
-						}
-					}
-
+				loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+					Node node = rh.result();
+					loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
+						Tag tag = th.result();
+						node.addTag(tag);
+						node.transformToRest(getUser(rc), trh -> {
+							rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(trh.result()));
+						});
+					});
 				});
 
 			}
@@ -172,7 +146,6 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 					Tag tag = srh.result();
 					node.removeTag(tag);
 					TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
-
 					node.transformToRest(requestUser, th -> {
 						rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(th.result()));
 					});
@@ -288,31 +261,18 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-
 				Project project = getProject(rc);
-				MeshAuthUser requestUser = getUser(rc);
-				List<String> languageTags = getSelectedLanguageTags(rc);
-
-				loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-					Node node = rh.result();
-					TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
-					node.transformToRest(requestUser, th -> {
-						rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(th.result()));
-					});
-				});
+				loadTransformAndReturn(rc, "uuid", READ_PERM, project.getNodeRoot());
 			}
 		});
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			Project project = getProject(rc);
-			loadObjects(rc, project.getNodeRoot(), rh -> {
-				rc.response().setStatusCode(200).end(toJson(rh.result()));
-			}, new NodeListResponse());
+			loadTransformAndResponde(rc, project.getNodeRoot(), new NodeListResponse());
 		});
 
 	}
@@ -321,16 +281,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			Project project = getProject(rc);
-			loadObject(rc, "uuid", DELETE_PERM, project.getNodeRoot(), rh -> {
-				Node node = rh.result();
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					node.delete();
-					tx.success();
-				}
-				String uuid = rc.request().params().get("uuid");
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, "node_deleted", uuid))));
-			});
+			delete(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
 		});
 	}
 
@@ -352,43 +303,41 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_set")));
 					return;
 				}
+				Project project = getProject(rc);
+				loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+
+					Node node = rh.result();
+					try {
+						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+						if (language == null) {
+							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
+							return;
+						}
+						// TODO handle other fields, node.setEditor(requestUser); etc.
+						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+							NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+							Schema schema = node.getSchema();
+							try {
+								container.setFieldFromRest(rc, requestModel.getFields(), schema);
+							} catch (MeshSchemaException e) {
+								tx.failure();
+								/* TODO i18n */
+								throw new HttpStatusCodeErrorException(400, e.getMessage());
+							}
+							tx.success();
+						}
+
+					} catch (IOException e) {
+						rc.fail(e);
+					}
+
+					node.transformToRest(requestUser, th -> {
+						rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(th.result()));
+					});
+				});
 			} catch (Exception e1) {
 				rc.fail(e1);
-				return;
 			}
-
-			Project project = getProject(rc);
-			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-
-				Node node = rh.result();
-				try {
-					Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-					if (language == null) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
-						return;
-					}
-					//TODO handle other fields, node.setEditor(requestUser); etc.
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-						Schema schema = node.getSchema();
-						try {
-							container.setFieldFromRest(rc, requestModel.getFields(), schema);
-						} catch (MeshSchemaException e) {
-							tx.failure();
-							/* TODO i18n */
-							throw new HttpStatusCodeErrorException(400, e.getMessage());
-						}
-						tx.success();
-					}
-
-				} catch (IOException e) {
-					rc.fail(e);
-				}
-
-				node.transformToRest(requestUser, th -> {
-					rc.response().setStatusCode(200).end(toJson(th.result()));
-				});
-			});
 
 		});
 	}

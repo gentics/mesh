@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -35,9 +33,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
-import com.gentics.mesh.util.RestModelPagingHelper;
 
 @Component
 @Scope("singleton")
@@ -69,18 +65,13 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
 			loadObject(rc, "uuid", READ_PERM, project.getTagFamilyRoot(), rh -> {
 				TagFamily tagFamily = rh.result();
-				TagListResponse listResponse = new TagListResponse();
 				try {
 					Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
-					for (Tag tag : tagPage) {
-						tag.transformToRest(requestUser, th -> {
-							if (hasSucceeded(rc, th)) {
-								listResponse.getData().add(th.result());
-							}
-						});
-					}
-					RestModelPagingHelper.setPaging(listResponse, tagPage);
-					rc.response().setStatusCode(200).end(toJson(listResponse));
+					transformPage(rc, tagPage, lh -> {
+						if (hasSucceeded(rc, lh)) {
+							rc.response().setStatusCode(200).end(toJson(lh.result()));
+						}
+					}, new TagListResponse());
 				} catch (Exception e) {
 					rc.fail(e);
 				}
@@ -92,37 +83,20 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route deleteRoute = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			Project project = getProject(rc);
-			loadObject(rc, "uuid", DELETE_PERM, project.getTagFamilyRoot(), rh -> {
-				TagFamily tagFamily = rh.result();
-				tagFamily.delete();
-				String uuid = rc.request().params().get("uuid");
-				rc.response().setStatusCode(200).end(JsonUtil.toJson(new GenericMessageResponse(i18n.get(rc, "tagfamily_deleted", uuid))));
-			});
-
+			delete(rc, "uuid", "tagfamily_deleted", getProject(rc).getTagFamilyRoot());
 		});
 	}
 
 	private void addReadHandler() {
 		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		readRoute.handler(rc -> {
-			Project project = getProject(rc);
-			loadAndTransform(rc, "uuid", READ_PERM, project.getTagFamilyRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rc.response().setStatusCode(200).end(JsonUtil.toJson(rh.result()));
-				}
-			});
+			loadTransformAndReturn(rc, "uuid", READ_PERM, getProject(rc).getTagFamilyRoot());
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
 			Project project = getProject(rc);
-			loadObjects(rc, project.getTagFamilyRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rc.response().setStatusCode(200).end(toJson(rh.result()));
-				}
-			}, new TagFamilyListResponse());
-
+			loadTransformAndResponde(rc, project.getTagFamilyRoot(), new TagFamilyListResponse());
 		});
 
 	}
@@ -136,24 +110,22 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tagfamily_name_not_set")));
-				return;
-			}
-			Project project = boot.projectRoot().findByName(projectName);
-			TagFamilyRoot root = project.getTagFamilyRoot();
-			/* TODO check for null */
-			if (requestUser.hasPermission(root, CREATE_PERM)) {
-				TagFamily tagFamily = null;
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					tagFamily = root.create(requestModel.getName());
-					root.addTagFamily(tagFamily);
-					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
-					tx.success();
-				}
-				tagFamily.transformToRest(requestUser, th -> {
-					rc.response().end(JsonUtil.toJson(th.result()));
-				});
 			} else {
-				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", root.getUuid())));
+				Project project = boot.projectRoot().findByName(projectName);
+				TagFamilyRoot root = project.getTagFamilyRoot();
+				/* TODO check for null */
+				if (requestUser.hasPermission(root, CREATE_PERM)) {
+					TagFamily tagFamily = null;
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						tagFamily = root.create(requestModel.getName());
+						root.addTagFamily(tagFamily);
+						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
+						tx.success();
+					}
+					transformAndResponde(rc, tagFamily);
+				} else {
+					rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", root.getUuid())));
+				}
 			}
 		});
 	}
@@ -167,24 +139,22 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tagfamily_name_not_set")));
-				return;
-			}
-			String uuid = rc.request().params().get("uuid");
-			Project project = boot.projectRoot().findByName(projectName);
-			TagFamilyRoot root = project.getTagFamilyRoot();
-			root.findByUuid(uuid, rh -> {
-				TagFamily tagFamily = rh.result();
-				if (tagFamily == null) {
-					rc.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_name", requestModel.getName())));
-					return;
-				}
-				if (requestUser.hasPermission(tagFamily, UPDATE_PERM)) {
-					tagFamily.setName(requestModel.getName());
-				}
-				tagFamily.transformToRest(requestUser, th -> {
-					rc.response().end(JsonUtil.toJson(th.result()));
+			} else {
+				String uuid = rc.request().params().get("uuid");
+				Project project = boot.projectRoot().findByName(projectName);
+				TagFamilyRoot root = project.getTagFamilyRoot();
+				root.findByUuid(uuid, rh -> {
+					TagFamily tagFamily = rh.result();
+					if (tagFamily == null) {
+						rc.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_name", requestModel.getName())));
+						return;
+					}
+					if (requestUser.hasPermission(tagFamily, UPDATE_PERM)) {
+						tagFamily.setName(requestModel.getName());
+					}
+					transformAndResponde(rc, tagFamily);
 				});
-			});
+			}
 
 		});
 	}

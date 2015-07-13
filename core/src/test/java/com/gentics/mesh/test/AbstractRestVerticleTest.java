@@ -105,7 +105,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		try {
 			latch.await(getTimeout(), TimeUnit.SECONDS);
 		} catch (UnknownHostException | InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

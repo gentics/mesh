@@ -18,4 +18,10 @@ public class MicroschemaContainerImpl extends AbstractGenericNode<MicroschemaRes
 		return null;
 	}
 
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
