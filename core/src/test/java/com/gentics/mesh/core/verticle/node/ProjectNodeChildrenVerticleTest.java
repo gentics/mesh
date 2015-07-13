@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
@@ -30,7 +30,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 	private DataHelper helper;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return verticle;
 	}
 

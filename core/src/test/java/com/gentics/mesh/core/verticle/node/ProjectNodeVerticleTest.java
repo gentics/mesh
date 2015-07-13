@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -61,7 +61,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return verticle;
 	}
 
@@ -81,7 +81,6 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(data().getFolder("news").getUuid());
-
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");

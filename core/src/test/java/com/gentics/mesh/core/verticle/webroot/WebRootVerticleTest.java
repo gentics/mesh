@@ -9,7 +9,7 @@ import io.vertx.core.Future;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
@@ -21,7 +21,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	private WebRootVerticle webRootVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return webRootVerticle;
 	}
 

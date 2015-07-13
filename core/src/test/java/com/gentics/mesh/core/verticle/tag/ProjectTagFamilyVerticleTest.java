@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -36,7 +36,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	private ProjectTagFamilyVerticle tagFamilyVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return tagFamilyVerticle;
 	}
 

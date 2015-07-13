@@ -2,7 +2,7 @@ package com.gentics.mesh.core;
 
 import io.vertx.ext.web.Router;
 
-public abstract class AbstractCoreApiVerticle extends AbstractRestVerticle {
+public abstract class AbstractCoreApiVerticle extends AbstractWebVerticle {
 
 	protected AbstractCoreApiVerticle(String basePath) {
 		super(basePath);

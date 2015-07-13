@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -42,7 +42,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	private GroupVerticle groupsVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return groupsVerticle;
 	}
 

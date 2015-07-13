@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -44,7 +44,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	private SchemaVerticle schemaVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return schemaVerticle;
 	}
 

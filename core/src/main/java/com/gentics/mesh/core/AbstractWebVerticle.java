@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 
-public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
+public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractRestVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
 
 	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
 
@@ -21,7 +21,7 @@ public abstract class AbstractRestVerticle extends AbstractSpringVerticle {
 	protected String basePath;
 	protected HttpServer server;
 
-	protected AbstractRestVerticle(String basePath) {
+	protected AbstractWebVerticle(String basePath) {
 		this.basePath = basePath;
 	}
 

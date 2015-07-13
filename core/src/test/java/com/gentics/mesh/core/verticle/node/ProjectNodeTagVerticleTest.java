@@ -14,7 +14,7 @@ import io.vertx.core.Future;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
@@ -33,7 +33,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	private DataHelper helper;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return verticle;
 	}
 

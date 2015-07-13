@@ -5,7 +5,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -15,7 +15,7 @@ public class ProjectTagNodeVerticleTest extends AbstractRestVerticleTest {
 	private ProjectTagVerticle tagVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return tagVerticle;
 	}
 

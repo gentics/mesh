@@ -39,8 +39,10 @@ public class RouterStorage {
 	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
 	private static final String API_ROUTER_KEY = "API_ROUTER";
+	private static final String CUSTOM_ROUTER_KEY = "CUSTOM_ROUTER";
 
 	public static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
+	public static final String DEFAULT_CUSTOM_MOUNTPOINT = "/custom";
 	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
 
 	@Autowired
@@ -60,6 +62,7 @@ public class RouterStorage {
 	 */
 	private Map<String, Router> coreRouters = new HashMap<>();
 
+	private Map<String, Router> customRouters = new HashMap<>();
 	/**
 	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/alohaeditor, /api/v1/yourprojectname
 	 */
@@ -130,6 +133,17 @@ public class RouterStorage {
 		router.route().handler(springConfiguration.sessionHandler());
 		router.route().handler(springConfiguration.userSessionHandler());
 		router.route().handler(dataHandler);
+	}
+
+	public Router getCustomRouter() {
+		Router customRouter = coreRouters.get(CUSTOM_ROUTER_KEY);
+		if (customRouter == null) {
+			customRouter = Router.router(vertx);
+			coreRouters.put(CUSTOM_ROUTER_KEY, customRouter);
+			getRootRouter().mountSubRouter(DEFAULT_CUSTOM_MOUNTPOINT, customRouter);
+		}
+		return customRouter;
+
 	}
 
 	/**
@@ -252,6 +266,17 @@ public class RouterStorage {
 			projectSubRouters.put(name, router);
 		}
 		mountRouterInProjects(router, name);
+		return router;
+	}
+
+	public Router getCustomSubRouter(String name) {
+		Router router = customRouters.get(name);
+		if (router == null) {
+			router = Router.router(vertx);
+			log.info("Added custom subrouter {" + name + "}");
+			customRouters.put(name, router);
+		}
+		getCustomRouter().mountSubRouter("/" + name, router);
 		return router;
 	}
 

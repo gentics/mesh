@@ -6,7 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectSearchVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -16,7 +16,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	private ProjectSearchVerticle searchVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return searchVerticle;
 	}
 

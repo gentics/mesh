@@ -22,7 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -63,7 +63,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
-		AbstractRestVerticle verticle = getVerticle();
+		AbstractWebVerticle verticle = getVerticle();
 		// Inject spring config
 		verticle.setSpringConfig(springConfig);
 		JsonObject config = new JsonObject();
@@ -80,7 +80,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	}
 
-	public abstract AbstractRestVerticle getVerticle();
+	public abstract AbstractWebVerticle getVerticle();
 
 	@After
 	public void tearDown() throws Exception {

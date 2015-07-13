@@ -334,6 +334,7 @@ public class BootstrapInitializer {
 			verticleLoader.apply(springConfiguration.vertx());
 		}
 		initProjects();
+		springConfiguration.vertx().eventBus().send("mesh-startup-complete", true);
 
 	}
 

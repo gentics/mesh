@@ -11,7 +11,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.verticle.project.ProjectBinaryVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -22,7 +22,7 @@ public class ProjectBinaryVerticleTest extends AbstractRestVerticleTest {
 	private ProjectBinaryVerticle verticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return verticle;
 	}
 

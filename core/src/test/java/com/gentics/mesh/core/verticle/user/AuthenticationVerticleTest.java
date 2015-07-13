@@ -8,7 +8,7 @@ import io.vertx.core.Future;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.AuthenticationVerticle;
@@ -21,7 +21,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 	private AuthenticationVerticle authenticationVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return authenticationVerticle;
 	}
 

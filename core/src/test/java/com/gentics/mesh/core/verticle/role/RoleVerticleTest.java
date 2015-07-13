@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.AbstractRestVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -44,7 +44,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	private RoleVerticle rolesVerticle;
 
 	@Override
-	public AbstractRestVerticle getVerticle() {
+	public AbstractWebVerticle getVerticle() {
 		return rolesVerticle;
 	}
 

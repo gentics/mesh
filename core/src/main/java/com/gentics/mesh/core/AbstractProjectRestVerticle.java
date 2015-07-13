@@ -14,7 +14,7 @@ import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
  * @author johannes2
  *
  */
-public abstract class AbstractProjectRestVerticle extends AbstractRestVerticle {
+public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectNodeVerticle.class);
 
