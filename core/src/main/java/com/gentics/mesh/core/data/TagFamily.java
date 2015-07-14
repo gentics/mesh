@@ -14,7 +14,7 @@ public interface TagFamily extends GenericNode<TagFamilyResponse>, NamedNode {
 
 	void setDescription(String description);
 
-	Tag create(String name);
+	Tag create(String name, Project project);
 
 	void removeTag(Tag tag);
 

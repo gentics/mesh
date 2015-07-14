@@ -46,7 +46,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		TagFamily basicTagFamily = data().getTagFamily("basic");
-		Tag noPermTag = basicTagFamily.create("noPermTag");
+		Tag noPermTag = basicTagFamily.create("noPermTag", data().getProject());
 		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 		data().getProject().getTagRoot().addTag(noPermTag);
 		assertNotNull(noPermTag.getUuid());
@@ -118,7 +118,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(0, tagList.getData().size());
 		assertEquals(4242, tagList.getMetainfo().getCurrentPage());
 		assertEquals(25, tagList.getMetainfo().getPerPage());
-		assertEquals(totalPages, tagList.getMetainfo().getTotalCount());
+		assertEquals(data().getTags().size(), tagList.getMetainfo().getTotalCount());
 		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 	}
 
@@ -211,11 +211,12 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteTagByUUID() throws Exception {
 		Tag tag = data().getTag("vehicle");
+		String name = tag.getName();
 		String uuid = tag.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("tag_deleted", future, uuid);
+		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNull("The tag should have been deleted", rh.result());

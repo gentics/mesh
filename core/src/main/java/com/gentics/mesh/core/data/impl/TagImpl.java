@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
@@ -65,7 +66,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 	@Override
 	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
 		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
-		vertx.executeBlocking(bc -> {
+//		vertx.executeBlocking(bc -> {
 			TagResponse restTag = new TagResponse();
 
 			try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
@@ -119,9 +120,10 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 			// restTag.setChildTags(null);
 			// }
 
-				bc.complete(restTag);
+//				bc.complete(restTag);
+			resultHandler.handle(Future.succeededFuture(restTag));
 
-			}, resultHandler);
+//			}, resultHandler);
 		return this;
 	}
 

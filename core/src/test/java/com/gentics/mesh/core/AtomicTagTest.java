@@ -33,7 +33,7 @@ public class AtomicTagTest extends AbstractDBTest {
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		TagFamily tagFamily = tagFamilyRoot.create("basic");
 
-		Tag tag = tagFamily.create("dummyName");
+		Tag tag = tagFamily.create("dummyName", data().getProject());
 		String uuid = tag.getUuid();
 		assertNotNull(tag);
 		assertEquals("dummyName", tag.getName());

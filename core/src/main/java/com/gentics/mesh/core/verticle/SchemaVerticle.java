@@ -181,7 +181,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				loadTransformAndReturn(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
+				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
 			}
 		});
 

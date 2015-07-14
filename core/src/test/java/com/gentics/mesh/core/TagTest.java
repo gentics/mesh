@@ -1,5 +1,6 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -57,14 +58,14 @@ public class TagTest extends AbstractBasicObjectTest {
 		tagFamily.setDescription("description");
 		assertEquals("description", tagFamily.getDescription());
 		assertEquals(0, tagFamily.getTags().size());
-		Tag tag = tagFamily.create(GERMAN_NAME);
+		assertNotNull(tagFamily.create(GERMAN_NAME, data().getProject()));
 		assertEquals(1, tagFamily.getTags().size());
 	}
 
 	@Test
 	public void testSimpleTag() {
 		TagFamily root = data().getTagFamily("basic");
-		Tag tag = root.create("test");
+		Tag tag = root.create("test", data().getProject());
 		assertEquals("test", tag.getName());
 		tag.setName("test2");
 		assertEquals("test2", tag.getName());
@@ -75,7 +76,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 		// 1. Create the tag
 		TagFamily root = data().getTagFamily("basic");
-		Tag tag = root.create(ENGLISH_NAME);
+		Tag tag = root.create(ENGLISH_NAME, data().getProject());
 		String uuid = tag.getUuid();
 		tagRoot.findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -118,7 +119,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testNodeTagging() {
 		final String TEST_TAG_NAME = "testTag";
 		TagFamily tagFamily = data().getTagFamily("basic");
-		Tag tag = tagFamily.create(TEST_TAG_NAME);
+		Tag tag = tagFamily.create(TEST_TAG_NAME, data().getProject());
 
 		Node node = data().getFolder("news");
 		node.addTag(tag);
@@ -154,7 +155,26 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		Page<? extends Tag> page = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
+
+		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+		TagFamily basicTagFamily = data().getTagFamily("basic");
+		Tag noPermTag = basicTagFamily.create("noPermTag", data().getProject());
+		data().getProject().getTagRoot().addTag(noPermTag);
+		assertNotNull(noPermTag.getUuid());
+		assertEquals(data().getTags().size() + 1, tagRoot.findAll().size());
+
+		Page<? extends Tag> projectTagpage = getProject().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+		assertPage(projectTagpage, data().getTags().size());
+
+		Page<? extends Tag> globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
+		assertPage(globalTagPage, data().getTags().size());
+
+		getRole().addPermissions(noPermTag, READ_PERM);
+		globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
+		assertPage(globalTagPage, data().getTags().size() + 1);
+	}
+
+	private void assertPage(Page<? extends Tag> page, int totalTags) {
 		assertNotNull(page);
 
 		int nTags = 0;
@@ -162,10 +182,11 @@ public class TagTest extends AbstractBasicObjectTest {
 			assertNotNull(tag.getName());
 			nTags++;
 		}
-		assertEquals(data().getTags().size(), nTags);
-		assertEquals(data().getTags().size(), page.getTotalElements());
+		assertEquals(totalTags, nTags);
+		assertEquals(totalTags, page.getTotalElements());
 		assertEquals(1, page.getNumber());
 		assertEquals(1, page.getTotalPages());
+
 	}
 
 	@Test
@@ -201,7 +222,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreate() {
 		TagFamily tagFamily = data().getTagFamily("basic");
-		Tag tag = tagFamily.create(GERMAN_NAME);
+		Tag tag = tagFamily.create(GERMAN_NAME, data().getProject());
 		assertNotNull(tag);
 		String uuid = tag.getUuid();
 		tagRoot.findByUuid(uuid, rh -> {
@@ -246,7 +267,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() {
 		TagFamily tagFamily = data().getTagFamily("basic");
-		Tag tag = tagFamily.create("someTag");
+		Tag tag = tagFamily.create("someTag", data().getProject());
 		String uuid = tag.getUuid();
 		tagRoot.findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -261,7 +282,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		TagFamily tagFamily = data().getTagFamily("basic");
-		Tag tag = tagFamily.create("someTag");
+		Tag tag = tagFamily.create("someTag", data().getProject());
 		assertTrue(getUser().hasPermission(tagFamily, Permission.READ_PERM));
 		assertFalse(getUser().hasPermission(tag, Permission.READ_PERM));
 		getRequestUser().addCRUDPermissionOnRole(tagFamily, Permission.CREATE_PERM, tag);

@@ -138,7 +138,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 
 				loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
 					TagFamily tagFamily = rh.result();
-					Tag newTag = tagFamily.create(requestModel.getFields().getName());
+					Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
 					project.getTagRoot().addTag(newTag);
 					tagCreated.complete(newTag);
 					transformAndResponde(rc, newTag);
@@ -153,7 +153,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			Project project = getProject(rc);
-			loadTransformAndReturn(rc, "uuid", READ_PERM, project.getTagRoot());
+			loadTransformAndResponde(rc, "uuid", READ_PERM, project.getTagRoot());
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);

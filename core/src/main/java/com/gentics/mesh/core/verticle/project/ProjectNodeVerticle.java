@@ -273,7 +273,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 				rc.next();
 			} else {
 				Project project = getProject(rc);
-				loadTransformAndReturn(rc, "uuid", READ_PERM, project.getNodeRoot());
+				loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
 			}
 		});
 

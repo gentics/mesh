@@ -90,7 +90,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		readRoute.handler(rc -> {
-			loadTransformAndReturn(rc, "uuid", READ_PERM, getProject(rc).getTagFamilyRoot());
+			loadTransformAndResponde(rc, "uuid", READ_PERM, getProject(rc).getTagFamilyRoot());
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);

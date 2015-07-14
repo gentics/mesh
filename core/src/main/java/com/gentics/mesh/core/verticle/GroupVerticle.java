@@ -211,7 +211,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadTransformAndReturn(rc, "uuid", READ_PERM, boot.groupRoot());
+			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.groupRoot());
 		});
 
 		/*

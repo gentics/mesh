@@ -12,6 +12,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
@@ -60,12 +61,15 @@ public class TagFamilyImpl extends AbstractGenericNode<TagFamilyResponse> implem
 		// TODO delete tag node?!
 	}
 
-	public Tag create(String name) {
+	public Tag create(String name, Project project) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		addTag(tag);
+		// Add to global list of tags
 		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();
 		tagRoot.addTag(tag);
+		// Add tag to project list of tags
+		project.getTagRoot().addTag(tag);
 		return tag;
 	}
 

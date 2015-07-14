@@ -133,7 +133,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				loadTransformAndReturn(rc, "uuid", READ_PERM, boot.projectRoot());
+				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.projectRoot());
 			}
 		});
 

@@ -141,7 +141,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		});
 	}
 
-	protected <T extends GenericNode<? extends AbstractRestModel>> void loadTransformAndReturn(RoutingContext rc, String uuidParameterName,
+	protected <T extends GenericNode<? extends AbstractRestModel>> void loadTransformAndResponde(RoutingContext rc, String uuidParameterName,
 			Permission permission, RootVertex<T> root) {
 		loadAndTransform(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {

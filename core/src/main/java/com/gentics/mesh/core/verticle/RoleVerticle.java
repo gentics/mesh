@@ -72,7 +72,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			loadTransformAndReturn(rc, "uuid", READ_PERM, boot.roleRoot());
+			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
 		});
 
 		/*

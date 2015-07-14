@@ -48,7 +48,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
-				loadTransformAndReturn(rc, "uuid", READ_PERM, boot.userRoot());
+				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.userRoot());
 			});
 		});
 
