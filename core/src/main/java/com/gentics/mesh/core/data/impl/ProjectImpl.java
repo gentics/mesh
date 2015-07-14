@@ -100,8 +100,8 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 	}
 
 	@Override
-	public void setBaseNode(BaseNode rootNode) {
-		linkOut(rootNode.getImpl(), HAS_BASE_NODE);
+	public void setBaseNode(BaseNode baseNode) {
+		linkOut(baseNode.getImpl(), HAS_BASE_NODE);
 	}
 
 	@Override

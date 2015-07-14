@@ -87,6 +87,29 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testCreateNodeInBaseNode() {
+		Node parentNode = data().getFolder("news");
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+
+		request.setParentNodeUuid(data().getProject().getBaseNode().getUuid());
+
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(request, restNode);
+	}
+
+	@Test
 	public void testCreateNode() throws Exception {
 
 		Node parentNode = data().getFolder("news");

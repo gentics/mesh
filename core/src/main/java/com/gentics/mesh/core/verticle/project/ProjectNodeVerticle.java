@@ -165,7 +165,6 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			Project project = getProject(rc);
 			MeshAuthUser requestUser = getUser(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
 
 			String body = rc.getBodyAsString();
 			SchemaReferenceInfo schemaInfo;
@@ -222,32 +221,37 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 								nodeCreated.setHandler(handler);
 
-								loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
-									if (hasSucceeded(rc, rhp)) {
-										Node parentNode = rhp.result();
-										try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-											Node node = parentNode.create(requestUser, schemaContainer, project);
-											requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-											Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-											if (language == null) {
-												nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
-														requestModel.getLanguage())));
-											} else {
-												NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-												try {
-													container.setFieldFromRest(rc, requestModel.getFields(), schema);
-												} catch (Exception e) {
-													nodeCreated.fail(e);
-													return;
+								if (project.getOrCreateBaseNode().equals(requestModel.getParentNodeUuid())) {
+					
+								} else {
+
+									loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
+										if (hasSucceeded(rc, rhp)) {
+											Node parentNode = rhp.result();
+											try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+												Node node = parentNode.create(requestUser, schemaContainer, project);
+												requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+												Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+												if (language == null) {
+													nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
+															requestModel.getLanguage())));
+												} else {
+													NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+													try {
+														container.setFieldFromRest(rc, requestModel.getFields(), schema);
+													} catch (Exception e) {
+														nodeCreated.fail(e);
+														return;
+													}
 												}
+												tx.success();
+												nodeCreated.complete(node);
 											}
-											tx.success();
-											nodeCreated.complete(node);
+
 										}
 
-									}
-
-								});
+									});
+								}
 							} catch (Exception e) {
 								rc.fail(e);
 								return;

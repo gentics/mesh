@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-
-public interface FieldSchema  {
+public interface FieldSchema {
 	public String getType();
 
 	public String getLabel();

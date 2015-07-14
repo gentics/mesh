@@ -80,7 +80,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("role_deleted", deleteFuture, restRole.getUuid());
+		expectMessageResponse("role_deleted", deleteFuture, restRole.getUuid() + "/" + restRole.getName());
 
 	}
 
@@ -148,6 +148,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
 		Role extraRole = roleRoot.create("extra role");
+		extraRole.setCreator(info.getUser());
+		extraRole.setEditor(info.getUser());
 		info.getGroup().addRole(extraRole);
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
@@ -343,7 +345,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteRole(extraRole.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("role_deleted", future, extraRole.getUuid());
+		expectMessageResponse("role_deleted", future, extraRole.getUuid() + "/" + extraRole.getName());
 		roleRoot.findByUuid(extraRole.getUuid(), rh -> {
 			assertNull("The user should have been deleted", rh.result());
 		});

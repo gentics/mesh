@@ -27,7 +27,7 @@ public class BaseNodeImpl extends AbstractGenericNode<NodeResponse> implements B
 
 	@Override
 	public void setParentNode(ContainerNode parentNode) {
-		throw new UnsupportedOperationException("The root node can't have any parent node.");
+		throw new UnsupportedOperationException("The base node can't have any parent node.");
 	}
 
 	@Override
@@ -45,8 +45,7 @@ public class BaseNodeImpl extends AbstractGenericNode<NodeResponse> implements B
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException("The base node can't be deleted");
 	}
 
 }

@@ -30,7 +30,7 @@ public interface Group extends GenericNode<GroupResponse>, NamedNode {
 
 	void removeUser(User user);
 
-	Role createRole(String name);
+	Role createRole(String name, Group parentGroup);
 
 	User createUser(String username);
 

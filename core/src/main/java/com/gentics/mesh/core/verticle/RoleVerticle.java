@@ -106,8 +106,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				if (hasSucceeded(rc, rh)) {
 					Group parentGroup = rh.result();
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						Role role = parentGroup.createRole(requestModel.getName());
-						role.addGroup(parentGroup);
+						Role role = parentGroup.createRole(requestModel.getName(), parentGroup);
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
 						tx.success();
 						roleCreated.complete(role);

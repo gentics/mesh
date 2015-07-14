@@ -255,11 +255,11 @@ public class DemoDataProvider {
 
 	private void addFolderStructure() {
 
-		BaseNode rootNode = project.getOrCreateBaseNode();
-		rootNode.setCreator(userInfo.getUser());
+		BaseNode baseNode = project.getOrCreateBaseNode();
+		baseNode.setCreator(userInfo.getUser());
 		//		rootNode.addProject(project);
 
-		Node news = addFolder(rootNode, "News", "Neuigkeiten");
+		Node news = addFolder(baseNode, "News", "Neuigkeiten");
 		Node news2015 = addFolder(news, "2015", null);
 		news2015.addTag(tags.get("car"));
 		news2015.addTag(tags.get("bike"));
@@ -269,8 +269,8 @@ public class DemoDataProvider {
 		Node news2014 = addFolder(news, "2014", null);
 		addFolder(news2014, "March", null);
 
-		addFolder(rootNode, "Products", "Produkte");
-		addFolder(rootNode, "Deals", "Angebote");
+		addFolder(baseNode, "Products", "Produkte");
+		addFolder(baseNode, "Deals", "Angebote");
 
 	}
 
@@ -666,6 +666,7 @@ public class DemoDataProvider {
 	}
 
 	public int getNodeCount() {
+		// +1 basenode (1 project)
 		return folders.size() + contents.size();
 	}
 

@@ -10,6 +10,7 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -131,9 +132,10 @@ public class GroupImpl extends AbstractGenericNode<GroupResponse> implements Gro
 		return user;
 	}
 
-	public Role createRole(String name) {
+	public Role createRole(String name, Group parentGroup) {
 		RoleImpl role = getGraph().addFramedVertex(RoleImpl.class);
 		role.setName(name);
+		BootstrapInitializer.getBoot().roleRoot().addRole(role);
 		// Add role also to role root
 		addRole(role);
 		return role;
