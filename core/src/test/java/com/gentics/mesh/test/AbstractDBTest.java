@@ -8,6 +8,8 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,27 +73,20 @@ public abstract class AbstractDBTest {
 	protected RoutingContext getMockedRoutingContext(String query) {
 
 		User user = data().getUserInfo().getUser();
-
+		Map<String, Object> map = new HashMap<>();
 		RoutingContext rc = mock(RoutingContext.class);
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 
 		MeshAuthUserImpl requestUser = fg.frameElement(user.getElement(), MeshAuthUserImpl.class);
-
+		when(rc.data()).thenReturn(map);
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);
 		JsonObject principal = new JsonObject();
 		principal.put("uuid", user.getUuid());
 		when(rc.user()).thenReturn(requestUser);
-		//when(vertxUser.principal()).thenReturn(principal);
-		// Create login session
-		// String loginSessionId = auth.createLoginSession(Long.MAX_VALUE, user);
-		// String loginSessionId = null;
-		// Session session = mock(Session.class);
-		// RoutingContext rc = mock(RoutingContext.class);
-		// when(rc.session()).thenReturn(session);
-		// when(session.id()).thenReturn(loginSessionId);
+
 		return rc;
 	}
 

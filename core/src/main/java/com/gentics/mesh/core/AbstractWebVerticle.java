@@ -152,7 +152,6 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
 			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
-		MeshAuthUser requestUser = getUser(rc);
 		for (T node : page) {
 			node.transformToRest(rc, rh -> {
 				listResponse.getData().add(rh.result());
@@ -183,13 +182,17 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			Permission permission, RootVertex<T> root, Handler<AsyncResult<AbstractRestModel>> handler) {
 		loadObject(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
-				rh.result().transformToRest(rc, th -> {
-					if (hasSucceeded(rc, th)) {
-						handler.handle(Future.succeededFuture(th.result()));
-					} else {
-						handler.handle(Future.failedFuture(""));
-					}
-				});
+				try {
+					rh.result().transformToRest(rc, th -> {
+						if (hasSucceeded(rc, th)) {
+							handler.handle(Future.succeededFuture(th.result()));
+						} else {
+							handler.handle(Future.failedFuture("Not authorized"));
+						}
+					});
+				} catch (HttpStatusCodeErrorException e) {
+					handler.handle(Future.failedFuture(e));
+				}
 			}
 		});
 	}
