@@ -1,16 +1,10 @@
 package com.gentics.mesh.core.rest.schema;
 
-import java.util.List;
-
-import com.gentics.mesh.core.rest.node.field.ListableField;
-
-public interface ListFieldSchema<T extends ListableField> extends MicroschemaListableFieldSchema {
-
-	List<T> getItems();
+public interface ListFieldSchema extends MicroschemaListableFieldSchema {
 
 	String[] getAllowedSchemas();
 
-	void setAllowedSchemas(String[] allowedSchemas);
+	void setAllowedSchemas(String... allowedSchemas);
 
 	String getListType();
 

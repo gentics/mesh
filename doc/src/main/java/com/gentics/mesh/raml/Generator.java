@@ -5,15 +5,12 @@ import static com.gentics.mesh.util.FieldUtil.createStringField;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -34,12 +31,23 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -53,18 +61,14 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.UUIDUtil;
 
 public class Generator {
 
-	private static final RandomBasedGenerator uuidGenerator = Generators.randomBasedGenerator();
 	private File outputDir;
 
 	public static String getUUID() {
-
-		final UUID uuid = uuidGenerator.generate();
-		final StringBuilder sb = new StringBuilder();
-		sb.append(Long.toHexString(uuid.getMostSignificantBits())).append(Long.toHexString(uuid.getLeastSignificantBits()));
-		return sb.toString();
+		return UUIDUtil.randomUUID();
 	}
 
 	private void writeJsonSchema(Class<?> clazz) throws IOException {
@@ -113,9 +117,10 @@ public class Generator {
 		userJson();
 		groupJson();
 		roleJson();
-		contentJson();
+		nodeJson();
 		tagJson();
 		schemaJson();
+		microschemaJson();
 		projectJson();
 
 		genericResponseJson();
@@ -228,39 +233,37 @@ public class Generator {
 		info.setTotalCount(totalCount);
 	}
 
+	private void microschemaJson() throws JsonGenerationException, JsonMappingException, IOException {
+		MicroschemaResponse response = new MicroschemaResponse();
+		response.setUuid(getUUID());
+		write(response);
+	}
+
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
-		SchemaResponse schema = new SchemaResponse();
-		schema.setUuid(getUUID());
-		//		schema.setDescription("Description of the schema");
-		//		schema.setName("extended-content");
-		schema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		//		PropertyTypeSchemaResponse prop = new PropertyTypeSchemaResponse();
-		//		prop.setDescription("Html Content");
-		//		prop.setKey("content");
-		//		prop.setType(PropertyType.HTML.name());
-		//		schema.getPropertyTypeSchemas().add(prop);
-		write(schema);
+		write(getSchemaResponse());
+		write(getSchemaCreateRequest());
+		write(getSchemaUpdateRequest());
+		write(getSchemaListResponse());
+	}
 
-		SchemaResponse schema2 = new SchemaResponse();
-		schema2.setUuid(getUUID());
-		//		schema2.setDescription("Description of the schema2");
-		schema2.setName("extended-content-2");
-
-		// TODO properties
-
+	private SchemaListResponse getSchemaListResponse() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaListResponse schemaList = new SchemaListResponse();
-		schemaList.getData().add(schema);
-		schemaList.getData().add(schema2);
+		schemaList.getData().add(getSchemaResponse());
+		schemaList.getData().add(getSchemaResponse());
 		setPaging(schemaList, 1, 10, 2, 20);
-		write(schemaList);
+		return schemaList;
+	}
 
+	private SchemaUpdateRequest getSchemaUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
 		schemaUpdate.setUuid(getUUID());
 		// TODO should i allow changing the name?
 		schemaUpdate.setName("extended-content");
 		schemaUpdate.setDescription("New description");
-		write(schemaUpdate);
+		return schemaUpdate;
+	}
 
+	private SchemaCreateRequest getSchemaCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaCreateRequest schemaUpdateRequest = new SchemaCreateRequest();
 		schemaUpdateRequest.setContainer(true);
 		schemaUpdateRequest.setBinary(true);
@@ -269,15 +272,53 @@ public class Generator {
 		schemaUpdateRequest.setName("video-schema");
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		schemaUpdateRequest.addField("name", nameFieldSchema);
-		write(schemaUpdateRequest);
+		return schemaUpdateRequest;
 	}
 
-	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {
+	private SchemaResponse getSchemaResponse() throws JsonGenerationException, JsonMappingException, IOException {
+		SchemaResponse schema = new SchemaResponse();
+		schema.setUuid(getUUID());
+		// schema.setDescription("Description of the schema");
+		// schema.setName("extended-content");
+		schema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("content");
-		schemaReference.setUuid(getUUID());
+		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+		nameFieldSchema.setName("name");
+		nameFieldSchema.setLabel("Name");
+		schema.addField("name", nameFieldSchema);
 
+		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
+		numberFieldSchema.setName("number");
+		numberFieldSchema.setLabel("Number");
+		numberFieldSchema.setMin(2);
+		numberFieldSchema.setMax(10);
+		numberFieldSchema.setStep(0.5F);
+		schema.addField("number", numberFieldSchema);
+
+		HTMLFieldSchema htmlFieldSchema = new HTMLFieldSchemaImpl();
+		htmlFieldSchema.setName("Teaser html");
+		htmlFieldSchema.setLabel("Teaser");
+		schema.addField("html", htmlFieldSchema);
+
+		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
+		listFieldSchema.setAllowedSchemas("content", "video");
+		listFieldSchema.setMin(1);
+		listFieldSchema.setMax(10);
+		listFieldSchema.setLabel("List of nodes");
+		listFieldSchema.setName("Nodes");
+		listFieldSchema.setListType("node");
+		schema.addField("list", listFieldSchema);
+
+		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
+		nodeFieldSchema.setAllowedSchemas("content", "video", "image");
+		schema.addField("node", nodeFieldSchema);
+
+		MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
+		schema.addField("microschema", microschemaFieldSchema);
+		return schema;
+	}
+
+	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse content = new NodeResponse();
 		content.setUuid(getUUID());
 		content.setCreator(getUserReference());
@@ -285,16 +326,26 @@ public class Generator {
 		content.getFields().put("filename", createStringField("dummy-content.de.html"));
 		content.getFields().put("teaser", createStringField("Dummy teaser for de-DE"));
 		content.getFields().put("content", createStringField("Content for language tag de-DE"));
-		content.setSchema(schemaReference);
+		content.setSchema(getSchemaReference("content"));
 		content.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		write(content);
+		return content;
+	}
 
-		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
-		contentUpdate.setUuid(getUUID());
+	private NodeResponse getNodeResponse2() throws JsonGenerationException, JsonMappingException, IOException {
+		NodeResponse nodeResponse = new NodeResponse();
+		nodeResponse.setUuid(getUUID());
+		nodeResponse.setCreator(getUserReference());
 
-		contentUpdate.getFields().put("filename", createStringField("index-renamed.en.html"));
-		write(contentUpdate);
+		nodeResponse.getFields().put("name", createStringField("Name for language tag en"));
+		nodeResponse.getFields().put("filename", createStringField("dummy-content.en.html"));
+		nodeResponse.getFields().put("teaser", createStringField("Dummy teaser for en"));
+		nodeResponse.getFields().put("content", createStringField("Content for language tag en"));
+		nodeResponse.setSchema(getSchemaReference("content"));
+		nodeResponse.setPermissions("READ", "CREATE");
+		return nodeResponse;
+	}
 
+	private NodeCreateRequest getNodeCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
 
@@ -305,26 +356,37 @@ public class Generator {
 		fields.put("title", createStringField("English title"));
 		fields.put("teaser", createStringField("English teaser"));
 
-		contentCreate.setSchema(schemaReference);
-		write(contentCreate);
+		contentCreate.setSchema(getSchemaReference("content"));
+		return contentCreate;
+	}
 
-		NodeResponse content2 = new NodeResponse();
-		content2.setUuid(getUUID());
-		content2.setCreator(getUserReference());
+	private NodeUpdateRequest getNodeUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
+		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
+		contentUpdate.setUuid(getUUID());
+		contentUpdate.getFields().put("filename", createStringField("index-renamed.en.html"));
+		return contentUpdate;
+	}
 
-		content2.getFields().put("name", createStringField("Name for language tag en"));
-		content2.getFields().put("filename", createStringField("dummy-content.en.html"));
-		content2.getFields().put("teaser", createStringField("Dummy teaser for en"));
-		content2.getFields().put("content", createStringField("Content for language tag en"));
-		content2.setSchema(schemaReference);
-		content2.setPermissions("READ", "CREATE");
-
+	private NodeListResponse getNodeListResponse() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeListResponse list = new NodeListResponse();
-		list.getData().add(content);
-		list.getData().add(content2);
+		list.getData().add(getNodeResponse1());
+		list.getData().add(getNodeResponse2());
 		setPaging(list, 1, 10, 2, 20);
-		write(list);
+		return list;
+	}
 
+	private SchemaReference getSchemaReference(String name) {
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName(name);
+		schemaReference.setUuid(getUUID());
+		return schemaReference;
+	}
+
+	private void nodeJson() throws JsonGenerationException, JsonMappingException, IOException {
+		write(getNodeResponse1());
+		write(getNodeCreateRequest());
+		write(getNodeListResponse());
+		write(getNodeUpdateRequest());
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -414,9 +476,12 @@ public class Generator {
 	}
 
 	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {
+		write(object, JsonUtil.getMapper());
+	}
+
+	private void write(Object object, ObjectMapper mapper) throws JsonGenerationException, JsonMappingException, IOException {
 		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
-		ObjectMapper mapper = JsonUtil.getMapper();
+		System.out.println("Write {" + object.getClass().getSimpleName() + "} to {" + file.getAbsolutePath() + "}");
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
-		writeJsonSchema(object.getClass());
 	}
 }

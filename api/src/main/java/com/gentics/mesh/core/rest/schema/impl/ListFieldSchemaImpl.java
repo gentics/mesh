@@ -1,18 +1,13 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
-public class ListFieldSchemaImpl<T extends ListableField> extends AbstractFieldSchema implements ListFieldSchema<T> {
+public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 
 	private Integer min;
 	private Integer max;
-	private List<T> defaultItems = new ArrayList<>();
 
 	@JsonProperty("allowed")
 	private String[] allowedSchemas;
@@ -62,11 +57,6 @@ public class ListFieldSchemaImpl<T extends ListableField> extends AbstractFieldS
 	@Override
 	public String getType() {
 		return FieldTypes.LIST.toString();
-	}
-
-	@Override
-	public List<T> getItems() {
-		return defaultItems;
 	}
 
 }

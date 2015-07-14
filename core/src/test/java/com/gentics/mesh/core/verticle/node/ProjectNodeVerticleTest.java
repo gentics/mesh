@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +36,6 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.HTMLField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -420,10 +420,6 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		final String newName = "english renamed name";
 		request.getFields().put("name", FieldUtil.createStringField(newName));
-		// final String newFilename = "new-name.html";
-		// request.getFields().put("filename", FieldUtil.createStringField(newFilename));
-		// final String newContent = "english renamed content!";
-		// request.getFields().put("content", FieldUtil.createStringField(newContent));
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de", "en");
@@ -432,11 +428,9 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
-		// assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getText());
 		assertEquals(newName, node.getFieldContainer(data().getEnglish()).getString("name").getString());
 		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getString());
 
-		// assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
 	}
 
 	@Test
@@ -459,9 +453,11 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "NYD", "???");
-		NodeResponse restNode = future.result();
-		test.assertMeshNode(request, restNode);
+		expectMessage(
+				future,
+				BAD_REQUEST,
+				"Can't handle field {extrafield} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeCreateRequest[\"fields\"])");
+		assertNull(future.result());
 
 	}
 
@@ -484,23 +480,21 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error");
-		NodeResponse restNode = future.result();
-		test.assertMeshNode(request, restNode);
+		assertNull(future.result());
 	}
 
 	@Test
-	public void testUpdateNodeWithExtraJson() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateNodeWithExtraField2() throws HttpStatusCodeErrorException, Exception {
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
-		final String newFilename = "new-name.html";
+		request.setLanguage("en");
 		final String newName = "english renamed name";
-		final String newContent = "english renamed content!";
+		final String newDisplayName = "display name changed";
 
 		request.getFields().put("name", FieldUtil.createStringField(newName));
-		request.getFields().put("filename", FieldUtil.createStringField(newFilename));
-		request.getFields().put("content", FieldUtil.createStringField(newContent));
+		request.getFields().put("displayName", FieldUtil.createStringField(newDisplayName));
 
 		Node node = data().getFolder("2015");
 
@@ -508,19 +502,15 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		parameters.setLanguages("de", "en");
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
 		latchFor(future);
-		assertSuccess(future);
+		expectMessage(
+				future,
+				BAD_REQUEST,
+				"Can't handle field {displayName} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeUpdateRequest[\"fields\"])");
 
-		NodeResponse restNode = future.result();
+		assertNull(future.result());
 
-		assertEquals(newFilename, ((StringField) restNode.getFields().get("filename")).getString());
-		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getString());
-		assertEquals(newContent, ((HTMLField) restNode.getFields().get("content")).getHTML());
-
-		// TODO Reload and update
 		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
-		assertEquals(newFilename, englishContainer.getString("displayName").getString());
-		assertEquals(newName, englishContainer.getString("name").getString());
-		assertEquals(newContent, englishContainer.getString("content").getString());
+		assertNotEquals(newName, englishContainer.getString("name").getString());
 
 	}
 

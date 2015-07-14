@@ -18,9 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -71,13 +69,11 @@ public class RestModelTest extends AbstractDBTest {
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
 		titleFieldSchema.setLabel("Title");
-		titleFieldSchema.setString("Enter the title here");
 		schema.addField("title", titleFieldSchema);
 
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
 		nameFieldSchema.setLabel("Name");
-		nameFieldSchema.setString("Enter the name here");
 		schema.addField("name", nameFieldSchema);
 
 		schema.setBinary(false);
@@ -177,16 +173,16 @@ public class RestModelTest extends AbstractDBTest {
 		booleanSchema.setValue(true);
 		schemaCreateRequest.addField("boolean", booleanSchema);
 
-		ListFieldSchema<NodeField> listFieldSchema = new ListFieldSchemaImpl<>();
+		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName("list field name");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
 		listFieldSchema.setMin(5);
 		listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
-		NodeField defaultNode = new NodeFieldImpl();
-		defaultNode.setUuid(UUIDUtil.randomUUID());
-		listFieldSchema.getItems().add(defaultNode);
+		//NodeField defaultNode = new NodeFieldImpl();
+		//defaultNode.setUuid(UUIDUtil.randomUUID());
+		//listFieldSchema.getItems().add(defaultNode);
 		schemaCreateRequest.addField("list", listFieldSchema);
 
 		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
@@ -241,7 +237,7 @@ public class RestModelTest extends AbstractDBTest {
 		booleanSchema.setValue(true);
 		schema.addField("boolean", booleanSchema);
 
-		ListFieldSchema<NodeField> listFieldSchema = new ListFieldSchemaImpl<>();
+		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName("list field name");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");

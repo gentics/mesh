@@ -36,7 +36,7 @@ public final class JsonUtil {
 
 	protected static ObjectMapper nodeMapper;
 
-	//TODO danger danger - This will cause trouble when doing multithreaded deserialisation!
+	// TODO danger danger - This will cause trouble when doing multithreaded deserialisation!
 	protected static Map<String, Object> valuesMap = new HashMap<>();
 
 	static {
@@ -63,10 +63,9 @@ public final class JsonUtil {
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		// module.addDeserializer(MicroschemaListableField.class, new FieldDeserializer<MicroschemaListableField>());
-		// module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
+//		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
 		module.addDeserializer(Map.class, new FieldMapDeserializer());
-		//		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
-
+		// module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
 
 		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;
@@ -84,9 +83,9 @@ public final class JsonUtil {
 		defaultMapper = new ObjectMapper();
 		defaultMapper.setSerializationInclusion(Include.NON_NULL);
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		
+
 		SimpleModule module = new SimpleModule();
-		
+
 		module.addSerializer(Field.class, new FieldSerializer<Field>());
 		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, valuesMap, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class, new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, valuesMap,
@@ -153,10 +152,6 @@ public final class JsonUtil {
 
 	}
 
-	public static ObjectMapper getMapper() {
-		return defaultMapper;
-	}
-
 	public static String writeNodeJson(NodeResponse response) {
 		try {
 			return nodeMapper.writeValueAsString(response);
@@ -166,6 +161,14 @@ public final class JsonUtil {
 			// TODO 500?
 			throw new HttpStatusCodeErrorException(500, message, e);
 		}
+	}
+
+	public static ObjectMapper getMapper() {
+		return defaultMapper;
+	}
+
+	public static ObjectMapper getNodeMapper() {
+		return nodeMapper;
 	}
 
 }

@@ -9,13 +9,12 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
 
-public class ListFieldSchemaDeserializer extends JsonDeserializer<ListFieldSchema<? extends ListableField>> {
+public class ListFieldSchemaDeserializer extends JsonDeserializer<ListFieldSchema> {
 	@Override
-	public ListFieldSchema<? extends ListableField> deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public ListFieldSchema deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
 		ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();

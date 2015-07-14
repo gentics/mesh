@@ -29,17 +29,17 @@ public class DelegagingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 		JsonNode rootNode = jsonParser.readValueAsTree();
 		JsonNode schemaNode = rootNode.get("schema");
 		if (schemaNode == null) {
-			throw new IOException(
+			throw new MeshJsonException(
 					"The schema reference field could not be found within the json that represents the node. This field is mandatory for deserialisation.");
 		}
 		String schemaName = schemaNode.get("name").textValue();
 		if (StringUtils.isEmpty(schemaName)) {
-			throw new IOException("The schemaName is empty or not set. This field is mandatory for deserialisation.");
+			throw new MeshJsonException("The schemaName is empty or not set. This field is mandatory for deserialisation.");
 		}
 		// ctxt.setAttribute("schemaName", schemaName);
 		valuesMap.put("schemaName", schemaName);
-		//		NodeResponse nodeResponse = nodeMapper.convertValue(node2, NodeResponse.class);
-		//		return nodeResponse;
+		// NodeResponse nodeResponse = nodeMapper.convertValue(node2, NodeResponse.class);
+		// return nodeResponse;
 		return nodeMapper.reader(JsonUtil.getInjectableValues()).forType(classOfT).readValue(rootNode.toString());
 
 		// NodeResponse nodeResponse = (NodeResponse) defaultDeserializer.deserialize(jsonParser, ctxt);

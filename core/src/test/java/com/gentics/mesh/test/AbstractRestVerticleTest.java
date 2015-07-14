@@ -130,23 +130,26 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertEquals("The response message does not match.", message, responseFuture.result().getMessage());
 	}
 
-	protected void expectException(Future<?> future, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+	protected void expectMessage(Future<?> future, HttpResponseStatus status, String message) {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
 		assertNotNull(future.cause());
-		Locale en = Locale.ENGLISH;
 
 		if (future.cause() instanceof MeshRestClientHttpException) {
 			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
 			assertEquals(status.code(), exception.getStatusCode());
 			assertEquals(status.reasonPhrase(), exception.getMessage());
 			assertNotNull(exception.getResponseMessage());
-			String message = i18n.get(en, bodyMessageI18nKey, i18nParams);
 			assertEquals(message, exception.getResponseMessage().getMessage());
 		} else {
 			future.cause().printStackTrace();
 			fail("Unhandled exception");
 		}
+	}
 
+	protected void expectException(Future<?> future, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+		Locale en = Locale.ENGLISH;
+		String message = i18n.get(en, bodyMessageI18nKey, i18nParams);
+		expectMessage(future, status, message);
 	}
 
 	protected void assertSuccess(Future<?> future) {

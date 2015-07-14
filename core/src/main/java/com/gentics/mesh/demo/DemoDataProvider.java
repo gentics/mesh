@@ -257,7 +257,7 @@ public class DemoDataProvider {
 
 		BaseNode baseNode = project.getOrCreateBaseNode();
 		baseNode.setCreator(userInfo.getUser());
-		//		rootNode.addProject(project);
+		// rootNode.addProject(project);
 
 		Node news = addFolder(baseNode, "News", "Neuigkeiten");
 		Node news2015 = addFolder(news, "2015", null);
@@ -447,13 +447,11 @@ public class DemoDataProvider {
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
 		titleFieldSchema.setLabel("Title");
-		titleFieldSchema.setString("Enter the title here");
 		schema.addField("title", titleFieldSchema);
 
 		HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
 		titleFieldSchema.setName("content");
 		titleFieldSchema.setLabel("Content");
-		titleFieldSchema.setString("Enter your text here");
 		schema.addField("content", contentFieldSchema);
 
 		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
@@ -516,12 +514,12 @@ public class DemoDataProvider {
 
 		if (germanName != null) {
 			NodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
-			//			germanContainer.createString("displayName").setString(germanName);
+			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
 		}
 		if (englishName != null) {
 			NodeFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
-			//			englishContainer.createString("displayName").setString(englishName);
+			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
 

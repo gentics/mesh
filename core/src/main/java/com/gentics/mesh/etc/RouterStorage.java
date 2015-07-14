@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.json.MeshJsonException;
 
 /**
  * Central storage for all apex request routers.
@@ -87,17 +88,24 @@ public class RouterStorage {
 			rootRouter.route().failureHandler(failureRoutingContext -> {
 				if (failureRoutingContext.statusCode() == 401) {
 					// Assume that it has been handled by the BasicAuthHandlerImpl
-					log.debug("Got failure with 401 code.");
+					if (log.isDebugEnabled()) {
+						log.debug("Got failure with 401 code.");
+					}
 					failureRoutingContext.next();
 				} else {
+					log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
 					Throwable failure = failureRoutingContext.failure();
 					if (failure != null) {
-						log.error("Error for request in path: " + failureRoutingContext.normalisedPath(), failure);
+						log.error("Error:", failure);
+					}
+					if (failure != null && (failure.getCause() instanceof MeshJsonException)) {
+						failureRoutingContext.response().setStatusCode(400);
+						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
+					} else if (failure != null) {
 						int code = getResponseStatusCode(failure);
 						failureRoutingContext.response().setStatusCode(code);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 					} else {
-						log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
 						failureRoutingContext.response().setStatusCode(500);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse("Internal error occured")));
 					}

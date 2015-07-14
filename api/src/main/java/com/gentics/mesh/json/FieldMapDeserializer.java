@@ -50,7 +50,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 
 		String schemaName = (String) ctxt.findInjectableValue("schemaName", null, null);
 		if (schemaName == null) {
-			throw new IOException("It is not possible to deserialize the field map because the schemaName could not be extracted.");
+			throw new MeshJsonException("It is not possible to deserialize the field map because the schemaName could not be extracted.");
 		}
 		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
 		ObjectCodec oc = jsonParser.getCodec();
@@ -62,13 +62,13 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 			String fieldKey = currentEntry.getKey();
 			Schema schema = schemaStorage.getSchema(schemaName);
 			if (schema == null) {
-				throw new IOException("Can't find schema {" + schemaName + "} within the schema storage.");
+				throw new MeshJsonException("Can't find schema {" + schemaName + "} within the schema storage.");
 			}
 			FieldSchema fieldSchema = schemaStorage.getSchema(schemaName).getFields().get(fieldKey);
 			if (fieldSchema != null) {
 				addField(map, fieldKey, fieldSchema, currentEntry.getValue());
 			} else {
-				throw new IOException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
+				throw new MeshJsonException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
 			}
 		}
 		return map;

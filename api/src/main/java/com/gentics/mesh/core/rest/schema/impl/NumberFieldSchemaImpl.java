@@ -11,8 +11,6 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 
 	private Float step;
 
-	private String defaultNumber;
-
 	@Override
 	public Integer getMax() {
 		return max;
@@ -41,16 +39,6 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 	@Override
 	public void setStep(Float step) {
 		this.step = step;
-	}
-
-	@Override
-	public String getNumber() {
-		return defaultNumber;
-	}
-
-	@Override
-	public void setNumber(String number) {
-		this.defaultNumber = number;
 	}
 
 	@Override

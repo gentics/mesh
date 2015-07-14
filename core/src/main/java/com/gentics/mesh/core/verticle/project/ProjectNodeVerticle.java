@@ -16,7 +16,6 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.Route;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -102,9 +101,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 					Node node = rh.result();
 					try {
 						Page<? extends Tag> tagPage = node.getTags(requestUser, getPagingInfo(rc));
-						transformPage(rc, tagPage, tlh -> {
-							rc.response().end(JsonUtil.toJson(tlh.result()));
-						}, new TagListResponse());
+						transformAndResponde(rc, tagPage, new TagListResponse());
 					} catch (Exception e) {
 						rc.fail(e);
 					}
@@ -122,11 +119,11 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 				loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 					Node node = rh.result();
 					loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
-						Tag tag = th.result();
-						node.addTag(tag);
-						node.transformToRest(rc, trh -> {
-							rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(trh.result()));
-						});
+						if (hasSucceeded(rc, th)) {
+							Tag tag = th.result();
+							node.addTag(tag);
+							transformAndResponde(rc, node);
+						}
 					});
 				});
 
@@ -137,19 +134,14 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
 			Project project = getProject(rc);
-			MeshAuthUser requestUser = getUser(rc);
-			List<String> languageTags = getSelectedLanguageTags(rc);
-
 			loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 				loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), srh -> {
-					Node node = rh.result();
-					Tag tag = srh.result();
-					node.removeTag(tag);
-					node.transformToRest(rc, th -> {
-						if (hasSucceeded(rc, th)) {
-							rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(th.result()));
-						}
-					});
+					if (hasSucceeded(rc, srh) && hasSucceeded(rc, rh)) {
+						Node node = rh.result();
+						Tag tag = srh.result();
+						node.removeTag(tag);
+						transformAndResponde(rc, node);
+					}
 				});
 			});
 
@@ -206,23 +198,16 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 								Future<Node> nodeCreated = Future.future();
 
 								Handler<AsyncResult<Node>> handler = ch -> {
-									if (ch.failed()) {
-										//TODO throw a better error?
-										rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error"), ch.cause()));
-									} else {
+									if (hasSucceeded(rc, ch)) {
 										Node node = ch.result();
-										node.transformToRest(rc, th -> {
-											if (hasSucceeded(rc, rh)) {
-												rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(th.result()));
-											}
-										});
+										transformAndResponde(rc, node);
 									}
 								};
 
 								nodeCreated.setHandler(handler);
 
 								if (project.getOrCreateBaseNode().equals(requestModel.getParentNodeUuid())) {
-					
+
 								} else {
 
 									loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
@@ -236,20 +221,18 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 													nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
 															requestModel.getLanguage())));
 												} else {
-													NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 													try {
+														NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 														container.setFieldFromRest(rc, requestModel.getFields(), schema);
+														tx.success();
+														nodeCreated.complete(node);
 													} catch (Exception e) {
 														nodeCreated.fail(e);
 														return;
 													}
 												}
-												tx.success();
-												nodeCreated.complete(node);
 											}
-
 										}
-
 									});
 								}
 							} catch (Exception e) {
@@ -303,7 +286,6 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
 			NodeUpdateRequest requestModel;
 			try {
 				requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);
@@ -327,23 +309,18 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 								Schema schema = node.getSchema();
 								try {
 									container.setFieldFromRest(rc, requestModel.getFields(), schema);
+									tx.success();
+									transformAndResponde(rc, node);
 								} catch (MeshSchemaException e) {
 									tx.failure();
 									/* TODO i18n */
-									throw new HttpStatusCodeErrorException(400, e.getMessage());
+									rc.fail(new HttpStatusCodeErrorException(400, e.getMessage()));
 								}
-								tx.success();
 							}
 
 						} catch (IOException e) {
 							rc.fail(e);
 						}
-
-						node.transformToRest(rc, th -> {
-							if (hasSucceeded(rc, th)) {
-								rc.response().setStatusCode(200).end(JsonUtil.writeNodeJson(th.result()));
-							}
-						});
 					}
 				});
 			} catch (Exception e1) {

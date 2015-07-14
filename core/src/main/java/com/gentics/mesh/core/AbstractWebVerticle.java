@@ -22,12 +22,14 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedNode;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
@@ -149,6 +151,16 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			}
 		});
 	}
+	
+	
+	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(RoutingContext rc, Page<T> page, RL listResponse) {
+		transformPage(rc, page, th -> {
+			if (hasSucceeded(rc, th)) {
+				rc.response().end(JsonUtil.toJson(th.result()));
+			}
+		}, listResponse);
+	}
+
 
 	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
 			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
@@ -178,10 +190,12 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		});
 	}
 
+
 	protected <T extends GenericNode<? extends AbstractRestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,
 			Permission permission, RootVertex<T> root, Handler<AsyncResult<AbstractRestModel>> handler) {
 		loadObject(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
+				//TODO handle nested exceptions differently
 				try {
 					rh.result().transformToRest(rc, th -> {
 						if (hasSucceeded(rc, th)) {
@@ -211,7 +225,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	protected <T extends GenericNode<?>> void loadObjectByUuid(RoutingContext rc, String uuid, Permission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 		if (root == null) {
-			//TODO i18n
+			// TODO i18n
 			handler.handle(Future.failedFuture("Could not find root node."));
 		} else {
 			root.findByUuid(uuid, rh -> {

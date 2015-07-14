@@ -9,7 +9,6 @@ public final class FieldUtil {
 
 	public static StringFieldSchema createStringFieldSchema(String defaultString) {
 		StringFieldSchema fieldSchema = new StringFieldSchemaImpl();
-		fieldSchema.setString(defaultString);
 		return fieldSchema;
 	}
 
