@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.util.BlueprintTransaction;
 
@@ -104,14 +103,13 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addCreateHandler() {
 		Route createRoute = route().method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
+			Project project = getProject(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			TagFamilyCreateRequest requestModel = fromJson(rc, TagFamilyCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tagfamily_name_not_set")));
 			} else {
-				Project project = boot.projectRoot().findByName(projectName);
 				TagFamilyRoot root = project.getTagFamilyRoot();
 				/* TODO check for null */
 				if (requestUser.hasPermission(root, CREATE_PERM)) {
@@ -133,26 +131,18 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addUpdateHandler() {
 		Route updateRoute = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		updateRoute.handler(rc -> {
-			String projectName = getProjectName(rc);
-			MeshAuthUser requestUser = getUser(rc);
+			Project project = getProject(rc);
 			TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tagfamily_name_not_set")));
 			} else {
-				String uuid = rc.request().params().get("uuid");
-				Project project = boot.projectRoot().findByName(projectName);
-				TagFamilyRoot root = project.getTagFamilyRoot();
-				root.findByUuid(uuid, rh -> {
-					TagFamily tagFamily = rh.result();
-					if (tagFamily == null) {
-						rc.fail(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_name", requestModel.getName())));
-						return;
-					}
-					if (requestUser.hasPermission(tagFamily, UPDATE_PERM)) {
+				loadObject(rc, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
+					if (hasSucceeded(rc, rh)) {
+						TagFamily tagFamily = rh.result();
 						tagFamily.setName(requestModel.getName());
+						transformAndResponde(rc, tagFamily);
 					}
-					transformAndResponde(rc, tagFamily);
 				});
 			}
 

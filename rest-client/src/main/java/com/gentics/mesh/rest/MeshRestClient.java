@@ -177,7 +177,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingInfo pagingInfo) {
-		return handleRequest(GET, "/" + projectName + "/tagFamilies", TagFamilyListResponse.class);
+		return handleRequest(GET, "/" + projectName + "/tagFamilies" + getQuery(pagingInfo), TagFamilyListResponse.class);
 	}
 
 	@Override

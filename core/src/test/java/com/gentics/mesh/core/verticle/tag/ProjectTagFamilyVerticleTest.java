@@ -86,8 +86,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 		int perPage = 4;
 		// Extra Tags + permitted tag
-		int totalTags = data().getTags().size();
-		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
+		int totalTagFamilies = data().getTagFamilies().size();
+		int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 		List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
 			Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(page, perPage));
@@ -96,20 +96,20 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 			restResponse = tagPageFut.result();
 			int expectedItemsCount = perPage;
 			// Check the last page
-			if (page == 3) {
-				expectedItemsCount = 4;
+			if (page == 1) {
+				expectedItemsCount = 2;
 			}
 			assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 			assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
 					.getCurrentPage());
-			assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
+			assertEquals("The amount of total pages did not match the expected value. There are {" + totalTagFamilies + "} tags and {" + perPage
 					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
+			assertEquals("The total tag count does not match.", totalTagFamilies, restResponse.getMetainfo().getTotalCount());
 
 			allTagFamilies.addAll(restResponse.getData());
 		}
-		assertEquals("Somehow not all users were loaded when loading all pages.", totalTags, allTagFamilies.size());
+		assertEquals("Somehow not all users were loaded when loading all pages.", totalTagFamilies, allTagFamilies.size());
 
 		// Verify that the no_perm_tag is not part of the response
 		final String noPermTagUUID = noPermTagFamily.getUuid();
@@ -134,14 +134,14 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
 		perPage = 25;
-		totalPages = (int) Math.ceil(totalTags / (double) perPage);
+		totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(4242, perPage));
 		latchFor(pageFuture);
 		TagFamilyListResponse tagList = pageFuture.result();
 		assertEquals(0, tagList.getData().size());
 		assertEquals(4242, tagList.getMetainfo().getCurrentPage());
 		assertEquals(25, tagList.getMetainfo().getPerPage());
-		assertEquals(totalPages, tagList.getMetainfo().getTotalCount());
+		assertEquals(totalTagFamilies, tagList.getMetainfo().getTotalCount());
 		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 
 	}
