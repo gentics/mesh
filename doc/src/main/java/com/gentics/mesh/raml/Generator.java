@@ -34,10 +34,13 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFieldContainer;
@@ -258,10 +261,15 @@ public class Generator {
 		schemaUpdate.setDescription("New description");
 		write(schemaUpdate);
 
-		//		SchemaCreateRequest schemaCreate = new SchemaCreateRequest();
-		//		schemaCreate.setName("extended-content");
-		//		schemaCreate.setDescription("Just a dummy ");
-		//		write(schemaCreate);
+		SchemaCreateRequest schemaUpdateRequest = new SchemaCreateRequest();
+		schemaUpdateRequest.setContainer(true);
+		schemaUpdateRequest.setBinary(true);
+		schemaUpdateRequest.setDescription("Some description text");
+		schemaUpdateRequest.setDisplayField("name");
+		schemaUpdateRequest.setName("video-schema");
+		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+		schemaUpdateRequest.addField("name", nameFieldSchema);
+		write(schemaUpdateRequest);
 	}
 
 	private void contentJson() throws JsonGenerationException, JsonMappingException, IOException {

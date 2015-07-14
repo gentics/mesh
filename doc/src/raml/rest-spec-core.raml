@@ -89,44 +89,6 @@ traits:
           type: string
           required: false
 
-schemas:
-  - UserResponse: !include json/UserResponse.schema.json
-  - UserListResponse: !include json/UserListResponse.schema.json
-  - UserCreateRequest: !include json/UserCreateRequest.schema.json
-  - UserUpdateRequest: !include json/UserUpdateRequest.schema.json
-
-  - GroupResponse: !include  json/GroupResponse.schema.json
-  - GroupListResponse: !include json/GroupListResponse.schema.json
-  - GroupUpdateRequest: !include json/GroupUpdateRequest.schema.json
-  - GroupCreateRequest: !include json/GroupCreateRequest.schema.json
-
-  - RoleResponse: !include json/RoleResponse.schema.json
-  - RoleListResponse: !include json/RoleListResponse.schema.json
-  - RoleUpdateRequest: !include json/RoleUpdateRequest.schema.json
-  - RoleCreateRequest: !include json/RoleCreateRequest.schema.json
-
-  - TagResponse: !include json/TagResponse.schema.json
-  - TagListResponse: !include json/TagListResponse.schema.json
-  - TagUpdateRequest: !include json/TagUpdateRequest.schema.json
-  - TagCreateRequest: !include json/TagCreateRequest.schema.json
-
-  - NodeResponse: !include json/NodeResponse.schema.json
-  - NodeUpdateRequest: !include json/NodeUpdateRequest.schema.json
-  - NodeCreateRequest: !include json/NodeCreateRequest.schema.json
-
-  - ObjectSchemaResponse: !include json/ObjectSchemaResponse.schema.json
-  - ObjectSchemaListResponse: !include json/ObjectSchemaListResponse.schema.json
-  - ObjectSchemaUpdateRequest: !include json/ObjectSchemaUpdateRequest.schema.json
-  - ObjectSchemaCreateRequest: !include json/ObjectSchemaCreateRequest.schema.json
-
-  - ProjectResponse: !include json/ProjectResponse.schema.json
-  - ProjectListResponse: !include json/ProjectListResponse.schema.json
-  - ProjectUpdateRequest: !include json/ProjectUpdateRequest.schema.json
-  - ProjectCreateRequest: !include json/ProjectCreateRequest.schema.json
-  
-  - GenericMessageResponse: !include json/GenericMessageResponse.schema.json
-
-
 #------------------------------------------------------------------------------
 # User Verticle
 #------------------------------------------------------------------------------
@@ -141,7 +103,6 @@ schemas:
       200:
         body:
           application/json:
-            schema: UserListResponse
             example: !include json/UserListResponse.example.json
 
 
@@ -149,13 +110,11 @@ schemas:
     description: Create new user.
     body:
       application/json:
-        schema: UserCreateRequest
         example: !include json/UserCreateRequest.example.json
     responses:
       200:
         body:
           application/json:
-            schema: UserResponse
             example: !include json/UserResponse.example.json
 
 
@@ -167,19 +126,16 @@ schemas:
         200:
           body:
             application/json:
-              schema: UserResponse
               example: !include json/UserResponse.example.json
     put:
       description: Updates the user with the given uuid.
       body:
           application/json:
-              schema: UserUpdateRequest
               example: !include json/UserUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: UserResponse
               example: !include json/UserResponse.example.json
     delete:
       description: Deletes the user with the given uuid.
@@ -187,7 +143,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
 
 
@@ -204,19 +159,16 @@ schemas:
       200:
         body:
           application/json:
-            schema: RoleListResponse
             example: !include json/RoleListResponse.example.json
   post:
     description: Create a new role.
     body:
       application/json:
-        schema: RoleCreateRequest
         example: !include json/RoleCreateRequest.example.json
     responses:
       200:
         body:
           application/json:
-            schema: RoleResponse
             example: !include json/RoleResponse.example.json
 
   /{uuid}:
@@ -227,19 +179,16 @@ schemas:
         200:
           body:
             application/json:
-              schema: RoleResponse
               example: !include json/RoleResponse.example.json
     put:
       description: Updates a single role with the given uuid.
       body:
         application/json:
-          schema: RoleUpdateRequest
           example: !include json/RoleUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: RoleResponse
               example: !include json/RoleResponse.example.json
     delete:
       description: Deletes a single role with the given uuid.
@@ -247,7 +196,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     /chmod/{uuid}:
       put:
@@ -271,19 +219,16 @@ schemas:
       200:
         body:
           application/json:
-            schema: GroupListResponse
             example: !include json/GroupListResponse.example.json
   post:
     description: Create a new group.
     body:
         application/json:
-            schema: GroupCreateRequest
             example: !include json/GroupCreateRequest.example.json
     responses:
       200:
         body:
           application/json:
-            schema: GroupResponse
             example: !include json/GroupResponse.example.json
 
   /{uuid}:
@@ -294,19 +239,16 @@ schemas:
         200:
           body:
             application/json:
-              schema: GroupResponse
               example: !include json/GroupResponse.example.json
     put:
       description: Updates a single group with the given uuid.
       body:
         application/json:
-          schema: GroupUpdateRequest
           example: !include json/GroupUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: GroupResponse
               example: !include json/GroupResponse.example.json
     delete:
       description: Deletes a single group with the given uuid.
@@ -314,16 +256,25 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
-    /roles
+    /roles:
       get:
         description: List all the roles for the given group.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/GroupListResponse.example.json
     /roles/{uuid}:
       put:
         description: Add the given role to the the group. 
       delete:
         description: Remove the given role from the group.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json
     /users/{uuid}:
       put:
         description: Add the user with the given uuid to the group.
@@ -331,7 +282,6 @@ schemas:
           200:
             body:
               application/json:
-                schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
         description: Remove the user with the given uuid from the group.
@@ -339,27 +289,6 @@ schemas:
           200:
             body:
               application/json:
-                schema: GenericMessageResponse
-                example: !include json/GenericMessageResponse.example.json
-    /roles:
-      get:
-        description: List all the roles for the given group.
-    /roles/{uuid}:
-      put:
-        description: Add the role with the given uuid to the group.
-        responses:
-          200:
-            body:
-              application/json:
-                schema: GenericMessageResponse
-                example: !include json/GenericMessageResponse.example.json
-      delete:
-        description: Remove the role with the given uuid from the group.
-        responses:
-          200:
-            body:
-              application/json:
-                schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
 
 
@@ -376,7 +305,6 @@ schemas:
       200:
         body:
           application/json:
-            schema: ProjectListResponse
             example: !include json/ProjectListResponse.example.json
       400:
         description: Bad Request
@@ -386,13 +314,11 @@ schemas:
     description: Create a new project.
     body:
       application/json:
-        schema: ProjectCreateRequest
         example: !include json/ProjectCreateRequest.example.json
     responses:
       200:
         body:
           application/json:
-            schema: ProjectResponse
             example: !include json/ProjectResponse.example.json
 
   /{uuid}:
@@ -402,19 +328,16 @@ schemas:
       description: Retrieves the project with the given uuid.
       body:
         application/json:
-          schema: ProjectResponse
           example: !include json/ProjectResponse.example.json
     put:
       description: Update the project with the given uuid.
       body:
         application/json:
-          schema: ProjectUpdateRequest
           example: !include json/ProjectUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: ProjectResponse
               example: !include json/ProjectResponse.example.json
     delete:
       description: Deletes the project with the given uuid.
@@ -422,7 +345,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
 
 #------------------------------------------------------------------------------
@@ -438,7 +360,7 @@ schemas:
       200:
         body:
           application/json:
-            example: !include json/ObjectSchemaListResponse.example.json
+            example: !include json/SchemaListResponse.example.json
       400:
         description: Bad Request
       500:
@@ -447,13 +369,12 @@ schemas:
     description: Create the schema.
     body:
       application/json:
-        schema: ObjectSchemaCreateRequest
-        example: !include json/ObjectSchemaCreateRequest.example.json
+        example: !include json/SchemaCreateRequest.example.json
     responses:
       200:
         body:
           application/json:
-            example: !include json/ObjectSchemaResponse.example.json
+            example: !include json/SchemaResponse.example.json
 
   /{uuid}:
     is: [ localized ]
@@ -464,26 +385,23 @@ schemas:
         200:
           body:
             application/json:
-              schema: ObjectSchemaResponse
-              example: !include json/ObjectSchemaResponse.example.json
+              example: !include json/SchemaResponse.example.json
     put: 
       description: Updates the schema with the given uuid.
       body:
         application/json:
-          schema: ObjectSchemaUpdateRequest
-          example: !include json/ObjectSchemaUpdateRequest.example.json
+          example: !include json/SchemaUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              example: !include json/ObjectSchemaResponse.example.json
+              example: !include json/SchemaResponse.example.json
     delete:
       description: Deletes the schema with the given uuid.
       responses:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     /projects/{uuid}:
       post:
@@ -492,7 +410,6 @@ schemas:
           200:
             body:
               application/json:
-                schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
       delete:
         description: Remove the schema from the project.
@@ -500,7 +417,6 @@ schemas:
           200:
             body:
               application/json:
-                schema: GenericMessageResponse
                 example: !include json/GenericMessageResponse.example.json
 
 
@@ -517,19 +433,16 @@ schemas:
         200:
           body:
             application/json:
-              schema: NodeListResponse
               example: !include json/NodeListResponse.example.json
     post:
       description: Create a new node.
       body:
         application/json:
-          schema: NodeCreateRequest
           example: !include json/NodeCreateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: NodeResponse
               example: !include json/NodeResponse.example.json
   /{uuid}:
     is: [ localized, sortable, nested, perm_listable ]
@@ -550,19 +463,16 @@ schemas:
         200:
           body:
             application/json:
-              schema: NodeResponse
               example: !include json/NodeResponse.example.json
     put:
       description: Updates the node with the given uuid.
       body:
         application/json:
-          schema: NodeUpdateRequest
           example: !include json/NodeUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: NodeResponse
               example: !include json/NodeResponse.example.json
         423:
     delete:
@@ -571,7 +481,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
         423:
     /bin/{name}:
@@ -609,13 +518,11 @@ schemas:
       description: Create a new tag.
       body:
         application/json:
-          schema: TagCreateRequest
           example: !include json/TagCreateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: TagResponse
               example: !include json/TagResponse.example.json
 
   /{uuid}:
@@ -635,19 +542,16 @@ schemas:
         200:
           body:
             application/json:
-              schema: TagResponse
               example: !include json/TagResponse.example.json
     put:
       description: Update the tag with the given path.
       body:
         application/json:
-          schema: TagUpdateRequest
           example: !include json/TagUpdateRequest.example.json
       responses:
         200:
           body:
             application/json:
-              schema: TagResponse
               example: !include json/TagResponse.example.json
     delete:
       description: Delete the tag with the given path.
@@ -655,7 +559,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     /tags:
       get: 
@@ -700,7 +603,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: NodeResponse
               example: !include json/NodeResponse.example.json
 
 #------------------------------------------------------------------------------
@@ -770,7 +672,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     delete:
       description: Undeploy a previouly deployed vertx maven server.
@@ -778,7 +679,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
 
   /verticles/{class}:
@@ -793,7 +693,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
     delete:
       description: Undeploy a verticle with the given class.
@@ -801,7 +700,6 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
 
   /backup:
@@ -812,5 +710,4 @@ schemas:
         200:
           body:
             application/json:
-              schema: GenericMessageResponse
               example: !include json/GenericMessageResponse.example.json
