@@ -42,12 +42,12 @@ public class LinkRendererTest extends AbstractDBTest {
 		Node parentNode = data().getFolder("2015");
 
 		// Create some dummy content
-		Node content = parentNode.create();
+		Node content = parentNode.create(data().getUserInfo().getUser(), data().getSchemaContainer("content"), data().getProject());
 		NodeFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
 		germanContainer.createString("displayName").setString("german name");
 		germanContainer.createString("name").setString("german.html");
 
-		Node content2 = parentNode.create();
+		Node content2 = parentNode.create(data().getUserInfo().getUser(), data().getSchemaContainer("content"),data().getProject());
 		NodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");

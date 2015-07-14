@@ -37,7 +37,7 @@ public class WebRootService {
 		Path nodePath = new Path();
 
 		// Traverse the graph and buildup the result path while doing so
-		Vertex currentVertex = project.getRootNode().getVertex();
+		Vertex currentVertex = project.getBaseNode().getVertex();
 		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i];
 

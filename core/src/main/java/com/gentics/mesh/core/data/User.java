@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
-public interface User extends GenericNode<UserResponse> {
+public interface User extends GenericNode<UserResponse>, NamedNode {
 
 	String getUsername();
 

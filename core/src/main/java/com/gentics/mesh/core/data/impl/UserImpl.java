@@ -11,6 +11,7 @@ import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfigur
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,18 +22,16 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
 @Configurable
-public class UserImpl extends AbstractGenericNode<UserResponse> implements User{
+public class UserImpl extends AbstractGenericNode<UserResponse> implements User {
 
 	public static final String FIRSTNAME_KEY = "firstname";
 
@@ -87,6 +86,11 @@ public class UserImpl extends AbstractGenericNode<UserResponse> implements User{
 		setProperty(LASTNAME_KEY, name);
 	}
 
+	@Override
+	public String getName() {
+		return getUsername();
+	}
+
 	// TODO add unique index
 	@Override
 	public String getUsername() {
@@ -96,6 +100,11 @@ public class UserImpl extends AbstractGenericNode<UserResponse> implements User{
 	@Override
 	public void setUsername(String name) {
 		setProperty(USERNAME_KEY, name);
+	}
+
+	@Override
+	public void setName(String name) {
+		setUsername(name);
 	}
 
 	@Override
@@ -186,9 +195,9 @@ public class UserImpl extends AbstractGenericNode<UserResponse> implements User{
 	}
 
 	@Override
-	public User transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<UserResponse>> handler, TransformationParameters... parameters) {
+	public User transformToRest(RoutingContext rc, Handler<AsyncResult<UserResponse>> handler) {
 		UserResponse restUser = new UserResponse();
-		fillRest(restUser, requestUser);
+		fillRest(restUser, rc);
 		restUser.setUsername(getUsername());
 		restUser.setEmailAddress(getEmailAddress());
 		restUser.setFirstname(getFirstname());

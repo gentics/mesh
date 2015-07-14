@@ -1,6 +1,5 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -41,10 +40,10 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() throws IOException {
-		SchemaContainer schemaContainer = schemaContainerRoot.findByName(PROJECT_NAME, "content");
+		SchemaContainer schemaContainer = schemaContainerRoot.findByName("content");
 		assertNotNull(schemaContainer);
 		assertEquals("content", schemaContainer.getSchema().getName());
-		assertNull(schemaContainerRoot.findByName(PROJECT_NAME, "content1235"));
+		assertNull(schemaContainerRoot.findByName("content1235"));
 	}
 
 	@Test
@@ -52,7 +51,9 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	public void testRootNode() {
 		SchemaContainerRoot root = data().getMeshRoot().getSchemaContainerRoot();
 		int nSchemasBefore = root.findAll().size();
-		assertNotNull(root.create("test1235"));
+		Schema schema = new SchemaImpl();
+		schema.setName("test123");
+		assertNotNull(root.create(schema));
 		int nSchemasAfter = root.findAll().size();
 		assertEquals(nSchemasBefore + 1, nSchemasAfter);
 	}
@@ -121,7 +122,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
 		newContainer.delete();
@@ -133,7 +134,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		assertFalse(getRole().hasPermission(Permission.CREATE_PERM, newContainer));
 		getRequestUser().addCRUDPermissionOnRole(getMeshRoot().getSchemaContainerRoot(), Permission.CREATE_PERM, newContainer);
 		assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
@@ -157,13 +158,13 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() throws IOException {
-		SchemaContainer schemaContainer = schemaContainerRoot.findByName(PROJECT_NAME, "content");
+		SchemaContainer schemaContainer = schemaContainerRoot.findByName("content");
 		Schema schema = schemaContainer.getSchema();
 		schema.setName("changed");
 		schemaContainer.setSchema(schema);
 		assertEquals("changed", schemaContainer.getSchema().getName());
-		schemaContainer.setSchemaName("changed2");
-		assertEquals("changed2", schemaContainer.getSchemaName());
+		schemaContainer.setName("changed2");
+		assertEquals("changed2", schemaContainer.getName());
 
 		schema = schemaContainer.getSchema();
 		schema.setContainer(true);
@@ -184,28 +185,28 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.READ_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.DELETE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.UPDATE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create("newcontainer");
+		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.CREATE_PERM, newContainer);
 	}
 

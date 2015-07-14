@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -106,7 +107,8 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	public void testTransformation() throws InterruptedException {
 		Project project = data().getProject();
 		CountDownLatch latch = new CountDownLatch(1);
-		project.transformToRest(getRequestUser(), rh -> {
+		RoutingContext rc = getMockedRoutingContext("");
+		project.transformToRest(rc, rh -> {
 			assertNotNull(rh.result());
 			ProjectResponse response = rh.result();
 			assertEquals(project.getName(), response.getName());
@@ -148,7 +150,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = getProject();
 		assertNotNull(project.getName());
 		assertEquals("dummy", project.getName());
-		assertNotNull(project.getRootNode());
+		assertNotNull(project.getBaseNode());
 		assertNotNull(project.getLanguages());
 		assertEquals(2, project.getLanguages().size());
 		assertEquals(3, project.getSchemaRoot().findAll().size());

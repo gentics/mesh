@@ -125,7 +125,8 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformation() throws InterruptedException {
 		CountDownLatch latch = new CountDownLatch(1);
-		getUser().transformToRest(getRequestUser(), rh -> {
+		RoutingContext rc = getMockedRoutingContext("");
+		getUser().transformToRest(rc, rh -> {
 			UserResponse restUser = rh.result();
 			assertNotNull(restUser);
 			assertEquals(getUser().getUsername(), restUser.getUsername());

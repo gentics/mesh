@@ -3,9 +3,11 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
@@ -61,14 +63,14 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 	}
 
 	@Override
-	public Tag transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagResponse>> resultHandler, TransformationParameters... parameters) {
+	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
 		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
 		vertx.executeBlocking(bc -> {
 			TagResponse restTag = new TagResponse();
 
 			try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
 					.getFramedThreadedTransactionalGraph())) {
-				restTag.setPermissions(requestUser.getPermissionNames(this));
+				restTag.setPermissions(getUser(rc).getPermissionNames(this));
 				restTag.setUuid(getUuid());
 
 				TagFamily tagFamily = getTagFamily();

@@ -468,8 +468,7 @@ public class BootstrapInitializer {
 
 			schema.setBinary(false);
 			schema.setContainer(false);
-			contentSchemaContainer = schemaContainerRoot.create("content");
-			contentSchemaContainer.setSchema(schema);
+			contentSchemaContainer = schemaContainerRoot.create(schema);
 
 		}
 
@@ -489,8 +488,7 @@ public class BootstrapInitializer {
 
 			schema.setBinary(false);
 			schema.setContainer(true);
-			folderSchemaContainer = schemaContainerRoot.create("folder");
-			folderSchemaContainer.setSchema(schema);
+			folderSchemaContainer = schemaContainerRoot.create(schema);
 
 		}
 
@@ -516,8 +514,7 @@ public class BootstrapInitializer {
 
 			schema.setBinary(true);
 			schema.setContainer(false);
-			binarySchemaContainer = schemaContainerRoot.create("binary-content");
-			binarySchemaContainer.setSchema(schema);
+			binarySchemaContainer = schemaContainerRoot.create(schema);
 		}
 
 		log.info("Stored mesh root node");

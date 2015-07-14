@@ -1,18 +1,21 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 
-import com.gentics.mesh.core.data.MeshAuthUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -21,18 +24,20 @@ import com.gentics.mesh.json.JsonUtil;
 
 public class SchemaContainerImpl extends AbstractGenericNode<SchemaResponse> implements SchemaContainer {
 
+	private static final Logger log = LoggerFactory.getLogger(SchemaContainerImpl.class);
+
 	@Override
-	public SchemaContainer transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<SchemaResponse>> handler, TransformationParameters... parameters) {
+	public SchemaContainer transformToRest(RoutingContext rc, Handler<AsyncResult<SchemaResponse>> handler) {
 		try {
 			SchemaResponse schemaResponse = JsonUtil.readSchema(getJson(), SchemaResponse.class);
 			schemaResponse.setUuid(getUuid());
 
-			for (ProjectImpl project : getProjects()) {
-				ProjectResponse restProject = new ProjectResponse();
-				restProject.setUuid(project.getUuid());
-				restProject.setName(project.getName());
-				schemaResponse.getProjects().add(restProject);
-			}
+			//			for (ProjectImpl project : getProjects()) {
+			//				ProjectResponse restProject = new ProjectResponse();
+			//				restProject.setUuid(project.getUuid());
+			//				restProject.setName(project.getName());
+			//				schemaResponse.getProjects().add(restProject);
+			//			}
 
 			// Sort the list by project name
 			Collections.sort(schemaResponse.getProjects(), new Comparator<ProjectResponse>() {
@@ -42,7 +47,7 @@ public class SchemaContainerImpl extends AbstractGenericNode<SchemaResponse> imp
 				};
 			});
 
-			schemaResponse.setPermissions(requestUser.getPermissionNames(this));
+			schemaResponse.setPermissions(getUser(rc).getPermissionNames(this));
 
 			handler.handle(Future.succeededFuture(schemaResponse));
 		} catch (IOException e) {
@@ -72,7 +77,7 @@ public class SchemaContainerImpl extends AbstractGenericNode<SchemaResponse> imp
 
 	@Override
 	public Schema getSchema() throws IOException {
-		Schema schema = getSchemaStorage().getSchema(getSchemaName());
+		Schema schema = getSchemaStorage().getSchema(getName());
 		if (schema == null) {
 			schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
 			getSchemaStorage().addSchema(schema);
@@ -90,12 +95,12 @@ public class SchemaContainerImpl extends AbstractGenericNode<SchemaResponse> imp
 	}
 
 	@Override
-	public void setSchemaName(String name) {
+	public void setName(String name) {
 		setProperty("name", name);
 	}
 
 	@Override
-	public String getSchemaName() {
+	public String getName() {
 		return getProperty("name");
 	}
 

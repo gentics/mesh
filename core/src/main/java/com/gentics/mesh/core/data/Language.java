@@ -3,11 +3,7 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
-public interface Language extends GenericNode<LanguageResponse> {
-
-	String getName();
-
-	void setName(String name);
+public interface Language extends GenericNode<LanguageResponse>, NamedNode {
 
 	void setNativeName(String languageNativeName);
 

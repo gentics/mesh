@@ -96,7 +96,8 @@ public class RestAssert {
 		//					restNode.getProperty(entry.getKey()));
 		//
 		//		}
-
+		assertNotNull(restNode);
+		assertNotNull(request);
 		String schemaName = request.getSchema().getName();
 		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restNode.getSchema().getName());
 		//		assertEquals(request.getOrder(), restNode.getOrder());
@@ -127,7 +128,7 @@ public class RestAssert {
 		assertGenericNode(node, readValue);
 		SchemaContainer schema = node.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
-		assertEquals(schema.getSchemaName(), readValue.getSchema().getName());
+		assertEquals(schema.getName(), readValue.getSchema().getName());
 		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
 
 		// TODO match fields

@@ -53,13 +53,15 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
-					Project project = rh.result();
-					SchemaContainer schema = srh.result();
-					schema.addProject(project);
+					if (hasSucceeded(rc, srh) && hasSucceeded(rc, rh)) {
+						Project project = rh.result();
+						SchemaContainer schema = srh.result();
+						project.getSchemaRoot().addSchemaContainer(schema);
 
-					// TODO add simple message or return schema?
+						// TODO add simple message or return schema?
 						transformAndResponde(rc, schema);
-					});
+					}
+				});
 			});
 
 		});
@@ -71,7 +73,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
 						SchemaContainer schema = srh.result();
 						Project project = rh.result();
-						schema.removeProject(project);
+						project.getSchemaRoot().removeSchemaContainer(schema);
 						transformAndResponde(rc, schema);
 					});
 				});
@@ -94,9 +96,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				SchemaContainerRoot root = boot.schemaContainerRoot();
 				if (requestUser.hasPermission(root, CREATE_PERM)) {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						SchemaContainer container = root.create(schema.getName());
+						SchemaContainer container = root.create(schema);
 						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
-						container.setSchema(schema);
 						transformAndResponde(rc, container);
 					}
 				}
@@ -146,19 +147,21 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "uuid", UPDATE_PERM, boot.schemaContainerRoot(), rh -> {
-				SchemaContainer schemaContainer = rh.result();
-				SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
+				if (hasSucceeded(rc, rh)) {
+					SchemaContainer schemaContainer = rh.result();
+					SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
 
-				if (StringUtils.isEmpty(requestModel.getName())) {
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
-					return;
+					if (StringUtils.isEmpty(requestModel.getName())) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+						return;
+					}
+
+					schemaContainer.setSchema(requestModel);
+					/*
+					 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
+					 */
+					transformAndResponde(rc, schemaContainer);
 				}
-
-				schemaContainer.setSchema(requestModel);
-				/*
-				 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
-				 */
-				transformAndResponde(rc, schemaContainer);
 			});
 
 		});

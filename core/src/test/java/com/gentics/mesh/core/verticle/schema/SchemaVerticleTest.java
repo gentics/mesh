@@ -17,6 +17,7 @@ import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
 			SchemaContainer schemaContainer = rh.result();
 			assertNotNull(schemaContainer);
-			assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getSchemaName());
+			assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 			});
@@ -100,7 +101,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("schema_deleted", deleteFuture, restSchema.getName());
+		expectMessageResponse("schema_deleted", deleteFuture, restSchema.getUuid() + "/" + restSchema.getName());
 
 	}
 
@@ -111,12 +112,16 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		SchemaContainerRoot schemaRoot = data().getMeshRoot().getSchemaContainerRoot();
 		final int nSchemas = 22;
-		SchemaContainer noPermSchema = schemaRoot.create("no_perm_schema");
+		Schema schema = new SchemaImpl();
+		schema.setName("No Perm Schema");
+		SchemaContainer noPermSchema = schemaRoot.create(schema);
 		Schema dummySchema = new SchemaImpl();
 		dummySchema.setName("dummy");
 		noPermSchema.setSchema(dummySchema);
 		for (int i = 0; i < nSchemas; i++) {
-			SchemaContainer extraSchema = schemaRoot.create("extra_schema_" + i);
+			schema = new SchemaImpl();
+			schema.setName("extra_schema_" + i);
+			SchemaContainer extraSchema = schemaRoot.create(schema);
 			extraSchema.setSchema(dummySchema);
 			info.getRole().addPermissions(extraSchema, READ_PERM);
 		}
@@ -243,7 +248,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateSchemaByBogusUUID() throws HttpStatusCodeErrorException, Exception {
 		SchemaContainer schema = data().getSchemaContainer("content");
 
-		String oldName = schema.getSchemaName();
+		String oldName = schema.getName();
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setUuid("bogus");
 		request.setName("new-name");
@@ -254,7 +259,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 			SchemaContainer reloaded = rh.result();
-			assertEquals("The name should not have been changed.", oldName, reloaded.getSchemaName());
+			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		});
 
 	}
@@ -268,7 +273,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("schema_deleted", future, schema.getSchemaName());
+		expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
 
 		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 			SchemaContainer reloaded = rh.result();
@@ -311,8 +316,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
 
-		// Reload the schema and check for expected changes
-		assertTrue("The schema should be added to the extra project", schema.getProjects().contains(extraProject));
+		CountDownLatch latch = new CountDownLatch(1);
+		extraProject.getSchemaRoot().findByUuid(schema.getUuid(), rh -> {
+			assertNotNull("The schema should be added to the extra project", rh.result());
+			latch.countDown();
+		});
+		latch.await();
 
 	}
 
@@ -331,7 +340,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", extraProject.getUuid());
 
 		// Reload the schema and check for expected changes
-		assertFalse("The schema should not have been added to the extra project", schema.getProjects().contains(extraProject));
+		assertFalse("The schema should not have been added to the extra project", extraProject.getSchemaRoot().contains(schema));
 
 	}
 
@@ -340,7 +349,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
 		SchemaContainer schema = data().getSchemaContainer("content");
 		Project project = data().getProject();
-		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
+		assertTrue("The schema should be assigned to the project.", project.getSchemaRoot().contains(schema));
 
 		Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
 		latchFor(future);
@@ -352,7 +361,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertFalse(restSchema.getProjects().stream().filter(p -> p.getName() == removedProjectName).findFirst().isPresent());
 
 		// Reload the schema and check for expected changes
-		assertFalse("The schema should have been removed from the extra project", schema.getProjects().contains(project));
+		assertFalse("The schema should not be assigned to the project.", project.getSchemaRoot().contains(schema));
 	}
 
 	@Test
@@ -360,7 +369,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		SchemaContainer schema = data().getSchemaContainer("content");
 		Project project = data().getProject();
 
-		assertTrue("The schema should be assigned to the project.", schema.getProjects().contains(project));
+		assertTrue("The schema should be assigned to the project.", project.getSchemaRoot().contains(schema));
 
 		// Revoke update perms on the project
 		info.getRole().revokePermissions(project, UPDATE_PERM);
@@ -369,6 +378,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
 
 		// Reload the schema and check for expected changes
-		assertTrue("The schema should still be listed for the project.", schema.getProjects().contains(project));
+		assertTrue("The schema should still be listed for the project.", project.getSchemaRoot().contains(schema));
 	}
 }

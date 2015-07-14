@@ -10,11 +10,7 @@ import com.gentics.mesh.core.data.service.transformation.TransformationParameter
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 
-public interface Tag extends GenericNode<TagResponse> {
-
-	void setName(String name);
-
-	String getName();
+public interface Tag extends GenericNode<TagResponse>, NamedNode {
 
 	List<? extends TagFieldContainer> getFieldContainers();
 

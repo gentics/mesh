@@ -22,15 +22,15 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.DataHelper;
+//import com.gentics.mesh.util.DataHelper;
 
 public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectNodeVerticle verticle;
 
-	@Autowired
-	private DataHelper helper;
+//	@Autowired
+//	private DataHelper helper;
 
 	@Override
 	public AbstractWebVerticle getVerticle() {

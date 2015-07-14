@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NamedNode;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
@@ -105,8 +106,10 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		try {
 			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
 			for (T node : page) {
-				node.transformToRest(requestUser, rh -> {
-					listResponse.getData().add(rh.result());
+				node.transformToRest(rc, rh -> {
+					if (hasSucceeded(rc, rh)) {
+						listResponse.getData().add(rh.result());
+					}
 					// TODO handle async issue
 					});
 			}
@@ -123,11 +126,17 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			if (hasSucceeded(rc, rh)) {
 				GenericNode<?> node = rh.result();
 				String uuid = node.getUuid();
+				String name = null;
+				if (node instanceof NamedNode) {
+					name = ((NamedNode) node).getName();
+					System.out.println(node.getClass().getName());
+				}
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					node.delete();
 					tx.success();
 				}
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, uuid))));
+				String id = name != null ? uuid + "/" + name : uuid;
+				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
 			}
 		});
 	}
@@ -145,7 +154,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		MeshAuthUser requestUser = getUser(rc);
 		for (T node : page) {
-			node.transformToRest(requestUser, rh -> {
+			node.transformToRest(rc, rh -> {
 				listResponse.getData().add(rh.result());
 			});
 		}
@@ -163,7 +172,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	}
 
 	protected <T extends AbstractRestModel> void transformAndResponde(RoutingContext rc, GenericNode<T> node) {
-		node.transformToRest(getUser(rc), th -> {
+		node.transformToRest(rc, th -> {
 			if (hasSucceeded(rc, th)) {
 				rc.response().setStatusCode(200).end(toJson(th.result()));
 			}
@@ -174,8 +183,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			Permission permission, RootVertex<T> root, Handler<AsyncResult<AbstractRestModel>> handler) {
 		loadObject(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
-				MeshAuthUser requestUser = getUser(rc);
-				rh.result().transformToRest(requestUser, th -> {
+				rh.result().transformToRest(rc, th -> {
 					if (hasSucceeded(rc, th)) {
 						handler.handle(Future.succeededFuture(th.result()));
 					} else {
@@ -199,23 +207,28 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	protected <T extends GenericNode<?>> void loadObjectByUuid(RoutingContext rc, String uuid, Permission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
-		root.findByUuid(uuid, rh -> {
-			if (rh.failed()) {
-				handler.handle(Future.failedFuture(rh.cause()));
-			} else {
-				T node = rh.result();
-				if (node == null) {
-					handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
+		if (root == null) {
+			//TODO i18n
+			handler.handle(Future.failedFuture("Could not find root node."));
+		} else {
+			root.findByUuid(uuid, rh -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
 				} else {
-					MeshAuthUser requestUser = getUser(rc);
-					if (requestUser.hasPermission(node, perm)) {
-						handler.handle(Future.succeededFuture(node));
+					T node = rh.result();
+					if (node == null) {
+						handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
 					} else {
-						handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+						MeshAuthUser requestUser = getUser(rc);
+						if (requestUser.hasPermission(node, perm)) {
+							handler.handle(Future.succeededFuture(node));
+						} else {
+							handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 
 	}
 

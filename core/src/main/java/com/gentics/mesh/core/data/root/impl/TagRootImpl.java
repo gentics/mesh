@@ -1,11 +1,9 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 
@@ -78,12 +76,6 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	@Override
 	public Tag findByName(String name) {
 		return out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().nextOrDefaultExplicit(TagImpl.class, null);
-	}
-
-	@Override
-	public Tag findByName(String projectName, String name) {
-		return out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().mark().out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
-				.has("name", projectName).back().nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
 }

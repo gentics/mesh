@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.HashSet;
 import java.util.List;
@@ -11,31 +12,33 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
 public class RoleImpl extends AbstractGenericNode<RoleResponse> implements Role {
 
 	// TODO index on name
+	@Override
 	public String getName() {
 		return getProperty("name");
 	}
 
+	@Override
 	public void setName(String name) {
 		setProperty("name", name);
 	}
 
+	@Override
 	public List<? extends Group> getGroups() {
 		return out(HAS_ROLE).has(RoleImpl.class).toListExplicit(GroupImpl.class);
 	}
 
+	@Override
 	public Set<Permission> getPermissions(MeshVertex node) {
 		Set<Permission> permissions = new HashSet<>();
 		Set<? extends String> labels = outE(Permission.labels()).mark().inV().retain((MeshVertexImpl) node).back().label().toSet();
@@ -50,37 +53,24 @@ public class RoleImpl extends AbstractGenericNode<RoleResponse> implements Role 
 		return out(permission.label()).retain(node.getImpl()).hasNext();
 	}
 
+	@Override
 	public void addGroup(Group group) {
 		linkOut(group.getImpl(), HAS_ROLE);
 	}
 
+	@Override
 	public void addPermissions(MeshVertex node, Permission... permissions) {
 		for (Permission permission : permissions) {
 			addFramedEdge(permission.label(), (MeshVertexImpl) node);
 		}
 	}
 
-	// public void addPermission(Role role, MeshVertex node, Permissions... permissions) {
-	// for(Permissions permission : permissions) {
-	// role.addFramedEdge(permission.getLabel(), node);
-	// }
-	// GraphPermission permission = getGraphPermission(role, node);
-	// // Create a new permission relation when no existing one could be found
-	// if (permission == null) {
-	// permission = permissionService.create(role, node);
-	// }
-	// for (int i = 0; i < permissionTypes.length; i++) {
-	// //TODO tinkerpop - handle grant call. Javahandler?
-	// // permission.grant(permissionTypes[i]);
-	// }
-	// }
-
 	@Override
-	public Role transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<RoleResponse>> handler, TransformationParameters... parameters) {
+	public Role transformToRest(RoutingContext rc, Handler<AsyncResult<RoleResponse>> handler) {
 
 		RoleResponse restRole = new RoleResponse();
 		restRole.setName(getName());
-		fillRest(restRole, requestUser);
+		fillRest(restRole, rc);
 
 		for (Group group : getGroups()) {
 			GroupResponse restGroup = new GroupResponse();
@@ -93,6 +83,7 @@ public class RoleImpl extends AbstractGenericNode<RoleResponse> implements Role 
 		return this;
 	}
 
+	@Override
 	public void revokePermissions(MeshVertex node, Permission... permissions) {
 
 		for (Permission permission : permissions) {
@@ -102,6 +93,7 @@ public class RoleImpl extends AbstractGenericNode<RoleResponse> implements Role 
 		}
 	}
 
+	@Override
 	public void delete() {
 		getVertex().remove();
 	}

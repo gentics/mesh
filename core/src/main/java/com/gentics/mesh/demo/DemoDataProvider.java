@@ -31,9 +31,9 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.BaseNode;
 import com.gentics.mesh.core.data.node.ContainerNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -255,7 +255,7 @@ public class DemoDataProvider {
 
 	private void addFolderStructure() {
 
-		RootNode rootNode = project.getOrCreateRootNode();
+		BaseNode rootNode = project.getOrCreateBaseNode();
 		rootNode.setCreator(userInfo.getUser());
 		//		rootNode.addProject(project);
 
@@ -422,22 +422,18 @@ public class DemoDataProvider {
 
 		// folder
 		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
-		folderSchemaContainer.addProject(project);
+		project.getSchemaRoot().addSchemaContainer(folderSchemaContainer);
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
 		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
-		contentSchemaContainer.addProject(project);
+		project.getSchemaRoot().addSchemaContainer(contentSchemaContainer);
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
 		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
-		binaryContentSchemaContainer.addProject(project);
+		project.getSchemaRoot().addSchemaContainer(binaryContentSchemaContainer);
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
-
-		project.getSchemaRoot().addSchemaContainer(getSchemaContainer("folder"));
-		project.getSchemaRoot().addSchemaContainer(getSchemaContainer("content"));
-		project.getSchemaRoot().addSchemaContainer(getSchemaContainer("binary-content"));
 
 	}
 
@@ -461,7 +457,7 @@ public class DemoDataProvider {
 		schema.addField("content", contentFieldSchema);
 
 		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-		SchemaContainer blogPostSchemaContainer = schemaRoot.create("blogpost");
+		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema);
 		blogPostSchemaContainer.setSchema(schema);
 
 		schemaContainers.put("blogpost", blogPostSchemaContainer);
@@ -516,9 +512,7 @@ public class DemoDataProvider {
 	}
 
 	public Node addFolder(ContainerNode rootNode, String englishName, String germanName) {
-		Node folderNode = rootNode.create();
-		folderNode.setParentNode(rootNode);
-		folderNode.addProject(project);
+		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);
 
 		if (germanName != null) {
 			NodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
@@ -530,9 +524,6 @@ public class DemoDataProvider {
 			//			englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
-		SchemaContainer schemaContainer = schemaContainers.get("folder");
-		folderNode.setSchemaContainer(schemaContainer);
-		setCreatorEditor(folderNode);
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
 			throw new RuntimeException("Key for folder empty");
@@ -562,7 +553,7 @@ public class DemoDataProvider {
 			throw new RuntimeException("Name for tag empty");
 		}
 		Tag tag = tagFamily.create(name);
-		
+
 		project.getTagRoot().addTag(tag);
 		setCreatorEditor(tag);
 		tags.put(name.toLowerCase(), tag);
@@ -570,7 +561,7 @@ public class DemoDataProvider {
 	}
 
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
-		Node node = parentNode.create();
+		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
 		if (englishContent != null) {
 			NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
 			englishContainer.createString("name").setString(name + " english name");
@@ -588,17 +579,6 @@ public class DemoDataProvider {
 			germanContainer.createString("filename").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHTML(germanContent);
 		}
-		// TODO maybe set project should be done inside the save?
-		node.addProject(project);
-
-		setCreatorEditor(node);
-
-		node.setSchemaContainer(schema);
-		// node.setOrder(42);
-		node.setParentNode(parentNode);
-		// Add the content to the given tag
-		// parentTag.addContent(content);
-		// parentTag = tagService.save(parentTag);
 
 		if (contents.containsKey(name.toLowerCase())) {
 			throw new RuntimeException("Collsion of contents detected for key " + name.toLowerCase());

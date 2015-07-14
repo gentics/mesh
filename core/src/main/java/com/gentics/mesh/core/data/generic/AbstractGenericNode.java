@@ -1,37 +1,18 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_EDITOR;
-
-import java.util.List;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import io.vertx.ext.web.RoutingContext;
 
 import com.gentics.mesh.core.data.GenericNode;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.ProjectNode;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 
-public abstract class AbstractGenericNode<T extends AbstractRestModel> extends MeshVertexImpl implements GenericNode<T>, ProjectNode {
+public abstract class AbstractGenericNode<T extends AbstractRestModel> extends MeshVertexImpl implements GenericNode<T> {
 
-	@Override
-	public List<? extends ProjectImpl> getProjects() {
-		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).toListExplicit(ProjectImpl.class);
-	}
-
-	@Override
-	public void addProject(Project project) {
-		addFramedEdge(ASSIGNED_TO_PROJECT, project.getImpl());
-	}
-
-	@Override
-	public void removeProject(Project project) {
-		unlinkOut(project.getImpl(), ASSIGNED_TO_PROJECT);
-	}
 
 	@Override
 	public User getCreator() {
@@ -59,7 +40,7 @@ public abstract class AbstractGenericNode<T extends AbstractRestModel> extends M
 		return out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
-	protected void fillRest(AbstractGenericNodeRestModel model, MeshAuthUser requestUser) {
+	protected void fillRest(AbstractGenericNodeRestModel model, RoutingContext rc) {
 		model.setUuid(getUuid());
 
 		User creator = getCreator();
@@ -75,7 +56,11 @@ public abstract class AbstractGenericNode<T extends AbstractRestModel> extends M
 		} else {
 			//TODO throw error and log something
 		}
-		model.setPermissions(requestUser.getPermissionNames(this));
+		model.setPermissions(getUser(rc).getPermissionNames(this));
+
+		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
+		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());
+
 	}
 
 	@Override

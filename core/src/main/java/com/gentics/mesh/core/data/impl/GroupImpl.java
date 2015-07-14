@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
@@ -17,7 +18,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -92,9 +92,9 @@ public class GroupImpl extends AbstractGenericNode<GroupResponse> implements Gro
 	}
 
 	// TODO handle depth?
-	public Group transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<GroupResponse>> handler, TransformationParameters... parameters) {
+	public Group transformToRest(RoutingContext rc, Handler<AsyncResult<GroupResponse>> handler) {
 		GroupResponse restGroup = new GroupResponse();
-		fillRest(restGroup, requestUser);
+		fillRest(restGroup, rc);
 		restGroup.setName(getName());
 
 		// for (User user : group.getUsers()) {

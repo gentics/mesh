@@ -84,7 +84,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
 		Node parentNode = data().getFolder("2015");
-		Node node = parentNode.create();
+		Node node = parentNode.create(getUser(), getSchemaContainer(), getProject());
 		Language german = boot.languageRoot().findByLanguageTag("de");
 		NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
@@ -181,10 +181,8 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag foundTag = tagRoot.findByName("Car");
 		assertNotNull(foundTag);
 		assertEquals("Car", foundTag.getName());
-		assertNotNull(tagRoot.findByName("dummy", tag.getName()));
-		assertNull(tagRoot.findByName("bogus", tag.getName()));
-		assertNull(tagRoot.findByName("dummy", "bogus"));
-		assertNull(tagRoot.findByName("bogus", "bogus"));
+		assertNotNull(tagRoot.findByName(tag.getName()));
+		assertNull(tagRoot.findByName("bogus"));
 	}
 
 	@Test
@@ -226,10 +224,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		int depth = 3;
 
 		RoutingContext rc = getMockedRoutingContext("lang=de,en");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		for (int i = 0; i < 100; i++) {
 			long start = System.currentTimeMillis();
-			tag.transformToRest(requestUser, th -> {
+			tag.transformToRest(rc, th -> {
 				if (th.failed()) {
 					rc.fail(th.cause());
 				}

@@ -6,7 +6,6 @@ public class MeshRelationships {
 	public static final String MEMBER_OF = "MEMBER_OF";
 
 	// Project
-	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
 	public static final String HAS_PROJECT = "HAS_PROJECT";
 
 	// Nodes
@@ -35,7 +34,7 @@ public class MeshRelationships {
 	public static final String HAS_CHILD = "HAS_CHILD";
 
 	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";
-	public static final String HAS_ROOT_NODE = "HAS_ROOT_NODE";
+	public static final String HAS_BASE_NODE = "HAS_ROOT_NODE";
 
 	// Schemas
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";

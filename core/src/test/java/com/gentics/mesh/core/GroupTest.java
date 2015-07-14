@@ -99,7 +99,8 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformation() throws InterruptedException {
 		CountDownLatch latch = new CountDownLatch(1);
-		getGroup().transformToRest(getRequestUser(), rh -> {
+		RoutingContext rc = getMockedRoutingContext("");
+		getGroup().transformToRest(rc, rh -> {
 			GroupResponse response = rh.result();
 			assertNotNull(response);
 			assertEquals(getGroup().getUuid(), response.getUuid());

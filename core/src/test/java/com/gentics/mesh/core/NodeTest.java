@@ -1,6 +1,5 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,10 +22,9 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.BaseNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.RootNode;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -41,8 +39,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testPageLinks() {
 		Node folder = data().getFolder("2015");
-		Node node = folder.create();
-		Node node2 = folder.create();
+		Node node = folder.create(getUser(), getSchemaContainer(), getProject());
+		Node node2 = folder.create(getUser(), getSchemaContainer(), getProject());
 
 		NodeFieldContainer englishContainer = node2.getOrCreateFieldContainer(data().getEnglish());
 		englishContainer.createString("content").setString("english content");
@@ -62,7 +60,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Node newsNode = data().getContent("news overview");
 		assertNotNull(newsNode);
 		Node newSubNode;
-		newSubNode = newsNode.create();
+		newSubNode = newsNode.create(getUser(), getSchemaContainer(), getProject());
 
 		assertEquals(1, newsNode.getChildren().size());
 		Node firstChild = newsNode.getChildren().iterator().next();
@@ -93,13 +91,14 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
-		Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 10));
+		Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingInfo(1, 10));
+
 		// There are nodes that are only available in english
 		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = boot.nodeRoot().findAll(requestUser, PROJECT_NAME, languageTags, new PagingInfo(1, 15));
+		page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingInfo(1, 15));
 		assertEquals(data().getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 
@@ -121,7 +120,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		languageTags.add("en");
-		Page<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), PROJECT_NAME, languageTags, new PagingInfo(1, 25));
+		Page<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingInfo(1, 25));
 		assertNotNull(page);
 
 	}
@@ -130,7 +129,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testRootNode() {
 		Project project = data().getProject();
-		RootNode root = project.getRootNode();
+		BaseNode root = project.getBaseNode();
 		assertNotNull(root);
 	}
 
@@ -146,7 +145,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testFindByUUID() {
 		Node newsNode = data().getContent("news overview");
 		boot.nodeRoot().findByUuid(newsNode.getUuid(), rh -> {
-			Node node = rh.result();	
+			Node node = rh.result();
 			assertNotNull(node);
 			assertEquals(newsNode.getUuid(), node.getUuid());
 		});
@@ -155,24 +154,21 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() {
-		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
-		List<String> languageTags = new ArrayList<>();
-		languageTags.add("en");
+		RoutingContext rc = getMockedRoutingContext("lang=en");
 		Node newsNode = data().getContent("porsche 911");
-		TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
-		newsNode.transformToRest(requestUser,rh -> {
-			NodeResponse response = rh.result();	
+		newsNode.transformToRest(rc, rh -> {
+			NodeResponse response = rh.result();
 			assertNotNull(response);
 			System.out.println(JsonUtil.toJson(response));
-		},info);
+			//TODO assert for english fields
+		});
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() {
 		Node folder = getFolder();
-		Node subNode = folder.create();
+		Node subNode = folder.create(getUser(), getSchemaContainer(), getProject());
 		assertNotNull(subNode.getUuid());
 		subNode.delete();
 	}
@@ -180,7 +176,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		Node node = getFolder().create();
+		Node node = getFolder().create(getUser(), getSchemaContainer(), getProject());
 		assertFalse(getUser().hasPermission(node, Permission.CREATE_PERM));
 		getUser().addCRUDPermissionOnRole(getFolder(), Permission.CREATE_PERM, node);
 		assertTrue(getUser().hasPermission(node, Permission.CREATE_PERM));
@@ -199,11 +195,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testCreate() {
 		User user = data().getUserInfo().getUser();
 		Node parentNode = data().getFolder("2015");
-		Node node = parentNode.create();
-		node.setCreator(user);
+		Node node = parentNode.create(user, data().getSchemaContainer("content"), getProject());
 		long ts = System.currentTimeMillis();
 		node.setCreationTimestamp(ts);
-		node.setEditor(user);
 		node.setLastEditedTimestamp(ts);
 		Long editedTimestamp = node.getLastEditedTimestamp();
 		assertNotNull(editedTimestamp);
@@ -242,13 +236,13 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		Node node = getContent();
 		String uuid = node.getUuid();
-		getMeshRoot().getNodeRoot().findByUuid(uuid, rh-> {
-			assertNotNull(rh.result());	
+		getMeshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
 		});
 		node.delete();
 		//TODO check for attached subnodes
-		getMeshRoot().getNodeRoot().findByUuid(uuid, rh-> {
-			assertNull(rh.result());	
+		getMeshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
 		});
 	}
 

@@ -20,7 +20,6 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.json.JsonUtil;
@@ -92,9 +91,10 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 				/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 				if (arh.succeeded()) {
 					Node node = arh.result();
-					TransformationParameters info = new TransformationParameters(requestUser, languageTags, rc);
-					node.transformToRest(requestUser, th -> {
-						rc.response().end(JsonUtil.toJson(info));
+					node.transformToRest(rc, th -> {
+						if (hasSucceeded(rc, th)) {
+							rc.response().end(JsonUtil.toJson(th.result()));
+						}
 					});
 				}
 			});

@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -29,7 +28,7 @@ public interface Node extends ContainerNode<NodeResponse> {
 
 	void setSchemaContainer(SchemaContainer schema);
 
-	void addProject(Project project);
+//	void addProject(Project project);
 
 	NodeFieldContainer getFieldContainer(Language language);
 

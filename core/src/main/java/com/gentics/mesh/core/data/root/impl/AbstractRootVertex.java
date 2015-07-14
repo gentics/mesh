@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
@@ -15,7 +14,6 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -30,6 +28,9 @@ public abstract class AbstractRootVertex<T extends GenericNode<? extends Abstrac
 	abstract protected String getRootLabel();
 
 	protected void addItem(T item) {
+		// 1. Unlink all edges between both objects with the given label
+		unlinkOut(item.getImpl(), getRootLabel());
+		// 2. Create a new edge with the given label
 		linkOut(item.getImpl(), getRootLabel());
 	}
 
@@ -54,11 +55,6 @@ public abstract class AbstractRootVertex<T extends GenericNode<? extends Abstrac
 			rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
 		}, resultHandler);
 		return this;
-	}
-
-	protected T findByNameAndProject(String projectName, String name) {
-		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).mark().out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
-				.has("name", projectName).back().nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	@Override

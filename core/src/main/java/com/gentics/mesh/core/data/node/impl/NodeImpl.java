@@ -4,12 +4,18 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIEL
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.service.I18NService.getI18n;
+import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -17,17 +23,22 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.ContainerNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -95,29 +106,97 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public Node create() {
-		Node node = BootstrapInitializer.getBoot().nodeRoot().create();
+	public Node create(User creator, SchemaContainer schemaContainer, Project project) {
+		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaContainer, project);
 		node.setParentNode(this);
 		return node;
 	}
 
-//	@Override
-//	public String getNodeResponseJson(TransformationInfo info) {
-//		return JsonUtil.writeNodeJson(transformToRest(info));
-//	}
+	private String getLanguageInfo(List<String> languageTags) {
+		Iterator<String> it = languageTags.iterator();
+
+		String langInfo = "[";
+		while (it.hasNext()) {
+			langInfo += it.next();
+			if (it.hasNext()) {
+				langInfo += ",";
+			}
+		}
+		langInfo += "]";
+		return langInfo;
+	}
 
 	@Override
-	public Node transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<NodeResponse>> handler, TransformationParameters... parameters) {
+	public Node transformToRest(RoutingContext rc, Handler<AsyncResult<NodeResponse>> handler) {
 
-		NodeResponse restContent = new NodeResponse();
-//		NodeTransformationTask task = new NodeTransformationTask(this, info, restContent);
-//		TransformationPool.getPool().invoke(task);
-		handler.handle(Future.succeededFuture(restContent));
+		NodeResponse restNode = new NodeResponse();
+		fillRest(restNode, rc);
+
+		SchemaContainer container = getSchemaContainer();
+		if (container == null) {
+			throw new HttpStatusCodeErrorException(400, "The schema container for node {" + getUuid() + "} could not be found.");
+		}
+
+		try {
+			Schema schema = container.getSchema();
+			if (schema == null) {
+				throw new HttpStatusCodeErrorException(400, "The schema for node {" + getUuid() + "} could not be found.");
+			}
+			/* Load the schema information */
+			if (getSchemaContainer() != null) {
+				SchemaReference schemaReference = new SchemaReference();
+				schemaReference.setName(getSchema().getName());
+				schemaReference.setUuid(getSchemaContainer().getUuid());
+				restNode.setSchema(schemaReference);
+			}
+
+			/* Load the children */
+			if (getSchema().isContainer()) {
+				// //TODO handle uuid
+				// //TODO handle expand
+				List<String> children = new ArrayList<>();
+				// //TODO check permissions
+				for (Node child : getChildren()) {
+					children.add(child.getUuid());
+				}
+				restNode.setContainer(true);
+				restNode.setChildren(children);
+			}
+			//TODO set language and all languages
+
+			NodeFieldContainer fieldContainer = null;
+			List<String> languageTags = getSelectedLanguageTags(rc);
+			for (String languageTag : languageTags) {
+				Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "error_language_not_found", languageTag));
+				}
+				fieldContainer = getFieldContainer(language);
+				// We found a container for one of the languages
+				if (fieldContainer != null) {
+					break;
+				}
+			}
+
+			if (fieldContainer == null) {
+				// "Could not find any field for one of the languagetags that were specified."
+				String langInfo = getLanguageInfo(languageTags);
+				throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
+			}
+
+			for (Entry<String, ? extends FieldSchema> fieldEntry : schema.getFields().entrySet()) {
+				com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(fieldEntry.getKey(), fieldEntry.getValue());
+				restNode.getFields().put(fieldEntry.getKey(), restField);
+			}
+
+			handler.handle(Future.succeededFuture(restNode));
+		} catch (IOException e) {
+			throw new HttpStatusCodeErrorException(400, "The schema for node {" + getUuid() + "} could not loaded.", e);
+		}
 		return this;
 
 	}
 
-	
 	public Page<? extends Tag> getTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo) throws InvalidArgumentException {
 
 		//TODO filter permissions
@@ -202,6 +281,5 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 }

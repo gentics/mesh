@@ -1,23 +1,23 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_BASE_NODE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.node.RootNode;
-import com.gentics.mesh.core.data.node.impl.RootNodeImpl;
+import com.gentics.mesh.core.data.node.BaseNode;
+import com.gentics.mesh.core.data.node.impl.BaseNodeImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
 public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements Project {
@@ -86,8 +85,8 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 	}
 
 	@Override
-	public RootNode getRootNode() {
-		return out(HAS_ROOT_NODE).has(RootNodeImpl.class).nextOrDefaultExplicit(RootNodeImpl.class, null);
+	public BaseNode getBaseNode() {
+		return out(HAS_BASE_NODE).has(BaseNodeImpl.class).nextOrDefaultExplicit(BaseNodeImpl.class, null);
 	}
 
 	@Override
@@ -101,26 +100,26 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 	}
 
 	@Override
-	public void setRootNode(RootNode rootNode) {
-		linkOut(rootNode.getImpl(), HAS_ROOT_NODE);
+	public void setBaseNode(BaseNode rootNode) {
+		linkOut(rootNode.getImpl(), HAS_BASE_NODE);
 	}
 
 	@Override
-	public Project transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<ProjectResponse>> handler, TransformationParameters... parameters) {
+	public Project transformToRest(RoutingContext rc, Handler<AsyncResult<ProjectResponse>> handler) {
 		ProjectResponse projectResponse = new ProjectResponse();
 		projectResponse.setName(getName());
-		projectResponse.setRootNodeUuid(getRootNode().getUuid());
-		fillRest(projectResponse, requestUser);
+		projectResponse.setRootNodeUuid(getBaseNode().getUuid());
+		fillRest(projectResponse, rc);
 		handler.handle(Future.succeededFuture(projectResponse));
 		return this;
 	}
 
 	@Override
-	public RootNode getOrCreateRootNode() {
-		RootNode rootNode = getRootNode();
+	public BaseNode getOrCreateBaseNode() {
+		BaseNode rootNode = getBaseNode();
 		if (rootNode == null) {
-			rootNode = getGraph().addFramedVertex(RootNodeImpl.class);
-			setRootNode(rootNode);
+			rootNode = getGraph().addFramedVertex(BaseNodeImpl.class);
+			setBaseNode(rootNode);
 		}
 		return rootNode;
 	}

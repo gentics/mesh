@@ -57,7 +57,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		// node2
 		Node parentNode = data().getFolder("2015");
-		Node node2 = parentNode.create();
+		Node node2 = parentNode.create(getUser(), getSchemaContainer(), getProject());
 		NodeFieldContainer englishContainer = node2.getFieldContainer(data().getEnglish());
 		// englishContainer.setI18nProperty("content", "Test");
 		role.addPermissions(node2, READ_PERM, DELETE_PERM);
@@ -153,7 +153,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 			role.addPermissions(parentNode, CREATE_PERM);
 		}
 
-		Node node = parentNode.create();
+		Node node = parentNode.create(getUser(), getSchemaContainer(), getProject());
 		assertEquals(0, requestUser.getPermissions(node).size());
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 		assertEquals(4, requestUser.getPermissions(node).size());
@@ -217,7 +217,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testTransformation() throws InterruptedException {
 		Role role = getRole();
 		CountDownLatch latch = new CountDownLatch(1);
-		role.transformToRest(getRequestUser(), rh -> {
+		RoutingContext rc = getMockedRoutingContext("");
+		role.transformToRest(rc, rh -> {
 			RoleResponse restModel = rh.result();
 			assertNotNull(restModel);
 			assertEquals(role.getName(), restModel.getName());

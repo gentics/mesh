@@ -140,7 +140,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 			assertNotNull(node);
 			test.assertMeshNode(request, node);
 			// Load the node again
-			Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
+				Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
 				latchFor(future2);
 				assertSuccess(future2);
 				NodeResponse restNode2 = future2.result();
@@ -222,7 +222,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Node parentNode = data().getFolder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		Node noPermNode = parentNode.create();
+		Node noPermNode = parentNode.create(info.getUser(), data().getSchemaContainer("content"), data().getProject());
 		noPermNode.setCreator(info.getUser());
 		assertNotNull(noPermNode.getUuid());
 
@@ -443,7 +443,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateNodeWithMissingField() throws UnknownHostException, InterruptedException {
+	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
 		Node parentNode = data().getFolder("news");
 		assertNotNull(parentNode);
 		assertNotNull(parentNode.getUuid());
@@ -460,7 +460,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "NYD", "???");
+		expectException(future, BAD_REQUEST, "error");
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 	}
@@ -514,7 +514,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		expectMessageResponse("node_deleted", future, uuid);
 		nodeRoot.findByUuid(uuid, rh -> {
-			assertNull(rh.result());	
+			assertNull(rh.result());
 		});
 	}
 
@@ -533,7 +533,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		nodeRoot.findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());	
+			assertNotNull(rh.result());
 		});
 	}
 }

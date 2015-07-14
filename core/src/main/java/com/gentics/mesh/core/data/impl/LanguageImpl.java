@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.data.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 public class LanguageImpl extends AbstractGenericNode<LanguageResponse> implements Language {
@@ -45,8 +45,14 @@ public class LanguageImpl extends AbstractGenericNode<LanguageResponse> implemen
 	}
 
 	@Override
-	public Language transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<LanguageResponse>> handler, TransformationParameters... parameters) {
-		// TODO Auto-generated method stub
+	public Language transformToRest(RoutingContext rc, Handler<AsyncResult<LanguageResponse>> handler) {
+		LanguageResponse model = new LanguageResponse();
+		model.setUuid(getUuid());
+		model.setLanguageTag(getLanguageTag());
+		model.setName(getName());
+		model.setNativeName(getNativeName());
+
+		handler.handle(Future.succeededFuture(model));
 		return this;
 	}
 

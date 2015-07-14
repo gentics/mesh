@@ -28,7 +28,8 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.DataHelper;
+
+//import com.gentics.mesh.util.DataHelper;
 
 public class GroupUserVerticleTest
 
@@ -37,8 +38,8 @@ extends AbstractRestVerticleTest {
 	@Autowired
 	private GroupVerticle groupsVerticle;
 
-	@Autowired
-	private DataHelper helper;
+	//	@Autowired
+	//	private DataHelper helper;
 
 	@Override
 	public AbstractWebVerticle getVerticle() {
@@ -71,7 +72,9 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		User extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
+
+		User extraUser = userRoot.create("extraUser");
+		info.getRole().addPermissions(extraUser, READ_PERM);
 
 		Future<GroupResponse> future = getClient().addUserToGroup("bogus", extraUser.getUuid());
 		latchFor(future);
@@ -82,7 +85,10 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithPerm() throws Exception {
 		Group group = info.getGroup();
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		User extraUser = helper.addUser(userRoot, "extraUser", info.getRole(), READ_PERM);
+
+		User extraUser = userRoot.create("extraUser");
+		info.getRole().addPermissions(extraUser, READ_PERM);
+
 		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
 
 		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());

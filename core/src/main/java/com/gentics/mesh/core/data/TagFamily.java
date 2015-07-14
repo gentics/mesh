@@ -8,11 +8,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface TagFamily extends GenericNode<TagFamilyResponse> {
-
-	String getName();
-
-	void setName(String name);
+public interface TagFamily extends GenericNode<TagFamilyResponse>, NamedNode {
 
 	String getDescription();
 

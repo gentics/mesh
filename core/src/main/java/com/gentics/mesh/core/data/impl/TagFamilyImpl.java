@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
@@ -15,7 +16,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.AbstractGenericNode;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.service.transformation.TransformationParameters;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -70,11 +70,11 @@ public class TagFamilyImpl extends AbstractGenericNode<TagFamilyResponse> implem
 	}
 
 	@Override
-	public TagFamily transformToRest(MeshAuthUser requestUser, Handler<AsyncResult<TagFamilyResponse>> handler, TransformationParameters... parameters) {
+	public TagFamily transformToRest(RoutingContext rc, Handler<AsyncResult<TagFamilyResponse>> handler) {
 		TagFamilyResponse response = new TagFamilyResponse();
 		response.setName(getName());
 
-		fillRest(response, requestUser);
+		fillRest(response, rc);
 		handler.handle(Future.succeededFuture(response));
 		return this;
 	}

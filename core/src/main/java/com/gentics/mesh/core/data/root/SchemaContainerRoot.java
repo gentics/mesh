@@ -1,15 +1,16 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.rest.schema.Schema;
 
 public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
-	SchemaContainer create(String name);
+	SchemaContainer create(Schema schema);
 
 	void addSchemaContainer(SchemaContainer schemaContainer);
 
 	void removeSchemaContainer(SchemaContainer schemaContainer);
 
-	SchemaContainer findByName(String projectName, String name);
+	boolean contains(SchemaContainer schema);
 
 }

@@ -2,11 +2,10 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.rest.schema.Schema;
 
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
 
@@ -31,21 +30,22 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(String name) {
-		SchemaContainerImpl schema = getGraph().addFramedVertex(SchemaContainerImpl.class);
-		schema.setSchemaName(name);
-		addSchemaContainer(schema);
-		return schema;
+	public SchemaContainer create(Schema schema) {
+		SchemaContainerImpl schemaContainer = getGraph().addFramedVertex(SchemaContainerImpl.class);
+		schemaContainer.setSchema(schema);
+		schemaContainer.setName(schema.getName());
+		addSchemaContainer(schemaContainer);
+		return schemaContainer;
 	}
 
-	// TODO unique index
-
 	@Override
-	public SchemaContainer findByName(String projectName, String name) {
-		if (StringUtils.isEmpty(projectName) || StringUtils.isEmpty(name)) {
-			throw new NullPointerException("name or project name null");
+	public boolean contains(SchemaContainer schema) {
+		//TODO this is not optimal
+		if (findByName(schema.getName()) == null) {
+			return true;
+		} else {
+			return false;
 		}
-		return findByNameAndProject(projectName, name);
 	}
 
 }

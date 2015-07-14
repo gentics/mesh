@@ -65,7 +65,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 
-		info.getRole().addPermissions(data().getProject().getRootNode(), CREATE_PERM);
+		info.getRole().addPermissions(data().getProject().getBaseNode(), CREATE_PERM);
 
 		Future<ProjectResponse> future = getClient().createProject(request);
 		latchFor(future);
@@ -83,7 +83,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		info.getRole().addPermissions(data().getProject().getRootNode(), CREATE_PERM);
+		info.getRole().addPermissions(data().getProject().getBaseNode(), CREATE_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);
@@ -113,7 +113,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project noPermProject;
 		for (int i = 0; i < nProjects; i++) {
 			Project extraProject = projectRoot.create("extra_project_" + i);
-			extraProject.setRootNode(data().getProject().getRootNode());
+			extraProject.setBaseNode(data().getProject().getBaseNode());
 			info.getRole().addPermissions(extraProject, READ_PERM);
 		}
 		noPermProject = projectRoot.create("no_perm_project");
