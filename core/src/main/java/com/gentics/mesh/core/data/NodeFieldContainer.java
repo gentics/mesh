@@ -14,4 +14,5 @@ public interface NodeFieldContainer extends FieldContainer, MicroschemaFieldCont
 	Field getRestField(String fieldKey, FieldSchema fieldSchema);
 
 	void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
+
 }

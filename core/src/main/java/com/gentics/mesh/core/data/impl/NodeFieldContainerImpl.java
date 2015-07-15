@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LIST;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.Map;
@@ -11,6 +12,20 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
+import com.gentics.mesh.core.data.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.MicroschemaFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.NumberFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaField;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
@@ -91,14 +106,16 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			case NODE:
 				NodeField nodeField = (NodeFieldImpl) field;
 				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
-					Node node = rh.result();	
+					Node node = rh.result();
 					createNode(key, node);
 				});
 				//TODO check node permissions
 				break;
 			case LIST:
 				ListField restListField = (ListFieldImpl) field;
-				com.gentics.mesh.core.data.node.field.nesting.ListField<ListableField> listField = createList(key);
+				restListField.getType();
+				//TODO convert type to class
+				//				com.gentics.mesh.core.data.node.field.nesting.ListField<ListableField> listField = createList(key, StringField.class);
 				break;
 			case SELECT:
 				SelectField restSelectField = (SelectFieldImpl) field;
@@ -183,4 +200,5 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 
 		return null;
 	}
+
 }

@@ -56,4 +56,6 @@ public class MeshRelationships {
 	public static final String HAS_ITEM = "HAS_ITEM";
 	public static final String ALLOWED_SCHEMA = "ALLOWED_SCHEMA";
 
+	public static final String HAS_LIST = "HAS_LIST";
+
 }
