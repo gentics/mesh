@@ -32,7 +32,7 @@ public class ProjectLanguageVerticle extends AbstractProjectRestVerticle {
 
 		Route deleteRoute = route("/:projectUuid/languages").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-
+			// Unassign languages should cause a batch process that removes the FieldContainers for the given language.
 		});
 
 		Route getRoute = route("/:projectUuid/languages").method(GET).produces(APPLICATION_JSON);

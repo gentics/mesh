@@ -301,7 +301,7 @@ public class Generator {
 		schema.addField("html", htmlFieldSchema);
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
-		listFieldSchema.setAllowedSchemas("content", "video");
+		listFieldSchema.setAllowedSchemas(new String[] { "content", "video" });
 		listFieldSchema.setMin(1);
 		listFieldSchema.setMax(10);
 		listFieldSchema.setLabel("List of nodes");
@@ -310,7 +310,7 @@ public class Generator {
 		schema.addField("list", listFieldSchema);
 
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
-		nodeFieldSchema.setAllowedSchemas("content", "video", "image");
+		nodeFieldSchema.setAllowedSchemas(new String[] { "content", "video", "image" });
 		schema.addField("node", nodeFieldSchema);
 
 		MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
