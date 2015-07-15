@@ -135,7 +135,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			// rc.fail(trh.cause());
 			// }
 			// SchemaContainer schemaContainer = schemaCreated.result();
-			// rc.response().setStatusCode(200).end(toJson(schema.transformToRest(requestUser)));
+			//responde(rc, toJson(schema.transformToRest(requestUser)));
 			// });
 		});
 

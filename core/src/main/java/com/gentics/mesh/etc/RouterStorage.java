@@ -1,5 +1,5 @@
 package com.gentics.mesh.etc;
-
+import static com.gentics.mesh.core.AbstractWebVerticle.APPLICATION_JSON;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -98,6 +98,7 @@ public class RouterStorage {
 					if (failure != null) {
 						log.error("Error:", failure);
 					}
+					failureRoutingContext.response().putHeader("content-type", APPLICATION_JSON);
 					if (failure != null && (failure.getCause() instanceof MeshJsonException)) {
 						failureRoutingContext.response().setStatusCode(400);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));

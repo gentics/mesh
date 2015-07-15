@@ -22,18 +22,15 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.GenericNode;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedNode;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RestModelPagingHelper;
@@ -131,14 +128,13 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 				String name = null;
 				if (node instanceof NamedNode) {
 					name = ((NamedNode) node).getName();
-					System.out.println(node.getClass().getName());
 				}
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					node.delete();
 					tx.success();
 				}
 				String id = name != null ? uuid + "/" + name : uuid;
-				rc.response().setStatusCode(200).end(toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
+				responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
 			}
 		});
 	}
@@ -147,20 +143,19 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			Permission permission, RootVertex<T> root) {
 		loadAndTransform(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
-				rc.response().setStatusCode(200).end(JsonUtil.toJson(rh.result()));
+				responde(rc, toJson(rh.result()));
 			}
 		});
 	}
-	
-	
-	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(RoutingContext rc, Page<T> page, RL listResponse) {
+
+	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
+			RoutingContext rc, Page<T> page, RL listResponse) {
 		transformPage(rc, page, th -> {
 			if (hasSucceeded(rc, th)) {
-				rc.response().end(JsonUtil.toJson(th.result()));
+				responde(rc, toJson(th.result()));
 			}
 		}, listResponse);
 	}
-
 
 	protected <T extends GenericNode<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
 			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
@@ -177,7 +172,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			AbstractListResponse<TR> listResponse) {
 		loadObjects(rc, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
-				rc.response().setStatusCode(200).end(toJson(rh.result()));
+				responde(rc, toJson(rh.result()));
 			}
 		}, listResponse);
 	}
@@ -185,11 +180,15 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	protected <T extends AbstractRestModel> void transformAndResponde(RoutingContext rc, GenericNode<T> node) {
 		node.transformToRest(rc, th -> {
 			if (hasSucceeded(rc, th)) {
-				rc.response().setStatusCode(200).end(toJson(th.result()));
+				responde(rc, toJson(th.result()));
 			}
 		});
 	}
 
+	protected void responde(RoutingContext rc, String body) {
+		rc.response().putHeader("content-type", APPLICATION_JSON);
+		rc.response().setStatusCode(200).end(body);
+	}
 
 	protected <T extends GenericNode<? extends AbstractRestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,
 			Permission permission, RootVertex<T> root, Handler<AsyncResult<AbstractRestModel>> handler) {

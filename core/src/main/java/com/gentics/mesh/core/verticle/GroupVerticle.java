@@ -4,14 +4,12 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.core.Future;
 import io.vertx.ext.web.Route;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,11 +66,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
 				try {
 					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-					transformPage(rc, rolePage, rh -> {
-						if (hasSucceeded(rc, rh)) {
-							rc.response().setStatusCode(200).end(toJson(rh.result()));
-						}
-					}, new RoleListResponse());
+					transformAndResponde(rc, rolePage, new RoleListResponse());
 				} catch (InvalidArgumentException e) {
 					rc.fail(e);
 				}
@@ -85,10 +79,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				if (hasSucceeded(rc, grh)) {
 					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
 						if (hasSucceeded(rc, rrh)) {
-							Group group = grh.result();
-							Role role = rrh.result();
-							group.addRole(role);
-							transformAndResponde(rc, role);
+							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+								Group group = grh.result();
+								Role role = rrh.result();
+								group.addRole(role);
+								tx.success();
+								transformAndResponde(rc, role);
+							}
 						}
 					});
 				}
@@ -102,10 +99,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					// TODO check whether the role is actually part of the group
 					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
 						if (hasSucceeded(rc, rrh)) {
-							Group group = grh.result();
-							Role role = rrh.result();
-							group.removeRole(role);
-							transformAndResponde(rc, group);
+							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+								Group group = grh.result();
+								Role role = rrh.result();
+								group.removeRole(role);
+								tx.success();
+								transformAndResponde(rc, group);
+							}
 						}
 					});
 
@@ -127,11 +127,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					Page<? extends User> userPage;
 					try {
 						userPage = group.getVisibleUsers(requestUser, pagingInfo);
-						transformPage(rc, userPage, rh -> {
-							if (hasSucceeded(rc, rh)) {
-								rc.response().setStatusCode(200).end(toJson(rh.result()));
-							}
-						}, new UserListResponse());
+						transformAndResponde(rc, userPage, new UserListResponse());
 					} catch (Exception e) {
 						rc.fail(e);
 					}
@@ -200,8 +196,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 							return;
 						}
 						group.setName(requestModel.getName());
+					} else {
+						transformAndResponde(rc, group);
 					}
-					transformAndResponde(rc, group);
 				}
 			});
 
@@ -233,22 +230,16 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 				return;
 			}
 
-			Future<Group> groupCreated = Future.future();
-
 			MeshRoot root = boot.meshRoot();
 			GroupRoot groupRoot = root.getGroupRoot();
-			rcs.hasPermission(rc, groupRoot, CREATE_PERM, rh -> {
-				Group group = groupRoot.create(requestModel.getName());
-				requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-				groupCreated.complete(group);
-			}, tch -> {
-				if (tch.failed()) {
-					rc.fail(tch.cause());
-				} else {
-					Group createdGroup = groupCreated.result();
-					transformAndResponde(rc, createdGroup);
+			if (requestUser.hasPermission(groupRoot, CREATE_PERM)) {
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					Group group = groupRoot.create(requestModel.getName());
+					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
+					tx.success();
+					transformAndResponde(rc, group);
 				}
-			});
+			}
 
 		});
 

@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -66,11 +65,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 				TagFamily tagFamily = rh.result();
 				try {
 					Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
-					transformPage(rc, tagPage, lh -> {
-						if (hasSucceeded(rc, lh)) {
-							rc.response().setStatusCode(200).end(toJson(lh.result()));
-						}
-					}, new TagListResponse());
+					transformAndResponde(rc, tagPage, new TagListResponse());
 				} catch (Exception e) {
 					rc.fail(e);
 				}
@@ -139,9 +134,12 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			} else {
 				loadObject(rc, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 					if (hasSucceeded(rc, rh)) {
-						TagFamily tagFamily = rh.result();
-						tagFamily.setName(requestModel.getName());
-						transformAndResponde(rc, tagFamily);
+						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+							TagFamily tagFamily = rh.result();
+							tagFamily.setName(requestModel.getName());
+							tx.success();
+							transformAndResponde(rc, tagFamily);
+						}
 					}
 				});
 			}

@@ -32,7 +32,6 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 
 /**
@@ -74,9 +73,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 			loadObject(rc, "uuid", READ_PERM, project.getTagRoot(), rh -> {
 				Tag tag = rh.result();
 				Page<? extends Node> page = tag.findTaggedNodes(getUser(rc), getSelectedLanguageTags(rc), getPagingInfo(rc));
-				transformPage(rc, page, th -> {
-					rc.response().setStatusCode(200).end(JsonUtil.toJson(th.result()));
-				}, new NodeListResponse());
+				transformAndResponde(rc, page, new NodeListResponse());
 			});
 
 		});
@@ -137,11 +134,15 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 				// TODO check tag family reference for null
 
 				loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
-					TagFamily tagFamily = rh.result();
-					Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
-					project.getTagRoot().addTag(newTag);
-					tagCreated.complete(newTag);
-					transformAndResponde(rc, newTag);
+					if (hasSucceeded(rc, rh)) {
+						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+							TagFamily tagFamily = rh.result();
+							Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
+							project.getTagRoot().addTag(newTag);
+							tagCreated.complete(newTag);
+							transformAndResponde(rc, newTag);
+						}
+					}
 				});
 			}
 

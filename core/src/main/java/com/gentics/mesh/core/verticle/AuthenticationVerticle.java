@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.json.JsonUtil;
 
 @Component
 @Scope("singleton")
@@ -25,11 +24,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		route("/*").handler(springConfiguration.authHandler());
 		route("/me").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			MeshAuthUser requestUser = getUser(rc);
-			requestUser.transformToRest(rc, rh -> {
-				if (hasSucceeded(rc, rh)) {
-					rc.response().end(JsonUtil.toJson(rh.result()));
-				}
-			});
+			transformAndResponde(rc, requestUser);
 		});
 		route("/login").method(GET).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			//			GenericResponse<String> response = new GenericResponse<>();
