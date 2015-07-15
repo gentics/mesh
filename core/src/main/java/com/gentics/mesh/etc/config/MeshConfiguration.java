@@ -24,7 +24,8 @@ public class MeshConfiguration {
 	public static final String DEFAULT_NEO4VERTX_MODE = "default";
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
-	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
+	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl";
+//	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
 
 	@JsonProperty("database_provider_class")
 	private String databaseProviderClass = DEFAULT_DATABASE_PROVIDER_CLASS;
