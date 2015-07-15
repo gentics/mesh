@@ -148,10 +148,8 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		});
 	}
 
-	// TODO maybe projects should not be a set?
-	// TODO handle schema by name / by uuid - move that code in a seperate
+	// TODO handle schema by name / by uuid - move that code in a separate
 	// handler
-	// TODO load the schema and set the reference to the tag
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
@@ -206,32 +204,40 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 								nodeCreated.setHandler(handler);
 
-								if (project.getOrCreateBaseNode().equals(requestModel.getParentNodeUuid())) {
+								Handler<AsyncResult<Node>> nodeCreatedHandler = pnh -> {
+									Node node = pnh.result();
+									try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+										
+										Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+										if (language == null) {
+											nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
+													requestModel.getLanguage())));
+										} else {
+											try {
+												NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+												container.setFieldFromRest(rc, requestModel.getFields(), schema);
+												tx.success();
+												nodeCreated.complete(node);
+											} catch (Exception e) {
+												nodeCreated.fail(e);
+												return;
+											}
+										}
+									}
+								};
 
+								if (project.getBaseNode().getUuid().equals(requestModel.getParentNodeUuid())) {
+									Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
+									requestUser.addCRUDPermissionOnRole(project.getBaseNode(), CREATE_PERM, node);
+									nodeCreatedHandler.handle(Future.succeededFuture(node));
 								} else {
 
 									loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
 										if (hasSucceeded(rc, rhp)) {
 											Node parentNode = rhp.result();
-											try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-												Node node = parentNode.create(requestUser, schemaContainer, project);
-												requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-												Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-												if (language == null) {
-													nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
-															requestModel.getLanguage())));
-												} else {
-													try {
-														NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-														container.setFieldFromRest(rc, requestModel.getFields(), schema);
-														tx.success();
-														nodeCreated.complete(node);
-													} catch (Exception e) {
-														nodeCreated.fail(e);
-														return;
-													}
-												}
-											}
+											Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
+											requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+											nodeCreatedHandler.handle(Future.succeededFuture(node));
 										}
 									});
 								}

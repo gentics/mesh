@@ -111,7 +111,6 @@ public final class JsonUtil {
 
 	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage) throws IOException, JsonParseException,
 			JsonMappingException {
-		System.out.println(json);
 		valuesMap.put("schema_storage", schemaStorage);
 		return defaultMapper.reader(getInjectableValues()).forType(valueType).readValue(json);
 	}
