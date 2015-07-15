@@ -271,7 +271,8 @@ public class Generator {
 		schemaUpdateRequest.setDisplayField("name");
 		schemaUpdateRequest.setName("video-schema");
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-		schemaUpdateRequest.addField("name", nameFieldSchema);
+		nameFieldSchema.setName("name");
+		schemaUpdateRequest.addField(nameFieldSchema);
 		return schemaUpdateRequest;
 	}
 
@@ -285,7 +286,7 @@ public class Generator {
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
 		nameFieldSchema.setLabel("Name");
-		schema.addField("name", nameFieldSchema);
+		schema.addField(nameFieldSchema);
 
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("number");
@@ -293,12 +294,12 @@ public class Generator {
 		numberFieldSchema.setMin(2);
 		numberFieldSchema.setMax(10);
 		numberFieldSchema.setStep(0.5F);
-		schema.addField("number", numberFieldSchema);
+		schema.addField(numberFieldSchema);
 
 		HTMLFieldSchema htmlFieldSchema = new HTMLFieldSchemaImpl();
-		htmlFieldSchema.setName("Teaser html");
+		htmlFieldSchema.setName("html");
 		htmlFieldSchema.setLabel("Teaser");
-		schema.addField("html", htmlFieldSchema);
+		schema.addField(htmlFieldSchema);
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setAllowedSchemas(new String[] { "content", "video" });
@@ -307,14 +308,17 @@ public class Generator {
 		listFieldSchema.setLabel("List of nodes");
 		listFieldSchema.setName("Nodes");
 		listFieldSchema.setListType("node");
-		schema.addField("list", listFieldSchema);
+		listFieldSchema.setName("list");
+		schema.addField(listFieldSchema);
 
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 		nodeFieldSchema.setAllowedSchemas(new String[] { "content", "video", "image" });
-		schema.addField("node", nodeFieldSchema);
+		nodeFieldSchema.setName("node");
+		schema.addField(nodeFieldSchema);
 
 		MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
-		schema.addField("microschema", microschemaFieldSchema);
+		microschemaFieldSchema.setName("microschema");
+		schema.addField(microschemaFieldSchema);
 		return schema;
 	}
 

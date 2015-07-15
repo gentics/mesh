@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-import java.util.Map;
+import java.util.List;
 
 public interface Schema {
 
@@ -25,13 +25,13 @@ public interface Schema {
 
 	public void setBinary(boolean flag);
 
-	public Map<String, ? extends FieldSchema> getFields();
+	public List<? extends FieldSchema> getFields();
 
 	public void setName(String name);
 
 	public void setDisplayField(String displayField);
 
-	public void addField(String key, FieldSchema fieldSchema);
+	public void addField(FieldSchema fieldSchema);
 
 	String getDescription();
 

@@ -172,7 +172,6 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route.handler(rc -> {
 			delete(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
 		});
-
 	}
 
 	private void addReadHandlers() {

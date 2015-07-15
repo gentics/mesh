@@ -69,12 +69,12 @@ public class RestModelTest extends AbstractDBTest {
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
 		titleFieldSchema.setLabel("Title");
-		schema.addField("title", titleFieldSchema);
+		schema.addField(titleFieldSchema);
 
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
 		nameFieldSchema.setLabel("Name");
-		schema.addField("name", nameFieldSchema);
+		schema.addField(nameFieldSchema);
 
 		schema.setBinary(false);
 		schema.setContainer(false);
@@ -118,7 +118,7 @@ public class RestModelTest extends AbstractDBTest {
 		Map<String, Field> fields = loadedRequest.getFields();
 		assertNotNull(fields);
 		assertNotNull(fields.get("name"));
-		assertNotNull(((StringField)fields.get("name")).getString());
+		assertNotNull(((StringField) fields.get("name")).getString());
 		assertEquals(StringFieldImpl.class.getName(), fields.get("name").getClass().getName());
 
 	}
@@ -150,7 +150,6 @@ public class RestModelTest extends AbstractDBTest {
 		NodeListResponse deserializedList = JsonUtil.readNode(json, NodeListResponse.class, storage);
 		assertNotNull(deserializedList);
 	}
-	
 
 	@Test
 	public void testSchema() throws JsonParseException, JsonMappingException, IOException {
@@ -164,17 +163,17 @@ public class RestModelTest extends AbstractDBTest {
 
 		StringFieldSchema stringSchema = new StringFieldSchemaImpl();
 		stringSchema.setLabel("string field label");
-		stringSchema.setName("string field name");
-		schemaCreateRequest.addField("name", stringSchema);
+		stringSchema.setName("name");
+		schemaCreateRequest.addField(stringSchema);
 
 		BooleanFieldSchema booleanSchema = new BooleanFieldSchemaImpl();
 		booleanSchema.setLabel("boolean field label");
-		booleanSchema.setName("boolean field name");
+		booleanSchema.setName("boolean");
 		booleanSchema.setValue(true);
-		schemaCreateRequest.addField("boolean", booleanSchema);
+		schemaCreateRequest.addField(booleanSchema);
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
-		listFieldSchema.setName("list field name");
+		listFieldSchema.setName("list");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
 		listFieldSchema.setMin(5);
@@ -183,7 +182,7 @@ public class RestModelTest extends AbstractDBTest {
 		//NodeField defaultNode = new NodeFieldImpl();
 		//defaultNode.setUuid(UUIDUtil.randomUUID());
 		//listFieldSchema.getItems().add(defaultNode);
-		schemaCreateRequest.addField("list", listFieldSchema);
+		schemaCreateRequest.addField(listFieldSchema);
 
 		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
 		// microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "gallery", "shorttext" });
@@ -228,14 +227,14 @@ public class RestModelTest extends AbstractDBTest {
 
 		StringFieldSchema stringSchema = new StringFieldSchemaImpl();
 		stringSchema.setLabel("string field label");
-		stringSchema.setName("string field name");
-		schema.addField("string", stringSchema);
+		stringSchema.setName("string");
+		schema.addField(stringSchema);
 
 		BooleanFieldSchema booleanSchema = new BooleanFieldSchemaImpl();
 		booleanSchema.setLabel("boolean field label");
-		booleanSchema.setName("boolean field name");
+		booleanSchema.setName("boolean");
 		booleanSchema.setValue(true);
-		schema.addField("boolean", booleanSchema);
+		schema.addField(booleanSchema);
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName("list field name");
@@ -245,8 +244,8 @@ public class RestModelTest extends AbstractDBTest {
 		listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
 
-		for (Entry<String, ? extends FieldSchema> fieldEntry : schema.getFields().entrySet()) {
-			System.out.println("Schema Field: " + fieldEntry.getKey() + " has " + fieldEntry.getValue().getName());
+		for (FieldSchema fieldEntry : schema.getFields()) {
+			System.out.println("Schema Field: " + fieldEntry.getName() + " has " + fieldEntry.getType());
 			System.out.println();
 		}
 

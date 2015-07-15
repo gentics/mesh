@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -184,9 +183,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
 			}
 
-			for (Entry<String, ? extends FieldSchema> fieldEntry : schema.getFields().entrySet()) {
-				com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(fieldEntry.getKey(), fieldEntry.getValue());
-				restNode.getFields().put(fieldEntry.getKey(), restField);
+			for (FieldSchema fieldEntry : schema.getFields()) {
+				com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(fieldEntry.getName(), fieldEntry);
+				restNode.getFields().put(fieldEntry.getName(), restField);
 			}
 
 			handler.handle(Future.succeededFuture(restNode));

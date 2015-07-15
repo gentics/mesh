@@ -445,22 +445,22 @@ public class BootstrapInitializer {
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("name");
 			nameFieldSchema.setLabel("Name");
-			schema.addField("name", nameFieldSchema);
+			schema.addField(nameFieldSchema);
 
 			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
 			filenameFieldSchema.setName("filename");
 			filenameFieldSchema.setLabel("Filename");
-			schema.addField("filename", filenameFieldSchema);
+			schema.addField(filenameFieldSchema);
 
 			StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 			titleFieldSchema.setName("title");
 			titleFieldSchema.setLabel("Title");
-			schema.addField("title", titleFieldSchema);
+			schema.addField(titleFieldSchema);
 
 			HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
 			titleFieldSchema.setName("content");
 			titleFieldSchema.setLabel("Content");
-			schema.addField("content", contentFieldSchema);
+			schema.addField(contentFieldSchema);
 
 			schema.setBinary(false);
 			schema.setContainer(false);
@@ -480,7 +480,7 @@ public class BootstrapInitializer {
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("name");
 			nameFieldSchema.setLabel("Name");
-			schema.addField("name", nameFieldSchema);
+			schema.addField(nameFieldSchema);
 
 			schema.setBinary(false);
 			schema.setContainer(true);
@@ -501,12 +501,12 @@ public class BootstrapInitializer {
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("name");
 			nameFieldSchema.setLabel("Name");
-			schema.addField("name", nameFieldSchema);
+			schema.addField(nameFieldSchema);
 
 			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("filename");
 			nameFieldSchema.setLabel("Filename");
-			schema.addField("filename", filenameFieldSchema);
+			schema.addField(filenameFieldSchema);
 
 			schema.setBinary(true);
 			schema.setContainer(false);

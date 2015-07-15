@@ -447,12 +447,12 @@ public class DemoDataProvider {
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
 		titleFieldSchema.setLabel("Title");
-		schema.addField("title", titleFieldSchema);
+		schema.addField(titleFieldSchema);
 
 		HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
 		titleFieldSchema.setName("content");
 		titleFieldSchema.setLabel("Content");
-		schema.addField("content", contentFieldSchema);
+		schema.addField(contentFieldSchema);
 
 		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
 		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema);

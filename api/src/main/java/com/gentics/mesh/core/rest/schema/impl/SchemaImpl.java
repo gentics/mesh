@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -16,7 +16,7 @@ public class SchemaImpl extends AbstractRestModel implements Schema {
 	private boolean container = false;
 	private String meshVersion;
 	private String schemaVersion;
-	private Map<String, FieldSchema> fields = new HashMap<>();
+	private List<FieldSchema> fields = new ArrayList<>();
 
 	@Override
 	public String getName() {
@@ -69,7 +69,7 @@ public class SchemaImpl extends AbstractRestModel implements Schema {
 	}
 
 	@Override
-	public Map<String, FieldSchema> getFields() {
+	public List<FieldSchema> getFields() {
 		return fields;
 	}
 
@@ -94,8 +94,8 @@ public class SchemaImpl extends AbstractRestModel implements Schema {
 	}
 
 	@Override
-	public void addField(String key, FieldSchema fieldSchema) {
-		this.fields.put(key, fieldSchema);
+	public void addField(FieldSchema fieldSchema) {
+		this.fields.add(fieldSchema);
 	}
 
 }

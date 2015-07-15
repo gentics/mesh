@@ -64,7 +64,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 			response.bodyHandler(bh -> {
 				log.error("Request failed statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {"
 						+ bh.toString() + "}");
-
+			
 				GenericMessageResponse responseMessage = null;
 				try {
 					responseMessage = JsonUtil.readValue(bh.toString(), GenericMessageResponse.class);

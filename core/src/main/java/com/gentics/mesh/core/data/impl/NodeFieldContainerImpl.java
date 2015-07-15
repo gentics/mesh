@@ -73,8 +73,8 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 	@Override
 	public void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException {
 
-		for (Entry<String, ? extends FieldSchema> entry : schema.getFields().entrySet()) {
-			String key = entry.getKey();
+		for (FieldSchema entry : schema.getFields()) {
+			String key = entry.getName();
 			Field field = fields.get(key);
 			if (field == null) {
 				throw new MeshSchemaException("Could not find value for schema field with key {" + key + "}");
