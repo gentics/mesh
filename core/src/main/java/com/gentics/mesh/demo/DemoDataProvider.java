@@ -462,25 +462,6 @@ public class DemoDataProvider {
 	}
 
 	private void updatePermissions() {
-		// // Add Permissions
-		// // Add admin permissions to all nodes
-		// int i = 0;
-		// for (GenericNode currentNode : genericNodeService.findAll()) {
-		// currentNode = genericNodeService.reload(currentNode);
-		// log.info("Adding BasicPermission to node {" + currentNode.getId() + "}");
-		// if (adminRole.getId() == currentNode.getId()) {
-		// log.info("Skipping role");
-		// continue;
-		// }
-		// roleService.addPermission(adminRole, currentNode, CREATE, READ, UPDATE, DELETE);
-		// adminRole = roleService.save(adminRole);
-		// log.info("Added permissions to {" + i + "} objects.");
-		// i++;
-		// }
-
-		// TODO determine why this is not working when using sdn
-		// Add Permissions
-		// Node roleNode = neo4jTemplate.getPersistentState(userInfo.getRole());
 		Role role = userInfo.getRole();
 
 		for (Vertex vertex : fg.getVertices()) {
@@ -494,19 +475,8 @@ public class DemoDataProvider {
 
 			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 			role.addPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-
-			// GraphPermission perm = role.addPermissions();
-			// perm.setProperty("permissions-read", true);
-			// perm.setProperty("permissions-delete", true);
-			// perm.setProperty("permissions-create", true);
-			// perm.setProperty("permissions-update", true);
-			// GenericNode sdnNode = neo4jTemplate.projectTo(node, GenericNode.class);
-			// roleService.addPermission(adminRole, sdnNode, CREATE, READ, UPDATE, DELETE);
-			// genericNodeService.save(node);
-
 		}
 		log.info("Added BasicPermissions to nodes");
-
 	}
 
 	public Node addFolder(ContainerNode rootNode, String englishName, String germanName) {

@@ -1,5 +1,9 @@
 package com.gentics.mesh.cli;
 
+import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -24,10 +28,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -65,6 +71,8 @@ import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshConfiguration;
 import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 @Component
 public class BootstrapInitializer {
@@ -202,7 +210,6 @@ public class BootstrapInitializer {
 			tagFamilyRoot = findTagFamilyRoot();
 		}
 		return tagFamilyRoot;
-
 	}
 
 	public NodeRoot findNodeRoot() {
@@ -550,8 +557,24 @@ public class BootstrapInitializer {
 			adminGroup.addRole(adminRole);
 		}
 
+		initPermissions(adminRole);
+
 		schemaStorage.init();
 
+	}
+
+	private void initPermissions(Role role) {
+		for (Vertex vertex : fg.getVertices()) {
+			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+
+			// TODO typecheck? and verify how orient will behave
+			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+				log.info("Skipping own role");
+				continue;
+			}
+			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+			role.addPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+		}
 	}
 
 	protected void initLanguages(LanguageRoot rootNode) throws JsonParseException, JsonMappingException, IOException {

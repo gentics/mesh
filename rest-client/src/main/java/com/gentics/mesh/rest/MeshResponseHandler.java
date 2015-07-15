@@ -62,7 +62,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 			});
 		} else {
 			response.bodyHandler(bh -> {
-				log.error("Request failed statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {"
+				log.error("Request failed for path {"+""+"} statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {"
 						+ bh.toString() + "}");
 			
 				GenericMessageResponse responseMessage = null;

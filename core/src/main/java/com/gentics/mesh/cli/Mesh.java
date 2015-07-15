@@ -134,9 +134,6 @@ public class Mesh {
 	}
 
 	private String getVertxVersion() {
-		// TODO extract from pom.xml metadata?
-		// Package pack = Vertx.class.getPackage();
-		// return pack.getImplementationVersion();
 		return new io.vertx.core.Starter().getVersion();
 	}
 
