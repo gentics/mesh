@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.util.Neo4jGenericContentUtils;
 
 /**
  * A navigation task is a recursivetask that is used to buildup a navigation object. This task is used within the {@link NavigationRequestHandler} to build the
@@ -26,13 +25,11 @@ public class NavigationTask extends RecursiveTask<Void> {
 	private Tag tag;
 	private NavigationElement element;
 	private NavigationRequestHandler handler;
-	private Neo4jGenericContentUtils genericContentUtils;
 
-	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler, Neo4jGenericContentUtils genericContentUtils) {
+	public NavigationTask(Tag tag, NavigationElement element, NavigationRequestHandler handler) {
 		this.tag = tag;
 		this.element = element;
 		this.handler = handler;
-		this.genericContentUtils = genericContentUtils;
 	}
 
 	@Override

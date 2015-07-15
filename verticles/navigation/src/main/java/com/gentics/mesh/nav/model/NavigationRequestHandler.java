@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.verticle.NodeNotFoundException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.util.Neo4jGenericContentUtils;
 
 @Component
 @Scope("singleton")
@@ -24,9 +23,6 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 
 	@Autowired
 	private MeshSpringConfiguration config;
-
-	@Autowired
-	private Neo4jGenericContentUtils genericContentUtils;
 
 	private static ForkJoinPool pool = new ForkJoinPool(8);
 
