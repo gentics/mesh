@@ -417,7 +417,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("user_deleted", deleteFuture, restUser.getUuid());
+		expectMessageResponse("user_deleted", deleteFuture, restUser.getUuid() + "/" + restUser.getUsername());
 	}
 
 	@Test
@@ -436,10 +436,11 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		assertTrue(user.isEnabled());
 		String uuid = user.getUuid();
+		String name = user.getName();
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("user_deleted", future, uuid);
+		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 		boot.userRoot().findByUuid(uuid, rh -> {
 			User loadedUser = rh.result();
 			assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
@@ -482,8 +483,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		String uuid;
+		String name = "extraUser";
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			User extraUser = userRoot.create("extraUser");
+			User extraUser = userRoot.create(name);
 			uuid = extraUser.getUuid();
 			extraUser.addGroup(info.getGroup());
 			info.getRole().addPermissions(extraUser, DELETE_PERM);
@@ -500,7 +502,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("user_deleted", future, uuid);
+		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 		// Check whether the user was correctly disabled
 		userRoot.findByUuid(uuid, rh -> {
 			User user2 = rh.result();

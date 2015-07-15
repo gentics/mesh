@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
@@ -99,7 +100,7 @@ public class RouterStorage {
 						log.error("Error:", failure);
 					}
 					failureRoutingContext.response().putHeader("content-type", APPLICATION_JSON);
-					if (failure != null && (failure.getCause() instanceof MeshJsonException)) {
+					if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 						failureRoutingContext.response().setStatusCode(400);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 					} else if (failure != null) {

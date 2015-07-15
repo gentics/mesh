@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -42,6 +41,8 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.error.EntityNotFoundException;
+import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -83,8 +84,11 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-				Node node = rh.result();
-				node.getChildren(requestUser, getSelectedLanguageTags(rc), getPagingInfo(rc));
+				if (hasSucceeded(rc, rh)) {
+					Node node = rh.result();
+					Page<? extends Node> page = node.getChildren(requestUser, getSelectedLanguageTags(rc), getPagingInfo(rc));
+					transformAndResponde(rc, page, new NodeListResponse());
+				}
 			});
 		});
 
@@ -165,88 +169,96 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 				return;
 			}
 
-			if (schemaInfo.getSchema() == null || StringUtils.isEmpty(schemaInfo.getSchema().getName())
-					|| StringUtils.isEmpty(schemaInfo.getSchema().getUuid())) {
+			boolean missingSchemaInfo = schemaInfo.getSchema() == null
+					|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
+			if (missingSchemaInfo) {
 				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
 				return;
 			}
 
-			loadObjectByUuid(
-					rc,
-					schemaInfo.getSchema().getUuid(),
-					Permission.READ_PERM,
-					project.getSchemaRoot(),
-					rh -> {
-						if (hasSucceeded(rc, rh)) {
-							SchemaContainer schemaContainer = rh.result();
+			Handler<AsyncResult<SchemaContainer>> containerFoundHandler = rh -> {
+				/*
+				 * SchemaContainer schema = boot.schemaContainerRoot().findByName(requestModel.getSchema().getName()); if (schema == null) { rc.fail(new
+				 * HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema() .getName()))); return; }
+				 */
+				SchemaContainer schemaContainer = rh.result();
+				try {
+					Schema schema = schemaContainer.getSchema();
+					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
+					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
+						return;
+					}
 
-							/*
-							 * SchemaContainer schema = boot.schemaContainerRoot().findByName(requestModel.getSchema().getName()); if (schema == null) {
-							 * rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema() .getName()))); return; }
-							 */
+					Handler<AsyncResult<Node>> handler = ch -> {
+						if (hasSucceeded(rc, ch)) {
+							Node node = ch.result();
+							transformAndResponde(rc, node);
+						}
+					};
+					Future<Node> nodeCreated = Future.future();
+					nodeCreated.setHandler(handler);
 
-							try {
-								Schema schema = schemaContainer.getSchema();
-								NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
-								if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-									rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
+					Handler<AsyncResult<Node>> nodeCreatedHandler = pnh -> {
+						Node node = pnh.result();
+						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+
+							Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+							if (language == null) {
+								nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
+										requestModel.getLanguage())));
+							} else {
+								try {
+									NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+									container.setFieldFromRest(rc, requestModel.getFields(), schema);
+									tx.success();
+									nodeCreated.complete(node);
+								} catch (Exception e) {
+									rc.fail(e);
 									return;
 								}
-
-								Future<Node> nodeCreated = Future.future();
-
-								Handler<AsyncResult<Node>> handler = ch -> {
-									if (hasSucceeded(rc, ch)) {
-										Node node = ch.result();
-										transformAndResponde(rc, node);
-									}
-								};
-
-								nodeCreated.setHandler(handler);
-
-								Handler<AsyncResult<Node>> nodeCreatedHandler = pnh -> {
-									Node node = pnh.result();
-									try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-										
-										Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-										if (language == null) {
-											nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
-													requestModel.getLanguage())));
-										} else {
-											try {
-												NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-												container.setFieldFromRest(rc, requestModel.getFields(), schema);
-												tx.success();
-												nodeCreated.complete(node);
-											} catch (Exception e) {
-												nodeCreated.fail(e);
-												return;
-											}
-										}
-									}
-								};
-
-								if (project.getBaseNode().getUuid().equals(requestModel.getParentNodeUuid())) {
-									Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
-									requestUser.addCRUDPermissionOnRole(project.getBaseNode(), CREATE_PERM, node);
-									nodeCreatedHandler.handle(Future.succeededFuture(node));
-								} else {
-
-									loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
-										if (hasSucceeded(rc, rhp)) {
-											Node parentNode = rhp.result();
-											Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
-											requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-											nodeCreatedHandler.handle(Future.succeededFuture(node));
-										}
-									});
-								}
-							} catch (Exception e) {
-								rc.fail(e);
-								return;
 							}
 						}
-					});
+					};
+
+					if (project.getBaseNode().getUuid().equals(requestModel.getParentNodeUuid())) {
+						Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
+						requestUser.addCRUDPermissionOnRole(project.getBaseNode(), CREATE_PERM, node);
+						nodeCreatedHandler.handle(Future.succeededFuture(node));
+					} else {
+						loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
+							if (hasSucceeded(rc, rhp)) {
+								Node parentNode = rhp.result();
+								Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
+								requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+								nodeCreatedHandler.handle(Future.succeededFuture(node));
+							}
+						});
+					}
+				} catch (Exception e) {
+					rc.fail(e);
+					return;
+				}
+			};
+			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
+				SchemaContainer containerByName = project.getSchemaRoot().findByName(schemaInfo.getSchema().getName());
+				if (containerByName != null) {
+					if (requestUser.hasPermission(containerByName, READ_PERM)) {
+						containerFoundHandler.handle(Future.succeededFuture(containerByName));
+					} else {
+						rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", containerByName.getUuid())));
+					}
+				} else {
+					rc.fail(new EntityNotFoundException(i18n.get(rc, "schema_not_found", schemaInfo.getSchema().getName())));
+				}
+			} else {
+				loadObjectByUuid(rc, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaRoot(), rh -> {
+					if (hasSucceeded(rc, rh)) {
+						SchemaContainer schemaContainer = rh.result();
+						containerFoundHandler.handle(Future.succeededFuture(schemaContainer));
+					}
+				});
+			}
 
 		});
 	}

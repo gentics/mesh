@@ -65,8 +65,10 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 				throw new MeshJsonException("Can't find schema {" + schemaName + "} within the schema storage.");
 			}
 			FieldSchema fieldSchema = null;
-			for(FieldSchema currentFieldSchema : schemaStorage.getSchema(schemaName).getFields()) {
-				if(currentFieldSchema.getName().equals(fieldKey)) {
+			for (FieldSchema currentFieldSchema : schemaStorage.getSchema(schemaName).getFields()) {
+				if (currentFieldSchema.getName() == null) {
+					log.info("Can't handle field schema in schema {" + schemaName + "} because the field schema name was not set.");
+				} else if (currentFieldSchema.getName().equals(fieldKey)) {
 					fieldSchema = currentFieldSchema;
 				}
 			}

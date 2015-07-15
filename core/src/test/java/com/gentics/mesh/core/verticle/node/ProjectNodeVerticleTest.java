@@ -479,7 +479,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error");
+		expectException(future, BAD_REQUEST, "Could not find value for schema field with key {title}");
 		assertNull(future.result());
 	}
 

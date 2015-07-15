@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -67,6 +68,46 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testBatchCreation() {
+		for (int i = 0; i < 10; i++) {
+
+			final String name = "test_" + i;
+			GroupCreateRequest request = new GroupCreateRequest();
+			request.setName(name);
+			info.getRole().addPermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
+
+			Future<GroupResponse> future = getClient().createGroup(request);
+			latchFor(future);
+			assertSuccess(future);
+			GroupResponse restGroup = future.result();
+			test.assertGroup(request, restGroup);
+
+		}
+	}
+
+	@Test
+	public void testConflicingGroupCreation() {
+		final String name = "test12345";
+		GroupCreateRequest request = new GroupCreateRequest();
+		request.setName(name);
+		info.getRole().addPermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
+
+		Future<GroupResponse> future = getClient().createGroup(request);
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
+		test.assertGroup(request, restGroup);
+
+		boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
+			assertNotNull("Group should have been created.", rh.result());
+		});
+
+		future = getClient().createGroup(request);
+		latchFor(future);
+		expectException(future, CONFLICT, "group_conflicting_name");
+	}
+
+	@Test
 	public void testCreateDeleteGroup() throws Exception {
 
 		// Create the group
@@ -88,7 +129,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("group_deleted", deleteFuture, restGroup.getUuid());
+		expectMessageResponse("group_deleted", deleteFuture, restGroup.getUuid() + "/" + restGroup.getName());
 	}
 
 	@Test
@@ -324,12 +365,13 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteGroupByUUID() throws Exception {
 		Group group = info.getGroup();
+		String name = group.getName();
 		String uuid = group.getUuid();
 		assertNotNull(uuid);
 		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("group_deleted", future, uuid);
+		expectMessageResponse("group_deleted", future, uuid + "/" + name);
 		boot.groupRoot().findByUuid(uuid, rh -> {
 			assertNull("The group should have been deleted", rh.result());
 		});

@@ -54,6 +54,7 @@ import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.AdminVerticle;
+import com.gentics.mesh.core.verticle.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.core.verticle.RoleVerticle;
@@ -132,7 +133,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(ProjectVerticle.class);
 		addMandatoryVerticle(SchemaVerticle.class);
 		// addMandatoryVerticle(SearchVerticle.class);
-		// addMandatoryVerticle(AuthenticationVerticle.class);
+		addMandatoryVerticle(AuthenticationVerticle.class);
 		addMandatoryVerticle(AdminVerticle.class);
 
 	}
@@ -465,8 +466,8 @@ public class BootstrapInitializer {
 			schema.addField(titleFieldSchema);
 
 			HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
-			titleFieldSchema.setName("content");
-			titleFieldSchema.setLabel("Content");
+			contentFieldSchema.setName("content");
+			contentFieldSchema.setLabel("Content");
 			schema.addField(contentFieldSchema);
 
 			schema.setBinary(false);

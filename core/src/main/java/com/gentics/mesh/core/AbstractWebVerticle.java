@@ -194,7 +194,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			Permission permission, RootVertex<T> root, Handler<AsyncResult<AbstractRestModel>> handler) {
 		loadObject(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
-				//TODO handle nested exceptions differently
+				// TODO handle nested exceptions differently
 				try {
 					rh.result().transformToRest(rc, th -> {
 						if (hasSucceeded(rc, th)) {
@@ -222,7 +222,8 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	}
 
 	protected <T extends GenericNode<?>> void loadObjectByUuid(RoutingContext rc, String uuid, Permission perm, RootVertex<T> root,
-			Handler<AsyncResult<T>> handler) {
+
+	Handler<AsyncResult<T>> handler) {
 		if (root == null) {
 			// TODO i18n
 			handler.handle(Future.failedFuture("Could not find root node."));

@@ -71,36 +71,38 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "uuid", UPDATE_PERM, boot.userRoot(), rh -> {
-				User user = rh.result();
-				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
+				if (hasSucceeded(rc, rh)) {
+					User user = rh.result();
+					UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
-						if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
-							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username")));
-							return;
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						if (requestModel.getUsername() != null && user.getUsername() != requestModel.getUsername()) {
+							if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
+								rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username")));
+								return;
+							}
+							user.setUsername(requestModel.getUsername());
 						}
-						user.setUsername(requestModel.getUsername());
-					}
 
-					if (!StringUtils.isEmpty(requestModel.getFirstname()) && user.getFirstname() != requestModel.getFirstname()) {
-						user.setFirstname(requestModel.getFirstname());
-					}
+						if (!StringUtils.isEmpty(requestModel.getFirstname()) && user.getFirstname() != requestModel.getFirstname()) {
+							user.setFirstname(requestModel.getFirstname());
+						}
 
-					if (!StringUtils.isEmpty(requestModel.getLastname()) && user.getLastname() != requestModel.getLastname()) {
-						user.setLastname(requestModel.getLastname());
-					}
+						if (!StringUtils.isEmpty(requestModel.getLastname()) && user.getLastname() != requestModel.getLastname()) {
+							user.setLastname(requestModel.getLastname());
+						}
 
-					if (!StringUtils.isEmpty(requestModel.getEmailAddress()) && user.getEmailAddress() != requestModel.getEmailAddress()) {
-						user.setEmailAddress(requestModel.getEmailAddress());
-					}
+						if (!StringUtils.isEmpty(requestModel.getEmailAddress()) && user.getEmailAddress() != requestModel.getEmailAddress()) {
+							user.setEmailAddress(requestModel.getEmailAddress());
+						}
 
-					if (!StringUtils.isEmpty(requestModel.getPassword())) {
-						user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+						if (!StringUtils.isEmpty(requestModel.getPassword())) {
+							user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+						}
+						tx.success();
 					}
-					tx.success();
+					transformAndResponde(rc, user);
 				}
-				transformAndResponde(rc, user);
 			});
 
 		});
@@ -132,27 +134,28 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 			Future<User> userCreated = Future.future();
 			// Load the parent group for the user
 			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
-
-				Group parentGroup = rh.result();
-				if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
-					String message = i18n.get(rc, "user_conflicting_username");
-					rc.fail(new HttpStatusCodeErrorException(409, message));
-				} else {
-					MeshAuthUser requestUser = getUser(rc);
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						User user = parentGroup.createUser(requestModel.getUsername());
-						user.setFirstname(requestModel.getFirstname());
-						user.setUsername(requestModel.getUsername());
-						user.setLastname(requestModel.getLastname());
-						user.setEmailAddress(requestModel.getEmailAddress());
-						user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
-						user.addGroup(parentGroup);
-						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
-						userCreated.complete(user);
-						tx.success();
+				if (hasSucceeded(rc, rh)) {
+					Group parentGroup = rh.result();
+					if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
+						String message = i18n.get(rc, "user_conflicting_username");
+						rc.fail(new HttpStatusCodeErrorException(409, message));
+					} else {
+						MeshAuthUser requestUser = getUser(rc);
+						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+							User user = parentGroup.createUser(requestModel.getUsername());
+							user.setFirstname(requestModel.getFirstname());
+							user.setUsername(requestModel.getUsername());
+							user.setLastname(requestModel.getLastname());
+							user.setEmailAddress(requestModel.getEmailAddress());
+							user.setPasswordHash(springConfiguration.passwordEncoder().encode(requestModel.getPassword()));
+							user.addGroup(parentGroup);
+							requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
+							userCreated.complete(user);
+							tx.success();
+						}
+						User user = userCreated.result();
+						transformAndResponde(rc, user);
 					}
-					User user = userCreated.result();
-					transformAndResponde(rc, user);
 				}
 			});
 

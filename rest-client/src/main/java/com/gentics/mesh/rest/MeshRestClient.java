@@ -4,6 +4,9 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+
+import org.apache.commons.lang.NotImplementedException;
+
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
@@ -378,8 +381,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 
 	//

@@ -32,9 +32,11 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 @Component
 @Scope("singleton")
@@ -196,9 +198,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 							return;
 						}
 						group.setName(requestModel.getName());
-					} else {
-						transformAndResponde(rc, group);
 					}
+					transformAndResponde(rc, group);
 				}
 			});
 
@@ -233,12 +234,18 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			MeshRoot root = boot.meshRoot();
 			GroupRoot groupRoot = root.getGroupRoot();
 			if (requestUser.hasPermission(groupRoot, CREATE_PERM)) {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					Group group = groupRoot.create(requestModel.getName());
-					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-					tx.success();
-					transformAndResponde(rc, group);
+				if (groupRoot.findByName(requestModel.getName()) != null) {
+					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
+				} else {
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						Group group = groupRoot.create(requestModel.getName());
+						requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
+						tx.success();
+						transformAndResponde(rc, group);
+					}
 				}
+			} else {
+				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", groupRoot.getUuid())));
 			}
 
 		});

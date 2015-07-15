@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.verticle.role;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -62,6 +63,24 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		RoleResponse restRole = future.result();
 		test.assertRole(request, restRole);
+	}
+
+	@Test
+	public void testCreateRoleWithConflictingName() throws Exception {
+
+		// Create first Role
+		String name = "new_role";
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName(name);
+		request.setGroupUuid(info.getGroup().getUuid());
+
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		assertSuccess(future);
+
+		future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, CONFLICT, "role_conflicting_name");
 	}
 
 	@Test

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.error;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 public class HttpStatusCodeErrorException extends RuntimeException {
 
 	private static final long serialVersionUID = 2209919403583173663L;
@@ -17,6 +19,11 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	public HttpStatusCodeErrorException(int code, String message, Throwable e) {
 		super(message, e);
 		this.code = code;
+	}
+
+	public HttpStatusCodeErrorException(HttpResponseStatus status, String message) {
+		super(message);
+		this.code = status.code();
 	}
 
 	public int getCode() {

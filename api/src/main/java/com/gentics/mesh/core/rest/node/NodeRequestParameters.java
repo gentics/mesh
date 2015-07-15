@@ -4,8 +4,9 @@ public class NodeRequestParameters implements QueryParameterProvider {
 
 	String[] languages;
 
-	public void setLanguages(String... languages) {
+	public NodeRequestParameters setLanguages(String... languages) {
 		this.languages = languages;
+		return this;
 	}
 
 	@Override
