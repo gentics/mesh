@@ -38,7 +38,7 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 
 	protected HttpClient client;
 
-	private static String cookie;
+	private String cookie;
 
 	public void setLogin(String username, String password) {
 		this.username = username;
@@ -55,7 +55,7 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		client.close();
 	}
 
-	public static String getCookie() {
+	public String getCookie() {
 		return cookie;
 	}
 
@@ -67,8 +67,8 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		this.client = client;
 	}
 
-	public static void setCookie(String cookie) {
-		AbstractMeshRestClient.cookie = cookie;
+	public void setCookie(String cookie) {
+		this.cookie = cookie;
 	}
 
 	public ClientSchemaStorage getClientSchemaStorage() {
@@ -94,10 +94,11 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
+
 		if (getCookie() != null) {
 			request.headers().add("Cookie", getCookie());
 		}
-		request.headers().add("Authorization", "Basic " + authEnc);
+		//		request.headers().add("Authorization", "Basic " + authEnc);
 		request.headers().add("Accept", "application/json");
 		if (buffer.length() != 0) {
 			request.headers().add("content-length", String.valueOf(buffer.length()));

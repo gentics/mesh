@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.AuthenticationVerticle;
 import com.gentics.mesh.rest.MeshRestClient;
@@ -33,11 +34,12 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 		MeshRestClient client = new MeshRestClient("localhost", getPort());
 		client.setLogin(user.getUsername(), info.getPassword());
-		Future<UserResponse> response = client.login();
-		latchFor(response);
-		UserResponse loginResponse = response.result();
+		Future<GenericMessageResponse> future = client.login();
+		latchFor(future);
+		assertSuccess(future);
+		GenericMessageResponse loginResponse = future.result();
 		assertNotNull(loginResponse);
-		assertEquals(user.getUuid(), loginResponse.getUuid());
+		assertEquals("OK", loginResponse.getMessage());
 
 		Future<UserResponse> meResponse = client.me();
 		latchFor(meResponse);
@@ -47,6 +49,5 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(me);
 		assertEquals(user.getUuid(), me.getUuid());
 	}
-
 
 }

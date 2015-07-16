@@ -1,5 +1,7 @@
 package com.gentics.mesh.rest;
 
+import org.apache.commons.lang.StringUtils;
+
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientResponse;
@@ -36,6 +38,11 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	public void handle(HttpClientResponse response) {
 
 		if (response.statusCode() == 200) {
+
+			if (!StringUtils.isEmpty(response.headers().get("Set-Cookie"))) {
+				client.setCookie(response.headers().get("Set-Cookie"));
+			}
+
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
 				try {
@@ -64,7 +71,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 			response.bodyHandler(bh -> {
 				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {"
 						+ bh.toString() + "}");
-			
+
 				GenericMessageResponse responseMessage = null;
 				try {
 					responseMessage = JsonUtil.readValue(bh.toString(), GenericMessageResponse.class);
@@ -72,7 +79,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 					// ignored
 				}
 
-				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage() , responseMessage));
+				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));
 			});
 		}
 		if (handler != null) {

@@ -4,6 +4,7 @@ import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,16 +39,18 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 			transformAndResponde(rc, requestUser);
 		});
 
+		//route("/login").handler(springConfiguration.jsonAuthHandler());
 		route("/login").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			LoginRequest request;
 			try {
-				request = JsonUtil.readValue(rc.getBodyAsString(), LoginRequest.class);
+				LoginRequest request= JsonUtil.readValue(rc.getBodyAsString(), LoginRequest.class);
 				//TODO fail on missing field
 				JsonObject authInfo = new JsonObject().put("username", request.getUsername()).put("password", request.getPassword());
 				springConfiguration.authProvider().authenticate(authInfo, rh -> {
 					if (rh.failed()) {
 						rc.fail(new HttpStatusCodeErrorException(401, i18n.get(rc, "login_failed"), rh.cause()));
 					} else {
+						User authenticated = rh.result();
+						rc.setUser(authenticated);
 						GenericMessageResponse message = new GenericMessageResponse("OK");
 						responde(rc, JsonUtil.toJson(message));
 					}

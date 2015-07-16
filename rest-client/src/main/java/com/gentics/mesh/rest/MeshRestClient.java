@@ -4,15 +4,14 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-
-import org.apache.commons.lang.NotImplementedException;
-
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
+
+import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -363,21 +362,27 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<UserResponse> login() {
-
-		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
-		meshHandler.handle(rh -> {
-			if (rh.statusCode() == 200) {
-				setCookie(rh.headers().get("Set-Cookie"));
-			}
-		});
-		HttpClientRequest request = client.get(BASEURI + "/auth/me", meshHandler);
-		request.headers().add("Authorization", "Basic " + authEnc);
-		request.headers().add("Accept", "application/json");
-		request.end();
-		return meshHandler.getFuture();
-
+	public Future<GenericMessageResponse> login() {
+		LoginRequest loginRequest = new LoginRequest();
+		loginRequest.setUsername(username);
+		loginRequest.setPassword(password);
+		return handleRequest(POST, "/auth/login", GenericMessageResponse.class, loginRequest);
 	}
+
+//		return 
+//		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
+//		meshHandler.handle(rh -> {
+//			if (rh.statusCode() == 200) {
+//				setCookie(rh.headers().get("Set-Cookie"));
+//			}
+//		});
+//		HttpClientRequest request = client.get(BASEURI + "/auth/login", meshHandler);
+////		request.headers().add("Authorization", "Basic " + authEnc);
+//		request.headers().add("Accept", "application/json");
+//		request.end();
+//		return meshHandler.getFuture();
+//
+//	}
 
 	@Override
 	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 
 public interface AuthClientMethods {
 
-	Future<UserResponse> login();
+	Future<GenericMessageResponse> login();
 
 	Future<UserResponse> me();
 
