@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import com.gentics.mesh.core.data.node.field.basic.StringField;
+import com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringFieldList;
 
@@ -8,20 +9,19 @@ public class StringFieldListImpl extends AbstractBasicFieldList<StringField> imp
 
 	@Override
 	public StringField createString(String string) {
-		// TODO Auto-generated method stub
-		return null;
+		StringField field = createField();
+		field.setString(string);
+		return field;
 	}
 
 	@Override
 	public StringField getString(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return getField(key);
 	}
 
 	@Override
-	protected StringField convertBasicValue(String listItemValue) {
-		// TODO Auto-generated method stub
-		return null;
+	protected StringField createField(String key) {
+		return new StringFieldImpl(key, getImpl());
 	}
 
 }

@@ -10,9 +10,11 @@ public interface ListField<T extends ListableField> extends MicroschemaListableF
 
 	List<? extends T> getList();
 
+	long getSize();
+
 	void addItem(T item);
 
-	//void getItem(String key);
+	// void getItem(String key);
 
 	void removeItem(T item);
 

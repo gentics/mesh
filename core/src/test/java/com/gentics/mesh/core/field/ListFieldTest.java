@@ -23,17 +23,23 @@ public class ListFieldTest extends AbstractDBTest {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 		StringFieldList list = container.createStringList("dummyList");
 
-		list.createString("1").setString("Some string 1");
+		list.createString("1");
 		assertEquals("dummyList", list.getFieldKey());
 		assertNotNull(list.getList());
 
 		assertEquals(1, list.getList().size());
-		list.createString("2").setString("Some string 2");
+		assertEquals(list.getSize(), list.getList().size());
+		list.createString("2");
 		assertEquals(2, list.getList().size());
+		list.createString("3").setString("Some string 3");
+		assertEquals(3, list.getList().size());
+		assertEquals("Some string 3", list.getList().get(0).getString());
 
-//		ListField<StringField> loadedList = container.getList("dummyList");
-//		assertNotNull(loadedList);
-//		assertEquals(2, loadedList.getList().size());
+		StringFieldList loadedList = container.getStringList("dummyList");
+		assertNotNull(loadedList);
+		assertEquals(3, loadedList.getSize());
+		// assertNotNull(loadedList);
+		// assertEquals(2, loadedList.getList().size());
 	}
 
 	@Test

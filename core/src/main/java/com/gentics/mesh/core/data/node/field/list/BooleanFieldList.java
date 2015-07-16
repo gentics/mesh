@@ -6,5 +6,5 @@ public interface BooleanFieldList extends ListField<BooleanField> {
 
 	BooleanField getBoolean(String key);
 
-	BooleanField createBoolean(String key);
+	BooleanField createBoolean(String flag);
 }

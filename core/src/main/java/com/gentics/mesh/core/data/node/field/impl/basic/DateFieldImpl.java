@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.node.field.impl.basic;
 
-import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.basic.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.basic.DateField;
+import com.syncleus.ferma.AbstractVertexFrame;
 
 public class DateFieldImpl extends AbstractBasicField implements DateField{
 
-	public DateFieldImpl(String fieldKey, AbstractFieldContainerImpl parentContainer) {
+	public DateFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

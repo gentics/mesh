@@ -43,17 +43,31 @@ public interface FieldContainer extends BasicFieldContainer {
 
 	DateFieldList createDateList(String fieldKey);
 
+	DateFieldList getDateList(String fieldKey);
+
 	HtmlFieldList createHTMLList(String fieldKey);
+
+	HtmlFieldList getHTMLList(String fieldKey);
 
 	NumberFieldList createNumberList(String fieldKey);
 
+	NumberFieldList getNumberList(String fieldKey);
+
 	NodeFieldList createNodeList(String fieldKey);
+
+	NodeFieldList getNodeList(String fieldKey);
 
 	StringFieldList createStringList(String fieldKey);
 
+	StringFieldList getStringList(String fieldKey);
+
 	BooleanFieldList createBooleanList(String fieldKey);
 
+	BooleanFieldList getBooleanList(String fieldKey);
+
 	MicroschemaFieldList createMicroschemaFieldList(String fieldKey);
+
+	MicroschemaFieldList getMicroschemaList(String fieldKey);
 
 	<T extends ListableField> SelectField<T> createSelect(String key);
 

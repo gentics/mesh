@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.node.field.impl.basic;
 
-import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.basic.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.basic.NumberField;
+import com.syncleus.ferma.AbstractVertexFrame;
 
 public class NumberFieldImpl extends AbstractBasicField implements NumberField {
 
-	public NumberFieldImpl(String fieldKey, AbstractFieldContainerImpl parentContainer) {
+	public NumberFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 

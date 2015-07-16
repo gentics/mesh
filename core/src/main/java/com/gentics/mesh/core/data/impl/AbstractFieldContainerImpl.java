@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.node.field.impl.nesting.SelectFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.ListField;
 import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
@@ -37,7 +36,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectField;
-import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
+import com.gentics.mesh.util.TraversalHelper;
 
 public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl implements FieldContainer {
 
@@ -151,8 +150,18 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 	}
 
 	@Override
+	public NumberFieldList getNumberList(String fieldKey) {
+		return getList(NumberFieldListImpl.class, fieldKey);
+	}
+
+	@Override
 	public NodeFieldList createNodeList(String fieldKey) {
 		return createList(NodeFieldListImpl.class, fieldKey);
+	}
+
+	@Override
+	public NodeFieldList getNodeList(String fieldKey) {
+		return getList(NodeFieldListImpl.class, fieldKey);
 	}
 
 	@Override
@@ -161,8 +170,18 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 	}
 
 	@Override
+	public StringFieldList getStringList(String fieldKey) {
+		return getList(StringFieldListImpl.class, fieldKey);
+	}
+
+	@Override
 	public BooleanFieldList createBooleanList(String fieldKey) {
 		return createList(BooleanFieldListImpl.class, fieldKey);
+	}
+
+	@Override
+	public BooleanFieldList getBooleanList(String fieldKey) {
+		return getList(BooleanFieldListImpl.class, fieldKey);
 	}
 
 	@Override
@@ -171,8 +190,18 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 	}
 
 	@Override
+	public MicroschemaFieldList getMicroschemaList(String fieldKey) {
+		return getList(MicroschemaFieldListImpl.class, fieldKey);
+	}
+
+	@Override
 	public HtmlFieldList createHTMLList(String fieldKey) {
 		return createList(HtmlFieldListImpl.class, fieldKey);
+	}
+
+	@Override
+	public HtmlFieldList getHTMLList(String fieldKey) {
+		return getList(HtmlFieldListImpl.class, fieldKey);
 	}
 
 	@Override
@@ -180,9 +209,18 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 		return createList(DateFieldListImpl.class, fieldKey);
 	}
 
+	@Override
+	public DateFieldList getDateList(String fieldKey) {
+		return getList(DateFieldListImpl.class, fieldKey);
+	}
+
+	private <T extends com.gentics.mesh.core.data.node.field.list.ListField<?>> T getList(Class<T> classOfT, String fieldKey) {
+		return out(HAS_LIST).has(classOfT).has("fieldKey", fieldKey).nextOrDefaultExplicit(classOfT, null);
+	}
+
 	private <T extends com.gentics.mesh.core.data.node.field.list.ListField<?>> T createList(Class<T> classOfT, String fieldKey) {
-		//TODO handle fieldkey
-		T list = getGraph().addFramedVertexExplicit(classOfT);
+		T list = getGraph().addFramedVertex(classOfT);
+		list.setFieldKey(fieldKey);
 		linkOut(list.getImpl(), HAS_LIST);
 		return list;
 	}

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import com.gentics.mesh.core.data.node.field.basic.BooleanField;
+import com.gentics.mesh.core.data.node.field.impl.basic.BooleanFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicFieldList;
 import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
 
@@ -8,20 +9,19 @@ public class BooleanFieldListImpl extends AbstractBasicFieldList<BooleanField> i
 
 	@Override
 	public BooleanField getBoolean(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return getField(key);
 	}
 
 	@Override
-	public BooleanField createBoolean(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public BooleanField createBoolean(String flag) {
+		BooleanField field = createField();
+		field.setBoolean(Boolean.valueOf(flag));
+		return field;
 	}
 
 	@Override
-	protected BooleanField convertBasicValue(String listItemValue) {
-		// TODO Auto-generated method stub
-		return null;
+	protected BooleanField createField(String key) {
+		return new BooleanFieldImpl(key, getImpl());
 	}
 
 }

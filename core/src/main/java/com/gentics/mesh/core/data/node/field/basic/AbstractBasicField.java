@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.data.node.field.basic;
 
-import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.Field;
+import com.syncleus.ferma.AbstractVertexFrame;
 
 public abstract class AbstractBasicField implements Field {
 
 	private String fieldKey;
-	private AbstractFieldContainerImpl parentContainer;
+	private AbstractVertexFrame parentContainer;
 
-	public AbstractBasicField(String fieldKey, AbstractFieldContainerImpl parentContainer) {
+	public AbstractBasicField(String fieldKey, AbstractVertexFrame parentContainer) {
 		this.fieldKey = fieldKey;
 		this.parentContainer = parentContainer;
 	}
@@ -23,7 +23,7 @@ public abstract class AbstractBasicField implements Field {
 		setFieldProperty("field", "true");
 	}
 
-	public AbstractFieldContainerImpl getParentContainer() {
+	public AbstractVertexFrame getParentContainer() {
 		return parentContainer;
 	}
 

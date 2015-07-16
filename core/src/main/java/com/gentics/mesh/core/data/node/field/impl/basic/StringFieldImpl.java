@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.node.field.impl.basic;
 
-import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.basic.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
+import com.syncleus.ferma.AbstractVertexFrame;
 
 public class StringFieldImpl extends AbstractBasicField implements StringField {
 
-	public StringFieldImpl(String fieldKey, AbstractFieldContainerImpl parentContainer) {
+	public StringFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 
