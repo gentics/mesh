@@ -1,19 +1,11 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-public interface MeshVertex {
-
-	String getUuid();
-
-	void setUuid(String uuid);
+public interface MeshVertex extends MeshElement {
 
 	Vertex getVertex();
 
-	Element getElement();
-
 	MeshVertexImpl getImpl();
-
 }

@@ -16,12 +16,6 @@ public abstract class AbstractFieldList<T extends ListableField> extends MeshVer
 	}
 
 	@Override
-	public Class<T> getListType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void addItem(T item) {
 		// TODO Auto-generated method stub
 

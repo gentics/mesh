@@ -19,4 +19,8 @@ public class DateFieldListImpl extends AbstractBasicFieldList<DateField> impleme
 		return new DateFieldImpl(key, getImpl());
 	}
 
+	@Override
+	public Class<? extends DateField> getListType() {
+		return DateFieldImpl.class;
+	}
 }

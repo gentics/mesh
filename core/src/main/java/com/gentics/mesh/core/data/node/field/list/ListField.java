@@ -18,6 +18,6 @@ public interface ListField<T extends ListableField> extends MicroschemaListableF
 
 	void removeItem(T item);
 
-	Class<T> getListType();
+	Class<? extends T> getListType();
 
 }

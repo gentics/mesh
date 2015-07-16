@@ -18,5 +18,10 @@ public class HtmlFieldListImpl extends AbstractBasicFieldList<HTMLField> impleme
 	protected HTMLField createField(String key) {
 		return new HTMLFieldImpl(key, getImpl());
 	}
+	
+	@Override
+	public Class<? extends HTMLField> getListType() {
+		return HTMLFieldImpl.class;
+	}
 
 }

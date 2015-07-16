@@ -8,7 +8,7 @@ import java.util.List;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.generic.MeshEdge;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -73,7 +73,7 @@ public final class TraversalHelper {
 	}
 
 	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
-		for (MeshEdge e : traversal.toListExplicit(MeshEdge.class)) {
+		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
 			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
 

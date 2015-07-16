@@ -54,6 +54,11 @@ public class ListFieldTest extends AbstractDBTest {
 		NodeField foundNodeField = list.getList().get(0);
 		assertNotNull(foundNodeField.getNode());
 		assertEquals(node.getUuid(), foundNodeField.getNode().getUuid());
+
+		NodeFieldList loadedList = container.getNodeList("dummyList");
+		assertNotNull(loadedList);
+		assertEquals(1, loadedList.getSize());
+		assertEquals(node.getUuid(), loadedList.getList().get(0).getNode().getUuid());
 	}
 
 	@Test

@@ -24,4 +24,9 @@ public class BooleanFieldListImpl extends AbstractBasicFieldList<BooleanField> i
 		return new BooleanFieldImpl(key, getImpl());
 	}
 
+	@Override
+	public Class<? extends BooleanField> getListType() {
+		return BooleanFieldImpl.class;
+	}
+
 }

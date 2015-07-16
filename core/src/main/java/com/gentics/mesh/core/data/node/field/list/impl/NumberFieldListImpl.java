@@ -23,5 +23,10 @@ public class NumberFieldListImpl extends AbstractBasicFieldList<NumberField> imp
 	protected NumberField createField(String key) {
 		return new NumberFieldImpl(key, getImpl());
 	}
+	
+	@Override
+	public Class<? extends NumberField> getListType() {
+		return NumberFieldImpl.class;
+	}
 
 }

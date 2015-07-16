@@ -24,4 +24,9 @@ public class StringFieldListImpl extends AbstractBasicFieldList<StringField> imp
 		return new StringFieldImpl(key, getImpl());
 	}
 
+	@Override
+	public Class<? extends StringField> getListType() {
+		return StringFieldImpl.class;
+	}
+
 }
