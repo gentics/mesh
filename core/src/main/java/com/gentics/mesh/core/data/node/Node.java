@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.data.node;
 
+import io.vertx.ext.web.RoutingContext;
+
 import java.io.IOException;
 import java.util.List;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
@@ -28,8 +28,6 @@ public interface Node extends ContainerNode<NodeResponse> {
 
 	void setSchemaContainer(SchemaContainer schema);
 
-//	void addProject(Project project);
-
 	NodeFieldContainer getFieldContainer(Language language);
 
 	List<? extends Tag> getTags();
@@ -38,9 +36,7 @@ public interface Node extends ContainerNode<NodeResponse> {
 
 	List<? extends FieldContainer> getFieldContainers();
 
-	//TODO why do we need the projectname here?
-	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
-
+	Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException;
 
 	void createLink(Node node);
 

@@ -166,7 +166,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 	}
 
 	@Override
-	public TagReference tansformToTagReference(TransformationParameters info) {
+	public TagReference tansformToTagReference() {
 		TagReference reference = new TagReference();
 		reference.setUuid(getUuid());
 		reference.setName(getName());

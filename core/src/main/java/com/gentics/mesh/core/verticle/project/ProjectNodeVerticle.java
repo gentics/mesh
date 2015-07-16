@@ -104,12 +104,11 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
 			Project project = getProject(rc);
-			MeshAuthUser requestUser = getUser(rc);
 			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					Node node = rh.result();
 					try {
-						Page<? extends Tag> tagPage = node.getTags(requestUser, getPagingInfo(rc));
+						Page<? extends Tag> tagPage = node.getTags(rc);
 						transformAndResponde(rc, tagPage, new TagListResponse());
 					} catch (Exception e) {
 						rc.fail(e);
@@ -126,14 +125,16 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 				// TODO i18n error
 			} else {
 				loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-					Node node = rh.result();
-					loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
-						if (hasSucceeded(rc, th)) {
-							Tag tag = th.result();
-							node.addTag(tag);
-							transformAndResponde(rc, node);
-						}
-					});
+					if (hasSucceeded(rc, rh)) {
+						Node node = rh.result();
+						loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
+							if (hasSucceeded(rc, th)) {
+								Tag tag = th.result();
+								node.addTag(tag);
+								transformAndResponde(rc, node);
+							}
+						});
+					}
 				});
 
 			}

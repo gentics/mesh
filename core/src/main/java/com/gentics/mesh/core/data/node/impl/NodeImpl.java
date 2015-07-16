@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
+import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -100,7 +101,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
-	public void setParentNode(ContainerNode parent) {
+	public void setParentNode(ContainerNode<NodeResponse> parent) {
 		setLinkOut(parent.getImpl(), HAS_PARENT_NODE);
 	}
 
@@ -188,8 +189,18 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				restNode.getFields().put(fieldEntry.getName(), restField);
 			}
 
+			try {
+				for (Tag tag : getTags(rc)) {
+					restNode.getTags().add(tag.tansformToTagReference());
+				}
+			} catch (InvalidArgumentException e) {
+				//TODO i18n
+				throw new HttpStatusCodeErrorException(400, "Could not transform tags");
+			}
+
 			handler.handle(Future.succeededFuture(restNode));
 		} catch (IOException e) {
+			//TODO i18n
 			throw new HttpStatusCodeErrorException(400, "The schema for node {" + getUuid() + "} could not loaded.", e);
 		}
 		return this;
@@ -261,20 +272,25 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public void delete() {
+		//TODO handle linked containers
 		getElement().remove();
 	}
 
 	@Override
-	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo)
+			throws InvalidArgumentException {
+		//TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = in(HAS_PARENT_NODE).has(NodeImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = in(HAS_PARENT_NODE).has(NodeImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+	public Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException {
+		//TODO add permissions
+		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
+		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, getPagingInfo(rc), TagImpl.class);
 	}
 
 	@Override

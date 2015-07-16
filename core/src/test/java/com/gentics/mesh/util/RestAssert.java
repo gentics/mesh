@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -260,6 +261,7 @@ public class RestAssert {
 		assertNotNull(tag);
 		assertNotNull(tag.getUuid());
 		assertNotNull(restNode);
+		assertNotEquals("There were not tags listed in the restNode.", 0, restNode.getTags().size());
 		if (restNode.getTags() == null) {
 			return false;
 		}

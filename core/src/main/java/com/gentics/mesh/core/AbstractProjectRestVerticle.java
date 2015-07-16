@@ -3,11 +3,7 @@ package com.gentics.mesh.core;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 
 /**
@@ -18,8 +14,6 @@ import com.gentics.mesh.etc.RouterStorage;
  *
  */
 public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(ProjectNodeVerticle.class);
 
 	protected AbstractProjectRestVerticle(String basePath) {
 		super(basePath);
