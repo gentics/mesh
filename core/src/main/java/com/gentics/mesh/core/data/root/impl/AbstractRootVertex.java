@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.GenericNode;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -21,7 +21,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public abstract class AbstractRootVertex<T extends GenericNode<? extends AbstractRestModel>> extends MeshVertexImpl implements RootVertex<T> {
+public abstract class AbstractRootVertex<T extends GenericVertex<? extends AbstractRestModel>> extends MeshVertexImpl implements RootVertex<T> {
 
 	abstract protected Class<? extends T> getPersistanceClass();
 

@@ -5,13 +5,13 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_EDIT
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import io.vertx.ext.web.RoutingContext;
 
-import com.gentics.mesh.core.data.GenericNode;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.AbstractRestModel;
 
-public abstract class AbstractGenericNode<T extends AbstractRestModel> extends MeshVertexImpl implements GenericNode<T> {
+public abstract class AbstractGenericVertex<T extends AbstractRestModel> extends MeshVertexImpl implements GenericVertex<T> {
 
 
 	@Override

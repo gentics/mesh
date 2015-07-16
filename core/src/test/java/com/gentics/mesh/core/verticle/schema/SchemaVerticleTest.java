@@ -304,7 +304,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testAddSchemaToProjectWithPerm() throws Exception {
 		SchemaContainer schema = data().getSchemaContainer("content");
 		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject");
+		Project extraProject = projectRoot.create("extraProject", info.getUser());
 
 		// Add only read perms
 		info.getRole().addPermissions(schema, READ_PERM);
@@ -330,7 +330,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		SchemaContainer schema = data().getSchemaContainer("content");
 		Project project = data().getProject();
 		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject");
+		Project extraProject = projectRoot.create("extraProject", info.getUser());
 		// Add only read perms
 		info.getRole().addPermissions(schema, READ_PERM);
 		info.getRole().addPermissions(project, READ_PERM);

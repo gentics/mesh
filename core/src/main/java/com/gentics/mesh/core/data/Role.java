@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
-public interface Role extends GenericNode<RoleResponse>, NamedNode {
+public interface Role extends GenericVertex<RoleResponse>, NamedNode {
 
 	void addPermissions(MeshVertex vertex, Permission... permissions);
 
@@ -19,7 +19,7 @@ public interface Role extends GenericNode<RoleResponse>, NamedNode {
 
 	void addGroup(Group group);
 
-	boolean hasPermission(Permission permission, GenericNode<?> node);
+	boolean hasPermission(Permission permission, GenericVertex<?> node);
 
 	List<? extends Group> getGroups();
 

@@ -3,20 +3,20 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.node.BaseNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
-public interface Project extends GenericNode<ProjectResponse>, NamedNode {
+public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 
-	BaseNode getOrCreateBaseNode();
+	Node createBaseNode(User creator);
 
-	BaseNode getBaseNode();
+	Node getBaseNode();
 
-	void setBaseNode(BaseNode rootNode);
+	void setBaseNode(Node baseNode);
 
 	TagFamilyRoot getTagFamilyRoot();
 

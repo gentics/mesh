@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -20,6 +21,7 @@ public class AtomicTagTest extends AbstractDBTest {
 	@Test
 	public void testTagCreation() {
 		MeshRoot meshRoot = boot.createMeshRoot();
+		User user = meshRoot.createUserRoot().create("test");
 		LanguageRoot languageRoot = meshRoot.createLanguageRoot();
 		assertNotNull(languageRoot);
 		Language language = languageRoot.create("Deutsch", "de");
@@ -29,7 +31,7 @@ public class AtomicTagTest extends AbstractDBTest {
 		meshRoot.createTagRoot();
 
 		ProjectRoot projectRoot = meshRoot.createProjectRoot();
-		Project project = projectRoot.create("dummy");
+		Project project = projectRoot.create("dummy", user);
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		TagFamily tagFamily = tagFamilyRoot.create("basic");
 

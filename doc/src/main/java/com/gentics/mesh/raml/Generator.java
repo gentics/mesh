@@ -352,7 +352,7 @@ public class Generator {
 	private NodeCreateRequest getNodeCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
-
+		contentCreate.setLanguage("en");
 		Map<String, Field> fields = contentCreate.getFields();
 		fields.put("name", createStringField("English name"));
 		fields.put("filename", createStringField("index.en.html"));

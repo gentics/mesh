@@ -15,14 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.generic.AbstractGenericNode;
+import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
-public class SchemaContainerImpl extends AbstractGenericNode<SchemaResponse> implements SchemaContainer {
+public class SchemaContainerImpl extends AbstractGenericVertex<SchemaResponse> implements SchemaContainer {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerImpl.class);
 

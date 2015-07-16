@@ -13,11 +13,13 @@ import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.generic.AbstractGenericNode;
-import com.gentics.mesh.core.data.node.BaseNode;
-import com.gentics.mesh.core.data.node.impl.BaseNodeImpl;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -28,7 +30,7 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
-public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements Project {
+public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implements Project {
 
 	// TODO index to name + unique constraint
 	@Override
@@ -85,8 +87,8 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 	}
 
 	@Override
-	public BaseNode getBaseNode() {
-		return out(HAS_BASE_NODE).has(BaseNodeImpl.class).nextOrDefaultExplicit(BaseNodeImpl.class, null);
+	public Node getBaseNode() {
+		return out(HAS_BASE_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override
@@ -100,7 +102,7 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 	}
 
 	@Override
-	public void setBaseNode(BaseNode baseNode) {
+	public void setBaseNode(Node baseNode) {
 		linkOut(baseNode.getImpl(), HAS_BASE_NODE);
 	}
 
@@ -115,13 +117,19 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 	}
 
 	@Override
-	public BaseNode getOrCreateBaseNode() {
-		BaseNode rootNode = getBaseNode();
-		if (rootNode == null) {
-			rootNode = getGraph().addFramedVertex(BaseNodeImpl.class);
-			setBaseNode(rootNode);
+	public Node createBaseNode(User creator) {
+		Node baseNode = getBaseNode();
+		if (baseNode == null) {
+			baseNode = getGraph().addFramedVertex(NodeImpl.class);
+			baseNode.setSchemaContainer(BootstrapInitializer.getBoot().schemaContainerRoot().findByName("folder"));
+			baseNode.setCreator(creator);
+			baseNode.setEditor(creator);
+			setBaseNode(baseNode);
+			// Add the node to the aggregation nodes
+			getNodeRoot().addNode(baseNode);
+			BootstrapInitializer.getBoot().nodeRoot().addNode(baseNode);
 		}
-		return rootNode;
+		return baseNode;
 	}
 
 	@Override
@@ -133,9 +141,12 @@ public class ProjectImpl extends AbstractGenericNode<ProjectResponse> implements
 
 	@Override
 	public NodeRoot createNodeRoot() {
-		NodeRoot root = getGraph().addFramedVertex(NodeRootImpl.class);
-		setNodeRoot(root);
-		return root;
+		NodeRoot nodeRoot = getNodeRoot();
+		if (nodeRoot == null) {
+			nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
+			setNodeRoot(nodeRoot);
+		}
+		return nodeRoot;
 	}
 
 	@Override

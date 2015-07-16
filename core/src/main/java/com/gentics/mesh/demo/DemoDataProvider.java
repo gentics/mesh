@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.data.GenericNode;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -255,8 +255,7 @@ public class DemoDataProvider {
 
 	private void addFolderStructure() {
 
-		BaseNode baseNode = project.getOrCreateBaseNode();
-		baseNode.setCreator(userInfo.getUser());
+		Node baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
 
 		Node news = addFolder(baseNode, "News", "Neuigkeiten");
@@ -347,9 +346,7 @@ public class DemoDataProvider {
 		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
-		project = root.getProjectRoot().create(PROJECT_NAME);
-		project.setCreator(userInfo.getUser());
-		project.setEditor(userInfo.getUser());
+		project = root.getProjectRoot().create(PROJECT_NAME, userInfo.getUser());
 		project.addLanguage(getEnglish());
 		project.addLanguage(getGerman());
 
@@ -504,7 +501,7 @@ public class DemoDataProvider {
 		return folderNode;
 	}
 
-	private void setCreatorEditor(GenericNode node) {
+	private void setCreatorEditor(GenericVertex node) {
 		node.setCreator(userInfo.getUser());
 		node.setCreationTimestamp(System.currentTimeMillis());
 
@@ -633,7 +630,7 @@ public class DemoDataProvider {
 
 	public int getNodeCount() {
 		// +1 basenode (1 project)
-		return folders.size() + contents.size();
+		return folders.size() + contents.size() + 1;
 	}
 
 	public Map<String, TagFamily> getTagFamilies() {

@@ -39,9 +39,6 @@ public interface Node extends ContainerNode<NodeResponse> {
 	List<? extends FieldContainer> getFieldContainers();
 
 	//TODO why do we need the projectname here?
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo);
-
-	//TODO why do we need the projectname here?
 	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 

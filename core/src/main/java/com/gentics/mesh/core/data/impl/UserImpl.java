@@ -25,13 +25,13 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractGenericNode;
+import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
 @Configurable
-public class UserImpl extends AbstractGenericNode<UserResponse> implements User {
+public class UserImpl extends AbstractGenericVertex<UserResponse> implements User {
 
 	public static final String FIRSTNAME_KEY = "firstname";
 

@@ -93,7 +93,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, QueryParameterProvider... parameters) {
-		return handleRequest(GET, "/" + projectName + "/nodes/" + parentNodeUuid + "/chilren" + getQuery(parameters), NodeListResponse.class);
+		return handleRequest(GET, "/" + projectName + "/nodes/" + parentNodeUuid + "/children" + getQuery(parameters), NodeListResponse.class);
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -66,6 +66,24 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	// Create tests
+	
+	@Test
+	public void testCreateNodeWithNoLanguageCode() {
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("content");
+		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
+		// No language code set
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+
+		request.setSchema(schemaReference);
+		request.setParentNodeUuid(data().getFolder("news").getUuid());
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
+	}
 
 	@Test
 	public void testCreateNodeWithBogusLanguageCode() throws HttpStatusCodeErrorException, Exception {
@@ -86,12 +104,10 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
 	}
 
+	
+	
 	@Test
 	public void testCreateNodeInBaseNode() {
-		Node parentNode = data().getFolder("news");
-		assertNotNull(parentNode);
-		assertNotNull(parentNode.getUuid());
-
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
 		request.setLanguage("en");
@@ -516,6 +532,21 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	// Delete
 
+	@Test
+	public void testDeleteBaseNode() throws Exception {
+
+		Node node = data().getProject().getBaseNode();
+		String uuid = node.getUuid();
+		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
+		latchFor(future);
+		assertSuccess(future);
+		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable", uuid);
+		nodeRoot.findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
+	}
+
+	
 	@Test
 	public void testDeleteNode() throws Exception {
 

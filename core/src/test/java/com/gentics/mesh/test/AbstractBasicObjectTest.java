@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 
-import com.gentics.mesh.core.data.GenericNode;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -61,7 +61,7 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 		return data().getSchemaContainer("content");
 	}
 
-	protected void testPermission(Permission perm, GenericNode node) {
+	protected void testPermission(Permission perm, GenericVertex node) {
 		getRole().addPermissions(node, perm);
 		assertTrue(getRole().hasPermission(perm, node));
 		assertTrue(getRequestUser().hasPermission(node, perm));

@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.service.transformation.TransformationParameter
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 
-public interface Tag extends GenericNode<TagResponse>, NamedNode {
+public interface Tag extends GenericVertex<TagResponse>, NamedNode {
 
 	List<? extends TagFieldContainer> getFieldContainers();
 

@@ -8,10 +8,10 @@ import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.generic.AbstractGenericNode;
+import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
-public class LanguageImpl extends AbstractGenericNode<LanguageResponse> implements Language {
+public class LanguageImpl extends AbstractGenericVertex<LanguageResponse> implements Language {
 
 	// TODO add index
 	@Override

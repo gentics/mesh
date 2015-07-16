@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.repository.action;
 
-import com.gentics.mesh.core.data.generic.AbstractGenericNode;
+import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 
-public interface UUIDCRUDActions<T extends AbstractGenericNode> {
+public interface UUIDCRUDActions<T extends AbstractGenericVertex> {
 
 //	@Query("MATCH (n:GenericNode) WHERE n.uuid = {0} return n")
 	public T findByUUID(String uuid);

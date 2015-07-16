@@ -101,7 +101,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 				} else {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 						ProjectRoot projectRoot = boot.projectRoot();
-						Project project = projectRoot.create(requestModel.getName());
+						Project project = projectRoot.create(requestModel.getName(), requestUser);
 						project.setCreator(requestUser);
 						try {
 							routerStorage.addProjectRouter(project.getName());

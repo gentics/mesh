@@ -86,8 +86,12 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					Node node = rh.result();
-					Page<? extends Node> page = node.getChildren(requestUser, getSelectedLanguageTags(rc), getPagingInfo(rc));
-					transformAndResponde(rc, page, new NodeListResponse());
+					try {
+						Page<? extends Node> page = node.getChildren(requestUser, getSelectedLanguageTags(rc), getPagingInfo(rc));
+						transformAndResponde(rc, page, new NodeListResponse());
+					} catch (Exception e) {
+						rc.fail(e);
+					}
 				}
 			});
 		});
@@ -189,6 +193,10 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
 						return;
 					}
+					if (StringUtils.isEmpty(requestModel.getLanguage())) {
+						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_languagecode_specified")));
+						return;
+					}
 
 					Handler<AsyncResult<Node>> handler = ch -> {
 						if (hasSucceeded(rc, ch)) {
@@ -221,20 +229,14 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 						}
 					};
 
-					if (project.getBaseNode().getUuid().equals(requestModel.getParentNodeUuid())) {
-						Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
-						requestUser.addCRUDPermissionOnRole(project.getBaseNode(), CREATE_PERM, node);
-						nodeCreatedHandler.handle(Future.succeededFuture(node));
-					} else {
-						loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
-							if (hasSucceeded(rc, rhp)) {
-								Node parentNode = rhp.result();
-								Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
-								requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-								nodeCreatedHandler.handle(Future.succeededFuture(node));
-							}
-						});
-					}
+					loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
+						if (hasSucceeded(rc, rhp)) {
+							Node parentNode = rhp.result();
+							Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
+							requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+							nodeCreatedHandler.handle(Future.succeededFuture(node));
+						}
+					});
 				} catch (Exception e) {
 					rc.fail(e);
 					return;

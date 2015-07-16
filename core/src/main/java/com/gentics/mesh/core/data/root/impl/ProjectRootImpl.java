@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PROJECT;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.node.BaseNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -36,19 +36,23 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	// TODO unique
 
 	@Override
-	public Project create(String name) {
+	public Project create(String name, User creator) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		project.setName(name);
-		project.getOrCreateBaseNode();
+
+		NodeRoot nodeRoot = project.createNodeRoot();
+		project.setNodeRoot(nodeRoot);
+
+		project.createBaseNode(creator);
+
+		project.setCreator(creator);
+		project.setEditor(creator);
 
 		project.createTagRoot();
 
 		SchemaContainerRoot schemaRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 		project.setSchemaRoot(schemaRoot);
 		addItem(project);
-
-		NodeRoot nodeRoot = project.createNodeRoot();
-		project.setNodeRoot(nodeRoot);
 
 		TagFamilyRoot tagFamilyRoot = project.createTagFamilyRoot();
 		project.setTagFamilyRoot(tagFamilyRoot);

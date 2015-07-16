@@ -112,11 +112,11 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		final int nProjects = 142;
 		Project noPermProject;
 		for (int i = 0; i < nProjects; i++) {
-			Project extraProject = projectRoot.create("extra_project_" + i);
+			Project extraProject = projectRoot.create("extra_project_" + i, info.getUser());
 			extraProject.setBaseNode(data().getProject().getBaseNode());
 			info.getRole().addPermissions(extraProject, READ_PERM);
 		}
-		noPermProject = projectRoot.create("no_perm_project");
+		noPermProject = projectRoot.create("no_perm_project", info.getUser());
 
 		// Don't grant permissions to no perm project
 
@@ -273,7 +273,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("project_deleted", future,  project.getUuid() + "/" + project.getName());
+		expectMessageResponse("project_deleted", future, project.getUuid() + "/" + project.getName());
 		projectRoot.findByUuid(uuid, rh -> {
 			assertNull("The project should have been deleted", rh.result());
 		});

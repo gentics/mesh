@@ -8,6 +8,6 @@ import com.gentics.mesh.core.rest.common.AbstractRestModel;
 
 public interface TransformableNode<T extends AbstractRestModel> {
 
-	GenericNode<T> transformToRest(RoutingContext rc, Handler<AsyncResult<T>> handler);
+	GenericVertex<T> transformToRest(RoutingContext rc, Handler<AsyncResult<T>> handler);
 
 }
