@@ -60,8 +60,11 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
 			Field field = fields.get(key);
-			if (field == null) {
-				throw new MeshSchemaException("Could not find value for schema field with key {" + key + "}");
+
+			if (field == null && entry.isRequired()) {
+				throw new MeshSchemaException("Could not find value for required schema field with key {" + key + "}");
+			} else if (field == null) {
+				continue;
 			}
 			fields.remove(key);
 

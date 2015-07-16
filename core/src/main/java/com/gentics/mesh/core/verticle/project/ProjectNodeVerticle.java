@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -121,7 +122,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		postRoute.handler(rc -> {
 			Project project = getProject(rc);
 			if (project == null) {
-				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Project not found"));
 				// TODO i18n error
 			} else {
 				loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -176,25 +177,25 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 			boolean missingSchemaInfo = schemaInfo.getSchema() == null
 					|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 			if (missingSchemaInfo) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_schema_parameter_missing")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_schema_parameter_missing")));
 				return;
 			}
 
 			Handler<AsyncResult<SchemaContainer>> containerFoundHandler = rh -> {
 				/*
 				 * SchemaContainer schema = boot.schemaContainerRoot().findByName(requestModel.getSchema().getName()); if (schema == null) { rc.fail(new
-				 * HttpStatusCodeErrorException(400, i18n.get(rc, "schema_not_found", requestModel.getSchema() .getName()))); return; }
+				 * HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "schema_not_found", requestModel.getSchema() .getName()))); return; }
 				 */
 				SchemaContainer schemaContainer = rh.result();
 				try {
 					Schema schema = schemaContainer.getSchema();
 					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
 					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_missing_parentnode_field")));
+						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_missing_parentnode_field")));
 						return;
 					}
 					if (StringUtils.isEmpty(requestModel.getLanguage())) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_languagecode_specified")));
+						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_no_languagecode_specified")));
 						return;
 					}
 
@@ -213,7 +214,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 							Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 							if (language == null) {
-								nodeCreated.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "node_no_language_found",
+								nodeCreated.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_no_language_found",
 										requestModel.getLanguage())));
 							} else {
 								try {
@@ -292,7 +293,13 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			delete(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
+			String uuid = rc.request().params().get("uuid");
+			Project project = getProject(rc);
+			if (project.getBaseNode().getUuid().equals(uuid)) {
+				rc.fail(new HttpStatusCodeErrorException(METHOD_NOT_ALLOWED, i18n.get(rc, "node_basenode_not_deletable")));
+			} else {
+				delete(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
+			}
 		});
 	}
 
@@ -310,39 +317,45 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 			try {
 				requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);
 				if (StringUtils.isEmpty(requestModel.getLanguage())) {
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_set")));
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
 					return;
 				}
 				Project project = getProject(rc);
-				loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
-						Node node = rh.result();
-						try {
-							Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-							if (language == null) {
-								rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
-								return;
-							}
-							/* TODO handle other fields, node.setEditor(requestUser); etc. */
-							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-								NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-								Schema schema = node.getSchema();
+				loadObject(
+						rc,
+						"uuid",
+						READ_PERM,
+						project.getNodeRoot(),
+						rh -> {
+							if (hasSucceeded(rc, rh)) {
+								Node node = rh.result();
 								try {
-									container.setFieldFromRest(rc, requestModel.getFields(), schema);
-									tx.success();
-									transformAndResponde(rc, node);
-								} catch (MeshSchemaException e) {
-									tx.failure();
-									/* TODO i18n */
-									rc.fail(new HttpStatusCodeErrorException(400, e.getMessage()));
+									Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+									if (language == null) {
+										rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_found",
+												requestModel.getLanguage())));
+										return;
+									}
+									/* TODO handle other fields, node.setEditor(requestUser); etc. */
+									try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+										NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+										Schema schema = node.getSchema();
+										try {
+											container.setFieldFromRest(rc, requestModel.getFields(), schema);
+											tx.success();
+											transformAndResponde(rc, node);
+										} catch (MeshSchemaException e) {
+											tx.failure();
+											/* TODO i18n */
+											rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
+										}
+									}
+
+								} catch (IOException e) {
+									rc.fail(e);
 								}
 							}
-
-						} catch (IOException e) {
-							rc.fail(e);
-						}
-					}
-				});
+						});
 			} catch (Exception e1) {
 				rc.fail(e1);
 			}

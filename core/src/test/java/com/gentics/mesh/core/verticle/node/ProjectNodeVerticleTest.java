@@ -66,7 +66,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	// Create tests
-	
+
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -104,8 +104,6 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
 	}
 
-	
-	
 	@Test
 	public void testCreateNodeInBaseNode() {
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -478,6 +476,29 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testCreateNodeWithMissingRequiredField() {
+		Node parentNode = data().getFolder("news");
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		// non required title field is missing
+		// required name field is missing
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+
+		request.setParentNodeUuid(parentNode.getUuid());
+
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "Could not find value for required schema field with key {name}");
+		assertNull(future.result());
+
+	}
+
+	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
 		Node parentNode = data().getFolder("news");
 		assertNotNull(parentNode);
@@ -495,8 +516,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "Could not find value for schema field with key {title}");
-		assertNull(future.result());
+		assertSuccess(future);
+		assertNotNull(future.result());
 	}
 
 	@Test
@@ -539,14 +560,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		String uuid = node.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
-		assertSuccess(future);
-		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable", uuid);
+		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 		nodeRoot.findByUuid(uuid, rh -> {
 			assertNull(rh.result());
 		});
 	}
 
-	
 	@Test
 	public void testDeleteNode() throws Exception {
 

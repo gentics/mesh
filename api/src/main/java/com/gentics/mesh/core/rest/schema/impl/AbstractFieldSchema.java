@@ -8,6 +8,8 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 
 	private String label;
 
+	private boolean required = false;
+
 	@Override
 	public String getLabel() {
 		return label;
@@ -26,6 +28,16 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public boolean isRequired() {
+		return required;
+	}
+
+	@Override
+	public void setRequired(boolean flag) {
+		this.required = flag;
 	}
 
 }

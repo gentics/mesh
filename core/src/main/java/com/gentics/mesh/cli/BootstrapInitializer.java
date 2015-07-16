@@ -453,6 +453,7 @@ public class BootstrapInitializer {
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 			nameFieldSchema.setName("name");
 			nameFieldSchema.setLabel("Name");
+			nameFieldSchema.setRequired(true);
 			schema.addField(nameFieldSchema);
 
 			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
