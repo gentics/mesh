@@ -97,8 +97,9 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 
 		if (getCookie() != null) {
 			request.headers().add("Cookie", getCookie());
+		} else {
+			request.headers().add("Authorization", "Basic " + authEnc);
 		}
-		//		request.headers().add("Authorization", "Basic " + authEnc);
 		request.headers().add("Accept", "application/json");
 		if (buffer.length() != 0) {
 			request.headers().add("content-length", String.valueOf(buffer.length()));
