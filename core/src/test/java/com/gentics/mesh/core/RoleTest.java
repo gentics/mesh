@@ -123,7 +123,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		getRole().revokePermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
 		User user = getUser();
-		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(data().getMeshRoot(), CREATE_PERM));
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(data().getMeshRoot().getGroupRoot(), CREATE_PERM));
 	}
 
 	@Test

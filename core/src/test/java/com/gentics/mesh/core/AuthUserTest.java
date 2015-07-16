@@ -62,8 +62,4 @@ public class AuthUserTest extends AbstractDBTest {
 
 	}
 
-	@Test
-	public void testAuthentication() {
-		fail("Not yet implemented");
-	}
 }
