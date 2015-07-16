@@ -22,7 +22,7 @@ public class DateFieldTest extends AbstractDBTest {
 		assertNull(container.getProperty("test-date"));
 		field.setDate("dummyDate");
 		assertEquals("dummyDate", container.getProperty("test-date"));
-		assertEquals(5, container.getPropertyKeys().size());
+		assertEquals(3, container.getPropertyKeys().size());
 		field.setDate(null);
 		assertNull(container.getProperty("test-date"));
 	}
