@@ -18,24 +18,26 @@ public class RestModelPagingHelperTest {
 		TestListResponse response = new TestListResponse();
 		Page<?> page = mock(Page.class);
 
-		int nTPPages = 3;
-		int nTPCurrentPage = 0;
-		int nTPTotalItems = 1000;
-		int nTPPageSize = 21;
+		int nPages = 3;
+		int nCurrentPage = 0;
+		int nTotalElements = 1000;
+		int nElements = 200;
+		long nPageSize = 21;
 
-		PagingInfo info = new PagingInfo(nTPCurrentPage + 1, (int) nTPPageSize);
+		PagingInfo info = new PagingInfo(nCurrentPage + 1, (int) nPageSize);
 
-		when(page.getNumber()).thenReturn(0);
-		when(page.getTotalPages()).thenReturn(nTPPages);
-		when(page.getNumberOfElements()).thenReturn(nTPTotalItems);
-		when(page.getTotalElements()).thenReturn(nTPPageSize);
+		when(page.getNumber()).thenReturn(nCurrentPage);
+		when(page.getTotalPages()).thenReturn(nPages);
+		when(page.getNumberOfElements()).thenReturn(nElements);
+		when(page.getTotalElements()).thenReturn(nTotalElements);
+		when(page.getPerPage()).thenReturn(nPageSize);
 
 		RestModelPagingHelper.setPaging(response, page);
 
 		assertNotNull(response.getMetainfo());
-		assertEquals(nTPCurrentPage, response.getMetainfo().getCurrentPage());
-		assertEquals(nTPPages, response.getMetainfo().getPageCount());
-		assertEquals(nTPPageSize, response.getMetainfo().getTotalCount());
+		assertEquals(nCurrentPage, response.getMetainfo().getCurrentPage());
+		assertEquals(nPages, response.getMetainfo().getPageCount());
+		assertEquals(nTotalElements, response.getMetainfo().getTotalCount());
 		assertEquals(info.getPerPage(), response.getMetainfo().getPerPage());
 	}
 
