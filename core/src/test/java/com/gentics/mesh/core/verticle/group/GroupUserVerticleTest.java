@@ -168,8 +168,8 @@ extends AbstractRestVerticleTest {
 
 		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error-user-last-group");
-		assertTrue("User should still be member of the group.", group.hasUser(user));
+		assertSuccess(future);
+		assertFalse("User should no longer be member of the group.", group.hasUser(user));
 	}
 
 	@Test

@@ -141,32 +141,40 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						Group group = grh.result();
-						User user = urh.result();
-						group.addUser(user);
-						tx.success();
-					}
-					Group group = grh.result();
-					transformAndResponde(rc, group);
-				});
+				if (hasSucceeded(rc, grh)) {
+					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
+						if (hasSucceeded(rc, urh)) {
+							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+								Group group = grh.result();
+								User user = urh.result();
+								group.addUser(user);
+								tx.success();
+							}
+							Group group = grh.result();
+							transformAndResponde(rc, group);
+						}
+					});
+				}
 			});
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						Group group = grh.result();
-						User user = urh.result();
-						group.removeUser(user);
-						tx.success();
-					}
-					Group group = grh.result();
-					transformAndResponde(rc, group);
-				});
+				if (hasSucceeded(rc, grh)) {
+					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
+						if (hasSucceeded(rc, urh)) {
+							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+								Group group = grh.result();
+								User user = urh.result();
+								group.removeUser(user);
+								tx.success();
+							}
+							Group group = grh.result();
+							transformAndResponde(rc, group);
+						}
+					});
+				}
 			});
 		});
 	}
