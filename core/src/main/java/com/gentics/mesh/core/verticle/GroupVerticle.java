@@ -86,7 +86,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 								Role role = rrh.result();
 								group.addRole(role);
 								tx.success();
-								transformAndResponde(rc, role);
+								transformAndResponde(rc, group);
 							}
 						}
 					});

@@ -42,9 +42,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	public boolean contains(SchemaContainer schema) {
 		//TODO this is not optimal
 		if (findByName(schema.getName()) == null) {
-			return true;
-		} else {
 			return false;
+		} else {
+			return true;
 		}
 	}
 

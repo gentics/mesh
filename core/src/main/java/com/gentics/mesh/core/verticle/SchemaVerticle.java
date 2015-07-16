@@ -69,14 +69,18 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
-				// TODO check whether schema is assigned to project
+				if (hasSucceeded(rc, rh)) {
+					// TODO check whether schema is assigned to project
 					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
-						SchemaContainer schema = srh.result();
-						Project project = rh.result();
-						project.getSchemaRoot().removeSchemaContainer(schema);
-						transformAndResponde(rc, schema);
+						if (hasSucceeded(rc, srh)) {
+							SchemaContainer schema = srh.result();
+							Project project = rh.result();
+							project.getSchemaRoot().removeSchemaContainer(schema);
+							transformAndResponde(rc, schema);
+						}
 					});
-				});
+				}
+			});
 		});
 	}
 

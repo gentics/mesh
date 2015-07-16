@@ -42,7 +42,8 @@ public class GroupImpl extends AbstractGenericNode<GroupResponse> implements Gro
 
 	public void addUser(User user) {
 		// TODO use link method
-		user.getImpl().addFramedEdge(HAS_USER, this, UserImpl.class);
+		linkIn(user.getImpl(), HAS_USER);
+		//user.getImpl().addFramedEdge(HAS_USER, this, UserImpl.class);
 	}
 
 	public void removeUser(User user) {

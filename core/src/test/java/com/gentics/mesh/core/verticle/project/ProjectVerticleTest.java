@@ -97,7 +97,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("project_deleted", deleteFuture, restProject.getName());
+		expectMessageResponse("project_deleted", deleteFuture, restProject.getUuid() + "/" + restProject.getName());
 
 	}
 
@@ -235,7 +235,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		test.assertProject(request, restProject);
 
 		projectRoot.findByUuid(project.getUuid(), rh -> {
-			Project reloadedProject = rh.result();	
+			Project reloadedProject = rh.result();
 			assertEquals("New Name", reloadedProject.getName());
 		});
 	}
@@ -255,7 +255,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
 
 		projectRoot.findByUuid(project.getUuid(), rh -> {
-			Project reloadedProject = rh.result();	
+			Project reloadedProject = rh.result();
 			assertEquals("The name should not have been changed", project.getName(), reloadedProject.getName());
 		});
 	}
@@ -266,15 +266,16 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteProjectByUUID() throws Exception {
 		Project project = data().getProject();
 		String uuid = project.getUuid();
+		String name = project.getName();
 		assertNotNull(uuid);
 		info.getRole().addPermissions(project, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("project_deleted", future, project.getName());
+		expectMessageResponse("project_deleted", future,  project.getUuid() + "/" + project.getName());
 		projectRoot.findByUuid(uuid, rh -> {
-			assertNull("The project should have been deleted", rh.result());	
+			assertNull("The project should have been deleted", rh.result());
 		});
 
 		// TODO check for removed routers?
@@ -290,7 +291,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		projectRoot.findByUuid(uuid, rh -> {
-			assertNotNull("The project should not have been deleted", rh.result());	
+			assertNotNull("The project should not have been deleted", rh.result());
 		});
 	}
 
