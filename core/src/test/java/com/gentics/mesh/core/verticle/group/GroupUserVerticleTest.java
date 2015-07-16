@@ -3,16 +3,18 @@ package com.gentics.mesh.core.verticle.group;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import io.vertx.core.Future;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -65,8 +67,12 @@ extends AbstractRestVerticleTest {
 		Iterator<UserResponse> userIt = userList.getData().iterator();
 		UserResponse userB = userIt.next();
 		UserResponse userA = userIt.next();
-		assertEquals(info.getUser().getUuid(), userA.getUuid());
-		assertEquals(extraUser.getUuid(), userB.getUuid());
+		Map<String, UserResponse> map = new HashMap<>();
+		map.put(userA.getUuid(), userA);
+		map.put(userB.getUuid(), userB);
+		assertEquals(2, map.size());
+		assertNotNull(map.get(info.getUser().getUuid()));
+		assertNotNull(map.get(extraUser.getUuid()));
 	}
 
 	@Test
