@@ -216,8 +216,9 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
+		Node node = data().getFolder("news");
 		// Revoke create perm
-		info.getRole().revokePermissions(data().getFolder("news"), CREATE_PERM);
+		info.getRole().revokePermissions(node, CREATE_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference("content", data().getSchemaContainer("content").getUuid());
@@ -226,12 +227,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
-
-		request.setParentNodeUuid(data().getFolder("news").getUuid());
+		request.setLanguage("en");
+		request.setParentNodeUuid(node.getUuid());
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", data().getFolder("news").getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 	}
 
 	// Read tests
