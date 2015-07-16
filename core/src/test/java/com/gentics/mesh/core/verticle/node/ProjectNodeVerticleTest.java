@@ -6,7 +6,8 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -342,6 +344,14 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled until custom 404 handler has been added")
+	public void testReadNodeWithBogusProject() {
+		Future<NodeResponse> future = getClient().findNodeByUuid("BOGUS", "someUuuid");
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "project_not_found", "BOGUS");
+	}
+
+	@Test
 	public void testReadNodeByUUID() throws Exception {
 
 		getClient().getClientSchemaStorage().addSchema(data().getSchemaContainer("folder").getSchema());
@@ -354,6 +364,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		test.assertMeshNode(node, future.result());
+		assertEquals("en", future.result().getLanguage());
 	}
 
 	@Test

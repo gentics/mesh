@@ -10,6 +10,8 @@ import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
@@ -44,6 +46,8 @@ import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public List<? extends Tag> getTags() {
 		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
@@ -162,9 +166,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				restNode.setContainer(true);
 				restNode.setChildren(children);
 			}
-			//TODO set language and all languages
 
 			NodeFieldContainer fieldContainer = null;
+			Language foundLanguage = null;
 			List<String> languageTags = getSelectedLanguageTags(rc);
 			for (String languageTag : languageTags) {
 				Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
@@ -174,19 +178,24 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				fieldContainer = getFieldContainer(language);
 				// We found a container for one of the languages
 				if (fieldContainer != null) {
+					foundLanguage = language;
 					break;
 				}
 			}
 
-			if (fieldContainer == null) {
-				// "Could not find any field for one of the languagetags that were specified."
-				String langInfo = getLanguageInfo(languageTags);
-				throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
-			}
+			restNode.setAvailableLanguages(getAvailableLanguageNames());
 
-			for (FieldSchema fieldEntry : schema.getFields()) {
-				com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(fieldEntry.getName(), fieldEntry);
-				restNode.getFields().put(fieldEntry.getName(), restField);
+			if (fieldContainer == null) {
+				String langInfo = getLanguageInfo(languageTags);
+				log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
+						+ langInfo + "}. Fields will be empty.");
+				//				throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
+			} else {
+				restNode.setLanguage(foundLanguage.getLanguageTag());
+				for (FieldSchema fieldEntry : schema.getFields()) {
+					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(fieldEntry.getName(), fieldEntry);
+					restNode.getFields().put(fieldEntry.getName(), restField);
+				}
 			}
 
 			try {
@@ -205,6 +214,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		}
 		return this;
 
+	}
+
+	@Override
+	public List<String> getAvailableLanguageNames() {
+		// TODO Auto-generated method stub
+		//TODO set language and all languages
+		return null;
 	}
 
 	public Page<? extends Tag> getTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo) throws InvalidArgumentException {

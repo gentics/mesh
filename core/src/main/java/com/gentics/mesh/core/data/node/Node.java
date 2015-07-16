@@ -42,4 +42,6 @@ public interface Node extends ContainerNode<NodeResponse> {
 
 	NodeImpl getImpl();
 
+	List<String> getAvailableLanguageNames();
+
 }
