@@ -2,7 +2,7 @@ package com.gentics.mesh.core.rest.common;
 
 import com.gentics.mesh.core.rest.user.UserReference;
 
-public class AbstractGenericNodeRestModel extends AbstractRestModel {
+public class AbstractGenericNodeRestModel extends AbstractResponse {
 
 	private UserReference creator;
 

@@ -160,7 +160,6 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 		// 2. Update the tag
 		TagUpdateRequest request = new TagUpdateRequest();
-		request.setUuid(tag.getUuid());
 		request.getFields().setName("new Name");
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		final String newName = "new Name";
@@ -191,7 +190,6 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
-		request.setUuid(tag.getUuid());
 		request.getFields().setName("new Name");
 
 		Future<TagResponse> tagUpdateFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), request);

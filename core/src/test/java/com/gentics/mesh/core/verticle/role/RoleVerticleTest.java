@@ -310,7 +310,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(extraRole, UPDATE_PERM);
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
-		request.setUuid(extraRole.getUuid());
 
 		Future<RoleResponse> future = getClient().updateRole(extraRole.getUuid(), request);
 		latchFor(future);

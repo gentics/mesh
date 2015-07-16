@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.common;
 
-public abstract class AbstractRestModel {
+public abstract class AbstractResponse implements RestModel {
 
 	private String uuid;
 

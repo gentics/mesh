@@ -214,7 +214,6 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 		// 2. Update the tagfamily
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-		request.setUuid(tagFamily.getUuid());
 		request.setName("new Name");
 		TagFamilyUpdateRequest tagUpdateRequest = new TagFamilyUpdateRequest();
 		final String newName = "new Name";

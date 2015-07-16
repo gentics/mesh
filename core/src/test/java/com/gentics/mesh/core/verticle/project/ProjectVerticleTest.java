@@ -225,7 +225,6 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(project, UPDATE_PERM);
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
-		request.setUuid(project.getUuid());
 		request.setName("New Name");
 
 		Future<ProjectResponse> future = getClient().updateProject(project.getUuid(), request);

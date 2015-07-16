@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.service.transformation;
 
 import java.util.Comparator;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 
-public class UuidRestModelComparator<T extends AbstractRestModel> implements Comparator<T> {
+public class UuidRestModelComparator<T extends AbstractResponse> implements Comparator<T> {
 
 	@Override
 	public int compare(T o1, T o2) {

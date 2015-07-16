@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class NodeCreateRequest extends NodeUpdateRequest {
-
-	@JsonIgnore
-	private String uuid;
 
 	private String parentNodeUuid;
 

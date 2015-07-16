@@ -3,11 +3,11 @@ package com.gentics.mesh.core.rest.node;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
-public class NodeUpdateRequest extends AbstractRestModel {
+public class NodeUpdateRequest implements RestModel {
 
 	private SchemaReference schema;
 

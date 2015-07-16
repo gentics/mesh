@@ -1,9 +1,8 @@
 package com.gentics.mesh.core.rest.project;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-
-public class ProjectUpdateRequest extends AbstractRestModel {
+public class ProjectUpdateRequest implements RestModel {
 
 	private String name;
 

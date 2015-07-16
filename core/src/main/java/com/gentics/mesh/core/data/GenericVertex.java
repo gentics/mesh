@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public interface GenericVertex<T extends AbstractRestModel> extends MeshVertex, TransformableNode<T> {
+public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
 
 	void setCreator(User user);
 

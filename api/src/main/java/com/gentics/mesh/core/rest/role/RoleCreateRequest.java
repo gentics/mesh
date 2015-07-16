@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class RoleCreateRequest extends RoleUpdateRequest {
 
-	@JsonIgnore
-	private String uuid;
-
 	private String groupUuid;
 
 	public RoleCreateRequest() {

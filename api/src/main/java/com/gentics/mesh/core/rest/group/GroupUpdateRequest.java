@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.group;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public class GroupUpdateRequest extends AbstractRestModel {
+public class GroupUpdateRequest implements RestModel {
 
 	private String name;
 

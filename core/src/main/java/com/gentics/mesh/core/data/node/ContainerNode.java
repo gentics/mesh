@@ -9,10 +9,10 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface ContainerNode<T extends AbstractRestModel> extends GenericVertex<T> {
+public interface ContainerNode<T extends AbstractResponse> extends GenericVertex<T> {
 
 	List<? extends Node> getChildren();
 

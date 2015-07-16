@@ -281,7 +281,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
-		request.setUuid(group.getUuid());
 		request.setName(name);
 
 		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
@@ -303,7 +302,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(group, UPDATE_PERM);
 		final String name = "";
 		GroupUpdateRequest request = new GroupUpdateRequest();
-		request.setUuid(group.getUuid());
 		request.setName(name);
 
 		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
@@ -327,7 +325,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		info.getRole().addPermissions(group, UPDATE_PERM);
 		GroupUpdateRequest request = new GroupUpdateRequest();
-		request.setUuid(group.getUuid());
 		request.setName(alreadyUsedName);
 
 		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
@@ -347,7 +344,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		info.getRole().addPermissions(group, UPDATE_PERM);
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
-		request.setUuid(group.getUuid());
 		request.setName(name);
 
 		Future<GroupResponse> future = getClient().updateGroup("bogus", request);

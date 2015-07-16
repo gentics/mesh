@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.rest.role;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public class RoleUpdateRequest extends AbstractRestModel {
+
+public class RoleUpdateRequest implements RestModel {
 
 	private String name;
 

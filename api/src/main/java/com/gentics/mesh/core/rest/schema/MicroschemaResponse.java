@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 
-public class MicroschemaResponse extends AbstractRestModel {
+public class MicroschemaResponse extends AbstractResponse {
 
 }

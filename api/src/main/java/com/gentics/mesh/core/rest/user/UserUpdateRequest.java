@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.user;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public class UserUpdateRequest extends AbstractRestModel {
+public class UserUpdateRequest implements RestModel {
 
 	private String password;
 

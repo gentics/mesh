@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.tag;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public class TagUpdateRequest extends AbstractRestModel {
+public class TagUpdateRequest implements RestModel {
 
 	private TagFamilyReference tagFamilyReference;
 

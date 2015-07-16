@@ -8,25 +8,20 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -228,7 +223,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateSchemaByUUID() throws HttpStatusCodeErrorException, Exception {
 		SchemaContainer schema = data().getSchemaContainer("content");
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
-		request.setUuid(schema.getUuid());
 		request.setName("new-name");
 
 		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
@@ -250,7 +244,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 		String oldName = schema.getName();
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
-		request.setUuid("bogus");
 		request.setName("new-name");
 
 		Future<SchemaResponse> future = getClient().updateSchema("bogus", request);

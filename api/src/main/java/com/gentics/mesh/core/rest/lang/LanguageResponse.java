@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.lang;
 
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 
-public class LanguageResponse extends AbstractRestModel {
+public class LanguageResponse extends AbstractResponse {
 
 	private String name;
 	private String nativeName;

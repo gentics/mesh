@@ -173,7 +173,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = info.getUser();
 		String username = user.getUsername();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		updateRequest.setUuid(user.getUuid());
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
 		updateRequest.setFirstname("Tony Awesome");
 		updateRequest.setLastname("Epic Stark");
@@ -281,7 +280,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("existing_username");
-		request.setUuid(user.getUuid());
 
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
 		latchFor(future);

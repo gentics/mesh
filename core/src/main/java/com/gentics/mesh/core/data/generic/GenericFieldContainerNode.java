@@ -6,10 +6,10 @@ import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Translated;
 import com.gentics.mesh.core.data.impl.TranslatedImpl;
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-public abstract class GenericFieldContainerNode<T extends AbstractRestModel> extends AbstractGenericVertex<T> {
+public abstract class GenericFieldContainerNode<T extends AbstractResponse> extends AbstractGenericVertex<T> {
 
 	protected <T extends BasicFieldContainer> T getFieldContainer(Language language, Class<T> classOfT) {
 		T container = outE(HAS_FIELD_CONTAINER).has("languageTag", language.getLanguageTag()).inV().nextOrDefault(classOfT, null);

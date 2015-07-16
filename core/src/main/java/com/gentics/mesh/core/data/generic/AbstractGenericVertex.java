@@ -9,9 +9,9 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public abstract class AbstractGenericVertex<T extends AbstractRestModel> extends MeshVertexImpl implements GenericVertex<T> {
+public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVertexImpl implements GenericVertex<T> {
 
 
 	@Override

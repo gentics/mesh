@@ -153,7 +153,6 @@ public class Generator {
 		write(projectList);
 
 		ProjectUpdateRequest projectUpdate = new ProjectUpdateRequest();
-		projectUpdate.setUuid(getUUID());
 		projectUpdate.setName("Renamed project");
 		write(projectUpdate);
 
@@ -182,7 +181,6 @@ public class Generator {
 		write(roleList);
 
 		RoleUpdateRequest roleUpdate = new RoleUpdateRequest();
-		roleUpdate.setUuid(getUUID());
 		roleUpdate.setName("New name");
 		write(roleUpdate);
 
@@ -204,7 +202,6 @@ public class Generator {
 		write(tag);
 
 		TagUpdateRequest tagUpdate = new TagUpdateRequest();
-		tagUpdate.setUuid(getUUID());
 		write(tagUpdate);
 
 		TagCreateRequest tagCreate = new TagCreateRequest();
@@ -256,7 +253,6 @@ public class Generator {
 
 	private SchemaUpdateRequest getSchemaUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
-		schemaUpdate.setUuid(getUUID());
 		// TODO should i allow changing the name?
 		schemaUpdate.setName("extended-content");
 		schemaUpdate.setDescription("New description");
@@ -366,7 +362,7 @@ public class Generator {
 
 	private NodeUpdateRequest getNodeUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
-		contentUpdate.setUuid(getUUID());
+		contentUpdate.setLanguage("en");
 		contentUpdate.getFields().put("filename", createStringField("index-renamed.en.html"));
 		return contentUpdate;
 	}
@@ -414,7 +410,6 @@ public class Generator {
 		write(groupList);
 
 		GroupUpdateRequest groupUpdate = new GroupUpdateRequest();
-		groupUpdate.setUuid(getUUID());
 		write(groupUpdate);
 
 		GroupCreateRequest groupCreate = new GroupCreateRequest();
@@ -442,7 +437,6 @@ public class Generator {
 		write(userList);
 
 		UserUpdateRequest userUpdate = new UserUpdateRequest();
-		userUpdate.setUuid(getUUID());
 		userUpdate.setUsername("jdoe42");
 		userUpdate.setPassword("iesiech0eewinioghaRa");
 		userUpdate.setFirstname("Joe");

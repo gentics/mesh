@@ -25,8 +25,8 @@ import com.gentics.mesh.core.data.NamedNode;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
-import com.gentics.mesh.core.rest.common.AbstractRestModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -98,7 +98,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		return route;
 	}
 
-	protected <T extends GenericVertex<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void loadObjects(RoutingContext rc,
+	protected <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(RoutingContext rc,
 			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		PagingInfo pagingInfo = getPagingInfo(rc);
 		MeshAuthUser requestUser = getUser(rc);
@@ -119,7 +119,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		}
 	}
 
-	protected <T extends GenericVertex<? extends AbstractRestModel>> void delete(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
+	protected <T extends GenericVertex<? extends RestModel>> void delete(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
 		loadObject(rc, "uuid", DELETE_PERM, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
@@ -139,7 +139,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		});
 	}
 
-	protected <T extends GenericVertex<? extends AbstractRestModel>> void loadTransformAndResponde(RoutingContext rc, String uuidParameterName,
+	protected <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(RoutingContext rc, String uuidParameterName,
 			Permission permission, RootVertex<T> root) {
 		loadAndTransform(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
@@ -148,7 +148,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		});
 	}
 
-	protected <T extends GenericVertex<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
+	protected <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
 			RoutingContext rc, Page<T> page, RL listResponse) {
 		transformPage(rc, page, th -> {
 			if (hasSucceeded(rc, th)) {
@@ -157,7 +157,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		}, listResponse);
 	}
 
-	protected <T extends GenericVertex<TR>, TR extends AbstractRestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
+	protected <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
 			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		for (T node : page) {
 			node.transformToRest(rc, rh -> {
@@ -168,7 +168,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		handler.handle(Future.succeededFuture(listResponse));
 	}
 
-	protected <T extends GenericVertex<TR>, TR extends AbstractRestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
+	protected <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse) {
 		loadObjects(rc, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
@@ -177,7 +177,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		}, listResponse);
 	}
 
-	protected <T extends AbstractRestModel> void transformAndResponde(RoutingContext rc, GenericVertex<T> node) {
+	protected <T extends RestModel> void transformAndResponde(RoutingContext rc, GenericVertex<T> node) {
 		node.transformToRest(rc, th -> {
 			if (hasSucceeded(rc, th)) {
 				responde(rc, toJson(th.result()));
@@ -190,8 +190,8 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		rc.response().setStatusCode(200).end(body);
 	}
 
-	protected <T extends GenericVertex<? extends AbstractRestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,
-			Permission permission, RootVertex<T> root, Handler<AsyncResult<AbstractRestModel>> handler) {
+	protected <T extends GenericVertex<? extends RestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,
+			Permission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
 		loadObject(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				// TODO handle nested exceptions differently
