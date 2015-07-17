@@ -26,10 +26,10 @@ public final class RoutingContextHelper {
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
 
-//	private static final String DEPTH_PARAM_KEY = "depth";
-//	private static final String TAGS_PARAM_KEY = "tags";
-//	private static final String CONTENTS_PARAM_KEY = "contents";
-//	private static final String CHILD_TAGS_PARAM_KEY = "childTags";
+	//	private static final String DEPTH_PARAM_KEY = "depth";
+	//	private static final String TAGS_PARAM_KEY = "tags";
+	//	private static final String CONTENTS_PARAM_KEY = "contents";
+	//	private static final String CHILD_TAGS_PARAM_KEY = "childTags";
 
 	public static MeshAuthUser getUser(RoutingContext routingContext) {
 		if (routingContext.user() instanceof MeshAuthUser) {
@@ -93,8 +93,12 @@ public final class RoutingContextHelper {
 	 */
 	public static PagingInfo getPagingInfo(RoutingContext rc) {
 		MultiMap params = rc.request().params();
-		int page = NumberUtils.toInt(params.get("page"), 1);
-		int perPage = NumberUtils.toInt(params.get("per_page"), MeshConfiguration.DEFAULT_PAGE_SIZE);
+		int page = 1;
+		int perPage = MeshConfiguration.DEFAULT_PAGE_SIZE;
+		if (params != null) {
+			page = NumberUtils.toInt(params.get("page"), 1);
+			NumberUtils.toInt(params.get("per_page"), MeshConfiguration.DEFAULT_PAGE_SIZE);
+		}
 		if (page < 1) {
 			throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "error_invalid_paging_parameters"));
 		}
