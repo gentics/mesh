@@ -472,7 +472,7 @@ public class BootstrapInitializer {
 			schema.addField(contentFieldSchema);
 
 			schema.setBinary(false);
-			schema.setContainer(false);
+			schema.setFolder(false);
 			contentSchemaContainer = schemaContainerRoot.create(schema);
 
 		}
@@ -492,7 +492,7 @@ public class BootstrapInitializer {
 			schema.addField(nameFieldSchema);
 
 			schema.setBinary(false);
-			schema.setContainer(true);
+			schema.setFolder(true);
 			folderSchemaContainer = schemaContainerRoot.create(schema);
 
 		}
@@ -518,7 +518,7 @@ public class BootstrapInitializer {
 			schema.addField(filenameFieldSchema);
 
 			schema.setBinary(true);
-			schema.setContainer(false);
+			schema.setFolder(false);
 			binarySchemaContainer = schemaContainerRoot.create(schema);
 		}
 

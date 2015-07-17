@@ -16,8 +16,9 @@ public class SelectFieldImpl implements SelectField {
 	}
 
 	@Override
-	public void setSelections(List<String> selections) {
+	public SelectField setSelections(List<String> selections) {
 		this.selections = selections;
+		return this;
 	}
 
 	@Override

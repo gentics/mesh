@@ -4,17 +4,17 @@ public interface ListFieldSchema extends MicroschemaListableFieldSchema {
 
 	String[] getAllowedSchemas();
 
-	void setAllowedSchemas(String[] allowedSchemas);
+	ListFieldSchema setAllowedSchemas(String[] allowedSchemas);
 
 	String getListType();
 
-	void setListType(String listType);
+	ListFieldSchema setListType(String listType);
 
-	void setMax(Integer max);
+	ListFieldSchema setMax(Integer max);
 
 	Integer getMax();
 
 	Integer getMin();
 
-	void setMin(Integer min);
+	ListFieldSchema setMin(Integer min);
 }

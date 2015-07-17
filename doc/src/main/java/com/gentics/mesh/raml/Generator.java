@@ -261,7 +261,7 @@ public class Generator {
 
 	private SchemaCreateRequest getSchemaCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaCreateRequest schemaUpdateRequest = new SchemaCreateRequest();
-		schemaUpdateRequest.setContainer(true);
+		schemaUpdateRequest.setFolder(true);
 		schemaUpdateRequest.setBinary(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");

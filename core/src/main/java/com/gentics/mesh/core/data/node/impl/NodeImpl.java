@@ -155,7 +155,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			}
 
 			/* Load the children */
-			if (getSchema().isContainer()) {
+			if (getSchema().isFolder()) {
 				// //TODO handle uuid
 				// //TODO handle expand
 				List<String> children = new ArrayList<>();

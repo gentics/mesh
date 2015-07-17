@@ -2,17 +2,17 @@ package com.gentics.mesh.core.rest.schema;
 
 public interface FieldSchema {
 
-	public String getType();
+	String getType();
 
-	public String getLabel();
+	String getLabel();
 
-	public void setLabel(String label);
+	FieldSchema setLabel(String label);
 
-	public String getName();
+	String getName();
 
-	public void setName(String name);
+	FieldSchema setName(String name);
 
-	public boolean isRequired();
+	boolean isRequired();
 
-	void setRequired(boolean flag);
+	FieldSchema setRequired(boolean flag);
 }

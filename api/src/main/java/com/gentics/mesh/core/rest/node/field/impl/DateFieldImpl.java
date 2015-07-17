@@ -15,8 +15,9 @@ public class DateFieldImpl implements DateField {
 	}
 
 	@Override
-	public void setDate(String date) {
+	public DateField setDate(String date) {
 		this.date = date;
+		return this;
 	}
 
 	@Override

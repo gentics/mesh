@@ -2,6 +2,8 @@ package com.gentics.mesh.core.rest.schema;
 
 import java.util.List;
 
+import com.gentics.mesh.json.MeshJsonException;
+
 public interface Schema {
 
 	public String getMeshVersion();
@@ -17,9 +19,9 @@ public interface Schema {
 
 	public String getDisplayField();
 
-	public boolean isContainer();
+	public boolean isFolder();
 
-	public void setContainer(boolean flag);
+	public void setFolder(boolean flag);
 
 	public boolean isBinary();
 
@@ -36,5 +38,7 @@ public interface Schema {
 	String getDescription();
 
 	void setDescription(String description);
+
+	void validate() throws MeshJsonException;
 
 }

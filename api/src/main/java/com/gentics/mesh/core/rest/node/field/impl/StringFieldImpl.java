@@ -13,8 +13,9 @@ public class StringFieldImpl implements StringField {
 	}
 
 	@Override
-	public void setString(String text) {
+	public StringField setString(String text) {
 		this.string = text;
+		return this;
 	}
 
 	@Override

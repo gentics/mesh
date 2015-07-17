@@ -20,8 +20,9 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public void setAllowedSchemas(String[] allowedSchemas) {
+	public ListFieldSchema setAllowedSchemas(String[] allowedSchemas) {
 		this.allowedSchemas = allowedSchemas;
+		return this;
 	}
 
 	@Override
@@ -30,8 +31,9 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public void setListType(String listType) {
+	public ListFieldSchema setListType(String listType) {
 		this.listType = listType;
+		return this;
 	}
 
 	@Override
@@ -40,8 +42,9 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public void setMax(Integer max) {
+	public ListFieldSchema setMax(Integer max) {
 		this.max = max;
+		return this;
 	}
 
 	@Override
@@ -50,8 +53,9 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public void setMin(Integer min) {
+	public ListFieldSchema setMin(Integer min) {
 		this.min = min;
+		return this;
 	}
 
 	@Override

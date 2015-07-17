@@ -17,8 +17,9 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 	}
 
 	@Override
-	public void setMax(Integer max) {
+	public NumberFieldSchema setMax(Integer max) {
 		this.max = max;
+		return this;
 	}
 
 	@Override
@@ -27,8 +28,9 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 	}
 
 	@Override
-	public void setMin(Integer min) {
+	public NumberFieldSchema setMin(Integer min) {
 		this.min = min;
+		return this;
 	}
 
 	@Override
@@ -37,8 +39,9 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 	}
 
 	@Override
-	public void setStep(Float step) {
+	public NumberFieldSchema setStep(Float step) {
 		this.step = step;
+		return this;
 	}
 
 	@Override

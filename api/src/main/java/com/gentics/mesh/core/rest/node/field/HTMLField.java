@@ -4,6 +4,6 @@ public interface HTMLField extends ListableField, MicroschemaListableField {
 
 	String getHTML();
 
-	void setHTML(String html);
+	HTMLField setHTML(String html);
 
 }

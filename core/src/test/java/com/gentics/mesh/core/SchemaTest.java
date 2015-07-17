@@ -167,18 +167,18 @@ public class SchemaTest extends AbstractBasicObjectTest {
 		assertEquals("changed2", schemaContainer.getName());
 
 		schema = schemaContainer.getSchema();
-		schema.setContainer(true);
-		assertTrue(schema.isContainer());
+		schema.setFolder(true);
+		assertTrue(schema.isFolder());
 		schemaContainer.setSchema(schema);
 		schema = schemaContainer.getSchema();
-		assertTrue(schema.isContainer());
+		assertTrue(schema.isFolder());
 
 		schema = schemaContainer.getSchema();
-		schema.setContainer(false);
-		assertFalse(schema.isContainer());
+		schema.setFolder(false);
+		assertFalse(schema.isFolder());
 		schemaContainer.setSchema(schema);
 		schema = schemaContainer.getSchema();
-		assertFalse(schema.isContainer());
+		assertFalse(schema.isFolder());
 
 	}
 

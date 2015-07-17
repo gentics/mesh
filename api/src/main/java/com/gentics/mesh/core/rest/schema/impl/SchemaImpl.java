@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.json.MeshJsonException;
 
 public class SchemaImpl implements RestModel, Schema {
 
@@ -13,7 +16,7 @@ public class SchemaImpl implements RestModel, Schema {
 	private String description;
 	private String displayField;
 	private boolean binary = false;
-	private boolean container = false;
+	private boolean folder = false;
 	private String meshVersion;
 	private String schemaVersion;
 	private List<FieldSchema> fields = new ArrayList<>();
@@ -49,13 +52,13 @@ public class SchemaImpl implements RestModel, Schema {
 	}
 
 	@Override
-	public boolean isContainer() {
-		return container;
+	public boolean isFolder() {
+		return folder;
 	}
 
 	@Override
-	public void setContainer(boolean flag) {
-		this.container = flag;
+	public void setFolder(boolean flag) {
+		this.folder = flag;
 	}
 
 	@Override
@@ -96,6 +99,27 @@ public class SchemaImpl implements RestModel, Schema {
 	@Override
 	public void addField(FieldSchema fieldSchema) {
 		this.fields.add(fieldSchema);
+	}
+
+	@Override
+	public void validate() throws MeshJsonException {
+		Set<String> fieldNames = new HashSet<>();
+		Set<String> fieldLabels = new HashSet<>();
+		for (FieldSchema fieldSchema : fields) {
+			String name = fieldSchema.getName();
+			String label = fieldSchema.getLabel();
+			if (fieldNames.contains(name)) {
+				throw new MeshJsonException("The schema contains duplicate names. The name for a schema field must be unique.");
+			} else {
+				fieldNames.add(name);
+			}
+			if (fieldLabels.contains(label)) {
+				throw new MeshJsonException("The schema contains duplicate labels. The label for a schema field must be unique.");
+			} else {
+				fieldLabels.add(label);
+			}
+		}
+
 	}
 
 }

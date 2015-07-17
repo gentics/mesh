@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface SelectField extends ListableField, MicroschemaListableField {
 
-	void setSelections(List<String> selections);
+	SelectField setSelections(List<String> selections);
 
 	List<String> getSelections();
 

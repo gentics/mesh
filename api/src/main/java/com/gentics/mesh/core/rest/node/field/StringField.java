@@ -4,6 +4,6 @@ public interface StringField extends ListableField, MicroschemaListableField {
 
 	String getString();
 
-	void setString(String string);
+	StringField setString(String string);
 
 }

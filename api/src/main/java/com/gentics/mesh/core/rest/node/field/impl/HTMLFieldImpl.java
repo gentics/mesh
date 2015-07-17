@@ -15,8 +15,9 @@ public class HTMLFieldImpl implements HTMLField {
 	}
 
 	@Override
-	public void setHTML(String html) {
+	public HTMLFieldImpl setHTML(String html) {
 		this.html = html;
+		return this;
 	}
 
 	@Override

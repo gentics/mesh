@@ -16,8 +16,9 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
-	public void setLabel(String label) {
+	public AbstractFieldSchema setLabel(String label) {
 		this.label = label;
+		return this;
 	}
 
 	@Override
@@ -26,8 +27,9 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
-	public void setName(String name) {
+	public AbstractFieldSchema setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	@Override
@@ -36,8 +38,9 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
-	public void setRequired(boolean flag) {
+	public AbstractFieldSchema setRequired(boolean flag) {
 		this.required = flag;
+		return this;
 	}
 
 }
