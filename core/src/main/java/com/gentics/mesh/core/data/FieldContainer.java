@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.HTMLField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlField;
 import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
 import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
@@ -33,9 +33,9 @@ public interface FieldContainer extends BasicFieldContainer {
 
 	NumberField getNumber(String key);
 
-	HTMLField createHTML(String key);
+	HtmlField createHTML(String key);
 
-	HTMLField getHTML(String key);
+	HtmlField getHTML(String key);
 
 	BooleanField getBoolean(String key);
 

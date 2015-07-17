@@ -20,6 +20,11 @@ public class DateFieldListImpl extends AbstractBasicFieldList<DateField> impleme
 	}
 
 	@Override
+	public DateField getDate(int index) {
+		return getField(index);
+	}
+
+	@Override
 	public Class<? extends DateField> getListType() {
 		return DateFieldImpl.class;
 	}

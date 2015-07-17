@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.data.node.field.list;
 
-import com.gentics.mesh.core.data.node.field.basic.HTMLField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlField;
 
-public interface HtmlFieldList extends ListField<HTMLField> {
+public interface HtmlFieldList extends ListField<HtmlField> {
 
-	HTMLField createHTML(String key);
+	HtmlField createHTML(String key);
+	
+	HtmlField getHTML(int index);
 
 }

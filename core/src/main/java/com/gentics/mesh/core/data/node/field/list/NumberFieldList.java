@@ -4,8 +4,8 @@ import com.gentics.mesh.core.data.node.field.basic.NumberField;
 
 public interface NumberFieldList extends ListField<NumberField> {
 
-	NumberField createNumber(String key);
+	NumberField createNumber(String value);
 	
-	NumberField getNumber(String key);
+	NumberField getNumber(int index);
 
 }

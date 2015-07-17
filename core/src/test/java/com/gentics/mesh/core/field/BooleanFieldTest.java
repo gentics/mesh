@@ -28,7 +28,8 @@ public class BooleanFieldTest extends AbstractDBTest {
 		field.setBoolean(new Boolean(false));
 		assertEquals("false", container.getProperty("test-boolean"));
 		field.setBoolean(null);
-		assertNull(container.getProperty("test-boolean"));
+		assertEquals("null", container.getProperty("test-boolean"));
+		assertNull(field.getBoolean());
 	}
 
 	@Test

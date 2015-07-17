@@ -15,8 +15,8 @@ public class StringFieldListImpl extends AbstractBasicFieldList<StringField> imp
 	}
 
 	@Override
-	public StringField getString(String key) {
-		return getField(key);
+	public StringField getString(int index) {
+		return getField(index);
 	}
 
 	@Override

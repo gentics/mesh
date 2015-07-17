@@ -161,7 +161,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 
 		if (FieldTypes.HTML.equals(type)) {
 			HTMLFieldSchema htmlFieldSchema = (HTMLFieldSchema) fieldSchema;
-			com.gentics.mesh.core.data.node.field.basic.HTMLField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HTMLFieldImpl(
+			com.gentics.mesh.core.data.node.field.basic.HtmlField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HTMLFieldImpl(
 					fieldKey, this);
 			HTMLFieldImpl htmlField = new HTMLFieldImpl();
 			String text = graphStringField.getHTML();

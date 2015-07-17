@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 
 public interface BooleanFieldList extends ListField<BooleanField> {
 
-	BooleanField getBoolean(String key);
+	BooleanField getBoolean(int index);
 
-	BooleanField createBoolean(String flag);
+	BooleanField createBoolean(Boolean flag);
 }

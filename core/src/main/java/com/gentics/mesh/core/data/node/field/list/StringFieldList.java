@@ -6,5 +6,5 @@ public interface StringFieldList extends ListField<StringField> {
 
 	StringField createString(String string);
 
-	StringField getString(String key);
+	StringField getString(int index);
 }

@@ -14,7 +14,7 @@ public class BooleanFieldImpl extends AbstractBasicField implements BooleanField
 	@Override
 	public void setBoolean(Boolean bool) {
 		if (bool == null) {
-			setFieldProperty("boolean", null);
+			setFieldProperty("boolean", "null");
 		} else {
 			setFieldProperty("boolean", String.valueOf(bool));
 		}
@@ -23,7 +23,7 @@ public class BooleanFieldImpl extends AbstractBasicField implements BooleanField
 	@Override
 	public Boolean getBoolean() {
 		String fieldValue = getFieldProperty("boolean");
-		if (fieldValue == null) {
+		if (fieldValue == null || fieldValue.equals("null")) {
 			return null;
 		}
 		return Boolean.valueOf(fieldValue);

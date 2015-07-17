@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.Field;
 import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.HTMLField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlField;
 import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
 
@@ -20,7 +20,7 @@ public interface NestingField extends Field {
 
 	NumberField createNumber(String key);
 
-	HTMLField createHTML(String key);
+	HtmlField createHTML(String key);
 
 	BooleanField getBoolean(String key);
 

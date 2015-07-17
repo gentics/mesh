@@ -15,8 +15,8 @@ public abstract class AbstractBasicFieldList<T extends ListableField> extends Ab
 		return createField(key);
 	}
 
-	protected T getField(String key) {
-		return createField("item-" + key);
+	protected T getField(int index) {
+		return createField("item-" + index);
 	}
 	
 	protected T createField() {

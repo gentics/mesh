@@ -15,8 +15,8 @@ public class NumberFieldListImpl extends AbstractBasicFieldList<NumberField> imp
 	}
 
 	@Override
-	public NumberField getNumber(String key) {
-		return getField(key);
+	public NumberField getNumber(int index) {
+		return getField(index);
 	}
 
 	@Override

@@ -8,14 +8,14 @@ import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
 public class BooleanFieldListImpl extends AbstractBasicFieldList<BooleanField> implements BooleanFieldList {
 
 	@Override
-	public BooleanField getBoolean(String key) {
-		return getField(key);
+	public BooleanField getBoolean(int index) {
+		return getField(index);
 	}
 
 	@Override
-	public BooleanField createBoolean(String flag) {
+	public BooleanField createBoolean(Boolean flag) {
 		BooleanField field = createField();
-		field.setBoolean(Boolean.valueOf(flag));
+		field.setBoolean(flag);
 		return field;
 	}
 

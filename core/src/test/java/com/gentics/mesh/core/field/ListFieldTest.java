@@ -2,13 +2,19 @@ package com.gentics.mesh.core.field;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.basic.DateField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlField;
 import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringFieldList;
@@ -38,8 +44,6 @@ public class ListFieldTest extends AbstractDBTest {
 		StringFieldList loadedList = container.getStringList("dummyList");
 		assertNotNull(loadedList);
 		assertEquals(3, loadedList.getSize());
-		// assertNotNull(loadedList);
-		// assertEquals(2, loadedList.getList().size());
 	}
 
 	@Test
@@ -68,16 +72,51 @@ public class ListFieldTest extends AbstractDBTest {
 
 		list.createNumber("1");
 		assertEquals(1, list.getList().size());
+
+		list.createNumber("2");
+		assertEquals(2, list.getList().size());
+	}
+
+	@Test
+	public void testDateList() {
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
+		DateFieldList list = container.createDateList("dummyList");
+		assertNotNull(list);
+		DateField dateField = list.createDate("Date One");
+		assertNotNull(dateField);
+		assertEquals(1, list.getSize());
+		assertEquals(1, list.getList().size());
+	}
+
+	@Test
+	public void testHTMLList() {
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
+		HtmlFieldList list = container.createHTMLList("dummyList");
+		assertNotNull(list);
+		HtmlField htmlField = list.createHTML("HTML 1");
+		assertNotNull(htmlField);
+		assertEquals(1, list.getSize());
+		assertEquals(1, list.getList().size());
+	}
+
+	@Test
+	public void testMicroschemaList() {
+		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
+		MicroschemaFieldList list = container.createMicroschemaFieldList("dummyList");
+		assertNotNull(list);
 	}
 
 	@Test
 	public void testBooleanList() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 		BooleanFieldList list = container.createBooleanList("dummyList");
-		list.createBoolean("A");
-		list.createBoolean("B");
-		list.createBoolean("C");
+		list.createBoolean(true);
+		list.createBoolean(false);
+		list.createBoolean(null);
 		assertEquals(3, list.getList().size());
+		assertEquals(3, list.getSize());
+		assertNotNull(list.getBoolean(1));
+		assertTrue(list.getBoolean(1).getBoolean());
 	}
 
 }

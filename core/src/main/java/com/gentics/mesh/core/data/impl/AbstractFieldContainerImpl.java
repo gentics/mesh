@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.BooleanField;
 import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.HTMLField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlField;
 import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
 import com.gentics.mesh.core.data.node.field.impl.basic.BooleanFieldImpl;
@@ -102,14 +102,14 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 	}
 
 	@Override
-	public HTMLField createHTML(String key) {
+	public HtmlField createHTML(String key) {
 		HTMLFieldImpl field = new HTMLFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
 	}
 
 	@Override
-	public HTMLField getHTML(String key) {
+	public HtmlField getHTML(String key) {
 		if (fieldExists(key)) {
 			return new HTMLFieldImpl(key, this);
 		}
