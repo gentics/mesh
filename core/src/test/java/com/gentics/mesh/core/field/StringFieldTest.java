@@ -18,9 +18,8 @@ public class StringFieldTest extends AbstractDBTest {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		StringFieldImpl field = new StringFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
-		assertEquals(4, container.getPropertyKeys().size());
 		field.setString("dummyString");
-		assertEquals(5, container.getPropertyKeys().size());
+		assertEquals("dummyString", field.getString());
 	}
 
 	@Test

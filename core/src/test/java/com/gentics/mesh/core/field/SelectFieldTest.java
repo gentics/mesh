@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
@@ -24,16 +25,19 @@ public class SelectFieldTest extends AbstractDBTest {
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testNodeSelection() {
 		fail("Not yet implemented");
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testNumberSelection() {
 		fail("Not yet implemented");
 	}
 
 	@Test
+	@Ignore("Not yet implemented")	
 	public void testBooleanSelection() {
 		fail("Not yet implemented");
 	}
