@@ -104,11 +104,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		System.out.println(data().getUsers().size());
-
-		for (UserResponse user : future.result().getData()) {
-			System.out.println(user.getUsername());
-		}
 		assertEquals(14, restResponse.getData().size());
 
 		int perPage = 2;

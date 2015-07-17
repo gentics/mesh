@@ -97,7 +97,7 @@ public final class RoutingContextHelper {
 		int perPage = MeshConfiguration.DEFAULT_PAGE_SIZE;
 		if (params != null) {
 			page = NumberUtils.toInt(params.get("page"), 1);
-			NumberUtils.toInt(params.get("per_page"), MeshConfiguration.DEFAULT_PAGE_SIZE);
+			perPage = NumberUtils.toInt(params.get("per_page"), MeshConfiguration.DEFAULT_PAGE_SIZE);
 		}
 		if (page < 1) {
 			throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "error_invalid_paging_parameters"));
