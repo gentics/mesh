@@ -234,7 +234,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 					loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
 						if (hasSucceeded(rc, rhp)) {
 							Node parentNode = rhp.result();
-							Node node = project.getBaseNode().create(requestUser, schemaContainer, project);
+							Node node = parentNode.create(requestUser, schemaContainer, project);
 							requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 							nodeCreatedHandler.handle(Future.succeededFuture(node));
 						}
