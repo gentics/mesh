@@ -1,5 +1,5 @@
 package com.gentics.mesh.nav.model;
-
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
@@ -36,7 +36,7 @@ public class NavigationRequestHandler implements Handler<RoutingContext> {
 			Navigation nav = getNavigation(rootTag);
 			rc.response().end(toJson(nav));
 		} catch (Exception e) {
-			throw new HttpStatusCodeErrorException(500, "Could not build naviguation", e);
+			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not build naviguation", e);
 		}
 	}
 

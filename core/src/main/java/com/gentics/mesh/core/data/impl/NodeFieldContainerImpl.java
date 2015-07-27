@@ -10,6 +10,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaField;
 import com.gentics.mesh.core.data.relationship.MeshRelationships;
@@ -27,12 +34,19 @@ import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.HTMLFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
@@ -71,7 +85,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			FieldTypes type = FieldTypes.valueByName(field.getType());
 			switch (type) {
 			case HTML:
-				HTMLField htmlField = (HTMLFieldImpl) field;
+				HTMLField htmlField = (HtmlFieldImpl) field;
 				createHTML(key).setHTML(htmlField.getHTML());
 				break;
 			case STRING:
@@ -163,7 +177,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			HTMLFieldSchema htmlFieldSchema = (HTMLFieldSchema) fieldSchema;
 			com.gentics.mesh.core.data.node.field.basic.HtmlField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HTMLFieldImpl(
 					fieldKey, this);
-			HTMLFieldImpl htmlField = new HTMLFieldImpl();
+			HtmlFieldImpl htmlField = new HtmlFieldImpl();
 			String text = graphStringField.getHTML();
 			htmlField.setHTML(text == null ? "" : text);
 			return htmlField;
@@ -171,6 +185,31 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 
 		if (FieldTypes.LIST.equals(type)) {
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
+
+			switch (listFieldSchema.getListType()) {
+			case NodeFieldList.TYPE:
+				//com.gentics.mesh.core.data.node.field.list.NodeFieldList nodeFieldList = new com.gentics.mesh.core.data.node.field.list.impl.NodeFieldListImpl();
+				NodeFieldListImpl nodeList = new NodeFieldListImpl();
+				return nodeList;
+			case NumberFieldList.TYPE:
+				NumberFieldListImpl numberList = new NumberFieldListImpl();
+				return numberList;
+			case BooleanFieldList.TYPE:
+				BooleanFieldListImpl booleanList = new BooleanFieldListImpl();
+				return booleanList;
+			case HtmlFieldList.TYPE:
+				HtmlFieldListImpl htmlList = new HtmlFieldListImpl();
+				return htmlList;
+			case MicroschemaFieldList.TYPE:
+				MicroschemaFieldListImpl microschemaList = new MicroschemaFieldListImpl();
+				return microschemaList;
+			case StringFieldList.TYPE:
+				StringFieldListImpl stringList = new StringFieldListImpl();
+				return stringList;
+			case DateFieldList.TYPE:
+				DateFieldListImpl dateList = new DateFieldListImpl();
+				return dateList;
+			}
 			// String listType = listFielSchema.getListType();
 		}
 		if (FieldTypes.SELECT.equals(type)) {
@@ -187,5 +226,4 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 
 		return null;
 	}
-
 }

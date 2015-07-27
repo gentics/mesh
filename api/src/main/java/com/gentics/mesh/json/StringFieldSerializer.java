@@ -11,7 +11,6 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HTMLField;
-import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.MicroschemaField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -19,8 +18,7 @@ import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.HTMLFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -28,7 +26,7 @@ import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
-public class FieldSerializer<T extends Field> extends JsonSerializer<T> {
+public class StringFieldSerializer<T extends Field> extends JsonSerializer<T> {
 
 	@Override
 	public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
@@ -40,7 +38,7 @@ public class FieldSerializer<T extends Field> extends JsonSerializer<T> {
 			FieldTypes type = FieldTypes.valueByName(value.getType());
 			switch (type) {
 			case HTML:
-				HTMLField htmlField = (HTMLFieldImpl) value;
+				HTMLField htmlField = (HtmlFieldImpl) value;
 				gen.writeString(htmlField.getHTML());
 				break;
 			case STRING:
@@ -59,22 +57,24 @@ public class FieldSerializer<T extends Field> extends JsonSerializer<T> {
 				DateField dateField = (DateFieldImpl) value;
 				gen.writeString(dateField.getDate());
 				break;
-			case NODE:
-				NodeField nodeField = (NodeFieldImpl) value;
-				// TODO impl
-				break;
-			case LIST:
-				ListField listField = (ListFieldImpl) value;
-				// TODO impl
-				break;
-			case SELECT:
-				SelectField selectField = (SelectFieldImpl) value;
-				// TODO impl
-				break;
-			case MICROSCHEMA:
-				MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
-				// TODO impl
-				break;
+//			case NODE:
+//				NodeField nodeField = (NodeFieldImpl) value;
+//				// TODO impl
+//				break;
+//			case LIST:
+//				//TODO just continue with normal deserialization
+//				//ListField listField = (ListFieldImpl) value;
+//				// TODO impl
+//				gen.writeObject(value);
+//				break;
+//			case SELECT:
+//				SelectField selectField = (SelectFieldImpl) value;
+//				// TODO impl
+//				break;
+//			case MICROSCHEMA:
+//				MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
+//				// TODO impl
+//				break;
 			}
 		}
 	}

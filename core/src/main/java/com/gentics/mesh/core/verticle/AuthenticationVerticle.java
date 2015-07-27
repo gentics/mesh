@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import io.vertx.core.json.JsonObject;
@@ -48,7 +49,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 				JsonObject authInfo = new JsonObject().put("username", request.getUsername()).put("password", request.getPassword());
 				springConfiguration.authProvider().authenticate(authInfo, rh -> {
 					if (rh.failed()) {
-						rc.fail(new HttpStatusCodeErrorException(401, i18n.get(rc, "login_failed"), rh.cause()));
+						rc.fail(new HttpStatusCodeErrorException(UNAUTHORIZED, i18n.get(rc, "login_failed"), rh.cause()));
 					} else {
 						User authenticated = rh.result();
 						rc.setUser(authenticated);
@@ -57,7 +58,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 					}
 				});
 			} catch (Exception e) {
-				rc.fail(new HttpStatusCodeErrorException(401, i18n.get(rc, "login_failed"), e));
+				rc.fail(new HttpStatusCodeErrorException(UNAUTHORIZED, i18n.get(rc, "login_failed"), e));
 			}
 		});
 

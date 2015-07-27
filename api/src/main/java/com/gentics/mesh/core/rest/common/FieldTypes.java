@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.HTMLFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 public enum FieldTypes {
 	STRING(StringFieldSchema.class, StringFieldSchemaImpl.class, StringField.class, StringFieldImpl.class), HTML(HTMLFieldSchema.class,
-			HTMLFieldSchemaImpl.class, HTMLField.class, HTMLFieldImpl.class), NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class,
+			HTMLFieldSchemaImpl.class, HTMLField.class, HtmlFieldImpl.class), NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class,
 			NumberField.class, NumberFieldImpl.class), DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateField.class, DateFieldImpl.class), BOOLEAN(
 			BooleanFieldSchema.class, BooleanFieldSchemaImpl.class, BooleanField.class, BooleanFieldImpl.class), SELECT(SelectFieldSchema.class,
 			SelectFieldSchemaImpl.class, SelectField.class, SelectFieldImpl.class), NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class,

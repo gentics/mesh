@@ -16,15 +16,16 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		this.code = code;
 	}
 
-	public HttpStatusCodeErrorException(int code, String message, Throwable e) {
+	public HttpStatusCodeErrorException(HttpResponseStatus status, String message, Throwable e) {
 		super(message, e);
-		this.code = code;
+		this.code = status.code();
 	}
 
 	public HttpStatusCodeErrorException(HttpResponseStatus status, String message) {
 		super(message);
 		this.code = status.code();
 	}
+
 
 	public int getCode() {
 		return code;

@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.HTMLFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
@@ -85,7 +85,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case HTML:
-			HTMLField htmlField = new HTMLFieldImpl();
+			HTMLField htmlField = new HtmlFieldImpl();
 			htmlField.setHTML(jsonNode.textValue());
 			map.put(fieldKey, htmlField);
 			break;

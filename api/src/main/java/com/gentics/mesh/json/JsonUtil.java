@@ -1,5 +1,7 @@
 package com.gentics.mesh.json;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
@@ -20,8 +22,10 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.ListableField;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -36,7 +40,7 @@ public final class JsonUtil {
 
 	protected static ObjectMapper nodeMapper;
 
-	// TODO danger danger - This will cause trouble when doing multithreaded deserialisation!
+	// TODO danger danger!!! - This will cause trouble when doing multithreaded deserialisation!
 	protected static Map<String, Object> valuesMap = new HashMap<>();
 
 	static {
@@ -62,10 +66,7 @@ public final class JsonUtil {
 		nodeMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
-		// module.addDeserializer(MicroschemaListableField.class, new FieldDeserializer<MicroschemaListableField>());
-//		module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer());
 		module.addDeserializer(Map.class, new FieldMapDeserializer());
-		// module.addDeserializer(NodeResponse.class, new NodeResponseDeserializer(nodeMapper, valuesMap));
 
 		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;
@@ -86,7 +87,9 @@ public final class JsonUtil {
 
 		SimpleModule module = new SimpleModule();
 
-		module.addSerializer(Field.class, new FieldSerializer<Field>());
+		module.addSerializer(NumberFieldImpl.class, new StringFieldSerializer<NumberFieldImpl>());
+		module.addSerializer(HtmlFieldImpl.class, new StringFieldSerializer<HtmlFieldImpl>());
+		module.addSerializer(StringFieldImpl.class, new StringFieldSerializer<StringFieldImpl>());
 		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, valuesMap, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class, new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, valuesMap,
 				NodeCreateRequest.class));
@@ -99,13 +102,13 @@ public final class JsonUtil {
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
 			// TODO don't use pretty printer in final version
-			// return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
-			return defaultMapper.writeValueAsString(obj);
+			 return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			//return defaultMapper.writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";
 			// TODO 500?
-			throw new HttpStatusCodeErrorException(500, message, e);
+			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, message, e);
 		}
 	}
 
@@ -146,7 +149,7 @@ public final class JsonUtil {
 			return (T) defaultMapper.readValue(body, classOfT);
 		} catch (Exception e) {
 			// throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
-			throw new HttpStatusCodeErrorException(400, "Error while parsing json.", e);
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Error while parsing json.", e);
 		}
 
 	}
@@ -158,7 +161,7 @@ public final class JsonUtil {
 			// TODO i18n
 			String message = "Could not generate json from object";
 			// TODO 500?
-			throw new HttpStatusCodeErrorException(500, message, e);
+			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, message, e);
 		}
 	}
 

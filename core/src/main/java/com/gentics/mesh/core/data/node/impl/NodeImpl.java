@@ -1,9 +1,14 @@
 package com.gentics.mesh.core.data.node.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.*;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARENT_NODE;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -218,7 +223,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			handler.handle(Future.succeededFuture(restNode));
 		} catch (IOException e) {
 			//TODO i18n
-			throw new HttpStatusCodeErrorException(400, "The schema for node {" + getUuid() + "} could not loaded.", e);
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
 		}
 		return this;
 

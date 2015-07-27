@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
 
@@ -75,7 +76,7 @@ public final class RoutingContextHelper {
 				try {
 					queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
 				} catch (UnsupportedEncodingException e) {
-					throw new HttpStatusCodeErrorException(500, "Could not decode query string pair {" + pair + "}", e);
+					throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not decode query string pair {" + pair + "}", e);
 				}
 
 			}

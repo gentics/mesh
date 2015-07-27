@@ -10,6 +10,7 @@ import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -117,7 +118,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 							projectCreated.complete(project);
 						} catch (Exception e) {
 							// TODO should we really fail here?
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "Error while adding project to router storage"), e));
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
 					tx.failure();
 					return;
 				}

@@ -5,6 +5,8 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 
 public interface NodeFieldList extends ListField<NodeField> {
 
+	public static final String TYPE = "node";
+
 	NodeField createNode(String key, Node node);
 
 }
