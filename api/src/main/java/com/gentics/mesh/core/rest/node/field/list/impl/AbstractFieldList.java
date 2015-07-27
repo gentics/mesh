@@ -1,8 +1,18 @@
 package com.gentics.mesh.core.rest.node.field.list.impl;
 
-import com.gentics.mesh.core.rest.node.field.Field;
+import java.util.ArrayList;
+import java.util.List;
 
-public abstract class AbstractFieldList implements Field {
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.ListableField;
+
+public abstract class AbstractFieldList<T extends ListableField> implements Field {
+
+	List<T> list = new ArrayList<>();
+
+	public List<T> getList() {
+		return list;
+	}
 
 	@Override
 	public String getType() {
