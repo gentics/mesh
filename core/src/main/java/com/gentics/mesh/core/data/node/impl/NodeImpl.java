@@ -230,60 +230,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
 		Page<? extends Tag> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
 		return items;
-		// public Page<Tag> findTags(String userUuid, String projectName, MeshNode node, List<String> languageTags, PagingInfo pagingInfo) {
-		// // String langFilter = getLanguageFilter("l");
-		// // if (languageTags == null || languageTags.isEmpty()) {
-		// // langFilter = "";
-		// // } else {
-		// // langFilter += " AND ";
-		// // }
-		// //
-		// // String baseQuery = PERMISSION_PATTERN_ON_TAG;
-		// // baseQuery += TAG_PROJECT_PATTERN;
-		// // baseQuery += "MATCH (node:MeshNode)-[:HAS_TAG]->(tag)-[l:HAS_I18N_PROPERTIES]-(sp:I18NProperties) ";
-		// // baseQuery += "WHERE " + langFilter + USER_PERMISSION_FILTER + " AND " + PROJECT_FILTER;
-		// //
-		// // String query = baseQuery + " WITH sp, tag ORDER BY sp.`properties-name` desc RETURN DISTINCT tag as n";
-		// // String countQuery = baseQuery + " RETURN count(DISTINCT tag) as count";
-		// //
-		// // Map<String, Object> parameters = new HashMap<>();
-		// // parameters.put("languageTags", languageTags);
-		// // parameters.put("projectName", projectName);
-		// // parameters.put("userUuid", userUuid);
-		// // parameters.put("node", node);
-		// // return queryService.query(query, countQuery, parameters, pagingInfo, Tag.class);
-		// return null;
-		// }
-	}
-
-	public Page<Node> getChildren(MeshAuthUser requestUser, String projectName, List<String> languageTags, PagingInfo pagingInfo) {
-
-		// if (languageTags == null || languageTags.size() == 0) {
-		// return findChildren(userUuid, projectName, parentNode, pr);
-		// } else {
-		// return findChildren(userUuid, projectName, parentNode, languageTags, pr);
-		// }
-
-		// Page<MeshNode> findChildren(String userUuid, String projectName, MeshNode parentNode, List<String> languageTags, Pageable pr) {
-		// @Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)-[:HAS_PARENT_NODE]->(node) " + "WHERE "
-		// + FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "WITH p, node " + ORDER_BY_NAME_DESC + "RETURN DISTINCT childNode",
-		//
-		// countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)-[:HAS_PARENT_NODE]->(node) " + "WHERE "
-		// + FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "RETURN count(DISTINCT node)"
-		//
-		// )
-		// }
-
-		// Page<MeshNode> findChildren(String userUuid, String projectName, MeshNode parentNode, Pageable pr) {
-		// @Query(value = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)<-[:HAS_PARENT_NODE]-(node) " + "WHERE "
-		// + FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "WITH p, node " + "ORDER by p.`properties-name` desc "
-		// + "RETURN DISTINCT node",
-		//
-		// countQuery = MATCH_PERMISSION_ON_NODE + MATCH_NODE_OF_PROJECT + " MATCH (parentNode)<-[:HAS_PARENT_NODE]-(node) " + "WHERE "
-		// + FILTER_USER_PERM_AND_PROJECT + " AND id(parentNode) = {2} " + "RETURN count(DISTINCT node)")
-		// }
-		return null;
-
 	}
 
 	@Override

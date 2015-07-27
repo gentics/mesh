@@ -15,13 +15,14 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-
-//import com.gentics.mesh.util.DataHelper;
 
 public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
@@ -39,6 +40,51 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, project.getBaseNode().getUuid());
 		latchFor(future);
 		assertSuccess(future);
+	}
+
+	@Test
+	public void testNodeHierarchy() {
+		Node baseNode = data().getProject().getBaseNode();
+		String parentNodeUuid = baseNode.getUuid();
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid);
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(3, future.result().getData().size());
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		nodeCreateRequest.setSchema(schemaReference);
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		Future<NodeResponse> nodeCreateFuture = getClient().createNode(PROJECT_NAME, nodeCreateRequest);
+		latchFor(nodeCreateFuture);
+		assertSuccess(nodeCreateFuture);
+
+		String uuid = nodeCreateFuture.result().getUuid();
+		future = getClient().findNodeChildren(PROJECT_NAME, uuid);
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(0, future.result().getData().size());
+
+		nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setSchema(schemaReference);
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(uuid);
+		nodeCreateFuture = getClient().createNode(PROJECT_NAME, nodeCreateRequest);
+		latchFor(nodeCreateFuture);
+		assertSuccess(nodeCreateFuture);
+
+		future = getClient().findNodeChildren(PROJECT_NAME, uuid);
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("The subnode did not contain the created node", 1, future.result().getData().size());
+
+		future = getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid);
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("The basenode should still contain four nodes.", 4, future.result().getData().size());
+
 	}
 
 	@Test
