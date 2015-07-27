@@ -30,13 +30,16 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.UserVerticle;
+import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -179,7 +182,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = future.result();
 
 		test.assertUser(updateRequest, restUser);
-		Thread.sleep(1000);
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
@@ -189,6 +191,140 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
 			assertEquals("dummy_user_changed", reloadedUser.getUsername());
 		}
+	}
+
+	@Test
+	public void testUpdateUserAndSetNodeReference() throws Exception {
+		String nodeUuid = data().getFolder("2015").getUuid();
+		User user = info.getUser();
+		String username = user.getUsername();
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setEmailAddress("t.stark@stark-industries.com");
+		updateRequest.setFirstname("Tony Awesome");
+		updateRequest.setLastname("Epic Stark");
+		updateRequest.setUsername("dummy_user_changed");
+
+		NodeReference userNodeReference = new NodeReference();
+		userNodeReference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		userNodeReference.setUuid(nodeUuid);
+		updateRequest.setNodeReference(userNodeReference);
+
+		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse restUser = future.result();
+		assertNotNull(restUser.getNodeReference());
+		assertEquals(DemoDataProvider.PROJECT_NAME, restUser.getNodeReference().getProjectName());
+		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
+
+		test.assertUser(updateRequest, restUser);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
+			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
+			assertNotNull(reloadedUser);
+			assertEquals("Epic Stark", reloadedUser.getLastname());
+			assertEquals("Tony Awesome", reloadedUser.getFirstname());
+			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+			assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
+
+		}
+	}
+
+	@Test
+	public void testCreateUserWithNodeReference() {
+
+		Node node = data().getFolder("2015");
+
+		NodeReference reference = new NodeReference();
+		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		reference.setUuid(node.getUuid());
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
+
+		Future<UserResponse> future = getClient().createUser(newUser);
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse response = future.result();
+		assertNotNull(response.getNodeReference());
+		assertNotNull(response.getNodeReference().getProjectName());
+		assertNotNull(response.getNodeReference().getUuid());
+
+	}
+
+	@Test
+	public void testCreateUserWithBogusProjectNameInNodeReference() {
+
+		Node node = data().getFolder("2015");
+
+		NodeReference reference = new NodeReference();
+		reference.setProjectName("bogus_name");
+		reference.setUuid(node.getUuid());
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
+
+		Future<UserResponse> future = getClient().createUser(newUser);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "project_not_found", "bogus_name");
+	}
+
+	@Test
+	public void testCreateUserWithBogusUuidInNodeReference() {
+
+		NodeReference reference = new NodeReference();
+		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		reference.setUuid("bogus_uuid");
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
+
+		Future<UserResponse> future = getClient().createUser(newUser);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus_uuid");
+	}
+
+	@Test
+	public void testCreateUserWithMissingProjectNameInNodeReference() {
+
+		NodeReference reference = new NodeReference();
+		reference.setUuid("bogus_uuid");
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
+
+		Future<UserResponse> future = getClient().createUser(newUser);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
+	}
+
+	@Test
+	public void testCreateUserWithMissingUuidNameInNodeReference() {
+
+		NodeReference reference = new NodeReference();
+		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
+
+		Future<UserResponse> future = getClient().createUser(newUser);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
 	}
 
 	@Test
@@ -231,7 +367,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
 		boot.userRoot().findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();	
+			User reloadedUser = rh.result();
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		});
 	}
@@ -254,7 +390,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
 		boot.userRoot().findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();	
+			User reloadedUser = rh.result();
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -486,11 +622,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 		userRoot.findByUuid(uuid, rh -> {
-			User user = rh.result();	
+			User user = rh.result();
 			assertEquals(1, user.getGroupCount());
 			assertEquals(1, user.getGroups().size());
 		});
-
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);

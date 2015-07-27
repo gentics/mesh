@@ -25,7 +25,7 @@ import com.gentics.mesh.rest.method.WebRootClientMethods;
 public abstract class AbstractMeshRestClient implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods,
 		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
+	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
 
 	public static final String BASEURI = "/api/v1";
 	public static final int DEFAULT_PORT = 8080;

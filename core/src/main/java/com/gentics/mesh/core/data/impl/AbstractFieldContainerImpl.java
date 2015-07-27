@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectField;
-import com.gentics.mesh.util.TraversalHelper;
 
 public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl implements FieldContainer {
 

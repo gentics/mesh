@@ -15,6 +15,8 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 
 	private String emailAddress;
 
+	private NodeReference nodeReference;
+
 	private List<String> groups = new ArrayList<>();
 
 	public UserResponse() {
@@ -64,4 +66,11 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 		this.groups.add(name);
 	}
 
+	public NodeReference getNodeReference() {
+		return nodeReference;
+	}
+
+	public void setNodeReference(NodeReference nodeReference) {
+		this.nodeReference = nodeReference;
+	}
 }

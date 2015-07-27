@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -25,7 +26,6 @@ import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
-
 @Component
 @Scope("singleton")
 @SpringVerticle

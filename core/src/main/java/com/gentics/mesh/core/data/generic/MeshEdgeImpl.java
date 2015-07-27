@@ -4,7 +4,6 @@ import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.tinkerpop.blueprints.Edge;
 
 public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 

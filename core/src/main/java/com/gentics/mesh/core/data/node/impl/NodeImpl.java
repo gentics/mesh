@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.data.node.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARENT_NODE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.*;
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
@@ -31,6 +28,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.ContainerNode;
@@ -107,6 +105,16 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	public void setParentNode(ContainerNode<NodeResponse> parent) {
 		setLinkOut(parent.getImpl(), HAS_PARENT_NODE);
+	}
+
+	@Override
+	public Project getProject() {
+		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+	}
+
+	@Override
+	public void setProject(Project project) {
+		setLinkOut(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override

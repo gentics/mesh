@@ -5,6 +5,11 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -28,7 +33,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
-
 @Component
 @Scope("singleton")
 @SpringVerticle

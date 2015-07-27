@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ITEM;
-
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.nesting.NodeFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingFieldList;

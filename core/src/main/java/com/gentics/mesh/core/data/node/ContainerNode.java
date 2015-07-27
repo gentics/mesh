@@ -14,6 +14,10 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface ContainerNode<T extends AbstractResponse> extends GenericVertex<T> {
 
+	Project getProject();
+
+	void setProject(Project project);
+
 	List<? extends Node> getChildren();
 
 	void setParentNode(ContainerNode<T> parentNode);

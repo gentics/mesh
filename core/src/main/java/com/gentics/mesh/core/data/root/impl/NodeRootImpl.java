@@ -56,7 +56,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		node.setSchemaContainer(container);
 		node.setCreator(creator);
 		node.setEditor(creator);
+		
+		//TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
 		project.getNodeRoot().addNode(node);
+		node.setProject(project);
 		//TODO handle timestamps
 		addNode(node);
 		return node;

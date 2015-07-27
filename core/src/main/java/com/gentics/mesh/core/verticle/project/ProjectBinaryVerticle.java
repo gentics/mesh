@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.json.JsonUtil;
-
+import static com.gentics.mesh.util.VerticleHelper.*;
 @Component
 @Scope("singleton")
 @SpringVerticle

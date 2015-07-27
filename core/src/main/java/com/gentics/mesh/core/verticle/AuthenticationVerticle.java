@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.responde;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import io.vertx.core.json.JsonObject;
@@ -18,7 +20,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
-
 @Component
 @Scope("singleton")
 @SpringVerticle()

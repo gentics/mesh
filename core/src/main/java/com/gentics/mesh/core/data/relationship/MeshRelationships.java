@@ -10,6 +10,8 @@ public class MeshRelationships {
 
 	// Nodes
 	public static final String HAS_NODE = "HAS_NODE";
+	public static final String HAS_NODE_REFERENCE = "HAS_NODE_REFERENCE";
+	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
 
 	// Groups/User/Role
 	public static final String HAS_GROUP_ROOT = "HAS_GROUP_ROOT";

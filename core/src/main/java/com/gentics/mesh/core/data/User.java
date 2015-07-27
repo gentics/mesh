@@ -1,12 +1,19 @@
 package com.gentics.mesh.core.data;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
+
 import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 public interface User extends GenericVertex<UserResponse>, NamedNode {
 
@@ -31,6 +38,10 @@ public interface User extends GenericVertex<UserResponse>, NamedNode {
 	void setPasswordHash(String hash);
 
 	void setPassword(String password);
+
+	Node getReferencedNode();
+
+	void setReferencedNode(Node node);
 
 	boolean hasPermission(MeshVertex vertex, Permission permission);
 
@@ -59,5 +70,10 @@ public interface User extends GenericVertex<UserResponse>, NamedNode {
 	UserReference transformToUserReference();
 
 	UserImpl getImpl();
+
+	void fillUpdateFromRest(RoutingContext rc, UserUpdateRequest requestModel, Handler<AsyncResult<User>> handler);
+
+	void fillCreateFromRest(RoutingContext rc, UserCreateRequest requestModel, Group parentGroup, Handler<AsyncResult<User>> handler);
+
 
 }

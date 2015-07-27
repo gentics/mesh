@@ -25,4 +25,6 @@ public interface SchemaClientMethods {
 
 	Future<SchemaResponse> removeSchemaFromProject(String schemaUuid, String projectUuid);
 
+	Future<Void> initSchemaStorage();
+
 }

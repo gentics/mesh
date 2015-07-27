@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
@@ -8,6 +9,11 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -21,15 +27,27 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 
+//TODO wtf annotation
 @Configurable
 public class UserImpl extends AbstractGenericVertex<UserResponse> implements User {
 
@@ -122,15 +140,8 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	 */
 	@Override
 	public List<? extends Group> getGroups() {
+		//TODO add permission handling?
 		return out(HAS_USER).has(GroupImpl.class).toListExplicit(GroupImpl.class);
-
-		// public List<? extends Group> listAllGroups(User user) {
-		// // @Query("start u=node({0}) MATCH (u)-[MEMBER_OF*]->(g) return g")
-		// //
-		// return user.getGroups()
-		// return framedGraph.v().has(Group.class).mark().in(MEMBER_OF).has(User.class).has("uuid", user.getUuid()).back().toList(Group.class);
-		//
-		// }
 	}
 
 	@Override
@@ -138,33 +149,15 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 		return out(HAS_GROUP).out(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 	}
 
-	//
-	// public Set<GraphPermission> findGraphPermissions(MeshVertex node) {
-	//
-	// // Set<GraphPermission> permissions = new HashSet<>();
-	// // Vertex userNode = user.getVertex();
-	// // Node userNode = neo4jTemplate.getPersistentState(user);
-	//
-	// // Traverse the graph from user to the page. Collect all permission relations and check them individually
-	// // for (Edge edge : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.MEMBER_OF, Direction.OUT)
-	// // .relationships(AuthRelationships.HAS_ROLE, Direction.IN).relationships(AuthRelationships.HAS_PERMISSION, Direction.OUT)
-	// // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL).traverse(userNode).relationships()) {
-	// // // log.info("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-	// // // + rel.getStartNode().getId() + rel.getStartNode().getLabels());
-	// //
-	// // if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(edge.getLabel())) {
-	// // // Check whether this relation in fact targets our object we want to check
-	// // boolean matchesTargetNode = edge.getVertex(com.tinkerpop.blueprints.Direction.OUT).getId() == node.getId();
-	// // if (matchesTargetNode) {
-	// // // Convert the api relationship to a SDN relationship
-	// // GraphPermission perm = framedGraph.frame(edge, GraphPermission.class);
-	// // permissions.add(perm);
-	// // }
-	// // }
-	// // }
-	// return permissions;
-	//
-	// }
+	@Override
+	public Node getReferencedNode() {
+		return out(HAS_NODE_REFERENCE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+	}
+
+	@Override
+	public void setReferencedNode(Node node) {
+		setLinkOut(node.getImpl(), HAS_NODE_REFERENCE);
+	}
 
 	@Override
 	public String[] getPermissionNames(MeshVertex node) {
@@ -202,6 +195,18 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 		restUser.setEmailAddress(getEmailAddress());
 		restUser.setFirstname(getFirstname());
 		restUser.setLastname(getLastname());
+
+		Node node = getReferencedNode();
+		if (node != null) {
+			NodeReference userNodeReference = new NodeReference();
+			userNodeReference.setUuid(node.getUuid());
+			if (node.getProject() != null) {
+				userNodeReference.setProjectName(node.getProject().getName());
+			} else {
+				//TODO handle this case
+			}
+			restUser.setNodeReference(userNodeReference);
+		}
 		for (Group group : getGroups()) {
 			restUser.addGroup(group.getName());
 		}
@@ -249,55 +254,6 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 		}
 	}
 
-	// public boolean isPermitted(long userNodeId, MeshPermission genericPermission) throws Exception {
-	// if (genericPermission.getTargetNode() == null) {
-	// return false;
-	// }
-	// Vertex userNode = framedGraph.getVertex(userNodeId);
-	// for (Edge groupRel : userNode.getEdges(com.tinkerpop.blueprints.Direction.OUT, MEMBER_OF)) {
-	// Vertex group = groupRel.getVertex(com.tinkerpop.blueprints.Direction.OUT);
-	// log.debug("Found group: " + group.getProperty("name"));
-	// for (Edge roleRel : group.getEdges(Direction.IN, HAS_ROLE)) {
-	// Vertex role = roleRel.getVertex(Direction.IN);
-	// log.debug("Found role: " + role.getProperty("name"));
-	// for (Edge authRel : role.getEdges(Direction.OUT, HAS_PERMISSION)) {
-	// log.debug("Permission from {" + authRel.getVertex(Direction.IN).getId() + " to " + authRel.getVertex(Direction.OUT).getId());
-	// boolean matchesTargetNode = authRel.getVertex(Direction.OUT).getId() == genericPermission.getTargetNode().getId();
-	// if (matchesTargetNode) {
-	// log.debug("Found permission");
-	// // Convert the api relationship to a framed edge
-	// GraphPermission perm = framedGraph.frameElement(authRel, GraphPermission.class);
-	// if (genericPermission.implies(perm) == true) {
-	// return true;
-	// }
-	// }
-	// }
-	// }
-	// }
-
-	// // Traverse the graph from user to the page. Collect all permission relations and check them individually
-	// for (Relationship rel : graphDb.traversalDescription().depthFirst().relationships(AuthRelationships.TYPES.MEMBER_OF, Direction.OUTGOING)
-	// .relationships(AuthRelationships.TYPES.HAS_ROLE, Direction.INCOMING)
-	// .relationships(AuthRelationships.TYPES.HAS_PERMISSION, Direction.OUTGOING).uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
-	// .traverse(userNode).relationships()) {
-	// // log.debug("Found Relationship " + rel.getType().name() + " between: " + rel.getEndNode().getId() + rel.getEndNode().getLabels() + " and "
-	// // + rel.getStartNode().getId() + rel.getStartNode().getLabels());
-	//
-	// if (AuthRelationships.HAS_PERMISSION.equalsIgnoreCase(rel.getType().name())) {
-	// // Check whether this relation in fact targets our object we want to check
-	// boolean matchesTargetNode = rel.getEndNode().getId() == genericPermission.getTargetNode().getId();
-	// if (matchesTargetNode) {
-	// // Convert the api relationship to a SDN relationship
-	// GraphPermission perm = neo4jTemplate.load(rel, GraphPermission.class);
-	// if (genericPermission.implies(perm) == true) {
-	// return true;
-	// }
-	// }
-	// }
-	// }
-	// return false;
-	// }
-
 	@Override
 	public void delete() {
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
@@ -318,6 +274,99 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	@Override
 	public UserImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public void fillUpdateFromRest(RoutingContext rc, UserUpdateRequest requestModel, Handler<AsyncResult<User>> handler) {
+		I18NService i18n = I18NService.getI18n();
+
+		if (requestModel.getUsername() != null && getUsername() != requestModel.getUsername()) {
+			if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username"))));
+				return;
+			}
+			setUsername(requestModel.getUsername());
+		}
+
+		if (!isEmpty(requestModel.getFirstname()) && getFirstname() != requestModel.getFirstname()) {
+			setFirstname(requestModel.getFirstname());
+		}
+
+		if (!isEmpty(requestModel.getLastname()) && getLastname() != requestModel.getLastname()) {
+			setLastname(requestModel.getLastname());
+		}
+
+		if (!isEmpty(requestModel.getEmailAddress()) && getEmailAddress() != requestModel.getEmailAddress()) {
+			setEmailAddress(requestModel.getEmailAddress());
+		}
+
+		if (!isEmpty(requestModel.getPassword())) {
+			setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+		}
+
+		if (requestModel.getNodeReference() != null) {
+			NodeReference reference = requestModel.getNodeReference();
+			if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference"))));
+				return;
+			} else {
+				String referencedNodeUuid = requestModel.getNodeReference().getUuid();
+				String projectName = requestModel.getNodeReference().getProjectName();
+				/* TODO decide whether we need to check perms on the project as well */
+				Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
+				if (project == null) {
+					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
+				} else {
+					loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
+						if (hasSucceeded(rc, nrh)) {
+							setReferencedNode(nrh.result());
+							handler.handle(Future.succeededFuture(this));
+						}
+					});
+				}
+			}
+		} else {
+			handler.handle(Future.succeededFuture(this));
+		}
+
+	}
+
+	@Override
+	public void fillCreateFromRest(RoutingContext rc, UserCreateRequest requestModel, Group parentGroup, Handler<AsyncResult<User>> handler) {
+		I18NService i18n = I18NService.getI18n();
+
+		setFirstname(requestModel.getFirstname());
+		setUsername(requestModel.getUsername());
+		setLastname(requestModel.getLastname());
+		setEmailAddress(requestModel.getEmailAddress());
+		setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+		addGroup(parentGroup);
+		MeshAuthUser requestUser = getUser(rc);
+		requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, this);
+		NodeReference reference = requestModel.getNodeReference();
+		if (reference != null) {
+			if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference"))));
+			} else {
+				String referencedNodeUuid = requestModel.getNodeReference().getUuid();
+				String projectName = requestModel.getNodeReference().getProjectName();
+				/* TODO decide whether we need to check perms on the project as well */
+				Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
+				if (project == null) {
+					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
+				} else {
+					loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
+						if (hasSucceeded(rc, nrh)) {
+							setReferencedNode(nrh.result());
+							handler.handle(Future.succeededFuture(this));
+						}
+					});
+				}
+			}
+		} else {
+			handler.handle(Future.succeededFuture(this));
+		}
+
 	}
 
 }

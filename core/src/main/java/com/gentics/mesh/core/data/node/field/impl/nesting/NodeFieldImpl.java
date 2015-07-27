@@ -4,7 +4,6 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.tinkerpop.blueprints.Vertex;
 
 public class NodeFieldImpl extends MeshEdgeImpl implements NodeField {
 

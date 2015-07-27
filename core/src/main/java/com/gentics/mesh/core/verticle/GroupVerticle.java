@@ -6,6 +6,12 @@ import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -36,8 +42,6 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-
 @Component
 @Scope("singleton")
 @SpringVerticle

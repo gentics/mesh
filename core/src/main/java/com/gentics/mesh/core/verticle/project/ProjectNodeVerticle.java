@@ -47,7 +47,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
-
+import static com.gentics.mesh.util.VerticleHelper.*;
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */

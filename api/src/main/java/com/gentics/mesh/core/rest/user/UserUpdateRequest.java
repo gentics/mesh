@@ -14,6 +14,8 @@ public class UserUpdateRequest implements RestModel {
 
 	private String emailAddress;
 
+	private NodeReference nodeReference;
+
 	public UserUpdateRequest() {
 	}
 
@@ -55,6 +57,14 @@ public class UserUpdateRequest implements RestModel {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public NodeReference getNodeReference() {
+		return nodeReference;
+	}
+
+	public void setNodeReference(NodeReference nodeReference) {
+		this.nodeReference = nodeReference;
 	}
 
 }

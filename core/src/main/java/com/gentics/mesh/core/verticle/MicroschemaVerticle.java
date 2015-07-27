@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static io.vertx.core.http.HttpMethod.*;
+import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -10,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-
 @Component
 @Scope("singleton")
 @SpringVerticle

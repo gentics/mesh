@@ -369,6 +369,27 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		return handleRequest(POST, "/auth/login", GenericMessageResponse.class, loginRequest);
 	}
 
+	@Override
+	public Future<Void> initSchemaStorage() {
+		//TODO handle paging correctly
+		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingInfo(1, 100));
+		Future<Void> future = Future.future();
+		schemasFuture.setHandler(rh -> {
+			if (rh.failed()) {
+				log.error("Could not load schemas", rh.cause());
+				future.fail(rh.cause());
+			} else {
+				SchemaListResponse list = rh.result();
+				for (SchemaResponse schema : list.getData()) {
+					System.out.println(schema.getName());
+					getClientSchemaStorage().addSchema(schema);
+				}
+				future.complete();
+			}
+		});
+		return future;
+	}
+
 //		return 
 //		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
 //		meshHandler.handle(rh -> {

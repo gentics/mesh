@@ -32,7 +32,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.util.BlueprintTransaction;
-
+import static com.gentics.mesh.util.VerticleHelper.*;
 @Component
 @Scope("singleton")
 @SpringVerticle

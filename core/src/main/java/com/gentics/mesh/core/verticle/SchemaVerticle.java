@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
-
+import static com.gentics.mesh.util.VerticleHelper.*;
 @Component
 @Scope("singleton")
 @SpringVerticle
