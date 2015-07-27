@@ -127,6 +127,16 @@ public class NodeResponse extends AbstractGenericNodeRestModel {
 		this.project = project;
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T extends Field> T getField(String key, Class<T> classOfT) {
+		return (T) getFields().get(key);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Field> T getField(String key) {
+		return (T) getFields().get(key);
+	}
+
 	public Map<String, Field> getFields() {
 		return fields;
 	}

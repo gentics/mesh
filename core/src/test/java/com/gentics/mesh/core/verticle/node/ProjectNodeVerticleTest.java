@@ -380,7 +380,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(node, restNode);
 
-		String nameText = ((StringFieldImpl) restNode.getFields().get("name")).getString();
+		StringField field = restNode.getField("name");
+		String nameText = field.getString();
 		assertEquals("Produkte", nameText);
 	}
 
