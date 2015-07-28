@@ -13,8 +13,9 @@ public class BooleanFieldImpl implements BooleanField {
 	}
 
 	@Override
-	public void setValue(Boolean value) {
+	public BooleanField setValue(Boolean value) {
 		this.value = value;
+		return this;
 	}
 
 	@Override

@@ -1,0 +1,82 @@
+package com.gentics.mesh.core.field;
+
+import static org.junit.Assert.assertNotNull;
+import io.vertx.core.Future;
+
+import java.io.IOException;
+
+import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeRequestParameters;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
+import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
+
+public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticleTest {
+
+	@Autowired
+	private ProjectNodeVerticle verticle;
+
+	@Autowired
+	private ServerSchemaStorage schemaStorage;
+
+	@Before
+	public void setup() throws Exception {
+		super.setupVerticleTest();
+	}
+
+	@Override
+	public AbstractWebVerticle getVerticle() {
+		return verticle;
+	}
+
+	protected NodeResponse createNode(String fieldKey, Field field) {
+		Node node = folder("2015");
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNodeUuid(node.getUuid());
+		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
+		nodeCreateRequest.setLanguage("en");
+
+		nodeCreateRequest.getFields().put(fieldKey, field);
+		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
+				new NodeRequestParameters().setLanguages("de"));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull("The response could not be found in the result of the future.", future.result());
+		assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+		return future.result();
+	}
+
+	/**
+	 * Read a node that already contains a filled field. Make sure the response contains the expected field data.
+	 * 
+	 * @throws IOException
+	 */
+	abstract public void testReadNodeWithExitingField() throws IOException;
+
+	/**
+	 * Update a node with a currently filled field. Change the field and make sure the changes were applied correctly.
+	 */
+	abstract public void testUpdateNodeFieldWithField();
+
+	/**
+	 * Update a node which currently does not have the defined field. This way the field will be created. Make sure that the field was correctly created.
+	 */
+	abstract public void testUpdateNodeFieldWithNoField();
+
+	/**
+	 * Create a new node and set field values. Make sure the node was correctly created and the field was populated with the correct data.
+	 */
+	abstract public void testCreateNodeWithField();
+
+	//TODO testcases for mandatory fields? deletion testcases? We can use explicit null values to delete a field.
+
+}

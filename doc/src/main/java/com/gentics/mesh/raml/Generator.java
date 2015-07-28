@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
+import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
@@ -292,7 +292,7 @@ public class Generator {
 		numberFieldSchema.setStep(0.5F);
 		schema.addField(numberFieldSchema);
 
-		HTMLFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
+		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 		htmlFieldSchema.setName("html");
 		htmlFieldSchema.setLabel("Teaser");
 		schema.addField(htmlFieldSchema);

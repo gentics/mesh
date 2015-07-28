@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
+import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -445,7 +445,7 @@ public class DemoDataProvider {
 		titleFieldSchema.setLabel("Title");
 		schema.addField(titleFieldSchema);
 
-		HTMLFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
+		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
 		titleFieldSchema.setName("content");
 		titleFieldSchema.setLabel("Content");
 		schema.addField(contentFieldSchema);

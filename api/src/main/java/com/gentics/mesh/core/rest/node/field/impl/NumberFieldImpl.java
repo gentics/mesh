@@ -13,8 +13,9 @@ public class NumberFieldImpl implements NumberField {
 	}
 
 	@Override
-	public void setNumber(String number) {
+	public NumberField setNumber(String number) {
 		this.number = number;
+		return this;
 	}
 
 	@Override

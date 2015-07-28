@@ -207,7 +207,20 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				restNode.setLanguage(foundLanguage.getLanguageTag());
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(fieldEntry.getName(), fieldEntry);
-					restNode.getFields().put(fieldEntry.getName(), restField);
+					if (fieldEntry.isRequired() && restField == null) {
+						/* TODO i18n */
+						throw new HttpStatusCodeErrorException(
+								BAD_REQUEST,
+								"The field {"
+										+ fieldEntry.getName()
+										+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+					}
+					if (restField == null) {
+						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field");
+					} else {
+						restNode.getFields().put(fieldEntry.getName(), restField);
+
+					}
 				}
 			}
 

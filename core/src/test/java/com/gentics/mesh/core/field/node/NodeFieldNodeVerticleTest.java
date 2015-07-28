@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field.number;
+package com.gentics.mesh.core.field.node;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -12,27 +12,26 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
-import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
 
-public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
 		Schema schema = schemaContainer("folder").getSchema();
-		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
-		numberFieldSchema.setRequired(true);
-		schema.addField(numberFieldSchema);
+		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
+		nodeFieldSchema.setName("nodeField");
+		nodeFieldSchema.setLabel("Some label");
+		nodeFieldSchema.setAllowedSchemas("folder");
+		schema.addField(nodeFieldSchema);
 		schemaContainer("folder").setSchema(schema);
 	}
 
@@ -51,28 +50,17 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("numberField", new NumberFieldImpl().setNumber("1.21"));
-		NumberFieldImpl numberField = response.getField("numberField");
-		assertEquals("1.21", numberField.getNumber());
+		throw new NotImplementedException();
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() throws IOException {
+		Node newsNode = folder("news");
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
-		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
-		numberFieldSchema.setRequired(true);
-		schema.addField(numberFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-
-		NumberField numberField = container.createNumber("numberField");
-		numberField.setNumber("100.9");
+		container.createNode("nodeField", newsNode);
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de");
@@ -80,9 +68,8 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		NumberFieldImpl deserializedNumberField = future.result().getField("numberField", NumberFieldImpl.class);
-		assertNotNull(deserializedNumberField);
-		assertEquals("100.9", deserializedNumberField.getNumber());
+		NodeField deserializedNodeField = future.result().getField("nodeField", NodeFieldImpl.class);
+		assertNotNull(deserializedNodeField);
+		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 	}
-
 }

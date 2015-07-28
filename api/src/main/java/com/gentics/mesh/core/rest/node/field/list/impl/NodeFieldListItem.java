@@ -15,8 +15,9 @@ public class NodeFieldListItem {
 		return uuid;
 	}
 
-	public void setUuid(String uuid) {
+	public NodeFieldListItem setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 }

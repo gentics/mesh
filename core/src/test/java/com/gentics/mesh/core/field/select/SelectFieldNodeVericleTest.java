@@ -1,6 +1,4 @@
-package com.gentics.mesh.core.field.html;
-
-import static org.junit.Assert.*;
+package com.gentics.mesh.core.field.select;
 
 import java.io.IOException;
 
@@ -9,21 +7,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.SelectFieldSchemaImpl;
 
-public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class SelectFieldNodeVericleTest extends AbstractFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
 		Schema schema = schemaContainer("folder").getSchema();
-		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
-		htmlFieldSchema.setName("htmlField");
-		htmlFieldSchema.setLabel("Some label");
-		schema.addField(htmlFieldSchema);
+		SelectFieldSchema selectFieldSchema = new SelectFieldSchemaImpl();
+		selectFieldSchema.setName("selectField");
+		selectFieldSchema.setLabel("Some label");
+		schema.addField(selectFieldSchema);
 		schemaContainer("folder").setSchema(schema);
 	}
 
@@ -31,27 +27,26 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		throw new NotImplementedException();
-
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithNoField() {
 		throw new NotImplementedException();
+
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
-		HtmlFieldImpl htmlField = response.getField("htmlField");
-		assertEquals("Some<b>html", htmlField.getHTML());
+		throw new NotImplementedException();
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
 		throw new NotImplementedException();
+
 	}
 
 }

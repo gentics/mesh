@@ -168,7 +168,6 @@ public class RestModelTest extends AbstractDBTest {
 		BooleanFieldSchema booleanSchema = new BooleanFieldSchemaImpl();
 		booleanSchema.setLabel("boolean field label");
 		booleanSchema.setName("boolean");
-		booleanSchema.setValue(true);
 		schemaCreateRequest.addField(booleanSchema);
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
@@ -232,7 +231,6 @@ public class RestModelTest extends AbstractDBTest {
 		BooleanFieldSchema booleanSchema = new BooleanFieldSchemaImpl();
 		booleanSchema.setLabel("boolean field label");
 		booleanSchema.setName("boolean");
-		booleanSchema.setValue(true);
 		schema.addField(booleanSchema);
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();

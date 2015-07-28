@@ -82,6 +82,7 @@ public class MeshSpringConfiguration {
 	public Vertx vertx() {
 		VertxOptions options = new VertxOptions();
 		options.setBlockedThreadCheckInterval(1000 * 60 * 60);
+		options.setWorkerPoolSize(16);
 		return Vertx.vertx(options);
 	}
 

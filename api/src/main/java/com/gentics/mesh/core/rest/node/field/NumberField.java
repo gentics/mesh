@@ -4,6 +4,6 @@ public interface NumberField extends ListableField, MicroschemaListableField {
 
 	String getNumber();
 
-	void setNumber(String number);
+	NumberField setNumber(String number);
 
 }

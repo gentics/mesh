@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectField;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl implements FieldContainer {
 

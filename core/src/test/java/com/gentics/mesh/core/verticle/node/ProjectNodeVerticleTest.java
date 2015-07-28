@@ -455,7 +455,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
 		assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
-		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getString());
+		StringField field = restNode.getField("name");
+		assertEquals(newName, field.getString());
 
 	}
 

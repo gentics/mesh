@@ -38,7 +38,7 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 
 	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
 		final MeshAuthUserImpl user = this;
-		getMeshSpringConfiguration().vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), resultHandler);
+		getMeshSpringConfiguration().vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
 		return this;
 	}
 
@@ -70,6 +70,5 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 	public MeshAuthUserImpl getImpl() {
 		return this;
 	}
-
 
 }
