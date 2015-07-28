@@ -37,7 +37,7 @@ public class ListFieldNodeTest extends AbstractDBTest {
 		listFieldSchema.setName("dummyList");
 		listFieldSchema.setListType("node");
 		schema.addField(listFieldSchema);
-		
+
 		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(data().getEnglish());

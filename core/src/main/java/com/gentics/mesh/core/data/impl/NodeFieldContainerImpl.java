@@ -188,14 +188,13 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 
 			switch (listFieldSchema.getListType()) {
 			case NodeFieldList.TYPE:
-				//com.gentics.mesh.core.data.node.field.list.NodeFieldList nodeFieldList = new com.gentics.mesh.core.data.node.field.list.impl.NodeFieldListImpl();
 				NodeFieldListImpl restNodeFieldList = new NodeFieldListImpl();
 				NodeFieldList nodeFieldList = getNodeList(fieldKey);
-				for (ListableField item : nodeFieldList.getList()) {
-					com.gentics.mesh.core.data.node.field.nesting.NodeField nodeItem = (com.gentics.mesh.core.data.node.field.nesting.NodeField)item;
+				for (com.gentics.mesh.core.data.node.field.nesting.NodeField item : nodeFieldList.getList()) {
+					// Create the rest field and populate the fields
 					NodeField field = new NodeFieldImpl();
-					field.setUuid(nodeItem.getUuid());
-					restNodeFieldList.getList().add(field);
+					field.setUuid(item.getUuid());
+					restNodeFieldList.add(field);
 				}
 				return restNodeFieldList;
 			case NumberFieldList.TYPE:

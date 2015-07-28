@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -87,6 +88,7 @@ public final class JsonUtil {
 
 		SimpleModule module = new SimpleModule();
 
+		module.addSerializer(AbstractFieldList.class, new FieldListSerializer<AbstractFieldList<?>>());
 		module.addSerializer(NumberFieldImpl.class, new StringFieldSerializer<NumberFieldImpl>());
 		module.addSerializer(HtmlFieldImpl.class, new StringFieldSerializer<HtmlFieldImpl>());
 		module.addSerializer(StringFieldImpl.class, new StringFieldSerializer<StringFieldImpl>());

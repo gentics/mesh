@@ -18,4 +18,9 @@ public abstract class AbstractFieldList<T extends ListableField> implements Fiel
 	public String getType() {
 		return "list";
 	}
+
+	public void add(T field) {
+		list.add(field);
+	}
+
 }
