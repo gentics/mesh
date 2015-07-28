@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -152,7 +153,7 @@ public class VerticleHelper {
 		I18NService i18n = I18NService.getI18n();
 		String uuid = rc.request().params().get(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_request_parameter_missing",
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_request_parameter_missing",
 					uuidParameterName))));
 		} else {
 			loadObjectByUuid(rc, uuid, perm, root, handler);

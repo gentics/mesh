@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
@@ -16,6 +17,7 @@ import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -36,9 +38,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
+import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -88,43 +92,48 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 	// TODO fetch project specific tag
 	// TODO update other fields as well?
 	// TODO Update user information
-	// TODO use schema and only handle those i18n properties that were specified within the schema.
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			Project project = getProject(rc);
-			if (project == null) {
-				rc.fail(new HttpStatusCodeErrorException(400, "Project not found"));
-				// TODO i18n error
-			} else {
-				loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
-						Tag tag = rh.result();
+			loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Tag tag = rh.result();
 
-						TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
+					TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 
-						if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
-						} else {
-							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-								tag.setName(requestModel.getFields().getName());
-								tx.success();
-							}
-							transformAndResponde(rc, tag);
+
+					TagFamilyReference reference = requestModel.getTagFamilyReference();
+					boolean updateTagFamily = false;
+					if (reference != null) {
+						// Check whether a uuid was specified and whether the tag family changed 
+					if (!isEmpty(reference.getUuid())) {
+						if (!tag.getTagFamily().getUuid().equals(reference.getUuid())) {
+							updateTagFamily = true;
 						}
 					}
-				});
+				}
 
+				if (StringUtils.isEmpty(requestModel.getFields().getName())) {
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
+				} else {
+					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						tag.setName(requestModel.getFields().getName());
+						if (updateTagFamily) {
+							/* TODO update the tagfamily */
+						}
+						tx.success();
+					}
+					transformAndResponde(rc, tag);
+				}
 			}
-
+		}	);
 		});
 
 	}
 
 	// TODO load project specific root tag
 	// TODO handle creator
-	// TODO load schema and set the reference to the tag
-	// newTag.setSchemaName(request.getSchemaName());
 	// TODO maybe projects should not be a set?
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
@@ -134,22 +143,24 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tag_name_not_set")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
 			} else {
-
-				// TODO check tag family reference for null
-
-				loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
-						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-							TagFamily tagFamily = rh.result();
-							Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
-							project.getTagRoot().addTag(newTag);
-							tagCreated.complete(newTag);
-							transformAndResponde(rc, newTag);
+				TagFamilyReference reference = requestModel.getTagFamilyReference();
+				if (reference == null || isEmpty(reference.getUuid())) {
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set")));
+				} else {
+					loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
+						if (hasSucceeded(rc, rh)) {
+							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+								TagFamily tagFamily = rh.result();
+								Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
+								project.getTagRoot().addTag(newTag);
+								tagCreated.complete(newTag);
+								transformAndResponde(rc, newTag);
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 
 		});

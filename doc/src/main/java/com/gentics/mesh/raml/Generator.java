@@ -43,7 +43,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -292,7 +292,7 @@ public class Generator {
 		numberFieldSchema.setStep(0.5F);
 		schema.addField(numberFieldSchema);
 
-		HTMLFieldSchema htmlFieldSchema = new HTMLFieldSchemaImpl();
+		HTMLFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 		htmlFieldSchema.setName("html");
 		htmlFieldSchema.setLabel("Teaser");
 		schema.addField(htmlFieldSchema);

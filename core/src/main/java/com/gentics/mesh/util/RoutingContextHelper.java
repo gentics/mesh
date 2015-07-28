@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshConfiguration;
-
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 public final class RoutingContextHelper {
 
 	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
@@ -38,7 +38,7 @@ public final class RoutingContextHelper {
 			return user;
 		}
 		//TODO i18n
-		throw new HttpStatusCodeErrorException(500, "Could not load request user");
+		throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not load request user");
 	}
 
 	/**
@@ -101,10 +101,10 @@ public final class RoutingContextHelper {
 			perPage = NumberUtils.toInt(params.get("per_page"), MeshConfiguration.DEFAULT_PAGE_SIZE);
 		}
 		if (page < 1) {
-			throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "error_invalid_paging_parameters"));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));
 		}
 		if (perPage <= 0) {
-			throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "error_invalid_paging_parameters"));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));
 		}
 		return new PagingInfo(page, perPage);
 	}

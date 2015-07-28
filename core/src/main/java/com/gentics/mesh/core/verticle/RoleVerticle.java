@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -64,7 +66,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 					if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
 						if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name")));
+							rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
 							return;
 						}
 						role.setName(requestModel.getName());
@@ -93,17 +95,17 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 			RoleCreateRequest requestModel = fromJson(rc, RoleCreateRequest.class);
 			MeshAuthUser requestUser = getUser(rc);
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
 				return;
 			}
 
 			if (StringUtils.isEmpty(requestModel.getGroupUuid())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "role_missing_parentgroup_field")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "role_missing_parentgroup_field")));
 				return;
 			}
 
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-				rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "role_conflicting_name")));
+				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
 				return;
 			}
 			Future<Role> roleCreated = Future.future();

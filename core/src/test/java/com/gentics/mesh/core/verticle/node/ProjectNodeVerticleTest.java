@@ -39,7 +39,6 @@ import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -74,14 +73,14 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
-		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
+		schemaReference.setUuid(schemaContainer("content").getUuid());
 		// No language code set
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		request.setSchema(schemaReference);
-		request.setParentNodeUuid(data().getFolder("news").getUuid());
+		request.setParentNodeUuid(folder("news").getUuid());
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
@@ -93,14 +92,14 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
-		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
+		schemaReference.setUuid(schemaContainer("content").getUuid());
 		request.setLanguage("BOGUS");
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		request.setSchema(schemaReference);
-		request.setParentNodeUuid(data().getFolder("news").getUuid());
+		request.setParentNodeUuid(folder("news").getUuid());
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
@@ -109,14 +108,14 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNodeInBaseNode() {
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		request.setParentNodeUuid(data().getProject().getBaseNode().getUuid());
+		request.setParentNodeUuid(project().getBaseNode().getUuid());
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -128,12 +127,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNode() throws Exception {
 
-		Node parentNode = data().getFolder("news");
+		Node parentNode = folder("news");
 		assertNotNull(parentNode);
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -155,7 +154,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
-		schemaReference.setUuid(data().getSchemaContainer("content").getUuid());
+		schemaReference.setUuid(schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 
 		request.setLanguage("de");
@@ -163,7 +162,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("title", FieldUtil.createStringField("Title"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setParentNodeUuid(data().getFolder("news").getUuid());
+		request.setParentNodeUuid(folder("news").getUuid());
 
 		// Create node
 		NodeRequestParameters parameters = new NodeRequestParameters();
@@ -190,7 +189,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 				latchFor(deleteFut);
 				assertSuccess(deleteFut);
 				expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
-				data().getMeshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
+				meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
 					assertNull("The node should have been deleted.", rh2.result());
 				});
 			});
@@ -207,7 +206,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -218,17 +217,17 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
-		Node node = data().getFolder("news");
+		Node node = folder("news");
 		// Revoke create perm
 		info.getRole().revokePermissions(node, CREATE_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		SchemaReference schemaReference = new SchemaReference("content", data().getSchemaContainer("content").getUuid());
+		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.setParentNodeUuid(node.getUuid());
 
@@ -260,9 +259,9 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodes() throws Exception {
 
-		Node parentNode = data().getFolder("2015");
+		Node parentNode = folder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		Node noPermNode = parentNode.create(info.getUser(), data().getSchemaContainer("content"), data().getProject());
+		Node noPermNode = parentNode.create(info.getUser(), schemaContainer("content"), project());
 		noPermNode.setCreator(info.getUser());
 		assertNotNull(noPermNode.getUuid());
 
@@ -354,9 +353,9 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUID() throws Exception {
 
-		getClient().getClientSchemaStorage().addSchema(data().getSchemaContainer("folder").getSchema());
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -369,8 +368,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
-		getClient().getClientSchemaStorage().addSchema(data().getSchemaContainer("folder").getSchema());
-		Node node = data().getFolder("products");
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		Node node = folder("products");
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de");
@@ -388,7 +387,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -403,7 +402,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			info.getRole().revokePermissions(node, READ_PERM);
 			tx.success();
@@ -435,15 +434,15 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("folder");
-		schemaReference.setUuid(data().getSchemaContainer("folder").getUuid());
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
 
-		assertEquals("2015", node.getFieldContainer(data().getEnglish()).getString("name").getString());
+		assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
 
 		final String newName = "english renamed name";
 		request.getFields().put("name", FieldUtil.createStringField(newName));
@@ -455,7 +454,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
-		assertEquals(newName, node.getFieldContainer(data().getEnglish()).getString("name").getString());
+		assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
 		assertEquals(newName, ((StringField) restNode.getFields().get("name")).getString());
 
 	}
@@ -463,12 +462,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateNodeWithExtraField() throws UnknownHostException, InterruptedException {
 
-		Node parentNode = data().getFolder("news");
+		Node parentNode = folder("news");
 		assertNotNull(parentNode);
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("extrafield", FieldUtil.createStringField("some extra field value"));
@@ -490,12 +489,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingRequiredField() {
-		Node parentNode = data().getFolder("news");
+		Node parentNode = folder("news");
 		assertNotNull(parentNode);
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		// non required title field is missing
 		// required name field is missing
@@ -513,12 +512,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
-		Node parentNode = data().getFolder("news");
+		Node parentNode = folder("news");
 		assertNotNull(parentNode);
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", data().getSchemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		// title field is missing
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -546,7 +545,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 		request.getFields().put("displayName", FieldUtil.createStringField(newDisplayName));
 
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de", "en");
@@ -559,7 +558,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		assertNull(future.result());
 
-		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(data().getEnglish());
+		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english());
 		assertNotEquals(newName, englishContainer.getString("name").getString());
 
 	}
@@ -569,7 +568,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteBaseNode() throws Exception {
 
-		Node node = data().getProject().getBaseNode();
+		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
@@ -582,7 +581,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteNode() throws Exception {
 
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		String uuid = node.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
@@ -597,9 +596,9 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteNodeWithNoPerm() throws Exception {
 
-		String uuid = data().getFolder("2015").getUuid();
+		String uuid = folder("2015").getUuid();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			Node node = data().getFolder("2015");
+			Node node = folder("2015");
 			info.getRole().revokePermissions(node, DELETE_PERM);
 			tx.success();
 		}

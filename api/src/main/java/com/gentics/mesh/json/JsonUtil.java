@@ -23,10 +23,11 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.ListableField;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -90,6 +91,9 @@ public final class JsonUtil {
 		module.addSerializer(NumberFieldImpl.class, new StringFieldSerializer<NumberFieldImpl>());
 		module.addSerializer(HtmlFieldImpl.class, new StringFieldSerializer<HtmlFieldImpl>());
 		module.addSerializer(StringFieldImpl.class, new StringFieldSerializer<StringFieldImpl>());
+		module.addSerializer(DateFieldImpl.class, new StringFieldSerializer<DateFieldImpl>());
+		module.addSerializer(BooleanFieldImpl.class, new StringFieldSerializer<BooleanFieldImpl>());
+
 		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, valuesMap, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class, new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, valuesMap,
 				NodeCreateRequest.class));

@@ -9,8 +9,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.BooleanUtils;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -21,9 +19,8 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HTMLField;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.MicroschemaField;
-import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -92,7 +89,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case HTML:
-			HTMLField htmlField = new HtmlFieldImpl();
+			HtmlField htmlField = new HtmlFieldImpl();
 			htmlField.setHTML(jsonNode.textValue());
 			map.put(fieldKey, htmlField);
 			break;
@@ -103,12 +100,13 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 			break;
 		case NUMBER:
 			NumberField numberField = new NumberFieldImpl();
-			numberField.setNumber(jsonNode.textValue());
+			numberField.setNumber(jsonNode.numberValue().toString());
 			map.put(fieldKey, numberField);
 			break;
 		case BOOLEAN:
 			BooleanField booleanField = new BooleanFieldImpl();
-			booleanField.setValue(BooleanUtils.toBooleanObject(jsonNode.textValue()));
+			//booleanField.setValue(BooleanUtils.toBooleanObject(jsonNode.booleanValue()));
+			booleanField.setValue(jsonNode.booleanValue());
 			map.put(fieldKey, booleanField);
 			break;
 		case DATE:

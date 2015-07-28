@@ -11,6 +11,7 @@ import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -42,6 +43,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -199,14 +201,14 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
 					if (StringUtils.isEmpty(requestModel.getName())) {
-						rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
 						return;
 					}
 
 					if (!group.getName().equals(requestModel.getName())) {
 						Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 						if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-							rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "group_conflicting_name")));
+							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "group_conflicting_name")));
 							return;
 						}
 						group.setName(requestModel.getName());
@@ -239,7 +241,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			GroupCreateRequest requestModel = JsonUtil.fromJson(rc, GroupCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_name_must_be_set")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
 				return;
 			}
 

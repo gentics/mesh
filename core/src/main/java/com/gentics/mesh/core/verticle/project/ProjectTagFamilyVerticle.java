@@ -6,6 +6,12 @@ import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -32,7 +38,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.util.BlueprintTransaction;
-import static com.gentics.mesh.util.VerticleHelper.*;
+
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -103,7 +110,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			TagFamilyCreateRequest requestModel = fromJson(rc, TagFamilyCreateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tagfamily_name_not_set")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
 			} else {
 				TagFamilyRoot root = project.getTagFamilyRoot();
 				/* TODO check for null */
@@ -130,7 +137,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "tagfamily_name_not_set")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
 			} else {
 				loadObject(rc, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 					if (hasSucceeded(rc, rh)) {

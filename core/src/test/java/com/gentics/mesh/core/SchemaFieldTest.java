@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
@@ -45,7 +45,7 @@ public class SchemaFieldTest extends AbstractDBTest {
 		schema.setName("dummySchema");
 		schema.setBinary(true);
 		schema.setFolder(true);
-		schema.addField(new HTMLFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
 		validateSchema(schema);
 	}
 
@@ -55,7 +55,7 @@ public class SchemaFieldTest extends AbstractDBTest {
 		schema.setName("dummySchema");
 		schema.setBinary(true);
 		schema.setFolder(true);
-		schema.addField(new HTMLFieldSchemaImpl().setLabel("label_1").setName("name_1").setRequired(true));
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("label_1").setName("name_1").setRequired(true));
 		schema.addField(new StringFieldSchemaImpl().setLabel("label_2").setName("name_2").setRequired(true));
 		schema.addField(new NumberFieldSchemaImpl().setLabel("label_3").setName("name_3").setRequired(true));
 		schema.addField(new DateFieldSchemaImpl().setLabel("label_4").setName("name_4").setRequired(true));
@@ -97,8 +97,8 @@ public class SchemaFieldTest extends AbstractDBTest {
 		schema.setName("dummySchema");
 		schema.setBinary(true);
 		schema.setFolder(true);
-		schema.addField(new HTMLFieldSchemaImpl().setLabel("Label1").setName("name").setRequired(true));
-		schema.addField(new HTMLFieldSchemaImpl().setLabel("Label2").setName("name").setRequired(true));
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label1").setName("name").setRequired(true));
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label2").setName("name").setRequired(true));
 		schema.validate();
 	}
 
@@ -108,8 +108,8 @@ public class SchemaFieldTest extends AbstractDBTest {
 		schema.setName("dummySchema");
 		schema.setBinary(true);
 		schema.setFolder(true);
-		schema.addField(new HTMLFieldSchemaImpl().setLabel("Label").setName("name1").setRequired(true));
-		schema.addField(new HTMLFieldSchemaImpl().setLabel("Label").setName("name2").setRequired(true));
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("name1").setRequired(true));
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("name2").setRequired(true));
 		schema.validate();
 	}
 

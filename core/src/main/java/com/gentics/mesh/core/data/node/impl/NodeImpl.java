@@ -151,13 +151,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 		SchemaContainer container = getSchemaContainer();
 		if (container == null) {
-			throw new HttpStatusCodeErrorException(400, "The schema container for node {" + getUuid() + "} could not be found.");
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
 
 		try {
 			Schema schema = container.getSchema();
 			if (schema == null) {
-				throw new HttpStatusCodeErrorException(400, "The schema for node {" + getUuid() + "} could not be found.");
+				throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found.");
 			}
 			/* Load the schema information */
 			if (getSchemaContainer() != null) {
@@ -186,7 +186,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			for (String languageTag : languageTags) {
 				Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
-					throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "error_language_not_found", languageTag));
+					throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_language_not_found", languageTag));
 				}
 				fieldContainer = getFieldContainer(language);
 				// We found a container for one of the languages
@@ -217,7 +217,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				}
 			} catch (InvalidArgumentException e) {
 				//TODO i18n
-				throw new HttpStatusCodeErrorException(400, "Could not transform tags");
+				throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags");
 			}
 
 			handler.handle(Future.succeededFuture(restNode));

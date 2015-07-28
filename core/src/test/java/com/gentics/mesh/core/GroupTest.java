@@ -29,8 +29,8 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testUserGroup() {
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
+		GroupRoot groupRoot = meshRoot().getGroupRoot();
 
 		User user = userRoot.create("testuser");
 		Group group = groupRoot.create("test group");
@@ -71,9 +71,9 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		GroupRoot root = data().getMeshRoot().getGroupRoot();
+		GroupRoot root = meshRoot().getGroupRoot();
 		int nGroupsBefore = root.findAll().size();
-		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
+		GroupRoot groupRoot = meshRoot().getGroupRoot();
 		assertNotNull(groupRoot.create("test group2"));
 
 		int nGroupsAfter = root.findAll().size();

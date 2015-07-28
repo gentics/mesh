@@ -50,7 +50,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.HTMLFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.AdminVerticle;
@@ -466,7 +466,7 @@ public class BootstrapInitializer {
 			titleFieldSchema.setLabel("Title");
 			schema.addField(titleFieldSchema);
 
-			HTMLFieldSchema contentFieldSchema = new HTMLFieldSchemaImpl();
+			HTMLFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
 			contentFieldSchema.setName("content");
 			contentFieldSchema.setLabel("Content");
 			schema.addField(contentFieldSchema);

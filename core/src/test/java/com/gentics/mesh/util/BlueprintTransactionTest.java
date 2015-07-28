@@ -26,7 +26,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 	public void testTransaction() throws InterruptedException {
 		AtomicInteger i = new AtomicInteger(0);
 
-		UserRoot root = data().getMeshRoot().getUserRoot();
+		UserRoot root = meshRoot().getUserRoot();
 		int e = i.incrementAndGet();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			assertNotNull(root.create("testuser" + e));
@@ -56,7 +56,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		User user = data().getUserInfo().getUser();
+		User user = user();
 
 		Runnable task2 = () -> {
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {

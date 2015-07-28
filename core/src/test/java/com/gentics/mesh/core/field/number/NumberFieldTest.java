@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field;
+package com.gentics.mesh.core.field.number;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

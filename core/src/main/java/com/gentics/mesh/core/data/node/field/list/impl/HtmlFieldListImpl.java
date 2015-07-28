@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import com.gentics.mesh.core.data.node.field.basic.HtmlField;
-import com.gentics.mesh.core.data.node.field.impl.basic.HTMLFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.basic.HtmlFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
 
@@ -16,7 +16,7 @@ public class HtmlFieldListImpl extends AbstractBasicFieldList<HtmlField> impleme
 
 	@Override
 	protected HtmlField createField(String key) {
-		return new HTMLFieldImpl(key, getImpl());
+		return new HtmlFieldImpl(key, getImpl());
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class HtmlFieldListImpl extends AbstractBasicFieldList<HtmlField> impleme
 
 	@Override
 	public Class<? extends HtmlField> getListType() {
-		return HTMLFieldImpl.class;
+		return HtmlFieldImpl.class;
 	}
 
 }

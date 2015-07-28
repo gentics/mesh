@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.data.node.field.basic.StringField;
 import com.gentics.mesh.core.data.node.field.impl.basic.BooleanFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.DateFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.HTMLFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.basic.HtmlFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.NumberFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.nesting.NodeFieldImpl;
@@ -103,7 +103,7 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 
 	@Override
 	public HtmlField createHTML(String key) {
-		HTMLFieldImpl field = new HTMLFieldImpl(key, this);
+		HtmlFieldImpl field = new HtmlFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
 	}
@@ -111,7 +111,7 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 	@Override
 	public HtmlField getHTML(String key) {
 		if (fieldExists(key)) {
-			return new HTMLFieldImpl(key, this);
+			return new HtmlFieldImpl(key, this);
 		}
 		return null;
 	}

@@ -37,17 +37,17 @@ public class LinkRendererTest extends AbstractDBTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 
-		Language german = data().getGerman();
-		Language english = data().getEnglish();
-		Node parentNode = data().getFolder("2015");
+		Language german = german();
+		Language english = english();
+		Node parentNode = folder("2015");
 
 		// Create some dummy content
-		Node content = parentNode.create(data().getUserInfo().getUser(), data().getSchemaContainer("content"), data().getProject());
+		Node content = parentNode.create(user(), data().getSchemaContainer("content"), project());
 		NodeFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
 		germanContainer.createString("displayName").setString("german name");
 		germanContainer.createString("name").setString("german.html");
 
-		Node content2 = parentNode.create(data().getUserInfo().getUser(), data().getSchemaContainer("content"),data().getProject());
+		Node content2 = parentNode.create(user(), data().getSchemaContainer("content"),project());
 		NodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");

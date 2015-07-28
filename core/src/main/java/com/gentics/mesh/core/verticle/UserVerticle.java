@@ -1,10 +1,17 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.util.VerticleHelper.*;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObject;
+import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -96,20 +103,20 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 			UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 			if (requestModel == null) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "error_parse_request_json_error")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_parse_request_json_error")));
 				return;
 			}
 			if (isEmpty(requestModel.getPassword())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_password")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_password")));
 				return;
 			}
 			if (isEmpty(requestModel.getUsername())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_username")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_username")));
 				return;
 			}
 			String groupUuid = requestModel.getGroupUuid();
 			if (isEmpty(groupUuid)) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "user_missing_parentgroup_field")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_parentgroup_field")));
 				return;
 			}
 
@@ -119,7 +126,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 					Group parentGroup = rh.result();
 					if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
 						String message = i18n.get(rc, "user_conflicting_username");
-						rc.fail(new HttpStatusCodeErrorException(409, message));
+						rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
 					} else {
 						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 							User user = parentGroup.createUser(requestModel.getUsername());

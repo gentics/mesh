@@ -54,7 +54,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		info.getRole().addPermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
+		info.getRole().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -74,7 +74,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			final String name = "test_" + i;
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
-			info.getRole().addPermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
+			info.getRole().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 			Future<GroupResponse> future = getClient().createGroup(request);
 			latchFor(future);
@@ -90,7 +90,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		info.getRole().addPermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
+		info.getRole().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -150,7 +150,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		GroupRoot root = data().getMeshRoot().getGroupRoot();
+		GroupRoot root = meshRoot().getGroupRoot();
 		info.getRole().revokePermissions(root, CREATE_PERM);
 		User user = info.getUser();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
@@ -166,7 +166,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadGroups() throws Exception {
 
-		GroupRoot root = data().getMeshRoot().getGroupRoot();
+		GroupRoot root = meshRoot().getGroupRoot();
 		// Create and save some groups
 		final int nGroups = 21;
 		Group extraGroupWithNoPerm = root.create("no_perm_group");
@@ -317,7 +317,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateGroupWithConflictingName() throws HttpStatusCodeErrorException, Exception {
 		Group group = info.getGroup();
-		GroupRoot groupRoot = data().getMeshRoot().getGroupRoot();
+		GroupRoot groupRoot = meshRoot().getGroupRoot();
 		final String alreadyUsedName = "extraGroup";
 
 		// Create a group which occupies the name

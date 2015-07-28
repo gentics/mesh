@@ -13,6 +13,7 @@ import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -47,8 +48,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 
-//TODO wtf annotation
-@Configurable
 public class UserImpl extends AbstractGenericVertex<UserResponse> implements User {
 
 	public static final String FIRSTNAME_KEY = "firstname";
@@ -282,7 +281,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 
 		if (requestModel.getUsername() != null && getUsername() != requestModel.getUsername()) {
 			if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(409, i18n.get(rc, "user_conflicting_username"))));
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "user_conflicting_username"))));
 				return;
 			}
 			setUsername(requestModel.getUsername());

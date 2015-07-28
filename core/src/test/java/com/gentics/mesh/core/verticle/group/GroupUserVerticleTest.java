@@ -31,17 +31,12 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-//import com.gentics.mesh.util.DataHelper;
-
 public class GroupUserVerticleTest
 
 extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupVerticle groupsVerticle;
-
-	//	@Autowired
-	//	private DataHelper helper;
 
 	@Override
 	public AbstractWebVerticle getVerticle() {
@@ -52,7 +47,7 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testGetUsersByGroup() throws Exception {
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser");
 		info.getGroup().addUser(extraUser);
 		info.getRole().addPermissions(extraUser, READ_PERM);
@@ -77,7 +72,7 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 
 		User extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, READ_PERM);
@@ -90,7 +85,7 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
 		Group group = info.getGroup();
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 
 		User extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, READ_PERM);
@@ -108,7 +103,7 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
 		Group group = info.getGroup();
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, READ_PERM);
 		info.getRole().revokePermissions(group, UPDATE_PERM);
@@ -122,7 +117,7 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
 		Group group = info.getGroup();
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser");
 		info.getRole().addPermissions(extraUser, DELETE_PERM);
 

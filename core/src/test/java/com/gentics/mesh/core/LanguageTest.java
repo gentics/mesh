@@ -30,7 +30,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		LanguageRoot languageRoot = data().getMeshRoot().getLanguageRoot();
+		LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 
 		int nLanguagesBefore = languageRoot.findAll().size();
 
@@ -108,7 +108,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		Language language = data().getEnglish();
+		Language language = english();
 		assertNotNull(language.getName());
 		assertEquals("English", language.getName());
 		assertNotNull(language.getNativeName());
@@ -120,7 +120,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		LanguageRoot languageRoot = data().getMeshRoot().getLanguageRoot();
+		LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 		final String languageTag = "tlh";
 		final String languageName = "klingon";
 		Language lang = languageRoot.create(languageName, languageTag);
@@ -147,28 +147,28 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		Language language = data().getEnglish();
+		Language language = english();
 		testPermission(Permission.READ_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		Language language = data().getEnglish();
+		Language language = english();
 		testPermission(Permission.DELETE_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		Language language = data().getEnglish();
+		Language language = english();
 		testPermission(Permission.UPDATE_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		Language language = data().getEnglish();
+		Language language = english();
 		testPermission(Permission.CREATE_PERM, language);
 	}
 

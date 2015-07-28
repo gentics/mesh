@@ -1,7 +1,6 @@
-package com.gentics.mesh.core.field.node;
+package com.gentics.mesh.core.field.number;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
@@ -13,17 +12,17 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.basic.NumberField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
 
-public class NodeFieldNodeTest extends AbstractDBTest {
+public class NumberFieldNodeTest extends AbstractDBTest {
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
@@ -34,29 +33,28 @@ public class NodeFieldNodeTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodeFieldTransformation() throws IOException, InterruptedException {
-		Node newsNode = folder("news");
-
+	public void testNumberFieldTransformation() throws IOException, InterruptedException {
 		Node node = folder("2015");
 		Schema schema = node.getSchema();
-		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
-		nodeFieldSchema.setName("nodeField");
-		nodeFieldSchema.setAllowedSchemas("folder");
-		schema.addField(nodeFieldSchema);
+		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
+		numberFieldSchema.setName("numberField");
+		numberFieldSchema.setMin(10);
+		numberFieldSchema.setMax(1000);
+		numberFieldSchema.setRequired(true);
+		schema.addField(numberFieldSchema);
 		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		container.createNode("nodeField", newsNode);
+
+		NumberField numberField = container.createNumber("numberField");
+		numberField.setNumber("100.9");
 
 		String json = getJson(node);
+		assertTrue(json.indexOf("100.9") > 1);
 		assertNotNull(json);
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 		assertNotNull(response);
-
-		NodeField deserializedNodeField = response.getField("nodeField", NodeFieldImpl.class);
-		assertNotNull(deserializedNodeField);
-		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
-
+		NumberFieldImpl deserializedNumberField = response.getField("numberField");
+		assertEquals("100.9", deserializedNumberField.getNumber());
 	}
-
 }

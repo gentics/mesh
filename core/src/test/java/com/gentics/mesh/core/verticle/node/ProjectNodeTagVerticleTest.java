@@ -35,7 +35,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		assertNotNull(node);
 		System.out.println(node.getUuid());
 		assertNotNull(node.getUuid());
@@ -52,8 +52,8 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddTagToNode() throws Exception {
 
-		Node node = data().getFolder("2015");
-		Tag tag = data().getTag("red");
+		Node node = folder("2015");
+		Tag tag = tag("red");
 		assertFalse(node.getTags().contains(tag));
 		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
@@ -66,8 +66,8 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
-		Node node = data().getFolder("2015");
-		Tag tag = data().getTag("red");
+		Node node = folder("2015");
+		Tag tag = tag("red");
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(node, UPDATE_PERM);
 
@@ -79,8 +79,8 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
-		Node node = data().getFolder("2015");
-		Tag tag = data().getTag("red");
+		Node node = folder("2015");
+		Tag tag = tag("red");
 		assertFalse(node.getTags().contains(tag));
 		info.getRole().revokePermissions(tag, READ_PERM);
 
@@ -92,8 +92,8 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
-		Node node = data().getFolder("2015");
-		Tag tag = data().getTag("bike");
+		Node node = folder("2015");
+		Tag tag = tag("bike");
 
 		assertTrue(node.getTags().contains(tag));
 		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
@@ -108,7 +108,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveBogusTagFromNode() throws Exception {
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 
 		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), "bogus");
 		latchFor(future);
@@ -117,8 +117,8 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
-		Node node = data().getFolder("2015");
-		Tag tag = data().getTag("bike");
+		Node node = folder("2015");
+		Tag tag = tag("bike");
 		assertTrue(node.getTags().contains(tag));
 		info.getRole().revokePermissions(node, UPDATE_PERM);
 
@@ -130,8 +130,8 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
-		Node node = data().getFolder("2015");
-		Tag tag = data().getTag("bike");
+		Node node = folder("2015");
+		Tag tag = tag("bike");
 		assertTrue(node.getTags().contains(tag));
 		info.getRole().revokePermissions(tag, READ_PERM);
 

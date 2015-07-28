@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field;
+package com.gentics.mesh.core.field.select;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;

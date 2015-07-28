@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field;
+package com.gentics.mesh.core.field.list;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,8 +48,8 @@ public class ListFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeListTransformation() throws IOException, InterruptedException {
-		Node node = data().getFolder("2015");
-		Node newsNode = data().getFolder("news");
+		Node node = folder("2015");
+		Node newsNode = folder("news");
 
 		Schema schema = node.getSchema();
 		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
@@ -84,7 +84,7 @@ public class ListFieldNodeTest extends AbstractDBTest {
 
 		node.getSchemaContainer().setSchema(schema);
 
-		NodeFieldContainer container = node.getFieldContainer(data().getEnglish());
+		NodeFieldContainer container = node.getFieldContainer(english());
 
 		NodeFieldList nodeList = container.createNodeList("nodeList");
 		nodeList.createNode("1", newsNode);
@@ -124,20 +124,6 @@ public class ListFieldNodeTest extends AbstractDBTest {
 		assertList(3, "booleanList", BooleanFieldListImpl.class, response);
 		//		assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
 
-	}
-
-	private String getJson(Node node) throws InterruptedException {
-		RoutingContext rc = getMockedRoutingContext("lang=en");
-		CountDownLatch latch = new CountDownLatch(1);
-		AtomicReference<String> reference = new AtomicReference<>();
-		node.transformToRest(rc, rh -> {
-			NodeResponse response = rh.result();
-			reference.set(JsonUtil.toJson(response));
-			assertNotNull(response);
-			latch.countDown();
-		});
-		latch.await();
-		return reference.get();
 	}
 
 	private <T extends AbstractFieldList<?>> void assertList(int expectedItems, String fieldKey, Class<T> classOfT, NodeResponse response) {

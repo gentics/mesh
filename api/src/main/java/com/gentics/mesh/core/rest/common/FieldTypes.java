@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.common;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HTMLField;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.MicroschemaField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.HTMLFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 public enum FieldTypes {
 	STRING(StringFieldSchema.class, StringFieldSchemaImpl.class, StringField.class, StringFieldImpl.class), HTML(HTMLFieldSchema.class,
-			HTMLFieldSchemaImpl.class, HTMLField.class, HtmlFieldImpl.class), NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class,
+			HtmlFieldSchemaImpl.class, HtmlField.class, HtmlFieldImpl.class), NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class,
 			NumberField.class, NumberFieldImpl.class), DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateField.class, DateFieldImpl.class), BOOLEAN(
 			BooleanFieldSchema.class, BooleanFieldSchemaImpl.class, BooleanField.class, BooleanFieldImpl.class), SELECT(SelectFieldSchema.class,
 			SelectFieldSchemaImpl.class, SelectField.class, SelectFieldImpl.class), NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class,

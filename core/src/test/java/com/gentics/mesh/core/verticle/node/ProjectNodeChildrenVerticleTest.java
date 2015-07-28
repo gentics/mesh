@@ -88,7 +88,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -103,7 +103,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
-		Node node = data().getContent("boeing 737");
+		Node node = content("boeing 737");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
@@ -118,7 +118,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeChildren() throws Exception {
-		Node node = data().getFolder("news");
+		Node node = folder("news");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 

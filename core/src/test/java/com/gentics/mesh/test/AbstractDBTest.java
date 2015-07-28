@@ -1,5 +1,6 @@
 package com.gentics.mesh.test;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import io.vertx.core.http.HttpServerRequest;
@@ -10,6 +11,8 @@ import io.vertx.ext.web.Session;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +22,21 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestAssert;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -56,8 +69,53 @@ public abstract class AbstractDBTest {
 		dataProvider.setup(1);
 	}
 
+	@Deprecated
 	public DemoDataProvider data() {
 		return dataProvider;
+	}
+
+	public SchemaContainer schemaContainer(String key) {
+		return data().getSchemaContainer(key);
+	}
+
+	public Tag tag(String key) {
+		return data().getTag(key);
+	}
+
+	public Project project() {
+		return data().getProject();
+	}
+
+	public Node content(String key) {
+		return data().getContent(key);
+	}
+
+	public Node folder(String key) {
+		return data().getFolder(key);
+	}
+
+	public Language english() {
+		return data().getEnglish();
+	}
+
+	public Language german() {
+		return data().getGerman();
+	}
+
+	public User user() {
+		return data().getUserInfo().getUser();
+	}
+
+	public Group group() {
+		return data().getUserInfo().getGroup();
+	}
+
+	public Role role() {
+		return data().getUserInfo().getRole();
+	}
+
+	public MeshRoot meshRoot() {
+		return data().getMeshRoot();
 	}
 
 	protected void purgeDatabase() {
@@ -68,6 +126,20 @@ public abstract class AbstractDBTest {
 		for (Vertex vertex : fg.getVertices()) {
 			vertex.remove();
 		}
+	}
+	
+	protected String getJson(Node node) throws InterruptedException {
+		RoutingContext rc = getMockedRoutingContext("lang=en");
+		CountDownLatch latch = new CountDownLatch(1);
+		AtomicReference<String> reference = new AtomicReference<>();
+		node.transformToRest(rc, rh -> {
+			NodeResponse response = rh.result();
+			reference.set(JsonUtil.toJson(response));
+			assertNotNull(response);
+			latch.countDown();
+		});
+		latch.await();
+		return reference.get();
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {

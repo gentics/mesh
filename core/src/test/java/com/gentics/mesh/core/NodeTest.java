@@ -37,15 +37,15 @@ public class NodeTest extends AbstractBasicObjectTest {
 	 */
 	@Test
 	public void testPageLinks() {
-		Node folder = data().getFolder("2015");
+		Node folder = folder("2015");
 		Node node = folder.create(getUser(), getSchemaContainer(), getProject());
 		Node node2 = folder.create(getUser(), getSchemaContainer(), getProject());
 
-		NodeFieldContainer englishContainer = node2.getOrCreateFieldContainer(data().getEnglish());
+		NodeFieldContainer englishContainer = node2.getOrCreateFieldContainer(english());
 		englishContainer.createString("content").setString("english content");
 		englishContainer.createString("name").setString("english.html");
 
-		NodeFieldContainer englishContainer2 = node.getOrCreateFieldContainer(data().getGerman());
+		NodeFieldContainer englishContainer2 = node.getOrCreateFieldContainer(german());
 		englishContainer2.createString("content").setString("english2 content");
 		englishContainer2.createString("name").setString("english2.html");
 		node.createLink(node2);
@@ -56,7 +56,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testMeshNodeStructure() {
-		Node newsNode = data().getContent("news overview");
+		Node newsNode = content("news overview");
 		assertNotNull(newsNode);
 		Node newSubNode;
 		newSubNode = newsNode.create(getUser(), getSchemaContainer(), getProject());
@@ -68,10 +68,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testTaggingOfMeshNode() {
-		Node newsNode = data().getContent("news overview");
+		Node newsNode = content("news overview");
 		assertNotNull(newsNode);
 
-		Tag carTag = data().getTag("car");
+		Tag carTag = tag("car");
 		assertNotNull(carTag);
 
 		newsNode.addTag(carTag);
@@ -105,8 +105,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testMeshNodeFields() {
-		Node newsNode = data().getContent("news overview");
-		Language german = data().getGerman();
+		Node newsNode = content("news overview");
+		Language german = german();
 		NodeFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
 
 		// TODO add some fields
@@ -127,7 +127,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		Project project = data().getProject();
+		Project project = project();
 		Node root = project.getBaseNode();
 		assertNotNull(root);
 	}
@@ -142,7 +142,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		Node newsNode = data().getContent("news overview");
+		Node newsNode = content("news overview");
 		boot.nodeRoot().findByUuid(newsNode.getUuid(), rh -> {
 			Node node = rh.result();
 			assertNotNull(node);
@@ -154,7 +154,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformation() {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
-		Node newsNode = data().getContent("porsche 911");
+		Node newsNode = content("porsche 911");
 		newsNode.transformToRest(rc, rh -> {
 			NodeResponse response = rh.result();
 			assertNotNull(response);
@@ -184,7 +184,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 		assertEquals("folder", node.getSchema().getName());
 		assertTrue(node.getSchema().isFolder());
 	}
@@ -192,8 +192,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		User user = data().getUserInfo().getUser();
-		Node parentNode = data().getFolder("2015");
+		User user = user();
+		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, data().getSchemaContainer("content"), getProject());
 		long ts = System.currentTimeMillis();
 		node.setCreationTimestamp(ts);
@@ -206,8 +206,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertEquals(ts, creationTimeStamp.longValue());
 		assertEquals(user, node.getCreator());
 		assertEquals(user, node.getEditor());
-		Language english = data().getEnglish();
-		Language german = data().getGerman();
+		Language english = english();
+		Language german = german();
 
 		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
 		englishContainer.createString("content").setString("english content");

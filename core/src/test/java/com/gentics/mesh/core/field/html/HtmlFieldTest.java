@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field;
+package com.gentics.mesh.core.field.html;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -8,15 +8,15 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.basic.HtmlField;
-import com.gentics.mesh.core.data.node.field.impl.basic.HTMLFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.basic.HtmlFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
-public class HTMLFieldTest extends AbstractDBTest {
+public class HtmlFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleHTML() {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
-		HTMLFieldImpl field = new HTMLFieldImpl("test", container);
+		HtmlFieldImpl field = new HtmlFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		assertNull(container.getProperty("test-html"));
 		field.setHTML("dummy HTML");

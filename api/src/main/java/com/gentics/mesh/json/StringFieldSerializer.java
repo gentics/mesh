@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HTMLField;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -32,7 +32,7 @@ public class StringFieldSerializer<T extends Field> extends JsonSerializer<T> {
 			FieldTypes type = FieldTypes.valueByName(value.getType());
 			switch (type) {
 			case HTML:
-				HTMLField htmlField = (HtmlFieldImpl) value;
+				HtmlField htmlField = (HtmlFieldImpl) value;
 				gen.writeString(htmlField.getHTML());
 				break;
 			case STRING:

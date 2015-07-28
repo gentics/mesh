@@ -11,6 +11,7 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	 */
 	private int code;
 
+	@Deprecated
 	public HttpStatusCodeErrorException(int code, String message) {
 		super(message);
 		this.code = code;

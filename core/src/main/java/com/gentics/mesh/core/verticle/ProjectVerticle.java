@@ -11,6 +11,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -66,7 +68,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 					// Check for conflicting project name
 					if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
 						if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-							rc.fail(new HttpStatusCodeErrorException(409, i18n.get(rc, "project_conflicting_name")));
+							rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
 							return;
 						}
 						project.setName(requestModel.getName());
@@ -90,7 +92,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			MeshAuthUser requestUser = getUser(rc);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_missing_name")));
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_missing_name")));
 				return;
 			}
 
@@ -102,7 +104,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 			rcs.hasPermission(rc, boot.projectRoot(), CREATE_PERM, rh -> {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-					rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "project_conflicting_name")));
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_conflicting_name")));
 				} else {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 						ProjectRoot projectRoot = boot.projectRoot();
