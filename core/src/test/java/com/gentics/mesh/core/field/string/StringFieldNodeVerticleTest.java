@@ -1,15 +1,19 @@
 package com.gentics.mesh.core.field.string;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.basic.StringField;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -50,7 +54,17 @@ public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		throw new NotImplementedException();
+		Node node = folder("2015");
+
+		NodeFieldContainer container = node.getFieldContainer(english());
+		StringField stringField = container.createString("stringField");
+		stringField.setString("someString");
+
+		NodeResponse response = readNode(node);
+
+		StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
+		assertNotNull(deserializedStringField);
+		assertEquals("someString", deserializedStringField.getString());
 	}
 
 }

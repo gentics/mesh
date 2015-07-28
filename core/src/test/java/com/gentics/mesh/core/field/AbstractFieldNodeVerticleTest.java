@@ -39,6 +39,16 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		return verticle;
 	}
 
+	protected NodeResponse readNode(Node node) {
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("en");
+		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid(), parameters);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse response = future.result();
+		return response;
+	}
+
 	protected NodeResponse createNode(String fieldKey, Field field) {
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
@@ -89,6 +99,6 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 	 */
 	abstract public void testCreateNodeWithField();
 
-	//TODO testcases for mandatory fields? deletion testcases? We can use explicit null values to delete a field.
+	// TODO testcases for mandatory fields? deletion testcases? We can use explicit null values to delete a field.
 
 }

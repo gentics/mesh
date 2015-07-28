@@ -1,13 +1,15 @@
 package com.gentics.mesh.core.field.html;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -50,7 +52,16 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		throw new NotImplementedException();
+		Node node = folder("2015");
+
+		NodeFieldContainer container = node.getFieldContainer(english());
+		container.createHTML("htmlField").setHTML("some<b>html");
+
+		NodeResponse response = readNode(node);
+		HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");
+		assertNotNull(deserializedHtmlField);
+		assertEquals("some<b>html", deserializedHtmlField.getHTML());
+
 	}
 
 }

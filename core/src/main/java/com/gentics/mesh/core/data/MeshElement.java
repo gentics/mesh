@@ -4,9 +4,9 @@ import com.tinkerpop.blueprints.Element;
 
 public interface MeshElement {
 
-	String getUuid();
-
 	void setUuid(String uuid);
+
+	String getUuid();
 
 	Element getElement();
 

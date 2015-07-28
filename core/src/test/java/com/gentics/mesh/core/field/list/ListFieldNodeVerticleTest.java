@@ -1,13 +1,16 @@
 package com.gentics.mesh.core.field.list;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
@@ -32,7 +35,19 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		throw new NotImplementedException();
+		Node node = folder("news");
+		NodeFieldListImpl list = new NodeFieldListImpl();
+		list.add(new NodeFieldListItem(node.getUuid()));
+		NodeResponse response = updateNode("listField", list);
+		NodeFieldListImpl field = response.getField("listField");
+		assertEquals(1, field.getList().size());
+
+		Node node2 = folder("deals");
+		list = new NodeFieldListImpl();
+		list.add(new NodeFieldListItem(node2.getUuid()));
+		response = updateNode("listField", list);
+		field = response.getField("listField");
+		assertEquals(1, field.getList().size());
 	}
 
 	@Test
@@ -49,7 +64,16 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		throw new NotImplementedException();
+		Node node = folder("2015");
+
+		NodeFieldContainer container = node.getFieldContainer(english());
+		NodeFieldList nodeList = container.createNodeList("listField");
+		nodeList.createNode("1", folder("news"));
+
+		NodeResponse response = readNode(node);
+		NodeFieldListImpl deserializedListField = response.getField("listField", NodeFieldListImpl.class);
+		assertNotNull(deserializedListField);
+		assertEquals(1, deserializedListField.getList().size());
 	}
 
 }

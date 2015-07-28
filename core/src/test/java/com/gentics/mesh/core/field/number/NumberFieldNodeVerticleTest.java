@@ -42,11 +42,11 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testUpdateNodeFieldWithField() {
 		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
 		NumberFieldImpl field = response.getField("numberField");
-		assertEquals("addedString", field.getNumber());
+		assertEquals("42", field.getNumber());
 
-		response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
+		response = updateNode("numberField", new NumberFieldImpl().setNumber("43"));
 		field = response.getField("numberField");
-		assertEquals("updatedString2", field.getNumber());
+		assertEquals("43", field.getNumber());
 	}
 
 	@Test
@@ -61,27 +61,14 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testReadNodeWithExitingField() throws IOException {
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
-		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
-		numberFieldSchema.setRequired(true);
-		schema.addField(numberFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-
 		NumberField numberField = container.createNumber("numberField");
 		numberField.setNumber("100.9");
 
-		NodeRequestParameters parameters = new NodeRequestParameters();
-		parameters.setLanguages("de");
-		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid(), parameters);
-		latchFor(future);
-		assertSuccess(future);
+		NodeResponse response = readNode(node);
 
-		NumberFieldImpl deserializedNumberField = future.result().getField("numberField", NumberFieldImpl.class);
+		NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);
 		assertNotNull(deserializedNumberField);
 		assertEquals("100.9", deserializedNumberField.getNumber());
 	}
