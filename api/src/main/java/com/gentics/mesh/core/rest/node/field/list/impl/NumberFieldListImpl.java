@@ -1,4 +1,4 @@
 package com.gentics.mesh.core.rest.node.field.list.impl;
 
-public class NumberFieldListImpl extends AbstractFieldList {
+public class NumberFieldListImpl extends AbstractFieldList<String> {
 }

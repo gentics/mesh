@@ -88,7 +88,7 @@ public final class JsonUtil {
 
 		SimpleModule module = new SimpleModule();
 
-		module.addSerializer(AbstractFieldList.class, new FieldListSerializer<AbstractFieldList<?>>());
+//		module.addSerializer(AbstractFieldList.class, new FieldListSerializer<AbstractFieldList<?>>());
 		module.addSerializer(NumberFieldImpl.class, new StringFieldSerializer<NumberFieldImpl>());
 		module.addSerializer(HtmlFieldImpl.class, new StringFieldSerializer<HtmlFieldImpl>());
 		module.addSerializer(StringFieldImpl.class, new StringFieldSerializer<StringFieldImpl>());

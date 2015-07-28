@@ -45,6 +45,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -192,28 +193,52 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				NodeFieldList nodeFieldList = getNodeList(fieldKey);
 				for (com.gentics.mesh.core.data.node.field.nesting.NodeField item : nodeFieldList.getList()) {
 					// Create the rest field and populate the fields
-					NodeField field = new NodeFieldImpl();
-					field.setUuid(item.getUuid());
-					restNodeFieldList.add(field);
+					NodeFieldListItem listItem = new NodeFieldListItem(item.getUuid());
+					restNodeFieldList.add(listItem);
 				}
 				return restNodeFieldList;
 			case NumberFieldList.TYPE:
 				NumberFieldListImpl numberList = new NumberFieldListImpl();
+				NumberFieldList numberFieldList = getNumberList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.NumberField item : numberFieldList.getList()) {
+					numberList.add(item.getNumber());
+				}
 				return numberList;
 			case BooleanFieldList.TYPE:
 				BooleanFieldListImpl booleanList = new BooleanFieldListImpl();
+				BooleanFieldList booleanFieldList = getBooleanList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.BooleanField item : booleanFieldList.getList()) {
+					booleanList.add(item.getBoolean());
+				}
 				return booleanList;
 			case HtmlFieldList.TYPE:
 				HtmlFieldListImpl htmlList = new HtmlFieldListImpl();
+
+				HtmlFieldList htmlFieldList = getHTMLList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.HtmlField item : htmlFieldList.getList()) {
+					htmlList.add(item.getHTML());
+				}
 				return htmlList;
 			case MicroschemaFieldList.TYPE:
 				MicroschemaFieldListImpl microschemaList = new MicroschemaFieldListImpl();
 				return microschemaList;
 			case StringFieldList.TYPE:
 				StringFieldListImpl stringList = new StringFieldListImpl();
+
+				StringFieldList stringFieldList = getStringList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.StringField item : stringFieldList.getList()) {
+					stringList.add(item.getString());
+				}
+
 				return stringList;
 			case DateFieldList.TYPE:
 				DateFieldListImpl dateList = new DateFieldListImpl();
+
+				DateFieldList dateFieldList = getDateList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.DateField item : dateFieldList.getList()) {
+					dateList.add(item.getDate());
+				}
+
 				return dateList;
 			}
 			// String listType = listFielSchema.getListType();

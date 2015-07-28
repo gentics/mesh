@@ -116,6 +116,9 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		case LIST:
 			ListField listField = new ListFieldImpl();
 			// TODO impl
+			//jsonNode.
+			//jsonNode.get
+			map.put(fieldKey, listField);
 			break;
 		case NODE:
 			NodeField nodeField = new NodeFieldImpl();

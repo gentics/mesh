@@ -69,6 +69,9 @@ public class StringFieldSerializer<T extends Field> extends JsonSerializer<T> {
 //				MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
 //				// TODO impl
 //				break;
+			default:
+				//TODO handle error
+				break;
 			}
 		}
 	}
