@@ -16,18 +16,20 @@ public class NodeFieldTest extends AbstractDBTest {
 	@Test
 	public void testSimpleNodeField() {
 
-		Node node = fg.addFramedVertexExplicit(NodeImpl.class);
+		Node node = fg.addFramedVertex(NodeImpl.class);
 
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
 		NodeField field = container.createNode("testNodeField", node);
-		Node loadedNode =field.getNode();
+		assertNotNull(field);
+		assertEquals("testNodeField", field.getFieldKey());
+		Node loadedNode = field.getNode();
 		assertNotNull(loadedNode);
 		assertEquals(node.getUuid(), loadedNode.getUuid());
-		
+
 		NodeField loadedField = container.getNode("testNodeField");
 		assertNotNull(loadedField);
 		assertNotNull(loadedField.getNode());
-		assertEquals(node.getUuid(), loadedField.getNode());
+		assertEquals(node.getUuid(), loadedField.getNode().getUuid());
 
 	}
 }

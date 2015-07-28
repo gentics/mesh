@@ -123,8 +123,7 @@ public class ListFieldNodeTest extends AbstractDBTest {
 		});
 		latch.await();
 		String json = reference.get();
-		System.out.println(json);
-
+		assertNotNull(json);
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 		assertNotNull(response);
 
@@ -134,7 +133,7 @@ public class ListFieldNodeTest extends AbstractDBTest {
 		assertList(2, "numberList", NumberFieldListImpl.class, response);
 		assertList(2, "nodeList", NodeFieldListImpl.class, response);
 		assertList(3, "booleanList", BooleanFieldListImpl.class, response);
-//		assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
+		//		assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
 
 	}
 
