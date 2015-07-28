@@ -14,8 +14,9 @@ public class NodeFieldImpl implements NodeField {
 	}
 
 	@Override
-	public void setUuid(String uuid) {
+	public NodeField setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 	@JsonIgnore

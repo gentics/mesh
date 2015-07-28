@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.html;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -30,14 +30,13 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		throw new NotImplementedException();
+		NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
+		HtmlFieldImpl field = response.getField("htmlField");
+		assertEquals("some<b>html", field.getHTML());
 
-	}
-
-	@Test
-	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
+		response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html2"));
+		field = response.getField("htmlField");
+		assertEquals("some<b>html2", field.getHTML());
 	}
 
 	@Test

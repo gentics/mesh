@@ -42,13 +42,6 @@ public class BooleanFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest 
 
 	@Test
 	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
-
-	}
-
-	@Test
-	@Override
 	public void testCreateNodeWithField() {
 		NodeResponse response = createNode("booleanField", new BooleanFieldImpl().setValue(true));
 		BooleanFieldImpl field = response.getField("booleanField");

@@ -17,6 +17,7 @@ import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
@@ -39,13 +40,13 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		throw new NotImplementedException();
-	}
+		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
+		NumberFieldImpl field = response.getField("numberField");
+		assertEquals("addedString", field.getNumber());
 
-	@Test
-	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
+		response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
+		field = response.getField("numberField");
+		assertEquals("updatedString2", field.getNumber());
 	}
 
 	@Test

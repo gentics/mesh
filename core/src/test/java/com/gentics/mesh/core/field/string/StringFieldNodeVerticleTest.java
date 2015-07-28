@@ -30,13 +30,13 @@ public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		throw new NotImplementedException();
-	}
+		NodeResponse response = updateNode("stringField", new StringFieldImpl().setString("addedString"));
+		StringFieldImpl field = response.getField("stringField");
+		assertEquals("addedString", field.getString());
 
-	@Test
-	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
+		response = updateNode("stringField", new StringFieldImpl().setString("updatedString2"));
+		field = response.getField("stringField");
+		assertEquals("updatedString2", field.getString());
 	}
 
 	@Test

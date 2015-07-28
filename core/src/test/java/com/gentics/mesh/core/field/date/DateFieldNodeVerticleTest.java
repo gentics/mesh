@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -31,13 +31,13 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		throw new NotImplementedException();
-	}
+		NodeResponse response = updateNode("dateField", new DateFieldImpl().setDate("01.01.1971"));
+		DateFieldImpl field = response.getField("dateField");
+		assertEquals("01.01.1971", field.getDate());
 
-	@Test
-	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
+		response = updateNode("dateField", new DateFieldImpl().setDate("02.01.1971"));
+		field = response.getField("dateField");
+		assertEquals("02.01.1971", field.getDate());
 	}
 
 	@Test

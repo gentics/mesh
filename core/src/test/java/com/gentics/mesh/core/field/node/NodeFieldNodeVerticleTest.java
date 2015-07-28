@@ -6,7 +6,6 @@ import io.vertx.core.Future;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,19 +37,23 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		throw new NotImplementedException();
-	}
+		Node node = folder("news");
+		NodeResponse response = updateNode("nodeField", new NodeFieldImpl().setUuid(node.getUuid()));
+		NodeFieldImpl field = response.getField("nodeField");
+		assertEquals(node.getUuid(), field.getUuid());
 
-	@Test
-	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
+		Node node2 = folder("deals");
+		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
+		field = response.getField("nodeField");
+		assertEquals(node2.getUuid(), field.getUuid());
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		throw new NotImplementedException();
+		NodeResponse response = createNode("nodeField", new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeFieldImpl field = response.getField("nodeField");
+		assertEquals(folder("news").getUuid(), field.getUuid());
 	}
 
 	@Test

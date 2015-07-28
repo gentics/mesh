@@ -37,12 +37,6 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
-	}
-
-	@Test
-	@Override
 	public void testCreateNodeWithField() {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
 		NodeFieldListItem item = new NodeFieldListItem().setUuid(folder("news").getUuid());

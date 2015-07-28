@@ -31,12 +31,6 @@ public class MicroschemaFieldNodeVerticleTest extends AbstractFieldNodeVerticleT
 
 	@Test
 	@Override
-	public void testUpdateNodeFieldWithNoField() {
-		throw new NotImplementedException();
-	}
-
-	@Test
-	@Override
 	public void testCreateNodeWithField() {
 		throw new NotImplementedException();
 	}

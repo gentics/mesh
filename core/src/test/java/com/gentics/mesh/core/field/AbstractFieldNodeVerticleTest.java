@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
@@ -44,10 +45,26 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
 		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
 		nodeCreateRequest.setLanguage("en");
-
 		nodeCreateRequest.getFields().put(fieldKey, field);
+
 		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameters().setLanguages("de"));
+				new NodeRequestParameters().setLanguages("en"));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull("The response could not be found in the result of the future.", future.result());
+		assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+		return future.result();
+	}
+
+	protected NodeResponse updateNode(String fieldKey, Field field) {
+		Node node = folder("2015");
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setSchema(new SchemaReference("folder", null));
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.getFields().put(fieldKey, field);
+
+		Future<NodeResponse> future = getClient().updateNode(DemoDataProvider.PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
+				new NodeRequestParameters().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
@@ -66,11 +83,6 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 	 * Update a node with a currently filled field. Change the field and make sure the changes were applied correctly.
 	 */
 	abstract public void testUpdateNodeFieldWithField();
-
-	/**
-	 * Update a node which currently does not have the defined field. This way the field will be created. Make sure that the field was correctly created.
-	 */
-	abstract public void testUpdateNodeFieldWithNoField();
 
 	/**
 	 * Create a new node and set field values. Make sure the node was correctly created and the field was populated with the correct data.
