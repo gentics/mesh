@@ -171,11 +171,15 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 
 		if (FieldTypes.NODE.equals(type)) {
-			NodeFieldSchema nodeFieldSchema = (NodeFieldSchema) fieldSchema;
+//			NodeFieldSchema nodeFieldSchema = (NodeFieldSchema) fieldSchema;
+			com.gentics.mesh.core.data.node.field.nesting.NodeField graphNodeField = getNode(fieldKey);
+			NodeFieldImpl nodeField = new NodeFieldImpl();
+			nodeField.setUuid(graphNodeField.getNode().getUuid());
+			return nodeField;
 		}
 
 		if (FieldTypes.HTML.equals(type)) {
-			HTMLFieldSchema htmlFieldSchema = (HTMLFieldSchema) fieldSchema;
+//			HTMLFieldSchema htmlFieldSchema = (HTMLFieldSchema) fieldSchema;
 			com.gentics.mesh.core.data.node.field.basic.HtmlField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HTMLFieldImpl(
 					fieldKey, this);
 			HtmlFieldImpl htmlField = new HtmlFieldImpl();

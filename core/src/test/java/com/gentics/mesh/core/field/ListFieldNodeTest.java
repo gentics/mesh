@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
@@ -112,17 +111,7 @@ public class ListFieldNodeTest extends AbstractDBTest {
 		htmlList.createHTML("some<b>html</b>");
 		htmlList.createHTML("some<b>more html</b>");
 
-		RoutingContext rc = getMockedRoutingContext("lang=en");
-		CountDownLatch latch = new CountDownLatch(1);
-		AtomicReference<String> reference = new AtomicReference<>();
-		node.transformToRest(rc, rh -> {
-			NodeResponse response = rh.result();
-			reference.set(JsonUtil.toJson(response));
-			assertNotNull(response);
-			latch.countDown();
-		});
-		latch.await();
-		String json = reference.get();
+		String json = getJson(node);
 		assertNotNull(json);
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 		assertNotNull(response);
@@ -135,6 +124,20 @@ public class ListFieldNodeTest extends AbstractDBTest {
 		assertList(3, "booleanList", BooleanFieldListImpl.class, response);
 		//		assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
 
+	}
+
+	private String getJson(Node node) throws InterruptedException {
+		RoutingContext rc = getMockedRoutingContext("lang=en");
+		CountDownLatch latch = new CountDownLatch(1);
+		AtomicReference<String> reference = new AtomicReference<>();
+		node.transformToRest(rc, rh -> {
+			NodeResponse response = rh.result();
+			reference.set(JsonUtil.toJson(response));
+			assertNotNull(response);
+			latch.countDown();
+		});
+		latch.await();
+		return reference.get();
 	}
 
 	private <T extends AbstractFieldList<?>> void assertList(int expectedItems, String fieldKey, Class<T> classOfT, NodeResponse response) {

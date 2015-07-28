@@ -158,8 +158,8 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 			//map.put(fieldKey, listField);
 			break;
 		case NODE:
-			NodeField nodeField = new NodeFieldImpl();
-			// TODO impl
+//			NodeField nodeField = new NodeFieldImpl();
+			map.put(fieldKey, oc.treeToValue(jsonNode, NodeFieldImpl.class));
 			break;
 		case MICROSCHEMA:
 			MicroschemaField MicroschemaField = new MicroschemaFieldImpl();

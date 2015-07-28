@@ -5,7 +5,7 @@ public interface NodeFieldSchema extends MicroschemaListableFieldSchema {
 
 	String[] getAllowedSchemas();
 
-	void setAllowedSchemas(String[] allowedSchemas);
+	void setAllowedSchemas(String... allowedSchemas);
 
 	String getUuid();
 

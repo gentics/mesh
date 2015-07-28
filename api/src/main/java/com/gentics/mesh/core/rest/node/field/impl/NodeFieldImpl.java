@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 
@@ -17,6 +18,7 @@ public class NodeFieldImpl implements NodeField {
 		this.uuid = uuid;
 	}
 
+	@JsonIgnore
 	@Override
 	public String getType() {
 		return FieldTypes.NODE.toString();
