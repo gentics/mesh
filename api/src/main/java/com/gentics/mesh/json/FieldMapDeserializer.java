@@ -22,7 +22,6 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HTMLField;
-import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.MicroschemaField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -31,15 +30,22 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
 public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 
@@ -73,7 +79,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 				}
 			}
 			if (fieldSchema != null) {
-				addField(map, fieldKey, fieldSchema, currentEntry.getValue());
+				addField(map, fieldKey, fieldSchema, currentEntry.getValue(), oc);
 			} else {
 				throw new MeshJsonException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
 			}
@@ -81,7 +87,8 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		return map;
 	}
 
-	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode) {
+	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode, ObjectCodec oc)
+			throws JsonProcessingException {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case HTML:
@@ -111,14 +118,44 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 			break;
 		case SELECT:
 			SelectField selectField = new SelectFieldImpl();
+			map.put(fieldKey, selectField);
 			// TODO impl
 			break;
 		case LIST:
-			ListField listField = new ListFieldImpl();
+			if (fieldSchema instanceof ListFieldSchemaImpl) {
+				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
+				switch (listFieldSchema.getListType()) {
+				case "node":
+					map.put(fieldKey, oc.treeToValue(jsonNode, NodeFieldListImpl.class));
+					break;
+				case "number":
+					map.put(fieldKey, oc.treeToValue(jsonNode, NumberFieldListImpl.class));
+					break;
+				case "date":
+					map.put(fieldKey, oc.treeToValue(jsonNode, DateFieldListImpl.class));
+					break;
+				case "boolean":
+					map.put(fieldKey, oc.treeToValue(jsonNode, BooleanFieldListImpl.class));
+					break;
+				case "microschema":
+					map.put(fieldKey, oc.treeToValue(jsonNode, MicroschemaFieldListImpl.class));
+					break;
+				case "string":
+					map.put(fieldKey, oc.treeToValue(jsonNode, StringFieldListImpl.class));
+					break;
+				case "html":
+					map.put(fieldKey, oc.treeToValue(jsonNode, HtmlFieldListImpl.class));
+					break;
+				}
+			} else {
+				//TODO handle unexpected error
+			}
+
+			//ListField listField = new ListFieldImpl();
 			// TODO impl
 			//jsonNode.
 			//jsonNode.get
-			map.put(fieldKey, listField);
+			//map.put(fieldKey, listField);
 			break;
 		case NODE:
 			NodeField nodeField = new NodeFieldImpl();

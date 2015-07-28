@@ -87,8 +87,6 @@ public final class JsonUtil {
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		SimpleModule module = new SimpleModule();
-
-//		module.addSerializer(AbstractFieldList.class, new FieldListSerializer<AbstractFieldList<?>>());
 		module.addSerializer(NumberFieldImpl.class, new StringFieldSerializer<NumberFieldImpl>());
 		module.addSerializer(HtmlFieldImpl.class, new StringFieldSerializer<HtmlFieldImpl>());
 		module.addSerializer(StringFieldImpl.class, new StringFieldSerializer<StringFieldImpl>());

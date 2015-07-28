@@ -24,6 +24,12 @@ import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringFieldList;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -121,9 +127,20 @@ public class ListFieldNodeTest extends AbstractDBTest {
 
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 		assertNotNull(response);
-		StringFieldListImpl deserializedStringList = response.getField("stringList", StringFieldListImpl.class);
-		assertNotNull(deserializedStringList);
-		assertEquals(2, deserializedStringList.getList().size());
 
+		assertList(2, "stringList", StringFieldListImpl.class, response);
+		assertList(2, "htmlList", StringFieldListImpl.class, response);
+		assertList(2, "dateList", DateFieldListImpl.class, response);
+		assertList(2, "numberList", NumberFieldListImpl.class, response);
+		assertList(2, "nodeList", NodeFieldListImpl.class, response);
+		assertList(3, "booleanList", BooleanFieldListImpl.class, response);
+//		assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
+
+	}
+
+	private <T extends AbstractFieldList<?>> void assertList(int expectedItems, String fieldKey, Class<T> classOfT, NodeResponse response) {
+		T deserializedList = response.getField(fieldKey, classOfT);
+		assertNotNull(deserializedList);
+		assertEquals(expectedItems, deserializedList.getList().size());
 	}
 }

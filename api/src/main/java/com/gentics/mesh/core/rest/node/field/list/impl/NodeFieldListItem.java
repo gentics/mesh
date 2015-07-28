@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.rest.node.field.list.impl;
 
 public class NodeFieldListItem {
-	String uuid;
+
+	private String uuid;
+
+	public NodeFieldListItem() {
+	}
 
 	public NodeFieldListItem(String uuid) {
 		this.uuid = uuid;
