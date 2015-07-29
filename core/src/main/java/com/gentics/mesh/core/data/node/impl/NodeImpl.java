@@ -167,6 +167,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				restNode.setSchema(schemaReference);
 			}
 
+			if (getParentNode() != null) {
+				restNode.setParentNodeUuid(getParentNode().getUuid());
+			}
 			/* Load the children */
 			if (getSchema().isFolder()) {
 				// //TODO handle uuid

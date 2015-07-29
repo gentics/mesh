@@ -131,6 +131,7 @@ public class RestAssert {
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), readValue.getSchema().getName());
 		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
+		assertNotNull(readValue.getParentNodeUuid());
 		// TODO match fields
 
 	}
