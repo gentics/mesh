@@ -21,4 +21,5 @@ public class NodeFieldImpl extends MeshEdgeImpl implements NodeField {
 	public Node getNode() {
 		return inV().has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
+
 }

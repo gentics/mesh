@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
 	@Before
-	public void updateSchema() throws IOException {
+	public void updateSchema() throws Exception {
 		Schema schema = schemaContainer("folder").getSchema();
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 		nodeFieldSchema.setName("nodeField");
@@ -38,7 +38,6 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse response = updateNode("nodeField", new NodeFieldImpl().setUuid(node.getUuid()));
 		NodeFieldImpl field = response.getField("nodeField");
 		assertEquals(node.getUuid(), field.getUuid());
-
 		Node node2 = folder("deals");
 		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
 		field = response.getField("nodeField");

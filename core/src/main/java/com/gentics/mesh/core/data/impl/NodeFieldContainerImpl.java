@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.*;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.Map;
@@ -55,6 +56,7 @@ import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.syncleus.ferma.traversals.EdgeTraversal;
 
 public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implements NodeFieldContainer {
 
@@ -106,11 +108,20 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				break;
 			case NODE:
 				NodeField nodeField = (NodeFieldImpl) field;
+
 				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
 					Node node = rh.result();
-					createNode(key, node);
-				});
-				//TODO check node permissions
+
+					/* Check whether the container already contains a node field */
+					//TODO check node permissions
+						com.gentics.mesh.core.data.node.field.nesting.NodeField graphNodeField = getNode(key);
+						if (graphNodeField == null) {
+							createNode(key, node);
+						} else {
+							deleteField(key);
+							createNode(key, node);
+						}
+					});
 				break;
 			case LIST:
 				if (field instanceof NodeFieldListImpl) {
@@ -194,6 +205,13 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		if (!StringUtils.isEmpty(extraFields)) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
 			//throw new MeshSchemaException("The following fields were not specified within the {" + schema.getName() + "} schema: " + extraFields);
+		}
+	}
+
+	private void deleteField(String key) {
+		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has("fieldKey", key);
+		if (traversal.hasNext()) {
+			traversal.next().remove();
 		}
 	}
 
