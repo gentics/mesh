@@ -49,7 +49,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		SchemaContainerRoot root = data().getMeshRoot().getSchemaContainerRoot();
+		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 		int nSchemasBefore = root.findAll().size();
 		Schema schema = new SchemaImpl();
 		schema.setName("test123");
@@ -60,7 +60,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testDefaultSchema() {
-		SchemaContainerRoot root = data().getMeshRoot().getSchemaContainerRoot();
+		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 		assertEquals(4, root.findAll().size());
 	}
 

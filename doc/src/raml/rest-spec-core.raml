@@ -496,6 +496,75 @@ traits:
         description: Load child nodes for the given node.
 
 #------------------------------------------------------------------------------
+# TagFamily Verticle
+#------------------------------------------------------------------------------
+/{project_name}/tagFamilies:
+  displayName: TagFamilies
+  uriParameters:
+    project_name:
+      description: Name of the project.
+      type: string
+
+  /:
+    get:
+      is: [ localized, sortable, nested, paged ]
+      description: Load all tag families of the project.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagFamilyListResponse.example.json
+    post:
+      description: Create a new tag family.
+      body:
+        application/json:
+          example: !include json/TagFamilyCreateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagFamilyResponse.example.json
+
+  /{uuid}:
+    is: [ perm_listable ]
+    uriParameters:
+      uuid:
+        description: | 
+             The uuid of a single tag family.
+        type: string
+    get:
+      is: [ localized, sortable, nested ]
+      description: Load the tag family with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagResponse.example.json
+    put:
+      description: Update the tag family with the given path.
+      body:
+        application/json:
+          example: !include json/TagFamilyUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagFamilyResponse.example.json
+    delete:
+      description: Delete the tag family with the given path.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+    /tags:
+      get: 
+        description: Load all tags which were assigned to this tag family.
+
+
+
+
+#------------------------------------------------------------------------------
 # Tag Verticle
 #------------------------------------------------------------------------------
 /{project_name}/tags:
@@ -535,9 +604,6 @@ traits:
     get:
       is: [ localized, sortable, nested ]
       description: Load the tag with the given uuid.
-      queryParameters:
-        depth: 
-          description: Determines the depth of traversal for fetching nested tags.
       responses:
         200:
           body:
@@ -560,21 +626,6 @@ traits:
           body:
             application/json:
               example: !include json/GenericMessageResponse.example.json
-    /tags:
-      get: 
-        description: Load all tags which were used for tagging.
-      post:
-        description: Tag the tag.
-      delete:
-        description: Untag the tag.
-    /children:
-      get:
-        description: Load a list of children.
-    /bin/{name}:
-      get:
-        description: Load the binary property value.
-      put: 
-        description: Update the binary property value.
 
 
 #------------------------------------------------------------------------------

@@ -89,7 +89,6 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(ClassOfT, this);
 
 		String uri = BASEURI + path;
-		System.out.println(uri);
 		HttpClientRequest request = client.request(method, uri, handler);
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");

@@ -4,6 +4,7 @@ import static com.gentics.mesh.util.FieldUtil.createStringField;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -50,7 +51,11 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -119,6 +124,7 @@ public class Generator {
 		roleJson();
 		nodeJson();
 		tagJson();
+		tagFamilyJson();
 		schemaJson();
 		microschemaJson();
 		projectJson();
@@ -134,16 +140,24 @@ public class Generator {
 
 	private void projectJson() throws JsonGenerationException, JsonMappingException, IOException {
 		ProjectResponse project = new ProjectResponse();
-		project.setName("Dummy Project");
 		project.setUuid(getUUID());
+		project.setName("Dummy Project");
+		project.setCreated(getTimestamp());
+		project.setCreator(getUserReference());
+		project.setEdited(getTimestamp());
+		project.setEditor(getUserReference());
 		project.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		project.setRootNodeUuid(getUUID());
 		write(project);
 
 		ProjectResponse project2 = new ProjectResponse();
-		project2.setName("Dummy Project (Mobile)");
-		project2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		project2.setUuid(getUUID());
+		project2.setName("Dummy Project (Mobile)");
+		project2.setCreated(getTimestamp());
+		project2.setCreator(getUserReference());
+		project2.setEdited(getTimestamp());
+		project2.setEditor(getUserReference());
+		project2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		project2.setRootNodeUuid(getUUID());
 
 		ProjectListResponse projectList = new ProjectListResponse();
@@ -166,11 +180,19 @@ public class Generator {
 		RoleResponse role = new RoleResponse();
 		role.setName("Admin role");
 		role.setUuid(getUUID());
+		role.setCreated(getTimestamp());
+		role.setCreator(getUserReference());
+		role.setEdited(getTimestamp());
+		role.setEditor(getUserReference());
 		role.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		write(role);
 
 		RoleResponse role2 = new RoleResponse();
 		role2.setName("Reader role");
+		role2.setCreated(getTimestamp());
+		role2.setCreator(getUserReference());
+		role2.setEdited(getTimestamp());
+		role2.setEditor(getUserReference());
 		role2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		role2.setUuid(getUUID());
 
@@ -197,6 +219,10 @@ public class Generator {
 
 		TagResponse tag = new TagResponse();
 		tag.setUuid(getUUID());
+		tag.setCreated(getTimestamp());
+		tag.setCreator(getUserReference());
+		tag.setEdited(getTimestamp());
+		tag.setEditor(getUserReference());
 		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		tag.setTagFamilyReference(tagFamilyReference);
 		write(tag);
@@ -210,6 +236,10 @@ public class Generator {
 
 		TagResponse tag2 = new TagResponse();
 		tag2.setUuid(getUUID());
+		tag2.setCreated(getTimestamp());
+		tag2.setCreator(getUserReference());
+		tag2.setEdited(getTimestamp());
+		tag2.setEditor(getUserReference());
 		TagFieldContainer tagFields = tag2.getFields();
 		tagFields.setName("Name for language tag en");
 		tag2.setTagFamilyReference(tagFamilyReference);
@@ -220,6 +250,34 @@ public class Generator {
 		tagList.getData().add(tag2);
 		setPaging(tagList, 1, 10, 2, 20);
 		write(tagList);
+	}
+
+	private void tagFamilyJson() throws JsonGenerationException, JsonMappingException, IOException {
+		TagFamilyResponse response = new TagFamilyResponse();
+		response.setPermissions("READ", "CREATE", "UPDATE");
+		response.setName("Colors");
+		response.setEdited(getTimestamp());
+		response.setEditor(getUserReference());
+		response.setCreated(getTimestamp());
+		response.setCreator(getUserReference());
+		write(response);
+
+		TagFamilyListResponse tagFamilyListResponse = new TagFamilyListResponse();
+		tagFamilyListResponse.getData().add(response);
+		setPaging(tagFamilyListResponse, 1, 10, 2, 20);
+		write(tagFamilyListResponse);
+
+		TagFamilyUpdateRequest updateRequest = new TagFamilyUpdateRequest();
+		updateRequest.setName("Nicer colors");
+		write(updateRequest);
+
+		TagFamilyCreateRequest createRequest = new TagFamilyCreateRequest();
+		createRequest.setName("Colors");
+		write(createRequest);
+	}
+
+	private long getTimestamp() {
+		return new Date().getTime();
 	}
 
 	public void setPaging(AbstractListResponse<?> response, long currentPage, long pageCount, long perPage, long totalCount) {
@@ -319,23 +377,27 @@ public class Generator {
 	}
 
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
-		NodeResponse content = new NodeResponse();
-		content.setUuid(getUUID());
-		content.setCreator(getUserReference());
-		content.getFields().put("name", createStringField("Name for language tag de-DE"));
-		content.getFields().put("filename", createStringField("dummy-content.de.html"));
-		content.getFields().put("teaser", createStringField("Dummy teaser for de-DE"));
-		content.getFields().put("content", createStringField("Content for language tag de-DE"));
-		content.setSchema(getSchemaReference("content"));
-		content.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		return content;
+		NodeResponse nodeResponse = new NodeResponse();
+		nodeResponse.setUuid(getUUID());
+		nodeResponse.setParentNodeUuid(getUUID());
+		nodeResponse.setCreator(getUserReference());
+		nodeResponse.getFields().put("name", createStringField("Name for language tag de-DE"));
+		nodeResponse.getFields().put("filename", createStringField("dummy-content.de.html"));
+		nodeResponse.getFields().put("teaser", createStringField("Dummy teaser for de-DE"));
+		nodeResponse.getFields().put("content", createStringField("Content for language tag de-DE"));
+		nodeResponse.setSchema(getSchemaReference("content"));
+		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		return nodeResponse;
 	}
 
 	private NodeResponse getNodeResponse2() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(getUUID());
+		nodeResponse.setParentNodeUuid(getUUID());
 		nodeResponse.setCreator(getUserReference());
-
+		nodeResponse.setCreated(getTimestamp());
+		nodeResponse.setEdited(getTimestamp());
+		nodeResponse.setEditor(getUserReference());
 		nodeResponse.getFields().put("name", createStringField("Name for language tag en"));
 		nodeResponse.getFields().put("filename", createStringField("dummy-content.en.html"));
 		nodeResponse.getFields().put("teaser", createStringField("Dummy teaser for en"));
@@ -361,10 +423,10 @@ public class Generator {
 	}
 
 	private NodeUpdateRequest getNodeUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
-		NodeUpdateRequest contentUpdate = new NodeUpdateRequest();
-		contentUpdate.setLanguage("en");
-		contentUpdate.getFields().put("filename", createStringField("index-renamed.en.html"));
-		return contentUpdate;
+		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
+		nodeUpdate.setLanguage("en");
+		nodeUpdate.getFields().put("filename", createStringField("index-renamed.en.html"));
+		return nodeUpdate;
 	}
 
 	private NodeListResponse getNodeListResponse() throws JsonGenerationException, JsonMappingException, IOException {
@@ -393,9 +455,12 @@ public class Generator {
 
 		GroupResponse group = new GroupResponse();
 		group.setUuid(getUUID());
+		group.setCreated(getTimestamp());
+		group.setCreator(getUserReference());
+		group.setEdited(getTimestamp());
+		group.setEditor(getUserReference());
 		group.setName("Admin Group");
 		group.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-
 		write(group);
 
 		GroupResponse group2 = new GroupResponse();
@@ -423,6 +488,10 @@ public class Generator {
 
 		UserResponse user2 = new UserResponse();
 		user2.setUuid(getUUID());
+		user2.setCreated(getTimestamp());
+		user2.setCreator(getUserReference());
+		user2.setEdited(getTimestamp());
+		user2.setEditor(getUserReference());
 		user2.setUsername("jroe");
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
@@ -464,6 +533,10 @@ public class Generator {
 	private UserResponse getUser() {
 		UserResponse user = new UserResponse();
 		user.setUuid(getUUID());
+		user.setCreated(getTimestamp());
+		user.setCreator(getUserReference());
+		user.setEdited(getTimestamp());
+		user.setEditor(getUserReference());
 		user.setUsername("jdoe42");
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
