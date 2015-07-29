@@ -53,11 +53,6 @@ traits:
           description: Include user permissions on the object.
           type: boolean
           required: false
-  - nested:
-      queryParameters:
-        depth:
-          description: Limit the depth of nested data in the response.
-          type: number
   - sortable:
       queryParameters:
         orderBy:
@@ -210,7 +205,7 @@ traits:
 # Group Verticle
 #------------------------------------------------------------------------------
 /groups:
-  is: [ localized, sortable, nested ]
+  is: [ localized, sortable ]
   displayName: Groups
   get: 
     is: [ paged, searchable, perm_listable ]
@@ -232,7 +227,7 @@ traits:
             example: !include json/GroupResponse.example.json
 
   /{uuid}:
-    is: [ localized, sortable, nested ]
+    is: [ localized, sortable ]
     get:
       description: Retrieves a single group with the given uuid.
       responses:
@@ -427,7 +422,7 @@ traits:
   displayName: Nodes
   /:
     get: 
-      is: [ localized, sortable, nested, paged ]
+      is: [ localized, sortable, paged ]
       description: Load all nodes.
       responses:
         200:
@@ -445,7 +440,7 @@ traits:
             application/json:
               example: !include json/NodeResponse.example.json
   /{uuid}:
-    is: [ localized, sortable, nested, perm_listable ]
+    is: [ localized, sortable, perm_listable ]
     uriParameters:
       uuid:
         description: Uuid of a single node.
@@ -507,7 +502,7 @@ traits:
 
   /:
     get:
-      is: [ localized, sortable, nested, paged ]
+      is: [ localized, sortable, paged ]
       description: Load all tag families of the project.
       responses:
         200:
@@ -533,7 +528,7 @@ traits:
              The uuid of a single tag family.
         type: string
     get:
-      is: [ localized, sortable, nested ]
+      is: [ localized, sortable ]
       description: Load the tag family with the given uuid.
       responses:
         200:
@@ -576,7 +571,7 @@ traits:
 
   /:
     get:
-      is: [ localized, sortable, nested, paged ]
+      is: [ localized, sortable, paged ]
       description: Load all tags of the project.
       responses:
         200:
@@ -602,7 +597,7 @@ traits:
              The uuid of a single tag.
         type: string
     get:
-      is: [ localized, sortable, nested ]
+      is: [ localized, sortable ]
       description: Load the tag with the given uuid.
       responses:
         200:
@@ -636,7 +631,7 @@ traits:
   is: [ localized ]
   displayName: WebRoot
   /{path}:
-    is: [ localized, sortable, nested, perm_listable ]
+    is: [ localized, sortable, perm_listable ]
     uriParameters:
       path:
         description: Path to a node.
