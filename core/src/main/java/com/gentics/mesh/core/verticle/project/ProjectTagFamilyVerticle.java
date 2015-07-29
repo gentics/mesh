@@ -39,7 +39,6 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.util.BlueprintTransaction;
 
-
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -52,12 +51,12 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
+		addReadTagsHandler();
 		addReadHandler();
 		addCreateHandler();
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addReadTagsHandler();
 	}
 
 	private void addReadTagsHandler() {
@@ -68,13 +67,15 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 			PagingInfo pagingInfo = getPagingInfo(rc);
 
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
-			loadObject(rc, "uuid", READ_PERM, project.getTagFamilyRoot(), rh -> {
-				TagFamily tagFamily = rh.result();
-				try {
-					Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
-					transformAndResponde(rc, tagPage, new TagListResponse());
-				} catch (Exception e) {
-					rc.fail(e);
+			loadObject(rc, "tagFamilyUuid", READ_PERM, project.getTagFamilyRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					TagFamily tagFamily = rh.result();
+					try {
+						Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
+						transformAndResponde(rc, tagPage, new TagListResponse());
+					} catch (Exception e) {
+						rc.fail(e);
+					}
 				}
 			});
 

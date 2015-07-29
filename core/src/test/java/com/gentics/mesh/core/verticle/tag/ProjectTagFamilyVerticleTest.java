@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -56,7 +57,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyReadWithoutPerm() throws UnknownHostException, InterruptedException {
-		Role role = data().getUserInfo().getRole();
+		Role role = role();
 		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 		assertNotNull(tagFamily);
 		role.revokePermissions(tagFamily, READ_PERM);
@@ -66,6 +67,15 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", tagFamily.getUuid());
 	}
 
+	
+	@Test
+	public void testTagFamilyTagList() {
+		TagFamily tagFamily = data().getTagFamilies().get("colors");
+		Future<TagListResponse> future = getClient().findTagsForTagFamilies(PROJECT_NAME, tagFamily.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+	}
+	
 	@Test
 	public void testTagFamilyListing() throws UnknownHostException, InterruptedException {
 
@@ -197,7 +207,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyDeletionWithNoPerm() throws UnknownHostException, InterruptedException {
-		TagFamily basicTagFamily = data().getTagFamily("basic");
+		TagFamily basicTagFamily = tagFamily("basic");
 		String uuid = basicTagFamily.getUuid();
 		Role role = role();
 		role.revokePermissions(basicTagFamily, DELETE_PERM);

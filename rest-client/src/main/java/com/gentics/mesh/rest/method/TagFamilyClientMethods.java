@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 
 public interface TagFamilyClientMethods {
 
@@ -19,9 +20,11 @@ public interface TagFamilyClientMethods {
 	Future<TagFamilyResponse> createTagFamily(String projectName, TagFamilyCreateRequest tagFamilyCreateRequest);
 
 	Future<GenericMessageResponse> deleteTagFamily(String projectName, String uuid);
-	
+
 	Future<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest tagFamilyUpdateRequest);
 
 	Future<TagFamilyListResponse> findTagFamilies(String projectName, QueryParameterProvider... parameters);
+
+	Future<TagListResponse> findTagsForTagFamilies(String projectName, String uuid, QueryParameterProvider... parameters);
 
 }

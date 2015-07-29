@@ -24,6 +24,8 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -59,11 +61,11 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		TagListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The response did not contain the correct amount of items", data().getTags().size(), restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items", tags().size(), restResponse.getData().size());
 
 		int perPage = 4;
 		// Extra Tags + permitted tag
-		int totalTags = data().getTags().size();
+		int totalTags = tags().size();
 		int totalPages = (int) Math.ceil(totalTags / (double) perPage);
 		List<TagResponse> allTags = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
@@ -142,7 +144,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 	}
-	
+
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
 
@@ -224,7 +226,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = data().getTag("vehicle");
+		Tag tag = tag("vehicle");
 		String uuid = tag.getUuid();
 		role().revokePermissions(tag, DELETE_PERM);
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
@@ -235,6 +237,23 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 				assertNotNull("The tag should not have been deleted", rh.result());
 			});
 		}
+	}
+
+	@Test
+	public void testCreateTag() {
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		tagCreateRequest.getFields().setName("SomeName");
+		TagFamily tagFamily = data().getTagFamilies().get("colors");
+		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("SomeName", future.result().getFields().getName());
+
+		future = getClient().findTagByUuid(PROJECT_NAME, future.result().getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("SomeName", future.result().getFields().getName());
 	}
 
 }

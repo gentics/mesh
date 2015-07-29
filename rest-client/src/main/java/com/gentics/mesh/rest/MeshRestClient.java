@@ -6,8 +6,9 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClientOptions;
+
+import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -64,82 +65,116 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<NodeResponse> findNodeByUuid(String projectName, String uuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
 		return handleRequest(GET, "/" + projectName + "/nodes/" + uuid + getQuery(parameters), NodeResponse.class);
 	}
 
 	@Override
 	public Future<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeCreateRequest, "nodeCreateRequest must not be null");
 		return handleRequest(POST, "/" + projectName + "/nodes" + getQuery(parameters), NodeResponse.class, nodeCreateRequest);
 	}
 
 	@Override
 	public Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUpdateRequest, "nodeUpdateRequest must not be null");
 		return handleRequest(PUT, "/" + projectName + "/nodes/" + uuid + getQuery(parameters), NodeResponse.class, nodeUpdateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/" + projectName + "/nodes/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<NodeListResponse> findNodes(String projectName, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
 		return handleRequest(GET, "/" + projectName + "/nodes" + getQuery(parameters), NodeListResponse.class);
 	}
 
 	@Override
+	public Future<TagListResponse> findTagsForTagFamilies(String projectName, String uuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return handleRequest(GET, "/" + projectName + "/tagFamilies/" + uuid + "/tags" + getQuery(parameters), TagListResponse.class);
+	}
+
+	@Override
 	public Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		return handleRequest(GET, "/" + projectName + "/nodes/" + nodeUuid + "/tags" + getQuery(parameters), TagListResponse.class);
 	}
 
 	@Override
 	public Future<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(parentNodeUuid, "parentNodeUuid must not be null");
 		return handleRequest(GET, "/" + projectName + "/nodes/" + parentNodeUuid + "/children" + getQuery(parameters), NodeListResponse.class);
 	}
 
 	@Override
 	public Future<TagResponse> createTag(String projectName, TagCreateRequest tagCreateRequest) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagCreateRequest, "tagCreateRequest must not be null");
 		return handleRequest(POST, "/" + projectName + "/tags", TagResponse.class, tagCreateRequest);
 	}
 
 	@Override
 	public Future<TagResponse> findTagByUuid(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(GET, "/" + projectName + "/tags/" + uuid, TagResponse.class);
 	}
 
 	@Override
 	public Future<TagResponse> updateTag(String projectName, String uuid, TagUpdateRequest tagUpdateRequest) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagUpdateRequest, "tagUpdateRequest must not be null");
 		return handleRequest(PUT, "/" + projectName + "/tags/" + uuid, TagResponse.class, tagUpdateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteTag(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/" + projectName + "/tags/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<TagFamilyListResponse> findTagFamilies(String projectName, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
 		return handleRequest(GET, "/" + projectName + "/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class);
 	}
 
 	@Override
 	public Future<TagListResponse> findTags(String projectName, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
 		return handleRequest(GET, "/" + projectName + "/tags" + getQuery(parameters), TagListResponse.class);
 	}
 
 	// TODO can we actually do this?
 	@Override
 	public Future<TagResponse> findTagByName(String projectName, String name) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(name, "name must not be null");
 		return handleRequest(GET, "/" + projectName + "/tags/" + name, TagResponse.class);
 	}
 
 	@Override
 	public Future<NodeListResponse> findNodesForTag(String projectName, String tagUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return handleRequest(GET, "/" + projectName + "/tags/" + tagUuid + "/nodes" + getQuery(parameters), NodeListResponse.class);
 	}
 
 	@Override
 	public Future<ProjectResponse> findProjectByUuid(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(GET, "/projects/" + uuid, ProjectResponse.class);
 	}
 
@@ -150,26 +185,34 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
+		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
+		Objects.requireNonNull(languageUuid, "languageUuid must not be null");
 		return handleRequest(POST, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
 	}
 
 	@Override
 	public Future<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
+		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
+		Objects.requireNonNull(languageUuid, "languageUuid must not be null");
 		return handleRequest(DELETE, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
 	}
 
 	@Override
 	public Future<ProjectResponse> createProject(ProjectCreateRequest projectCreateRequest) {
+		Objects.requireNonNull(projectCreateRequest, "projectCreateRequest must not be null");
 		return handleRequest(POST, "/projects", ProjectResponse.class, projectCreateRequest);
 	}
 
 	@Override
 	public Future<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(projectUpdateRequest, "projectUpdateRequest must not be null");
 		return handleRequest(PUT, "/projects/" + uuid, ProjectResponse.class, projectUpdateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteProject(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/projects/" + uuid, GenericMessageResponse.class);
 	}
 
@@ -180,26 +223,35 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingInfo pagingInfo) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
 		return handleRequest(GET, "/" + projectName + "/tagFamilies" + getQuery(pagingInfo), TagFamilyListResponse.class);
 	}
 
 	@Override
 	public Future<TagFamilyResponse> createTagFamily(String projectName, TagFamilyCreateRequest tagFamilyCreateRequest) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyCreateRequest, "tagFamilyCreateRequest must not be null");
 		return handleRequest(POST, "/" + projectName + "/tagFamilies", TagFamilyResponse.class, tagFamilyCreateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteTagFamily(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/" + projectName + "/tagFamilies/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest tagFamilyUpdateRequest) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(tagFamilyUpdateRequest, "tagFamilyUpdateRequest must not be null");
 		return handleRequest(PUT, "/" + projectName + "/tagFamilies/" + tagFamilyUuid, TagFamilyResponse.class, tagFamilyUpdateRequest);
 	}
 
 	@Override
 	public Future<GroupResponse> findGroupByUuid(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(GET, "/groups/" + uuid, GroupResponse.class);
 	}
 
@@ -210,21 +262,26 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest) {
+		Objects.requireNonNull(groupCreateRequest, "groupCreateRequest must not be null");
 		return handleRequest(POST, "/groups", GroupResponse.class, groupCreateRequest);
 	}
 
 	@Override
 	public Future<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(groupUpdateRequest, "groupUpdateRequest must not be null");
 		return handleRequest(PUT, "/groups/" + uuid, GroupResponse.class, groupUpdateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteGroup(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/groups/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<UserResponse> findUserByUuid(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(GET, "/users/" + uuid, UserResponse.class);
 	}
 
@@ -240,16 +297,20 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<UserResponse> createUser(UserCreateRequest userCreateRequest) {
+		Objects.requireNonNull(userCreateRequest, "userCreateRequest must not be null");
 		return handleRequest(POST, "/users", UserResponse.class, userCreateRequest);
 	}
 
 	@Override
 	public Future<UserResponse> updateUser(String uuid, UserUpdateRequest userUpdateRequest) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(userUpdateRequest, "userUpdateRequest must not be null");
 		return handleRequest(PUT, "/users/" + uuid, UserResponse.class, userUpdateRequest);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteUser(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/users/" + uuid, GenericMessageResponse.class);
 	}
 
@@ -280,41 +341,53 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return handleRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/tags/" + tagUuid + getQuery(parameters), NodeResponse.class);
 	}
 
 	@Override
 	public Future<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return handleRequest(DELETE, "/" + projectName + "/nodes/" + nodeUuid + "/tags/" + tagUuid + getQuery(parameters), NodeResponse.class);
 	}
 
 	@Override
 	public Future<UserListResponse> findUsersOfGroup(String groupUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
 		return handleRequest(GET, "/groups/" + groupUuid + "/users" + getQuery(parameters), UserListResponse.class);
 	}
 
 	@Override
 	public Future<GroupResponse> addUserToGroup(String groupUuid, String userUuid) {
+		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
 		return handleRequest(POST, "/groups/" + groupUuid + "/users/" + userUuid, GroupResponse.class);
 	}
 
 	@Override
 	public Future<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid) {
+		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
 		return handleRequest(DELETE, "/groups/" + groupUuid + "/users/" + userUuid, GroupResponse.class);
 	}
 
 	@Override
 	public Future<RoleListResponse> findRolesForGroup(String groupUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
 		return handleRequest(GET, "/groups/" + groupUuid + "/roles" + getQuery(parameters), RoleListResponse.class);
 	}
 
 	@Override
 	public Future<GroupResponse> addRoleToGroup(String groupUuid, String roleUuid) {
+		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
 		return handleRequest(POST, "/groups/" + groupUuid + "/roles/" + roleUuid, GroupResponse.class);
 	}
 
 	@Override
 	public Future<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid) {
+		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
 		return handleRequest(DELETE, "/groups/" + groupUuid + "/roles/" + roleUuid, GroupResponse.class);
 	}
 
@@ -329,26 +402,32 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<SchemaResponse> findSchemaByUuid(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(GET, "/schemas/" + uuid, SchemaResponse.class);
 	}
 
 	@Override
 	public Future<SchemaResponse> updateSchema(String uuid, SchemaUpdateRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(PUT, "/schemas/" + uuid, SchemaResponse.class, request);
 	}
 
 	@Override
 	public Future<NodeResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
 		return handleRequest(GET, "/" + projectName + "/webroot/" + path + getQuery(parameters), NodeResponse.class);
 	}
 
 	@Override
 	public Future<GenericMessageResponse> deleteSchema(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/schemas/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
 	public Future<SchemaResponse> addSchemaToProject(String schemaUuid, String projectUuid) {
+		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
+		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
 		return handleRequest(POST, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
 	}
 
@@ -359,6 +438,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 	@Override
 	public Future<SchemaResponse> removeSchemaFromProject(String schemaUuid, String projectUuid) {
+		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
+		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
 		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
 	}
 

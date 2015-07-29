@@ -12,16 +12,18 @@ public class TagFamilyReference {
 		return name;
 	}
 
-	public void setName(String name) {
+	public TagFamilyReference setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	public String getUuid() {
 		return uuid;
 	}
 
-	public void setUuid(String uuid) {
+	public TagFamilyReference setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 }
