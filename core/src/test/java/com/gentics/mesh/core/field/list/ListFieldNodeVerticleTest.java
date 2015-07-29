@@ -23,13 +23,32 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
+		setSchema("node");
+	}
+
+	private void setSchema(String listType) throws IOException {
 		Schema schema = schemaContainer("folder").getSchema();
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName("listField");
 		listFieldSchema.setLabel("Some label");
-		listFieldSchema.setListType("node");
+		listFieldSchema.setListType(listType);
 		schema.addField(listFieldSchema);
 		schemaContainer("folder").setSchema(schema);
+	}
+	
+	@Test
+	public void testStringList() {
+		
+	}
+	
+	@Test
+	public void testHtmlList() {
+		
+	}
+	
+	@Test
+	public void testBooleanList() {
+		
 	}
 
 	@Test

@@ -43,7 +43,7 @@ public final class JsonUtil {
 	protected static ObjectMapper nodeMapper;
 
 	// TODO danger danger!!! - This will cause trouble when doing multithreaded deserialisation!
-	protected static Map<String, Object> valuesMap = new HashMap<>();
+	//	protected static Map<String, Object> valuesMap = new HashMap<>();
 
 	static {
 		initNodeMapper();
@@ -94,11 +94,11 @@ public final class JsonUtil {
 		module.addSerializer(DateFieldImpl.class, new StringFieldSerializer<DateFieldImpl>());
 		module.addSerializer(BooleanFieldImpl.class, new StringFieldSerializer<BooleanFieldImpl>());
 
-		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, valuesMap, NodeResponse.class));
-		module.addDeserializer(NodeCreateRequest.class, new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, valuesMap,
-				NodeCreateRequest.class));
-		module.addDeserializer(NodeUpdateRequest.class, new DelegagingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, valuesMap,
-				NodeUpdateRequest.class));
+		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class));
+		module.addDeserializer(NodeCreateRequest.class,
+				new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, NodeCreateRequest.class));
+		module.addDeserializer(NodeUpdateRequest.class,
+				new DelegagingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, NodeUpdateRequest.class));
 		defaultMapper.registerModule(module);
 
 	}
@@ -106,7 +106,7 @@ public final class JsonUtil {
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
 			// TODO don't use pretty printer in final version
-			 return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 			//return defaultMapper.writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
@@ -118,24 +118,19 @@ public final class JsonUtil {
 
 	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage) throws IOException, JsonParseException,
 			JsonMappingException {
-		valuesMap.put("schema_storage", schemaStorage);
-		return defaultMapper.reader(getInjectableValues()).forType(valueType).readValue(json);
-	}
 
-	public static InjectableValues getInjectableValues() {
-
-		InjectableValues values = new InjectableValues() {
+		InjectableValues injectedSchemaStorage = new InjectableValues() {
 
 			@Override
 			public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) {
-				if (valuesMap.containsKey(valueId.toString())) {
-					return valuesMap.get(valueId.toString());
+				if ("schema_storage".equals(valueId.toString())) {
+					return schemaStorage;
 				}
 				return null;
 			}
 		};
-		return values;
 
+		return defaultMapper.reader(injectedSchemaStorage).forType(valueType).readValue(json);
 	}
 
 	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {

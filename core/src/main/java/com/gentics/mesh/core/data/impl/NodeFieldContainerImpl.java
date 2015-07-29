@@ -294,7 +294,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 		if (FieldTypes.SELECT.equals(type)) {
 			SelectFieldSchema selectFieldSchema = (SelectFieldSchema) fieldSchema;
-			throw new NotImplementedException();
+//			throw new NotImplementedException();
 
 		}
 
