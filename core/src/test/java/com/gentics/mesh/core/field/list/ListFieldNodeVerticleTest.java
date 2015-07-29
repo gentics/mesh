@@ -35,20 +35,30 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		schema.addField(listFieldSchema);
 		schemaContainer("folder").setSchema(schema);
 	}
-	
+
 	@Test
 	public void testStringList() {
-		
+		setSchema("string");
 	}
-	
+
 	@Test
 	public void testHtmlList() {
-		
+		setSchema("html");
 	}
-	
+
 	@Test
 	public void testBooleanList() {
-		
+		setSchema("boolean");
+	}
+
+	@Test
+	public void testDateList() {
+		setSchema("date");
+	}
+
+	@Test
+	public void testNumbuerList() {
+		setSchema("number");
 	}
 
 	@Test
