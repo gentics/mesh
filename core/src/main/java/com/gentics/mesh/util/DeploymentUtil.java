@@ -13,7 +13,7 @@ import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.cli.MeshImpl;
 
 /**
  * Various wrappers for verticle deployment calls.
@@ -23,7 +23,7 @@ import com.gentics.mesh.cli.Mesh;
  */
 public final class DeploymentUtil {
 
-	private static final Logger LOG = LoggerFactory.getLogger(Mesh.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MeshImpl.class);
 
 	// TODO decrease
 	private static final long DEFAULT_TIMEOUT_IN_SECONDS = 10 * 1000;

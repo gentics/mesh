@@ -223,6 +223,7 @@ public class Generator {
 		tag.setCreator(getUserReference());
 		tag.setEdited(getTimestamp());
 		tag.setEditor(getUserReference());
+		tag.getFields().setName("tagName");
 		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		tag.setTagFamilyReference(tagFamilyReference);
 		write(tag);
@@ -240,8 +241,7 @@ public class Generator {
 		tag2.setCreator(getUserReference());
 		tag2.setEdited(getTimestamp());
 		tag2.setEditor(getUserReference());
-		TagFieldContainer tagFields = tag2.getFields();
-		tagFields.setName("Name for language tag en");
+		tag2.getFields().setName("Name for language tag en");
 		tag2.setTagFamilyReference(tagFamilyReference);
 		tag2.setPermissions("READ", "CREATE");
 

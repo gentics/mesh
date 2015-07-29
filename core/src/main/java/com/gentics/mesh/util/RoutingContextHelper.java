@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
@@ -16,11 +17,10 @@ import java.util.Map;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.config.MeshConfiguration;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import com.gentics.mesh.etc.config.MeshOptions;
 public final class RoutingContextHelper {
 
 	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
@@ -57,7 +57,7 @@ public final class RoutingContextHelper {
 		if (value != null) {
 			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
 		}
-		languageTags.add(MeshSpringConfiguration.getConfiguration().getDefaultLanguage());
+		languageTags.add(MeshImpl.mesh().getOptions().getDefaultLanguage());
 		return languageTags;
 
 	}
@@ -95,10 +95,10 @@ public final class RoutingContextHelper {
 	public static PagingInfo getPagingInfo(RoutingContext rc) {
 		MultiMap params = rc.request().params();
 		int page = 1;
-		int perPage = MeshConfiguration.DEFAULT_PAGE_SIZE;
+		int perPage = MeshOptions.DEFAULT_PAGE_SIZE;
 		if (params != null) {
 			page = NumberUtils.toInt(params.get("page"), 1);
-			perPage = NumberUtils.toInt(params.get("per_page"), MeshConfiguration.DEFAULT_PAGE_SIZE);
+			perPage = NumberUtils.toInt(params.get("per_page"), MeshOptions.DEFAULT_PAGE_SIZE);
 		}
 		if (page < 1) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));

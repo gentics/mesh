@@ -7,10 +7,10 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.demo.verticle.CustomerVerticle;
-import com.gentics.mesh.etc.ConfigurationLoader;
-import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.etc.OptionsLoader;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 
 /**
@@ -27,7 +27,11 @@ public class DemoRunner {
 		File graphDBDir = new File(System.getProperty("java.io.tmpdir"), "graphdb");
 		FileUtils.deleteDirectory(graphDBDir);
 
-		Mesh mesh = Mesh.mesh();
+		// Setup custom config to enable neo4j web console
+		MeshOptions options = OptionsLoader.createOrloadOptions();
+		// config.getNeo4jConfiguration().setMode("gui");
+		// config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
+		MeshImpl mesh = MeshImpl.mesh(options);
 
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
@@ -36,7 +40,7 @@ public class DemoRunner {
 			// deployAndWait(vertx, AuthenticationVerticle.class);
 			// deployAndWait(vertx, NavigationVerticle.class);
 			// deployAndWait(vertx, TagCloudVerticle.class);
-//			deployAndWait(vertx, config, StaticContentVerticle.class);
+			//			deployAndWait(vertx, config, StaticContentVerticle.class);
 			deployAndWait(vertx, config, AdminGUIVerticle.class);
 		});
 		// // DeploymentOptions options = new DeploymentOptions();
@@ -48,11 +52,7 @@ public class DemoRunner {
 		// // deployAndWait(vertx, "", "TestJSVerticle.js");
 		// });
 
-		// Setup custom config to enable neo4j web console
-		MeshConfiguration config = ConfigurationLoader.createOrloadConfiguration();
-		// config.getNeo4jConfiguration().setMode("gui");
-		// config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
-		mesh.run(config);
+		mesh.run();
 
 	}
 }

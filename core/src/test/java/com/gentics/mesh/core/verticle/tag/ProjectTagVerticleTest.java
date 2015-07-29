@@ -142,11 +142,11 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 	}
-
+	
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
 
-		Tag tag = data().getTag("vehicle");
+		Tag tag = tag("vehicle");
 
 		// 1. Read the current tag
 		Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
@@ -184,7 +184,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = data().getTag("vehicle");
+		Tag tag = tag("vehicle");
 
 		info.getRole().revokePermissions(tag, UPDATE_PERM);
 

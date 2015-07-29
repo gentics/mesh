@@ -6,7 +6,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 
-public class MeshConfiguration {
+public class MeshOptions {
 
 	// private static final boolean ENABLED = true;
 	private static final boolean DISABLED = false;
@@ -58,7 +58,7 @@ public class MeshConfiguration {
 	@JsonProperty("verticles")
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
 
-	public MeshConfiguration() {
+	public MeshOptions() {
 
 		// Check for target directory and use it as a subdirectory if possible
 		//		File targetDir = new File("target");

@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClientOptions;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -390,20 +391,20 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		return future;
 	}
 
-//		return 
-//		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
-//		meshHandler.handle(rh -> {
-//			if (rh.statusCode() == 200) {
-//				setCookie(rh.headers().get("Set-Cookie"));
-//			}
-//		});
-//		HttpClientRequest request = client.get(BASEURI + "/auth/login", meshHandler);
-////		request.headers().add("Authorization", "Basic " + authEnc);
-//		request.headers().add("Accept", "application/json");
-//		request.end();
-//		return meshHandler.getFuture();
-//
-//	}
+	//		return 
+	//		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
+	//		meshHandler.handle(rh -> {
+	//			if (rh.statusCode() == 200) {
+	//				setCookie(rh.headers().get("Set-Cookie"));
+	//			}
+	//		});
+	//		HttpClientRequest request = client.get(BASEURI + "/auth/login", meshHandler);
+	////		request.headers().add("Authorization", "Basic " + authEnc);
+	//		request.headers().add("Accept", "application/json");
+	//		request.end();
+	//		return meshHandler.getFuture();
+	//
+	//	}
 
 	@Override
 	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {

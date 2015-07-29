@@ -1,8 +1,6 @@
 package com.gentics.mesh.etc;
 
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -30,7 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.MeshAuthProvider;
-import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseServiceProvider;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
@@ -53,11 +52,10 @@ public class MeshSpringConfiguration {
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
-	private static MeshConfiguration configuration = null;
 
 	@Bean
 	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
-		String className = configuration.getDatabaseProviderClass();
+		String className = MeshImpl.mesh().getOptions().getDatabaseProviderClass();
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
@@ -70,21 +68,21 @@ public class MeshSpringConfiguration {
 		}
 	}
 
-	public static MeshConfiguration getConfiguration() {
-		return configuration;
-	}
+//	public static MeshOptions getConfiguration() {
+//		return configuration;
+//	}
+//
+//	public static void setConfiguration(MeshOptions conf) {
+//		configuration = conf;
+//	}
 
-	public static void setConfiguration(MeshConfiguration conf) {
-		configuration = conf;
-	}
-
-	@Bean
-	public Vertx vertx() {
-		VertxOptions options = new VertxOptions();
-		options.setBlockedThreadCheckInterval(1000 * 60 * 60);
-		options.setWorkerPoolSize(16);
-		return Vertx.vertx(options);
-	}
+//	@Bean
+//	public Vertx vertx() {
+//		VertxOptions options = new VertxOptions();
+//		options.setBlockedThreadCheckInterval(1000 * 60 * 60);
+//		options.setWorkerPoolSize(16);
+//		return Vertx.vertx(options);
+//	}
 
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
@@ -93,7 +91,7 @@ public class MeshSpringConfiguration {
 
 	@Bean
 	public SessionHandler sessionHandler() {
-		SessionStore store = LocalSessionStore.create(vertx());
+		SessionStore store = LocalSessionStore.create(MeshImpl.vertx());
 		return new SessionHandlerImpl("mesh.session", 30 * 60 * 1000, false, store);
 	}
 
@@ -121,7 +119,7 @@ public class MeshSpringConfiguration {
 		config.setStarttls(StartTLSOptions.REQUIRED);
 		config.setUsername("user");
 		config.setPassword("password");
-		MailClient mailClient = MailClient.createShared(vertx(), config, "exampleclient");
+		MailClient mailClient = MailClient.createShared(MeshImpl.vertx(), config, "exampleclient");
 		return mailClient;
 	}
 
@@ -142,7 +140,7 @@ public class MeshSpringConfiguration {
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
 		BodyHandler handler = BodyHandler.create();
-		handler.setBodyLimit(MeshSpringConfiguration.getConfiguration().getFileUploadByteLimit());
+		handler.setBodyLimit(MeshImpl.mesh().getOptions().getFileUploadByteLimit());
 		// TODO check for windows issues
 		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
 		return handler;

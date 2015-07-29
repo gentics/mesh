@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.http.LocaleContextDataHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -55,7 +56,7 @@ public class RouterStorage {
 
 	@PostConstruct
 	public void init() {
-		this.vertx = springConfiguration.vertx();
+		this.vertx = MeshImpl.vertx();
 		initAPIRouter();
 	}
 

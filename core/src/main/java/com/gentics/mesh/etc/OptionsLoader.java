@@ -11,29 +11,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 
-public final class ConfigurationLoader {
+public final class OptionsLoader {
 
-	private static final Logger log = LoggerFactory.getLogger(ConfigurationLoader.class);
+	private static final Logger log = LoggerFactory.getLogger(OptionsLoader.class);
 
 	public static final String MESH_CONF_FILENAME = "mesh.json";
 
-	private ConfigurationLoader() {
+	private OptionsLoader() {
 
 	}
 
 	/**
 	 * Load the main mesh configuration file.
 	 */
-	public static MeshConfiguration createOrloadConfiguration() {
+	public static MeshOptions createOrloadOptions() {
 		File confFile = new File(MESH_CONF_FILENAME);
-		InputStream ins = Mesh.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
+		InputStream ins = MeshImpl.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
 		// 1. Try to load from classpath
 		if (ins != null) {
 			log.info("Loading configuration file from classpath.");
-			MeshConfiguration configuration = loadConfiguration(ins);
+			MeshOptions configuration = loadConfiguration(ins);
 			if (configuration != null) {
 				return configuration;
 			}
@@ -44,7 +44,7 @@ public final class ConfigurationLoader {
 		if (confFile.exists()) {
 			try {
 				log.info("Loading configuration file {" + confFile + "}.");
-				MeshConfiguration configuration = loadConfiguration(new FileInputStream(confFile));
+				MeshOptions configuration = loadConfiguration(new FileInputStream(confFile));
 				if (configuration != null) {
 					return configuration;
 				}
@@ -55,7 +55,7 @@ public final class ConfigurationLoader {
 			log.info("Configuration file {" + MESH_CONF_FILENAME + "} was not found within filesystem.");
 			ObjectMapper mapper = new ObjectMapper();
 			try {
-				MeshConfiguration conf = new MeshConfiguration();
+				MeshOptions conf = new MeshOptions();
 				FileUtils.writeStringToFile(confFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf));
 				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
 				return conf;
@@ -65,7 +65,7 @@ public final class ConfigurationLoader {
 		}
 		// 2. No luck - use default config
 		log.info("Loading default configuration.");
-		return new MeshConfiguration();
+		return new MeshOptions();
 	}
 
 	/**
@@ -74,16 +74,16 @@ public final class ConfigurationLoader {
 	 * @param ins
 	 * @return
 	 */
-	private static MeshConfiguration loadConfiguration(InputStream ins) {
+	private static MeshOptions loadConfiguration(InputStream ins) {
 		// TODO use java 8 optionals
 		if (ins == null) {
 			log.info("Config file {" + MESH_CONF_FILENAME + "} not found. Using default configuration.");
-			return new MeshConfiguration();
+			return new MeshOptions();
 		}
 
 		ObjectMapper mapper = new ObjectMapper();
 		try {
-			return mapper.readValue(ins, MeshConfiguration.class);
+			return mapper.readValue(ins, MeshOptions.class);
 		} catch (IOException e) {
 			log.error("Could not parse configuration.", e);
 		}

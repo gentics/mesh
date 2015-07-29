@@ -70,7 +70,7 @@ import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -82,7 +82,7 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
-	private MeshConfiguration configuration;
+	private MeshOptions configuration;
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
@@ -293,7 +293,7 @@ public class BootstrapInitializer {
 			try {
 				log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
 				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(springConfiguration.vertx(), defaultConfig, clazz);
+				deployAndWait(MeshImpl.vertx(), defaultConfig, clazz);
 			} catch (InterruptedException e) {
 				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
 			}
@@ -312,7 +312,7 @@ public class BootstrapInitializer {
 			mergedVerticleConfig.put("port", configuration.getHttpPort());
 			try {
 				log.info("Loading configured verticle {" + verticleName + "}.");
-				deployAndWait(springConfiguration.vertx(), mergedVerticleConfig, verticleName);
+				deployAndWait(MeshImpl.vertx(), mergedVerticleConfig, verticleName);
 			} catch (InterruptedException e) {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}
@@ -330,7 +330,7 @@ public class BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	public void init(MeshConfiguration configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.configuration = configuration;
 		if (configuration.isClusterMode()) {
 			joinCluster();
@@ -339,10 +339,10 @@ public class BootstrapInitializer {
 		initMandatoryData();
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
-			verticleLoader.apply(springConfiguration.vertx());
+			verticleLoader.apply(MeshImpl.vertx());
 		}
 		initProjects();
-		springConfiguration.vertx().eventBus().send("mesh-startup-complete", true);
+		MeshImpl.vertx().eventBus().send("mesh-startup-complete", true);
 
 	}
 
@@ -363,7 +363,7 @@ public class BootstrapInitializer {
 	 */
 	private void joinCluster() {
 		HazelcastClusterManager manager = new HazelcastClusterManager();
-		manager.setVertx(springConfiguration.vertx());
+		manager.setVertx(MeshImpl.vertx());
 		manager.join(rh -> {
 			if (!rh.succeeded()) {
 				log.error("Error while joining mesh cluster.", rh.cause());
@@ -447,7 +447,7 @@ public class BootstrapInitializer {
 			Schema schema = new SchemaImpl();
 			schema.setName("content");
 			schema.setDisplayField("title");
-			schema.setMeshVersion(Mesh.getVersion());
+			schema.setMeshVersion(MeshImpl.getVersion());
 			schema.setSchemaVersion("1.0.0");
 
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
@@ -483,7 +483,7 @@ public class BootstrapInitializer {
 			Schema schema = new SchemaImpl();
 			schema.setName("folder");
 			schema.setDisplayField("name");
-			schema.setMeshVersion(Mesh.getVersion());
+			schema.setMeshVersion(MeshImpl.getVersion());
 			schema.setSchemaVersion("1.0.0");
 
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
@@ -504,7 +504,7 @@ public class BootstrapInitializer {
 			Schema schema = new SchemaImpl();
 			schema.setName("binary-content");
 			schema.setDisplayField("name");
-			schema.setMeshVersion(Mesh.getVersion());
+			schema.setMeshVersion(MeshImpl.getVersion());
 			schema.setSchemaVersion("1.0.0");
 
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();

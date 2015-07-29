@@ -11,13 +11,13 @@ import io.vertx.core.Vertx;
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -51,7 +51,7 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 
 	@Override
 	public RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
-		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
+//		Vertx vertx = Mesh.vertx();
 //		vertx.executeBlocking(rh -> {
 		resultHandler.handle(Future.succeededFuture(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
 			//rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));

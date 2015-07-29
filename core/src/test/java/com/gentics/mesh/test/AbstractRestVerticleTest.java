@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NService;
@@ -59,7 +60,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		setupData();
 		info = data().getUserInfo();
 		port = com.gentics.mesh.test.TestUtil.getRandomPort();
-		vertx = springConfig.vertx();
+		vertx = MeshImpl.vertx();
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 

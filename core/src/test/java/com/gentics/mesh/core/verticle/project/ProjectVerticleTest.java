@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -65,8 +67,6 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 
-		info.getRole().addPermissions(data().getProject().getBaseNode(), CREATE_PERM);
-
 		Future<ProjectResponse> future = getClient().createProject(request);
 		latchFor(future);
 		assertSuccess(future);
@@ -75,6 +75,20 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		test.assertProject(request, restProject);
 		assertNotNull("The project should have been created.", projectRoot.findByName(name));
 
+		CountDownLatch latch = new CountDownLatch(1);
+		AtomicReference<Project> reference = new AtomicReference<>();
+		meshRoot().getProjectRoot().findByUuid(restProject.getUuid(), rh -> {
+			reference.set(rh.result());
+			latch.countDown();
+		});
+		latch.await();
+		Project project = reference.get();
+		assertNotNull(project);
+		assertTrue(user().hasPermission(project, CREATE_PERM));
+		assertTrue(user().hasPermission(project.getBaseNode(), CREATE_PERM));
+		assertTrue(user().hasPermission(project.getTagFamilyRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(project.getTagRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(project.getNodeRoot(), CREATE_PERM));
 	}
 
 	@Test

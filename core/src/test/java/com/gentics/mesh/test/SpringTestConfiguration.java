@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.config.MeshConfiguration;
+import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl;
 
 @Configuration
@@ -21,10 +21,12 @@ public class SpringTestConfiguration {
 
 	@PostConstruct
 	public void setup() {
-		MeshConfiguration config = new MeshConfiguration();
-		config.setDatabaseProviderClass(graphProviderClassname());
-		config.setHttpPort(TestUtil.getRandomPort());
-		MeshSpringConfiguration.setConfiguration(config);
+		MeshOptions options = new MeshOptions();
+		options.setDatabaseProviderClass(graphProviderClassname());
+		options.setHttpPort(TestUtil.getRandomPort());
+		MeshImpl.mesh(options);
+//		Mesh.
+//		MeshSpringConfiguration.setConfiguration(config);
 	}
 
 }

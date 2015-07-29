@@ -14,6 +14,7 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -64,7 +65,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 
 	@Override
 	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
-		Vertx vertx = MeshSpringConfiguration.getMeshSpringConfiguration().vertx();
+		Vertx vertx = MeshImpl.vertx();
 //		vertx.executeBlocking(bc -> {
 			TagResponse restTag = new TagResponse();
 

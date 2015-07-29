@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
-import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -13,6 +12,7 @@ import io.vertx.ext.auth.User;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Tag;
@@ -38,7 +38,7 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 
 	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
 		final MeshAuthUserImpl user = this;
-		getMeshSpringConfiguration().vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
+		MeshImpl.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
 		return this;
 	}
 

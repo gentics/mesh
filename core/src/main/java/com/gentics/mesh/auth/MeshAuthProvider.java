@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -34,12 +35,9 @@ public class MeshAuthProvider implements AuthProvider {
 	@Autowired
 	private FramedThreadedTransactionalGraph fg;
 
-	@Autowired
-	private Vertx vertx;
-
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		vertx.executeBlocking(fut -> {
+		MeshImpl.vertx().executeBlocking(fut -> {
 
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");

@@ -116,6 +116,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 							log.info(msg);
 							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project);
 							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getBaseNode());
+							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getTagFamilyRoot());
+							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getTagRoot());
+							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getNodeRoot());
 							tx.success();
 							projectCreated.complete(project);
 						} catch (Exception e) {

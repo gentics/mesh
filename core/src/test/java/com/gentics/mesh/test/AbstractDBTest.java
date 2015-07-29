@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -82,6 +83,10 @@ public abstract class AbstractDBTest {
 		return data().getTag(key);
 	}
 
+	public TagFamily tagFamily(String key) {
+		return data().getTagFamily(key);
+	}
+
 	public Project project() {
 		return data().getProject();
 	}
@@ -127,7 +132,7 @@ public abstract class AbstractDBTest {
 			vertex.remove();
 		}
 	}
-	
+
 	protected String getJson(Node node) throws InterruptedException {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
 		CountDownLatch latch = new CountDownLatch(1);
