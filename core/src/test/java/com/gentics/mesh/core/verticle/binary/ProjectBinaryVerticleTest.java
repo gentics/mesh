@@ -28,8 +28,8 @@ public class ProjectBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpload() throws Exception {
-		Node node = data().getFolder("news");
-		info.getRole().addPermissions(node, UPDATE_PERM);
+		Node node = folder("news");
+		role().addPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(10000);
 		String response = sendFileUploadRequest(buffer, "/api/v1/" + PROJECT_NAME + "/binaries/" + node.getUuid(), 200, "OK");
 		System.out.println(response);

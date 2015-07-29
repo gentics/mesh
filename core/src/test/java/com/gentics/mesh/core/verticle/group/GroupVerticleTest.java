@@ -54,7 +54,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		info.getRole().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		role().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -74,7 +74,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			final String name = "test_" + i;
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
-			info.getRole().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+			role().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 			Future<GroupResponse> future = getClient().createGroup(request);
 			latchFor(future);
@@ -90,7 +90,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		info.getRole().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		role().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -136,7 +136,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateGroupWithMissingName() throws Exception {
 
 		GroupCreateRequest request = new GroupCreateRequest();
-		info.getRole().addPermissions(info.getGroup(), CREATE_PERM);
+		role().addPermissions(group(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -151,8 +151,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 		GroupRoot root = meshRoot().getGroupRoot();
-		info.getRole().revokePermissions(root, CREATE_PERM);
-		User user = info.getUser();
+		role().revokePermissions(root, CREATE_PERM);
+		User user = user();
 		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
 
 		Future<GroupResponse> future = getClient().createGroup(request);
@@ -173,7 +173,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		for (int i = 0; i < nGroups; i++) {
 			Group group = root.create("group_" + i);
-			info.getRole().addPermissions(group, READ_PERM);
+			role().addPermissions(group, READ_PERM);
 		}
 
 		int totalGroups = nGroups + data().getGroups().size();
@@ -243,7 +243,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadGroupByUUID() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
 		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
@@ -254,9 +254,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadGroupByUUIDWithNoPermission() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 
-		info.getRole().revokePermissions(group, READ_PERM);
+		role().revokePermissions(group, READ_PERM);
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
@@ -277,7 +277,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateGroup() throws HttpStatusCodeErrorException, Exception {
-		Group group = info.getGroup();
+		Group group = group();
 
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
@@ -297,9 +297,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateGroupWithEmptyName() throws HttpStatusCodeErrorException, Exception {
-		Group group = info.getGroup();
+		Group group = group();
 
-		info.getRole().addPermissions(group, UPDATE_PERM);
+		role().addPermissions(group, UPDATE_PERM);
 		final String name = "";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
@@ -316,14 +316,14 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateGroupWithConflictingName() throws HttpStatusCodeErrorException, Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		GroupRoot groupRoot = meshRoot().getGroupRoot();
 		final String alreadyUsedName = "extraGroup";
 
 		// Create a group which occupies the name
 		assertNotNull(groupRoot.create(alreadyUsedName));
 
-		info.getRole().addPermissions(group, UPDATE_PERM);
+		role().addPermissions(group, UPDATE_PERM);
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(alreadyUsedName);
 
@@ -339,9 +339,9 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateGroupWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
-		Group group = info.getGroup();
+		Group group = group();
 
-		info.getRole().addPermissions(group, UPDATE_PERM);
+		role().addPermissions(group, UPDATE_PERM);
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
@@ -360,7 +360,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteGroupByUUID() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		String name = group.getName();
 		String uuid = group.getUuid();
 		assertNotNull(uuid);
@@ -375,11 +375,11 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteGroupByUUIDWithMissingPermission() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		String uuid = group.getUuid();
 		assertNotNull(uuid);
 		// Don't allow delete
-		info.getRole().revokePermissions(group, DELETE_PERM);
+		role().revokePermissions(group, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
 		latchFor(future);

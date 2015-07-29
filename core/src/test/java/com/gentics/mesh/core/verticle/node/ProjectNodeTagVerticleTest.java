@@ -69,7 +69,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 		Node node = folder("2015");
 		Tag tag = tag("red");
 		assertFalse(node.getTags().contains(tag));
-		info.getRole().revokePermissions(node, UPDATE_PERM);
+		role().revokePermissions(node, UPDATE_PERM);
 
 		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
@@ -82,7 +82,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 		Node node = folder("2015");
 		Tag tag = tag("red");
 		assertFalse(node.getTags().contains(tag));
-		info.getRole().revokePermissions(tag, READ_PERM);
+		role().revokePermissions(tag, READ_PERM);
 
 		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
@@ -120,7 +120,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
 		assertTrue(node.getTags().contains(tag));
-		info.getRole().revokePermissions(node, UPDATE_PERM);
+		role().revokePermissions(node, UPDATE_PERM);
 
 		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
 		latchFor(future);
@@ -133,7 +133,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
 		assertTrue(node.getTags().contains(tag));
-		info.getRole().revokePermissions(tag, READ_PERM);
+		role().revokePermissions(tag, READ_PERM);
 
 		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
 		latchFor(future);

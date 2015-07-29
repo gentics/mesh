@@ -97,7 +97,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		info.getRole().addPermissions(data().getProject().getBaseNode(), CREATE_PERM);
+		role().addPermissions(project().getBaseNode(), CREATE_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);
@@ -120,17 +120,17 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadProjectList() throws Exception {
 
-		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
-		info.getRole().addPermissions(data().getProject(), READ_PERM);
+		ProjectRoot projectRoot = meshRoot().getProjectRoot();
+		role().addPermissions(project(), READ_PERM);
 
 		final int nProjects = 142;
 		Project noPermProject;
 		for (int i = 0; i < nProjects; i++) {
-			Project extraProject = projectRoot.create("extra_project_" + i, info.getUser());
-			extraProject.setBaseNode(data().getProject().getBaseNode());
-			info.getRole().addPermissions(extraProject, READ_PERM);
+			Project extraProject = projectRoot.create("extra_project_" + i, user());
+			extraProject.setBaseNode(project().getBaseNode());
+			role().addPermissions(extraProject, READ_PERM);
 		}
-		noPermProject = projectRoot.create("no_perm_project", info.getUser());
+		noPermProject = projectRoot.create("no_perm_project", user());
 
 		// Don't grant permissions to no perm project
 
@@ -199,10 +199,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadProjectByUUID() throws Exception {
-		Project project = data().getProject();
+		Project project = project();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-		info.getRole().addPermissions(project, READ_PERM);
+		role().addPermissions(project, READ_PERM);
 
 		Future<ProjectResponse> future = getClient().findProjectByUuid(project.getUuid());
 		latchFor(future);
@@ -219,10 +219,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadProjectByUUIDWithNoPerm() throws Exception {
-		Project project = data().getProject();
+		Project project = project();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-		info.getRole().revokePermissions(project, READ_PERM);
+		role().revokePermissions(project, READ_PERM);
 
 		Future<ProjectResponse> future = getClient().findProjectByUuid(project.getUuid());
 		latchFor(future);
@@ -234,9 +234,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateProject() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		Project project = data().getProject();
+		Project project = project();
 
-		info.getRole().addPermissions(project, UPDATE_PERM);
+		role().addPermissions(project, UPDATE_PERM);
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
@@ -255,10 +255,10 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateProjectWithNoPerm() throws JsonProcessingException, Exception {
-		Project project = data().getProject();
+		Project project = project();
 
-		info.getRole().addPermissions(project, READ_PERM);
-		info.getRole().revokePermissions(project, UPDATE_PERM);
+		role().addPermissions(project, READ_PERM);
+		role().revokePermissions(project, UPDATE_PERM);
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
@@ -277,11 +277,11 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteProjectByUUID() throws Exception {
-		Project project = data().getProject();
+		Project project = project();
 		String uuid = project.getUuid();
 		String name = project.getName();
 		assertNotNull(uuid);
-		info.getRole().addPermissions(project, DELETE_PERM);
+		role().addPermissions(project, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
@@ -296,9 +296,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteProjectByUUIDWithNoPermission() throws Exception {
-		Project project = data().getProject();
+		Project project = project();
 		String uuid = project.getUuid();
-		info.getRole().revokePermissions(project, DELETE_PERM);
+		role().revokePermissions(project, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);

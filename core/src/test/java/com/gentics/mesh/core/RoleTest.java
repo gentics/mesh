@@ -38,7 +38,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreate() {
 		String roleName = "test";
-		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		RoleRoot root = meshRoot().getRoleRoot();
 		Role createdRole = root.create(roleName);
 		assertNotNull(createdRole);
 		String uuid = createdRole.getUuid();
@@ -52,7 +52,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testGrantPermission() {
 		Role role = getRole();
-		Node node = data().getContent("news overview");
+		Node node = content("news overview");
 		role.addPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
 		// node2
@@ -84,7 +84,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testGrantPermissionTwice() {
 		Role role = getRole();
-		Node node = data().getContent("news overview");
+		Node node = content("news overview");
 
 		role.addPermissions(node, CREATE_PERM);
 		role.addPermissions(node, CREATE_PERM);
@@ -100,14 +100,14 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testGetPermissions() {
 		Role role = getRole();
-		Node node = data().getContent("news overview");
+		Node node = content("news overview");
 		assertEquals(4, role.getPermissions(node).size());
 	}
 
 	@Test
 	public void testRevokePermission() {
 		Role role = getRole();
-		Node node = data().getContent("news overview");
+		Node node = content("news overview");
 		role.revokePermissions(node, CREATE_PERM);
 
 		Set<Permission> permissions = role.getPermissions(node);
@@ -121,15 +121,15 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 
-		getRole().revokePermissions(data().getMeshRoot().getGroupRoot(), CREATE_PERM);
+		getRole().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 		User user = getUser();
-		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(data().getMeshRoot().getGroupRoot(), CREATE_PERM));
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(meshRoot().getGroupRoot(), CREATE_PERM));
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
-		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		RoleRoot root = meshRoot().getRoleRoot();
 		int nRolesBefore = root.findAll().size();
 
 		final String roleName = "test2";
@@ -145,7 +145,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		MeshAuthUser requestUser = getUser().getImpl().reframe(MeshAuthUserImpl.class);
 		// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
-		Node parentNode = data().getFolder("2015");
+		Node parentNode = folder("2015");
 		assertNotNull(parentNode);
 
 		// Also assign create permissions on the parent object to other roles
@@ -168,7 +168,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testRolesOfGroup() throws InvalidArgumentException {
 
-		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole");
 		getGroup().addRole(extraRole);
 		getRole().addPermissions(extraRole, READ_PERM);
@@ -233,7 +233,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() {
 		String roleName = "test";
-		RoleRoot root = data().getMeshRoot().getRoleRoot();
+		RoleRoot root = meshRoot().getRoleRoot();
 
 		Role role = root.create(roleName);
 		String uuid = role.getUuid();

@@ -17,7 +17,7 @@ import java.util.Map;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -57,7 +57,7 @@ public final class RoutingContextHelper {
 		if (value != null) {
 			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
 		}
-		languageTags.add(MeshImpl.mesh().getOptions().getDefaultLanguage());
+		languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
 		return languageTags;
 
 	}

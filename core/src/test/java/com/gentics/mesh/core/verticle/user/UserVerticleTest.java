@@ -58,7 +58,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		User user = info.getUser();
+		User user = user();
 		assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
 		Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
@@ -73,11 +73,11 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUIDWithNoPermission() throws Exception {
-		User user = info.getUser();
+		User user = user();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			info.getRole().revokePermissions(user, READ_PERM);
+			role().revokePermissions(user, READ_PERM);
 			tx.success();
 		}
 
@@ -96,7 +96,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			user3.setLastname("should_not_be_listed");
 			user3.setFirstname("should_not_be_listed");
 			user3.setEmailAddress("should_not_be_listed");
-			info.getGroup().addUser(user3);
+			group().addUser(user3);
 			tx.success();
 		}
 
@@ -168,7 +168,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUser() throws Exception {
-		User user = info.getUser();
+		User user = user();
 		String username = user.getUsername();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -196,7 +196,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
 		String nodeUuid = data().getFolder("2015").getUuid();
-		User user = info.getUser();
+		User user = user();
 		String username = user.getUsername();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -242,7 +242,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 		newUser.setPassword("test1234");
 		newUser.setNodeReference(reference);
 
@@ -267,7 +267,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 		newUser.setPassword("test1234");
 		newUser.setNodeReference(reference);
 
@@ -285,7 +285,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 		newUser.setPassword("test1234");
 		newUser.setNodeReference(reference);
 
@@ -302,7 +302,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 		newUser.setPassword("test1234");
 		newUser.setNodeReference(reference);
 
@@ -318,7 +318,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 		newUser.setPassword("test1234");
 		newUser.setNodeReference(reference);
 
@@ -329,7 +329,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		User user = info.getUser();
+		User user = user();
 		String oldHash = user.getPasswordHash();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
@@ -353,10 +353,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		User user = info.getUser();
+		User user = user();
 		String oldHash = user.getPasswordHash();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			info.getRole().revokePermissions(user, UPDATE_PERM);
+			role().revokePermissions(user, UPDATE_PERM);
 			tx.success();
 		}
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -374,16 +374,16 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUserWithNoPermission() throws Exception {
-		User user = info.getUser();
+		User user = user();
 		String oldHash = user.getPasswordHash();
-		info.getRole().revokePermissions(user, UPDATE_PERM);
+		role().revokePermissions(user, UPDATE_PERM);
 
 		UserUpdateRequest updatedUser = new UserUpdateRequest();
 		updatedUser.setEmailAddress("n.user@spam.gentics.com");
 		updatedUser.setFirstname("Joe");
 		updatedUser.setLastname("Doe");
 		updatedUser.setUsername("new_user");
-		// updatedUser.addGroup(info.getGroup().getName());
+		// updatedUser.addGroup(group().getName());
 
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
 		latchFor(future);
@@ -399,13 +399,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
-		User user = info.getUser();
+		User user = user();
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			User conflictingUser = userRoot.create("existing_username");
-			info.getGroup().addUser(conflictingUser);
+			group().addUser(conflictingUser);
 			tx.success();
 		}
 
@@ -426,13 +426,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Create an user with a conflicting username
 		UserRoot userRoot = data().getMeshRoot().getUserRoot();
 		User conflictingUser = userRoot.create("existing_username");
-		info.getGroup().addUser(conflictingUser);
+		group().addUser(conflictingUser);
 		// Add update permission to group in order to create the user in that group
-		info.getRole().addPermissions(info.getGroup(), CREATE_PERM);
+		role().addPermissions(group(), CREATE_PERM);
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 		newUser.setPassword("test1234");
 
 		Future<UserResponse> future = getClient().createUser(newUser);
@@ -448,7 +448,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user_test123");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 
 		Future<UserResponse> future = getClient().createUser(newUser);
 		latchFor(future);
@@ -507,7 +507,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user");
 		newUser.setPassword("test123456");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 
 		Future<UserResponse> future = getClient().createUser(newUser);
 		latchFor(future);
@@ -535,7 +535,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user");
 		newUser.setPassword("test123456");
-		newUser.setGroupUuid(info.getGroup().getUuid());
+		newUser.setGroupUuid(group().getUuid());
 
 		Future<UserResponse> createFuture = getClient().createUser(newUser);
 		latchFor(createFuture);
@@ -562,7 +562,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	// Delete tests
 	@Test
 	public void testDeleteUserByUUID() throws Exception {
-		User user = info.getUser();
+		User user = user();
 		assertTrue(user.isEnabled());
 		String uuid = user.getUuid();
 		String name = user.getName();
@@ -586,9 +586,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			User user = userRoot.create("extraUser");
 			uuid = user.getUuid();
 			assertNotNull(uuid);
-			info.getRole().addPermissions(user, UPDATE_PERM);
-			info.getRole().addPermissions(user, CREATE_PERM);
-			info.getRole().addPermissions(user, READ_PERM);
+			role().addPermissions(user, UPDATE_PERM);
+			role().addPermissions(user, CREATE_PERM);
+			role().addPermissions(user, READ_PERM);
 			tx.success();
 		}
 
@@ -616,8 +616,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			User extraUser = userRoot.create(name);
 			uuid = extraUser.getUuid();
-			extraUser.addGroup(info.getGroup());
-			info.getRole().addPermissions(extraUser, DELETE_PERM);
+			extraUser.addGroup(group());
+			role().addPermissions(extraUser, DELETE_PERM);
 			assertNotNull(extraUser.getUuid());
 			tx.success();
 		}

@@ -30,10 +30,10 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRestClient() throws Exception {
-		User user = info.getUser();
+		User user = user();
 
 		MeshRestClient client = new MeshRestClient("localhost", getPort());
-		client.setLogin(user.getUsername(), info.getPassword());
+		client.setLogin(user.getUsername(), password());
 		Future<GenericMessageResponse> future = client.login();
 		latchFor(future);
 		assertSuccess(future);

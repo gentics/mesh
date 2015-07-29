@@ -7,7 +7,7 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.demo.verticle.CustomerVerticle;
 import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -31,7 +31,7 @@ public class DemoRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		// config.getNeo4jConfiguration().setMode("gui");
 		// config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
-		MeshImpl mesh = MeshImpl.mesh(options);
+		Mesh mesh = Mesh.initalize(options);
 
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();

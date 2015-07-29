@@ -45,10 +45,10 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadAllTags() throws Exception {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-		TagFamily basicTagFamily = data().getTagFamily("basic");
-		Tag noPermTag = basicTagFamily.create("noPermTag", data().getProject());
+		TagFamily basicTagFamily = tagFamily("basic");
+		Tag noPermTag = basicTagFamily.create("noPermTag", project());
 		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-		data().getProject().getTagRoot().addTag(noPermTag);
+		project().getTagRoot().addTag(noPermTag);
 		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters
@@ -124,7 +124,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadTagByUUID() throws Exception {
-		Tag tag = data().getTag("red");
+		Tag tag = tag("red");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
 		latchFor(future);
@@ -134,9 +134,9 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = data().getTag("vehicle");
+		Tag tag = tag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		info.getRole().revokePermissions(tag, READ_PERM);
+		role().revokePermissions(tag, READ_PERM);
 
 		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
 		latchFor(future);
@@ -186,7 +186,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 
-		info.getRole().revokePermissions(tag, UPDATE_PERM);
+		role().revokePermissions(tag, UPDATE_PERM);
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -208,7 +208,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	// Delete Tests
 	@Test
 	public void testDeleteTagByUUID() throws Exception {
-		Tag tag = data().getTag("vehicle");
+		Tag tag = tag("vehicle");
 		String name = tag.getName();
 		String uuid = tag.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, uuid);
@@ -226,7 +226,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = data().getTag("vehicle");
 		String uuid = tag.getUuid();
-		info.getRole().revokePermissions(tag, DELETE_PERM);
+		role().revokePermissions(tag, DELETE_PERM);
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", tag.getUuid());

@@ -2,7 +2,6 @@ package com.gentics.mesh.auth;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -15,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -37,7 +36,7 @@ public class MeshAuthProvider implements AuthProvider {
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		MeshImpl.vertx().executeBlocking(fut -> {
+		Mesh.vertx().executeBlocking(fut -> {
 
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");

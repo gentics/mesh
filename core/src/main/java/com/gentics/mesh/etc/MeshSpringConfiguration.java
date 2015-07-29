@@ -28,8 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.MeshAuthProvider;
-import com.gentics.mesh.cli.MeshImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.graphdb.DatabaseServiceProvider;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
@@ -55,7 +54,7 @@ public class MeshSpringConfiguration {
 
 	@Bean
 	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
-		String className = MeshImpl.mesh().getOptions().getDatabaseProviderClass();
+		String className = Mesh.mesh().getOptions().getDatabaseProviderClass();
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
@@ -91,7 +90,7 @@ public class MeshSpringConfiguration {
 
 	@Bean
 	public SessionHandler sessionHandler() {
-		SessionStore store = LocalSessionStore.create(MeshImpl.vertx());
+		SessionStore store = LocalSessionStore.create(Mesh.vertx());
 		return new SessionHandlerImpl("mesh.session", 30 * 60 * 1000, false, store);
 	}
 
@@ -119,7 +118,7 @@ public class MeshSpringConfiguration {
 		config.setStarttls(StartTLSOptions.REQUIRED);
 		config.setUsername("user");
 		config.setPassword("password");
-		MailClient mailClient = MailClient.createShared(MeshImpl.vertx(), config, "exampleclient");
+		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "exampleclient");
 		return mailClient;
 	}
 
@@ -140,7 +139,7 @@ public class MeshSpringConfiguration {
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
 		BodyHandler handler = BodyHandler.create();
-		handler.setBodyLimit(MeshImpl.mesh().getOptions().getFileUploadByteLimit());
+		handler.setBodyLimit(Mesh.mesh().getOptions().getFileUploadByteLimit());
 		// TODO check for windows issues
 		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
 		return handler;

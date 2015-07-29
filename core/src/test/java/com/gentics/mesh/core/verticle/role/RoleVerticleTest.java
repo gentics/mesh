@@ -55,7 +55,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateRole() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(info.getGroup().getUuid());
+		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -72,7 +72,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		String name = "new_role";
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName(name);
-		request.setGroupUuid(info.getGroup().getUuid());
+		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -87,7 +87,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateDeleteRole() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(info.getGroup().getUuid());
+		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> createFuture = getClient().createRole(request);
 		latchFor(createFuture);
@@ -107,15 +107,15 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateRoleWithNoPermissionOnGroup() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(info.getGroup().getUuid());
+		request.setGroupUuid(group().getUuid());
 
 		// Add needed permission to group
-		info.getRole().revokePermissions(info.getGroup(), CREATE_PERM);
-		// roleRoot.revokePermission(info.getRole(), data().getMeshRoot().getRoleRoot(), CREATE);
+		role().revokePermissions(group(), CREATE_PERM);
+		// roleRoot.revokePermission(role(), data().getMeshRoot().getRoleRoot(), CREATE);
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", info.getGroup().getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateRoleWithNoName() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
-		request.setGroupUuid(info.getGroup().getUuid());
+		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -151,7 +151,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadOwnRoleByUUID() throws Exception {
 		UserInfo info = data().getUserInfo();
-		Role role = info.getRole();
+		Role role = role();
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 
 		Future<RoleResponse> future = getClient().findRoleByUuid(role.getUuid());
@@ -169,10 +169,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Role extraRole = roleRoot.create("extra role");
 		extraRole.setCreator(info.getUser());
 		extraRole.setEditor(info.getUser());
-		info.getGroup().addRole(extraRole);
+		group().addRole(extraRole);
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-		info.getRole().addPermissions(extraRole, READ_PERM);
+		role().addPermissions(extraRole, READ_PERM);
 
 		Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
 		latchFor(future);
@@ -188,10 +188,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
 
 		Role extraRole = roleRoot.create("extra role");
-		info.getGroup().addRole(extraRole);
+		group().addRole(extraRole);
 
 		// Revoke read permission from the role
-		info.getRole().revokePermissions(extraRole, READ_PERM);
+		role().revokePermissions(extraRole, READ_PERM);
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 
@@ -204,7 +204,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
 		UserInfo info = data().getUserInfo();
-		Role role = info.getRole();
+		Role role = role();
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 		role.revokePermissions(role, READ_PERM);
 
@@ -220,17 +220,17 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Role noPermRole = roleRoot.create("no_perm_role");
 		final int nRoles = 21;
 
-		info.getRole().addPermissions(info.getGroup(), READ_PERM);
+		role().addPermissions(group(), READ_PERM);
 
 		// Create and save some roles
 		for (int i = 0; i < nRoles; i++) {
 			Role extraRole = roleRoot.create("extra role " + i);
-			info.getGroup().addRole(extraRole);
-			info.getRole().addPermissions(extraRole, READ_PERM);
+			group().addRole(extraRole);
+			role().addPermissions(extraRole, READ_PERM);
 		}
 
 		// Role with no permission
-		info.getGroup().addRole(noPermRole);
+		group().addRole(noPermRole);
 		// Test default paging parameters
 		Future<RoleListResponse> future = getClient().findRoles();
 		latchFor(future);
@@ -305,9 +305,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
 		Role extraRole = roleRoot.create("extra role");
-		info.getGroup().addRole(extraRole);
+		group().addRole(extraRole);
 
-		info.getRole().addPermissions(extraRole, UPDATE_PERM);
+		role().addPermissions(extraRole, UPDATE_PERM);
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 
@@ -327,7 +327,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		Role role = info.getRole();
+		Role role = role();
 
 		RoleUpdateRequest restRole = new RoleUpdateRequest();
 		restRole.setName("renamed role");
@@ -337,7 +337,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", role.getUuid());
 
 		// Add the missing permission and try again
-		info.getRole().addPermissions(info.getRole(), Permission.UPDATE_PERM);
+		role().addPermissions(role(), Permission.UPDATE_PERM);
 
 		future = getClient().updateRole(role.getUuid(), restRole);
 		latchFor(future);
@@ -357,8 +357,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteRoleByUUID() throws Exception {
 		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
 		Role extraRole = roleRoot.create("extra role");
-		info.getGroup().addRole(extraRole);
-		info.getRole().addPermissions(extraRole, DELETE_PERM);
+		group().addRole(extraRole);
+		role().addPermissions(extraRole, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteRole(extraRole.getUuid());
 		latchFor(future);
@@ -371,10 +371,10 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteRoleByUUIDWithMissingPermission() throws Exception {
-		Future<GenericMessageResponse> future = getClient().deleteRole(info.getRole().getUuid());
+		Future<GenericMessageResponse> future = getClient().deleteRole(role().getUuid());
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", info.getRole().getUuid());
-		boot.roleRoot().findByUuid(info.getRole().getUuid(), rh -> {
+		expectException(future, FORBIDDEN, "error_missing_perm", role().getUuid());
+		boot.roleRoot().findByUuid(role().getUuid(), rh -> {
 			assertNotNull("The role should not have been deleted", rh.result());
 		});
 	}

@@ -28,7 +28,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadFolderByPath() throws Exception {
 
-		Node folder = data().getFolder("2015");
+		Node folder = folder("2015");
 		String path = "/News/2015";
 
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
@@ -45,7 +45,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
-		Node concordeNode = data().getContent("concorde");
+		Node concordeNode = content("concorde");
 
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
@@ -68,8 +68,8 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "News/2015";
-		Node newsFolder = data().getFolder("2015");
-		info.getRole().revokePermissions(newsFolder, READ_PERM);
+		Node newsFolder = folder("2015");
+		role().revokePermissions(newsFolder, READ_PERM);
 
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, englishPath);
 		latchFor(future);

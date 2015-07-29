@@ -293,7 +293,7 @@ public class BootstrapInitializer {
 			try {
 				log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
 				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(MeshImpl.vertx(), defaultConfig, clazz);
+				deployAndWait(Mesh.vertx(), defaultConfig, clazz);
 			} catch (InterruptedException e) {
 				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
 			}
@@ -312,7 +312,7 @@ public class BootstrapInitializer {
 			mergedVerticleConfig.put("port", configuration.getHttpPort());
 			try {
 				log.info("Loading configured verticle {" + verticleName + "}.");
-				deployAndWait(MeshImpl.vertx(), mergedVerticleConfig, verticleName);
+				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName);
 			} catch (InterruptedException e) {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}
@@ -339,10 +339,10 @@ public class BootstrapInitializer {
 		initMandatoryData();
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
-			verticleLoader.apply(MeshImpl.vertx());
+			verticleLoader.apply(Mesh.vertx());
 		}
 		initProjects();
-		MeshImpl.vertx().eventBus().send("mesh-startup-complete", true);
+		Mesh.vertx().eventBus().send("mesh-startup-complete", true);
 
 	}
 
@@ -363,7 +363,7 @@ public class BootstrapInitializer {
 	 */
 	private void joinCluster() {
 		HazelcastClusterManager manager = new HazelcastClusterManager();
-		manager.setVertx(MeshImpl.vertx());
+		manager.setVertx(Mesh.vertx());
 		manager.join(rh -> {
 			if (!rh.succeeded()) {
 				log.error("Error while joining mesh cluster.", rh.cause());
@@ -447,7 +447,7 @@ public class BootstrapInitializer {
 			Schema schema = new SchemaImpl();
 			schema.setName("content");
 			schema.setDisplayField("title");
-			schema.setMeshVersion(MeshImpl.getVersion());
+			schema.setMeshVersion(Mesh.getVersion());
 			schema.setSchemaVersion("1.0.0");
 
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
@@ -483,7 +483,7 @@ public class BootstrapInitializer {
 			Schema schema = new SchemaImpl();
 			schema.setName("folder");
 			schema.setDisplayField("name");
-			schema.setMeshVersion(MeshImpl.getVersion());
+			schema.setMeshVersion(Mesh.getVersion());
 			schema.setSchemaVersion("1.0.0");
 
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
@@ -504,7 +504,7 @@ public class BootstrapInitializer {
 			Schema schema = new SchemaImpl();
 			schema.setName("binary-content");
 			schema.setDisplayField("name");
-			schema.setMeshVersion(MeshImpl.getVersion());
+			schema.setMeshVersion(Mesh.getVersion());
 			schema.setSchemaVersion("1.0.0");
 
 			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();

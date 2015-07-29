@@ -36,7 +36,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
+		ProjectRoot projectRoot = meshRoot().getProjectRoot();
 		Project project = projectRoot.create("test", getUser());
 		Project project2 = projectRoot.findByName(project.getName());
 		assertNotNull(project2);
@@ -47,9 +47,9 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		String uuid = data().getProject().getUuid();
+		String uuid = project().getUuid();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			Project project = data().getProject();
+			Project project = project();
 			project.delete();
 			tx.success();
 		}
@@ -94,7 +94,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		projectRoot.findByUuid(data().getProject().getUuid(), rh -> {
+		projectRoot.findByUuid(project().getUuid(), rh -> {
 			assertNotNull(rh.result());
 		});
 		projectRoot.findByUuid("bogus", rh -> {
@@ -105,7 +105,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		Project project = data().getProject();
+		Project project = project();
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		project.transformToRest(rc, rh -> {

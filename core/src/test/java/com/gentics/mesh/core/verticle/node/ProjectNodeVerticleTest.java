@@ -219,7 +219,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Node node = folder("news");
 		// Revoke create perm
-		info.getRole().revokePermissions(node, CREATE_PERM);
+		role().revokePermissions(node, CREATE_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
@@ -261,8 +261,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Node parentNode = folder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		Node noPermNode = parentNode.create(info.getUser(), schemaContainer("content"), project());
-		noPermNode.setCreator(info.getUser());
+		Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
+		noPermNode.setCreator(user());
 		assertNotNull(noPermNode.getUuid());
 
 		int perPage = 11;
@@ -404,7 +404,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
 		Node node = folder("2015");
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			info.getRole().revokePermissions(node, READ_PERM);
+			role().revokePermissions(node, READ_PERM);
 			tx.success();
 		}
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
@@ -600,7 +600,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		String uuid = folder("2015").getUuid();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			Node node = folder("2015");
-			info.getRole().revokePermissions(node, DELETE_PERM);
+			role().revokePermissions(node, DELETE_PERM);
 			tx.success();
 		}
 

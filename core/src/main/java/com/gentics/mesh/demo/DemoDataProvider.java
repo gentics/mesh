@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -437,7 +437,7 @@ public class DemoDataProvider {
 		Schema schema = new SchemaImpl();
 		schema.setName("blogpost");
 		schema.setDisplayField("title");
-		schema.setMeshVersion(MeshImpl.getVersion());
+		schema.setMeshVersion(Mesh.getVersion());
 		schema.setSchemaVersion("1.0.0");
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();

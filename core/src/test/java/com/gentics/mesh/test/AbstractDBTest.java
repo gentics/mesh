@@ -79,6 +79,10 @@ public abstract class AbstractDBTest {
 		return data().getSchemaContainer(key);
 	}
 
+	public Map<String, ? extends Tag> tags() {
+		return data().getTags();
+	}
+
 	public Tag tag(String key) {
 		return data().getTag(key);
 	}
@@ -109,6 +113,10 @@ public abstract class AbstractDBTest {
 
 	public User user() {
 		return data().getUserInfo().getUser();
+	}
+
+	public String password() {
+		return data().getUserInfo().getPassword();
 	}
 
 	public Group group() {

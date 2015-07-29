@@ -9,16 +9,16 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import java.util.Objects;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-public class MeshImpl {
+public class MeshImpl implements Mesh {
 
 	private static final Logger log;
 
@@ -35,6 +35,13 @@ public class MeshImpl {
 		log = LoggerFactory.getLogger(MeshImpl.class);
 	}
 
+	public static Mesh instance() {
+		if (instance == null) {
+			throw new RuntimeException("Mesh instance not yet initialized.");
+		}
+		return instance;
+	}
+
 	public MeshImpl(MeshOptions options) {
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;
@@ -47,31 +54,21 @@ public class MeshImpl {
 		this.vertx = vertx;
 	}
 
-	public MeshImpl() {
-		options = OptionsLoader.createOrloadOptions();
-	}
-
-	public static MeshImpl mesh() {
-		if (instance == null) {
-			instance = new MeshImpl();
-		}
-		return instance;
-	}
-
-	public static MeshImpl mesh(MeshOptions options) {
+	public static MeshImpl create(MeshOptions options) {
 		if (instance == null) {
 			instance = new MeshImpl(options);
 		}
 		return instance;
 	}
 
-	public static MeshImpl mesh(MeshOptions options, Vertx vertx) {
+	public static Mesh create(MeshOptions options, Vertx vertx) {
 		if (instance == null) {
 			instance = new MeshImpl(options, vertx);
 		}
 		return instance;
 	}
 
+	@Override
 	public Vertx getVertx() {
 		if (vertx == null) {
 			VertxOptions options = new VertxOptions();
@@ -82,17 +79,7 @@ public class MeshImpl {
 		return vertx;
 	}
 
-	public static Vertx vertx() {
-		return mesh().getVertx();
-	}
-
-	public static void main(String[] args) throws Exception {
-		// TODO errors should be handled by a logger
-		MeshImpl mesh = MeshImpl.mesh();
-		mesh.handleArguments(args);
-		mesh.run();
-	}
-
+	@Override
 	public void run() throws Exception {
 		run(null);
 	}
@@ -103,6 +90,7 @@ public class MeshImpl {
 	 * @param startupHandler
 	 * @throws Exception
 	 */
+	@Override
 	public void run(Runnable startupHandler) throws Exception {
 
 		printProductInformation();
@@ -129,6 +117,7 @@ public class MeshImpl {
 	 * @param args
 	 * @throws ParseException
 	 */
+	@Override
 	public void handleArguments(String[] args) throws ParseException {
 		// TODO WIP
 		// create Options object
@@ -158,7 +147,7 @@ public class MeshImpl {
 
 	private void printProductInformation() {
 		log.info("#################################################");
-		log.info(infoLine("Mesh Version " + getVersion()));
+		log.info(infoLine("Mesh Version " + Mesh.getVersion()));
 		log.info(infoLine("Gentics Software GmbH"));
 		log.info("#-----------------------------------------------#");
 		//log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
@@ -174,22 +163,24 @@ public class MeshImpl {
 		return "# " + StringUtils.rightPad(text, 45) + " #";
 	}
 
-	public static String getVersion() {
-		Package pack = MeshImpl.class.getPackage();
-		return pack.getImplementationVersion();
-	}
-
 	/**
 	 * Set a custom verticle loader that will be invoked once all major components have been initialized.
 	 * 
 	 * @param verticleLoader
 	 */
+	@Override
 	public void setCustomLoader(MeshCustomLoader<Vertx> verticleLoader) {
 		this.verticleLoader = verticleLoader;
 	}
 
+	@Override
 	public MeshOptions getOptions() {
 		return options;
+	}
+
+	@Override
+	public void close() {
+		throw new NotImplementedException();
 	}
 
 }

@@ -41,10 +41,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole");
 
-		info.getGroup().addRole(extraRole);
-		info.getRole().addPermissions(extraRole, READ_PERM);
+		group().addRole(extraRole);
+		role().addPermissions(extraRole, READ_PERM);
 
-		String uuid = info.getGroup().getUuid();
+		String uuid = group().getUuid();
 		Future<RoleListResponse> future = getClient().findRolesForGroup(uuid);
 		latchFor(future);
 		assertSuccess(future);
@@ -55,7 +55,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Iterator<RoleResponse> roleIt = roleList.getData().iterator();
 		RoleResponse roleB = roleIt.next();
 		RoleResponse roleA = roleIt.next();
-		assertEquals(info.getRole().getUuid(), roleB.getUuid());
+		assertEquals(role().getUuid(), roleB.getUuid());
 		assertEquals(extraRole.getUuid(), roleA.getUuid());
 	}
 
@@ -64,25 +64,25 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole");
 
-		info.getRole().addPermissions(extraRole, READ_PERM);
+		role().addPermissions(extraRole, READ_PERM);
 
-		assertEquals(1, info.getGroup().getRoles().size());
-		String uuid = info.getGroup().getUuid();
+		assertEquals(1, group().getRoles().size());
+		String uuid = group().getUuid();
 		Future<GroupResponse> future = getClient().addRoleToGroup(uuid, extraRole.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		assertTrue(restGroup.getRoles().contains("extraRole"));
 
-		Group group = info.getGroup();
+		Group group = group();
 		assertEquals(2, group.getRoles().size());
 
 	}
 
 	@Test
 	public void testAddBogusRoleToGroup() throws Exception {
-		assertEquals(1, info.getGroup().getRoles().size());
-		String uuid = info.getGroup().getUuid();
+		assertEquals(1, group().getRoles().size());
+		String uuid = group().getUuid();
 		Future<GroupResponse> future = getClient().addRoleToGroup(uuid, "bogus");
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -93,13 +93,13 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole");
 
-		assertEquals(1, info.getGroup().getRoles().size());
-		String uuid = info.getGroup().getUuid();
+		assertEquals(1, group().getRoles().size());
+		String uuid = group().getUuid();
 		Future<GroupResponse> future = getClient().addRoleToGroup(uuid, extraRole.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", extraRole.getUuid());
 
-		Group group = info.getGroup();
+		Group group = group();
 		assertEquals(1, group.getRoles().size());
 	}
 
@@ -108,28 +108,28 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole");
 
-		info.getGroup().addRole(extraRole);
-		info.getRole().addPermissions(extraRole, READ_PERM);
-		assertEquals(2, info.getGroup().getRoles().size());
-		String uuid = info.getGroup().getUuid();
+		group().addRole(extraRole);
+		role().addPermissions(extraRole, READ_PERM);
+		assertEquals(2, group().getRoles().size());
+		String uuid = group().getUuid();
 
 		Future<GroupResponse> future = getClient().removeRoleFromGroup(uuid, extraRole.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		assertFalse(restGroup.getRoles().contains("extraRole"));
-		Group group = info.getGroup();
+		Group group = group();
 		assertEquals(1, group.getRoles().size());
 
 	}
 
 	@Test
 	public void testAddRoleToGroupWithPerm() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		RoleRoot root = meshRoot().getRoleRoot();
 
 		Role extraRole = root.create("extraRole");
-		info.getRole().addPermissions(extraRole, READ_PERM);
+		role().addPermissions(extraRole, READ_PERM);
 
 		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), extraRole.getUuid());
 		latchFor(future);
@@ -142,10 +142,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole");
-		info.getRole().revokePermissions(group, UPDATE_PERM);
+		role().revokePermissions(group, UPDATE_PERM);
 
 		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), extraRole.getUuid());
 		latchFor(future);
@@ -155,7 +155,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddRoleToGroupWithBogusRoleUUID() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), "bogus");
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -166,7 +166,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
 		RoleRoot root = meshRoot().getRoleRoot();
-		Group group = info.getGroup();
+		Group group = group();
 
 		Role extraRole = root.create("extraRole");
 		group.addRole(extraRole);
@@ -174,8 +174,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(group.getUuid());
 		assertNotNull(extraRole.getUuid());
 
-		info.getRole().addPermissions(extraRole, READ_PERM);
-		info.getRole().addPermissions(group, UPDATE_PERM);
+		role().addPermissions(extraRole, READ_PERM);
+		role().addPermissions(group, UPDATE_PERM);
 
 		Future<GroupResponse> future = getClient().removeRoleFromGroup(group.getUuid(), extraRole.getUuid());
 		latchFor(future);
@@ -187,12 +187,12 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveRoleFromGroupWithoutPerm() throws Exception {
-		Group group = info.getGroup();
+		Group group = group();
 		RoleRoot root = meshRoot().getRoleRoot();
 
 		Role extraRole = root.create("extraRole");
 		group.addRole(extraRole);
-		info.getRole().revokePermissions(group, UPDATE_PERM);
+		role().revokePermissions(group, UPDATE_PERM);
 
 		Future<GroupResponse> future = getClient().removeRoleFromGroup(group.getUuid(), extraRole.getUuid());
 		latchFor(future);

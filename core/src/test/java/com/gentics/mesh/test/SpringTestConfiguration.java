@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl;
 
@@ -24,9 +24,7 @@ public class SpringTestConfiguration {
 		MeshOptions options = new MeshOptions();
 		options.setDatabaseProviderClass(graphProviderClassname());
 		options.setHttpPort(TestUtil.getRandomPort());
-		MeshImpl.mesh(options);
-//		Mesh.
-//		MeshSpringConfiguration.setConfiguration(config);
+		Mesh.initalize(options);
 	}
 
 }

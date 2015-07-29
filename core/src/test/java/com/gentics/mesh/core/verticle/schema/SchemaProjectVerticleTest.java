@@ -35,13 +35,13 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddSchemaToProjectWithPerm() throws Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
-		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject", info.getUser());
+		SchemaContainer schema = schemaContainer("content");
+		ProjectRoot projectRoot = meshRoot().getProjectRoot();
+		Project extraProject = projectRoot.create("extraProject", user());
 
 		// Add only read perms
-		info.getRole().addPermissions(schema, READ_PERM);
-		info.getRole().addPermissions(extraProject, UPDATE_PERM);
+		role().addPermissions(schema, READ_PERM);
+		role().addPermissions(extraProject, UPDATE_PERM);
 
 		Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
 		latchFor(future);
@@ -60,13 +60,13 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddSchemaToProjectWithoutPerm() throws Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
-		Project project = data().getProject();
-		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject", info.getUser());
+		SchemaContainer schema = schemaContainer("content");
+		Project project = project();
+		ProjectRoot projectRoot = meshRoot().getProjectRoot();
+		Project extraProject = projectRoot.create("extraProject", user());
 		// Add only read perms
-		info.getRole().addPermissions(schema, READ_PERM);
-		info.getRole().addPermissions(project, READ_PERM);
+		role().addPermissions(schema, READ_PERM);
+		role().addPermissions(project, READ_PERM);
 
 		Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
 		latchFor(future);
@@ -80,8 +80,8 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 	// Schema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
-		Project project = data().getProject();
+		SchemaContainer schema = schemaContainer("content");
+		Project project = project();
 		assertTrue("The schema should be assigned to the project.", project.getSchemaRoot().contains(schema));
 
 		Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
@@ -99,13 +99,13 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
-		Project project = data().getProject();
+		SchemaContainer schema = schemaContainer("content");
+		Project project = project();
 
 		assertTrue("The schema should be assigned to the project.", project.getSchemaRoot().contains(schema));
 
 		// Revoke update perms on the project
-		info.getRole().revokePermissions(project, UPDATE_PERM);
+		role().revokePermissions(project, UPDATE_PERM);
 		Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());

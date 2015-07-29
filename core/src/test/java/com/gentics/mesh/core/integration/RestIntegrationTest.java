@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
 public class RestIntegrationTest extends AbstractIntegrationTest {
@@ -18,7 +18,7 @@ public class RestIntegrationTest extends AbstractIntegrationTest {
 	public void testIntegration() throws Exception {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
 
-		final MeshImpl mesh = MeshImpl.mesh();
+		final Mesh mesh = Mesh.mesh();
 		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);
 		final AtomicBoolean meshStarted = new AtomicBoolean(false);
 		mesh.setCustomLoader((vertx) -> {

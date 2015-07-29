@@ -118,7 +118,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 			schema.setName("extra_schema_" + i);
 			SchemaContainer extraSchema = schemaRoot.create(schema);
 			extraSchema.setSchema(dummySchema);
-			info.getRole().addPermissions(extraSchema, READ_PERM);
+			role().addPermissions(extraSchema, READ_PERM);
 		}
 		// Don't grant permissions to no perm schema
 
@@ -188,7 +188,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
 
-		SchemaContainer schemaContainer = data().getSchemaContainer("content");
+		SchemaContainer schemaContainer = schemaContainer("content");
 		Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
 		latchFor(future);
 		assertSuccess(future);
@@ -198,12 +198,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadSchemaByUUIDWithNoPerm() throws Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
+		SchemaContainer schema = schemaContainer("content");
 
-		info.getRole().addPermissions(schema, DELETE_PERM);
-		info.getRole().addPermissions(schema, UPDATE_PERM);
-		info.getRole().addPermissions(schema, CREATE_PERM);
-		info.getRole().revokePermissions(schema, READ_PERM);
+		role().addPermissions(schema, DELETE_PERM);
+		role().addPermissions(schema, UPDATE_PERM);
+		role().addPermissions(schema, CREATE_PERM);
+		role().revokePermissions(schema, READ_PERM);
 
 		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
 		latchFor(future);
@@ -221,7 +221,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateSchemaByUUID() throws HttpStatusCodeErrorException, Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
+		SchemaContainer schema = schemaContainer("content");
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setName("new-name");
 
@@ -240,7 +240,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateSchemaByBogusUUID() throws HttpStatusCodeErrorException, Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
+		SchemaContainer schema = schemaContainer("content");
 
 		String oldName = schema.getName();
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
@@ -261,7 +261,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteSchemaByUUID() throws Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
+		SchemaContainer schema = schemaContainer("content");
 
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
@@ -275,7 +275,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	public void testDeleteSchemaWithMissingPermission() throws Exception {
-		SchemaContainer schema = data().getSchemaContainer("content");
+		SchemaContainer schema = schemaContainer("content");
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
 		assertSuccess(future);

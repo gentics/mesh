@@ -22,13 +22,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
@@ -50,17 +49,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private MeshRestClient client;
 
-	protected UserInfo info;
-
 	@Autowired
 	private RouterStorage routerStorage;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
 		setupData();
-		info = data().getUserInfo();
 		port = com.gentics.mesh.test.TestUtil.getRandomPort();
-		vertx = MeshImpl.vertx();
+		vertx = Mesh.vertx();
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
@@ -74,7 +70,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		verticle.start();
 		verticle.registerEndPoints();
 		client = new MeshRestClient("localhost", getPort());
-		client.setLogin(info.getUser().getUsername(), info.getPassword());
+		client.setLogin(user().getUsername(), data().getUserInfo().getPassword());
 		for (SchemaContainer container : data().getSchemaContainers().values()) {
 			getClient().getClientSchemaStorage().addSchema(container.getSchema());
 		}
