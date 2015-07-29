@@ -4,7 +4,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -131,12 +130,45 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 						});
 					}
 				} else if (field instanceof StringFieldListImpl) {
-					throw new NotImplementedException();
+					StringFieldListImpl stringList = (StringFieldListImpl) field;
+					StringFieldList graphStringList = createStringList(key);
 
-				} else if (field instanceof NumberFieldImpl) {
-					throw new NotImplementedException();
+					for (String item : stringList.getList()) {
+						graphStringList.createString(item);
+					}
+				} else if (field instanceof HtmlFieldListImpl) {
+					HtmlFieldListImpl htmlList = (HtmlFieldListImpl) field;
+					HtmlFieldList graphHtmlList = createHTMLList(key);
 
+					for (String item : htmlList.getList()) {
+						graphHtmlList.createHTML(item);
+					}
+				} else if (field instanceof NumberFieldListImpl) {
+					NumberFieldListImpl numberList = (NumberFieldListImpl) field;
+					NumberFieldList graphNumberList = createNumberList(key);
+
+					for (String item : numberList.getList()) {
+						graphNumberList.createNumber(item);
+					}
+				} else if (field instanceof BooleanFieldListImpl) {
+
+					BooleanFieldListImpl booleanList = (BooleanFieldListImpl) field;
+					BooleanFieldList graphBooleanList = createBooleanList(key);
+
+					for (Boolean item : booleanList.getList()) {
+						graphBooleanList.createBoolean(item);
+					}
+				} else if (field instanceof DateFieldListImpl) {
+					DateFieldListImpl dateList = (DateFieldListImpl) field;
+					DateFieldList graphDateList = createDateList(key);
+
+					for (String item : dateList.getList()) {
+						graphDateList.createDate(item);
+					}
+				} else if (field instanceof MicroschemaFieldListImpl) {
+					throw new NotImplementedException();
 				} else {
+					//TODO unknown type - throw better error
 					throw new NotImplementedException();
 				}
 				break;
@@ -294,7 +326,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 		if (FieldTypes.SELECT.equals(type)) {
 			SelectFieldSchema selectFieldSchema = (SelectFieldSchema) fieldSchema;
-//			throw new NotImplementedException();
+			//			throw new NotImplementedException();
 
 		}
 
