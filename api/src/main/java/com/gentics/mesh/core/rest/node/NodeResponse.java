@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +8,7 @@ import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 
 public class NodeResponse extends AbstractGenericNodeRestModel {
 
@@ -24,7 +23,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel {
 
 	private String parentNodeUuid;
 
-	private List<TagReference> tags = new ArrayList<>();
+	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
 
 	private ProjectResponse project;
 
@@ -51,7 +50,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel {
 		this.parentNodeUuid = parentNodeUuid;
 	}
 
-	public List<TagReference> getTags() {
+	public Map<String, TagFamilyTagGroup> getTags() {
 		return tags;
 	}
 

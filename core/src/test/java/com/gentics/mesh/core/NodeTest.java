@@ -158,9 +158,11 @@ public class NodeTest extends AbstractBasicObjectTest {
 		newsNode.transformToRest(rc, rh -> {
 			NodeResponse response = rh.result();
 			assertNotNull(response);
-			System.out.println(JsonUtil.toJson(response));
-			//TODO assert for english fields
-		});
+			String json = JsonUtil.toJson(response);
+			assertNotNull(json);
+			// TODO assert for english fields
+				System.out.println(json);
+			});
 	}
 
 	@Test
@@ -239,7 +241,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			assertNotNull(rh.result());
 		});
 		node.delete();
-		//TODO check for attached subnodes
+		// TODO check for attached subnodes
 		getMeshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 			assertNull(rh.result());
 		});
@@ -253,7 +255,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertEquals(getUser().getUuid(), node.getCreator().getUuid());
 		node.setCreator(newUser);
 		assertEquals(newUser.getUuid(), node.getCreator().getUuid());
-		//TODO update other fields
+		// TODO update other fields
 	}
 
 	@Test

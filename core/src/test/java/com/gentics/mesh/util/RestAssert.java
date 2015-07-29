@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -58,14 +59,14 @@ public class RestAssert {
 		assertNotNull(request);
 		assertNotNull(restGroup);
 		assertEquals(request.getName(), restGroup.getName());
-		//		assertNotNull(restGroup.getUsers());
+		// assertNotNull(restGroup.getUsers());
 		assertNotNull(restGroup.getUuid());
 	}
 
 	public void assertUser(User user, UserResponse restUser) {
 		assertNotNull("The user must not be null.", user);
 		assertNotNull("The restuser must not be null", restUser);
-		//		user = neo4jTemplate.fetch(user);
+		// user = neo4jTemplate.fetch(user);
 		assertEquals(user.getUsername(), restUser.getUsername());
 		assertEquals(user.getEmailAddress(), restUser.getEmailAddress());
 		assertEquals(user.getFirstname(), restUser.getFirstname());
@@ -77,10 +78,10 @@ public class RestAssert {
 
 	public void assertTag(Tag tag, TagResponse restTag) {
 		assertGenericNode(tag, restTag);
-		//		tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
+		// tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
 		assertEquals(tag.getUuid(), restTag.getUuid());
-		//		assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
-		//		assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
+		// assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
+		// assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
 	}
 
 	/**
@@ -91,17 +92,17 @@ public class RestAssert {
 	 */
 	public void assertMeshNode(NodeCreateRequest request, NodeResponse restNode) {
 
-		//		for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {
-		//			String value = request.getParentNodeUuid();
-		//			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
-		//					restNode.getProperty(entry.getKey()));
+		// for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {
+		// String value = request.getParentNodeUuid();
+		// assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
+		// restNode.getProperty(entry.getKey()));
 		//
-		//		}
+		// }
 		assertNotNull(restNode);
 		assertNotNull(request);
 		String schemaName = request.getSchema().getName();
 		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restNode.getSchema().getName());
-		//		assertEquals(request.getOrder(), restNode.getOrder());
+		// assertEquals(request.getOrder(), restNode.getOrder());
 		String tagUuid = request.getParentNodeUuid();
 		// TODO how to match the parent tag?
 
@@ -115,11 +116,11 @@ public class RestAssert {
 		assertNotNull(request);
 		assertNotNull(node);
 
-		//		for (Entry<String, String> entry : request.getProperties().entrySet()) {
-		////			Language language = languageService.findByLanguageTag(languageTag);
-		//			String propValue = node.getI18nProperties(language).getProperty(entry.getKey());
-		//			assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
-		//		}
+		// for (Entry<String, String> entry : request.getProperties().entrySet()) {
+		// // Language language = languageService.findByLanguageTag(languageTag);
+		// String propValue = node.getI18nProperties(language).getProperty(entry.getKey());
+		// assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(), propValue);
+		// }
 
 		assertNotNull(node.getUuid());
 		assertNotNull(node.getCreator());
@@ -187,22 +188,22 @@ public class RestAssert {
 	}
 
 	public void assertSchema(SchemaContainer schema, SchemaResponse restSchema) {
-		//TODO make schemas extends generic nodes?
-		//		assertGenericNode(schema, restSchema);
+		// TODO make schemas extends generic nodes?
+		// assertGenericNode(schema, restSchema);
 		assertNotNull(schema);
 		assertNotNull(restSchema);
-		//		assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
-		//		assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
-		//		assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
+		// assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
+		// assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
+		// assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
 		// TODO verify other fields
 	}
 
 	public void assertSchema(SchemaCreateRequest request, SchemaResponse restSchema) {
 		assertNotNull(request);
 		assertNotNull(restSchema);
-		//		assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
-		//		assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
-		//		assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
+		// assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
+		// assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
+		// assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
 		// TODO assert for schema properties
 	}
 
@@ -266,9 +267,11 @@ public class RestAssert {
 			return false;
 		}
 
-		for (TagReference restTag : restNode.getTags()) {
-			if (tag.getUuid().equals(restTag.getUuid())) {
-				return true;
+		for (TagFamilyTagGroup group : restNode.getTags().values()) {
+			for (TagReference restTag : group.getItems()) {
+				if (tag.getUuid().equals(restTag.getUuid())) {
+					return true;
+				}
 			}
 		}
 		return false;

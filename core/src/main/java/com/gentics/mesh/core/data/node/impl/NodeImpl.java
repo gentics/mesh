@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
@@ -44,6 +45,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -205,7 +208,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				String langInfo = getLanguageInfo(languageTags);
 				log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
 						+ langInfo + "}. Fields will be empty.");
-				//				throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
+				// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
 			} else {
 				restNode.setLanguage(foundLanguage.getLanguageTag());
 				for (FieldSchema fieldEntry : schema.getFields()) {
@@ -222,23 +225,32 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field");
 					} else {
 						restNode.getFields().put(fieldEntry.getName(), restField);
-
 					}
 				}
 			}
 
 			try {
 				for (Tag tag : getTags(rc)) {
-					restNode.getTags().add(tag.tansformToTagReference());
+					TagFamily tagFamily = tag.getTagFamily();
+					String tagFamilyName = tagFamily.getName();
+					String tagFamilyUuid = tagFamily.getUuid();
+					TagReference reference = tag.tansformToTagReference();
+					TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
+					if (group == null) {
+						group = new TagFamilyTagGroup();
+						group.setUuid(tagFamilyUuid);
+						restNode.getTags().put(tagFamilyName, group);
+					}
+					group.getItems().add(reference);
 				}
 			} catch (InvalidArgumentException e) {
-				//TODO i18n
+				// TODO i18n
 				throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags");
 			}
 
 			handler.handle(Future.succeededFuture(restNode));
 		} catch (IOException e) {
-			//TODO i18n
+			// TODO i18n
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
 		}
 		return this;
@@ -248,13 +260,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	@Override
 	public List<String> getAvailableLanguageNames() {
 		// TODO Auto-generated method stub
-		//TODO set language and all languages
+		// TODO set language and all languages
 		return null;
 	}
 
 	public Page<? extends Tag> getTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo) throws InvalidArgumentException {
 
-		//TODO filter permissions
+		// TODO filter permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
 		Page<? extends Tag> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
@@ -263,14 +275,14 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public void delete() {
-		//TODO handle linked containers
+		// TODO handle linked containers
 		getElement().remove();
 	}
 
 	@Override
 	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
-		//TODO add permissions
+		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = in(HAS_PARENT_NODE).has(NodeImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = in(HAS_PARENT_NODE).has(NodeImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
@@ -278,7 +290,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException {
-		//TODO add permissions
+		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, getPagingInfo(rc), TagImpl.class);
