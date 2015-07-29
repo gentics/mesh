@@ -37,27 +37,27 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	}
 
 	@Test
-	public void testStringList() {
+	public void testStringList() throws IOException {
 		setSchema("string");
 	}
 
 	@Test
-	public void testHtmlList() {
+	public void testHtmlList() throws IOException {
 		setSchema("html");
 	}
 
 	@Test
-	public void testBooleanList() {
+	public void testBooleanList() throws IOException {
 		setSchema("boolean");
 	}
 
 	@Test
-	public void testDateList() {
+	public void testDateList() throws IOException {
 		setSchema("date");
 	}
 
 	@Test
-	public void testNumbuerList() {
+	public void testNumbuerList() throws IOException {
 		setSchema("number");
 	}
 
