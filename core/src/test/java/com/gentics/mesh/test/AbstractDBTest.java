@@ -103,6 +103,10 @@ public abstract class AbstractDBTest {
 		return data().getFolder(key);
 	}
 
+	public Map<String, User> users() {
+		return data().getUsers();
+	}
+
 	public Language english() {
 		return data().getEnglish();
 	}

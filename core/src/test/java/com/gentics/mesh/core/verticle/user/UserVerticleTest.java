@@ -88,7 +88,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllUsers() throws Exception {
-		UserRoot root = data().getMeshRoot().getUserRoot();
+		UserRoot root = meshRoot().getUserRoot();
 
 		String username = "testuser_3";
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -110,7 +110,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(14, restResponse.getData().size());
 
 		int perPage = 2;
-		int totalUsers = data().getUsers().size();
+		int totalUsers = users().size();
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 		future = getClient().findUsers(new PagingInfo(3, perPage));
 		latchFor(future);
@@ -195,7 +195,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
-		String nodeUuid = data().getFolder("2015").getUuid();
+		String nodeUuid = folder("2015").getUuid();
 		User user = user();
 		String username = user.getUsername();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
@@ -234,7 +234,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateUserWithNodeReference() {
 
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 
 		NodeReference reference = new NodeReference();
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
@@ -259,7 +259,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
 
-		Node node = data().getFolder("2015");
+		Node node = folder("2015");
 
 		NodeReference reference = new NodeReference();
 		reference.setProjectName("bogus_name");
@@ -428,7 +428,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
-
 	}
 
 	// Create tests
@@ -437,7 +436,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 		User conflictingUser = userRoot.create("existing_username");
 		group().addUser(conflictingUser);
 		// Add update permission to group in order to create the user in that group
@@ -593,7 +592,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			User user = userRoot.create("extraUser");
@@ -623,7 +622,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteByUUID() throws Exception {
 
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
 		String name = "extraUser";
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {

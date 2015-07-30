@@ -11,10 +11,12 @@ public abstract class AbstractBasicFieldContainerImpl extends MeshVertexImpl imp
 
 	public static final String I18N_PREFIX = "i18n-";
 
+	@Override
 	public Language getLanguage() {
 		return out(MeshRelationships.HAS_LANGUAGE).nextOrDefault(LanguageImpl.class, null);
 	}
 
+	@Override
 	public void setLanguage(Language language) {
 		setLinkOut(language.getImpl(), MeshRelationships.HAS_LANGUAGE);
 	}

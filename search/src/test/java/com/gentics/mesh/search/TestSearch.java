@@ -1,63 +1,139 @@
 package com.gentics.mesh.search;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.elasticsearch.index.query.FilterBuilders.andFilter;
-import static org.elasticsearch.index.query.FilterBuilders.prefixFilter;
-import static org.elasticsearch.index.query.FilterBuilders.rangeFilter;
+import static org.elasticsearch.client.Requests.refreshRequest;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.junit.Before;
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.UUIDUtil;
 
 public class TestSearch {
 
-	@Test
-	public void testSearch() throws ElasticsearchException, IOException {
+	private Client client;
+
+	@Before
+	public void setup() throws IOException {
+		FileUtils.deleteDirectory(new File("data"));
 		Node node = NodeBuilder.nodeBuilder().node();
-		Client client = node.client();
+		client = node.client();
 
-		/*
-		 * 
-		 * SearchResponse response = client.prepareSearch("index1", "index2") .setTypes("type1", "type2") .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-		 * .setQuery(QueryBuilders.termQuery("multi", "test")) // Query .setPostFilter(FilterBuilders.rangeFilter("age").from(12).to(18)) // Filter
-		 * .setFrom(0).setSize(60).setExplain(true) .execute() .actionGet();
-		 */
+	}
 
-		Map<String, Object> json = new HashMap<String, Object>();
-		json.put("user", "kimchy");
-		json.put("postDate", new Date());
-		json.put("message", "trying out Elasticsearch");
+	@Test
+	public void testSearch() throws ElasticsearchException, IOException, InterruptedException {
+		String uuidForIndex = UUIDUtil.randomUUID();
 
-		// JsonUtil.getMapper().writeValueAsBytes(json)
+//		setupIndex();
 
-		IndexResponse response2 = client
-				.prepareIndex("twitter", "tweet", "1")
-				.setSource(
-						jsonBuilder().startObject().field("user", "kimchy").field("postDate", new Date())
-								.field("message", "trying out Elasticsearch").endObject()).execute().actionGet();
-		System.out.println(response2.getIndex());
+		storeDocument("de", uuidForIndex, "Deutsch");
+		storeDocument("en", uuidForIndex, "English");
 
-		SearchResponse response = client.prepareSearch("twitter").setTypes("type1", "type2").setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-				.setQuery(QueryBuilders.termQuery("multi", "test")) // Query
-				.setPostFilter(FilterBuilders.rangeFilter("age").from(12).to(18)) // Filter
-				.setFrom(0).setSize(60).setExplain(true).execute().actionGet();
+		refreshIndex();
+		Thread.sleep(1000);
+		getDocument(uuidForIndex, "de");
+		search("English");
+		search("Deutsch");
+		search("dagdsgasdg");
 
-		FilterBuilder filter = andFilter(rangeFilter("postDate").from("2010-03-01").to("2010-04-01"), prefixFilter("name.second", "ba"));
+		client.close();
+	}
 
-		System.out.println(response.getHits().getTotalHits());
+	private void setupIndex() {
+		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate("node");
+		createIndexRequestBuilder.execute().actionGet();
+	}
+
+	private void getDocument(String uuid, String language) {
+		GetResponse getResponse = client.prepareGet("node", "node-" + language, uuid).setFields("uuid", "name", "fields.name", "language").execute()
+				.actionGet();
+		System.out.println("\nLoading object with uuid {" + uuid + "}");
+		System.out.println("------------------------------");
+		for (String field : getResponse.getFields().keySet()) {
+			System.out.println(field + "=" + getResponse.getField(field).getValue());
+		}
+		System.out.println("------------------------------\n");
+	}
+
+	private void search(String name) throws JsonParseException, JsonMappingException, IOException {
+		SearchRequestBuilder builder = client.prepareSearch();
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+
+		//SearchResponse response = builder.setQuery(QueryBuilders.termQuery("language", "en")).execute().actionGet();
+		//.setPostFilter(FilterBuilders.rangeFilter("age").from(12).to(18)) // Filter
+		//.setFrom(0).setSize(60).setExplain(true).execute().actionGet();
+		//FilterBuilder filter = andFilter(rangeFilter("postDate").from("2010-03-01").to("2010-04-01"), prefixFilter("name.second", "ba"));
+		//SearchResponse response = builder.setQuery(QueryBuilders.termQuery("name", "Deutsch")).setExplain(true).execute().actionGet();
+
+		QueryBuilder qb = QueryBuilders.queryStringQuery(name);
+		SearchResponse response = client.prepareSearch().setQuery(qb).setSize(1000).execute().actionGet();
+
+		Iterator<SearchHit> hit_it = response.getHits().iterator();
+		while (hit_it.hasNext()) {
+			SearchHit hit = hit_it.next();
+			ObjectMapper mapper = new ObjectMapper();
+			Object json = mapper.readValue(hit.getSourceAsString(), Object.class);
+			String indented = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+
+			System.out.println(indented);
+		}
+		System.out.println("Search Result: " + response.getHits().totalHits());
+
+	}
+
+	private void refreshIndex() {
+		client.admin().indices().refresh(refreshRequest()).actionGet();
+
+	}
+
+	private void storeDocument(String language, String uuidForIndex, String name) {
+		Map<String, Object> json = new HashMap<>();
+		json.put("uuid", UUIDUtil.randomUUID());
+		json.put("created", new Date());
+		json.put("creator", UUIDUtil.randomUUID());
+		json.put("edited", new Date());
+		json.put("editor", UUIDUtil.randomUUID());
+		json.put("language", language);
+		json.put("name", name);
+
+		List<String> tags = new ArrayList<>();
+		tags.add("green");
+		tags.add("blue");
+		json.put("tags", tags);
+
+		Map<String, Object> fields = new HashMap<>();
+		fields.put("name", "f_" + name);
+		fields.put("number", 1);
+		json.put("fields", fields);
+		System.err.println(JsonUtil.toJson(json));
+		IndexResponse indexResponse = client.prepareIndex("node", "node-" + language, uuidForIndex).setSource(json).execute().actionGet();
+		System.out.println("Created document {" + uuidForIndex + "} with lang {" + language + "} name = " + indexResponse.isCreated());
 	}
 
 }

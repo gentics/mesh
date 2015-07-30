@@ -51,7 +51,6 @@ public class MeshSpringConfiguration {
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
-
 	@Bean
 	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
 		String className = Mesh.mesh().getOptions().getDatabaseProviderClass();
@@ -66,22 +65,6 @@ public class MeshSpringConfiguration {
 			throw new RuntimeException(msg, e);
 		}
 	}
-
-//	public static MeshOptions getConfiguration() {
-//		return configuration;
-//	}
-//
-//	public static void setConfiguration(MeshOptions conf) {
-//		configuration = conf;
-//	}
-
-//	@Bean
-//	public Vertx vertx() {
-//		VertxOptions options = new VertxOptions();
-//		options.setBlockedThreadCheckInterval(1000 * 60 * 60);
-//		options.setWorkerPoolSize(16);
-//		return Vertx.vertx(options);
-//	}
 
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
@@ -108,9 +91,10 @@ public class MeshSpringConfiguration {
 	public AuthProvider authProvider() {
 		return new MeshAuthProvider();
 	}
-
+	
 	@Bean
 	public MailClient mailClient() {
+		//Mesh.mesh().getOptions().getMailServer().getPost();
 		MailConfig config = new MailConfig();
 		// TODO configure mail client
 		config.setHostname("bogus");

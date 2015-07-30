@@ -75,9 +75,8 @@
 		<module>core</module>
 		<module>search</module>
 		<module>verticles</module>
-		<!-- 
-		<module>importers</module>
-		 -->
+		<!-- <module>importers</module> -->
+		<module>server</module>
 		<module>examples</module>
 		<module>doc</module>
 	</modules>

@@ -43,7 +43,9 @@ public class AdminGUIVerticle extends AbstractSpringVerticle {
 		// router.route().handler(staticContentServer);
 
 		// // All other requests handled by template engine
-		// TemplateEngine engine = HandlebarsTemplateEngine.create();
+//		 TemplateEngine engine = HandlebarsTemplateEngine.create();
+//		 engine.render(context, templateFileName, handler);
+//		 Handlebars handlebars;
 		//
 		// // // Example content
 		// router.route("/test.html").handler(context -> {

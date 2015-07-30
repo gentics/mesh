@@ -34,7 +34,7 @@ public interface Node extends ContainerNode<NodeResponse> {
 
 	NodeFieldContainer getOrCreateFieldContainer(Language language);
 
-	List<? extends FieldContainer> getFieldContainers();
+	List<? extends NodeFieldContainer> getFieldContainers();
 
 	Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException;
 

@@ -8,4 +8,6 @@ public interface BasicFieldContainer extends MeshVertex {
 //
 //	String getI18nProperty(String string);
 
+	Language getLanguage();
+
 }

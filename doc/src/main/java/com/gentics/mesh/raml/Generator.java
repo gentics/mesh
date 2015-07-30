@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -540,6 +541,10 @@ public class Generator {
 		user.setUsername("jdoe42");
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
+		NodeReference reference = new NodeReference();
+		reference.setProjectName("dummy");
+		reference.setUuid(getUUID());
+		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
 		user.addGroup("editors");
 		user.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
