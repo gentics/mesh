@@ -279,7 +279,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	public void fillUpdateFromRest(RoutingContext rc, UserUpdateRequest requestModel, Handler<AsyncResult<User>> handler) {
 		I18NService i18n = I18NService.getI18n();
 
-		if (requestModel.getUsername() != null && getUsername() != requestModel.getUsername()) {
+		if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 			if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "user_conflicting_username"))));
 				return;

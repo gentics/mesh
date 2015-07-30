@@ -402,7 +402,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = user();
 
 		// Create an user with a conflicting username
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
+		UserRoot userRoot = meshRoot().getUserRoot();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			User conflictingUser = userRoot.create("existing_username");
 			group().addUser(conflictingUser);
@@ -415,6 +415,19 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
 		latchFor(future);
 		expectException(future, CONFLICT, "user_conflicting_username");
+
+	}
+
+	@Test
+	public void testUpdateUserWithSameUsername() throws Exception {
+		User user = user();
+
+		UserUpdateRequest request = new UserUpdateRequest();
+		request.setUsername(user.getUsername());
+
+		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
 
 	}
 
