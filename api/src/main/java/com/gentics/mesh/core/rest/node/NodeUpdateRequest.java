@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -13,7 +12,7 @@ public class NodeUpdateRequest implements RestModel {
 
 	private String language;
 
-	private Map<String, Field> fields = new HashMap<>();
+	private FieldMap fields = new FieldMapImpl();
 
 	public NodeUpdateRequest() {
 	}

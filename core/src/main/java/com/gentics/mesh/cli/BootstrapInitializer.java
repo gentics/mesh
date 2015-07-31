@@ -142,18 +142,14 @@ public class BootstrapInitializer {
 		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
 	}
 
-	public MeshRoot createMeshRoot() {
-		MeshRootImpl root = fg.addFramedVertex(MeshRootImpl.class);
-		return root;
-	}
-
-	public MeshRoot findMeshRoot() {
-		return fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-	}
-
 	public MeshRoot meshRoot() {
+		// Check reference, graph and finally create the node when it can't be found.
 		if (meshRoot == null) {
-			meshRoot = findMeshRoot();
+			meshRoot = fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+			if (meshRoot == null) {
+				meshRoot = fg.addFramedVertex(MeshRootImpl.class);
+				log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
+			}
 		}
 		return meshRoot;
 	}
@@ -169,101 +165,65 @@ public class BootstrapInitializer {
 		return schemaContainerRoot;
 	}
 
-	public MicroschemaContainerRoot findMicroschemaContainerRoot() {
-		return meshRoot().getMicroschemaContainerRoot();
-	}
-
 	public MicroschemaContainerRoot microschemaContainerRoot() {
 		if (microschemaContainerRoot == null) {
-			microschemaContainerRoot = findMicroschemaContainerRoot();
+			microschemaContainerRoot = meshRoot().getMicroschemaContainerRoot();
 		}
 		return microschemaContainerRoot;
 	}
 
-	public RoleRoot findRoleRoot() {
-		return meshRoot().getRoleRoot();
-	}
-
 	public RoleRoot roleRoot() {
 		if (roleRoot == null) {
-			roleRoot = findRoleRoot();
+			roleRoot = meshRoot().getRoleRoot();
 		}
 		return roleRoot;
 	}
 
-	public TagRoot findTagRoot() {
-		return meshRoot().getTagRoot();
-	}
-
 	public TagRoot tagRoot() {
 		if (tagRoot == null) {
-			tagRoot = findTagRoot();
+			tagRoot = meshRoot().getTagRoot();
 		}
 		return tagRoot;
 	}
 
-	public TagFamilyRoot findTagFamilyRoot() {
-		return meshRoot().getTagFamilyRoot();
-	}
-
 	public TagFamilyRoot tagFamilyRoot() {
 		if (tagFamilyRoot == null) {
-			tagFamilyRoot = findTagFamilyRoot();
+			tagFamilyRoot = meshRoot().getTagFamilyRoot();
 		}
 		return tagFamilyRoot;
 	}
 
-	public NodeRoot findNodeRoot() {
-		return meshRoot().getNodeRoot();
-	}
-
 	public NodeRoot nodeRoot() {
 		if (nodeRoot == null) {
-			nodeRoot = findNodeRoot();
+			nodeRoot = meshRoot().getNodeRoot();
 		}
 		return nodeRoot;
 	}
 
-	public UserRoot findUserRoot() {
-		return meshRoot().getUserRoot();
-	}
-
 	public UserRoot userRoot() {
 		if (userRoot == null) {
-			return findUserRoot();
+			userRoot = meshRoot().getUserRoot();
 		}
 		return userRoot;
 	}
 
-	public GroupRoot findGroupRoot() {
-		return meshRoot().getGroupRoot();
-	}
-
 	public GroupRoot groupRoot() {
 		if (groupRoot == null) {
-			groupRoot = findGroupRoot();
+			groupRoot = meshRoot().getGroupRoot();
 		}
 		return groupRoot;
 	}
 
-	public LanguageRoot findLanguageRoot() {
-		return meshRoot().getLanguageRoot();
-	}
-
 	public LanguageRoot languageRoot() {
 		if (languageRoot == null) {
-			languageRoot = findLanguageRoot();
+			languageRoot = meshRoot().getLanguageRoot();
 		}
 		return languageRoot;
 	}
 
-	public ProjectRoot findProjectRoot() {
-		return meshRoot().getProjectRoot();
-	}
-
 	public ProjectRoot projectRoot() {
 		if (projectRoot == null) {
-			projectRoot = findProjectRoot();
+			projectRoot = meshRoot().getProjectRoot();
 		}
 		return projectRoot;
 	}
@@ -380,66 +340,17 @@ public class BootstrapInitializer {
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
 		MeshRoot meshRoot = meshRoot();
-		if (meshRoot == null) {
-			meshRoot = createMeshRoot();
-			log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
-		}
 		MeshRootImpl.setInstance(meshRoot);
 
 		NodeRoot nodeRoot = meshRoot.getNodeRoot();
-		if (nodeRoot == null) {
-			nodeRoot = meshRoot.createNodeRoot();
-			log.info("Stored node root {" + nodeRoot.getUuid() + "}");
-		}
-
 		TagRoot tagRoot = meshRoot.getTagRoot();
-		if (tagRoot == null) {
-			tagRoot = meshRoot.createTagRoot();
-			log.info("Stored tag root {" + tagRoot.getUuid() + "}");
-		}
-
 		TagFamilyRoot tagFamilyRoot = meshRoot.getTagFamilyRoot();
-		if (tagFamilyRoot == null) {
-			tagFamilyRoot = meshRoot.createTagFamilyRoot();
-			log.info("Stored tag family root {" + tagFamilyRoot.getUuid() + "}");
-		}
-
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
-		if (languageRoot == null) {
-			languageRoot = meshRoot.createLanguageRoot();
-			log.info("Stored language root {" + languageRoot.getUuid() + "}");
-		}
-
 		GroupRoot groupRoot = meshRoot.getGroupRoot();
-		if (groupRoot == null) {
-			groupRoot = meshRoot.createGroupRoot();
-			log.info("Stored group root {" + groupRoot.getUuid() + "}");
-		}
-
 		UserRoot userRoot = meshRoot.getUserRoot();
-		if (userRoot == null) {
-			userRoot = meshRoot.createUserRoot();
-			log.info("Stored user root {" + userRoot.getUuid() + "}");
-		}
-
 		RoleRoot roleRoot = meshRoot.getRoleRoot();
-		if (roleRoot == null) {
-			roleRoot = meshRoot.createRoleRoot();
-			log.info("Stored role root {" + roleRoot.getUuid() + "}");
-		}
-
 		ProjectRoot projectRoot = meshRoot.getProjectRoot();
-		if (projectRoot == null) {
-			projectRoot = meshRoot.createProjectRoot();
-			log.info("Stored project root {" + projectRoot.getUuid() + "}");
-		}
-
-		// Save the default object schemas
 		SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
-		if (schemaContainerRoot == null) {
-			schemaContainerRoot = meshRoot.createRoot();
-			log.info("Stored schema root node");
-		}
 
 		// Content
 		SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");

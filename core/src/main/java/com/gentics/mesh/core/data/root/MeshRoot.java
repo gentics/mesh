@@ -15,60 +15,22 @@ public interface MeshRoot extends MeshVertex {
 
 	UserRoot getUserRoot();
 
+	SearchQueueRoot getSearchQueueRoot();
+
 	LanguageRoot getLanguageRoot();
 
 	ProjectRoot getProjectRoot();
 
 	SchemaContainerRoot getSchemaContainerRoot();
 
-	LanguageRoot createLanguageRoot();
-
-	GroupRoot createGroupRoot();
-
-	UserRoot createUserRoot();
-
-	RoleRoot createRoleRoot();
-
-	ProjectRoot createProjectRoot();
-
-	SchemaContainerRoot createRoot();
-
-	void setGroupRoot(GroupRoot groupRoot);
+	TagRoot getTagRoot();
 
 	MeshRootImpl getImpl();
 
 	NodeRoot getNodeRoot();
 
-	NodeRoot createNodeRoot();
-
-	void setNodeRoot(NodeRoot nodeRoot);
-
-	void setUserRoot(UserRoot userRoot);
-
-	void setRoleRoot(RoleRoot roleRoot);
-
-	void setSchemaRoot(SchemaContainerRoot schemaRoot);
-
-	void setLanguageRoot(LanguageRoot languageRoot);
-
-	TagRoot getTagRoot();
-
-	TagRoot createTagRoot();
-
-	void setProjectRoot(ProjectRoot projectRoot);
-
-	void setTagRoot(TagRoot tagRoot);
-
 	TagFamilyRoot getTagFamilyRoot();
 
-	void setTagFamilyRoot(TagFamilyRoot root);
-
-	TagFamilyRoot createTagFamilyRoot();
-
 	MicroschemaContainerRoot getMicroschemaContainerRoot();
-
-	void setMicroschemaContainerRoot(MicroschemaContainerRoot root);
-
-	MicroschemaContainerRoot createMicroschemaContainerRoot();
 
 }

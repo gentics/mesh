@@ -5,6 +5,9 @@ public class MeshRelationships {
 	// Auth Relationships
 	public static final String MEMBER_OF = "MEMBER_OF";
 
+	// Search
+	public static final String HAS_SEARCH_QUEUE_ROOT = "HAS_SEARCH_QUEUE_ROOT";
+
 	// Project
 	public static final String HAS_PROJECT = "HAS_PROJECT";
 
