@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -43,6 +44,13 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testSearchContent() throws InterruptedException {
+
+		for (Node node : boot.nodeRoot().findAll()) {
+			boot.meshRoot().getSearchQueueRoot().addElement(node);
+		}
+
+	
+
 		assertNotNull(elasticSearchNode);
 
 		Vertx vertx = Mesh.vertx();

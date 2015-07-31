@@ -133,7 +133,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		builder.setSize(25);
 		SearchResponse response = builder.execute().actionGet();
 
-		//TODO handle paging? 
+		// TODO handle paging?
 		for (SearchHit hit : response.getHits()) {
 			String uuid = hit.getId();
 
@@ -149,17 +149,28 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 					});
 				}
 			} else {
-				//TODO log error info?
+				// TODO log error info?
 			}
 		}	);
 		}
-		//TODO add meta info?
+		// TODO add meta info?
 		responde(rc, toJson(listResponse));
 
 	}
 
 	private void addEventBusHandlers() {
 		EventBus bus = vertx.eventBus();
+
+		bus.consumer("search-queue-entry", mh -> {
+			GenericVertex<?> element = boot.meshRoot().getSearchQueueRoot().getNext();
+			if (element != null) {
+				System.out.println(element.getUuid());
+				System.out.println(element.getClass());
+				// TODO invoke matching store method
+				boot.meshRoot().getSearchQueueRoot().removeElement(element);
+			}
+		});
+
 		bus.consumer("search-index-create", (Message<JsonObject> mh) -> {
 			String uuid = mh.body().getString("uuid");
 			String type = mh.body().getString("type");
@@ -194,7 +205,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 				tagFamilyIndexHandler.store(uuid);
 				break;
 			default:
-				//TODO throw exception / logging /reply?
+				// TODO throw exception / logging /reply?
 			}
 		});
 
