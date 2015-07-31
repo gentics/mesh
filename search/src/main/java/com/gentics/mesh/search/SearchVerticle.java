@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
+import io.vertx.ext.web.RoutingContext;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -22,10 +23,21 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.NodeIndexHandler;
@@ -85,114 +97,65 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSearchEndpoints() {
-		addUserSearch();
-		addGroupSearch();
-		addRoleSearch();
-		addNodeSearch();
-		addTagSearch();
-		addTagFamilySearch();
-		addProjectSearch();
-		addSchemaContainerSearch();
-		addMicroschemaContainerSearch();
+		addSearch("users", boot.userRoot(), UserListResponse.class);
+		addSearch("groups", boot.groupRoot(), GroupListResponse.class);
+		addSearch("role", boot.roleRoot(), RoleListResponse.class);
+		addSearch("nodes", boot.nodeRoot(), NodeListResponse.class);
+		addSearch("tags", boot.tagRoot(), TagListResponse.class);
+		addSearch("tagFamilies", boot.tagFamilyRoot(), TagFamilyListResponse.class);
+		addSearch("projects", boot.projectRoot(), ProjectListResponse.class);
+		addSearch("schemas", boot.schemaContainerRoot(), SchemaListResponse.class);
+		addSearch("microschemas", boot.microschemaContainerRoot(), MicroschemaListResponse.class);
 	}
 
-	private void addSchemaContainerSearch() {
-		Route postRoute = route("/schemas").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void addSearch(String typeName,
+			RootVertex<T> root, Class<RL> classOfRL) {
+		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
-
+			try {
+				handleSearch(rc, root, classOfRL);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		});
 	}
 
-	private void addProjectSearch() {
-		Route postRoute = route("/projects").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
+	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
+			RootVertex<T> rootVertex, Class<RL> classOfRL) throws InstantiationException, IllegalAccessException {
 
-		});
-	}
+		RL listResponse = classOfRL.newInstance();
+		MeshAuthUser requestUser = getUser(rc);
+		Client client = elasticSearchNode.client();
+		SearchRequestBuilder builder = client.prepareSearch().setQuery(rc.getBodyAsString());
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		/* TODO configure size by using global setting? */
+		builder.setSize(25);
+		SearchResponse response = builder.execute().actionGet();
 
-	private void addMicroschemaContainerSearch() {
-		Route postRoute = route("/microschemas").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
+		//TODO handle paging? 
+		for (SearchHit hit : response.getHits()) {
+			String uuid = hit.getId();
 
-		});
-	}
-
-	private void addRoleSearch() {
-		Route postRoute = route("/roles").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-
-		});
-	}
-
-	private void addTagSearch() {
-		Route postRoute = route("/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-
-		});
-	}
-
-	private void addTagFamilySearch() {
-		Route postRoute = route("/tagFamilies").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-
-		});
-	}
-
-	private void addNodeSearch() {
-		Route postRoute = route("/nodes").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
-			Client client = elasticSearchNode.client();
-			SearchRequestBuilder builder = client.prepareSearch().setQuery(rc.getBodyAsString());
-			builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-			//TODO configure size by using global setting?
-				builder.setSize(25);
-				SearchResponse response = builder.execute().actionGet();
-
-				NodeListResponse listResponse = new NodeListResponse();
-				for (SearchHit hit : response.getHits()) {
-					String uuid = hit.getId();
-
-					// Locate the node
-					boot.nodeRoot().findByUuid(uuid, rh -> {
-						if (rh.result() != null && rh.succeeded()) {
-							Node node = rh.result();
-							// Check permissions
-							if (requestUser.hasPermission(node, Permission.READ_PERM)) {
-								// Transform node and add it to the list of nodes
-								node.transformToRest(rc, th -> {
-									listResponse.getData().add(th.result());
-								});
-							}
-						} else {
-							//TODO log error info?
-						}
+			// Locate the node
+			rootVertex.findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					T element = rh.result();
+					// Check permissions
+					if (requestUser.hasPermission(element, Permission.READ_PERM)) {
+						// Transform node and add it to the list of nodes
+					element.transformToRest(rc, th -> {
+						listResponse.getData().add(th.result());
 					});
-					//					System.out.println("UUID:" + uuid);
-					//					ObjectMapper mapper = new ObjectMapper();
-					//					Object json = mapper.readValue(hit.getSourceAsString(), Object.class);
-					//					String indented = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-					//					System.out.println(hit.getSourceAsString());
 				}
-				//TODO add meta info?
-				responde(rc, toJson(listResponse));
-			});
+			} else {
+				//TODO log error info?
+			}
+		}	);
+		}
+		//TODO add meta info?
+		responde(rc, toJson(listResponse));
 
-	}
-
-	private void addGroupSearch() {
-		Route postRoute = route("/groups").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-
-		});
-	}
-
-	private void addUserSearch() {
-		Route postRoute = route("/users").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-
-		});
 	}
 
 	private void addEventBusHandlers() {
