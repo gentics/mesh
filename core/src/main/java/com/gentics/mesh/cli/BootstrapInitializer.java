@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SearchQueueRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -88,11 +89,12 @@ public class BootstrapInitializer {
 	private ServerSchemaStorage schemaStorage;
 
 	private static BootstrapInitializer instance;
+	private static MeshRoot meshRoot;
 
 	@PostConstruct
 	public void setup() {
 		instance = this;
-		clearReferenceCache();
+		clearReferences();
 	}
 
 	public static BootstrapInitializer getBoot() {
@@ -107,18 +109,6 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private RouterStorage routerStorage;
-
-	private static GroupRoot groupRoot;
-	private static NodeRoot nodeRoot;
-	private static TagRoot tagRoot;
-	private static TagFamilyRoot tagFamilyRoot;
-	private static LanguageRoot languageRoot;
-	private static RoleRoot roleRoot;
-	private static UserRoot userRoot;
-	private static SchemaContainerRoot schemaContainerRoot;
-	private static MicroschemaContainerRoot microschemaContainerRoot;
-	private static ProjectRoot projectRoot;
-	private static MeshRoot meshRoot;
 
 	public BootstrapInitializer() {
 		addMandatoryVerticle(UserVerticle.class);
@@ -143,7 +133,7 @@ public class BootstrapInitializer {
 	}
 
 	public MeshRoot meshRoot() {
-		// Check reference, graph and finally create the node when it can't be found.
+		// Check reference graph and finally create the node when it can't be found.
 		if (meshRoot == null) {
 			meshRoot = fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 			if (meshRoot == null) {
@@ -159,85 +149,50 @@ public class BootstrapInitializer {
 	}
 
 	public SchemaContainerRoot schemaContainerRoot() {
-		if (schemaContainerRoot == null) {
-			schemaContainerRoot = findSchemaContainerRoot();
-		}
-		return schemaContainerRoot;
+		return meshRoot().getSchemaContainerRoot();
 	}
 
 	public MicroschemaContainerRoot microschemaContainerRoot() {
-		if (microschemaContainerRoot == null) {
-			microschemaContainerRoot = meshRoot().getMicroschemaContainerRoot();
-		}
-		return microschemaContainerRoot;
+		return meshRoot().getMicroschemaContainerRoot();
 	}
 
 	public RoleRoot roleRoot() {
-		if (roleRoot == null) {
-			roleRoot = meshRoot().getRoleRoot();
-		}
-		return roleRoot;
+		return meshRoot().getRoleRoot();
 	}
 
 	public TagRoot tagRoot() {
-		if (tagRoot == null) {
-			tagRoot = meshRoot().getTagRoot();
-		}
-		return tagRoot;
+		return meshRoot().getTagRoot();
 	}
 
 	public TagFamilyRoot tagFamilyRoot() {
-		if (tagFamilyRoot == null) {
-			tagFamilyRoot = meshRoot().getTagFamilyRoot();
-		}
-		return tagFamilyRoot;
+		return meshRoot().getTagFamilyRoot();
 	}
 
 	public NodeRoot nodeRoot() {
-		if (nodeRoot == null) {
-			nodeRoot = meshRoot().getNodeRoot();
-		}
-		return nodeRoot;
+		return meshRoot().getNodeRoot();
 	}
 
 	public UserRoot userRoot() {
-		if (userRoot == null) {
-			userRoot = meshRoot().getUserRoot();
-		}
-		return userRoot;
+		return meshRoot().getUserRoot();
 	}
 
 	public GroupRoot groupRoot() {
-		if (groupRoot == null) {
-			groupRoot = meshRoot().getGroupRoot();
-		}
-		return groupRoot;
+		return meshRoot().getGroupRoot();
 	}
 
 	public LanguageRoot languageRoot() {
-		if (languageRoot == null) {
-			languageRoot = meshRoot().getLanguageRoot();
-		}
-		return languageRoot;
+		return meshRoot().getLanguageRoot();
 	}
 
 	public ProjectRoot projectRoot() {
-		if (projectRoot == null) {
-			projectRoot = meshRoot().getProjectRoot();
-		}
-		return projectRoot;
+		return meshRoot().getProjectRoot();
 	}
 
-	public static void clearReferenceCache() {
-		projectRoot = null;
-		tagRoot = null;
-		roleRoot = null;
-		meshRoot = null;
-		groupRoot = null;
-		userRoot = null;
-		nodeRoot = null;
-		schemaContainerRoot = null;
-		languageRoot = null;
+	public static void clearReferences() {
+		if (meshRoot != null) {
+			meshRoot.clearReferences();
+			meshRoot = null;
+		}
 	}
 
 	/**
@@ -312,7 +267,7 @@ public class BootstrapInitializer {
 	 * @throws InvalidNameException
 	 */
 	private void initProjects() throws InvalidNameException {
-		for (Project project : projectRoot().findAll()) {
+		for (Project project : meshRoot().getProjectRoot().findAll()) {
 			routerStorage.addProjectRouter(project.getName());
 			log.info("Initalized project {" + project.getName() + "}");
 		}
@@ -503,7 +458,7 @@ public class BootstrapInitializer {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = languageRoot().findByName(languageName);
+			Language language = meshRoot().getLanguageRoot().findByName(languageName);
 			if (language == null) {
 				language = rootNode.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);

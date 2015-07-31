@@ -23,5 +23,4 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 
 	Page<? extends T> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
-
 }

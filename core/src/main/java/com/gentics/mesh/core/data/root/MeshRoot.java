@@ -33,4 +33,5 @@ public interface MeshRoot extends MeshVertex {
 
 	MicroschemaContainerRoot getMicroschemaContainerRoot();
 
+	void clearReferences();
 }
