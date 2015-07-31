@@ -539,16 +539,10 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	// return future;
 	// }
 
-	private String getQuery(QueryParameterProvider... parameters) {
-		StringBuilder builder = new StringBuilder();
-		for (QueryParameterProvider provider : parameters) {
-			builder.append(provider.getQueryParameters());
-		}
-		if (builder.length() > 0) {
-			return "?" + builder.toString();
-		} else {
-			return "";
-		}
+	@Override
+	public Future<NodeListResponse> searchNodes(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/nodes", NodeListResponse.class, json);
 	}
 
 }

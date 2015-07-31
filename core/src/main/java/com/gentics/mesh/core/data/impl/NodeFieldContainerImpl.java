@@ -223,6 +223,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 	@Override
 	public Field getRestField(String fieldKey, FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+		//TODO replace switch case
 		if (FieldTypes.STRING.equals(type)) {
 			//TODO validate found fields has same type as schema 
 			com.gentics.mesh.core.data.node.field.basic.StringField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl(

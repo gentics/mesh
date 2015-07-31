@@ -4,7 +4,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,6 +15,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -44,12 +45,12 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
-public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
+public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 	private static final Logger log = LoggerFactory.getLogger(FieldMapDeserializer.class);
 
 	@Override
-	public Map<String, Field> deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public FieldMap deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
 		String schemaName = (String) ctxt.findInjectableValue("schemaName", null, null);
 		if (schemaName == null) {
@@ -59,7 +60,7 @@ public class FieldMapDeserializer extends JsonDeserializer<Map<String, Field>> {
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
 		Iterator<Entry<String, JsonNode>> it = node.fields();
-		Map<String, Field> map = new HashMap<>();
+		FieldMap map = new FieldMapImpl();
 		while (it.hasNext()) {
 			Entry<String, JsonNode> currentEntry = it.next();
 			String fieldKey = currentEntry.getKey();

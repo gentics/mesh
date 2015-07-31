@@ -50,7 +50,7 @@ public class TestSearch {
 	public void testSearch() throws ElasticsearchException, IOException, InterruptedException {
 		String uuidForIndex = UUIDUtil.randomUUID();
 
-//		setupIndex();
+		//		setupIndex();
 
 		storeDocument("de", uuidForIndex, "Deutsch");
 		storeDocument("en", uuidForIndex, "English");
@@ -116,15 +116,30 @@ public class TestSearch {
 		Map<String, Object> json = new HashMap<>();
 		json.put("uuid", UUIDUtil.randomUUID());
 		json.put("created", new Date());
-		json.put("creator", UUIDUtil.randomUUID());
 		json.put("edited", new Date());
-		json.put("editor", UUIDUtil.randomUUID());
+
+		Map<String, String> editorMap = new HashMap<>();
+		editorMap.put("firstname", "Joe");
+		editorMap.put("lastname", "Doe");
+		editorMap.put("emailadress", "j.doe@spam.gentics.com");
+		editorMap.put("username", "joe1");
+		json.put("creator", editorMap);
+		json.put("editor", editorMap);
+
 		json.put("language", language);
 		json.put("name", name);
 
-		List<String> tags = new ArrayList<>();
-		tags.add("green");
-		tags.add("blue");
+		List<String> tagNames = new ArrayList<>();
+		tagNames.add("green");
+		tagNames.add("blue");
+
+		List<String> tagUuids = new ArrayList<>();
+		tagUuids.add(UUIDUtil.randomUUID());
+		tagUuids.add(UUIDUtil.randomUUID());
+
+		Map<String, Object> tags = new HashMap<>();
+		tags.put("name", tagNames);
+		tags.put("uuid", tagUuids);
 		json.put("tags", tags);
 
 		Map<String, Object> fields = new HashMap<>();

@@ -23,6 +23,8 @@ public interface FieldContainer extends BasicFieldContainer {
 
 	StringField createString(String key);
 
+	NodeField getNode(String key);
+
 	NodeField createNode(String key, Node node);
 
 	DateField getDate(String key);

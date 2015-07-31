@@ -10,6 +10,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 import org.apache.commons.codec.binary.Base64;
 
+import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.method.AuthClientMethods;
 import com.gentics.mesh.rest.method.GroupClientMethods;
@@ -17,13 +18,14 @@ import com.gentics.mesh.rest.method.NodeClientMethods;
 import com.gentics.mesh.rest.method.ProjectClientMethods;
 import com.gentics.mesh.rest.method.RoleClientMethods;
 import com.gentics.mesh.rest.method.SchemaClientMethods;
+import com.gentics.mesh.rest.method.SearchClientMethods;
 import com.gentics.mesh.rest.method.TagClientMethods;
 import com.gentics.mesh.rest.method.TagFamilyClientMethods;
 import com.gentics.mesh.rest.method.UserClientMethods;
 import com.gentics.mesh.rest.method.WebRootClientMethods;
 
 public abstract class AbstractMeshRestClient implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods,
-		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods {
+		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
 
@@ -83,8 +85,12 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 
 		Buffer buffer = Buffer.buffer();
 		if (requestModel != null) {
-			String json = JsonUtil.toJson(requestModel);
-			buffer.appendString(json);
+			if (requestModel instanceof String) {
+				buffer.appendString((String) requestModel);
+			} else {
+				String json = JsonUtil.toJson(requestModel);
+				buffer.appendString(json);
+			}
 		}
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(ClassOfT, this);
 
@@ -109,6 +115,18 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		request.end();
 		return handler.getFuture();
 
+	}
+
+	protected String getQuery(QueryParameterProvider... parameters) {
+		StringBuilder builder = new StringBuilder();
+		for (QueryParameterProvider provider : parameters) {
+			builder.append(provider.getQueryParameters());
+		}
+		if (builder.length() > 0) {
+			return "?" + builder.toString();
+		} else {
+			return "";
+		}
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> ClassOfT) {

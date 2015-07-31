@@ -66,6 +66,7 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 		return field;
 	}
 
+	@Override
 	public NodeField getNode(String key) {
 		return outE(HAS_FIELD).has(NodeFieldImpl.class).has("field-key", key).nextOrDefaultExplicit(NodeFieldImpl.class, null);
 	}

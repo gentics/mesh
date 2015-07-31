@@ -37,7 +37,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel {
 
 	private String segmentField;
 
-	private Map<String, Field> fields = new HashMap<>();
+	private FieldMap fields = new FieldMapImpl();
 
 	public NodeResponse() {
 	}

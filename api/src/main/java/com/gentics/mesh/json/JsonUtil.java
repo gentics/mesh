@@ -5,8 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -19,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -41,9 +40,6 @@ public final class JsonUtil {
 	protected static ObjectMapper schemaMapper;
 
 	protected static ObjectMapper nodeMapper;
-
-	// TODO danger danger!!! - This will cause trouble when doing multithreaded deserialisation!
-	//	protected static Map<String, Object> valuesMap = new HashMap<>();
 
 	static {
 		initNodeMapper();
@@ -68,7 +64,7 @@ public final class JsonUtil {
 		nodeMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
-		module.addDeserializer(Map.class, new FieldMapDeserializer());
+		module.addDeserializer(FieldMap.class, new FieldMapDeserializer());
 
 		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;

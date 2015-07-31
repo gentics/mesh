@@ -10,10 +10,15 @@ import io.vertx.ext.web.RoutingContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
@@ -24,6 +29,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -31,6 +37,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RoutingContextHelper;
 
 public class NodeTest extends AbstractBasicObjectTest {
+
+	@Autowired
+	private ServerSchemaStorage schemaStorage;
 
 	/**
 	 * Test linking two contents
@@ -152,17 +161,26 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() {
+	public void testTransformation() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
 		Node newsNode = content("porsche 911");
+
+		CountDownLatch latch = new CountDownLatch(1);
+		AtomicReference<NodeResponse> reference = new AtomicReference<>();
 		newsNode.transformToRest(rc, rh -> {
-			NodeResponse response = rh.result();
-			assertNotNull(response);
-			String json = JsonUtil.toJson(response);
-			assertNotNull(json);
-			// TODO assert for english fields
-				System.out.println(json);
-			});
+			reference.set(rh.result());
+			latch.countDown();
+		});
+		latch.await();
+		NodeResponse response = reference.get();
+
+		String json = JsonUtil.toJson(response);
+		assertNotNull(json);
+
+		NodeResponse deserialized = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		// TODO assert for english fields
+		System.out.println(json);
+
 	}
 
 	@Test
