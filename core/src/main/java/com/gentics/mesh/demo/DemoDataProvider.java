@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.ContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -475,7 +474,7 @@ public class DemoDataProvider {
 		log.info("Added BasicPermissions to nodes");
 	}
 
-	public Node addFolder(ContainerNode rootNode, String englishName, String germanName) {
+	public Node addFolder(Node rootNode, String englishName, String germanName) {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);
 
 		if (germanName != null) {

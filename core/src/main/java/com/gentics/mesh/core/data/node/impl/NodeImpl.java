@@ -37,7 +37,6 @@ import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
-import com.gentics.mesh.core.data.node.ContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -116,7 +115,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
-	public void setParentNode(ContainerNode<NodeResponse> parent) {
+	public void setParentNode(Node parent) {
 		setLinkOut(parent.getImpl(), HAS_PARENT_NODE);
 	}
 
