@@ -41,4 +41,9 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	}
 
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

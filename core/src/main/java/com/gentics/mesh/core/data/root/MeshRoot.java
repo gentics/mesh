@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
 
 public interface MeshRoot extends MeshVertex {
 
@@ -15,7 +16,7 @@ public interface MeshRoot extends MeshVertex {
 
 	UserRoot getUserRoot();
 
-	SearchQueueRoot getSearchQueueRoot();
+	SearchQueue getSearchQueue();
 
 	LanguageRoot getLanguageRoot();
 

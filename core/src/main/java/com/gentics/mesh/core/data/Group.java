@@ -10,6 +10,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface Group extends GenericVertex<GroupResponse>, NamedNode {
 
+	public static final String TYPE = "group";
+
+	
 	void addUser(User user);
 
 	void addRole(Role role);

@@ -23,10 +23,11 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.root.SearchQueueRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
@@ -47,7 +48,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static SchemaContainerRoot schemaContainerRoot;
 	private static MicroschemaContainerRoot microschemaContainerRoot;
-	private static SearchQueueRoot searchQueueRoot;
+	private static SearchQueue searchQueueRoot;
 
 	public static MeshRoot getInstance() {
 		return instance;
@@ -88,13 +89,13 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public SearchQueueRoot getSearchQueueRoot() {
+	public SearchQueue getSearchQueue() {
 		if (searchQueueRoot != null) {
 			return searchQueueRoot;
 		} else {
-			searchQueueRoot = out(HAS_SEARCH_QUEUE_ROOT).has(SearchQueueRootImpl.class).nextOrDefault(SearchQueueRootImpl.class, null);
+			searchQueueRoot = out(HAS_SEARCH_QUEUE_ROOT).has(SearchQueueImpl.class).nextOrDefault(SearchQueueImpl.class, null);
 			if (searchQueueRoot == null) {
-				searchQueueRoot = getGraph().addFramedVertex(SearchQueueRootImpl.class);
+				searchQueueRoot = getGraph().addFramedVertex(SearchQueueImpl.class);
 				linkOut(searchQueueRoot.getImpl(), HAS_SEARCH_QUEUE_ROOT);
 				log.info("Stored search queue root {" + searchQueueRoot.getUuid() + "}");
 			}

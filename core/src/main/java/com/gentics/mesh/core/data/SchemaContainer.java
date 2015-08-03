@@ -8,9 +8,11 @@ import com.gentics.mesh.core.rest.schema.SchemaResponse;
 
 public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedNode {
 
-	public Schema getSchema() throws IOException;
+	public static final String TYPE = "schemaContainer";
 
-	public void setSchema(Schema schema);
+	Schema getSchema() throws IOException;
+
+	void setSchema(Schema schema);
 
 	SchemaContainerImpl getImpl();
 

@@ -41,4 +41,9 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	}
 
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

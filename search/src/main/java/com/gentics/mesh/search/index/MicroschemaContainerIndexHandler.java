@@ -41,4 +41,9 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	}
 
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

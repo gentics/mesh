@@ -44,4 +44,9 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 			}
 		});
 	}
+
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+		
+	}
 }

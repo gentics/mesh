@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -17,6 +16,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface Node extends ContainerNode<NodeResponse> {
+
+	public static final String TYPE = "node";
 
 	void addTag(Tag tag);
 

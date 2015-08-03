@@ -1,10 +1,20 @@
 package com.gentics.mesh.search.index;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -14,12 +24,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 
 @Component
 public abstract class AbstractIndexHandler<T> {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
+
+	public static final String INDEX_EVENT_ADDRESS_PREFIX = "search-index-action-";
 
 	@Autowired
 	protected org.elasticsearch.node.Node elasticSearchNode;
@@ -27,11 +43,29 @@ public abstract class AbstractIndexHandler<T> {
 	@Autowired
 	protected BootstrapInitializer boot;
 
+	@PostConstruct
+	public void test() {
+		Vertx vertx = Mesh.vertx();
+		// Event handler that deals with new index events for this type.
+		String address = INDEX_EVENT_ADDRESS_PREFIX + getType();
+		log.info("Registering event handler for type {" + getType() + "} on address {" + address + "}");
+		MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer(address);
+		consumer.handler(message -> {
+			String uuid = message.body().getString("uuid");
+			String type = message.body().getString("type");
+			String action = message.body().getString("action");
+			log.info("Handling index event for " + uuid + ":" + type + " event:" + action);
+			handleEvent(uuid, action);
+			message.reply(null);
+		});
+
+	}
+
 	/**
 	 * Transform the given element to a elasticsearch model and store it in the index.
 	 * 
 	 * @param element
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	abstract public void store(T element) throws IOException;
 
@@ -45,6 +79,8 @@ public abstract class AbstractIndexHandler<T> {
 	 * @param uuid
 	 */
 	abstract public void store(String uuid);
+
+	abstract public void update(String uuid);
 
 	protected Client getClient() {
 		return elasticSearchNode.client();
@@ -95,6 +131,21 @@ public abstract class AbstractIndexHandler<T> {
 		tagFields.put("name", tagNames);
 		map.put("tags", tagFields);
 
+	}
+
+	public void handleEvent(String uuid, String actionName) {
+		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
+		switch (action) {
+		case CREATE_ACTION:
+			store(uuid);
+			break;
+		case DELETE_ACTION:
+			delete(uuid);
+			break;
+		case UPDATE_ACTION:
+			update(uuid);
+			break;
+		}
 	}
 
 }

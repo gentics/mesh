@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.elasticsearch.action.index.IndexResponse;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -19,7 +22,6 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.json.JsonUtil;
 
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
@@ -48,8 +50,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			map.put("language", language);
 
 			addFields(map, container, node.getSchema());
-//			String json = JsonUtil.toJson(map);
-//			System.out.println(json);
+			//			String json = JsonUtil.toJson(map);
+			//			System.out.println(json);
 			store(node.getUuid(), map, getType() + "-" + language);
 		}
 
@@ -120,6 +122,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+
+	}
+
 	private void removeFieldEntries(Map<String, Object> map) {
 		for (String key : map.keySet()) {
 			if (key.startsWith("field.")) {
@@ -129,10 +136,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	private void addProject(Map<String, Object> map, Project project) {
-		Map<String, String> projectFields = new HashMap<>();
-		projectFields.put("name", project.getName());
-		projectFields.put("uuid", project.getUuid());
-		map.put("project", projectFields);
+		if (project != null) {
+			Map<String, String> projectFields = new HashMap<>();
+			projectFields.put("name", project.getName());
+			projectFields.put("uuid", project.getUuid());
+			map.put("project", projectFields);
+		}
 	}
 
 	private void addSchema(Map<String, Object> map, SchemaContainer schemaContainer) {

@@ -42,4 +42,9 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	}
 
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

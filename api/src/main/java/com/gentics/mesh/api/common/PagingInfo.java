@@ -37,6 +37,22 @@ public class PagingInfo implements QueryParameterProvider {
 		return perPage;
 	}
 
+	public PagingInfo setPerPage(int perPage) {
+		this.perPage = perPage;
+		return this;
+
+	}
+
+	public PagingInfo setPage(int page) {
+		this.page = page;
+		return this;
+	}
+
+	public PagingInfo setSortOrder(String sortBy) {
+		this.sortBy = sortBy;
+		return this;
+	}
+
 	public String getSortBy() {
 		return sortBy;
 	}

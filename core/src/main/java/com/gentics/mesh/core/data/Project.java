@@ -12,6 +12,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 
 public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 
+	public static final String TYPE = "project";
+
 	Node createBaseNode(User creator);
 
 	Node getBaseNode();

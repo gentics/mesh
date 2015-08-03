@@ -21,16 +21,12 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.config.MeshOptions;
+
 public final class RoutingContextHelper {
 
 	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
-
-	//	private static final String DEPTH_PARAM_KEY = "depth";
-	//	private static final String TAGS_PARAM_KEY = "tags";
-	//	private static final String CONTENTS_PARAM_KEY = "contents";
-	//	private static final String CHILD_TAGS_PARAM_KEY = "childTags";
 
 	public static MeshAuthUser getUser(RoutingContext routingContext) {
 		if (routingContext.user() instanceof MeshAuthUser) {
@@ -108,46 +104,5 @@ public final class RoutingContextHelper {
 		}
 		return new PagingInfo(page, perPage);
 	}
-
-	//	public Future<Integer> getDepthParameter(RoutingContext rc) {
-	//
-	//		Future<Integer> depthFut = Future.future();
-	//
-	//		Map<String, String> queryPairs = splitQuery(rc);
-	//		String value = queryPairs.get(DEPTH_PARAM_KEY);
-	//
-	//		int depth = NumberUtils.toInt(value, 0);
-	//		int maxDepth = MeshSpringConfiguration.getConfiguration().getMaxDepth();
-	//		if (depth > maxDepth) {
-	//			throw new HttpStatusCodeErrorException(400, i18n.get(rc, "error_depth_max_exceeded", String.valueOf(depth), String.valueOf(maxDepth)));
-	//		}
-	//		depthFut.complete(depth);
-	//
-	//		return depthFut;
-	//	}
-
-	//	public Future<Boolean> getTagsIncludeParameter(RoutingContext rc) {
-	//		Future<Boolean> tagsFut = Future.future();
-	//		Map<String, String> queryPairs = splitQuery(rc);
-	//		String value = queryPairs.get(TAGS_PARAM_KEY);
-	//		tagsFut.complete(BooleanUtils.toBoolean(value));
-	//		return tagsFut;
-	//	}
-	//
-	//	public Future<Boolean> getChildTagIncludeParameter(RoutingContext rc) {
-	//		Future<Boolean> childTagsFut = Future.future();
-	//		Map<String, String> queryPairs = splitQuery(rc);
-	//		String value = queryPairs.get(CHILD_TAGS_PARAM_KEY);
-	//		childTagsFut.complete(BooleanUtils.toBoolean(value));
-	//		return childTagsFut;
-	//	}
-
-	//	public Future<Boolean> getContentsIncludeParameter(RoutingContext rc) {
-	//		Future<Boolean> contentsFut = Future.future();
-	//		Map<String, String> queryPairs = splitQuery(rc);
-	//		String value = queryPairs.get(CONTENTS_PARAM_KEY);
-	//		contentsFut.complete(BooleanUtils.toBoolean(value));
-	//		return contentsFut;
-	//	}
 
 }

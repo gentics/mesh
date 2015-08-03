@@ -10,6 +10,8 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedNode {
 
+	public static final String TYPE = "tagFamily";
+
 	String getDescription();
 
 	void setDescription(String description);

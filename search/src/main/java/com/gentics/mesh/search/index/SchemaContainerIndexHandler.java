@@ -39,4 +39,9 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 			}
 		});
 	}
+
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+		
+	}
 }

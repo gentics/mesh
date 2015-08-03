@@ -540,9 +540,9 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	// }
 
 	@Override
-	public Future<NodeListResponse> searchNodes(String json) {
+	public Future<NodeListResponse> searchNodes(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/search/nodes", NodeListResponse.class, json);
+		return handleRequest(POST, "/search/nodes" + getQuery(parameters), NodeListResponse.class, json);
 	}
 
 }

@@ -17,6 +17,8 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 public interface User extends GenericVertex<UserResponse>, NamedNode {
 
+	public static final String TYPE = "user";
+
 	String getUsername();
 
 	void setUsername(String string);

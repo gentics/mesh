@@ -14,6 +14,12 @@ import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
+/**
+ * This class contains a collection of traversal methods that can be used for pagination and other traversals.
+ * 
+ * @author johannes2
+ *
+ */
 public final class TraversalHelper {
 
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal, String sortBy,
@@ -65,6 +71,11 @@ public final class TraversalHelper {
 				pagingInfo.getPerPage(), pagingInfo.getPerPage(), classOfT);
 	}
 
+	/**
+	 * Simple debug method for a vertex traversal. All vertices will be printed out. Don't use this code for production.
+	 * 
+	 * @param traversal
+	 */
 	public static void debug(VertexTraversal<?, ?, ?> traversal) {
 		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
 			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
@@ -72,11 +83,15 @@ public final class TraversalHelper {
 		}
 	}
 
+	/**
+	 * Simple debug method for a edge traversal. All edges will be printed out. Don't use this code for production.
+	 * 
+	 * @param traversal
+	 */
 	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
 		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
 			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
-
 	}
 
 }

@@ -50,4 +50,9 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		tagFamilyFields.put("uuid", tagFamily.getUuid());
 		map.put("tagFamily", tagFamilyFields);
 	}
+
+	public void update(String uuid) {
+		// TODO Auto-generated method stub
+		
+	}
 }

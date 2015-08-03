@@ -10,6 +10,8 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 
 public interface Tag extends GenericVertex<TagResponse>, NamedNode {
+	
+	public static final String TYPE = "tag";
 
 	List<? extends TagFieldContainer> getFieldContainers();
 

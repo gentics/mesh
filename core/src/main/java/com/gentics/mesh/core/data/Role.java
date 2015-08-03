@@ -9,6 +9,8 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 
 public interface Role extends GenericVertex<RoleResponse>, NamedNode {
 
+	public static final String TYPE = "role";
+
 	void addPermissions(MeshVertex vertex, Permission... permissions);
 
 	void revokePermissions(MeshVertex vertex, Permission... permissions);
