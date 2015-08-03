@@ -88,7 +88,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			switch (type) {
 			case HTML:
 				HtmlField htmlField = (HtmlFieldImpl) field;
-				createHTML(key).setHTML(htmlField.getHTML());
+				createHTML(key).setHtml(htmlField.getHTML());
 				break;
 			case STRING:
 				StringField stringField = (StringFieldImpl) field;

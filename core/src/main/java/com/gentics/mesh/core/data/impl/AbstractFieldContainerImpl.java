@@ -109,7 +109,7 @@ public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl 
 	}
 
 	@Override
-	public HtmlField getHTML(String key) {
+	public HtmlField getHtml(String key) {
 		if (fieldExists(key)) {
 			return new HtmlFieldImpl(key, this);
 		}

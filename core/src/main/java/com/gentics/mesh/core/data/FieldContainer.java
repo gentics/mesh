@@ -37,7 +37,7 @@ public interface FieldContainer extends BasicFieldContainer {
 
 	HtmlField createHTML(String key);
 
-	HtmlField getHTML(String key);
+	HtmlField getHtml(String key);
 
 	BooleanField getBoolean(String key);
 

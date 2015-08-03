@@ -531,7 +531,7 @@ public class DemoDataProvider {
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("filename").setString(name + ".en.html");
-			englishContainer.createHTML("content").setHTML(englishContent);
+			englishContainer.createHTML("content").setHtml(englishContent);
 		}
 
 		if (germanContent != null) {
@@ -540,7 +540,7 @@ public class DemoDataProvider {
 			germanContainer.createString("title").setString(name + " english title");
 			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("filename").setString(name + ".de.html");
-			germanContainer.createHTML("content").setHTML(germanContent);
+			germanContainer.createHTML("content").setHtml(germanContent);
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {

@@ -10,7 +10,7 @@ public class HtmlFieldListImpl extends AbstractBasicFieldList<HtmlField> impleme
 	@Override
 	public HtmlField createHTML(String html) {
 		HtmlField field = createField();
-		field.setHTML(html);
+		field.setHtml(html);
 		return field;
 	}
 

@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.elasticsearch.action.index.IndexResponse;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -57,6 +56,54 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
+	@Override
+	public void update(String uuid) {
+		boot.nodeRoot().findByUuid(uuid, rh -> {
+			if (rh.result() != null && rh.succeeded()) {
+				Node node = rh.result();
+				try {
+					update(node);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			//TODO reply error? discard? log?
+			}
+		});
+
+	}
+
+	private void update(Node node) throws IOException {
+
+		Map<String, Object> map = new HashMap<>();
+		addBasicReferences(map, node);
+		addSchema(map, node.getSchemaContainer());
+		addProject(map, node.getProject());
+		addTags(map, node.getTags());
+		for (NodeFieldContainer container : node.getFieldContainers()) {
+			removeFieldEntries(map);
+			map.remove("language");
+			String language = container.getLanguage().getLanguageTag();
+			map.put("language", language);
+
+			addFields(map, container, node.getSchema());
+			//			String json = JsonUtil.toJson(map);
+			//			System.out.println(json);
+			update(node.getUuid(), map, getType() + "-" + language);
+		}
+
+	}
+
+	@Override
+	public void delete(String uuid) {
+		//		DeleteResponse response = 
+		for (Language lang : BootstrapInitializer.getBoot().languageRoot().findAll()) {
+			String language = lang.getLanguageTag();
+			getClient().prepareDelete(getIndex(), getType() + "-" + language, uuid).execute().actionGet();
+		}
+	}
+
 	private void addFields(Map<String, Object> map, NodeFieldContainer container, Schema schema) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : schema.getFields()) {
@@ -69,7 +116,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				fieldsMap.put(name, stringField.getString());
 				break;
 			case HTML:
-				HtmlField htmlField = container.getHTML(name);
+				HtmlField htmlField = container.getHtml(name);
 				fieldsMap.put(name, htmlField.getHTML());
 				break;
 			case DATE:
@@ -120,11 +167,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			//TODO reply error? discard? log?
 			}
 		});
-	}
-
-	public void update(String uuid) {
-		// TODO Auto-generated method stub
-
 	}
 
 	private void removeFieldEntries(Map<String, Object> map) {

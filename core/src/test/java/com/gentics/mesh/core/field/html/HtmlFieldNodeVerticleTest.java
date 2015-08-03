@@ -55,7 +55,7 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node node = folder("2015");
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		container.createHTML("htmlField").setHTML("some<b>html");
+		container.createHTML("htmlField").setHtml("some<b>html");
 
 		NodeResponse response = readNode(node);
 		HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");

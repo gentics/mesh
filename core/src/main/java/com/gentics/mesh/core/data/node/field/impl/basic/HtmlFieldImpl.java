@@ -10,7 +10,7 @@ public class HtmlFieldImpl extends AbstractBasicField implements HtmlField {
 		super(fieldKey, parentContainer);
 	}
 
-	public void setHTML(String html) {
+	public void setHtml(String html) {
 		setFieldProperty("html", html);
 	}
 

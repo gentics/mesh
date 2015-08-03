@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 
 public interface HtmlField extends ListableField, BasicField {
 
-	void setHTML(String html);
+	void setHtml(String html);
 
 	String getHTML();
 

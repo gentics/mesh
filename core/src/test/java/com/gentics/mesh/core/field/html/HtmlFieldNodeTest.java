@@ -46,7 +46,7 @@ public class HtmlFieldNodeTest extends AbstractDBTest {
 
 		NodeFieldContainer container = node.getFieldContainer(english());
 		HtmlField field = container.createHTML("htmlField");
-		field.setHTML("Some<b>htmlABCDE");
+		field.setHtml("Some<b>htmlABCDE");
 
 		String json = getJson(node);
 		assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("ABCDE") > 1);

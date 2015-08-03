@@ -1,8 +1,6 @@
 package com.gentics.mesh.search.index;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -16,9 +14,8 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -87,15 +84,20 @@ public abstract class AbstractIndexHandler<T> {
 	}
 
 	public void delete(String uuid) {
-		DeleteResponse response = getClient().prepareDelete(getIndex(), getType(), uuid).execute().actionGet();
+		//		DeleteResponse response = 
+		getClient().prepareDelete(getIndex(), getType(), uuid).execute().actionGet();
 	}
 
-	public void store(String uuid, Map<String, Object> map) {
-		IndexResponse indexResponse = getClient().prepareIndex(getIndex(), getType(), uuid).setSource(map).execute().actionGet();
+	protected void update(String uuid, Map<String, Object> map, String type) {
+		UpdateRequestBuilder builder = getClient().prepareUpdate(getIndex(), type, uuid);
+		builder.setDoc(map);
+		builder.execute().actionGet();
 	}
 
-	public void update(String uuid, Map<String, Object> map) {
-		UpdateResponse updateResponse = getClient().prepareUpdate(getIndex(), getType(), uuid).setDoc(map).execute().actionGet();
+	protected void store(String uuid, Map<String, Object> map) {
+		IndexRequestBuilder builder = getClient().prepareIndex(getIndex(), getType(), uuid);
+		builder.setSource(map);
+		builder.execute().actionGet();
 	}
 
 	protected void addBasicReferences(Map<String, Object> map, GenericVertex<?> vertex) {
