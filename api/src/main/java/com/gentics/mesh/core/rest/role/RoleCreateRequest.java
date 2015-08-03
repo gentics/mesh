@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.rest.role;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+/**
+ * Role request model that is used for role creation.
+ */
 public class RoleCreateRequest extends RoleUpdateRequest {
 
 	private String groupUuid;

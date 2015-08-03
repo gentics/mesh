@@ -10,7 +10,6 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -18,7 +17,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -48,7 +46,7 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 	public void addUser(User user) {
 		// TODO use link method
 		linkIn(user.getImpl(), HAS_USER);
-		//user.getImpl().addFramedEdge(HAS_USER, this, UserImpl.class);
+		// user.getImpl().addFramedEdge(HAS_USER, this, UserImpl.class);
 	}
 
 	public void removeUser(User user) {
@@ -128,23 +126,6 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 
 		return this;
 
-	}
-
-	public User createUser(String username) {
-		//UserImpl user = getGraph().addFramedVertex(UserImpl.class);
-		MeshRoot root = MeshRoot.getInstance();
-		User user = root.getUserRoot().create(username);
-		addUser(user);
-		return user;
-	}
-
-	public Role createRole(String name, Group parentGroup) {
-		RoleImpl role = getGraph().addFramedVertex(RoleImpl.class);
-		role.setName(name);
-		BootstrapInitializer.getBoot().roleRoot().addRole(role);
-		// Add role also to role root
-		addRole(role);
-		return role;
 	}
 
 	@Override

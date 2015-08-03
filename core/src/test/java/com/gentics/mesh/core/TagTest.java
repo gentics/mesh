@@ -84,8 +84,8 @@ public class TagTest extends AbstractBasicObjectTest {
 
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
-		Node parentNode = data().getFolder("2015");
-		Node node = parentNode.create(getUser(), getSchemaContainer(), getProject());
+		Node parentNode = folder("2015");
+		Node node = parentNode.create(user(), getSchemaContainer(), project());
 		Language german = boot.languageRoot().findByLanguageTag("de");
 		NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
@@ -163,18 +163,16 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull(noPermTag.getUuid());
 		assertEquals(tags().size() + 1, tagRoot.findAll().size());
 
-		Page<? extends Tag> projectTagpage = getProject().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+		Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
 		assertPage(projectTagpage, tags().size());
 
 		Page<? extends Tag> globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
 		assertPage(globalTagPage, tags().size());
 
-		getRole().addPermissions(noPermTag, READ_PERM);
+		role().addPermissions(noPermTag, READ_PERM);
 		globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
 		assertPage(globalTagPage, tags().size() + 1);
 	}
-
-
 
 	private void assertPage(Page<? extends Tag> page, int totalTags) {
 		assertNotNull(page);
@@ -285,10 +283,10 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		TagFamily tagFamily = tagFamily("basic");
 		Tag tag = tagFamily.create("someTag", project());
-		assertTrue(getUser().hasPermission(tagFamily, Permission.READ_PERM));
-		assertFalse(getUser().hasPermission(tag, Permission.READ_PERM));
+		assertTrue(user().hasPermission(tagFamily, Permission.READ_PERM));
+		assertFalse(user().hasPermission(tag, Permission.READ_PERM));
 		getRequestUser().addCRUDPermissionOnRole(tagFamily, Permission.CREATE_PERM, tag);
-		assertTrue(getUser().hasPermission(tag, Permission.READ_PERM));
+		assertTrue(user().hasPermission(tag, Permission.READ_PERM));
 	}
 
 	@Test

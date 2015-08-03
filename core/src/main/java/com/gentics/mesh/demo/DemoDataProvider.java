@@ -300,7 +300,7 @@ public class DemoDataProvider {
 		log.info("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-		User user = root.getUserRoot().create(username);
+		User user = root.getUserRoot().create(username, null, null);
 		user.setUuid("UUIDOFUSER1");
 		user.setPassword(password);
 		user.setFirstname(firstname);
@@ -313,24 +313,19 @@ public class DemoDataProvider {
 		user.setLastEditedTimestamp(System.currentTimeMillis());
 		users.put(username, user);
 
-		String roleName = username + "_role";
-		Role role = root.getRoleRoot().create(roleName);
-		role.addPermissions(role, READ_PERM);
-		role.setCreator(user);
-		role.setCreationTimestamp(System.currentTimeMillis());
-		role.setEditor(user);
-		role.setLastEditedTimestamp(System.currentTimeMillis());
-		roles.put(roleName, role);
-
 		String groupName = username + "_group";
 		Group group = root.getGroupRoot().create(groupName);
 		group.addUser(user);
-		group.addRole(role);
 		group.setCreator(user);
 		group.setCreationTimestamp(System.currentTimeMillis());
 		group.setEditor(user);
 		group.setLastEditedTimestamp(System.currentTimeMillis());
 		groups.put(groupName, group);
+
+		String roleName = username + "_role";
+		Role role = root.getRoleRoot().create(roleName, group, user);
+		role.addPermissions(role, READ_PERM);
+		roles.put(roleName, role);
 
 		UserInfo userInfo = new UserInfo(user, group, role, password);
 		return userInfo;
@@ -349,22 +344,21 @@ public class DemoDataProvider {
 		project.addLanguage(getGerman());
 
 		// Guest Group / Role
-		Role guestRole = root.getRoleRoot().create("guest_role");
-		roles.put(guestRole.getName(), guestRole);
 
 		Group guests = root.getGroupRoot().create("guests");
-		guests.addRole(guestRole);
 		groups.put("guests", guests);
+
+		Role guestRole = root.getRoleRoot().create("guest_role", guests, userInfo.getUser());
+		roles.put(guestRole.getName(), guestRole);
 
 		// Extra User
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			User user = userRoot.create("guest_" + i);
+			User user = userRoot.create("guest_" + i, guests, userInfo.getUser());
 			// userService.setPassword(user, "guestpw" + i);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
 			user.setEmailAddress("guest_" + i + "@spam.gentics.com");
 			setCreatorEditor(user);
-			guests.addUser(user);
 			users.put(user.getUsername(), user);
 		}
 		// Extra Groups
@@ -376,7 +370,7 @@ public class DemoDataProvider {
 
 		// Extra Roles
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			Role role = roleRoot.create("extra_role_" + i);
+			Role role = roleRoot.create("extra_role_" + i, null, userInfo.getUser());
 			setCreatorEditor(role);
 			roles.put(role.getName(), role);
 		}
@@ -487,7 +481,6 @@ public class DemoDataProvider {
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
-		
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
 			throw new RuntimeException("Key for folder empty");

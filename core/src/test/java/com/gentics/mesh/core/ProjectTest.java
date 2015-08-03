@@ -37,7 +37,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreate() {
 		ProjectRoot projectRoot = meshRoot().getProjectRoot();
-		Project project = projectRoot.create("test", getUser());
+		Project project = projectRoot.create("test", user());
 		Project project2 = projectRoot.findByName(project.getName());
 		assertNotNull(project2);
 		assertEquals("test", project2.getName());
@@ -62,9 +62,9 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		ProjectRoot projectRoot = data().getMeshRoot().getProjectRoot();
+		ProjectRoot projectRoot = meshRoot().getProjectRoot();
 		int nProjectsBefore = projectRoot.findAll().size();
-		assertNotNull(projectRoot.create("test1234556", getUser()));
+		assertNotNull(projectRoot.create("test1234556", user()));
 		int nProjectsAfter = projectRoot.findAll().size();
 		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}
@@ -121,15 +121,15 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		Project project = getMeshRoot().getProjectRoot().create("newProject", getUser());
+		Project project = meshRoot().getProjectRoot().create("newProject", user());
 		assertNotNull(project);
 		String uuid = project.getUuid();
-		getMeshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
 		});
 		project.delete();
 		// TODO check for attached nodes
-		getMeshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
 			assertNull(rh.result());
 		});
 	}
@@ -137,17 +137,17 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		MeshRoot root = getMeshRoot();
-		Project project = root.getProjectRoot().create("TestProject", getUser());
-		assertFalse(getUser().hasPermission(project, Permission.CREATE_PERM));
-		getUser().addCRUDPermissionOnRole(root.getProjectRoot(), Permission.CREATE_PERM, project);
-		assertTrue(getUser().hasPermission(project, Permission.CREATE_PERM));
+		MeshRoot root = meshRoot();
+		Project project = root.getProjectRoot().create("TestProject", user());
+		assertFalse(user().hasPermission(project, Permission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(root.getProjectRoot(), Permission.CREATE_PERM, project);
+		assertTrue(user().hasPermission(project, Permission.CREATE_PERM));
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		Project project = getProject();
+		Project project = project();
 		assertNotNull(project.getName());
 		assertEquals("dummy", project.getName());
 		assertNotNull(project.getBaseNode());
@@ -159,7 +159,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		Project project = getProject();
+		Project project = project();
 		project.setName("new Name");
 		assertEquals("new Name", project.getName());
 
@@ -170,28 +170,28 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		Project newProject = getMeshRoot().getProjectRoot().create("newProject", getUser());
+		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
 		testPermission(Permission.READ_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		Project newProject = getMeshRoot().getProjectRoot().create("newProject", getUser());
+		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
 		testPermission(Permission.DELETE_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		Project newProject = getMeshRoot().getProjectRoot().create("newProject", getUser());
+		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
 		testPermission(Permission.UPDATE_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		Project newProject = getMeshRoot().getProjectRoot().create("newProject", getUser());
+		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
 		testPermission(Permission.CREATE_PERM, newProject);
 	}
 

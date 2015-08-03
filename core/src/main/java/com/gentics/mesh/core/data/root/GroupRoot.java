@@ -6,6 +6,9 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+/**
+ * Aggregation vertex for groups.
+ */
 public interface GroupRoot extends RootVertex<Group> {
 
 	Group create(String name);

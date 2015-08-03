@@ -47,8 +47,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testPageLinks() {
 		Node folder = folder("2015");
-		Node node = folder.create(getUser(), getSchemaContainer(), getProject());
-		Node node2 = folder.create(getUser(), getSchemaContainer(), getProject());
+		Node node = folder.create(user(), getSchemaContainer(), project());
+		Node node2 = folder.create(user(), getSchemaContainer(), project());
 
 		NodeFieldContainer englishContainer = node2.getOrCreateFieldContainer(english());
 		englishContainer.createString("content").setString("english content");
@@ -68,7 +68,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Node newsNode = content("news overview");
 		assertNotNull(newsNode);
 		Node newSubNode;
-		newSubNode = newsNode.create(getUser(), getSchemaContainer(), getProject());
+		newSubNode = newsNode.create(user(), getSchemaContainer(), project());
 
 		assertEquals(1, newsNode.getChildren().size());
 		Node firstChild = newsNode.getChildren().iterator().next();
@@ -187,7 +187,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() {
 		Node folder = getFolder();
-		Node subNode = folder.create(getUser(), getSchemaContainer(), getProject());
+		Node subNode = folder.create(user(), getSchemaContainer(), project());
 		assertNotNull(subNode.getUuid());
 		subNode.delete();
 	}
@@ -195,10 +195,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		Node node = getFolder().create(getUser(), getSchemaContainer(), getProject());
-		assertFalse(getUser().hasPermission(node, Permission.CREATE_PERM));
-		getUser().addCRUDPermissionOnRole(getFolder(), Permission.CREATE_PERM, node);
-		assertTrue(getUser().hasPermission(node, Permission.CREATE_PERM));
+		Node node = getFolder().create(user(), getSchemaContainer(), project());
+		assertFalse(user().hasPermission(node, Permission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(getFolder(), Permission.CREATE_PERM, node);
+		assertTrue(user().hasPermission(node, Permission.CREATE_PERM));
 	}
 
 	@Test
@@ -214,7 +214,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testCreate() {
 		User user = user();
 		Node parentNode = folder("2015");
-		Node node = parentNode.create(user, data().getSchemaContainer("content"), getProject());
+		Node node = parentNode.create(user, data().getSchemaContainer("content"), project());
 		long ts = System.currentTimeMillis();
 		node.setCreationTimestamp(ts);
 		node.setLastEditedTimestamp(ts);
@@ -255,12 +255,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		Node node = getContent();
 		String uuid = node.getUuid();
-		getMeshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
 		});
 		node.delete();
 		// TODO check for attached subnodes
-		getMeshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 			assertNull(rh.result());
 		});
 	}
@@ -269,8 +269,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdate() {
 		Node node = getContent();
-		User newUser = getMeshRoot().getUserRoot().create("newUser");
-		assertEquals(getUser().getUuid(), node.getCreator().getUuid());
+		User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
+		assertEquals(user().getUuid(), node.getCreator().getUuid());
 		node.setCreator(newUser);
 		assertEquals(newUser.getUuid(), node.getCreator().getUuid());
 		// TODO update other fields

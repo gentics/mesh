@@ -32,23 +32,22 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testCreatedUser() {
-		assertNotNull("The uuid of the user should not be null since the entity was reloaded.", data().getUserInfo().getUser().getUuid());
+		assertNotNull("The uuid of the user should not be null since the entity was reloaded.", user().getUuid());
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
-		UserRoot root = data().getMeshRoot().getUserRoot();
+		UserRoot root = meshRoot().getUserRoot();
 		int nUserBefore = root.findAll().size();
-		assertNotNull(root.create("dummy12345"));
+		assertNotNull(root.create("dummy12345", null, user()));
 		int nUserAfter = root.findAll().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 	}
 
 	@Test
 	public void testHasPermission() {
-		Language language = data().getEnglish();
-		assertTrue(getUser().hasPermission(language, READ_PERM));
+		assertTrue(user().hasPermission(english(), READ_PERM));
 	}
 
 	@Test
@@ -57,12 +56,12 @@ public class UserTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
 		Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
-		assertEquals(data().getUsers().size(), page.getTotalElements());
+		assertEquals(users().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 15));
-		assertEquals(data().getUsers().size(), page.getTotalElements());
-		assertEquals(data().getUsers().size(), page.getSize());
+		assertEquals(users().size(), page.getTotalElements());
+		assertEquals(users().size(), page.getSize());
 	}
 
 	@Test
@@ -70,14 +69,14 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		Page<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
 		assertNotNull(page);
-		assertEquals(data().getUsers().size(), page.getTotalElements());
+		assertEquals(users().size(), page.getTotalElements());
 	}
 
 	@Test
 	public void testGetPermissions() {
-		Language language = data().getEnglish();
+		Language language = english();
 		String[] perms = { "create", "update", "delete", "read" };
-		String[] loadedPerms = getUser().getPermissionNames(language);
+		String[] loadedPerms = user().getPermissionNames(language);
 		Arrays.sort(perms);
 		Arrays.sort(loadedPerms);
 		assertArrayEquals("Permissions do not match", perms, loadedPerms);
@@ -86,12 +85,10 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser");
-		Group group = getGroup();
-		Role role = getRole();
-		group.addUser(extraUser);
-
+		UserRoot userRoot = meshRoot().getUserRoot();
+		User extraUser = userRoot.create("extraUser", group(), user());
+		Group group = group();
+		Role role = role();
 		role.addPermissions(extraUser, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
@@ -105,13 +102,13 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByName() {
 		assertNull(boot.userRoot().findByUsername("bogus"));
-		boot.userRoot().findByUsername(getUser().getUsername());
+		boot.userRoot().findByUsername(user().getUsername());
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		String uuid = getUser().getUuid();
+		String uuid = user().getUuid();
 		CountDownLatch latch = new CountDownLatch(1);
 		boot.userRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -126,14 +123,14 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testTransformation() throws InterruptedException {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
-		getUser().transformToRest(rc, rh -> {
+		user().transformToRest(rc, rh -> {
 			UserResponse restUser = rh.result();
 			assertNotNull(restUser);
-			assertEquals(getUser().getUsername(), restUser.getUsername());
-			assertEquals(getUser().getUuid(), restUser.getUuid());
-			assertEquals(getUser().getLastname(), restUser.getLastname());
-			assertEquals(getUser().getFirstname(), restUser.getFirstname());
-			assertEquals(getUser().getEmailAddress(), restUser.getEmailAddress());
+			assertEquals(user().getUsername(), restUser.getUsername());
+			assertEquals(user().getUuid(), restUser.getUuid());
+			assertEquals(user().getLastname(), restUser.getLastname());
+			assertEquals(user().getFirstname(), restUser.getFirstname());
+			assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
 			assertEquals(1, restUser.getGroups().size());
 			latch.countDown();
 		});
@@ -143,8 +140,8 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		MeshRoot root = getMeshRoot();
-		User user = root.getUserRoot().create("Anton");
+		MeshRoot root = meshRoot();
+		User user = root.getUserRoot().create("Anton", null, user());
 		assertTrue(user.isEnabled());
 		assertNotNull(user);
 		String uuid = user.getUuid();
@@ -159,9 +156,9 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		MeshRoot root = getMeshRoot();
-		User user = getUser();
-		User newUser = root.getUserRoot().create("Anton");
+		MeshRoot root = meshRoot();
+		User user = user();
+		User newUser = root.getUserRoot().create("Anton", null, user());
 		assertFalse(user.hasPermission(newUser, Permission.CREATE_PERM));
 		user.addCRUDPermissionOnRole(root.getUserRoot(), Permission.CREATE_PERM, newUser);
 		assertTrue(user.hasPermission(newUser, Permission.CREATE_PERM));
@@ -170,7 +167,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		User user = getUser();
+		User user = user();
 		assertEquals("joe1", user.getUsername());
 		assertNotNull(user.getPasswordHash());
 		assertEquals("Joe", user.getFirstname());
@@ -194,8 +191,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		final String LASTNAME = "doe";
 		final String PASSWDHASH = "RANDOM";
 
-		UserRoot userRoot = data().getMeshRoot().getUserRoot();
-		User user = userRoot.create(USERNAME);
+		UserRoot userRoot = meshRoot().getUserRoot();
+		User user = userRoot.create(USERNAME, null, user());
 		user.setEmailAddress(EMAIL);
 		user.setFirstname(FIRSTNAME);
 		user.setLastname(LASTNAME);
@@ -216,7 +213,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		User user = getUser();
+		User user = user();
 		assertEquals(1, user.getGroupCount());
 		assertTrue(user.isEnabled());
 		user.delete();
@@ -228,9 +225,9 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdate() {
 
-		User newUser = getMeshRoot().getUserRoot().create("newUser");
+		User newUser = meshRoot().getUserRoot().create("newUser", null, user());
 
-		User user = getUser();
+		User user = user();
 
 		user.setEmailAddress("changed");
 		assertEquals("changed", user.getEmailAddress());
@@ -264,28 +261,28 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		User user = getMeshRoot().getUserRoot().create("Anton");
+		User user = meshRoot().getUserRoot().create("Anton", null, user());
 		testPermission(Permission.READ_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		User user = getMeshRoot().getUserRoot().create("Anton");
+		User user = meshRoot().getUserRoot().create("Anton", null, user());
 		testPermission(Permission.DELETE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		User user = getMeshRoot().getUserRoot().create("Anton");
+		User user = meshRoot().getUserRoot().create("Anton", null, user());
 		testPermission(Permission.UPDATE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		User user = getMeshRoot().getUserRoot().create("Anton");
+		User user = meshRoot().getUserRoot().create("Anton", null, user());
 		testPermission(Permission.CREATE_PERM, user);
 	}
 }

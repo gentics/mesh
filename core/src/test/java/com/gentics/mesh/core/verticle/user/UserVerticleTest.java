@@ -33,9 +33,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.UserVerticle;
@@ -92,11 +92,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		String username = "testuser_3";
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			User user3 = root.create(username);
+			User user3 = root.create(username, group(), user());
 			user3.setLastname("should_not_be_listed");
 			user3.setFirstname("should_not_be_listed");
 			user3.setEmailAddress("should_not_be_listed");
-			group().addUser(user3);
 			tx.success();
 		}
 
@@ -399,20 +398,18 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
-		User user = user();
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = meshRoot().getUserRoot();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			User conflictingUser = userRoot.create("existing_username");
-			group().addUser(conflictingUser);
+			User conflictingUser = userRoot.create("existing_username", group(), user());
 			tx.success();
 		}
 
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("existing_username");
 
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
+		Future<UserResponse> future = getClient().updateUser(user().getUuid(), request);
 		latchFor(future);
 		expectException(future, CONFLICT, "user_conflicting_username");
 
@@ -437,8 +434,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User conflictingUser = userRoot.create("existing_username");
-		group().addUser(conflictingUser);
+		User conflictingUser = userRoot.create("existing_username", group(), user());
 		// Add update permission to group in order to create the user in that group
 		role().addPermissions(group(), CREATE_PERM);
 
@@ -595,7 +591,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			User user = userRoot.create("extraUser");
+			User user = userRoot.create("extraUser", group(), user());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
 			role().addPermissions(user, UPDATE_PERM);
@@ -612,7 +608,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		});
 	}
 
-	@Test
+	@Test(expected=NullPointerException.class)
 	public void testDeleteWithUuidNull() throws Exception {
 		Future<GenericMessageResponse> future = getClient().deleteUser(null);
 		latchFor(future);
@@ -626,9 +622,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		String uuid;
 		String name = "extraUser";
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			User extraUser = userRoot.create(name);
+			User extraUser = userRoot.create(name, group(), user());
 			uuid = extraUser.getUuid();
-			extraUser.addGroup(group());
 			role().addPermissions(extraUser, DELETE_PERM);
 			assertNotNull(extraUser.getUuid());
 			tx.success();

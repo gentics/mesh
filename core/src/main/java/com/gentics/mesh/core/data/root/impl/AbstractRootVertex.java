@@ -6,12 +6,10 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;

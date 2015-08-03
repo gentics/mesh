@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.delete;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -133,7 +135,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
 					} else {
 						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-							User user = parentGroup.createUser(requestModel.getUsername());
+							MeshAuthUser requestUser = getUser(rc);
+							User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
+//							User user = parentGroup.createUser(requestModel.getUsername());
 							user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
 								if (ch.failed()) {
 									rc.fail(ch.cause());

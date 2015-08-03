@@ -6,16 +6,11 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 
 import com.gentics.mesh.core.data.GenericVertex;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 
 public abstract class AbstractBasicObjectTest extends AbstractDBTest implements BasicObjectTestcases {
@@ -23,18 +18,6 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 	@Before
 	public void setup() throws Exception {
 		setupData();
-	}
-
-	public User getUser() {
-		return data().getUserInfo().getUser();
-	}
-
-	public Role getRole() {
-		return data().getUserInfo().getRole();
-	}
-
-	public Group getGroup() {
-		return data().getUserInfo().getGroup();
 	}
 
 	public Node getContent() {
@@ -49,24 +32,16 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 		return data().getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
 	}
 
-	public Project getProject() {
-		return data().getProject();
-	}
-
-	public MeshRoot getMeshRoot() {
-		return data().getMeshRoot();
-	}
-
 	public SchemaContainer getSchemaContainer() {
 		return data().getSchemaContainer("content");
 	}
 
 	protected void testPermission(Permission perm, GenericVertex node) {
-		getRole().addPermissions(node, perm);
-		assertTrue(getRole().hasPermission(perm, node));
+		role().addPermissions(node, perm);
+		assertTrue(role().hasPermission(perm, node));
 		assertTrue(getRequestUser().hasPermission(node, perm));
-		getRole().revokePermissions(node, perm);
-		assertFalse(getRole().hasPermission(perm, node));
+		role().revokePermissions(node, perm);
+		assertFalse(role().hasPermission(perm, node));
 		assertFalse(getRequestUser().hasPermission(node, perm));
 	}
 

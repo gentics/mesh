@@ -21,7 +21,7 @@ public class AtomicTagTest extends AbstractDBTest {
 	@Test
 	public void testTagCreation() {
 		MeshRoot meshRoot = boot.meshRoot();
-		User user = meshRoot.getUserRoot().create("test");
+		User user = meshRoot.getUserRoot().create("test", group(), user());
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		assertNotNull(languageRoot);
 		Language language = languageRoot.create("Deutsch", "de");

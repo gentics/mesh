@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -12,7 +11,6 @@ public interface Group extends GenericVertex<GroupResponse>, NamedNode {
 
 	public static final String TYPE = "group";
 
-	
 	void addUser(User user);
 
 	void addRole(Role role);
@@ -32,11 +30,5 @@ public interface Group extends GenericVertex<GroupResponse>, NamedNode {
 	void removeRole(Role role);
 
 	void removeUser(User user);
-
-	Role createRole(String name, Group parentGroup);
-
-	User createUser(String username);
-
-	GroupImpl getImpl();
 
 }

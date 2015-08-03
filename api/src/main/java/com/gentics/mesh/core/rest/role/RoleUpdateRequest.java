@@ -2,7 +2,9 @@ package com.gentics.mesh.core.rest.role;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 
-
+/**
+ * Role update request model.
+ */
 public class RoleUpdateRequest implements RestModel {
 
 	private String name;

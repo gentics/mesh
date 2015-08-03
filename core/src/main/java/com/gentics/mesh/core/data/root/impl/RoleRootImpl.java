@@ -2,7 +2,9 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 
@@ -33,10 +35,17 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	// TODO unique index
 
 	@Override
-	public Role create(String name) {
+	public Role create(String name, Group group, User creator) {
 		Role role = getGraph().addFramedVertex(RoleImpl.class);
 		role.setName(name);
+		role.setCreator(creator);
+		role.setCreationTimestamp(System.currentTimeMillis());
+		role.setEditor(creator);
+		role.setLastEditedTimestamp(System.currentTimeMillis());
 		addRole(role);
+		if (group != null) {
+			group.addRole(role);
+		}
 		return role;
 	}
 

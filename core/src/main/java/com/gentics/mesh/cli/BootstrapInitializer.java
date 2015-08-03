@@ -394,7 +394,7 @@ public class BootstrapInitializer {
 		// Verify that an admin user exists
 		User adminUser = userRoot.findByUsername("admin");
 		if (adminUser == null) {
-			adminUser = userRoot.create("admin");
+			adminUser = userRoot.create("admin", null, adminUser);
 
 			adminUser.setCreator(adminUser);
 			adminUser.setCreationTimestamp(System.currentTimeMillis());
@@ -420,8 +420,7 @@ public class BootstrapInitializer {
 
 		Role adminRole = roleRoot.findByName("admin");
 		if (adminRole == null) {
-			adminRole = roleRoot.create("admin");
-			adminGroup.addRole(adminRole);
+			adminRole = roleRoot.create("admin", adminGroup, adminUser);
 		}
 
 		initPermissions(adminRole);

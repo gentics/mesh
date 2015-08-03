@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Paging meta info model.
+ */
 public class PagingMetaInfo {
 
 	@JsonProperty("page")

@@ -107,6 +107,14 @@ public abstract class AbstractDBTest {
 		return data().getUsers();
 	}
 
+	public Map<String, Role> roles() {
+		return data().getRoles();
+	}
+
+	public Map<String, Group> groups() {
+		return data().getGroups();
+	}
+
 	public Language english() {
 		return data().getEnglish();
 	}

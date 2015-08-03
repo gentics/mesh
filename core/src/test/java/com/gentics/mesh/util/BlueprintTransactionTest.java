@@ -29,7 +29,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 		UserRoot root = meshRoot().getUserRoot();
 		int e = i.incrementAndGet();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			assertNotNull(root.create("testuser" + e));
+			assertNotNull(root.create("testuser" + e, group(), user()));
 			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
@@ -38,7 +38,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				assertNotNull(root.create("testuser" + u));
+				assertNotNull(root.create("testuser" + u, group(), user()));
 				assertNotNull(boot.userRoot().findByUsername("testuser" + u));
 				tx.failure();
 			}

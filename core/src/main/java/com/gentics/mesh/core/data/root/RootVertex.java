@@ -13,14 +13,48 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+/**
+ * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
+ */
 public interface RootVertex<T extends GenericVertex<? extends RestModel>> extends MeshVertex {
 
-	RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler);
-
+	/**
+	 * Return a list of all elements.
+	 * 
+	 * @return
+	 */
 	List<? extends T> findAll();
 
+	/**
+	 * Find the element with the given name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	T findByName(String name);
 
+	/**
+	 * Find the element with the given uuid and call the result handler.
+	 * 
+	 * @param uuid
+	 *            Uuid of the element to be located.
+	 * @param resultHandler
+	 *            Handler that is being invoked when search finished.
+	 * @return this root vertex - fluent API
+	 */
+	RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler);
+
+	/**
+	 * Find the visible elements and return a paged result.
+	 * 
+	 * @param requestUser
+	 *            User that is used to check read permissions against.
+	 * @param pagingInfo
+	 *            Paging information object that contains page options.
+	 * @return
+	 * @throws InvalidArgumentException
+	 *             if the paging options are malformed.
+	 */
 	Page<? extends T> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 }

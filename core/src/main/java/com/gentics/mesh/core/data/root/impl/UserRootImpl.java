@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
@@ -33,11 +34,20 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	// TODO unique index
 
 	@Override
-	public User create(String username) {
+	public User create(String username, Group group, User creator) {
 		UserImpl user = getGraph().addFramedVertex(UserImpl.class);
 		user.setUsername(username);
 		user.enable();
 		addItem(user);
+		if (group != null) {
+			group.addUser(user);
+		}
+		if (creator != null) {
+			user.setCreator(creator);
+			user.setCreationTimestamp(System.currentTimeMillis());
+			user.setEditor(creator);
+			user.setLastEditedTimestamp(System.currentTimeMillis());
+		}
 		return user;
 	}
 

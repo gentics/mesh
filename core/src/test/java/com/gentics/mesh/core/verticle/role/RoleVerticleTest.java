@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.verticle.role;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -35,7 +35,6 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.verticle.RoleVerticle;
-import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -150,7 +149,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadOwnRoleByUUID() throws Exception {
-		UserInfo info = data().getUserInfo();
 		Role role = role();
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 
@@ -163,13 +161,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadExtraRoleByUUID() throws Exception {
-		UserInfo info = data().getUserInfo();
-
-		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
-		Role extraRole = roleRoot.create("extra role");
-		extraRole.setCreator(info.getUser());
-		extraRole.setEditor(info.getUser());
-		group().addRole(extraRole);
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role", group(), user());
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 		role().addPermissions(extraRole, READ_PERM);
@@ -184,11 +177,9 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadExtraRoleByUUIDWithMissingPermission() throws Exception {
-		UserInfo info = data().getUserInfo();
-		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
 
-		Role extraRole = roleRoot.create("extra role");
-		group().addRole(extraRole);
+		Role extraRole = roleRoot.create("extra role", group(), user());
 
 		// Revoke read permission from the role
 		role().revokePermissions(extraRole, READ_PERM);
@@ -203,7 +194,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
-		UserInfo info = data().getUserInfo();
 		Role role = role();
 		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 		role.revokePermissions(role, READ_PERM);
@@ -215,17 +205,16 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadRoles() throws Exception {
-		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
 
-		Role noPermRole = roleRoot.create("no_perm_role");
+		Role noPermRole = roleRoot.create("no_perm_role", null, user());
 		final int nRoles = 21;
 
 		role().addPermissions(group(), READ_PERM);
 
 		// Create and save some roles
 		for (int i = 0; i < nRoles; i++) {
-			Role extraRole = roleRoot.create("extra role " + i);
-			group().addRole(extraRole);
+			Role extraRole = roleRoot.create("extra role " + i, group(), user());
 			role().addPermissions(extraRole, READ_PERM);
 		}
 
@@ -250,7 +239,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		// created roles + test data role
 		// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
-		int totalRoles = nRoles + data().getRoles().size();
+		int totalRoles = nRoles + roles().size();
 		int totalPages = (int) Math.ceil(totalRoles / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
@@ -303,9 +292,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 
-		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
-		Role extraRole = roleRoot.create("extra role");
-		group().addRole(extraRole);
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role", group(), user());
 
 		role().addPermissions(extraRole, UPDATE_PERM);
 		RoleUpdateRequest request = new RoleUpdateRequest();
@@ -355,9 +343,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteRoleByUUID() throws Exception {
-		RoleRoot roleRoot = data().getMeshRoot().getRoleRoot();
-		Role extraRole = roleRoot.create("extra role");
-		group().addRole(extraRole);
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role", group(), user());
 		role().addPermissions(extraRole, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteRole(extraRole.getUuid());

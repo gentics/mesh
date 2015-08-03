@@ -19,19 +19,19 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		TagFamilyRoot root = getMeshRoot().getTagFamilyRoot();
+		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 		root.findAll(getRequestUser(), new PagingInfo(1, 10));
 	}
 
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		TagFamilyRoot root = getMeshRoot().getTagFamilyRoot();
+		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 		List<? extends TagFamily> families = root.findAll();
 		assertNotNull(families);
 		assertEquals(2, families.size());
 
-		TagFamilyRoot projectTagFamilyRoot = getProject().getTagFamilyRoot();
+		TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
 		assertNotNull(projectTagFamilyRoot);
 
 		TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors");
@@ -50,7 +50,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 
 	@Override
 	public void testFindByName() {
-		TagFamilyRoot root = getMeshRoot().getTagFamilyRoot();
+		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 		assertNotNull(root);
 		assertNotNull(root.findByName("colors"));
 

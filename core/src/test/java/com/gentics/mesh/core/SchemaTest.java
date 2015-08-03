@@ -122,7 +122,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
+		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
 		newContainer.delete();
@@ -134,11 +134,11 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
-		assertFalse(getRole().hasPermission(Permission.CREATE_PERM, newContainer));
-		getRequestUser().addCRUDPermissionOnRole(getMeshRoot().getSchemaContainerRoot(), Permission.CREATE_PERM, newContainer);
+		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl());
+		assertFalse(role().hasPermission(Permission.CREATE_PERM, newContainer));
+		getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), Permission.CREATE_PERM, newContainer);
 		assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
-				getRole().hasPermission(Permission.CREATE_PERM, newContainer));
+				role().hasPermission(Permission.CREATE_PERM, newContainer));
 
 	}
 
@@ -185,28 +185,28 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
+		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.READ_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
+		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.DELETE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
+		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.UPDATE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		SchemaContainer newContainer = getMeshRoot().getSchemaContainerRoot().create(new SchemaImpl());
+		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl());
 		testPermission(Permission.CREATE_PERM, newContainer);
 	}
 

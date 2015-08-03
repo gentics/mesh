@@ -39,9 +39,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadRolesByGroup() throws Exception {
 		RoleRoot root = meshRoot().getRoleRoot();
-		Role extraRole = root.create("extraRole");
+		Role extraRole = root.create("extraRole", group(), user());
 
-		group().addRole(extraRole);
 		role().addPermissions(extraRole, READ_PERM);
 
 		String uuid = group().getUuid();
@@ -62,7 +61,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroup() throws Exception {
 		RoleRoot root = meshRoot().getRoleRoot();
-		Role extraRole = root.create("extraRole");
+		Role extraRole = root.create("extraRole", null, user());
 
 		role().addPermissions(extraRole, READ_PERM);
 
@@ -91,7 +90,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddNoPermissionRoleToGroup() throws Exception {
 		RoleRoot root = meshRoot().getRoleRoot();
-		Role extraRole = root.create("extraRole");
+		Role extraRole = root.create("extraRole", null, user());
 
 		assertEquals(1, group().getRoles().size());
 		String uuid = group().getUuid();
@@ -106,7 +105,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveRoleFromGroup() throws Exception {
 		RoleRoot root = meshRoot().getRoleRoot();
-		Role extraRole = root.create("extraRole");
+		Role extraRole = root.create("extraRole", null, user());
 
 		group().addRole(extraRole);
 		role().addPermissions(extraRole, READ_PERM);
@@ -128,7 +127,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Group group = group();
 		RoleRoot root = meshRoot().getRoleRoot();
 
-		Role extraRole = root.create("extraRole");
+		Role extraRole = root.create("extraRole", null, user());
 		role().addPermissions(extraRole, READ_PERM);
 
 		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), extraRole.getUuid());
@@ -144,7 +143,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
 		Group group = group();
 		RoleRoot root = meshRoot().getRoleRoot();
-		Role extraRole = root.create("extraRole");
+		Role extraRole = root.create("extraRole", null, user());
 		role().revokePermissions(group, UPDATE_PERM);
 
 		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), extraRole.getUuid());
@@ -168,8 +167,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 		Group group = group();
 
-		Role extraRole = root.create("extraRole");
-		group.addRole(extraRole);
+		Role extraRole = root.create("extraRole", group, user());
 
 		assertNotNull(group.getUuid());
 		assertNotNull(extraRole.getUuid());
@@ -190,8 +188,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Group group = group();
 		RoleRoot root = meshRoot().getRoleRoot();
 
-		Role extraRole = root.create("extraRole");
-		group.addRole(extraRole);
+		Role extraRole = root.create("extraRole", group, user());
 		role().revokePermissions(group, UPDATE_PERM);
 
 		Future<GroupResponse> future = getClient().removeRoleFromGroup(group.getUuid(), extraRole.getUuid());

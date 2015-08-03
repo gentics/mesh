@@ -48,8 +48,7 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testGetUsersByGroup() throws Exception {
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser");
-		group().addUser(extraUser);
+		User extraUser = userRoot.create("extraUser", group(), user());
 		role().addPermissions(extraUser, READ_PERM);
 		String uuid = group().getUuid();
 
@@ -74,7 +73,7 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 		UserRoot userRoot = meshRoot().getUserRoot();
 
-		User extraUser = userRoot.create("extraUser");
+		User extraUser = userRoot.create("extraUser", null, user());
 		role().addPermissions(extraUser, READ_PERM);
 
 		Future<GroupResponse> future = getClient().addUserToGroup("bogus", extraUser.getUuid());
@@ -87,7 +86,7 @@ extends AbstractRestVerticleTest {
 		Group group = group();
 		UserRoot userRoot = meshRoot().getUserRoot();
 
-		User extraUser = userRoot.create("extraUser");
+		User extraUser = userRoot.create("extraUser", null, user());
 		role().addPermissions(extraUser, READ_PERM);
 
 		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
@@ -104,7 +103,7 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
 		Group group = group();
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser");
+		User extraUser = userRoot.create("extraUser", null, user());
 		role().addPermissions(extraUser, READ_PERM);
 		role().revokePermissions(group, UPDATE_PERM);
 
@@ -118,7 +117,7 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
 		Group group = group();
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser");
+		User extraUser = userRoot.create("extraUser", null, user());
 		role().addPermissions(extraUser, DELETE_PERM);
 
 		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
