@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
@@ -29,10 +30,12 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -213,6 +216,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 						}
 						group.setName(requestModel.getName());
 					}
+					searchQueue.put(group.getUuid(), Group.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					transformAndResponde(rc, group);
 				}
 			});

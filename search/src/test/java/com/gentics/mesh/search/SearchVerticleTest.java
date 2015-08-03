@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,7 +53,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		System.out.println("Search Queue size:" + searchQueue.getSize());
 
 		CountDownLatch latch = new CountDownLatch(1);
-		vertx.eventBus().send(SearchVerticle.QUEUE_EVENT_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
 		latch.await();
@@ -70,7 +71,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		JsonObject message = new JsonObject();
 		message.put("uuid", node.getUuid());
 		message.put("type", Node.TYPE);
-//		vertx.eventBus().send(SearchVerticle.QUEUE_EVENT_ADDRESS);
+		//		vertx.eventBus().send(SearchVerticle.QUEUE_EVENT_ADDRESS);
 	}
 
 	@Test

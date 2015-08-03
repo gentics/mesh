@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
@@ -14,11 +14,12 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.vertx.core.http.HttpMethod.PUT;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -35,6 +36,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -42,7 +44,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
-import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -102,7 +103,6 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 
 					TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 
-
 					TagFamilyReference reference = requestModel.getTagFamilyReference();
 					boolean updateTagFamily = false;
 					if (reference != null) {
@@ -122,6 +122,8 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 						if (updateTagFamily) {
 							/* TODO update the tagfamily */
 						}
+						searchQueue.put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 						tx.success();
 					}
 					transformAndResponde(rc, tag);
@@ -157,6 +159,8 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 								getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
 								project.getTagRoot().addTag(newTag);
 								tagCreated.complete(newTag);
+								searchQueue.put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 								transformAndResponde(rc, newTag);
 							}
 						}

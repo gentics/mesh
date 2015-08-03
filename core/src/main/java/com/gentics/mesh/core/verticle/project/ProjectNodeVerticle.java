@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.project;
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
@@ -57,6 +58,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
+
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -234,7 +236,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
 									//Inform elasticsearch about the new element
 									searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-									vertx.eventBus().send("search-queue-entry", null);
+									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 									tx.success();
 									nodeCreated.complete(node);
 								} catch (Exception e) {
@@ -358,7 +360,7 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 										try {
 											container.setFieldFromRest(rc, requestModel.getFields(), schema);
 											searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-											vertx.eventBus().send("search-queue-entry", null);
+											vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 											tx.success();
 											transformAndResponde(rc, node);
 										} catch (MeshSchemaException e) {

@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -80,7 +80,7 @@ public class VerticleHelper {
 							vertex.delete();
 							BootstrapInitializer.getBoot().meshRoot().getSearchQueue()
 									.put(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.DELETE_ACTION);
-							Mesh.vertx().eventBus().send("search-queue-entry", null);
+							Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 							tx.success();
 						}
 						String id = name != null ? uuid + "/" + name : uuid;

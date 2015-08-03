@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.responde;
@@ -67,7 +68,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 @SpringVerticle
 public class SearchVerticle extends AbstractCoreApiVerticle {
 
-	public static final String QUEUE_EVENT_ADDRESS = "search-queue-entry";
 
 	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
 
@@ -110,7 +110,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		route("/*").handler(springConfiguration.authHandler());
 		addSearchEndpoints();
 		addEventBusHandlers();
-		vertx.eventBus().send(QUEUE_EVENT_ADDRESS, true);
+		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true);
 	}
 
 	synchronized private void checkPendingQueueEntries(Handler<AsyncResult<Void>> handler) {
@@ -261,7 +261,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	private void addEventBusHandlers() {
 		EventBus bus = vertx.eventBus();
 
-		bus.consumer(QUEUE_EVENT_ADDRESS, mh -> {
+		bus.consumer(SEARCH_QUEUE_ENTRY_ADDRESS, mh -> {
 			checkPendingQueueEntries(rh -> {
 				if (rh.failed()) {
 					mh.fail(500, rh.cause().getMessage());

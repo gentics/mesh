@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.delete;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
@@ -71,6 +73,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						}
 						role.setName(requestModel.getName());
 					}
+					searchQueue.put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					transformAndResponde(rc, role);
 				}
 			});
@@ -119,6 +123,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 						roleCreated.complete(role);
 					}
 					Role role = roleCreated.result();
+					searchQueue.put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					transformAndResponde(rc, role);
 				}
 			});

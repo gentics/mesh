@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.delete;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
@@ -73,7 +75,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 						}
 						project.setName(requestModel.getName());
 					}
-
+					searchQueue.put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					transformAndResponde(rc, project);
 				}
 			});
@@ -114,11 +117,14 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 							routerStorage.addProjectRouter(project.getName());
 							String msg = "Registered project {" + project.getName() + "}";
 							log.info(msg);
-							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project);
-							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getBaseNode());
-							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getTagFamilyRoot());
-							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getTagRoot());
-							requestUser.addCRUDPermissionOnRole(boot.meshRoot(), CREATE_PERM, project.getNodeRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+							//Inform elasticsearch about the new element
+							searchQueue.put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 							tx.success();
 							projectCreated.complete(project);
 						} catch (Exception e) {

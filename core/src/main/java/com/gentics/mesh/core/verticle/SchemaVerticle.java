@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.delete;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -110,6 +112,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 						SchemaContainer container = root.create(schema);
 						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
+						searchQueue.put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 						transformAndResponde(rc, container);
 					}
 				}
@@ -172,6 +176,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 					/*
 					 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
 					 */
+					searchQueue.put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					transformAndResponde(rc, schemaContainer);
 				}
 			});

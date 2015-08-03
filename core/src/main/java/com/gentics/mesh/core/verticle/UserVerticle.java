@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.delete;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -86,6 +88,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 								rc.fail(uh.cause());
 								tx.failure();
 							} else {
+								searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 								tx.success();
 								transformAndResponde(rc, uh.result());
 							}
@@ -135,6 +139,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 									rc.fail(ch.cause());
 								} else {
 									User createdUser = ch.result();
+									searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 									transformAndResponde(rc, createdUser);
 								}
 							});
