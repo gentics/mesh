@@ -27,6 +27,11 @@ public class SchemaContainerImpl extends AbstractGenericVertex<SchemaResponse> i
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerImpl.class);
 
 	@Override
+	public String getType() {
+		return SchemaContainer.TYPE;
+	}
+
+	@Override
 	public SchemaContainer transformToRest(RoutingContext rc, Handler<AsyncResult<SchemaResponse>> handler) {
 		try {
 			SchemaResponse schemaResponse = JsonUtil.readSchema(getJson(), SchemaResponse.class);

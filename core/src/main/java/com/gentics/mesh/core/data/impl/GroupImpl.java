@@ -28,6 +28,11 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 
 	public static final String NAME_KEY = "name";
 
+	@Override
+	public String getType() {
+		return Group.TYPE;
+	}
+
 	public String getName() {
 		return getProperty(NAME_KEY);
 	}

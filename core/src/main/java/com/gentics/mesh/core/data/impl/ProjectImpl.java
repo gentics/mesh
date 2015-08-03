@@ -33,6 +33,12 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implements Project {
 
 	// TODO index to name + unique constraint
+
+	@Override
+	public String getType() {
+		return Project.TYPE;
+	}
+
 	@Override
 	public String getName() {
 		return getProperty("name");

@@ -13,6 +13,11 @@ import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaResponse> implements MicroschemaContainer {
 
 	@Override
+	public String getType() {
+		return MicroschemaContainer.TYPE;
+	}
+
+	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
 		return null;

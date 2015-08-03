@@ -6,7 +6,14 @@ import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObject;
+import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -14,6 +21,8 @@ import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
 
 import java.io.IOException;
@@ -34,6 +43,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -47,7 +57,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
-import static com.gentics.mesh.util.VerticleHelper.*;
+
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
@@ -56,7 +66,7 @@ import static com.gentics.mesh.util.VerticleHelper.*;
 @SpringVerticle
 public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 
-	// private static final Logger log = LoggerFactory.getLogger(MeshNodeVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectNodeVerticle.class);
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
@@ -221,6 +231,10 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 								try {
 									NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 									container.setFieldFromRest(rc, requestModel.getFields(), schema);
+
+									//Inform elasticsearch about the new element
+									searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+									vertx.eventBus().send("search-queue-entry", null);
 									tx.success();
 									nodeCreated.complete(node);
 								} catch (Exception e) {
@@ -343,6 +357,8 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 										Schema schema = node.getSchema();
 										try {
 											container.setFieldFromRest(rc, requestModel.getFields(), schema);
+											searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+											vertx.eventBus().send("search-queue-entry", null);
 											tx.success();
 											transformAndResponde(rc, node);
 										} catch (MeshSchemaException e) {

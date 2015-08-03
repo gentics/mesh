@@ -55,6 +55,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
+	@Override
+	public String getType() {
+		return Node.TYPE;
+	}
+
 	public List<? extends Tag> getTags() {
 		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
 	}

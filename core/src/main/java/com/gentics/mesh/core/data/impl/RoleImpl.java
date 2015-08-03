@@ -23,6 +23,12 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Role {
 
 	// TODO index on name
+
+	@Override
+	public String getType() {
+		return Role.TYPE;
+	}
+
 	@Override
 	public String getName() {
 		return getProperty("name");

@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static io.vertx.core.http.HttpMethod.POST;
+import static org.elasticsearch.client.Requests.refreshRequest;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -67,7 +68,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	public static final String QUEUE_EVENT_ADDRESS = "search-queue-entry";
-	public static final String FULL_INDEX_EVENT_ADDRESS = "search-queue-full-index";
 
 	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
 
@@ -110,7 +110,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		route("/*").handler(springConfiguration.authHandler());
 		addSearchEndpoints();
 		addEventBusHandlers();
-		//vertx.eventBus().send(FULL_INDEX_EVENT_ADDRESS, true);
+		vertx.eventBus().send(QUEUE_EVENT_ADDRESS, true);
 	}
 
 	synchronized private void checkPendingQueueEntries(Handler<AsyncResult<Void>> handler) {
@@ -119,6 +119,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 		Handler<AsyncResult<JsonObject>> completeHandler = ach -> {
 			if (counter.decrementAndGet() == 0) {
+				elasticSearchNode.client().admin().indices().refresh(refreshRequest()).actionGet();
 				handler.handle(Future.succeededFuture());
 			}
 		};
@@ -260,8 +261,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	private void addEventBusHandlers() {
 		EventBus bus = vertx.eventBus();
 
-		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-		bus.consumer(FULL_INDEX_EVENT_ADDRESS, mh -> {
+		bus.consumer(QUEUE_EVENT_ADDRESS, mh -> {
 			checkPendingQueueEntries(rh -> {
 				if (rh.failed()) {
 					mh.fail(500, rh.cause().getMessage());
@@ -269,19 +269,6 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 					mh.reply(true);
 				}
 			});
-		});
-
-		bus.consumer(QUEUE_EVENT_ADDRESS, mh -> {
-			try {
-				SearchQueueEntry entry = searchQueue.take();
-				if (entry != null) {
-
-				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 		});
 
 	}

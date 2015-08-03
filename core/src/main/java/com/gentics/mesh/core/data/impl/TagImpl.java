@@ -35,6 +35,11 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
+	@Override
+	public String getType() {
+		return Tag.TYPE;
+	}
+
 	public List<? extends Node> getNodes() {
 		return in(HAS_TAG).has(NodeImpl.class).toListExplicit(NodeImpl.class);
 	}
@@ -66,64 +71,64 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 	@Override
 	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
 		Vertx vertx = Mesh.vertx();
-//		vertx.executeBlocking(bc -> {
-			TagResponse restTag = new TagResponse();
+		//		vertx.executeBlocking(bc -> {
+		TagResponse restTag = new TagResponse();
 
-			try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
-					.getFramedThreadedTransactionalGraph())) {
-				restTag.setPermissions(getUser(rc).getPermissionNames(this));
-				restTag.setUuid(getUuid());
+		try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
+				.getFramedThreadedTransactionalGraph())) {
+			restTag.setPermissions(getUser(rc).getPermissionNames(this));
+			restTag.setUuid(getUuid());
 
-				TagFamily tagFamily = getTagFamily();
+			TagFamily tagFamily = getTagFamily();
 
-				if (tagFamily != null) {
-					TagFamilyReference tagFamilyReference = new TagFamilyReference();
-					tagFamilyReference.setName(tagFamily.getName());
-					tagFamilyReference.setUuid(tagFamily.getUuid());
-					restTag.setTagFamilyReference(tagFamilyReference);
-				}
-
-				User creator = getCreator();
-				if (creator != null) {
-					restTag.setCreator(creator.transformToUserReference());
-				}
-
-				User editor = getEditor();
-				if (editor != null) {
-					restTag.setEditor(editor.transformToUserReference());
-				}
-
-				restTag.getFields().setName(getName());
-				tx.success();
+			if (tagFamily != null) {
+				TagFamilyReference tagFamilyReference = new TagFamilyReference();
+				tagFamilyReference.setName(tagFamily.getName());
+				tagFamilyReference.setUuid(tagFamily.getUuid());
+				restTag.setTagFamilyReference(tagFamilyReference);
 			}
 
-			// if (currentDepth < info.getMaxDepth()) {
-			// }
-			// if (info.isIncludeTags()) {
-			// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
-			// tag.getTags().parallelStream().forEachOrdered(tagConsumer);
-			// } else {
-			// restTag.setTags(null);
-			// }
-			//
-			// if (info.isIncludeContents()) {
-			// ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, currentDepth, restTag, tasks);
-			// tag.getContents().parallelStream().forEachOrdered(contentConsumer);
-			// } else {
-			// restTag.setContents(null);
-			// }
-			//
-			// if (info.isIncludeChildTags()) {
-			// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
-			// tag.getChildTags().parallelStream().forEachOrdered(tagConsumer);
-			// } else {
-			// restTag.setChildTags(null);
-			// }
+			User creator = getCreator();
+			if (creator != null) {
+				restTag.setCreator(creator.transformToUserReference());
+			}
 
-//				bc.complete(restTag);
-			resultHandler.handle(Future.succeededFuture(restTag));
+			User editor = getEditor();
+			if (editor != null) {
+				restTag.setEditor(editor.transformToUserReference());
+			}
 
-//			}, resultHandler);
+			restTag.getFields().setName(getName());
+			tx.success();
+		}
+
+		// if (currentDepth < info.getMaxDepth()) {
+		// }
+		// if (info.isIncludeTags()) {
+		// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
+		// tag.getTags().parallelStream().forEachOrdered(tagConsumer);
+		// } else {
+		// restTag.setTags(null);
+		// }
+		//
+		// if (info.isIncludeContents()) {
+		// ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, currentDepth, restTag, tasks);
+		// tag.getContents().parallelStream().forEachOrdered(contentConsumer);
+		// } else {
+		// restTag.setContents(null);
+		// }
+		//
+		// if (info.isIncludeChildTags()) {
+		// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
+		// tag.getChildTags().parallelStream().forEachOrdered(tagConsumer);
+		// } else {
+		// restTag.setChildTags(null);
+		// }
+
+		//				bc.complete(restTag);
+		resultHandler.handle(Future.succeededFuture(restTag));
+
+		//			}, resultHandler);
 		return this;
 	}
 

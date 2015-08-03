@@ -1,12 +1,11 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
-import static org.elasticsearch.client.Requests.refreshRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -46,12 +44,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		FileUtils.deleteDirectory(new File("data"));
 	}
 
-	@Test
-	public void testSearchContent() throws InterruptedException {
-		assertNotNull(elasticSearchNode);
-		Vertx vertx = Mesh.vertx();
-		assertNotNull(vertx);
-
+	private void setupFullIndex() throws InterruptedException {
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 		for (Node node : boot.nodeRoot().findAll()) {
 			searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
@@ -59,12 +52,35 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		System.out.println("Search Queue size:" + searchQueue.getSize());
 
 		CountDownLatch latch = new CountDownLatch(1);
-		vertx.eventBus().send(SearchVerticle.FULL_INDEX_EVENT_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+		vertx.eventBus().send(SearchVerticle.QUEUE_EVENT_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
 		latch.await();
+	}
 
-		elasticSearchNode.client().admin().indices().refresh(refreshRequest()).actionGet();
+	@Test
+	public void testRemoveContent() throws InterruptedException {
+		setupFullIndex();
+
+	}
+
+	@Test
+	public void testAddContent() {
+		Node node = folder("2015");
+		JsonObject message = new JsonObject();
+		message.put("uuid", node.getUuid());
+		message.put("type", Node.TYPE);
+//		vertx.eventBus().send(SearchVerticle.QUEUE_EVENT_ADDRESS);
+	}
+
+	@Test
+	public void testUpdateContent() {
+
+	}
+
+	@Test
+	public void testSearchContent() throws InterruptedException {
+		setupFullIndex();
 
 		QueryBuilder qb = QueryBuilders.queryStringQuery("the");
 		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
@@ -77,13 +93,6 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 			assertNotNull(nodeResponse);
 			assertNotNull(nodeResponse.getUuid());
 		}
-
-		//		Node node = folder("2015");
-		//		JsonObject message = new JsonObject();
-		//		message.put("uuid", node.getUuid());
-		//		message.put("type", Node.TYPE);
-		//		vertx.eventBus().send("search-index-create", message);
-		//		Thread.sleep(5000);
 
 	}
 }

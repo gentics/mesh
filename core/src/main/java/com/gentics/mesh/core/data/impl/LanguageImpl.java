@@ -13,6 +13,11 @@ import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 public class LanguageImpl extends AbstractGenericVertex<LanguageResponse> implements Language {
 
+	@Override
+	public String getType() {
+		return Language.TYPE;
+	}
+
 	// TODO add index
 	@Override
 	public String getName() {

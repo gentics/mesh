@@ -4,6 +4,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
 
 public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
 
+	String getType();
+
 	void setCreator(User user);
 
 	User getCreator();

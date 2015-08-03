@@ -24,6 +24,11 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse> implements TagFamily {
 
+	@Override
+	public String getType() {
+		return TagFamily.TYPE;
+	}
+
 	public String getName() {
 		return getProperty("name");
 	}

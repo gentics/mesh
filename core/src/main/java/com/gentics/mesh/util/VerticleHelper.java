@@ -13,13 +13,17 @@ import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -57,23 +61,32 @@ public class VerticleHelper {
 			RootVertex<T> root) {
 		I18NService i18n = I18NService.getI18n();
 
-		loadObject(rc, "uuid", DELETE_PERM, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
-				GenericVertex<?> node = rh.result();
-				String uuid = node.getUuid();
-				String name = null;
-				if (node instanceof NamedNode) {
-					name = ((NamedNode) node).getName();
-				}
-				FramedThreadedTransactionalGraph fg = MeshSpringConfiguration.getMeshSpringConfiguration().getFramedThreadedTransactionalGraph();
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					node.delete();
-					tx.success();
-				}
-				String id = name != null ? uuid + "/" + name : uuid;
-				responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
-			}
-		});
+		loadObject(
+				rc,
+				"uuid",
+				DELETE_PERM,
+				root,
+				rh -> {
+					if (hasSucceeded(rc, rh)) {
+						GenericVertex<?> vertex = rh.result();
+						String uuid = vertex.getUuid();
+						String name = null;
+						if (vertex instanceof NamedNode) {
+							name = ((NamedNode) vertex).getName();
+						}
+						FramedThreadedTransactionalGraph fg = MeshSpringConfiguration.getMeshSpringConfiguration()
+								.getFramedThreadedTransactionalGraph();
+						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+							vertex.delete();
+							BootstrapInitializer.getBoot().meshRoot().getSearchQueue()
+									.put(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.DELETE_ACTION);
+							Mesh.vertx().eventBus().send("search-queue-entry", null);
+							tx.success();
+						}
+						String id = name != null ? uuid + "/" + name : uuid;
+						responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
+					}
+				});
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(RoutingContext rc, String uuidParameterName,

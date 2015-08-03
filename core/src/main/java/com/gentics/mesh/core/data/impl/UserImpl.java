@@ -63,6 +63,11 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	public static final String ENABLED_FLAG = "enabledFlag";
 
 	@Override
+	public String getType() {
+		return User.TYPE;
+	}
+
+	@Override
 	public void disable() {
 		setProperty(ENABLED_FLAG, false);
 	}

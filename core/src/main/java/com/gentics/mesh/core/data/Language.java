@@ -5,6 +5,8 @@ import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 public interface Language extends GenericVertex<LanguageResponse>, NamedNode {
 
+	public static final String TYPE = "language";
+
 	void setNativeName(String languageNativeName);
 
 	String getNativeName();
