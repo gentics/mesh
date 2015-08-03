@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.data.relationship;
 
+/**
+ * Main class that holds all the graph relationship names.
+ *
+ */
 public class MeshRelationships {
 
 	// Auth Relationships

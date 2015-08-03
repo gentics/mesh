@@ -66,30 +66,23 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implemen
 
 	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
-		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
-	}
-
-	@Override
-	public void setTagFamilyRoot(TagFamilyRoot root) {
-		outE(HAS_TAGFAMILY_ROOT).removeAll();
-		linkOut(root.getImpl(), HAS_TAGFAMILY_ROOT);
-	}
-
-	@Override
-	public TagFamilyRoot createTagFamilyRoot() {
-		TagFamilyRootImpl root = getGraph().addFramedVertex(TagFamilyRootImpl.class);
-		setTagFamilyRoot(root);
+		TagFamilyRoot root = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
+		if (root == null) {
+			root = getGraph().addFramedVertex(TagFamilyRootImpl.class);
+			linkOut(root.getImpl(), HAS_TAGFAMILY_ROOT);
+		}
 		return root;
+
 	}
 
 	@Override
 	public SchemaContainerRoot getSchemaRoot() {
-		return out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
-	}
-
-	@Override
-	public void setSchemaRoot(SchemaContainerRoot schemaRoot) {
-		linkOut(schemaRoot.getImpl(), HAS_SCHEMA_ROOT);
+		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
+		if (root == null) {
+			root = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
+			linkOut(root.getImpl(), HAS_SCHEMA_ROOT);
+		}
+		return root;
 	}
 
 	@Override
@@ -99,12 +92,22 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implemen
 
 	@Override
 	public TagRoot getTagRoot() {
-		return out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefaultExplicit(TagRootImpl.class, null);
+		TagRoot root = out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefaultExplicit(TagRootImpl.class, null);
+		if (root == null) {
+			root = getGraph().addFramedVertex(TagRootImpl.class);
+			linkOut(root.getImpl(), HAS_TAG_ROOT);
+		}
+		return root;
 	}
 
 	@Override
 	public NodeRoot getNodeRoot() {
-		return out(HAS_NODE_ROOT).has(NodeRootImpl.class).nextOrDefaultExplicit(NodeRootImpl.class, null);
+		NodeRoot root = out(HAS_NODE_ROOT).has(NodeRootImpl.class).nextOrDefaultExplicit(NodeRootImpl.class, null);
+		if (root == null) {
+			root = getGraph().addFramedVertex(NodeRootImpl.class);
+			linkOut(root.getImpl(), HAS_NODE_ROOT);
+		}
+		return root;
 	}
 
 	@Override
@@ -139,42 +142,10 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implemen
 	}
 
 	@Override
-	public TagRoot createTagRoot() {
-		TagRoot root = getGraph().addFramedVertex(TagRootImpl.class);
-		setTagRoot(root);
-		return root;
-	}
-
-	@Override
-	public NodeRoot createNodeRoot() {
-		NodeRoot nodeRoot = getNodeRoot();
-		if (nodeRoot == null) {
-			nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
-			setNodeRoot(nodeRoot);
-		}
-		return nodeRoot;
-	}
-
-	@Override
-	public void setNodeRoot(NodeRoot root) {
-		linkOut(root.getImpl(), HAS_NODE_ROOT);
-	}
-
-	@Override
-	public void setTagRoot(TagRoot root) {
-		linkOut(root.getImpl(), HAS_TAG_ROOT);
-	}
-
-	@Override
 	public void delete() {
 		// TODO handle this correctly
 		getVertex().remove();
-		//TODO handle: 		routerStorage.removeProjectRouter(name);
-	}
-
-	@Override
-	public ProjectImpl getImpl() {
-		return this;
+		// TODO handle: routerStorage.removeProjectRouter(name);
 	}
 
 }

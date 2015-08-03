@@ -9,6 +9,10 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshSchemaException;
 
+/**
+ * A node field container is a aggregation node that holds localized fields.
+ *
+ */
 public interface NodeFieldContainer extends FieldContainer, MicroschemaFieldContainer {
 
 	Field getRestField(String fieldKey, FieldSchema fieldSchema);

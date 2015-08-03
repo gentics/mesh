@@ -268,15 +268,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return null;
 	}
 
-	public Page<? extends Tag> getTags(MeshAuthUser requestUser, String projectName, PagingInfo pagingInfo) throws InvalidArgumentException {
-
-		// TODO filter permissions
-		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
-		Page<? extends Tag> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
-		return items;
-	}
-
 	@Override
 	public void delete() {
 		// TODO handle linked containers

@@ -5,10 +5,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PROJ
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
@@ -39,22 +36,19 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		project.setName(name);
 
-		NodeRoot nodeRoot = project.createNodeRoot();
-		project.setNodeRoot(nodeRoot);
+		project.getNodeRoot();
 
 		project.createBaseNode(creator);
 
 		project.setCreator(creator);
 		project.setEditor(creator);
 
-		project.createTagRoot();
+		project.getTagRoot();
+		project.getSchemaRoot();
+		project.getTagFamilyRoot();
 
-		SchemaContainerRoot schemaRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
-		project.setSchemaRoot(schemaRoot);
 		addItem(project);
 
-		TagFamilyRoot tagFamilyRoot = project.createTagFamilyRoot();
-		project.setTagFamilyRoot(tagFamilyRoot);
 		return project;
 	}
 

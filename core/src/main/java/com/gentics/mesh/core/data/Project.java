@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -16,37 +15,57 @@ public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 
 	Node createBaseNode(User creator);
 
+	/**
+	 * Return the base node of the project.
+	 * 
+	 * @return
+	 */
 	Node getBaseNode();
 
+	/**
+	 * Set the base node for the project.
+	 * 
+	 * @param baseNode
+	 */
 	void setBaseNode(Node baseNode);
 
 	TagFamilyRoot getTagFamilyRoot();
 
 	SchemaContainerRoot getSchemaRoot();
 
-	void setSchemaRoot(SchemaContainerRoot schemaRoot);
-
-	TagFamilyRoot createTagFamilyRoot();
-
-	void setTagFamilyRoot(TagFamilyRoot tagFamilyRoot);
-
+	/**
+	 * Return a list of languages that were assigned to the project.
+	 * 
+	 * @return
+	 */
 	List<? extends Language> getLanguages();
 
+	/**
+	 * Unassign the language from the project.
+	 * 
+	 * @param language
+	 */
 	void removeLanguage(Language language);
 
+	/**
+	 * Assign the given language to the project.
+	 * 
+	 * @param language
+	 */
 	void addLanguage(Language language);
 
+	/**
+	 * Return the tag root aggregation vertex of the project. Internally this method will create the tag root when it has not yet been created.
+	 * 
+	 * @return
+	 */
 	TagRoot getTagRoot();
 
-	TagRoot createTagRoot();
-
+	/**
+	 * Return the node root aggregation vertex of the project. Internally this method will create the node root when it has not yet been created.
+	 * 
+	 * @return
+	 */
 	NodeRoot getNodeRoot();
 
-	NodeRoot createNodeRoot();
-
-	void setTagRoot(TagRoot root);
-
-	void setNodeRoot(NodeRoot root);
-
-	ProjectImpl getImpl();
 }

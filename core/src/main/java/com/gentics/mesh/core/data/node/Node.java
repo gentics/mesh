@@ -24,19 +24,55 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	public static final String TYPE = "node";
 
+	/**
+	 * Add the given tag to the list of tags for this node.
+	 * 
+	 * @param tag
+	 */
 	void addTag(Tag tag);
 
+	/**
+	 * Remove the given tag from the list of tags for this node.
+	 * 
+	 * @param tag
+	 */
 	void removeTag(Tag tag);
 
+	/**
+	 * Return a list of tags that were assigned to this node.
+	 * 
+	 * @return
+	 */
+	List<? extends Tag> getTags();
+
+	/**
+	 * Return the schema container that holds the schema that is used in combination with this node.
+	 * 
+	 * @return
+	 */
 	SchemaContainer getSchemaContainer();
 
-	Schema getSchema() throws IOException;
-
+	/**
+	 * Set the schema container that is used in combination with this node.
+	 * 
+	 * @param schema
+	 */
 	void setSchemaContainer(SchemaContainer schema);
 
-	NodeFieldContainer getFieldContainer(Language language);
+	/**
+	 * Shortcut method for getSchemaContainer().getSchema()
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	Schema getSchema() throws IOException;
 
-	List<? extends Tag> getTags();
+	/**
+	 * Return the field container for the given language.
+	 * @param language
+	 * @return
+	 */
+	NodeFieldContainer getFieldContainer(Language language);
 
 	NodeFieldContainer getOrCreateFieldContainer(Language language);
 
@@ -46,15 +82,17 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	void createLink(Node node);
 
-	NodeImpl getImpl();
-
 	List<String> getAvailableLanguageNames();
-	
 
 	Project getProject();
 
 	void setProject(Project project);
 
+	/**
+	 * Return the list of children for this node.
+	 * 
+	 * @return
+	 */
 	List<? extends Node> getChildren();
 
 	void setParentNode(Node parentNode);
