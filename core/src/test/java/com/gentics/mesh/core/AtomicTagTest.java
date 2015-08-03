@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -24,8 +23,8 @@ public class AtomicTagTest extends AbstractDBTest {
 		User user = meshRoot.getUserRoot().create("test", group(), user());
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		assertNotNull(languageRoot);
-		Language language = languageRoot.create("Deutsch", "de");
-		Language english = languageRoot.create("English", "en");
+		languageRoot.create("Deutsch", "de");
+		languageRoot.create("English", "en");
 
 		meshRoot.getTagFamilyRoot();
 		meshRoot.getTagRoot();
@@ -33,9 +32,9 @@ public class AtomicTagTest extends AbstractDBTest {
 		ProjectRoot projectRoot = meshRoot.getProjectRoot();
 		Project project = projectRoot.create("dummy", user);
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-		TagFamily tagFamily = tagFamilyRoot.create("basic");
+		TagFamily tagFamily = tagFamilyRoot.create("basic", user);
 
-		Tag tag = tagFamily.create("dummyName", data().getProject());
+		Tag tag = tagFamily.create("dummyName", project());
 		String uuid = tag.getUuid();
 		assertNotNull(tag);
 		assertEquals("dummyName", tag.getName());

@@ -51,7 +51,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	public void testTagFamilyTagCreation() {
 		final String TAG_FAMILY_NAME = "mycustomtagFamily";
-		TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME);
+		TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
 		assertNotNull(tagFamily);
 		assertEquals(TAG_FAMILY_NAME, tagFamily.getName());
 		assertNull(tagFamily.getDescription());

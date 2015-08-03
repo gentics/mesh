@@ -9,9 +9,9 @@ import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.delete;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -118,7 +118,7 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 				if (requestUser.hasPermission(root, CREATE_PERM)) {
 					TagFamily tagFamily = null;
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						tagFamily = root.create(requestModel.getName());
+						tagFamily = root.create(requestModel.getName(), requestUser);
 						root.addTagFamily(tagFamily);
 						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
 						tx.success();

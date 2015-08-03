@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -30,11 +31,15 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(Schema schema) {
+	public SchemaContainer create(Schema schema, User creator) {
 		SchemaContainerImpl schemaContainer = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		schemaContainer.setSchema(schema);
 		schemaContainer.setName(schema.getName());
 		addSchemaContainer(schemaContainer);
+		schemaContainer.setCreator(creator);
+		schemaContainer.setCreationTimestamp(System.currentTimeMillis());
+		schemaContainer.setEditor(creator);
+		schemaContainer.setLastEditedTimestamp(System.currentTimeMillis());
 		return schemaContainer;
 	}
 

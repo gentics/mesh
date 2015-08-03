@@ -256,7 +256,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
 				} else {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						Group group = groupRoot.create(requestModel.getName());
+						Group group = groupRoot.create(requestModel.getName(), requestUser);
 						requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
 						tx.success();
 						transformAndResponde(rc, group);

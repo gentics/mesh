@@ -37,7 +37,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors");
 		assertNotNull(projectTagFamily);
 
-		assertNotNull(projectTagFamilyRoot.create("bogus"));
+		assertNotNull(projectTagFamilyRoot.create("bogus", user()));
 		assertEquals(3, projectTagFamilyRoot.findAll().size());
 		assertEquals(3, root.findAll().size());
 	}

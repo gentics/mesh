@@ -143,7 +143,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	 */
 	@Override
 	public List<? extends Group> getGroups() {
-		//TODO add permission handling?
+		// TODO add permission handling?
 		return out(HAS_USER).has(GroupImpl.class).toListExplicit(GroupImpl.class);
 	}
 
@@ -206,7 +206,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 			if (node.getProject() != null) {
 				userNodeReference.setProjectName(node.getProject().getName());
 			} else {
-				//TODO handle this case
+				// TODO handle this case
 			}
 			restUser.setNodeReference(userNodeReference);
 		}
@@ -291,15 +291,15 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 			setUsername(requestModel.getUsername());
 		}
 
-		if (!isEmpty(requestModel.getFirstname()) && getFirstname() != requestModel.getFirstname()) {
+		if (!isEmpty(requestModel.getFirstname()) && !getFirstname().equals(requestModel.getFirstname())) {
 			setFirstname(requestModel.getFirstname());
 		}
 
-		if (!isEmpty(requestModel.getLastname()) && getLastname() != requestModel.getLastname()) {
+		if (!isEmpty(requestModel.getLastname()) && !getLastname().equals(requestModel.getLastname())) {
 			setLastname(requestModel.getLastname());
 		}
 
-		if (!isEmpty(requestModel.getEmailAddress()) && getEmailAddress() != requestModel.getEmailAddress()) {
+		if (!isEmpty(requestModel.getEmailAddress()) && !getEmailAddress().equals(requestModel.getEmailAddress())) {
 			setEmailAddress(requestModel.getEmailAddress());
 		}
 

@@ -32,7 +32,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		GroupRoot groupRoot = meshRoot().getGroupRoot();
 
-		Group group = groupRoot.create("test group");
+		Group group = groupRoot.create("test group", user());
 		User user = userRoot.create("testuser", group(), user());
 
 		assertEquals("The group should contain one member.", 1, group.getUsers().size());
@@ -73,7 +73,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 		GroupRoot root = meshRoot().getGroupRoot();
 		int nGroupsBefore = root.findAll().size();
 		GroupRoot groupRoot = meshRoot().getGroupRoot();
-		assertNotNull(groupRoot.create("test group2"));
+		assertNotNull(groupRoot.create("test group2", user()));
 
 		int nGroupsAfter = root.findAll().size();
 		assertEquals(nGroupsBefore + 1, nGroupsAfter);
@@ -112,7 +112,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		Group group = meshRoot().getGroupRoot().create("newGroup");
+		Group group = meshRoot().getGroupRoot().create("newGroup", user());
 		assertNotNull(group);
 		String uuid = group.getUuid();
 		group.delete();
@@ -126,7 +126,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
 		User user = user();
-		Group group = root.getGroupRoot().create("newGroup");
+		Group group = root.getGroupRoot().create("newGroup", user);
 		assertFalse(user.hasPermission(group, Permission.CREATE_PERM));
 		user.addCRUDPermissionOnRole(root.getGroupRoot(), Permission.CREATE_PERM, group);
 		assertTrue(user.hasPermission(group, Permission.CREATE_PERM));
@@ -145,7 +145,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		Group group = meshRoot().getGroupRoot().create("newGroup");
+		Group group = meshRoot().getGroupRoot().create("newGroup", user());
 		assertNotNull(group);
 		assertEquals("newGroup", group.getName());
 	}
@@ -153,7 +153,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		Group group = meshRoot().getGroupRoot().create("newGroup");
+		Group group = meshRoot().getGroupRoot().create("newGroup", user());
 		assertNotNull(group);
 		assertEquals("newGroup", group.getName());
 		String uuid = group.getUuid();

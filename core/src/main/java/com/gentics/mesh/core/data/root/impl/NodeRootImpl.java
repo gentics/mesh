@@ -54,13 +54,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// TODO check whether the mesh node is in fact a container node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		node.setSchemaContainer(container);
-		node.setCreator(creator);
-		node.setEditor(creator);
-		
-		//TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
+
+		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
 		project.getNodeRoot().addNode(node);
 		node.setProject(project);
-		//TODO handle timestamps
+		node.setCreator(creator);
+		node.setCreationTimestamp(System.currentTimeMillis());
+		node.setEditor(creator);
+		node.setLastEditedTimestamp(System.currentTimeMillis());
+
 		addNode(node);
 		return node;
 	}

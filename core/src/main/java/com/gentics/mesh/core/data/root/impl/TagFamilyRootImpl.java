@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 
@@ -20,7 +21,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamily create(String name) {
+	public TagFamily create(String name, User creator) {
 
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
 		tagFamily.setName(name);

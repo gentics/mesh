@@ -169,10 +169,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupRoot root = meshRoot().getGroupRoot();
 		// Create and save some groups
 		final int nGroups = 21;
-		Group extraGroupWithNoPerm = root.create("no_perm_group");
+		Group extraGroupWithNoPerm = root.create("no_perm_group", user());
 
 		for (int i = 0; i < nGroups; i++) {
-			Group group = root.create("group_" + i);
+			Group group = root.create("group_" + i, user());
 			role().addPermissions(group, READ_PERM);
 		}
 
@@ -321,7 +321,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String alreadyUsedName = "extraGroup";
 
 		// Create a group which occupies the name
-		assertNotNull(groupRoot.create(alreadyUsedName));
+		assertNotNull(groupRoot.create(alreadyUsedName, user()));
 
 		role().addPermissions(group, UPDATE_PERM);
 		GroupUpdateRequest request = new GroupUpdateRequest();

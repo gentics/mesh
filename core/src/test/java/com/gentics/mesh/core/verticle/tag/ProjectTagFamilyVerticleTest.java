@@ -67,7 +67,6 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", tagFamily.getUuid());
 	}
 
-	
 	@Test
 	public void testTagFamilyTagList() {
 		TagFamily tagFamily = data().getTagFamilies().get("colors");
@@ -75,13 +74,13 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 	}
-	
+
 	@Test
 	public void testTagFamilyListing() throws UnknownHostException, InterruptedException {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		TagFamily basicTagFamily = tagFamily("basic");
-		TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily");
+		TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
 		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 		// noPermTag.addProject(project());
 		assertNotNull(noPermTagFamily.getUuid());
@@ -181,7 +180,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testTagFamilyCreateWithNoName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
-		//Don't set the name
+		// Don't set the name
 		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "tagfamily_name_not_set");

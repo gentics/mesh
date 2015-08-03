@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP;
 
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 
@@ -30,10 +31,16 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public Group create(String name) {
+	public Group create(String name, User creator) {
 		GroupImpl group = getGraph().addFramedVertex(GroupImpl.class);
 		group.setName(name);
 		addGroup(group);
+
+		group.setCreator(creator);
+		group.setCreationTimestamp(System.currentTimeMillis());
+		group.setEditor(creator);
+		group.setLastEditedTimestamp(System.currentTimeMillis());
+
 		return group;
 	}
 

@@ -314,7 +314,7 @@ public class DemoDataProvider {
 		users.put(username, user);
 
 		String groupName = username + "_group";
-		Group group = root.getGroupRoot().create(groupName);
+		Group group = root.getGroupRoot().create(groupName, user);
 		group.addUser(user);
 		group.setCreator(user);
 		group.setCreationTimestamp(System.currentTimeMillis());
@@ -345,7 +345,7 @@ public class DemoDataProvider {
 
 		// Guest Group / Role
 
-		Group guests = root.getGroupRoot().create("guests");
+		Group guests = root.getGroupRoot().create("guests", userInfo.getUser());
 		groups.put("guests", guests);
 
 		Role guestRole = root.getRoleRoot().create("guest_role", guests, userInfo.getUser());
@@ -363,7 +363,7 @@ public class DemoDataProvider {
 		}
 		// Extra Groups
 		for (int i = 0; i < 12 * multiplicator; i++) {
-			Group group = groupRoot.create("extra_group_" + i);
+			Group group = groupRoot.create("extra_group_" + i, userInfo.getUser());
 			setCreatorEditor(group);
 			groups.put(group.getName(), group);
 		}
@@ -390,12 +390,12 @@ public class DemoDataProvider {
 	// }
 
 	private void addTagFamilies() {
-		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic");
+		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic", userInfo.getUser());
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
 		setCreatorEditor(basicTagFamily.getImpl());
 
-		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors");
+		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors", userInfo.getUser());
 		colorTagFamily.setDescription("Description for color tag family");
 		setCreatorEditor(colorTagFamily.getImpl());
 		tagFamilies.put("colors", colorTagFamily);
@@ -444,7 +444,7 @@ public class DemoDataProvider {
 		schema.addField(contentFieldSchema);
 
 		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema);
+		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
 		blogPostSchemaContainer.setSchema(schema);
 
 		schemaContainers.put("blogpost", blogPostSchemaContainer);

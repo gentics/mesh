@@ -105,18 +105,18 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllSchemaList() throws Exception {
 
-		SchemaContainerRoot schemaRoot = data().getMeshRoot().getSchemaContainerRoot();
+		SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 		final int nSchemas = 22;
 		Schema schema = new SchemaImpl();
 		schema.setName("No Perm Schema");
-		SchemaContainer noPermSchema = schemaRoot.create(schema);
+		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
 		Schema dummySchema = new SchemaImpl();
 		dummySchema.setName("dummy");
 		noPermSchema.setSchema(dummySchema);
 		for (int i = 0; i < nSchemas; i++) {
 			schema = new SchemaImpl();
 			schema.setName("extra_schema_" + i);
-			SchemaContainer extraSchema = schemaRoot.create(schema);
+			SchemaContainer extraSchema = schemaRoot.create(schema, user());
 			extraSchema.setSchema(dummySchema);
 			role().addPermissions(extraSchema, READ_PERM);
 		}
@@ -281,7 +281,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		fail("unspecified test");
-		String json = "error";
+//		String json = "error";
 		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {

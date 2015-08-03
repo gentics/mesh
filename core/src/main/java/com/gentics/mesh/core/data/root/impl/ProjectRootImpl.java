@@ -35,13 +35,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	public Project create(String name, User creator) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		project.setName(name);
-
 		project.getNodeRoot();
-
 		project.createBaseNode(creator);
 
 		project.setCreator(creator);
+		project.setCreationTimestamp(System.currentTimeMillis());
 		project.setEditor(creator);
+		project.setLastEditedTimestamp(System.currentTimeMillis());
 
 		project.getTagRoot();
 		project.getSchemaRoot();

@@ -21,7 +21,7 @@ public class SelectFieldTest extends AbstractDBTest {
 
 		SelectField<StringField> field = container.createSelect("dummySelect");
 		field.addOption(new StringFieldImpl("test", null));
-		assertEquals(1, field.getOptions());
+		assertEquals(1, field.getOptions().size());
 	}
 
 	@Test
@@ -37,7 +37,7 @@ public class SelectFieldTest extends AbstractDBTest {
 	}
 
 	@Test
-	@Ignore("Not yet implemented")	
+	@Ignore("Not yet implemented")
 	public void testBooleanSelection() {
 		fail("Not yet implemented");
 	}

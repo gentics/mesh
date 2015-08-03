@@ -306,6 +306,26 @@ public class BootstrapInitializer {
 		ProjectRoot projectRoot = meshRoot.getProjectRoot();
 		SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
 
+		// Verify that an admin user exists
+		User adminUser = userRoot.findByUsername("admin");
+		if (adminUser == null) {
+			adminUser = userRoot.create("admin", null, adminUser);
+
+			adminUser.setCreator(adminUser);
+			adminUser.setCreationTimestamp(System.currentTimeMillis());
+			adminUser.setEditor(adminUser);
+			adminUser.setLastEditedTimestamp(System.currentTimeMillis());
+
+			System.out.println("Enter admin password:");
+			// Scanner scanIn = new Scanner(System.in);
+			// String pw = scanIn.nextLine();
+			// TODO remove later on
+			String pw = "finger";
+			// scanIn.close();
+			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
+			log.info("Stored admin user");
+		}
+
 		// Content
 		SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");
 		if (contentSchemaContainer == null) {
@@ -338,7 +358,7 @@ public class BootstrapInitializer {
 
 			schema.setBinary(false);
 			schema.setFolder(false);
-			contentSchemaContainer = schemaContainerRoot.create(schema);
+			contentSchemaContainer = schemaContainerRoot.create(schema, adminUser);
 
 		}
 
@@ -358,7 +378,7 @@ public class BootstrapInitializer {
 
 			schema.setBinary(false);
 			schema.setFolder(true);
-			folderSchemaContainer = schemaContainerRoot.create(schema);
+			folderSchemaContainer = schemaContainerRoot.create(schema, adminUser);
 
 		}
 
@@ -384,36 +404,16 @@ public class BootstrapInitializer {
 
 			schema.setBinary(true);
 			schema.setFolder(false);
-			binarySchemaContainer = schemaContainerRoot.create(schema);
+			binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
 		}
 
 		log.info("Stored mesh root node");
 
 		initLanguages(languageRoot);
 
-		// Verify that an admin user exists
-		User adminUser = userRoot.findByUsername("admin");
-		if (adminUser == null) {
-			adminUser = userRoot.create("admin", null, adminUser);
-
-			adminUser.setCreator(adminUser);
-			adminUser.setCreationTimestamp(System.currentTimeMillis());
-			adminUser.setEditor(adminUser);
-			adminUser.setLastEditedTimestamp(System.currentTimeMillis());
-
-			System.out.println("Enter admin password:");
-			// Scanner scanIn = new Scanner(System.in);
-			// String pw = scanIn.nextLine();
-			// TODO remove later on
-			String pw = "finger";
-			// scanIn.close();
-			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
-			log.info("Stored admin user");
-		}
-
 		Group adminGroup = groupRoot.findByName("admin");
 		if (adminGroup == null) {
-			adminGroup = groupRoot.create("admin");
+			adminGroup = groupRoot.create("admin", adminUser);
 			adminGroup.addUser(adminUser);
 			log.info("Stored admin group");
 		}

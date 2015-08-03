@@ -110,7 +110,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 				SchemaContainerRoot root = boot.schemaContainerRoot();
 				if (requestUser.hasPermission(root, CREATE_PERM)) {
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						SchemaContainer container = root.create(schema);
+						SchemaContainer container = root.create(schema, requestUser);
 						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
 						searchQueue.put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
@@ -151,7 +151,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			// rc.fail(trh.cause());
 			// }
 			// SchemaContainer schemaContainer = schemaCreated.result();
-			//responde(rc, toJson(schema.transformToRest(requestUser)));
+			// responde(rc, toJson(schema.transformToRest(requestUser)));
 			// });
 		});
 
