@@ -63,7 +63,7 @@ public class VerticleHelper {
 
 		loadObject(
 				rc,
-				"uuid",
+				uuidParameterName,
 				DELETE_PERM,
 				root,
 				rh -> {

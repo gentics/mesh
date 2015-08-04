@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -120,7 +121,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(0, tagList.getData().size());
 		assertEquals(4242, tagList.getMetainfo().getCurrentPage());
 		assertEquals(25, tagList.getMetainfo().getPerPage());
-		assertEquals(data().getTags().size(), tagList.getMetainfo().getTotalCount());
+		assertEquals(tags().size(), tagList.getMetainfo().getTotalCount());
 		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 	}
 
@@ -222,6 +223,8 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 				assertNull("The tag should have been deleted", rh.result());
 			});
 		}
+		Project project = boot.projectRoot().findByName(PROJECT_NAME);
+		assertNotNull(project);
 	}
 
 	@Test

@@ -141,7 +141,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 	}
 
 	public void delete() {
-		e().removeAll();
+		outE().removeAll();
 		getVertex().remove();
 	}
 
