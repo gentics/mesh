@@ -28,7 +28,7 @@ import com.gentics.mesh.json.JsonUtil;
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	MeshSpringConfiguration springConfiguration;
+	private MeshSpringConfiguration springConfiguration;
 
 	public AuthenticationVerticle() {
 		super("auth");

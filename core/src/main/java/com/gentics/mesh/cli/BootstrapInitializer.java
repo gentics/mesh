@@ -225,10 +225,16 @@ public class BootstrapInitializer {
 	public MeshRoot meshRoot() {
 		// Check reference graph and finally create the node when it can't be found.
 		if (meshRoot == null) {
-			meshRoot = fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-			if (meshRoot == null) {
-				meshRoot = fg.addFramedVertex(MeshRootImpl.class);
-				log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
+			synchronized (BootstrapInitializer.class) {
+				MeshRoot foundMeshRoot = fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+				if (foundMeshRoot == null) {
+					meshRoot = fg.addFramedVertex(MeshRootImpl.class);
+					if (log.isInfoEnabled()) {
+						log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
+					}
+				} else {
+					meshRoot = foundMeshRoot;
+				}
 			}
 		}
 		return meshRoot;

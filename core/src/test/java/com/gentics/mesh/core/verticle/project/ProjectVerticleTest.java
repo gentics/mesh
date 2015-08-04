@@ -279,8 +279,9 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteProjectByUUID() throws Exception {
 		Project project = project();
 		String uuid = project.getUuid();
-		String name = project.getName();
 		assertNotNull(uuid);
+		String name = project.getName();
+		assertNotNull(name);
 		role().addPermissions(project, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);

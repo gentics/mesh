@@ -47,17 +47,19 @@ public class MeshAuthProvider implements AuthProvider {
 			}
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
-				//TODO check if user is enabled
+				// TODO check if user is enabled
 				boolean hashMatches = false;
 				if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
-					log.debug("The account password hash or token password string are invalid.");
+					if (log.isDebugEnabled()) {
+						log.debug("The account password hash or token password string are invalid.");
+					}
 				} else {
 					hashMatches = springConfiguration.passwordEncoder().matches(password, accountPasswordHash);
 				}
 				if (hashMatches) {
 					fut.complete(user);
 				} else {
-					new VertxException("Invalid credentials!");
+					throw new VertxException("Invalid credentials!");
 				}
 			} else {
 				if (log.isDebugEnabled()) {

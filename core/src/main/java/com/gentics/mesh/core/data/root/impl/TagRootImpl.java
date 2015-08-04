@@ -26,7 +26,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public void removeTag(Tag tag) {
-		removeTag(tag);
+		removeItem(tag);
 	}
 
 	@Override

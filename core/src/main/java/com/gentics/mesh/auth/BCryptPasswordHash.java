@@ -37,12 +37,16 @@ public class BCryptPasswordHash {
 		try {
 			String tokenPasswordStr = String.valueOf((char[]) tokenPassword);
 			if (StringUtils.isEmpty(accountPasswordHash) && tokenPasswordStr != null) {
-				log.debug("The account password hash or token password string are invalid.");
+				if (log.isDebugEnabled()) {
+					log.debug("The account password hash or token password string are invalid.");
+				}
 				return false;
 			}
 			return springConfiguration.passwordEncoder().matches(tokenPasswordStr, accountPasswordHash);
 		} catch (ClassCastException e) {
-			log.error("The given token password could not be transformed", e);
+			if (log.isErrorEnabled()) {
+				log.error("The given token password could not be transformed", e);
+			}
 			return false;
 		}
 

@@ -42,7 +42,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestAssert;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
