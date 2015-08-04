@@ -75,6 +75,13 @@
 			<version>2.4</version>
 		</dependency>
 
+		<!-- Search -->
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>1.7.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-core</artifactId>

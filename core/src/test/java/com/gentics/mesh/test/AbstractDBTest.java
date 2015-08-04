@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestAssert;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -67,8 +68,14 @@ public abstract class AbstractDBTest {
 	private I18NService i18n;
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException {
-		purgeDatabase();
-		dataProvider.setup(1);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			purgeDatabase();
+			tx.success();
+		}
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			dataProvider.setup(1);
+			tx.success();
+		}
 	}
 
 	@Deprecated

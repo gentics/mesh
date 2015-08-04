@@ -182,23 +182,29 @@ public class VerticleHelper {
 			handler.handle(Future.failedFuture("Could not find root node."));
 		} else {
 			I18NService i18n = I18NService.getI18n();
-			root.findByUuid(uuid, rh -> {
-				if (rh.failed()) {
-					handler.handle(Future.failedFuture(rh.cause()));
-				} else {
-					T node = rh.result();
-					if (node == null) {
-						handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
-					} else {
-						MeshAuthUser requestUser = getUser(rc);
-						if (requestUser.hasPermission(node, perm)) {
-							handler.handle(Future.succeededFuture(node));
-						} else {
-							handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
-						}
-					}
-				}
-			});
+			try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
+					.getFramedThreadedTransactionalGraph())) {
+				root.findByUuid(
+						uuid,
+						rh -> {
+							if (rh.failed()) {
+								handler.handle(Future.failedFuture(rh.cause()));
+							} else {
+								T node = rh.result();
+								if (node == null) {
+									handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
+								} else {
+									MeshAuthUser requestUser = getUser(rc);
+									if (requestUser.hasPermission(node, perm)) {
+										handler.handle(Future.succeededFuture(node));
+									} else {
+										handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm",
+												node.getUuid()))));
+									}
+								}
+							}
+						});
+			}
 		}
 
 	}

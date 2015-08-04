@@ -1,45 +1,33 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.delete;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.web.Route;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.core.verticle.handler.SchemaContainerCRUDHandler;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class SchemaVerticle extends AbstractCoreApiVerticle {
+
+	@Autowired
+	private SchemaContainerCRUDHandler crudHandler;
 
 	protected SchemaVerticle() {
 		super("schemas");
@@ -98,63 +86,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
-			SchemaCreateRequest schema;
-			try {
-				schema = JsonUtil.readSchema(rc.getBodyAsString(), SchemaCreateRequest.class);
-				if (StringUtils.isEmpty(schema.getName())) {
-					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "schema_missing_name")));
-					return;
-				}
-				SchemaContainerRoot root = boot.schemaContainerRoot();
-				if (requestUser.hasPermission(root, CREATE_PERM)) {
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						SchemaContainer container = root.create(schema, requestUser);
-						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
-						searchQueue.put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-						transformAndResponde(rc, container);
-					}
-				}
-			} catch (Exception e1) {
-				rc.fail(e1);
-			}
-
-			// if (StringUtils.isEmpty(requestModel.getProjectUuid())) {
-			// rc.fail(new HttpStatusCodeErrorException(400, i18n.get(rc, "schema_missing_project_uuid")));
-			// return;
-			// }
-			// Future<SchemaContainer> schemaCreated = Future.future();
-			// rcs.loadObjectByUuid(rc, requestModel.getProjectUuid(), CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
-			// rcs.loadObjectByUuid(rc, CREATE_PERM, Project.class, (AsyncResult<Project> srh) -> {
-			// Project project = srh.result();
-			// SchemaContainerRoot root = project.getSchemaRoot();
-			// SchemaContainer schema = root.create(requestModel.getName());
-			// schema.setDescription(requestModel.getDescription());
-			// schema.setDisplayName(requestModel.getDisplayName());
-			//
-			// for (PropertyTypeSchemaResponse restPropSchema : requestModel.getPropertyTypeSchemas()) {
-			// // TODO validate field?
-			// PropertyType type = PropertyType.valueOfName(restPropSchema.getType());
-			// String key = restPropSchema.getKey();
-			// BasicPropertyType propSchema = schema.createBasicPropertyTypeSchema(key, type);
-			// propSchema.setDescription(restPropSchema.getDesciption());
-			// propSchema.setType(type);
-			// schema.addPropertyTypeSchema(propSchema);
-			// }
-			// schema.addProject(project);
-			// roleService.addCRUDPermissionOnRole(requestUser, project, CREATE_PERM, schema);
-			// schemaCreated.complete(schema);
-			// }, trh -> {
-			// if (trh.failed()) {
-			// rc.fail(trh.cause());
-			// }
-			// SchemaContainer schemaContainer = schemaCreated.result();
-			// responde(rc, toJson(schema.transformToRest(requestUser)));
-			// });
+			crudHandler.handleCreate(rc);
 		});
-
 	}
 
 	// TODO update modification timestamps
@@ -162,48 +95,24 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "uuid", UPDATE_PERM, boot.schemaContainerRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					SchemaContainer schemaContainer = rh.result();
-					SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
-
-					if (StringUtils.isEmpty(requestModel.getName())) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-						return;
-					}
-
-					schemaContainer.setSchema(requestModel);
-					/*
-					 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
-					 */
-					searchQueue.put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-					transformAndResponde(rc, schemaContainer);
-				}
-			});
-
+			crudHandler.handleUpdate(rc);
 		});
 	}
 
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			delete(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
+			crudHandler.handleDelete(rc);
 		});
 	}
 
 	private void addReadHandlers() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			if (StringUtils.isEmpty(uuid)) {
-				rc.next();
-			} else {
-				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
-			}
+			crudHandler.handleRead(rc);
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
+			crudHandler.handleReadList(rc);
 		});
 
 	}

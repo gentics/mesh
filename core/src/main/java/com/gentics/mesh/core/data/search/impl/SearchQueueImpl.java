@@ -16,7 +16,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	@Override
 	public void put(SearchQueueEntry entry) {
-		linkOut(entry.getImpl(), HAS_ITEM);
+		setLinkOutTo(entry.getImpl(), HAS_ITEM);
 	}
 
 	@Override

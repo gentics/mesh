@@ -1,8 +1,8 @@
 package com.gentics.mesh.core;
 
-import javax.annotation.PostConstruct;
-
 import io.vertx.core.AbstractVerticle;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

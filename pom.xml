@@ -73,7 +73,6 @@
 		<module>databases</module>
 		<module>git</module>
 		<module>core</module>
-		<module>search</module>
 		<module>verticles</module>
 		<!-- <module>importers</module> -->
 		<module>server</module>

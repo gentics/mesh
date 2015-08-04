@@ -14,7 +14,8 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -41,8 +42,13 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		return searchVerticle;
 	}
 
-	@BeforeClass
-	public static void setup() throws IOException {
+	@After
+	public void resetElasticSearch() {
+		elasticSearchNode.client().prepareDeleteByQuery("node").setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
+	}
+
+	@AfterClass
+	public static void cleanup() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
 	}
 

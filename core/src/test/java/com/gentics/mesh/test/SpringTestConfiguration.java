@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl;
 import com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl;
 
 @Configuration
@@ -16,7 +17,8 @@ public class SpringTestConfiguration {
 
 	@Bean
 	public String graphProviderClassname() {
-		return TinkerGraphDatabaseProviderImpl.class.getName();
+		//return TinkerGraphDatabaseProviderImpl.class.getName();
+		return OrientDBDatabaseProviderImpl.class.getName();
 	}
 
 	@PostConstruct

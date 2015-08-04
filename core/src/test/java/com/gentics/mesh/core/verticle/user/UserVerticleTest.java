@@ -578,11 +578,13 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		boot.userRoot().findByUuid(uuid, rh -> {
-			User loadedUser = rh.result();
-			assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
-			assertFalse(user.isEnabled());
-		});
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			boot.userRoot().findByUuid(uuid, rh -> {
+				User loadedUser = rh.result();
+				assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
+				assertFalse(loadedUser.isEnabled());
+			});
+		}
 	}
 
 	@Test
@@ -608,7 +610,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		});
 	}
 
-	@Test(expected=NullPointerException.class)
+	@Test(expected = NullPointerException.class)
 	public void testDeleteWithUuidNull() throws Exception {
 		Future<GenericMessageResponse> future = getClient().deleteUser(null);
 		latchFor(future);

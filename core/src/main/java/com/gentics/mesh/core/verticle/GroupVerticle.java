@@ -1,27 +1,20 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.delete;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.ext.web.Route;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -32,17 +25,9 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.group.GroupCreateRequest;
-import com.gentics.mesh.core.rest.group.GroupListResponse;
-import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.core.verticle.handler.GroupCRUDHandler;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -50,6 +35,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
 @Scope("singleton")
 @SpringVerticle
 public class GroupVerticle extends AbstractCoreApiVerticle {
+
+	@Autowired
+	private GroupCRUDHandler crudHandler;
 
 	public GroupVerticle() {
 		super("groups");
@@ -189,7 +177,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			delete(rc, "uuid", "group_deleted", boot.groupRoot());
+			crudHandler.handleDelete(rc);
 		});
 	}
 
@@ -197,75 +185,28 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "uuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				if (hasSucceeded(rc, grh)) {
-					Group group = grh.result();
-					GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
-
-					if (StringUtils.isEmpty(requestModel.getName())) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-						return;
-					}
-
-					if (!group.getName().equals(requestModel.getName())) {
-						Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
-						if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "group_conflicting_name")));
-							return;
-						}
-						group.setName(requestModel.getName());
-					}
-					searchQueue.put(group.getUuid(), Group.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-					transformAndResponde(rc, group);
-				}
-			});
-
+			crudHandler.handleUpdate(rc);
 		});
 
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.groupRoot());
+			crudHandler.handleRead(rc);
 		});
 
 		/*
 		 * List all groups when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadTransformAndResponde(rc, boot.groupRoot(), new GroupListResponse());
+			crudHandler.handleReadList(rc);
 		});
 	}
 
 	// TODO handle conflicting group name: group_conflicting_name
 	private void addCreateHandler() {
 		route("/").method(POST).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-			GroupCreateRequest requestModel = JsonUtil.fromJson(rc, GroupCreateRequest.class);
-
-			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-				return;
-			}
-
-			MeshRoot root = boot.meshRoot();
-			GroupRoot groupRoot = root.getGroupRoot();
-			if (requestUser.hasPermission(groupRoot, CREATE_PERM)) {
-				if (groupRoot.findByName(requestModel.getName()) != null) {
-					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
-				} else {
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						Group group = groupRoot.create(requestModel.getName(), requestUser);
-						requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-						tx.success();
-						transformAndResponde(rc, group);
-					}
-				}
-			} else {
-				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", groupRoot.getUuid())));
-			}
-
+			crudHandler.handleCreate(rc);
 		});
 
 	}

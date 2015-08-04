@@ -71,6 +71,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.search.SearchVerticle;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -80,8 +81,6 @@ public class BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
-	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
-
 	private MeshOptions configuration;
 
 	@Autowired
@@ -89,6 +88,120 @@ public class BootstrapInitializer {
 
 	private static BootstrapInitializer instance;
 	private static MeshRoot meshRoot;
+
+	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
+
+	public BootstrapInitializer() {
+		addMandatoryVerticle(UserVerticle.class);
+		addMandatoryVerticle(GroupVerticle.class);
+		addMandatoryVerticle(RoleVerticle.class);
+
+		addMandatoryVerticle(ProjectTagVerticle.class);
+		addMandatoryVerticle(ProjectNodeVerticle.class);
+		addMandatoryVerticle(ProjectTagFamilyVerticle.class);
+		addMandatoryVerticle(WebRootVerticle.class);
+
+		addMandatoryVerticle(ProjectVerticle.class);
+		addMandatoryVerticle(SchemaVerticle.class);
+		addMandatoryVerticle(SearchVerticle.class);
+		addMandatoryVerticle(AuthenticationVerticle.class);
+		addMandatoryVerticle(AdminVerticle.class);
+	}
+
+	private void addMandatoryVerticle(Class<? extends AbstractVerticle> clazz) {
+		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
+	}
+
+	private Map<String, Class<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
+		return mandatoryVerticles;
+	}
+
+	/**
+	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
+	 * 
+	 * @throws InvalidNameException
+	 */
+	private void initProjects() throws InvalidNameException {
+		for (Project project : meshRoot().getProjectRoot().findAll()) {
+			routerStorage.addProjectRouter(project.getName());
+			log.info("Initalized project {" + project.getName() + "}");
+		}
+	}
+
+	/**
+	 * Use the hazelcast cluster manager to join the cluster of mesh instances.
+	 */
+	private void joinCluster() {
+		HazelcastClusterManager manager = new HazelcastClusterManager();
+		manager.setVertx(Mesh.vertx());
+		manager.join(rh -> {
+			if (!rh.succeeded()) {
+				log.error("Error while joining mesh cluster.", rh.cause());
+			}
+		});
+	}
+
+	/**
+	 * Initialize mesh.
+	 * 
+	 * @param configuration
+	 * @param verticleLoader
+	 * @throws Exception
+	 */
+	public void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		this.configuration = configuration;
+		if (configuration.isClusterMode()) {
+			joinCluster();
+		}
+
+		initMandatoryData();
+		loadConfiguredVerticles();
+		if (verticleLoader != null) {
+			verticleLoader.apply(Mesh.vertx());
+		}
+		initProjects();
+		Mesh.vertx().eventBus().send("mesh-startup-complete", true);
+
+	}
+
+	/**
+	 * Load verticles that are configured within the mesh configuration.
+	 * 
+	 * @throws InterruptedException
+	 */
+	private void loadConfiguredVerticles() throws InterruptedException {
+		JsonObject defaultConfig = new JsonObject();
+		defaultConfig.put("port", configuration.getHttpPort());
+
+		for (Class<? extends AbstractVerticle> clazz : getMandatoryVerticleClasses().values()) {
+			try {
+				log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+				// TODO handle custom config? i assume we will not allow this
+				deployAndWait(Mesh.vertx(), defaultConfig, clazz);
+			} catch (InterruptedException e) {
+				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
+			}
+		}
+
+		for (String verticleName : configuration.getVerticles().keySet()) {
+			if (getMandatoryVerticleClasses().containsKey(verticleName)) {
+				log.error("Can't configure mandatory verticles. Skipping configured verticle {" + verticleName + "}");
+				continue;
+			}
+			MeshVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
+			JsonObject mergedVerticleConfig = new JsonObject();
+			if (verticleConf.getVerticleConfig() != null) {
+				mergedVerticleConfig = verticleConf.getVerticleConfig().copy();
+			}
+			mergedVerticleConfig.put("port", configuration.getHttpPort());
+			try {
+				log.info("Loading configured verticle {" + verticleName + "}.");
+				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName);
+			} catch (InterruptedException e) {
+				log.error("Could not load verticle {" + verticleName + "}.", e);
+			}
+		}
+	}
 
 	@PostConstruct
 	public void setup() {
@@ -108,28 +221,6 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private RouterStorage routerStorage;
-
-	public BootstrapInitializer() {
-		addMandatoryVerticle(UserVerticle.class);
-		addMandatoryVerticle(GroupVerticle.class);
-		addMandatoryVerticle(RoleVerticle.class);
-
-		addMandatoryVerticle(ProjectTagVerticle.class);
-		addMandatoryVerticle(ProjectNodeVerticle.class);
-		addMandatoryVerticle(ProjectTagFamilyVerticle.class);
-		addMandatoryVerticle(WebRootVerticle.class);
-
-		addMandatoryVerticle(ProjectVerticle.class);
-		addMandatoryVerticle(SchemaVerticle.class);
-		// addMandatoryVerticle(SearchVerticle.class);
-		addMandatoryVerticle(AuthenticationVerticle.class);
-		addMandatoryVerticle(AdminVerticle.class);
-
-	}
-
-	private void addMandatoryVerticle(Class<? extends AbstractVerticle> clazz) {
-		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
-	}
 
 	public MeshRoot meshRoot() {
 		// Check reference graph and finally create the node when it can't be found.
@@ -195,97 +286,6 @@ public class BootstrapInitializer {
 	}
 
 	/**
-	 * Load verticles that are configured within the mesh configuration.
-	 * 
-	 * @throws InterruptedException
-	 */
-	private void loadConfiguredVerticles() throws InterruptedException {
-		JsonObject defaultConfig = new JsonObject();
-		defaultConfig.put("port", configuration.getHttpPort());
-
-		for (Class<? extends AbstractVerticle> clazz : getMandatoryVerticleClasses().values()) {
-			try {
-				log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
-				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(Mesh.vertx(), defaultConfig, clazz);
-			} catch (InterruptedException e) {
-				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
-			}
-		}
-
-		for (String verticleName : configuration.getVerticles().keySet()) {
-			if (getMandatoryVerticleClasses().containsKey(verticleName)) {
-				log.error("Can't configure mandatory verticles. Skipping configured verticle {" + verticleName + "}");
-				continue;
-			}
-			MeshVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
-			JsonObject mergedVerticleConfig = new JsonObject();
-			if (verticleConf.getVerticleConfig() != null) {
-				mergedVerticleConfig = verticleConf.getVerticleConfig().copy();
-			}
-			mergedVerticleConfig.put("port", configuration.getHttpPort());
-			try {
-				log.info("Loading configured verticle {" + verticleName + "}.");
-				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName);
-			} catch (InterruptedException e) {
-				log.error("Could not load verticle {" + verticleName + "}.", e);
-			}
-		}
-	}
-
-	private Map<String, Class<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
-		return mandatoryVerticles;
-	}
-
-	/**
-	 * Initialize mesh.
-	 * 
-	 * @param configuration
-	 * @param verticleLoader
-	 * @throws Exception
-	 */
-	public void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-		this.configuration = configuration;
-		if (configuration.isClusterMode()) {
-			joinCluster();
-		}
-
-		initMandatoryData();
-		loadConfiguredVerticles();
-		if (verticleLoader != null) {
-			verticleLoader.apply(Mesh.vertx());
-		}
-		initProjects();
-		Mesh.vertx().eventBus().send("mesh-startup-complete", true);
-
-	}
-
-	/**
-	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
-	 * 
-	 * @throws InvalidNameException
-	 */
-	private void initProjects() throws InvalidNameException {
-		for (Project project : meshRoot().getProjectRoot().findAll()) {
-			routerStorage.addProjectRouter(project.getName());
-			log.info("Initalized project {" + project.getName() + "}");
-		}
-	}
-
-	/**
-	 * Use the hazelcast cluster manager to join the cluster of mesh instances.
-	 */
-	private void joinCluster() {
-		HazelcastClusterManager manager = new HazelcastClusterManager();
-		manager.setVertx(Mesh.vertx());
-		manager.join(rh -> {
-			if (!rh.succeeded()) {
-				log.error("Error while joining mesh cluster.", rh.cause());
-			}
-		});
-	}
-
-	/**
 	 * Setup various mandatory data. This includes mandatory root nodes and the admin user, group.
 	 * 
 	 * @throws IOException
@@ -296,14 +296,15 @@ public class BootstrapInitializer {
 		MeshRoot meshRoot = meshRoot();
 		MeshRootImpl.setInstance(meshRoot);
 
-		NodeRoot nodeRoot = meshRoot.getNodeRoot();
-		TagRoot tagRoot = meshRoot.getTagRoot();
-		TagFamilyRoot tagFamilyRoot = meshRoot.getTagFamilyRoot();
+		meshRoot.getNodeRoot();
+		meshRoot.getTagRoot();
+		meshRoot.getTagFamilyRoot();
+		meshRoot.getProjectRoot();
+		meshRoot.getSearchQueue();
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		GroupRoot groupRoot = meshRoot.getGroupRoot();
 		UserRoot userRoot = meshRoot.getUserRoot();
 		RoleRoot roleRoot = meshRoot.getRoleRoot();
-		ProjectRoot projectRoot = meshRoot.getProjectRoot();
 		SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
 
 		// Verify that an admin user exists

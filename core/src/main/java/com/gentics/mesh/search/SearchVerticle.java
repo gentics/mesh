@@ -61,13 +61,13 @@ import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class SearchVerticle extends AbstractCoreApiVerticle {
-
 
 	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
 
@@ -154,15 +154,17 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSearchEndpoints() {
-		addSearch("users", boot.userRoot(), UserListResponse.class);
-		addSearch("groups", boot.groupRoot(), GroupListResponse.class);
-		addSearch("role", boot.roleRoot(), RoleListResponse.class);
-		addSearch("nodes", boot.nodeRoot(), NodeListResponse.class);
-		addSearch("tags", boot.tagRoot(), TagListResponse.class);
-		addSearch("tagFamilies", boot.tagFamilyRoot(), TagFamilyListResponse.class);
-		addSearch("projects", boot.projectRoot(), ProjectListResponse.class);
-		addSearch("schemas", boot.schemaContainerRoot(), SchemaListResponse.class);
-		addSearch("microschemas", boot.microschemaContainerRoot(), MicroschemaListResponse.class);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			addSearch("users", boot.userRoot(), UserListResponse.class);
+			addSearch("groups", boot.groupRoot(), GroupListResponse.class);
+			addSearch("role", boot.roleRoot(), RoleListResponse.class);
+			addSearch("nodes", boot.nodeRoot(), NodeListResponse.class);
+			addSearch("tags", boot.tagRoot(), TagListResponse.class);
+			addSearch("tagFamilies", boot.tagFamilyRoot(), TagFamilyListResponse.class);
+			addSearch("projects", boot.projectRoot(), ProjectListResponse.class);
+			addSearch("schemas", boot.schemaContainerRoot(), SchemaListResponse.class);
+			addSearch("microschemas", boot.microschemaContainerRoot(), MicroschemaListResponse.class);
+		}
 	}
 
 	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void addSearch(String typeName,
