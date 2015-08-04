@@ -8,7 +8,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
-import io.vertx.ext.mail.StartTLSOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
@@ -94,22 +93,20 @@ public class MeshSpringConfiguration {
 	
 	@Bean
 	public MailClient mailClient() {
-		//Mesh.mesh().getOptions().getMailServer().getPost();
-		MailConfig config = new MailConfig();
-		// TODO configure mail client
-		config.setHostname("bogus");
-		config.setPort(587);
-		config.setStarttls(StartTLSOptions.REQUIRED);
-		config.setUsername("user");
-		config.setPassword("password");
-		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "exampleclient");
+		MailConfig config = Mesh.mesh().getOptions().getMailServerOptions();
+
+//		config.setHostname(options.getHostname());
+//		config.setPort(options.getPort());
+//		config.setStarttls(StartTLSOptions.REQUIRED);
+//		config.setUsername(options.getUsername());
+//		config.setPassword(options.getPassword());
+		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "meshClient");
 		return mailClient;
 	}
 
 	public CorsHandler corsHandler() {
-		// TODO make core configurable
-		CorsHandler corsHandler = CorsHandler.create("*");
-		// corsHandler.allowCredentials(true);
+		String pattern = Mesh.mesh().getOptions().getCorsAllowedOriginPattern();
+		CorsHandler corsHandler = CorsHandler.create(pattern);
 		corsHandler.allowedMethod(HttpMethod.GET);
 		corsHandler.allowedMethod(HttpMethod.POST);
 		corsHandler.allowedMethod(HttpMethod.PUT);

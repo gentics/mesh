@@ -56,9 +56,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
-				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.userRoot());
-			});
+			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
+					loadTransformAndResponde(rc, "uuid", READ_PERM, boot.userRoot());
+				});
+			}
 		});
 
 		/*
@@ -137,21 +139,21 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 							MeshAuthUser requestUser = getUser(rc);
 							User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
-//							User user = parentGroup.createUser(requestModel.getUsername());
-							user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
-								if (ch.failed()) {
-									rc.fail(ch.cause());
-								} else {
-									User createdUser = ch.result();
-									searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-									transformAndResponde(rc, createdUser);
-								}
-							});
+							//							User user = parentGroup.createUser(requestModel.getUsername());
+					user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
+						if (ch.failed()) {
+							rc.fail(ch.cause());
+						} else {
+							User createdUser = ch.result();
+							searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+							transformAndResponde(rc, createdUser);
 						}
-					}
+					});
 				}
-			});
+			}
+		}
+	}		);
 
 		});
 	}

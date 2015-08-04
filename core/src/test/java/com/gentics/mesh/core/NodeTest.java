@@ -186,7 +186,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		Node folder = getFolder();
+		Node folder = folder("2015");
 		Node subNode = folder.create(user(), getSchemaContainer(), project());
 		assertNotNull(subNode.getUuid());
 		subNode.delete();
@@ -195,9 +195,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		Node node = getFolder().create(user(), getSchemaContainer(), project());
+		Node node = folder("2015").create(user(), getSchemaContainer(), project());
 		assertFalse(user().hasPermission(node, Permission.CREATE_PERM));
-		user().addCRUDPermissionOnRole(getFolder(), Permission.CREATE_PERM, node);
+		user().addCRUDPermissionOnRole(folder("2015"), Permission.CREATE_PERM, node);
 		assertTrue(user().hasPermission(node, Permission.CREATE_PERM));
 	}
 
@@ -253,7 +253,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		Node node = getContent();
+		Node node = content();
 		String uuid = node.getUuid();
 		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -268,7 +268,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		Node node = getContent();
+		Node node = content();
 		User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
 		assertEquals(user().getUuid(), node.getCreator().getUuid());
 		node.setCreator(newUser);
@@ -279,25 +279,25 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(Permission.READ_PERM, getContent());
+		testPermission(Permission.READ_PERM, content());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(Permission.DELETE_PERM, getContent());
+		testPermission(Permission.DELETE_PERM, content());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(Permission.UPDATE_PERM, getContent());
+		testPermission(Permission.UPDATE_PERM, content());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(Permission.CREATE_PERM, getContent());
+		testPermission(Permission.CREATE_PERM, content());
 	}
 
 }

@@ -35,6 +35,11 @@
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>mesh-orientdb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- Logging -->
 		<dependency>
@@ -69,7 +74,6 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>io.vertx</groupId>

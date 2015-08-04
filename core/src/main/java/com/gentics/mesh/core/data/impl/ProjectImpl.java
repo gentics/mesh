@@ -46,7 +46,7 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implemen
 
 	@Override
 	public void addLanguage(Language language) {
-		linkOut(language.getImpl(), HAS_LANGUAGE);
+		setLinkOutTo(language.getImpl(), HAS_LANGUAGE);
 	}
 
 	@Override

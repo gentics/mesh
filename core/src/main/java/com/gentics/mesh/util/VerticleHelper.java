@@ -41,6 +41,7 @@ public class VerticleHelper {
 		PagingInfo pagingInfo = getPagingInfo(rc);
 		MeshAuthUser requestUser = getUser(rc);
 		try {
+
 			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
 			for (T node : page) {
 				node.transformToRest(rc, rh -> {

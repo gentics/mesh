@@ -27,10 +27,7 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 	abstract protected String getRootLabel();
 
 	protected void addItem(T item) {
-		// 1. Unlink all edges between both objects with the given label
-		unlinkOut(item.getImpl(), getRootLabel());
-		// 2. Create a new edge with the given label
-		linkOut(item.getImpl(), getRootLabel());
+		setLinkOutTo(item.getImpl(), getRootLabel());
 	}
 
 	protected void removeItem(T item) {
@@ -49,11 +46,12 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 
 	@Override
 	public RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
-//		Vertx vertx = Mesh.vertx();
-//		vertx.executeBlocking(rh -> {
-		resultHandler.handle(Future.succeededFuture(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
-			//rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
-//		}, false, resultHandler);
+		//		Vertx vertx = Mesh.vertx();
+		//		vertx.executeBlocking(rh -> {
+		resultHandler.handle(Future.succeededFuture(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid)
+				.nextOrDefaultExplicit(getPersistanceClass(), null)));
+		//rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
+		//		}, false, resultHandler);
 		return this;
 	}
 

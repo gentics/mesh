@@ -6,6 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
+import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -28,8 +29,21 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		return properties;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Object getId() {
 		return getElement().getId();
+	}
+
+	public void setLinkInTo(VertexFrame vertex, String... labels) {
+		unlinkIn(vertex, labels);
+		linkIn(vertex, labels);
+	}
+
+	public void setLinkOutTo(VertexFrame vertex, String... labels) {
+		// 1. Unlink all edges between both objects with the given label
+		unlinkOut(vertex, labels);
+		// 2. Create a new edge with the given label
+		linkOut(vertex, labels);
 	}
 
 	public String getUuid() {

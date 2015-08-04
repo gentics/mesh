@@ -44,9 +44,8 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 	}
 
 	public void addUser(User user) {
-		// TODO use link method
+		unlinkIn(user.getImpl(), HAS_USER);
 		linkIn(user.getImpl(), HAS_USER);
-		// user.getImpl().addFramedEdge(HAS_USER, this, UserImpl.class);
 	}
 
 	public void removeUser(User user) {
@@ -58,6 +57,7 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 	}
 
 	public void addRole(Role role) {
+		unlinkIn(role.getImpl(), HAS_ROLE);
 		linkIn(role.getImpl(), HAS_ROLE);
 	}
 

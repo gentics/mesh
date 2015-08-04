@@ -493,7 +493,7 @@ public class DemoDataProvider {
 		return folderNode;
 	}
 
-	private void setCreatorEditor(GenericVertex node) {
+	private void setCreatorEditor(GenericVertex<?> node) {
 		node.setCreator(userInfo.getUser());
 		node.setCreationTimestamp(System.currentTimeMillis());
 

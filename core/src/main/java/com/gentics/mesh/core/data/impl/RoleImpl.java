@@ -61,7 +61,7 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Rol
 
 	@Override
 	public void addGroup(Group group) {
-		linkOut(group.getImpl(), HAS_ROLE);
+		setLinkOutTo(group.getImpl(), HAS_ROLE);
 	}
 
 	@Override

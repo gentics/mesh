@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -141,6 +142,18 @@ public abstract class AbstractDBTest {
 
 	public MeshRoot meshRoot() {
 		return data().getMeshRoot();
+	}
+
+	public Node content() {
+		return data().getContent("news overview");
+	}
+
+	public MeshAuthUser getRequestUser() {
+		return data().getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
+	}
+
+	public SchemaContainer getSchemaContainer() {
+		return data().getSchemaContainer("content");
 	}
 
 	protected void purgeDatabase() {

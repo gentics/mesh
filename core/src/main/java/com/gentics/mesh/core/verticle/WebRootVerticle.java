@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -77,7 +78,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 						if (rh.result()) {
 							bch.complete(node);
 						} else {
-							bch.fail(new HttpStatusCodeErrorException(403, i18n.get(rc, "error_missing_perm", node.getUuid())));
+							bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, i18n.get(rc, "error_missing_perm", node.getUuid())));
 						}
 					});
 

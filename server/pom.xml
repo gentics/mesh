@@ -41,10 +41,11 @@
 			<artifactId>mesh-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-orientdb</artifactId> 
-			<version>${project.version}</version> </dependency> <dependency> <groupId>${project.groupId}</groupId> 
-			<artifactId>mesh-neo4j</artifactId> <version>${project.version}</version> 
-			</dependency> -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>mesh-orientdb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-search</artifactId>
@@ -172,7 +173,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
+							<mainClass>com.gentics.mesh.cli.Mesh</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -201,7 +202,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
+									<mainClass>com.gentics.mesh.cli.Mesh</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

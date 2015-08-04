@@ -1,6 +1,0 @@
-{
-  "mode": "gui",
-  "path": "/tmp/graphdb",
-  "baseAddress": "graph",
-  "webServerBindAddress": "0.0.0.0"
-}

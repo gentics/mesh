@@ -170,7 +170,13 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole", group(), user());
+		
+		// Multiple add role calls should not affect the result
 		group().addRole(extraRole);
+		group().addRole(extraRole);
+		group().addRole(extraRole);
+		group().addRole(extraRole);
+		
 		role().addPermissions(extraRole, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");

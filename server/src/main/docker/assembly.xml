@@ -7,7 +7,7 @@
 		<dependencySet>
 			<useProjectArtifact>true</useProjectArtifact>
 			<includes>
-				<include>com.gentics.mesh:mesh-demo-java</include>
+				<include>com.gentics.mesh:mesh-server</include>
 			</includes>
 			<outputDirectory>.</outputDirectory>
 			<outputFileNameMapping>mesh.jar</outputFileNameMapping>

@@ -25,7 +25,17 @@ public interface GroupRoot extends RootVertex<Group> {
 
 	Page<? extends Group> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
+	/**
+	 * Add the group to the aggregation vertex.
+	 * 
+	 * @param group
+	 */
 	void addGroup(Group group);
 
+	/**
+	 * Remove the group from the aggregation vertex.
+	 * 
+	 * @param group
+	 */
 	void removeGroup(Group group);
 }

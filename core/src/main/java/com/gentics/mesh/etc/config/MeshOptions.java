@@ -1,5 +1,7 @@
 package com.gentics.mesh.etc.config;
 
+import io.vertx.ext.mail.MailConfig;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +26,9 @@ public class MeshOptions {
 	public static final String DEFAULT_NEO4VERTX_MODE = "default";
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
-	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl";
-//	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
+	//public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl";
+	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
+	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
 
 	@JsonProperty("database_provider_class")
 	private String databaseProviderClass = DEFAULT_DATABASE_PROVIDER_CLASS;
@@ -58,15 +61,12 @@ public class MeshOptions {
 	@JsonProperty("verticles")
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
 
-	public MeshOptions() {
+	@JsonProperty("cors_allowed_origin_pattern")
+	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
 
-		// Check for target directory and use it as a subdirectory if possible
-		//		File targetDir = new File("target");
-		//		if (targetDir.exists()) {
-		//			neo4jConfiguration.setPath(new File(targetDir, DEFAULT_DIRECTORY_NAME).getAbsolutePath());
-		//		} else {
-		//			neo4jConfiguration.setPath(new File(DEFAULT_DIRECTORY_NAME).getAbsolutePath());
-		//		}
+	private MailConfig mailServerOptions = new MailConfig();
+
+	public MeshOptions() {
 	}
 
 	public Map<String, MeshVerticleConfiguration> getVerticles() {
@@ -120,9 +120,22 @@ public class MeshOptions {
 	public String getDatabaseProviderClass() {
 		return databaseProviderClass;
 	}
-	
+
 	public void setDatabaseProviderClass(String databaseProviderClass) {
 		this.databaseProviderClass = databaseProviderClass;
+	}
+
+	public String getCorsAllowedOriginPattern() {
+		return this.corsAllowedOriginPattern;
+	}
+
+	public void setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
+		this.corsAllowedOriginPattern = corsAllowedOriginPattern;
+	}
+
+	public MailConfig getMailServerOptions() {
+		return this.mailServerOptions;
+
 	}
 
 }

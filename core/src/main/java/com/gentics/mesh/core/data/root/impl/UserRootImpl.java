@@ -38,7 +38,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		UserImpl user = getGraph().addFramedVertex(UserImpl.class);
 		user.setUsername(username);
 		user.enable();
-		addItem(user);
 		if (group != null) {
 			group.addUser(user);
 		}
@@ -48,6 +47,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			user.setEditor(creator);
 			user.setLastEditedTimestamp(System.currentTimeMillis());
 		}
+		addItem(user);
 		return user;
 	}
 

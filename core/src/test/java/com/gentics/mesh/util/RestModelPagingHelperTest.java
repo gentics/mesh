@@ -43,6 +43,7 @@ public class RestModelPagingHelperTest {
 
 }
 
+@SuppressWarnings("rawtypes")
 class TestListResponse extends AbstractListResponse {
 
 }

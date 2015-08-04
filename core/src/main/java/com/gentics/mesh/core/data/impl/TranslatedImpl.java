@@ -16,7 +16,7 @@ public class TranslatedImpl extends AbstractEdgeFrame implements Translated {
 		setProperty(LANGUAGE_TAG_KEY, languageTag);
 	}
 
-	public AbstractGenericVertex getStartNode() {
+	public AbstractGenericVertex<?> getStartNode() {
 		return inV().nextOrDefault(AbstractGenericVertex.class, null);
 	}
 
