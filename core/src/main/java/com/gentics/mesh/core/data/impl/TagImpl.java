@@ -70,8 +70,6 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 
 	@Override
 	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
-		Vertx vertx = Mesh.vertx();
-		//		vertx.executeBlocking(bc -> {
 		TagResponse restTag = new TagResponse();
 
 		try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
@@ -102,33 +100,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 			tx.success();
 		}
 
-		// if (currentDepth < info.getMaxDepth()) {
-		// }
-		// if (info.isIncludeTags()) {
-		// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
-		// tag.getTags().parallelStream().forEachOrdered(tagConsumer);
-		// } else {
-		// restTag.setTags(null);
-		// }
-		//
-		// if (info.isIncludeContents()) {
-		// ContentTraversalConsumer contentConsumer = new ContentTraversalConsumer(info, currentDepth, restTag, tasks);
-		// tag.getContents().parallelStream().forEachOrdered(contentConsumer);
-		// } else {
-		// restTag.setContents(null);
-		// }
-		//
-		// if (info.isIncludeChildTags()) {
-		// TagTraversalConsumer tagConsumer = new TagTraversalConsumer(info, currentDepth, restTag, tasks);
-		// tag.getChildTags().parallelStream().forEachOrdered(tagConsumer);
-		// } else {
-		// restTag.setChildTags(null);
-		// }
-
-		//				bc.complete(restTag);
 		resultHandler.handle(Future.succeededFuture(restTag));
 
-		//			}, resultHandler);
 		return this;
 	}
 

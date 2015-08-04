@@ -10,8 +10,6 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -35,6 +33,7 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
@@ -74,15 +73,6 @@ public class Generator {
 
 	public static String getUUID() {
 		return UUIDUtil.randomUUID();
-	}
-
-	private void writeJsonSchema(Class<?> clazz) throws IOException {
-		File file = new File(outputDir, clazz.getSimpleName() + ".schema.json");
-		ObjectMapper m = new ObjectMapper();
-		SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
-		m.acceptJsonFormatVisitor(m.constructType(clazz), visitor);
-		JsonSchema jsonSchema = visitor.finalSchema();
-		m.writerWithDefaultPrettyPrinter().writeValue(file, jsonSchema);
 	}
 
 	public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {
@@ -292,6 +282,11 @@ public class Generator {
 		MicroschemaResponse response = new MicroschemaResponse();
 		response.setUuid(getUUID());
 		write(response);
+		
+		MicroschemaListResponse listResponse = new MicroschemaListResponse();
+		listResponse.getData().add(response);
+		setPaging(listResponse, 1, 1, 25, 1);
+		write(listResponse);
 	}
 
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {

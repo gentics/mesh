@@ -47,12 +47,14 @@ traits:
       headers:
         Accept-Language:
           description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
+
   - perm_listable:
       queryParameters:
         perms:
           description: Include user permissions on the object.
           type: boolean
           required: false
+
   - sortable:
       queryParameters:
         orderBy:
@@ -654,19 +656,99 @@ traits:
 #------------------------------------------------------------------------------
 # Search Verticle
 #------------------------------------------------------------------------------
-/{project_name}/search:
-  is: [ localized ]
-  displayName: Project Search
-  get:
-    description: Query for various objects.
-
 /search:
-  is: [ localized ]
-  displayName: Global Search
-  get:
-    description: Query for various objects.
-
-
+  /nodes:
+    is: [ localized, paged ]
+    displayName: Node Search
+    post:
+        description: Query for nodes. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        body:
+            application/json:
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/NodeListResponse.example.json
+  /tags:
+    is: [ localized ]
+    displayName: Tag Search
+    post:
+        description: Query for tags. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/TagListResponse.example.json
+  /users:
+    is: [ localized ]
+    displayName: User Search
+    post:
+        description: Query for users. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/UserListResponse.example.json
+  /groups:
+    is: [ localized ]
+    displayName: Group Search
+    post:
+        description: Query for groups. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/GroupListResponse.example.json
+  /roles:
+    is: [ localized ]
+    displayName: Role Search
+    post:
+        description: Query for roles. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/RoleListResponse.example.json
+  /projects:
+    is: [ localized ]
+    displayName: Project Search
+    post:
+        description: Query for projects. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/ProjectListResponse.example.json
+  /tagFamilies:
+    is: [ localized ]
+    displayName: TagFamily Search
+    post:
+        description: Query for tagFamilies. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/TagFamilyListResponse.example.json
+  /schemas:
+    is: [ localized ]
+    displayName: Schema Search
+    post:
+        description: Query for schemas. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/SchemaListResponse.example.json
+  /microschemas:
+    is: [ localized ]
+    displayName: Microschema Search
+    post:
+        description: Query for microschemas. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/MicroschemaListResponse.example.json
 
 #------------------------------------------------------------------------------
 # Navigation Verticle
