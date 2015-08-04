@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_EDITOR;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import io.vertx.ext.web.RoutingContext;
 
 import com.gentics.mesh.core.data.GenericVertex;
@@ -10,7 +10,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.RestModel;
-
 public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVertexImpl implements GenericVertex<T> {
 
 

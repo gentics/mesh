@@ -1,5 +1,6 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RoutingContextHelper;
 
 public class GroupTest extends AbstractBasicObjectTest {
 
@@ -45,7 +45,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 19));
 
 		assertEquals(groups().size(), page.getTotalElements());

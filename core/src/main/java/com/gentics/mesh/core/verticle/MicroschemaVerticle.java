@@ -1,22 +1,25 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.delete;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.verticle.handler.MicroschemaCRUDHandler;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class MicroschemaVerticle extends AbstractCoreApiVerticle {
+
+	@Autowired
+	private MicroschemaCRUDHandler crudHandler;
 
 	protected MicroschemaVerticle() {
 		super("microschemas");
@@ -35,32 +38,31 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandlers() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
-			if (StringUtils.isEmpty(uuid)) {
-				rc.next();
-			} else {
-				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.microschemaContainerRoot());
-			}
+			crudHandler.handleRead(rc);
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			loadTransformAndResponde(rc, boot.microschemaContainerRoot(), new MicroschemaListResponse());
+			crudHandler.handleReadList(rc);
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			delete(rc, "uuid", "group_deleted", boot.microschemaContainerRoot());
+			crudHandler.handleDelete(rc);
 		});
 	}
 
 	private void addUpdateHandler() {
-		// TODO Auto-generated method stub
+		route("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
+			crudHandler.handleUpdate(rc);
+		});
 
 	}
 
 	private void addCreateHandler() {
-		// TODO Auto-generated method stub
+		route().method(POST).produces(APPLICATION_JSON).handler(rc -> {
+			crudHandler.handleCreate(rc);
+		});
 
 	}
 

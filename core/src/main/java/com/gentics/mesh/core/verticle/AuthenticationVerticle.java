@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
+
 @Component
 @Scope("singleton")
 @SpringVerticle()
@@ -41,11 +42,11 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 			transformAndResponde(rc, requestUser);
 		});
 
-		//route("/login").handler(springConfiguration.jsonAuthHandler());
+		// route("/login").handler(springConfiguration.jsonAuthHandler());
 		route("/login").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			try {
-				LoginRequest request= JsonUtil.readValue(rc.getBodyAsString(), LoginRequest.class);
-				//TODO fail on missing field
+				LoginRequest request = JsonUtil.readValue(rc.getBodyAsString(), LoginRequest.class);
+				// TODO fail on missing field
 				JsonObject authInfo = new JsonObject().put("username", request.getUsername()).put("password", request.getPassword());
 				springConfiguration.authProvider().authenticate(authInfo, rh -> {
 					if (rh.failed()) {

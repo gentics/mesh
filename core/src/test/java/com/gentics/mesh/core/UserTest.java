@@ -1,6 +1,7 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,8 +27,6 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RoutingContextHelper;
-
 public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
@@ -54,7 +53,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(users().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());
@@ -92,7 +91,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		role.addPermissions(extraUser, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends User> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 		assertEquals(2, userPage.getTotalElements());

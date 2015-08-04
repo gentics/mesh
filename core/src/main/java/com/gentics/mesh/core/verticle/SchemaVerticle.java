@@ -20,7 +20,6 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.verticle.handler.SchemaContainerCRUDHandler;
-
 @Component
 @Scope("singleton")
 @SpringVerticle

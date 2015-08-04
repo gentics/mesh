@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -13,9 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.UserCRUDHandler;
-import com.gentics.mesh.util.BlueprintTransaction;
 
 @Component
 @Scope("singleton")
@@ -48,9 +45,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		 * List all users when no parameter was specified
 		 */
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				loadTransformAndResponde(rc, boot.userRoot(), new UserListResponse());
-			}
+			crudHandler.handleReadList(rc);
 		});
 	}
 

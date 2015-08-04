@@ -21,6 +21,8 @@ import io.vertx.ext.web.sstore.SessionStore;
 
 import javax.annotation.PostConstruct;
 
+import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -71,6 +73,12 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
+	public Node elasticSearchNode() {
+		Node node = NodeBuilder.nodeBuilder().node();
+		return node;
+	}
+
+	@Bean
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
 		return new SessionHandlerImpl("mesh.session", 30 * 60 * 1000, false, store);
@@ -90,16 +98,16 @@ public class MeshSpringConfiguration {
 	public AuthProvider authProvider() {
 		return new MeshAuthProvider();
 	}
-	
+
 	@Bean
 	public MailClient mailClient() {
 		MailConfig config = Mesh.mesh().getOptions().getMailServerOptions();
 
-//		config.setHostname(options.getHostname());
-//		config.setPort(options.getPort());
-//		config.setStarttls(StartTLSOptions.REQUIRED);
-//		config.setUsername(options.getUsername());
-//		config.setPassword(options.getPassword());
+		// config.setHostname(options.getHostname());
+		// config.setPort(options.getPort());
+		// config.setStarttls(StartTLSOptions.REQUIRED);
+		// config.setUsername(options.getUsername());
+		// config.setPassword(options.getPassword());
 		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "meshClient");
 		return mailClient;
 	}

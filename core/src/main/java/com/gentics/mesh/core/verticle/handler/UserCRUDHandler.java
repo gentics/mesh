@@ -5,8 +5,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
@@ -25,9 +24,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
-
 @Component
 public class UserCRUDHandler extends AbstractCRUDHandler {
 
@@ -123,8 +122,9 @@ public class UserCRUDHandler extends AbstractCRUDHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		// TODO Auto-generated method stub
-
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			loadTransformAndResponde(rc, boot.userRoot(), new UserListResponse());
+		}
 	}
 
 }

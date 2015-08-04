@@ -6,8 +6,8 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PARE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
-import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
-import static com.gentics.mesh.util.RoutingContextHelper.getSelectedLanguageTags;
+import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
+import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

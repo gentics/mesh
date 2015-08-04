@@ -5,8 +5,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.delete;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
@@ -36,88 +35,99 @@ public class TagCRUDHandler extends AbstractCRUDHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		Project project = getProject(rc);
-		Future<Tag> tagCreated = Future.future();
-		TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 
-		if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
-		} else {
-			TagFamilyReference reference = requestModel.getTagFamilyReference();
-			if (reference == null || isEmpty(reference.getUuid())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set")));
+			Project project = getProject(rc);
+			Future<Tag> tagCreated = Future.future();
+			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
+
+			if (StringUtils.isEmpty(requestModel.getFields().getName())) {
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
 			} else {
-				loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
-						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-							TagFamily tagFamily = rh.result();
-							Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
-							getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
-							project.getTagRoot().addTag(newTag);
-							tagCreated.complete(newTag);
-							searchQueue.put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-							transformAndResponde(rc, newTag);
+				TagFamilyReference reference = requestModel.getTagFamilyReference();
+				if (reference == null || isEmpty(reference.getUuid())) {
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set")));
+				} else {
+					loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
+						if (hasSucceeded(rc, rh)) {
+//							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+								TagFamily tagFamily = rh.result();
+								Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
+								getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
+								project.getTagRoot().addTag(newTag);
+								tagCreated.complete(newTag);
+								searchQueue.put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+								transformAndResponde(rc, newTag);
+//							}
 						}
-					}
-				});
+					});
+				}
 			}
 		}
 	}
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		delete(rc, "uuid", "tag_deleted", getProject(rc).getTagRoot());
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			delete(rc, "uuid", "tag_deleted", getProject(rc).getTagRoot());
+		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		Project project = getProject(rc);
-		loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
-				Tag tag = rh.result();
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			Project project = getProject(rc);
+			loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Tag tag = rh.result();
 
-				TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
+					TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 
-				TagFamilyReference reference = requestModel.getTagFamilyReference();
-				boolean updateTagFamily = false;
-				if (reference != null) {
-					// Check whether a uuid was specified and whether the tag family changed 
-				if (!isEmpty(reference.getUuid())) {
-					if (!tag.getTagFamily().getUuid().equals(reference.getUuid())) {
-						updateTagFamily = true;
+					TagFamilyReference reference = requestModel.getTagFamilyReference();
+					boolean updateTagFamily = false;
+					if (reference != null) {
+						// Check whether a uuid was specified and whether the tag family changed
+					if (!isEmpty(reference.getUuid())) {
+						if (!tag.getTagFamily().getUuid().equals(reference.getUuid())) {
+							updateTagFamily = true;
+						}
 					}
 				}
-			}
 
-			if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
-			} else {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				if (StringUtils.isEmpty(requestModel.getFields().getName())) {
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
+				} else {
+					// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					tag.setName(requestModel.getFields().getName());
 					if (updateTagFamily) {
 						/* TODO update the tagfamily */
 					}
 					searchQueue.put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-					tx.success();
+					// tx.success();
+					// }
+					transformAndResponde(rc, tag);
 				}
-				transformAndResponde(rc, tag);
 			}
+		}	);
 		}
-	}	);
 	}
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		Project project = getProject(rc);
-		loadTransformAndResponde(rc, "uuid", READ_PERM, project.getTagRoot());
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			Project project = getProject(rc);
+			loadTransformAndResponde(rc, "uuid", READ_PERM, project.getTagRoot());
+		}
 	}
-	
+
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		Project project = getProject(rc);
-		loadTransformAndResponde(rc, project.getTagRoot(), new TagListResponse());
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			Project project = getProject(rc);
+			loadTransformAndResponde(rc, project.getTagRoot(), new TagListResponse());
+		}
 	}
 
 }

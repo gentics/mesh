@@ -1,9 +1,9 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
-import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
+import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static io.vertx.core.http.HttpMethod.POST;
 import static org.elasticsearch.client.Requests.refreshRequest;

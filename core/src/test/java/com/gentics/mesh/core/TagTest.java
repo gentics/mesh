@@ -1,6 +1,7 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,8 +30,8 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
+import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RoutingContextHelper;
 
 public class TagTest extends AbstractBasicObjectTest {
 
@@ -141,7 +142,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 
 		Page<? extends Tag> tagPage = tagRoot.findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(12, tagPage.getTotalElements());
@@ -308,10 +309,15 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		Tag tag = tag("red");
 		String uuid = tag.getUuid();
-		tag.remove();
-		tagRoot.findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-		});
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			tag.remove();
+			tx.success();
+		}
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			tagRoot.findByUuid(uuid, rh -> {
+				assertNull(rh.result());
+			});
+		}
 	}
 
 	@Test

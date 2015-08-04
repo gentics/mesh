@@ -139,7 +139,10 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		role().revokePermissions(tag, READ_PERM);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			role().revokePermissions(tag, READ_PERM);
+			tx.success();
+		}
 
 		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
 		latchFor(future);
@@ -189,7 +192,10 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 
-		role().revokePermissions(tag, UPDATE_PERM);
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			role().revokePermissions(tag, UPDATE_PERM);
+			tx.success();
+		}
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -231,7 +237,11 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 		String uuid = tag.getUuid();
-		role().revokePermissions(tag, DELETE_PERM);
+
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			role().revokePermissions(tag, DELETE_PERM);
+			tx.success();
+		}
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", tag.getUuid());
@@ -246,7 +256,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateTag() {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("SomeName");
-		TagFamily tagFamily = data().getTagFamilies().get("colors");
+		TagFamily tagFamily = tagFamilies().get("colors");
 		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);

@@ -119,6 +119,10 @@ public abstract class AbstractDBTest {
 		return data().getRoles();
 	}
 
+	public Map<String, TagFamily> tagFamilies() {
+		return data().getTagFamilies();
+	}
+
 	public Map<String, Group> groups() {
 		return data().getGroups();
 	}
@@ -165,9 +169,9 @@ public abstract class AbstractDBTest {
 
 	protected void purgeDatabase() {
 		fg.commit();
-		for (Edge edge : fg.getEdges()) {
-			edge.remove();
-		}
+		// for (Edge edge : fg.getEdges()) {
+		// edge.remove();
+		// }
 		for (Vertex vertex : fg.getVertices()) {
 			vertex.remove();
 		}

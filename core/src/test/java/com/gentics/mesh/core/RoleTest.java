@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RoutingContextHelper;
 
 public class RoleTest extends AbstractBasicObjectTest {
 
@@ -180,7 +180,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		role().addPermissions(extraRole, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends Role> roles = group().getRoles(requestUser, new PagingInfo(1, 10));
 		assertEquals(2, roles.getSize());
 		// assertEquals(2, roles.getTotalElements());
@@ -190,7 +190,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 		Page<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 10));
 		assertEquals(roles().size(), page.getTotalElements());
 		assertEquals(10, page.getSize());

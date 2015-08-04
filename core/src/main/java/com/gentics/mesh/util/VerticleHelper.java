@@ -1,40 +1,67 @@
 package com.gentics.mesh.util;
 
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
+import static com.gentics.mesh.core.data.service.I18NService.getI18n;
+
 import static com.gentics.mesh.json.JsonUtil.toJson;
-import static com.gentics.mesh.util.RoutingContextHelper.getPagingInfo;
-import static com.gentics.mesh.util.RoutingContextHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NamedNode;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 public class VerticleHelper {
+
+	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
+
+	public static final String QUERY_MAP_DATA_KEY = "queryMap";
+
+	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
+			AbstractListResponse<TR> listResponse) {
+		loadObjects(rc, root, rh -> {
+			if (hasSucceeded(rc, rh)) {
+				responde(rc, toJson(rh.result()));
+			}
+		}, listResponse);
+	}
+
+	public static void setPaging(AbstractListResponse<?> response, Page<?> page) {
+		PagingMetaInfo info = response.getMetainfo();
+		info.setCurrentPage(page.getNumber());
+		info.setPageCount(page.getTotalPages());
+		info.setPerPage(page.getPerPage());
+		info.setTotalCount(page.getTotalElements());
+	}
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(RoutingContext rc,
 			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
@@ -51,43 +78,11 @@ public class VerticleHelper {
 					// TODO handle async issue
 					});
 			}
-			RestModelPagingHelper.setPaging(listResponse, page);
+			setPaging(listResponse, page);
 			handler.handle(Future.succeededFuture(listResponse));
 		} catch (InvalidArgumentException e) {
 			handler.handle(Future.failedFuture(e));
 		}
-	}
-
-	public static <T extends GenericVertex<? extends RestModel>> void delete(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
-			RootVertex<T> root) {
-		I18NService i18n = I18NService.getI18n();
-
-		loadObject(
-				rc,
-				uuidParameterName,
-				DELETE_PERM,
-				root,
-				rh -> {
-					if (hasSucceeded(rc, rh)) {
-						GenericVertex<?> vertex = rh.result();
-						String uuid = vertex.getUuid();
-						String name = null;
-						if (vertex instanceof NamedNode) {
-							name = ((NamedNode) vertex).getName();
-						}
-						FramedThreadedTransactionalGraph fg = MeshSpringConfiguration.getMeshSpringConfiguration()
-								.getFramedThreadedTransactionalGraph();
-						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-							vertex.delete();
-							BootstrapInitializer.getBoot().meshRoot().getSearchQueue()
-									.put(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.DELETE_ACTION);
-							Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-							tx.success();
-						}
-						String id = name != null ? uuid + "/" + name : uuid;
-						responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
-					}
-				});
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(RoutingContext rc, String uuidParameterName,
@@ -115,30 +110,8 @@ public class VerticleHelper {
 				listResponse.getData().add(rh.result());
 			});
 		}
-		RestModelPagingHelper.setPaging(listResponse, page);
+		setPaging(listResponse, page);
 		handler.handle(Future.succeededFuture(listResponse));
-	}
-
-	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
-			AbstractListResponse<TR> listResponse) {
-		loadObjects(rc, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
-				responde(rc, toJson(rh.result()));
-			}
-		}, listResponse);
-	}
-
-	public static <T extends RestModel> void transformAndResponde(RoutingContext rc, GenericVertex<T> node) {
-		node.transformToRest(rc, th -> {
-			if (hasSucceeded(rc, th)) {
-				responde(rc, toJson(th.result()));
-			}
-		});
-	}
-
-	public static void responde(RoutingContext rc, String body) {
-		rc.response().putHeader("content-type", AbstractWebVerticle.APPLICATION_JSON);
-		rc.response().setStatusCode(200).end(body);
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,
@@ -159,6 +132,97 @@ public class VerticleHelper {
 				}
 			}
 		});
+	}
+
+	public static MeshAuthUser getUser(RoutingContext routingContext) {
+		if (routingContext.user() instanceof MeshAuthUser) {
+			MeshAuthUser user = (MeshAuthUser) routingContext.user();
+			return user;
+		}
+		// TODO i18n
+		throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not load request user");
+	}
+
+	/**
+	 * Extracts the lang parameter values from the query.
+	 * 
+	 * @param rc
+	 * @return List of languages. List can be empty.
+	 */
+	public static List<String> getSelectedLanguageTags(RoutingContext rc) {
+		List<String> languageTags = new ArrayList<>();
+		Map<String, String> queryPairs = splitQuery(rc);
+		if (queryPairs == null) {
+			return new ArrayList<>();
+		}
+		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
+		if (value != null) {
+			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
+		}
+		languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
+		return languageTags;
+
+	}
+
+	public static Map<String, String> splitQuery(RoutingContext rc) {
+		rc.data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
+			String query = rc.request().query();
+			Map<String, String> queryPairs = new LinkedHashMap<String, String>();
+			if (query == null) {
+				return queryPairs;
+			}
+			String[] pairs = query.split("&");
+			for (String pair : pairs) {
+				int idx = pair.indexOf("=");
+
+				try {
+					queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not decode query string pair {" + pair + "}", e);
+				}
+
+			}
+			return queryPairs;
+		});
+		return (Map<String, String>) rc.data().get(QUERY_MAP_DATA_KEY);
+	}
+
+	/**
+	 * Extract the paging information from the request parameters. The paging information contains information about the number of the page that is currently
+	 * requested and the amount of items that should be included in a single page.
+	 * 
+	 * @param rc
+	 * @return Paging information
+	 */
+	public static PagingInfo getPagingInfo(RoutingContext rc) {
+		MultiMap params = rc.request().params();
+		int page = 1;
+		int perPage = MeshOptions.DEFAULT_PAGE_SIZE;
+		if (params != null) {
+			page = NumberUtils.toInt(params.get("page"), 1);
+			perPage = NumberUtils.toInt(params.get("per_page"), MeshOptions.DEFAULT_PAGE_SIZE);
+		}
+		if (page < 1) {
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));
+		}
+		if (perPage <= 0) {
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));
+		}
+		return new PagingInfo(page, perPage);
+	}
+
+	public static <T extends RestModel> void transformAndResponde(RoutingContext rc, GenericVertex<T> node) {
+		node.transformToRest(rc, th -> {
+			if (hasSucceeded(rc, th)) {
+				responde(rc, toJson(th.result()));
+			}
+		});
+	}
+
+	public static void responde(RoutingContext rc, String body) {
+		rc.response().putHeader("content-type", AbstractWebVerticle.APPLICATION_JSON);
+		// TODO use 201 for created entities
+		rc.response().setStatusCode(200).end(body);
 	}
 
 	public static <T extends GenericVertex<?>> void loadObject(RoutingContext rc, String uuidParameterName, Permission perm, RootVertex<T> root,
@@ -216,4 +280,5 @@ public class VerticleHelper {
 		}
 		return true;
 	}
+
 }

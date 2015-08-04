@@ -1,5 +1,6 @@
 package com.gentics.mesh.util;
 
+import static com.gentics.mesh.util.VerticleHelper.setPaging;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -10,7 +11,6 @@ import org.junit.Test;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
-
 public class RestModelPagingHelperTest {
 
 	@Test
@@ -32,7 +32,7 @@ public class RestModelPagingHelperTest {
 		when(page.getTotalElements()).thenReturn(nTotalElements);
 		when(page.getPerPage()).thenReturn(nPageSize);
 
-		RestModelPagingHelper.setPaging(response, page);
+		setPaging(response, page);
 
 		assertNotNull(response.getMetainfo());
 		assertEquals(nCurrentPage, response.getMetainfo().getCurrentPage());

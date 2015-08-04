@@ -1,5 +1,6 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -18,7 +19,6 @@ import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RoutingContextHelper;
 
 public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Ignore("Not yet implemented")
@@ -34,7 +34,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = RoutingContextHelper.getUser(rc);
+		MeshAuthUser requestUser = getUser(rc);
 
 		Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingInfo(1, 10));
 

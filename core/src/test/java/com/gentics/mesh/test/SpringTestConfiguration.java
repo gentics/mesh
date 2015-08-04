@@ -2,6 +2,7 @@ package com.gentics.mesh.test;
 
 import javax.annotation.PostConstruct;
 
+import org.elasticsearch.node.Node;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl;
-import com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -17,8 +17,13 @@ public class SpringTestConfiguration {
 
 	@Bean
 	public String graphProviderClassname() {
-		//return TinkerGraphDatabaseProviderImpl.class.getName();
+		// return TinkerGraphDatabaseProviderImpl.class.getName();
 		return OrientDBDatabaseProviderImpl.class.getName();
+	}
+
+	@Bean
+	public Node elasticSearchNode() {
+		return null;
 	}
 
 	@PostConstruct
