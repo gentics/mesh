@@ -247,7 +247,7 @@ public class VerticleHelper {
 		} else {
 			I18NService i18n = I18NService.getI18n();
 			try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
-					.getFramedThreadedTransactionalGraph())) {
+					.framedThreadedTransactionalGraph())) {
 				root.findByUuid(
 						uuid,
 						rh -> {

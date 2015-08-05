@@ -26,6 +26,9 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
 		tagFamily.setName(name);
 		addTagFamily(tagFamily);
+		tagFamily.setCreator(creator);
+		tagFamily.setEditor(creator);
+		//TODO set creation and editing timestamps
 		TagFamilyRoot root = BootstrapInitializer.getBoot().tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);

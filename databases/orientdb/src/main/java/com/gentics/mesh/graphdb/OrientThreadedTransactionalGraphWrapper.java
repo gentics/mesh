@@ -14,7 +14,8 @@ public class OrientThreadedTransactionalGraphWrapper extends ThreadedTransaction
 
 	@Override
 	public TransactionalGraph newTransaction() {
-		return factory.getTx();
+//		return factory.getTx();
+		return graph;
 	}
 
 }

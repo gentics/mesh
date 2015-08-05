@@ -71,7 +71,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 		TagResponse restTag = new TagResponse();
 
 		try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
-				.getFramedThreadedTransactionalGraph())) {
+				.framedThreadedTransactionalGraph())) {
 			restTag.setPermissions(getUser(rc).getPermissionNames(this));
 			restTag.setUuid(getUuid());
 

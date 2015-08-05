@@ -2,7 +2,6 @@ package com.gentics.mesh.etc;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
@@ -67,10 +66,10 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
-	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
+	public FramedThreadedTransactionalGraph framedThreadedTransactionalGraph() {
 		try {
-			JsonObject settings = new JsonObject();
-			return databaseServiceProvider().getFramedGraph(settings);
+			StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
+			return databaseServiceProvider().getFramedGraph(options);
 		} catch (Exception e) {
 			String msg = "Could not get framed graph from database provider";
 			log.error(msg, e);

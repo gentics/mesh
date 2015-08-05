@@ -42,6 +42,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestAssert;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
@@ -74,6 +75,7 @@ public abstract class AbstractDBTest {
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			dataProvider.setup(1);
 			tx.success();
+			fg.commit();
 		}
 	}
 
@@ -167,10 +169,10 @@ public abstract class AbstractDBTest {
 	}
 
 	protected void purgeDatabase() {
-		fg.commit();
-		// for (Edge edge : fg.getEdges()) {
-		// edge.remove();
-		// }
+		// fg.commit();
+		for (Edge edge : fg.getEdges()) {
+			edge.remove();
+		}
 		for (Vertex vertex : fg.getVertices()) {
 			vertex.remove();
 		}

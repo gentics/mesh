@@ -2,8 +2,7 @@ package com.gentics.mesh.core;
 
 import static org.junit.Assert.assertNotNull;
 
-import java.util.concurrent.atomic.AtomicReference;
-
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
@@ -12,6 +11,11 @@ import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
 public class MultithreadGraphTest extends AbstractDBTest {
+
+	@Before
+	public void cleanup() {
+		purgeDatabase();
+	}
 
 	@Test
 	public void testMultithreading() throws InterruptedException {
@@ -28,7 +32,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 
 		runAndWait(() -> {
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				//			fg.getEdges();
+				// fg.getEdges();
 				runAndWait(() -> {
 					User user = boot.meshRoot().getUserRoot().findByUsername("test");
 					assertNotNull(user);
@@ -40,10 +44,10 @@ public class MultithreadGraphTest extends AbstractDBTest {
 			}
 		});
 
-		//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 		User user = boot.meshRoot().getUserRoot().findByUsername("test");
 		assertNotNull(user);
-		//		}
+		// }
 	}
 
 	public void runAndWait(Runnable runnable) {

@@ -281,6 +281,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.userRoot = null;
 		MeshRootImpl.nodeRoot = null;
 		MeshRootImpl.schemaContainerRoot = null;
+		MeshRootImpl.tagFamilyRoot = null;
 		MeshRootImpl.languageRoot = null;
 	}
 

@@ -1,9 +1,6 @@
 package com.gentics.mesh.graphdb;
 
-import io.vertx.core.json.JsonObject;
-
-import com.orientechnologies.orient.core.Orient;
-import com.orientechnologies.orient.core.db.ODatabaseThreadLocalFactory;
+import com.gentics.mesh.etc.StorageOptions;
 import com.orientechnologies.orient.core.db.OPartitionedDatabasePoolFactory;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
@@ -20,7 +17,7 @@ public class OrientDBDatabaseProviderImpl implements DatabaseServiceProvider {
 	}
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) {
+	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) {
 		//OrientTransactionalGraph memoryGraph = new OrientGraph("memory:tinkerpop");
 
 //		ODatabaseThreadLocalFactory customFactory = new MeshRecordFactory(poolFactory);

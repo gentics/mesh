@@ -1,7 +1,5 @@
 package com.gentics.mesh.graphdb;
 
-import io.vertx.core.json.JsonObject;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -10,6 +8,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
+import com.gentics.mesh.etc.StorageOptions;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -19,9 +18,9 @@ import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 public class Neo4jDatabaseProviderImpl implements DatabaseServiceProvider {
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) throws IOException {
+	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) throws IOException {
 
-		String DB_LOCATION = "/tmp/graphdb";
+		String DB_LOCATION = options.getDirectory();
 		File dbDir = new File(DB_LOCATION);
 		//TODO move this somewhere else or handle it by settings
 		FileUtils.deleteDirectory(dbDir);

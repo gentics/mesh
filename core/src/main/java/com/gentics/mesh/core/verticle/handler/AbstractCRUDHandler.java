@@ -92,7 +92,7 @@ public abstract class AbstractCRUDHandler {
 							name = ((NamedNode) vertex).getName();
 						}
 						FramedThreadedTransactionalGraph fg = MeshSpringConfiguration.getMeshSpringConfiguration()
-								.getFramedThreadedTransactionalGraph();
+								.framedThreadedTransactionalGraph();
 						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 							vertex.delete();
 							BootstrapInitializer.getBoot().meshRoot().getSearchQueue()

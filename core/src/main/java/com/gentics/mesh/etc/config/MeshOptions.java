@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
+import com.gentics.mesh.etc.StorageOptions;
 
 public class MeshOptions {
 
@@ -26,7 +27,7 @@ public class MeshOptions {
 	public static final String DEFAULT_NEO4VERTX_MODE = "default";
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
-	//public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl";
+	// public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl";
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
 	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
 
@@ -65,6 +66,8 @@ public class MeshOptions {
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
 
 	private MailConfig mailServerOptions = new MailConfig();
+
+	private StorageOptions storageOptions = new StorageOptions();
 
 	public MeshOptions() {
 	}
@@ -136,6 +139,10 @@ public class MeshOptions {
 	public MailConfig getMailServerOptions() {
 		return this.mailServerOptions;
 
+	}
+
+	public StorageOptions getStorageOptions() {
+		return this.storageOptions;
 	}
 
 }

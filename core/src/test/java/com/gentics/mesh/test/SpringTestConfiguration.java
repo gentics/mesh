@@ -19,10 +19,12 @@ public class SpringTestConfiguration {
 	public String graphProviderClassname() {
 		// return TinkerGraphDatabaseProviderImpl.class.getName();
 		return OrientDBDatabaseProviderImpl.class.getName();
+		// return TitanDBDatabaseProviderImpl.class.getName();
 	}
 
 	@Bean
 	public Node elasticSearchNode() {
+		// For testing it is not needed to start ES in most cases. This will speedup test execution since ES does not need to initialize.
 		return null;
 	}
 

@@ -1,9 +1,6 @@
 package com.gentics.mesh.graphdb;
 
-import io.vertx.core.json.JsonObject;
-
-import com.gentics.mesh.graphdb.DatabaseServiceProvider;
-import com.gentics.mesh.graphdb.ThreadedTransactionalGraphWrapper;
+import com.gentics.mesh.etc.StorageOptions;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
@@ -14,7 +11,7 @@ public class TinkerGraphDatabaseProviderImpl implements DatabaseServiceProvider 
 	}
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph(JsonObject settings) {
+	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) {
 		ThreadedTransactionalGraphWrapper wrapper = new TinkerGraphThreadedTransactionalGraphWrapper(new TinkerTransactionalGraphMock());
 		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 		return fg;
