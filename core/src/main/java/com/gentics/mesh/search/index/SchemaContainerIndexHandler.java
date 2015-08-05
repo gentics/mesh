@@ -12,7 +12,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	String getIndex() {
-		return "schemaContainer";
+		return "schema_container";
 	}
 
 	@Override

@@ -52,7 +52,7 @@ public class TagCRUDHandler extends AbstractCRUDHandler {
 						if (hasSucceeded(rc, rh)) {
 //							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 								TagFamily tagFamily = rh.result();
-								Tag newTag = tagFamily.create(requestModel.getFields().getName(), project);
+								Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
 								getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
 								project.getTagRoot().addTag(newTag);
 								tagCreated.complete(newTag);

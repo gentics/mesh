@@ -509,7 +509,7 @@ public class DemoDataProvider {
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
-		Tag tag = tagFamily.create(name, project);
+		Tag tag = tagFamily.create(name, project, userInfo.getUser());
 		setCreatorEditor(tag);
 		tags.put(name.toLowerCase(), tag);
 		return tag;

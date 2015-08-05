@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -66,9 +67,11 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse> impl
 		// TODO delete tag node?!
 	}
 
-	public Tag create(String name, Project project) {
+	public Tag create(String name, Project project, User creator) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
+		tag.setCreator(creator);
+		tag.setEditor(creator);
 		addTag(tag);
 		// Add to global list of tags
 		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();

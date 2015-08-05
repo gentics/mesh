@@ -59,14 +59,14 @@ public class TagTest extends AbstractBasicObjectTest {
 		tagFamily.setDescription("description");
 		assertEquals("description", tagFamily.getDescription());
 		assertEquals(0, tagFamily.getTags().size());
-		assertNotNull(tagFamily.create(GERMAN_NAME, project()));
+		assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
 		assertEquals(1, tagFamily.getTags().size());
 	}
 
 	@Test
 	public void testSimpleTag() {
 		TagFamily root = tagFamily("basic");
-		Tag tag = root.create("test", project());
+		Tag tag = root.create("test", project(), user());
 		assertEquals("test", tag.getName());
 		tag.setName("test2");
 		assertEquals("test2", tag.getName());
@@ -77,7 +77,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 		// 1. Create the tag
 		TagFamily root = tagFamily("basic");
-		Tag tag = root.create(ENGLISH_NAME, project());
+		Tag tag = root.create(ENGLISH_NAME, project(), user());
 		String uuid = tag.getUuid();
 		tagRoot.findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -120,7 +120,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testNodeTagging() {
 		final String TEST_TAG_NAME = "testTag";
 		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create(TEST_TAG_NAME, project());
+		Tag tag = tagFamily.create(TEST_TAG_NAME, project(), user());
 
 		Node node = folder("news");
 		node.addTag(tag);
@@ -159,7 +159,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		TagFamily basicTagFamily = tagFamily("basic");
-		Tag noPermTag = basicTagFamily.create("noPermTag", project());
+		Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
 		project().getTagRoot().addTag(noPermTag);
 		assertNotNull(noPermTag.getUuid());
 		assertEquals(tags().size() + 1, tagRoot.findAll().size());
@@ -223,7 +223,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreate() {
 		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create(GERMAN_NAME, project());
+		Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
 		assertNotNull(tag);
 		String uuid = tag.getUuid();
 		tagRoot.findByUuid(uuid, rh -> {
@@ -268,7 +268,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() {
 		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create("someTag", project());
+		Tag tag = tagFamily.create("someTag", project(), user());
 		String uuid = tag.getUuid();
 		tagRoot.findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -283,7 +283,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create("someTag", project());
+		Tag tag = tagFamily.create("someTag", project(), user());
 		assertTrue(user().hasPermission(tagFamily, Permission.READ_PERM));
 		assertFalse(user().hasPermission(tag, Permission.READ_PERM));
 		getRequestUser().addCRUDPermissionOnRole(tagFamily, Permission.CREATE_PERM, tag);

@@ -13,6 +13,8 @@ import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class AtomicTagTest extends AbstractDBTest {
@@ -20,11 +22,15 @@ public class AtomicTagTest extends AbstractDBTest {
 	@Test
 	public void testTagCreation() {
 		MeshRoot meshRoot = boot.meshRoot();
-		User user = meshRoot.getUserRoot().create("test", group(), user());
+		User user = meshRoot.getUserRoot().create("test", null, null);
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		assertNotNull(languageRoot);
 		languageRoot.create("Deutsch", "de");
 		languageRoot.create("English", "en");
+
+		Schema schema = new SchemaImpl();
+		schema.setName("folder");
+		meshRoot.getSchemaContainerRoot().create(schema, user);
 
 		meshRoot.getTagFamilyRoot();
 		meshRoot.getTagRoot();
@@ -34,7 +40,7 @@ public class AtomicTagTest extends AbstractDBTest {
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		TagFamily tagFamily = tagFamilyRoot.create("basic", user);
 
-		Tag tag = tagFamily.create("dummyName", project());
+		Tag tag = tagFamily.create("dummyName", project, user);
 		String uuid = tag.getUuid();
 		assertNotNull(tag);
 		assertEquals("dummyName", tag.getName());

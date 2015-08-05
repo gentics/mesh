@@ -53,15 +53,26 @@ public class MeshSpringConfiguration {
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
 	@Bean
-	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
+	public DatabaseServiceProvider databaseServiceProvider() {
 		String className = Mesh.mesh().getOptions().getDatabaseProviderClass();
 		try {
 			Class<?> clazz = Class.forName(className);
 			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
-			JsonObject settings = new JsonObject();
-			return provider.getFramedGraph(settings);
+			return provider;
 		} catch (Exception e) {
 			String msg = "Could not load database provider class {" + className + "}. Maybe there is no such provider within the classpath.";
+			log.error(msg, e);
+			throw new RuntimeException(msg, e);
+		}
+	}
+
+	@Bean
+	public FramedThreadedTransactionalGraph getFramedThreadedTransactionalGraph() {
+		try {
+			JsonObject settings = new JsonObject();
+			return databaseServiceProvider().getFramedGraph(settings);
+		} catch (Exception e) {
+			String msg = "Could not get framed graph from database provider";
 			log.error(msg, e);
 			throw new RuntimeException(msg, e);
 		}

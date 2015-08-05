@@ -16,7 +16,7 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedNode {
 
 	void setDescription(String description);
 
-	Tag create(String name, Project project);
+	Tag create(String name, Project project, User creator);
 
 	void removeTag(Tag tag);
 

@@ -12,7 +12,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	String getIndex() {
-		return "tagFamily";
+		return "tag_family";
 	}
 
 	@Override

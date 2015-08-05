@@ -113,23 +113,33 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			switch (type) {
 			case STRING:
 				StringField stringField = container.getString(name);
-				fieldsMap.put(name, stringField.getString());
+				if (stringField != null) {
+					fieldsMap.put(name, stringField.getString());
+				}
 				break;
 			case HTML:
 				HtmlField htmlField = container.getHtml(name);
-				fieldsMap.put(name, htmlField.getHTML());
+				if (htmlField != null) {
+					fieldsMap.put(name, htmlField.getHTML());
+				}
 				break;
 			case DATE:
 				DateField dateField = container.getDate(name);
-				fieldsMap.put(name, dateField.getDate());
+				if (dateField != null) {
+					fieldsMap.put(name, dateField.getDate());
+				}
 				break;
 			case NUMBER:
 				NumberField numberField = container.getNumber(name);
-				fieldsMap.put(name, numberField.getNumber());
+				if (numberField != null) {
+					fieldsMap.put(name, numberField.getNumber());
+				}
 				break;
 			case NODE:
 				NodeField nodeField = container.getNode(name);
-				fieldsMap.put(name, nodeField.getNode());
+				if (nodeField != null) {
+					fieldsMap.put(name, nodeField.getNode());
+				}
 				break;
 			case LIST:
 				//ListField listField = container.getN(name);
