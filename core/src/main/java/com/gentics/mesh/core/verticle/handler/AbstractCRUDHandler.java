@@ -106,12 +106,4 @@ public abstract class AbstractCRUDHandler {
 				});
 	}
 
-
-
-	
-
-
-
-
-
 }

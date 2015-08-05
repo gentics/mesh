@@ -186,6 +186,14 @@
 						<configuration>
 							<filters>
 								<filter>
+									<artifact>org.elasticsearch:elasticsearch</artifact>
+									<excludes>
+										<exclude>META-INF/services/org.apache.lucene.codecs.Codec</exclude>
+										<exclude>META-INF/services/org.apache.lucene.codecs.DocValuesFormat</exclude>
+										<exclude>META-INF/services/org.apache.lucene.codecs.PostingsFormat</exclude>
+									</excludes>
+								</filter>
+								<filter>
 									<artifact>*:*</artifact>
 									<excludes>
 										<exclude>META-INF/*.SF</exclude>

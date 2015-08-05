@@ -128,7 +128,7 @@ public class DemoDataProvider {
 		log.info("Users:    " + users.size());
 		log.info("Groups:   " + groups.size());
 		log.info("Roles:    " + roles.size());
-		fg.commit();
+//		fg.commit();
 	}
 
 	private void addBootstrappedData() {
