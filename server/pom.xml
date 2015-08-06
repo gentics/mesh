@@ -16,8 +16,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<dockerHost>cetus.office</dockerHost>
-		<dockerIP>10.43.84.220</dockerIP>
 	</properties>
 
 	<dependencies>
@@ -55,111 +53,6 @@
 
 	<build>
 		<plugins>
-		<!-- 
-			<plugin>
-				<groupId>org.jolokia</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.11.2</version>
-				<configuration>
-					<dockerHost>http://cetus.office:2375</dockerHost>
-					<images>
-						<image>
-							<name>gentics/mesh:0.1</name>
-							<alias>mesh</alias>
-							<build>
-								<from>java:8u40</from>
-								<assembly>
-									<descriptor>assembly.xml</descriptor>
-								</assembly>
-								<ports>
-									<port>8080</port>
-								</ports>
-								<command>java -jar /maven/mesh.jar</command>
-							</build>
-							<run>
-								<ports>
-									<port>mesh.port:8080</port>
-								</ports>
-								<wait>
-									<url>http://${dockerIP}:${mesh.port}/api/v1/admin/status</url>
-									<log>.*Initalized project.*</log>
-									<time>50000</time>
-								</wait>
-								<log>
-									<color>cyan</color>
-									<prefix>TC</prefix>
-								</log>
-							</run>
-						</image>
-					</images>
-				</configuration>
-				<executions>
-					<execution>
-						<id>start</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>build</goal>
-							<goal>start</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>stop</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.lazerycode.jmeter</groupId>
-				<artifactId>jmeter-maven-plugin</artifactId>
-				<version>1.8.1</version>
-				<executions>
-					<execution>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>jmeter</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<propertiesUser>
-						<webservice.host>${dockerIP}</webservice.host>
-						<webservice.port>${mesh.port}</webservice.port>
-					</propertiesUser>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>integration-test</id>
-						<goals>
-							<goal>integration-test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>verify</id>
-						<goals>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<systemPropertyVariables>
-						<mesh.url>http://${dockerIP}:${mesh.port}</mesh.url>
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
-			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -183,6 +76,8 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>combined</shadedClassifierName>
 							<filters>
 								<filter>
 									<artifact>org.elasticsearch:elasticsearch</artifact>
