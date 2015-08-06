@@ -26,6 +26,14 @@ public interface NodeFieldContainer extends FieldContainer, MicroschemaFieldCont
 	 */
 	Field getRestField(RoutingContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField);
 
+	/**
+	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
+	 * 
+	 * @param rc
+	 * @param fields
+	 * @param schema
+	 * @throws MeshSchemaException
+	 */
 	void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
 
 }

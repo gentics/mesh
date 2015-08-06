@@ -106,10 +106,11 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 		return groups;
 	}
 
-	public void setGroups(List<String> groups) {
-		this.groups = groups;
-	}
-
+	/**
+	 * Add the given group name to the list of groups.
+	 * 
+	 * @param name
+	 */
 	public void addGroup(String name) {
 		this.groups.add(name);
 	}

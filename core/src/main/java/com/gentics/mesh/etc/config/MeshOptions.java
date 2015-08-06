@@ -23,9 +23,6 @@ public class MeshOptions {
 	public static final int DEFAULT_NESTED_TAGS_LIMIT = 25;
 	public static final int DEFAULT_NESTED_NODES_LIMIT = 25;
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
-	public static final String DEFAULT_NEO4VERTX_BASE_ADDRESS = "graph";
-	public static final String DEFAULT_NEO4VERTX_MODE = "default";
-	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
 

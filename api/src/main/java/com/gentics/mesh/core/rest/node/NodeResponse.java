@@ -9,11 +9,12 @@ import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 
-public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField {
+public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField, NodeFieldListItem {
 
 	private boolean published;
 

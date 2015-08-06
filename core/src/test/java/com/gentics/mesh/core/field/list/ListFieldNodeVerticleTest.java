@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -112,14 +112,14 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testUpdateNodeFieldWithField() {
 		Node node = folder("news");
 		NodeFieldListImpl list = new NodeFieldListImpl();
-		list.add(new NodeFieldListItem(node.getUuid()));
+		list.add(new NodeFieldListItemImpl(node.getUuid()));
 		NodeResponse response = updateNode("listField", list);
 		NodeFieldListImpl field = response.getField("listField");
 		assertEquals(1, field.getList().size());
 
 		Node node2 = folder("deals");
 		list = new NodeFieldListImpl();
-		list.add(new NodeFieldListItem(node2.getUuid()));
+		list.add(new NodeFieldListItemImpl(node2.getUuid()));
 		response = updateNode("listField", list);
 		field = response.getField("listField");
 		assertEquals(1, field.getList().size());
@@ -129,7 +129,7 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testCreateNodeWithField() {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
-		NodeFieldListItem item = new NodeFieldListItem().setUuid(folder("news").getUuid());
+		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
 		listField.add(item);
 		NodeResponse response = createNode("listField", listField);
 		NodeFieldListImpl listFromResponse = response.getField("listField");
