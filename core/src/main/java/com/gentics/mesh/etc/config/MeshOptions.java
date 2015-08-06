@@ -5,7 +5,6 @@ import io.vertx.ext.mail.MailConfig;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.StorageOptions;
 
@@ -31,39 +30,30 @@ public class MeshOptions {
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
 	//public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
 
-	@JsonProperty("database_provider_class")
 	private String databaseProviderClass = DEFAULT_DATABASE_PROVIDER_CLASS;
 
-	@JsonProperty("http_port")
 	private int httpPort = DEFAULT_HTTP_PORT;
 
-	@JsonProperty("max_depth")
 	private int maxDepth = DEFAULT_MAX_DEPTH;
 
-	@JsonProperty("cluster_mode")
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
 	// TODO fileupload limit per project?
-	@JsonProperty("fileupload_byte_limit")
 	private long fileUploadByteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
 
-	@JsonProperty("default_nested_tags_limit")
 	private int defaultNestedTagsLimit = DEFAULT_NESTED_TAGS_LIMIT;
 
-	@JsonProperty("default_nested_nodes_limit")
 	private int defaultNestedNodesLimit = DEFAULT_NESTED_NODES_LIMIT;
 
-	@JsonProperty("default_page_size")
 	private int defaultPageSize = DEFAULT_PAGE_SIZE;
 
-	@JsonProperty("default_language")
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
-	@JsonProperty("verticles")
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
 
-	@JsonProperty("cors_allowed_origin_pattern")
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
+
+	private Boolean enableCors = false;
 
 	private MailConfig mailServerOptions = new MailConfig();
 
@@ -138,11 +128,22 @@ public class MeshOptions {
 
 	public MailConfig getMailServerOptions() {
 		return this.mailServerOptions;
-
 	}
 
 	public StorageOptions getStorageOptions() {
 		return this.storageOptions;
+	}
+
+	public Boolean getEnableCors() {
+		return enableCors;
+	}
+
+	public void setEnableCors(Boolean enableCors) {
+		this.enableCors = enableCors;
+	}
+
+	public boolean isCorsEnabled() {
+		return this.enableCors != null && this.enableCors == true;
 	}
 
 }

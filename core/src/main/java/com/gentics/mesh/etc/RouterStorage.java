@@ -1,4 +1,5 @@
 package com.gentics.mesh.etc;
+
 import static com.gentics.mesh.core.AbstractWebVerticle.APPLICATION_JSON;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -138,7 +139,9 @@ public class RouterStorage {
 
 	private void initAPIRouter() {
 		Router router = getAPIRouter();
-		router.route().handler(springConfiguration.corsHandler());
+		if (Mesh.mesh().getOptions().isCorsEnabled()) {
+			router.route().handler(springConfiguration.corsHandler());
+		}
 		router.route().handler(springConfiguration.bodyHandler());
 		router.route().handler(CookieHandler.create());
 		router.route().handler(springConfiguration.sessionHandler());
