@@ -45,17 +45,14 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
+				if (log.isDebugEnabled()) {
+					log.debug(json);
+				}
 				try {
 					if (isSchemaClass(classOfT)) {
 						T restObj = JsonUtil.readSchema(json, classOfT);
 						future.complete(restObj);
 					} else if (isNodeClass(classOfT) || isNodeListClass(classOfT)) {
-						//	SchemaReferenceInfo info = JsonUtil.readValue(json, SchemaReferenceInfo.class);
-						//	String schemaName = info.getSchema().getName();
-						//TODO should we check whether the schema exists upfront?
-						//	if (schema == null) {
-						//		future.fail("Schema {" + schemaName + "} could not be found. This schema is needed to deserialize the response.");
-						//	} else {
 						T restObj = JsonUtil.readNode(json, classOfT, client.getClientSchemaStorage());
 						future.complete(restObj);
 					} else {

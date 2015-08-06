@@ -39,9 +39,10 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		return verticle;
 	}
 
-	protected NodeResponse readNode(Node node) {
+	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("en");
+		parameters.setExpandedFieldNames(expandedFieldNames);
 		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid(), parameters);
 		latchFor(future);
 		assertSuccess(future);

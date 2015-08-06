@@ -10,4 +10,8 @@ public class MeshJsonException extends JsonProcessingException {
 		super(msg);
 	}
 
+	public MeshJsonException(String msg, Exception e) {
+		super(msg, e);
+	}
+
 }

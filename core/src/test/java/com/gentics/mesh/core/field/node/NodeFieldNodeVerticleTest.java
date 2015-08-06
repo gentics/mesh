@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.node;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -65,6 +66,46 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeField deserializedNodeField = response.getField("nodeField", NodeFieldImpl.class);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+	}
+
+	@Test
+	public void testReadExpandedNodeWithExitingField() throws IOException {
+		resetClientSchemaStorage();
+		Node newsNode = folder("news");
+		Node node = folder("2015");
+
+		// 1. Read node with collapsed fields
+		NodeFieldContainer container = node.getFieldContainer(english());
+		container.createNode("nodeField", newsNode);
+
+		// Check that the collapsed node field can be read
+		NodeResponse responseCollapsed = readNode(node);
+		NodeField deserializedNodeField = responseCollapsed.getField("nodeField", NodeFieldImpl.class);
+		assertNotNull(deserializedNodeField);
+		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+
+		// Check whether it is possible to read the field in an expanded form.
+		NodeResponse deserializedExpandedNodeField = responseCollapsed.getField("nodeField", NodeResponse.class);
+		assertNotNull(deserializedExpandedNodeField);
+
+		// 2. Read node with expanded fields
+		NodeResponse responseExpanded = readNode(node, "nodeField", "bogus");
+
+		// Check collapsed node field
+		deserializedNodeField = responseExpanded.getField("nodeField", NodeFieldImpl.class);
+		assertNotNull(deserializedNodeField);
+		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+
+		// Check expanded node field
+		deserializedExpandedNodeField = responseExpanded.getField("nodeField", NodeResponse.class);
+		if (deserializedExpandedNodeField instanceof NodeResponse) {
+			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
+			assertNotNull(expandedField);
+			assertEquals(newsNode.getUuid(), expandedField.getUuid());
+			assertNotNull(expandedField.getCreator());
+		} else {
+			fail("The returned object should be a NodeResponse object");
+		}
 	}
 
 }

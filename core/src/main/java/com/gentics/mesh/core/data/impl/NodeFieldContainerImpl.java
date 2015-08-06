@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.*;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +30,7 @@ import com.gentics.mesh.core.data.relationship.MeshRelationships;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -221,7 +225,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 	}
 
 	@Override
-	public Field getRestField(String fieldKey, FieldSchema fieldSchema) {
+	public Field getRestField(RoutingContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		//TODO replace switch case
 		if (FieldTypes.STRING.equals(type)) {
@@ -270,9 +274,24 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			com.gentics.mesh.core.data.node.field.nesting.NodeField graphNodeField = getNode(fieldKey);
 			//TODO handle null across all types
 			if (graphNodeField != null && graphNodeField.getNode() != null) {
-				NodeFieldImpl nodeField = new NodeFieldImpl();
-				nodeField.setUuid(graphNodeField.getNode().getUuid());
-				return nodeField;
+				if (expandField) {
+					CountDownLatch latch = new CountDownLatch(1);
+					AtomicReference<NodeResponse> reference = new AtomicReference<>();
+					graphNodeField.getNode().transformToRest(rc, rh -> {
+						reference.set(rh.result());
+						latch.countDown();
+					});
+					try {
+						latch.await(2, TimeUnit.SECONDS);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return reference.get();
+				} else {
+					NodeFieldImpl nodeField = new NodeFieldImpl();
+					nodeField.setUuid(graphNodeField.getNode().getUuid());
+					return nodeField;
+				}
 			}
 		}
 

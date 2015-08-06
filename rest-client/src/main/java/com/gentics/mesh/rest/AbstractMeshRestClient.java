@@ -26,7 +26,8 @@ import com.gentics.mesh.rest.method.UserClientMethods;
 import com.gentics.mesh.rest.method.WebRootClientMethods;
 
 public abstract class AbstractMeshRestClient implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods,
-		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods {
+		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods,
+		AdminClientMethods {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
 
@@ -90,6 +91,9 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 				buffer.appendString((String) requestModel);
 			} else {
 				String json = JsonUtil.toJson(requestModel);
+				if (log.isDebugEnabled()) {
+					log.debug(json);
+				}
 				buffer.appendString(json);
 			}
 		}

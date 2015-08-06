@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
@@ -22,6 +24,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -66,6 +69,12 @@ public abstract class AbstractDBTest {
 
 	@Autowired
 	private I18NService i18n;
+
+	static {
+		// Use slf4j instead of jul
+		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		JsonUtil.debugMode = true;
+	}
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException {
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {

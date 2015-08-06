@@ -4,13 +4,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 
-public class NodeResponse extends AbstractGenericNodeRestModel {
+public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField {
 
 	private boolean published;
 
@@ -154,6 +157,12 @@ public class NodeResponse extends AbstractGenericNodeRestModel {
 
 	public void setAvailableLanguages(List<String> availableLanguages) {
 		this.availableLanguages = availableLanguages;
+	}
+
+	@JsonIgnore
+	@Override
+	public String getType() {
+		return FieldTypes.NODE.toString();
 	}
 
 }

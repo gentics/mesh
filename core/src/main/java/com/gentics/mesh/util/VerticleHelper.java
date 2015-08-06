@@ -1,7 +1,8 @@
 package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
-
+import static com.gentics.mesh.core.rest.node.NodeRequestParameters.EXPANDFIELDS_QUERY_PARAM_KEY;
+import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QUERY_PARAM_KEY;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -41,8 +42,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 public class VerticleHelper {
-
-	private static final Object LANGUAGES_QUERY_PARAM_KEY = "lang";
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
 
@@ -162,6 +161,25 @@ public class VerticleHelper {
 		languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
 		return languageTags;
 
+	}
+
+	/**
+	 * Extracts the lang parameter values from the query.
+	 * 
+	 * @param rc
+	 * @return List of languages. List can be empty.
+	 */
+	public static List<String> getExpandedFieldnames(RoutingContext rc) {
+		List<String> expandFieldnames = new ArrayList<>();
+		Map<String, String> queryPairs = splitQuery(rc);
+		if (queryPairs == null) {
+			return new ArrayList<>();
+		}
+		String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
+		if (value != null) {
+			expandFieldnames = new ArrayList<>(Arrays.asList(value.split(",")));
+		}
+		return expandFieldnames;
 	}
 
 	public static Map<String, String> splitQuery(RoutingContext rc) {

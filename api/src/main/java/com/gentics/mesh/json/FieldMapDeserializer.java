@@ -11,12 +11,17 @@ import java.util.Map.Entry;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -77,7 +82,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				}
 			}
 			if (fieldSchema != null) {
-				addField(map, fieldKey, fieldSchema, currentEntry.getValue(), oc);
+				addField(map, fieldKey, fieldSchema, currentEntry.getValue(), oc, schemaStorage);
 			} else {
 				throw new MeshJsonException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
 			}
@@ -85,8 +90,8 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		return map;
 	}
 
-	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode, ObjectCodec oc)
-			throws JsonProcessingException {
+	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode, ObjectCodec oc,
+			SchemaStorage schemaStorage) throws JsonProcessingException {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case HTML:
@@ -157,8 +162,21 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 			//map.put(fieldKey, listField);
 			break;
 		case NODE:
-//			NodeField nodeField = new NodeFieldImpl();
-			map.put(fieldKey, oc.treeToValue(jsonNode, NodeFieldImpl.class));
+			//TODO determine somehow whether the field can be mapped to a node response
+			try {
+				NodeResponse expandedField = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
+				map.put(fieldKey, expandedField);
+			} catch (MeshJsonException e) {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not deserialize json to expanded Node Response", e);
+				}
+				NodeFieldImpl collapsedField = oc.treeToValue(jsonNode, NodeFieldImpl.class);
+				NodeResponse restNode = new NodeResponse();
+				restNode.setUuid(collapsedField.getUuid());
+				map.put(fieldKey, restNode);
+			} catch (IOException e) {
+				throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
+			}
 			break;
 		case MICROSCHEMA:
 			MicroschemaField MicroschemaField = new MicroschemaFieldImpl();

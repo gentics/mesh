@@ -41,6 +41,8 @@ public final class JsonUtil {
 
 	protected static ObjectMapper nodeMapper;
 
+	public static boolean debugMode = false;
+
 	static {
 		initNodeMapper();
 		initSchemaMapper();
@@ -52,7 +54,7 @@ public final class JsonUtil {
 		schemaMapper.setSerializationInclusion(Include.NON_NULL);
 		schemaMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		SimpleModule module = new SimpleModule();
-		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
+//		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 		schemaMapper.registerModule(module);
@@ -101,9 +103,11 @@ public final class JsonUtil {
 
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
-			// TODO don't use pretty printer in final version
-			//return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
-			return defaultMapper.writeValueAsString(obj);
+			if (debugMode) {
+				return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			} else {
+				return defaultMapper.writeValueAsString(obj);
+			}
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";

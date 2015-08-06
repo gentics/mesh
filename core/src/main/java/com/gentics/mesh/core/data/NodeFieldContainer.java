@@ -15,7 +15,16 @@ import com.gentics.mesh.error.MeshSchemaException;
  */
 public interface NodeFieldContainer extends FieldContainer, MicroschemaFieldContainer {
 
-	Field getRestField(String fieldKey, FieldSchema fieldSchema);
+	/**
+	 * Locate the field with the given fieldkey in this container and return the rest model for this field.
+	 * 
+	 * @param rc
+	 * @param fieldKey
+	 * @param fieldSchema
+	 * @param expandField
+	 * @return
+	 */
+	Field getRestField(RoutingContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField);
 
 	void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
 

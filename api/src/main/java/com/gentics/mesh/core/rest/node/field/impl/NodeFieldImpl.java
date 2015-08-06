@@ -13,7 +13,6 @@ public class NodeFieldImpl implements NodeField {
 		return uuid;
 	}
 
-	@Override
 	public NodeField setUuid(String uuid) {
 		this.uuid = uuid;
 		return this;

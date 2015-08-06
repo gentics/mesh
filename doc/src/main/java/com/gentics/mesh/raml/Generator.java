@@ -1,6 +1,14 @@
 package com.gentics.mesh.raml;
 
+import static com.gentics.mesh.util.FieldUtil.createBooleanField;
+import static com.gentics.mesh.util.FieldUtil.createDateField;
+import static com.gentics.mesh.util.FieldUtil.createHtmlField;
+import static com.gentics.mesh.util.FieldUtil.createNodeField;
+import static com.gentics.mesh.util.FieldUtil.createNodeListField;
+import static com.gentics.mesh.util.FieldUtil.createNumberField;
+import static com.gentics.mesh.util.FieldUtil.createNumberListField;
 import static com.gentics.mesh.util.FieldUtil.createStringField;
+import static com.gentics.mesh.util.FieldUtil.createStringListField;
 
 import java.io.File;
 import java.io.IOException;
@@ -282,7 +290,7 @@ public class Generator {
 		MicroschemaResponse response = new MicroschemaResponse();
 		response.setUuid(getUUID());
 		write(response);
-		
+
 		MicroschemaListResponse listResponse = new MicroschemaListResponse();
 		listResponse.getData().add(response);
 		setPaging(listResponse, 1, 1, 25, 1);
@@ -375,11 +383,23 @@ public class Generator {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(getUUID());
 		nodeResponse.setParentNodeUuid(getUUID());
+		nodeResponse.setCreated(getTimestamp());
+		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
-		nodeResponse.getFields().put("name", createStringField("Name for language tag de-DE"));
-		nodeResponse.getFields().put("filename", createStringField("dummy-content.de.html"));
-		nodeResponse.getFields().put("teaser", createStringField("Dummy teaser for de-DE"));
-		nodeResponse.getFields().put("content", createStringField("Content for language tag de-DE"));
+
+		Map<String, Field> fields = nodeResponse.getFields();
+		fields.put("name-stringField", createStringField("Name for language tag de-DE"));
+		fields.put("filename-stringField", createStringField("dummy-content.de.html"));
+		fields.put("teaser-stringField", createStringField("Dummy teaser for de-DE"));
+		fields.put("content-htmlField", createHtmlField("Content for language tag de-DE"));
+		fields.put("relatedProduct-nodeField", createNodeField(getUUID()));
+		fields.put("price-numberField", createNumberField("100.1"));
+		fields.put("enabled-booleanField", createBooleanField(true));
+		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("categories-nodeListField", createNodeListField());
+		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
+		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
+
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		return nodeResponse;
@@ -393,10 +413,13 @@ public class Generator {
 		nodeResponse.setCreated(getTimestamp());
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setEditor(getUserReference());
-		nodeResponse.getFields().put("name", createStringField("Name for language tag en"));
-		nodeResponse.getFields().put("filename", createStringField("dummy-content.en.html"));
-		nodeResponse.getFields().put("teaser", createStringField("Dummy teaser for en"));
-		nodeResponse.getFields().put("content", createStringField("Content for language tag en"));
+
+		Map<String, Field> fields = nodeResponse.getFields();
+		fields.put("name", createStringField("Name for language tag en"));
+		fields.put("filename", createStringField("dummy-content.en.html"));
+		fields.put("teaser", createStringField("Dummy teaser for en"));
+		fields.put("content", createStringField("Content for language tag en"));
+
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "CREATE");
 		return nodeResponse;
@@ -406,12 +429,20 @@ public class Generator {
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
 		contentCreate.setLanguage("en");
+
 		Map<String, Field> fields = contentCreate.getFields();
 		fields.put("name", createStringField("English name"));
 		fields.put("filename", createStringField("index.en.html"));
 		fields.put("content", createStringField("English content"));
 		fields.put("title", createStringField("English title"));
 		fields.put("teaser", createStringField("English teaser"));
+		fields.put("relatedProduct-nodeField", createNodeField(getUUID()));
+		fields.put("price-numberField", createNumberField("100.1"));
+		fields.put("enabled-booleanField", createBooleanField(true));
+		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("categories-nodeListField", createNodeListField());
+		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
+		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
 
 		contentCreate.setSchema(getSchemaReference("content"));
 		return contentCreate;
@@ -420,7 +451,16 @@ public class Generator {
 	private NodeUpdateRequest getNodeUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
-		nodeUpdate.getFields().put("filename", createStringField("index-renamed.en.html"));
+		
+		Map<String, Field> fields = nodeUpdate.getFields();
+		fields.put("filename", createStringField("index-renamed.en.html"));
+		fields.put("relatedProduct-nodeField", createNodeField(getUUID()));
+		fields.put("price-numberField", createNumberField("100.1"));
+		fields.put("enabled-booleanField", createBooleanField(true));
+		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("categories-nodeListField", createNodeListField());
+		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
+		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
 		return nodeUpdate;
 	}
 
@@ -447,7 +487,6 @@ public class Generator {
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
-
 		GroupResponse group = new GroupResponse();
 		group.setUuid(getUUID());
 		group.setCreated(getTimestamp());
@@ -515,7 +554,6 @@ public class Generator {
 		userCreate.setLastname("Doe");
 		userCreate.setEmailAddress("j.doe@nowhere.com");
 		write(userCreate);
-
 	}
 
 	private UserReference getUserReference() {

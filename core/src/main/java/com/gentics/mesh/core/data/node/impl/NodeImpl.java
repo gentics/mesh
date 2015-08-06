@@ -48,6 +48,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.VerticleHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
@@ -156,6 +157,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	@Override
 	public Node transformToRest(RoutingContext rc, Handler<AsyncResult<NodeResponse>> handler) {
 
+		List<String> fieldToExpand = VerticleHelper.getExpandedFieldnames(rc);
+
 		NodeResponse restNode = new NodeResponse();
 		fillRest(restNode, rc);
 
@@ -180,6 +183,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			if (getParentNode() != null) {
 				restNode.setParentNodeUuid(getParentNode().getUuid());
 			}
+
 			/* Load the children */
 			if (getSchema().isFolder()) {
 				// //TODO handle uuid
@@ -219,7 +223,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			} else {
 				restNode.setLanguage(foundLanguage.getLanguageTag());
 				for (FieldSchema fieldEntry : schema.getFields()) {
-					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(fieldEntry.getName(), fieldEntry);
+					boolean expandField = fieldToExpand.contains(fieldEntry.getName());
+					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(rc, fieldEntry.getName(), fieldEntry,
+							expandField);
 					if (fieldEntry.isRequired() && restField == null) {
 						/* TODO i18n */
 						throw new HttpStatusCodeErrorException(

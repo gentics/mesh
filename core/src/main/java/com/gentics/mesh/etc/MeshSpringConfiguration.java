@@ -36,6 +36,8 @@ import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class MeshSpringConfiguration {
 
+	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);
+
 	public static MeshSpringConfiguration instance;
 
 	@PostConstruct
@@ -46,8 +48,6 @@ public class MeshSpringConfiguration {
 	public static MeshSpringConfiguration getMeshSpringConfiguration() {
 		return instance;
 	}
-
-	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 

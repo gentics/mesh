@@ -13,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -71,10 +72,15 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		verticle.registerEndPoints();
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(user().getUsername(), data().getUserInfo().getPassword());
+		resetClientSchemaStorage();
+
+	}
+
+	protected void resetClientSchemaStorage() throws IOException {
+		getClient().getClientSchemaStorage().clear();
 		for (SchemaContainer container : data().getSchemaContainers().values()) {
 			getClient().getClientSchemaStorage().addSchema(container.getSchema());
 		}
-
 	}
 
 	public abstract AbstractWebVerticle getVerticle();

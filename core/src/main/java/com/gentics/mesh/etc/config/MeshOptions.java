@@ -5,6 +5,7 @@ import io.vertx.ext.mail.MailConfig;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.StorageOptions;
 
@@ -38,7 +39,6 @@ public class MeshOptions {
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
-	// TODO fileupload limit per project?
 	private long fileUploadByteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
 
 	private int defaultNestedTagsLimit = DEFAULT_NESTED_TAGS_LIMIT;
@@ -142,6 +142,7 @@ public class MeshOptions {
 		this.enableCors = enableCors;
 	}
 
+	@JsonIgnore	
 	public boolean isCorsEnabled() {
 		return this.enableCors != null && this.enableCors == true;
 	}
