@@ -102,8 +102,8 @@ public final class JsonUtil {
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
 			// TODO don't use pretty printer in final version
-			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
-			//return defaultMapper.writeValueAsString(obj);
+			//return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			return defaultMapper.writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";
