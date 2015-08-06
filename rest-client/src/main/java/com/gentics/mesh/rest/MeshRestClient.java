@@ -473,8 +473,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 			} else {
 				SchemaListResponse list = rh.result();
 				for (SchemaResponse schema : list.getData()) {
-					System.out.println(schema.getName());
 					getClientSchemaStorage().addSchema(schema);
+					log.info("Added schema {" + schema.getName() + "} to schema storage.");
 				}
 				future.complete();
 			}
