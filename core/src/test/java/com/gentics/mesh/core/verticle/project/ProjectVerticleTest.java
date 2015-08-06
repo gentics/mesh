@@ -192,9 +192,14 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		String response = JsonUtil.toJson(future.result());
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":25,\"page_count\":6,\"total_count\":143}}";
-		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
+		assertNotNull(response);
 
+		ProjectListResponse listResponse = future.result();
+		assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, listResponse.getMetainfo().getPerPage());
+		assertEquals(143, listResponse.getMetainfo().getTotalCount());
+		assertEquals(6, listResponse.getMetainfo().getPageCount());
+		assertEquals(0, listResponse.getData().size());
 	}
 
 	@Test

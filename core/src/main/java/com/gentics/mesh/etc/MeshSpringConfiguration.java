@@ -112,12 +112,6 @@ public class MeshSpringConfiguration {
 	@Bean
 	public MailClient mailClient() {
 		MailConfig config = Mesh.mesh().getOptions().getMailServerOptions();
-
-		// config.setHostname(options.getHostname());
-		// config.setPort(options.getPort());
-		// config.setStarttls(StartTLSOptions.REQUIRED);
-		// config.setUsername(options.getUsername());
-		// config.setPassword(options.getPassword());
 		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "meshClient");
 		return mailClient;
 	}
