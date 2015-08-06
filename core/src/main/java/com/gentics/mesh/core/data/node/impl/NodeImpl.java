@@ -107,14 +107,17 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return getSchemaContainer().getSchema();
 	}
 
+	@Override
 	public List<? extends Node> getChildren() {
 		return in(HAS_PARENT_NODE).has(NodeImpl.class).toListExplicit(NodeImpl.class);
 	}
 
+	@Override
 	public Node getParentNode() {
 		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
+	@Override
 	public void setParentNode(Node parent) {
 		setLinkOut(parent.getImpl(), HAS_PARENT_NODE);
 	}

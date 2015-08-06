@@ -491,6 +491,9 @@ traits:
     /children:
       get:
         description: Load child nodes for the given node.
+    /moveTo/{uuid}:
+      put:
+        description: Move the node to the given node. 
 
 #------------------------------------------------------------------------------
 # TagFamily Verticle
@@ -657,6 +660,7 @@ traits:
 # Search Verticle
 #------------------------------------------------------------------------------
 /search:
+  displayName: Search
   /nodes:
     is: [ localized, paged ]
     displayName: Node Search

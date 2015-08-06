@@ -68,6 +68,7 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	/**
 	 * Return the field container for the given language.
+	 * 
 	 * @param language
 	 * @return
 	 */
@@ -93,6 +94,13 @@ public interface Node extends GenericVertex<NodeResponse> {
 	 * @return
 	 */
 	List<? extends Node> getChildren();
+
+	/**
+	 * Returns the parentnode of this node.
+	 * 
+	 * @return
+	 */
+	Node getParentNode();
 
 	void setParentNode(Node parentNode);
 

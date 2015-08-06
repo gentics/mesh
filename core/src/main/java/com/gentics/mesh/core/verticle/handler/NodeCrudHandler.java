@@ -2,12 +2,15 @@ package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
+import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.responde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -30,6 +33,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -237,4 +241,32 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 		loadTransformAndResponde(rc, project.getNodeRoot(), new NodeListResponse());
 	}
 
+	public void handleMove(RoutingContext rc) {
+		Project project = getProject(rc);
+		// Load the node that should be moved
+		String uuid = rc.request().params().get("uuid");
+		String toUuid = rc.request().params().get("toUuid");
+		loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), sourceNodeHandler -> {
+			if (hasSucceeded(rc, sourceNodeHandler)) {
+
+				loadObject(rc, "toUuid", UPDATE_PERM, project.getNodeRoot(), targetNodeHandler -> {
+					if (hasSucceeded(rc, targetNodeHandler)) {
+						Node sourceNode = sourceNodeHandler.result();
+						Node targetNode = targetNodeHandler.result();
+						//TODO check whether the targetnode is a child of the source node
+						//TODO check whether a child of the targetnode has the same name as the sourceNode
+						//Move the element
+						sourceNode.setParentNode(targetNode);
+						//TODO update the editor fields and timestamps
+						sourceNode.setEditor(getUser(rc));
+						targetNode.setEditor(getUser(rc));
+						//TODO also update editor of affected childnodes?
+
+						//TODO update the search index
+						responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_moved_to", uuid, toUuid))));
+					}
+				});
+			}
+		});
+	}
 }

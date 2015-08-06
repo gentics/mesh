@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.NodeCrudHandler;
+
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
@@ -54,6 +55,15 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		addDeleteHandler();
 		addChildrenHandler();
 		addTagsHandler();
+		addMoveHandler();
+	}
+
+	private void addMoveHandler() {
+		Route route = route("/:uuid/moveTo/:toUuid").method(PUT).produces(APPLICATION_JSON);
+		route.handler(rc -> {
+			crudHandler.handleMove(rc);
+		});
+
 	}
 
 	private void addChildrenHandler() {

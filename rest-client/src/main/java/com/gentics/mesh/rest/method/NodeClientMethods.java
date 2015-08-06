@@ -30,4 +30,15 @@ public interface NodeClientMethods {
 	Future<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, QueryParameterProvider... parameters);
 
 	Future<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, QueryParameterProvider... parameters);
+
+	/**
+	 * Move the given node into the target folder. This operation will also affect the children of the given node. Please also note that it is not possible to
+	 * move a node into one of its children. This operation can only be executed within the scope of a single project.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param targetFolderUuid
+	 * @return
+	 */
+	Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid);
 }
