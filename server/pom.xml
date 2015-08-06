@@ -55,6 +55,7 @@
 
 	<build>
 		<plugins>
+		<!-- 
 			<plugin>
 				<groupId>org.jolokia</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
@@ -75,7 +76,6 @@
 								</ports>
 								<command>java -jar /maven/mesh.jar</command>
 							</build>
-							<!-- Running the container -->
 							<run>
 								<ports>
 									<port>mesh.port:8080</port>
@@ -111,7 +111,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>com.lazerycode.jmeter</groupId>
 				<artifactId>jmeter-maven-plugin</artifactId>
@@ -131,7 +130,6 @@
 					</propertiesUser>
 				</configuration>
 			</plugin>
-			<!-- Tell surefire to skip test, we are using the failsafe plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -161,6 +159,7 @@
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
