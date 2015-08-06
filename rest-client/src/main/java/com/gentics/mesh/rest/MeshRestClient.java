@@ -7,10 +7,10 @@ import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 
-import java.util.HashMap;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -553,6 +553,28 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	public Future<NodeListResponse> searchNodes(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/nodes" + getQuery(parameters), NodeListResponse.class, json);
+	}
+
+	@Override
+	public Future<String> getMeshStatus() {
+		Future<String> future = Future.future();
+		String uri = BASEURI + "/admin/status";
+		HttpClientRequest request = client.request(HttpMethod.GET, uri, rh -> {
+			rh.bodyHandler(bh -> {
+				future.complete(bh.toString());
+			});
+		});
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking get request to {" + uri + "}");
+		}
+		if (getCookie() != null) {
+			request.headers().add("Cookie", getCookie());
+		} else {
+			request.headers().add("Authorization", "Basic " + authEnc);
+		}
+		request.headers().add("Accept", "application/json");
+		request.end();
+		return future;
 	}
 
 }

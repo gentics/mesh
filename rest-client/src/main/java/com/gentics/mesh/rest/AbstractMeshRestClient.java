@@ -12,6 +12,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.method.AdminClientMethods;
 import com.gentics.mesh.rest.method.AuthClientMethods;
 import com.gentics.mesh.rest.method.GroupClientMethods;
 import com.gentics.mesh.rest.method.NodeClientMethods;
@@ -25,7 +26,7 @@ import com.gentics.mesh.rest.method.UserClientMethods;
 import com.gentics.mesh.rest.method.WebRootClientMethods;
 
 public abstract class AbstractMeshRestClient implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods,
-		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods {
+		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
 
