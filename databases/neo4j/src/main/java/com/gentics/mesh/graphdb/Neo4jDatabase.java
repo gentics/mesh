@@ -9,13 +9,14 @@ import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
-public class Neo4jDatabaseProviderImpl implements DatabaseServiceProvider {
+public class Neo4jDatabase implements Database {
 
 	@Override
 	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) throws IOException {

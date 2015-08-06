@@ -1,12 +1,13 @@
 package com.gentics.mesh.graphdb;
 
 import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
-public class TinkerGraphDatabaseProviderImpl implements DatabaseServiceProvider {
+public class TinkerGraphDatabase implements Database {
 
-	public TinkerGraphDatabaseProviderImpl() {
+	public TinkerGraphDatabase() {
 
 	}
 

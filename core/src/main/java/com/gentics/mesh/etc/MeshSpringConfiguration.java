@@ -29,7 +29,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.graphdb.DatabaseServiceProvider;
+import com.gentics.mesh.graphdb.DatabaseService;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 @Configuration
@@ -52,24 +52,15 @@ public class MeshSpringConfiguration {
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
 	@Bean
-	public DatabaseServiceProvider databaseServiceProvider() {
-		String className = Mesh.mesh().getOptions().getDatabaseProviderClass();
-		try {
-			Class<?> clazz = Class.forName(className);
-			DatabaseServiceProvider provider = (DatabaseServiceProvider) clazz.newInstance();
-			return provider;
-		} catch (Exception e) {
-			String msg = "Could not load database provider class {" + className + "}. Maybe there is no such provider within the classpath.";
-			log.error(msg, e);
-			throw new RuntimeException(msg, e);
-		}
+	public DatabaseService databaseService() {
+		return DatabaseService.getInstance();
 	}
 
 	@Bean
 	public FramedThreadedTransactionalGraph framedThreadedTransactionalGraph() {
 		try {
 			StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			return databaseServiceProvider().getFramedGraph(options);
+			return databaseService().getDatabase().getFramedGraph(options);
 		} catch (Exception e) {
 			String msg = "Could not get framed graph from database provider";
 			log.error(msg, e);

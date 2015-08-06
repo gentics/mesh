@@ -1,18 +1,19 @@
 package com.gentics.mesh.graphdb;
 
 import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.db.OPartitionedDatabasePoolFactory;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
-public class OrientDBDatabaseProviderImpl implements DatabaseServiceProvider {
+public class OrientDBDatabase implements Database {
 
 	OrientGraphFactory factory = new OrientGraphFactory("memory:tinkerpop");//.setupPool(5, 100);
 
 	private final OPartitionedDatabasePoolFactory poolFactory = new OPartitionedDatabasePoolFactory();
 
-	public OrientDBDatabaseProviderImpl() {
+	public OrientDBDatabase() {
 
 	}
 

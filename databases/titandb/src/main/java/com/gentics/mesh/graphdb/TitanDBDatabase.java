@@ -4,10 +4,11 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
-public class TitanDBDatabaseProviderImpl implements DatabaseServiceProvider {
+public class TitanDBDatabase implements Database {
 
 	private Configuration getBerkleyDBConf(StorageOptions settings) {
 		Configuration conf = new BaseConfiguration();

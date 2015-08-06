@@ -11,7 +11,7 @@ import com.gentics.mesh.etc.StorageOptions;
 
 public class MeshOptions {
 
-	// private static final boolean ENABLED = true;
+	private static final boolean ENABLED = true;
 	private static final boolean DISABLED = false;
 
 	public static final String HTTP_PORT_KEY = "httpPort";
@@ -27,11 +27,7 @@ public class MeshOptions {
 	public static final String DEFAULT_NEO4VERTX_MODE = "default";
 	public static final String DEFAULT_NEO4J_WEB_SERVER_BIND_ADDRESS = "0.0.0.0";
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
-	public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.TinkerGraphDatabaseProviderImpl";
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
-	//public static final String DEFAULT_DATABASE_PROVIDER_CLASS = "com.gentics.mesh.graphdb.OrientDBDatabaseProviderImpl";
-
-	private String databaseProviderClass = DEFAULT_DATABASE_PROVIDER_CLASS;
 
 	private int httpPort = DEFAULT_HTTP_PORT;
 
@@ -110,14 +106,6 @@ public class MeshOptions {
 		return defaultNestedTagsLimit;
 	}
 
-	public String getDatabaseProviderClass() {
-		return databaseProviderClass;
-	}
-
-	public void setDatabaseProviderClass(String databaseProviderClass) {
-		this.databaseProviderClass = databaseProviderClass;
-	}
-
 	public String getCorsAllowedOriginPattern() {
 		return this.corsAllowedOriginPattern;
 	}
@@ -142,7 +130,7 @@ public class MeshOptions {
 		this.enableCors = enableCors;
 	}
 
-	@JsonIgnore	
+	@JsonIgnore
 	public boolean isCorsEnabled() {
 		return this.enableCors != null && this.enableCors == true;
 	}
