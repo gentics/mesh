@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class ProjectNodeVerticleBinaryTest extends AbstractRestVerticleTest {
+public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectNodeVerticle verticle;
@@ -75,7 +75,7 @@ public class ProjectNodeVerticleBinaryTest extends AbstractRestVerticleTest {
 		assertEquals(contentType, response.getBinaryProperties().getMimeType());
 		assertEquals(binaryLen, response.getBinaryProperties().getFileSize());
 		//TODO add sha512sum support
-//		assertNotNull(response.getBinaryProperties().getSha512sum());
+		assertNotNull(response.getBinaryProperties().getSha512sum());
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getDpi());
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getWidth());
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getHeight());

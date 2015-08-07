@@ -20,6 +20,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -32,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -55,6 +58,8 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.util.FileUtils;
+import com.jcraft.jsch.Buffer;
 
 @Component
 public class NodeCrudHandler extends AbstractCRUDHandler {
@@ -125,7 +130,7 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 								NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 								container.setFieldFromRest(rc, requestModel.getFields(), schema);
 
-								//Inform elasticsearch about the new element
+								// Inform elasticsearch about the new element
 								searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 								tx.success();
@@ -264,16 +269,16 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 					if (hasSucceeded(rc, targetNodeHandler)) {
 						Node sourceNode = sourceNodeHandler.result();
 						Node targetNode = targetNodeHandler.result();
-						//TODO check whether the targetnode is a child of the source node
-						//TODO check whether a child of the targetnode has the same name as the sourceNode
-						//Move the element
+						// TODO check whether the targetnode is a child of the source node
+						// TODO check whether a child of the targetnode has the same name as the sourceNode
+						// Move the element
 						sourceNode.setParentNode(targetNode);
-						//TODO update the editor fields and timestamps
+						// TODO update the editor fields and timestamps
 						sourceNode.setEditor(getUser(rc));
 						targetNode.setEditor(getUser(rc));
-						//TODO also update editor of affected childnodes?
+						// TODO also update editor of affected childnodes?
 
-						//TODO update the search index
+						// TODO update the search index
 						responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_moved_to", uuid, toUuid))));
 					}
 				});
@@ -308,12 +313,19 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 							node.setBinaryFileName(fileName);
 							node.setBinaryFileSize(ul.size());
 							node.setBinaryContentType(contentType);
-							// TODO handle sha512sum checksum
-							//node.setBinarySHA512Sum(sha512HashSum);
-//							node.setBinaryImageDPI(dpi);
-//							node.setBinaryImageHeight(heigth);
-//							node.setBinaryImageWidth(width);
-							responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated", node.getUuid()))));
+							FileUtils.generateSha512Sum(ul.uploadedFileName(), hash -> {
+								if (hash.succeeded()) {
+									node.setBinarySHA512Sum(hash.result());
+									System.out.println("FILE: " + ul.uploadedFileName());
+									/* TODO handle sha512sum checksum */
+									// node.setBinaryImageDPI(dpi);
+									// node.setBinaryImageHeight(heigth);
+									// node.setBinaryImageWidth(width);
+									responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated", node.getUuid()))));
+								} else {
+									fail(rc, "node_error_hashing_failed");
+								}
+							});
 						}
 					}
 				} catch (Exception e) {
