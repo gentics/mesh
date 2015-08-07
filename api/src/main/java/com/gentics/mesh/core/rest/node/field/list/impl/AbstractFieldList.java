@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 
-public abstract class AbstractFieldList<T> implements Field {
+public abstract class AbstractFieldList<T> implements FieldList<T> {
 
 	private List<T> list = new ArrayList<>();
 
@@ -16,6 +16,7 @@ public abstract class AbstractFieldList<T> implements Field {
 
 	private long totalCount;
 
+	@Override
 	public List<T> getList() {
 		return list;
 	}
@@ -26,30 +27,37 @@ public abstract class AbstractFieldList<T> implements Field {
 		return "list";
 	}
 
+	@Override
 	public void add(T field) {
 		list.add(field);
 	}
 
+	@Override
 	public String getOrder() {
 		return order;
 	}
 
+	@Override
 	public void setOrder(String order) {
 		this.order = order;
 	}
 
+	@Override
 	public String getOrderBy() {
 		return orderBy;
 	}
 
+	@Override
 	public void setOrderBy(String orderBy) {
 		this.orderBy = orderBy;
 	}
 
+	@Override
 	public long getTotalCount() {
 		return totalCount;
 	}
 
+	@Override
 	public void setTotalCount(long totalCount) {
 		this.totalCount = totalCount;
 	}

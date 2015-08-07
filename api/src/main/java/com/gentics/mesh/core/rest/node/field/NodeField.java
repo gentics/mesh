@@ -4,6 +4,4 @@ public interface NodeField extends ListableField, MicroschemaListableField {
 
 	String getUuid();
 
-//	NodeField setUuid(String uuid);
-
 }

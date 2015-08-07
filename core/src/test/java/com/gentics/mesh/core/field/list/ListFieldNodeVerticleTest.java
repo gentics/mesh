@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.list;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -149,6 +151,48 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeFieldListImpl deserializedListField = response.getField("listField", NodeFieldListImpl.class);
 		assertNotNull(deserializedListField);
 		assertEquals(1, deserializedListField.getList().size());
+	}
+
+	@Test
+	public void testReadExpandedNodeListWithExitingField() throws IOException {
+		resetClientSchemaStorage();
+		Node newsNode = folder("news");
+		Node node = folder("2015");
+
+		// Create node list
+		NodeFieldContainer container = node.getFieldContainer(english());
+		NodeFieldList nodeList = container.createNodeList("listField");
+		nodeList.createNode("1", newsNode);
+
+		// 1. Read node with collapsed fields and check that the collapsed node list item can be read
+		NodeResponse responseCollapsed = readNode(node);
+		com.gentics.mesh.core.rest.node.field.list.NodeFieldList deserializedNodeListField = responseCollapsed.getField("listField",
+				NodeFieldListImpl.class);
+		assertNotNull(deserializedNodeListField);
+		assertEquals("The newsNode should be the first item in the list.", newsNode.getUuid(), deserializedNodeListField.getList().get(0).getUuid());
+
+		// Check whether it is possible to read the field in an expanded form.
+		NodeResponse nodeListItem = (NodeResponse) deserializedNodeListField.getList().get(0);
+		assertNotNull(nodeListItem);
+
+		// 2. Read node with expanded fields
+		NodeResponse responseExpanded = readNode(node, "listField", "bogus");
+
+		// Check collapsed node field
+		deserializedNodeListField = responseExpanded.getField("listField", NodeFieldListImpl.class);
+		assertNotNull(deserializedNodeListField);
+		assertEquals(newsNode.getUuid(), deserializedNodeListField.getList().get(0).getUuid());
+
+		// Check expanded node field
+		NodeFieldListItem deserializedExpandedItem = deserializedNodeListField.getList().get(0);
+		if (deserializedExpandedItem instanceof NodeResponse) {
+			NodeResponse expandedField = (NodeResponse) deserializedExpandedItem;
+			assertNotNull(expandedField);
+			assertEquals(newsNode.getUuid(), expandedField.getUuid());
+			assertNotNull(expandedField.getCreator());
+		} else {
+			fail("The returned item should be a NodeResponse object");
+		}
 	}
 
 }

@@ -126,7 +126,18 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 				switch (listFieldSchema.getListType()) {
 				case "node":
-					map.put(fieldKey, oc.treeToValue(jsonNode, NodeFieldListImpl.class));
+					NodeFieldListImpl nodeListField = null;
+					try {
+						nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class, schemaStorage);
+					} catch (MeshJsonException e) {
+						if (log.isDebugEnabled()) {
+							log.debug("Could not deserialize json to expanded Node Response", e);
+						}
+						nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
+					} catch (IOException e) {
+						throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
+					}
+					map.put(fieldKey, nodeListField);
 					break;
 				case "number":
 					map.put(fieldKey, oc.treeToValue(jsonNode, NumberFieldListImpl.class));
@@ -146,19 +157,16 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				case "html":
 					map.put(fieldKey, oc.treeToValue(jsonNode, HtmlFieldListImpl.class));
 					break;
+				default:
+					log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
+					break;
 				}
 			} else {
 				//TODO handle unexpected error
 			}
-
-			//ListField listField = new ListFieldImpl();
-			// TODO impl
-			//jsonNode.
-			//jsonNode.get
-			//map.put(fieldKey, listField);
 			break;
 		case NODE:
-			//TODO determine somehow whether the field can be mapped to a node response
+			// Try to deserialize the field in the expanded version
 			try {
 				NodeResponse expandedField = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
 				map.put(fieldKey, expandedField);

@@ -74,11 +74,11 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 
-		// 1. Read node with collapsed fields
+		// Create test field
 		NodeFieldContainer container = node.getFieldContainer(english());
 		container.createNode("nodeField", newsNode);
 
-		// Check that the collapsed node field can be read
+		// 1. Read node with collapsed fields and check that the collapsed node field can be read
 		NodeResponse responseCollapsed = readNode(node);
 		NodeField deserializedNodeField = responseCollapsed.getField("nodeField", NodeFieldImpl.class);
 		assertNotNull(deserializedNodeField);

@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.ListableField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -53,7 +54,7 @@ public final class JsonUtil {
 		schemaMapper.setSerializationInclusion(Include.NON_NULL);
 		schemaMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		SimpleModule module = new SimpleModule();
-//		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
+		//		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 		schemaMapper.registerModule(module);
@@ -85,6 +86,7 @@ public final class JsonUtil {
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		SimpleModule module = new SimpleModule();
+		module.addDeserializer(NodeFieldListItem.class, new NodeFieldListItemDeserializer());
 		module.addSerializer(NumberFieldImpl.class, new StringFieldSerializer<NumberFieldImpl>());
 		module.addSerializer(HtmlFieldImpl.class, new StringFieldSerializer<HtmlFieldImpl>());
 		module.addSerializer(StringFieldImpl.class, new StringFieldSerializer<StringFieldImpl>());

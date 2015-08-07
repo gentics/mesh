@@ -316,13 +316,13 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				if (nodeFieldList == null) {
 					return null;
 				}
-
 				for (com.gentics.mesh.core.data.node.field.nesting.NodeField item : nodeFieldList.getList()) {
 					if (expandField) {
 						//TODO, FIXME get rid of the countdown latch
 						CountDownLatch latch = new CountDownLatch(1);
 						AtomicReference<NodeResponse> reference = new AtomicReference<>();
 						item.getNode().transformToRest(rc, rh -> {
+							reference.set(rh.result());
 							latch.countDown();
 						});
 						try {
