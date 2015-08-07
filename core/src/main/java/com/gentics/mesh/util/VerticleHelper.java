@@ -243,6 +243,18 @@ public class VerticleHelper {
 		rc.response().setStatusCode(200).end(body);
 	}
 
+	/**
+	 * Calls the rc.fail method and sets a http 400 error with the additional response information.
+	 * 
+	 * @param rc
+	 * @param msg
+	 * @param parameters
+	 */
+	public static void fail(RoutingContext rc, String msg, String... parameters) {
+		I18NService i18n = I18NService.getI18n();
+		rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, msg, parameters)));
+	}
+
 	public static <T extends GenericVertex<?>> void loadObject(RoutingContext rc, String uuidParameterName, Permission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 

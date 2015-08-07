@@ -39,6 +39,10 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 
 	private String displayField;
 
+	private BinaryProperties binaryProperties;
+
+	private String fileName;
+
 	private String segmentField;
 
 	private FieldMap fields = new FieldMapImpl();
@@ -112,6 +116,22 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 
 	public void setDisplayField(String displayField) {
 		this.displayField = displayField;
+	}
+
+	public BinaryProperties getBinaryProperties() {
+		return binaryProperties;
+	}
+
+	public void setBinaryProperties(BinaryProperties binaryProperties) {
+		this.binaryProperties = binaryProperties;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 
 	public String getSegmentField() {

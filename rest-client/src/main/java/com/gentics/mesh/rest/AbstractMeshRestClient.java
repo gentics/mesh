@@ -9,7 +9,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.method.AdminClientMethods;
@@ -83,21 +85,8 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		this.clientSchemaStorage = clientSchemaStorage;
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> ClassOfT, Object requestModel) {
-
-		Buffer buffer = Buffer.buffer();
-		if (requestModel != null) {
-			if (requestModel instanceof String) {
-				buffer.appendString((String) requestModel);
-			} else {
-				String json = JsonUtil.toJson(requestModel);
-				if (log.isDebugEnabled()) {
-					log.debug(json);
-				}
-				buffer.appendString(json);
-			}
-		}
-		MeshResponseHandler<T> handler = new MeshResponseHandler<>(ClassOfT, this);
+	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType) {
+		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, this);
 
 		String uri = BASEURI + path;
 		HttpClientRequest request = client.request(method, uri, handler);
@@ -111,15 +100,41 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 			request.headers().add("Authorization", "Basic " + authEnc);
 		}
 		request.headers().add("Accept", "application/json");
-		if (buffer.length() != 0) {
-			request.headers().add("content-length", String.valueOf(buffer.length()));
-			request.headers().add("content-type", "application/json");
-			request.write(buffer);
-		}
 
+		if (bodyData.length() != 0) {
+			request.headers().add("content-length", String.valueOf(bodyData.length()));
+			if (!StringUtils.isEmpty(contentType)) {
+				request.headers().add("content-type", contentType);
+			}
+			request.write(bodyData);
+		}
 		request.end();
 		return handler.getFuture();
+	}
 
+	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, RestModel restModel) {
+		Buffer buffer = Buffer.buffer();
+		String json = JsonUtil.toJson(restModel);
+		if (log.isDebugEnabled()) {
+			log.debug(json);
+		}
+		buffer.appendString(json);
+		return handleRequest(method, path, classOfT, buffer, "application/json");
+	}
+
+	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, String jsonBodyData) {
+
+		Buffer buffer = Buffer.buffer();
+		if (!StringUtils.isEmpty(jsonBodyData)) {
+			buffer.appendString(jsonBodyData);
+		}
+
+		return handleRequest(method, path, classOfT, buffer, "application/json");
+
+	}
+
+	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT) {
+		return handleRequest(method, path, classOfT, Buffer.buffer(), null);
 	}
 
 	protected String getQuery(QueryParameterProvider... parameters) {
@@ -134,7 +149,4 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 		}
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> ClassOfT) {
-		return handleRequest(method, path, ClassOfT, null);
-	}
 }

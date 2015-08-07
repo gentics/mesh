@@ -1,14 +1,5 @@
 package com.gentics.mesh.core.verticle.project;
 
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
-import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
-import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -21,14 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.NodeCrudHandler;
 
 /**
@@ -56,6 +39,21 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 		addChildrenHandler();
 		addTagsHandler();
 		addMoveHandler();
+
+		addFileuploadHandler();
+		addFileDownloadHandler();
+	}
+
+	private void addFileDownloadHandler() {
+		route("/:uuid/bin").method(GET).handler(rc -> {
+			crudHandler.handleDownload(rc);
+		});
+	}
+
+	private void addFileuploadHandler() {
+		route("/:uuid/bin").method(POST).method(PUT).handler(rc -> {
+			crudHandler.handleUpload(rc);
+		});
 	}
 
 	private void addMoveHandler() {
@@ -69,79 +67,26 @@ public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
 	private void addChildrenHandler() {
 		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-			Project project = getProject(rc);
-			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					Node node = rh.result();
-					try {
-						Page<? extends Node> page = node.getChildren(requestUser, getSelectedLanguageTags(rc), getPagingInfo(rc));
-						transformAndResponde(rc, page, new NodeListResponse());
-					} catch (Exception e) {
-						rc.fail(e);
-					}
-				}
-			});
+			crudHandler.handleReadChildren(rc);
 		});
-
 	}
 
 	// TODO filtering, sorting
 	private void addTagsHandler() {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			Project project = getProject(rc);
-			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					Node node = rh.result();
-					try {
-						Page<? extends Tag> tagPage = node.getTags(rc);
-						transformAndResponde(rc, tagPage, new TagListResponse());
-					} catch (Exception e) {
-						rc.fail(e);
-					}
-				}
-			});
+			crudHandler.readTags(rc);
 		});
 
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
-			Project project = getProject(rc);
-			if (project == null) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Project not found"));
-				// TODO i18n error
-			} else {
-				loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
-						Node node = rh.result();
-						loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
-							if (hasSucceeded(rc, th)) {
-								Tag tag = th.result();
-								node.addTag(tag);
-								transformAndResponde(rc, node);
-							}
-						});
-					}
-				});
-
-			}
+			crudHandler.handleAddTag(rc);
 		});
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			Project project = getProject(rc);
-			loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-				loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), srh -> {
-					if (hasSucceeded(rc, srh) && hasSucceeded(rc, rh)) {
-						Node node = rh.result();
-						Tag tag = srh.result();
-						node.removeTag(tag);
-						transformAndResponde(rc, node);
-					}
-				});
-			});
-
+			crudHandler.handleRemoveTag(rc);
 		});
 	}
 

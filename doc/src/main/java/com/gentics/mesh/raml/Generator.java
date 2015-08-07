@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.node.BinaryProperties;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -387,6 +388,16 @@ public class Generator {
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
 
+		nodeResponse.setFileName("flower.jpg");
+		BinaryProperties binaryProperties = new BinaryProperties();
+		binaryProperties.setDpi(200);
+		binaryProperties.setFileSize(95365);
+		binaryProperties.setWidth(800);
+		binaryProperties.setHeight(600);
+		binaryProperties.setMimeType("image/jpeg");
+		binaryProperties.setSha512sum("ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
+		nodeResponse.setBinaryProperties(binaryProperties);
+
 		Map<String, Field> fields = nodeResponse.getFields();
 		fields.put("name-stringField", createStringField("Name for language tag de-DE"));
 		fields.put("filename-stringField", createStringField("dummy-content.de.html"));
@@ -451,7 +462,7 @@ public class Generator {
 	private NodeUpdateRequest getNodeUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
-		
+
 		Map<String, Field> fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
 		fields.put("relatedProduct-nodeField", createNodeField(getUUID()));

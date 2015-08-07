@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -115,4 +116,17 @@ public interface NodeClientMethods {
 	 * @return
 	 */
 	Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid);
+
+	/**
+	 * Update the binary field for the node with the given nodeUuid in the given project using the provided data buffer.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param fileData
+	 *            Buffer that serves the binary data.
+	 * @param fileName
+	 * @param contentType
+	 * @return
+	 */
+	Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName, String contentType);
 }

@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -40,6 +42,7 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.BinaryProperties;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -54,6 +57,20 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
+
+	private static final String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
+
+	private static final String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
+
+	private static final String BINARY_SHA512SUM_PROPERTY_KEY = "binarySha512Sum";
+
+	private static final String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
+
+	private static final String BINARY_IMAGE_DPI_PROPERTY_KEY = "binaryImageDPI";
+
+	private static final String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
+
+	private static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
 	@Override
 	public String getType() {
@@ -214,6 +231,21 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			}
 
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
+			if (schema.isBinary()) {
+				restNode.setFileName(getBinaryFileName());
+				BinaryProperties binaryProperties = new BinaryProperties();
+				binaryProperties.setMimeType(getBinaryContentType());
+				binaryProperties.setFileSize(getBinaryFileSize());
+				binaryProperties.setSha512sum(getBinarySHA512Sum());
+				//TODO determine whether file is an image
+				//binaryProperties.setDpi(getImageDpi());
+				getBinaryImageDPI();
+				getBinaryImageHeight();
+				getBinaryImageWidth();
+				//binaryProperties.setHeight(getImageHeight());
+				//binaryProperties.setWidth(getImageWidth());
+				restNode.setBinaryProperties(binaryProperties);
+			}
 
 			if (fieldContainer == null) {
 				String langInfo = getLanguageInfo(languageTags);
@@ -271,6 +303,91 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
+	public Integer getBinaryImageWidth() {
+		return getProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setBinaryImageWidth(Integer width) {
+		setProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
+	}
+
+	@Override
+	public Integer getBinaryImageHeight() {
+		return getProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setBinaryImageHeight(Integer heigth) {
+		setProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, heigth);
+	}
+
+	@Override
+	public Integer getBinaryImageDPI() {
+		return getProperty(BINARY_IMAGE_DPI_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setBinaryImageDPI(Integer dpi) {
+		setProperty(BINARY_IMAGE_DPI_PROPERTY_KEY, dpi);
+	}
+
+	@Override
+	public String getBinarySHA512Sum() {
+		return getProperty(BINARY_SHA512SUM_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setBinarySHA512Sum(String sha512HashSum) {
+		setProperty(BINARY_SHA512SUM_PROPERTY_KEY, sha512HashSum);
+	}
+
+	@Override
+	public long getBinaryFileSize() {
+		Long size = getProperty(BINARY_FILESIZE_PROPERTY_KEY);
+		return size == null ? 0 : size;
+	}
+
+	@Override
+	public void setBinaryFileSize(long sizeInBytes) {
+		setProperty(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
+	}
+
+	@Override
+	public void setBinaryFileName(String filenName) {
+		setProperty(BINARY_FILENAME_PROPERTY_KEY, filenName);
+	}
+
+	@Override
+	public String getBinaryFileName() {
+		return getProperty(BINARY_FILENAME_PROPERTY_KEY);
+	}
+
+	@Override
+	public String getBinaryContentType() {
+		return getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setBinaryContentType(String contentType) {
+		setProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY, contentType);
+	}
+
+	@Override
+	public Future<Buffer> getBinaryFileBuffer() {
+		Future<Buffer> future = Future.future();
+		//TODO determine the path to the file
+		Mesh.vertx().fileSystem().readFile("/tmp/bogus", rh -> {
+			if (rh.failed()) {
+				future.fail(rh.cause());
+			} else {
+				future.complete(rh.result());
+			}
+		});
+		return future;
+	}
+
+	@Override
 	public List<String> getAvailableLanguageNames() {
 		// TODO Auto-generated method stub
 		// TODO set language and all languages
@@ -279,7 +396,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public void delete() {
-		// TODO handle linked containers
+		// TODO handle linked containers and other cases
 		getElement().remove();
 	}
 

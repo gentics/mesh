@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
@@ -575,6 +576,23 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		request.headers().add("Accept", "application/json");
 		request.end();
 		return future;
+	}
+
+	@Override
+	public Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName,
+			String contentType) {
+		//TODO handle escaping of filename
+		String boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO";
+		Buffer multiPartFormData = Buffer.buffer();
+		String header = "--" + boundary + "\r\n" + "Content-Disposition: form-data; name=\"" + "someName" + "\"; filename=\"" + fileName + "\"\r\n"
+				+ "Content-Type: " + contentType + "\r\n" + "Content-Transfer-Encoding: binary\r\n" + "\r\n";
+		multiPartFormData.appendString(header);
+		multiPartFormData.appendBuffer(fileData);
+		String footer = "\r\n--" + boundary + "--\r\n";
+		multiPartFormData.appendString(footer);
+		String bodyContentType = "multipart/form-data; boundary=" + boundary;
+		return handleRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/bin", GenericMessageResponse.class, multiPartFormData,
+				bodyContentType);
 	}
 
 }

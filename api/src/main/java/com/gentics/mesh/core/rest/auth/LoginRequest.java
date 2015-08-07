@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.auth;
 
-public class LoginRequest {
+import com.gentics.mesh.core.rest.common.RestModel;
+
+public class LoginRequest implements RestModel {
 
 	private String username;
 	private String password;

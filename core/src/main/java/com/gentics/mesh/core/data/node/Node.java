@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
@@ -107,5 +109,60 @@ public interface Node extends GenericVertex<NodeResponse> {
 	Node create(User creator, SchemaContainer schemaContainer, Project project);
 
 	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
+
+	void setBinaryFileName(String filenName);
+
+	String getBinaryFileName();
+
+	String getBinaryContentType();
+
+	void setBinaryContentType(String contentType);
+
+	/**
+	 * Return future that holds a buffer reference to the binary file data.
+	 * 
+	 * @return
+	 */
+	Future<Buffer> getBinaryFileBuffer();
+
+	/**
+	 * Set the binary file size in bytes
+	 * 
+	 * @param sizeInBytes
+	 */
+	void setBinaryFileSize(long sizeInBytes);
+
+	/**
+	 * Return the binary file size in bytes
+	 * 
+	 * @return
+	 */
+	long getBinaryFileSize();
+
+	void setBinarySHA512Sum(String sha512HashSum);
+
+	String getBinarySHA512Sum();
+
+	void setBinaryImageDPI(Integer dpi);
+
+	Integer getBinaryImageDPI();
+
+	Integer getBinaryImageHeight();
+
+	void setBinaryImageWidth(Integer width);
+
+	/**
+	 * Return the width of the binary image
+	 * 
+	 * @return
+	 */
+	Integer getBinaryImageWidth();
+
+	/**
+	 * Set the with of the binary image. You can set this null to indicate that the binary data has no height.
+	 * 
+	 * @param heigth
+	 */
+	void setBinaryImageHeight(Integer heigth);
 
 }

@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.fail;
+import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
+import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
@@ -17,19 +20,25 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -40,6 +49,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -48,6 +58,8 @@ import com.gentics.mesh.util.BlueprintTransaction;
 
 @Component
 public class NodeCrudHandler extends AbstractCRUDHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
@@ -158,7 +170,6 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 				}
 			});
 		}
-
 	}
 
 	@Override
@@ -267,6 +278,116 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 					}
 				});
 			}
+		});
+	}
+
+	public void handleDownload(RoutingContext rc) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void handleUpload(RoutingContext rc) {
+		Project project = getProject(rc);
+		loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+			if (hasSucceeded(rc, rh)) {
+				Node node = rh.result();
+				try {
+					Schema schema = node.getSchema();
+					if (!schema.isBinary()) {
+						fail(rc, "node_error_no_binary_node");
+					} else {
+						Set<FileUpload> fileUploads = rc.fileUploads();
+						if (fileUploads.isEmpty()) {
+							fail(rc, "node_error_no_binarydata_found");
+						} else if (fileUploads.size() > 1) {
+							fail(rc, "node_error_more_than_one_binarydata_included");
+						} else {
+							FileUpload ul = fileUploads.iterator().next();
+							String contentType = ul.contentType();
+							String fileName = ul.fileName();
+							node.setBinaryFileName(fileName);
+							node.setBinaryFileSize(ul.size());
+							node.setBinaryContentType(contentType);
+							// TODO handle sha512sum checksum
+							//node.setBinarySHA512Sum(sha512HashSum);
+//							node.setBinaryImageDPI(dpi);
+//							node.setBinaryImageHeight(heigth);
+//							node.setBinaryImageWidth(width);
+							responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated", node.getUuid()))));
+						}
+					}
+				} catch (Exception e) {
+					log.error("Could not load schema for node {" + node.getUuid() + "}");
+					rc.fail(e);
+				}
+
+			}
+		});
+	}
+
+	public void handleReadChildren(RoutingContext rc) {
+		MeshAuthUser requestUser = getUser(rc);
+		Project project = getProject(rc);
+		loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+			if (hasSucceeded(rc, rh)) {
+				Node node = rh.result();
+				try {
+					Page<? extends Node> page = node.getChildren(requestUser, getSelectedLanguageTags(rc), getPagingInfo(rc));
+					transformAndResponde(rc, page, new NodeListResponse());
+				} catch (Exception e) {
+					rc.fail(e);
+				}
+			}
+		});
+	}
+
+	public void readTags(RoutingContext rc) {
+		Project project = getProject(rc);
+		loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+			if (hasSucceeded(rc, rh)) {
+				Node node = rh.result();
+				try {
+					Page<? extends Tag> tagPage = node.getTags(rc);
+					transformAndResponde(rc, tagPage, new TagListResponse());
+				} catch (Exception e) {
+					rc.fail(e);
+				}
+			}
+		});
+	}
+
+	public void handleAddTag(RoutingContext rc) {
+		Project project = getProject(rc);
+		if (project == null) {
+			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Project not found"));
+			// TODO i18n error
+		} else {
+			loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Node node = rh.result();
+					loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
+						if (hasSucceeded(rc, th)) {
+							Tag tag = th.result();
+							node.addTag(tag);
+							transformAndResponde(rc, node);
+						}
+					});
+				}
+			});
+		}
+	}
+
+	public void handleRemoveTag(RoutingContext rc) {
+		Project project = getProject(rc);
+		loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+			loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), srh -> {
+				if (hasSucceeded(rc, srh) && hasSucceeded(rc, rh)) {
+					Node node = rh.result();
+					Tag tag = srh.result();
+					node.removeTag(tag);
+					transformAndResponde(rc, node);
+				}
+			});
 		});
 	}
 }
