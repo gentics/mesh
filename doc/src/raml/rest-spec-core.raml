@@ -48,6 +48,13 @@ traits:
         Accept-Language:
           description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
 
+  - expandable:
+      queryParameters:
+        expand:
+          description: Expand the fields with the given name.
+          type: string
+          required: false
+
   - perm_listable:
       queryParameters:
         perms:
@@ -424,7 +431,7 @@ traits:
   displayName: Nodes
   /:
     get: 
-      is: [ localized, sortable, paged ]
+      is: [ localized, sortable, paged, expandable ]
       description: Load all nodes.
       responses:
         200:
@@ -433,6 +440,7 @@ traits:
               example: !include json/NodeListResponse.example.json
     post:
       description: Create a new node.
+      is: [ expandable, perm_listable ]
       body:
         application/json:
           example: !include json/NodeCreateRequest.example.json
@@ -442,12 +450,13 @@ traits:
             application/json:
               example: !include json/NodeResponse.example.json
   /{uuid}:
-    is: [ localized, sortable, perm_listable ]
+    is: [ localized ]
     uriParameters:
       uuid:
         description: Uuid of a single node.
         type: string
     get:
+      is: [ expandable, perm_listable ]
       description: Retrieves the node with the given uuid.
       queryParameters:
         lang:
@@ -462,6 +471,7 @@ traits:
             application/json:
               example: !include json/NodeResponse.example.json
     put:
+      is: [ expandable, perm_listable ]
       description: Updates the node with the given uuid.
       body:
         application/json:
@@ -486,10 +496,12 @@ traits:
       put: 
         description: Update the binary property value.
     /tags:
+      is: [ sortable, paged ]
       get:
         description: Load the tags that tag the node.
     /children:
       get:
+        is: [ localized, sortable, paged, expandable ]
         description: Load child nodes for the given node.
     /moveTo/{uuid}:
       put:
