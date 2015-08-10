@@ -165,7 +165,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Role extraRole = roleRoot.create("extra role", group(), user());
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-		role().addPermissions(extraRole, READ_PERM);
+		role().grantPermissions(extraRole, READ_PERM);
 
 		Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
 		latchFor(future);
@@ -210,12 +210,12 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		Role noPermRole = roleRoot.create("no_perm_role", null, user());
 		final int nRoles = 21;
 
-		role().addPermissions(group(), READ_PERM);
+		role().grantPermissions(group(), READ_PERM);
 
 		// Create and save some roles
 		for (int i = 0; i < nRoles; i++) {
 			Role extraRole = roleRoot.create("extra role " + i, group(), user());
-			role().addPermissions(extraRole, READ_PERM);
+			role().grantPermissions(extraRole, READ_PERM);
 		}
 
 		// Role with no permission
@@ -295,7 +295,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot roleRoot = meshRoot().getRoleRoot();
 		Role extraRole = roleRoot.create("extra role", group(), user());
 
-		role().addPermissions(extraRole, UPDATE_PERM);
+		role().grantPermissions(extraRole, UPDATE_PERM);
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 
@@ -325,7 +325,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", role.getUuid());
 
 		// Add the missing permission and try again
-		role().addPermissions(role(), Permission.UPDATE_PERM);
+		role().grantPermissions(role(), Permission.UPDATE_PERM);
 
 		future = getClient().updateRole(role.getUuid(), restRole);
 		latchFor(future);
@@ -345,7 +345,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteRoleByUUID() throws Exception {
 		RoleRoot roleRoot = meshRoot().getRoleRoot();
 		Role extraRole = roleRoot.create("extra role", group(), user());
-		role().addPermissions(extraRole, DELETE_PERM);
+		role().grantPermissions(extraRole, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteRole(extraRole.getUuid());
 		latchFor(future);

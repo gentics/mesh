@@ -41,7 +41,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole", group(), user());
 
-		role().addPermissions(extraRole, READ_PERM);
+		role().grantPermissions(extraRole, READ_PERM);
 
 		String uuid = group().getUuid();
 		Future<RoleListResponse> future = getClient().findRolesForGroup(uuid);
@@ -63,7 +63,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole", null, user());
 
-		role().addPermissions(extraRole, READ_PERM);
+		role().grantPermissions(extraRole, READ_PERM);
 
 		assertEquals(1, group().getRoles().size());
 		String uuid = group().getUuid();
@@ -108,7 +108,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		Role extraRole = root.create("extraRole", null, user());
 
 		group().addRole(extraRole);
-		role().addPermissions(extraRole, READ_PERM);
+		role().grantPermissions(extraRole, READ_PERM);
 		assertEquals(2, group().getRoles().size());
 		String uuid = group().getUuid();
 
@@ -128,7 +128,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		RoleRoot root = meshRoot().getRoleRoot();
 
 		Role extraRole = root.create("extraRole", null, user());
-		role().addPermissions(extraRole, READ_PERM);
+		role().grantPermissions(extraRole, READ_PERM);
 
 		Future<GroupResponse> future = getClient().addRoleToGroup(group.getUuid(), extraRole.getUuid());
 		latchFor(future);
@@ -172,8 +172,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(group.getUuid());
 		assertNotNull(extraRole.getUuid());
 
-		role().addPermissions(extraRole, READ_PERM);
-		role().addPermissions(group, UPDATE_PERM);
+		role().grantPermissions(extraRole, READ_PERM);
+		role().grantPermissions(group, UPDATE_PERM);
 
 		Future<GroupResponse> future = getClient().removeRoleFromGroup(group.getUuid(), extraRole.getUuid());
 		latchFor(future);

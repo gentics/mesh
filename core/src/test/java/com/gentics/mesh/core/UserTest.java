@@ -88,7 +88,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		User extraUser = userRoot.create("extraUser", group(), user());
 		Group group = group();
 		Role role = role();
-		role.addPermissions(extraUser, READ_PERM);
+		role.grantPermissions(extraUser, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = getUser(rc);

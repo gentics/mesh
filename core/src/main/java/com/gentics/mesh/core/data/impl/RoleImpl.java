@@ -65,7 +65,7 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Rol
 	}
 
 	@Override
-	public void addPermissions(MeshVertex node, Permission... permissions) {
+	public void grantPermissions(MeshVertex node, Permission... permissions) {
 		for (Permission permission : permissions) {
 			addFramedEdge(permission.label(), (MeshVertexImpl) node);
 		}

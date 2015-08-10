@@ -157,7 +157,7 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 			}
 		};
 		if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
-			SchemaContainer containerByName = project.getSchemaRoot().findByName(schemaInfo.getSchema().getName());
+			SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 			if (containerByName != null) {
 				if (requestUser.hasPermission(containerByName, READ_PERM)) {
 					containerFoundHandler.handle(Future.succeededFuture(containerByName));
@@ -168,7 +168,7 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 				rc.fail(new EntityNotFoundException(i18n.get(rc, "schema_not_found", schemaInfo.getSchema().getName())));
 			}
 		} else {
-			loadObjectByUuid(rc, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaRoot(), rh -> {
+			loadObjectByUuid(rc, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaContainerRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					SchemaContainer schemaContainer = rh.result();
 					containerFoundHandler.handle(Future.succeededFuture(schemaContainer));

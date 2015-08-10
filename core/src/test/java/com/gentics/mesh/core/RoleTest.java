@@ -52,15 +52,15 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testGrantPermission() {
 		Role role = role();
 		Node node = content("news overview");
-		role.addPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
+		role.grantPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
 		// node2
 		Node parentNode = folder("2015");
 		Node node2 = parentNode.create(user(), getSchemaContainer(), project());
 //		NodeFieldContainer englishContainer = node2.getFieldContainer(english());
 		// englishContainer.setI18nProperty("content", "Test");
-		role.addPermissions(node2, READ_PERM, DELETE_PERM);
-		role.addPermissions(node2, CREATE_PERM);
+		role.grantPermissions(node2, READ_PERM, DELETE_PERM);
+		role.grantPermissions(node2, CREATE_PERM);
 		Set<Permission> permissions = role.getPermissions(node2);
 
 		assertNotNull(permissions);
@@ -68,7 +68,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		assertTrue(permissions.contains(READ_PERM));
 		assertTrue(permissions.contains(DELETE_PERM));
 		assertFalse(permissions.contains(UPDATE_PERM));
-		role.addPermissions(role, CREATE_PERM);
+		role.grantPermissions(role, CREATE_PERM);
 	}
 
 	@Test
@@ -85,8 +85,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = role();
 		Node node = content("news overview");
 
-		role.addPermissions(node, CREATE_PERM);
-		role.addPermissions(node, CREATE_PERM);
+		role.grantPermissions(node, CREATE_PERM);
+		role.grantPermissions(node, CREATE_PERM);
 
 		Set<Permission> permissions = role.getPermissions(node);
 		assertNotNull(permissions);
@@ -150,7 +150,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		// Also assign create permissions on the parent object to other roles
 		for (Role role : roles().values()) {
-			role.addPermissions(parentNode, CREATE_PERM);
+			role.grantPermissions(parentNode, CREATE_PERM);
 		}
 
 		Node node = parentNode.create(user(), getSchemaContainer(), project());
@@ -177,7 +177,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		group().addRole(extraRole);
 		group().addRole(extraRole);
 		
-		role().addPermissions(extraRole, READ_PERM);
+		role().grantPermissions(extraRole, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
 		MeshAuthUser requestUser = getUser(rc);

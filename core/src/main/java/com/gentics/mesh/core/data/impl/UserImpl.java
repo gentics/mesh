@@ -170,7 +170,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 		String[] strings = new String[permissions.size()];
 		Iterator<Permission> it = permissions.iterator();
 		for (int i = 0; i < permissions.size(); i++) {
-			strings[i] = it.next().getHumanName();
+			strings[i] = it.next().getSimpleName();
 		}
 		return strings;
 	}
@@ -255,7 +255,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {
-			role.addPermissions(targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
+			role.grantPermissions(targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 		}
 	}
 

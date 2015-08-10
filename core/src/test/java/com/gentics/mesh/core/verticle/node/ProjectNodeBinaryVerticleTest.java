@@ -93,7 +93,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		node.getSchemaContainer().setSchema(schema);
 
 		resetClientSchemaStorage();
-		role().addPermissions(node, UPDATE_PERM);
+		role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 
 		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), buffer, fileName, contentType);

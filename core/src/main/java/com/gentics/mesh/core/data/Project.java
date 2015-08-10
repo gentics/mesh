@@ -29,9 +29,19 @@ public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 	 */
 	void setBaseNode(Node baseNode);
 
+	/**
+	 * Return the tagFamilyRoot for the project.
+	 * 
+	 * @return
+	 */
 	TagFamilyRoot getTagFamilyRoot();
 
-	SchemaContainerRoot getSchemaRoot();
+	/**
+	 * Return the schema container root for the project.
+	 * 
+	 * @return
+	 */
+	SchemaContainerRoot getSchemaContainerRoot();
 
 	/**
 	 * Return a list of languages that were assigned to the project.

@@ -170,7 +170,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Page<? extends Tag> globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
 		assertPage(globalTagPage, tags().size());
 
-		role().addPermissions(noPermTag, READ_PERM);
+		role().grantPermissions(noPermTag, READ_PERM);
 		globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
 		assertPage(globalTagPage, tags().size() + 1);
 	}

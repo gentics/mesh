@@ -76,7 +76,7 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implemen
 	}
 
 	@Override
-	public SchemaContainerRoot getSchemaRoot() {
+	public SchemaContainerRoot getSchemaContainerRoot() {
 		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(SchemaContainerRootImpl.class);

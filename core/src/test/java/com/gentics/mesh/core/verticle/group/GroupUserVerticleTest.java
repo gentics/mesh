@@ -49,7 +49,7 @@ extends AbstractRestVerticleTest {
 	public void testGetUsersByGroup() throws Exception {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser", group(), user());
-		role().addPermissions(extraUser, READ_PERM);
+		role().grantPermissions(extraUser, READ_PERM);
 		String uuid = group().getUuid();
 
 		Future<UserListResponse> future = getClient().findUsersOfGroup(uuid, new PagingInfo());
@@ -74,7 +74,7 @@ extends AbstractRestVerticleTest {
 		UserRoot userRoot = meshRoot().getUserRoot();
 
 		User extraUser = userRoot.create("extraUser", null, user());
-		role().addPermissions(extraUser, READ_PERM);
+		role().grantPermissions(extraUser, READ_PERM);
 
 		Future<GroupResponse> future = getClient().addUserToGroup("bogus", extraUser.getUuid());
 		latchFor(future);
@@ -87,7 +87,7 @@ extends AbstractRestVerticleTest {
 		UserRoot userRoot = meshRoot().getUserRoot();
 
 		User extraUser = userRoot.create("extraUser", null, user());
-		role().addPermissions(extraUser, READ_PERM);
+		role().grantPermissions(extraUser, READ_PERM);
 
 		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
 
@@ -104,7 +104,7 @@ extends AbstractRestVerticleTest {
 		Group group = group();
 		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser", null, user());
-		role().addPermissions(extraUser, READ_PERM);
+		role().grantPermissions(extraUser, READ_PERM);
 		role().revokePermissions(group, UPDATE_PERM);
 
 		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
@@ -118,7 +118,7 @@ extends AbstractRestVerticleTest {
 		Group group = group();
 		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser", null, user());
-		role().addPermissions(extraUser, DELETE_PERM);
+		role().grantPermissions(extraUser, DELETE_PERM);
 
 		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
 		latchFor(future);

@@ -14,7 +14,6 @@ import io.vertx.core.http.HttpMethod;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
@@ -35,6 +34,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
@@ -582,6 +582,12 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName,
 			String contentType) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(fileData, "fileData must not be null");
+		Objects.requireNonNull(fileName, "fileName must not be null");
+		Objects.requireNonNull(contentType, "contentType must not be null");
+
 		//TODO handle escaping of filename
 		String boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO";
 		Buffer multiPartFormData = Buffer.buffer();
@@ -597,11 +603,14 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<Buffer> downloadBinaryField(String projectName, String uuid) {
-		Future<Buffer> future = Future.future();
-		String path = "/" + projectName + "/nodes/" + uuid + "/bin";
+	public Future<Buffer> downloadBinaryField(String projectName, String nodeUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
+		Future<Buffer> future = Future.future();
+		String path = "/" + projectName + "/nodes/" + nodeUuid + "/bin";
 		String uri = BASEURI + path;
+
 		HttpClientRequest request = client.request(GET, uri, rh -> {
 			rh.bodyHandler(buffer -> {
 				future.complete(buffer);
@@ -620,5 +629,9 @@ public class MeshRestClient extends AbstractMeshRestClient {
 
 		request.end();
 		return future;
+	}
+
+	public Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request) {
+		return handleRequest(PUT, "/roles/" + roleUuid + "/permissions/" + pathToElement, GenericMessageResponse.class, request);
 	}
 }

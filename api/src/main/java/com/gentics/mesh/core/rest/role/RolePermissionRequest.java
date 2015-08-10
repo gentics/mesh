@@ -9,7 +9,7 @@ public class RolePermissionRequest implements RestModel {
 
 	private Set<String> permissions = new HashSet<>();
 
-	private Boolean recursive;
+	private Boolean recursive = false;
 
 	public RolePermissionRequest() {
 	}
