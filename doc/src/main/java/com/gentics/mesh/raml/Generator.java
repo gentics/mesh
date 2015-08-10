@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -208,6 +209,14 @@ public class Generator {
 		RoleCreateRequest roleCreate = new RoleCreateRequest();
 		roleCreate.setName("super editors");
 		write(roleCreate);
+
+		RolePermissionRequest rolePermission = new RolePermissionRequest();
+		rolePermission.setRecursive(false);
+		rolePermission.getPermissions().add("create");
+		rolePermission.getPermissions().add("read");
+		rolePermission.getPermissions().add("update");
+		rolePermission.getPermissions().add("delete");
+		write(rolePermission);
 	}
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {

@@ -396,7 +396,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public void delete() {
-		// TODO handle linked containers and other cases
+		//Delete subfolders
+		for (Node child : getChildren()) {
+			child.delete();
+		}
+		for (NodeFieldContainer container : getFieldContainers()) {
+			container.delete();
+		}
 		getElement().remove();
 	}
 

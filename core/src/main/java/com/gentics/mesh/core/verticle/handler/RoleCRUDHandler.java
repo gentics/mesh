@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
@@ -98,9 +100,24 @@ public class RoleCRUDHandler extends AbstractCRUDHandler {
 			}
 		});
 	}
-	
+
 	@Override
 	public void handleReadList(RoutingContext rc) {
 		loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
+	}
+
+	public void handlePermissionUpdate(RoutingContext rc) {
+		String pathToElement = rc.request().params().get("pathToElement");
+		if (StringUtils.isEmpty(pathToElement)) {
+			fail(rc, "role_permission_path_missing");
+		} else {
+			loadObject(rc, "uuid", UPDATE_PERM, boot.roleRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Role role = rh.result();
+					RolePermissionRequest requestModel = fromJson(rc, RolePermissionRequest.class);
+
+				}
+			});
+		}
 	}
 }

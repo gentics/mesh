@@ -10,7 +10,9 @@ import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,6 +37,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+
 public class NodeTest extends AbstractBasicObjectTest {
 
 	@Autowired
@@ -252,7 +255,16 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		Node node = content();
+		Node node = folder("news");
+		Set<String> uuidToBeDeleted = new HashSet<>();
+		for (FieldContainer container : node.getFieldContainers()) {
+			uuidToBeDeleted.add(container.getUuid());
+		}
+
+		// Add subfolders
+		uuidToBeDeleted.add(folder("2015").getUuid());
+		uuidToBeDeleted.add(folder("2014").getUuid());
+
 		String uuid = node.getUuid();
 		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -262,6 +274,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 			assertNull(rh.result());
 		});
+
+		for (String uuidOfDeletedVerticle : uuidToBeDeleted) {
+			assertFalse(fg.v().has("uuid", uuidOfDeletedVerticle).hasNext());
+		}
 	}
 
 	@Test
