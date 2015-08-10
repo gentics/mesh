@@ -50,16 +50,16 @@ public class TagCRUDHandler extends AbstractCRUDHandler {
 				} else {
 					loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
 						if (hasSucceeded(rc, rh)) {
-//							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-								TagFamily tagFamily = rh.result();
-								Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
-								getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
-								project.getTagRoot().addTag(newTag);
-								tagCreated.complete(newTag);
-								searchQueue.put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-								transformAndResponde(rc, newTag);
-//							}
+							//							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+							TagFamily tagFamily = rh.result();
+							Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
+							getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
+							project.getTagRoot().addTag(newTag);
+							tagCreated.complete(newTag);
+							searchQueue.put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+							transformAndResponde(rc, newTag);
+							//							}
 						}
 					});
 				}
@@ -88,29 +88,32 @@ public class TagCRUDHandler extends AbstractCRUDHandler {
 					boolean updateTagFamily = false;
 					if (reference != null) {
 						// Check whether a uuid was specified and whether the tag family changed
-					if (!isEmpty(reference.getUuid())) {
-						if (!tag.getTagFamily().getUuid().equals(reference.getUuid())) {
-							updateTagFamily = true;
+						if (!isEmpty(reference.getUuid())) {
+							if (!tag.getTagFamily().getUuid().equals(reference.getUuid())) {
+								updateTagFamily = true;
+							}
 						}
 					}
-				}
 
-				if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
-				} else {
-					// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					tag.setName(requestModel.getFields().getName());
-					if (updateTagFamily) {
-						/* TODO update the tagfamily */
+					if (StringUtils.isEmpty(requestModel.getFields().getName())) {
+						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
+					} else {
+
+						tag.setEditor(getUser(rc));
+						tag.setLastEditedTimestamp(System.currentTimeMillis());
+						// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						tag.setName(requestModel.getFields().getName());
+						if (updateTagFamily) {
+							/* TODO update the tagfamily */
+						}
+						searchQueue.put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+						// tx.success();
+						// }
+						transformAndResponde(rc, tag);
 					}
-					searchQueue.put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-					// tx.success();
-					// }
-					transformAndResponde(rc, tag);
 				}
-			}
-		}	);
+			});
 		}
 	}
 

@@ -97,7 +97,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		role().addPermissions(project().getBaseNode(), CREATE_PERM);
+		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);
@@ -121,14 +121,14 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testReadProjectList() throws Exception {
 
 		ProjectRoot projectRoot = meshRoot().getProjectRoot();
-		role().addPermissions(project(), READ_PERM);
+		role().grantPermissions(project(), READ_PERM);
 
 		final int nProjects = 142;
 		Project noPermProject;
 		for (int i = 0; i < nProjects; i++) {
 			Project extraProject = projectRoot.create("extra_project_" + i, user());
 			extraProject.setBaseNode(project().getBaseNode());
-			role().addPermissions(extraProject, READ_PERM);
+			role().grantPermissions(extraProject, READ_PERM);
 		}
 		noPermProject = projectRoot.create("no_perm_project", user());
 
@@ -207,7 +207,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		Project project = project();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
 
-		role().addPermissions(project, READ_PERM);
+		role().grantPermissions(project, READ_PERM);
 
 		Future<ProjectResponse> future = getClient().findProjectByUuid(project.getUuid());
 		latchFor(future);
@@ -241,7 +241,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateProject() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		Project project = project();
 
-		role().addPermissions(project, UPDATE_PERM);
+		role().grantPermissions(project, UPDATE_PERM);
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
@@ -262,7 +262,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateProjectWithNoPerm() throws JsonProcessingException, Exception {
 		Project project = project();
 
-		role().addPermissions(project, READ_PERM);
+		role().grantPermissions(project, READ_PERM);
 		role().revokePermissions(project, UPDATE_PERM);
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
@@ -287,7 +287,7 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(uuid);
 		String name = project.getName();
 		assertNotNull(name);
-		role().addPermissions(project, DELETE_PERM);
+		role().grantPermissions(project, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);

@@ -12,6 +12,8 @@ import com.gentics.mesh.util.InvalidArgumentException;
  */
 public interface GroupRoot extends RootVertex<Group> {
 
+	public static final String TYPE = "groups";
+
 	/**
 	 * Create a new group and assign it to the group root.
 	 * 

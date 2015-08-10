@@ -36,4 +36,9 @@ public interface NodeFieldContainer extends FieldContainer, MicroschemaFieldCont
 	 */
 	void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
 
+	/**
+	 * Delete the field container. This will also delete linked elements like lists
+	 */
+	void delete();
+
 }

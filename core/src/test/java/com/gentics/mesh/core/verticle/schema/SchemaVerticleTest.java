@@ -118,7 +118,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 			schema.setName("extra_schema_" + i);
 			SchemaContainer extraSchema = schemaRoot.create(schema, user());
 			extraSchema.setSchema(dummySchema);
-			role().addPermissions(extraSchema, READ_PERM);
+			role().grantPermissions(extraSchema, READ_PERM);
 		}
 		// Don't grant permissions to no perm schema
 
@@ -200,9 +200,9 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testReadSchemaByUUIDWithNoPerm() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 
-		role().addPermissions(schema, DELETE_PERM);
-		role().addPermissions(schema, UPDATE_PERM);
-		role().addPermissions(schema, CREATE_PERM);
+		role().grantPermissions(schema, DELETE_PERM);
+		role().grantPermissions(schema, UPDATE_PERM);
+		role().grantPermissions(schema, CREATE_PERM);
 		role().revokePermissions(schema, READ_PERM);
 
 		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());

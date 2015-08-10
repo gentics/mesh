@@ -10,7 +10,7 @@ public interface Role extends GenericVertex<RoleResponse>, NamedNode {
 
 	public static final String TYPE = "role";
 
-	void addPermissions(MeshVertex vertex, Permission... permissions);
+	void grantPermissions(MeshVertex vertex, Permission... permissions);
 
 	void revokePermissions(MeshVertex vertex, Permission... permissions);
 

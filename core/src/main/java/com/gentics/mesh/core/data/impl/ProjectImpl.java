@@ -6,6 +6,11 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -20,6 +25,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -28,9 +34,13 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 
-public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implements Project {
+public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implements Project {
 
 	// TODO index to name + unique constraint
 
@@ -76,7 +86,7 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implemen
 	}
 
 	@Override
-	public SchemaContainerRoot getSchemaRoot() {
+	public SchemaContainerRoot getSchemaContainerRoot() {
 		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
@@ -146,6 +156,23 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse> implemen
 		// TODO handle this correctly
 		getVertex().remove();
 		// TODO handle: routerStorage.removeProjectRouter(name);
+	}
+
+	@Override
+	public void fillUpdateFromRest(RoutingContext rc, ProjectUpdateRequest requestModel) {
+		I18NService i18n = I18NService.getI18n();
+		// Check for conflicting project name
+		if (requestModel.getName() != null && getName() != requestModel.getName()) {
+			if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
+				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
+				return;
+			}
+			setName(requestModel.getName());
+		}
+
+		setEditor(getUser(rc));
+		setLastEditedTimestamp(System.currentTimeMillis());
+
 	}
 
 }

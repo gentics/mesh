@@ -153,7 +153,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		assertNotNull(project.getBaseNode());
 		assertNotNull(project.getLanguages());
 		assertEquals(2, project.getLanguages().size());
-		assertEquals(3, project.getSchemaRoot().findAll().size());
+		assertEquals(3, project.getSchemaContainerRoot().findAll().size());
 	}
 
 	@Test

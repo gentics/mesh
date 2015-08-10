@@ -94,6 +94,7 @@ public class UserCRUDHandler extends AbstractCRUDHandler {
 				User user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
+				//TODO not sure whether this is actually correct. The try-with might terminate while the async call may still run 
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					user.fillUpdateFromRest(rc, requestModel, uh -> {
 						if (uh.failed()) {

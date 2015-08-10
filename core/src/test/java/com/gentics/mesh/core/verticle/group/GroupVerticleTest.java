@@ -54,7 +54,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		role().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -74,7 +74,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 			final String name = "test_" + i;
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
-			role().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 			Future<GroupResponse> future = getClient().createGroup(request);
 			latchFor(future);
@@ -90,7 +90,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		role().addPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -136,7 +136,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateGroupWithMissingName() throws Exception {
 
 		GroupCreateRequest request = new GroupCreateRequest();
-		role().addPermissions(group(), CREATE_PERM);
+		role().grantPermissions(group(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -173,7 +173,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 		for (int i = 0; i < nGroups; i++) {
 			Group group = root.create("group_" + i, user());
-			role().addPermissions(group, READ_PERM);
+			role().grantPermissions(group, READ_PERM);
 		}
 
 		int totalGroups = nGroups + data().getGroups().size();
@@ -299,7 +299,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateGroupWithEmptyName() throws HttpStatusCodeErrorException, Exception {
 		Group group = group();
 
-		role().addPermissions(group, UPDATE_PERM);
+		role().grantPermissions(group, UPDATE_PERM);
 		final String name = "";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
@@ -323,7 +323,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		// Create a group which occupies the name
 		assertNotNull(groupRoot.create(alreadyUsedName, user()));
 
-		role().addPermissions(group, UPDATE_PERM);
+		role().grantPermissions(group, UPDATE_PERM);
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(alreadyUsedName);
 
@@ -341,7 +341,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateGroupWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
 		Group group = group();
 
-		role().addPermissions(group, UPDATE_PERM);
+		role().grantPermissions(group, UPDATE_PERM);
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);

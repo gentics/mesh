@@ -9,6 +9,8 @@ import com.gentics.mesh.core.data.User;
  */
 public interface UserRoot extends RootVertex<User> {
 
+	public static final String TYPE = "users";
+
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node and to the given group.
 	 * 

@@ -5,11 +5,11 @@ public enum Permission {
 			"HAS_DELETE_PERMISSION", "delete");
 
 	private String label;
-	private String humanName;
+	private String simpleName;
 
-	Permission(String label, String humanName) {
+	Permission(String label, String simpleName) {
 		this.label = label;
-		this.humanName = humanName;
+		this.simpleName = simpleName;
 	}
 
 	public static String[] labels() {
@@ -36,8 +36,22 @@ public enum Permission {
 		return null;
 	}
 
-	public String getHumanName() {
-		return humanName;
+	public static Permission valueOfSimpleName(String simpleName) {
+		for (Permission p : Permission.values()) {
+			if (simpleName.equals(p.getSimpleName())) {
+				return p;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Return the human friendly name for the permission.
+	 * 
+	 * @return
+	 */
+	public String getSimpleName() {
+		return simpleName;
 	}
 
 	@Override

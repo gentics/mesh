@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -208,6 +209,14 @@ public class Generator {
 		RoleCreateRequest roleCreate = new RoleCreateRequest();
 		roleCreate.setName("super editors");
 		write(roleCreate);
+
+		RolePermissionRequest rolePermission = new RolePermissionRequest();
+		rolePermission.setRecursive(false);
+		rolePermission.getPermissions().add("create");
+		rolePermission.getPermissions().add("read");
+		rolePermission.getPermissions().add("update");
+		rolePermission.getPermissions().add("delete");
+		write(rolePermission);
 	}
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -395,7 +404,8 @@ public class Generator {
 		binaryProperties.setWidth(800);
 		binaryProperties.setHeight(600);
 		binaryProperties.setMimeType("image/jpeg");
-		binaryProperties.setSha512sum("ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
+		binaryProperties
+				.setSha512sum("ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
 		nodeResponse.setBinaryProperties(binaryProperties);
 
 		Map<String, Field> fields = nodeResponse.getFields();
@@ -531,12 +541,7 @@ public class Generator {
 		UserResponse user = getUser();
 		write(user);
 
-		UserResponse user2 = new UserResponse();
-		user2.setUuid(getUUID());
-		user2.setCreated(getTimestamp());
-		user2.setCreator(getUserReference());
-		user2.setEdited(getTimestamp());
-		user2.setEditor(getUserReference());
+		UserResponse user2 = getUser();
 		user2.setUsername("jroe");
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
@@ -556,6 +561,8 @@ public class Generator {
 		userUpdate.setFirstname("Joe");
 		userUpdate.setLastname("Doe");
 		userUpdate.setEmailAddress("j.doe@nowhere.com");
+
+		userUpdate.setNodeReference(user2.getNodeReference());
 		write(userUpdate);
 
 		UserCreateRequest userCreate = new UserCreateRequest();
@@ -564,6 +571,8 @@ public class Generator {
 		userCreate.setFirstname("Joe");
 		userCreate.setLastname("Doe");
 		userCreate.setEmailAddress("j.doe@nowhere.com");
+		userCreate.setGroupUuid(getUUID());
+		userCreate.setNodeReference(user2.getNodeReference());
 		write(userCreate);
 	}
 

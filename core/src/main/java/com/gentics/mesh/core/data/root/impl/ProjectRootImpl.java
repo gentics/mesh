@@ -44,7 +44,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		project.setLastEditedTimestamp(System.currentTimeMillis());
 
 		project.getTagRoot();
-		project.getSchemaRoot();
+		project.getSchemaContainerRoot();
 		project.getTagFamilyRoot();
 
 		addItem(project);

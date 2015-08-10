@@ -11,9 +11,13 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SEAR
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER_ROOT;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
+import org.apache.commons.lang.NotImplementedException;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -22,12 +26,19 @@ import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
@@ -159,8 +170,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public SchemaContainerRoot getSchemaContainerRoot() {
 		if (schemaContainerRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefault(
-						SchemaContainerRootImpl.class, null);
+				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class)
+						.nextOrDefault(SchemaContainerRootImpl.class, null);
 				if (foundSchemaContainerRoot == null) {
 					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 					linkOut(schemaContainerRoot.getImpl(), HAS_SCHEMA_ROOT);
@@ -236,8 +247,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public TagFamilyRoot getTagFamilyRoot() {
 		if (tagFamilyRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(
-						TagFamilyRootImpl.class, null);
+				TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class,
+						null);
 				if (foundTagFamilyRoot == null) {
 					tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
 					linkOut(tagFamilyRoot.getImpl(), HAS_TAGFAMILY_ROOT);
@@ -283,6 +294,149 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.schemaContainerRoot = null;
 		MeshRootImpl.tagFamilyRoot = null;
 		MeshRootImpl.languageRoot = null;
+	}
+
+	@Override
+	public void resolvePathToElement(String pathToElement, Handler<AsyncResult<? extends MeshVertex>> resultHandler) {
+		MeshRoot root = BootstrapInitializer.getBoot().meshRoot();
+		if (pathToElement.endsWith("/")) {
+			resultHandler.handle(Future.failedFuture("Could not resolve path. The path must not end with a slash."));
+			return;
+		}
+		String[] elements = pathToElement.split("\\/");
+		if (log.isDebugEnabled()) {
+			log.debug("Found " + elements.length + " elements");
+		}
+		String rootNodeSegment = elements[0];
+		RootVertex<? extends GenericVertex<?>> rootVertex = null;
+		switch (rootNodeSegment) {
+		case ProjectRoot.TYPE:
+			ProjectRoot projectRoot = root.getProjectRoot();
+			if (elements.length > 4) {
+				//TODO maybe this will change in the future. It would be better to check this individually within each segment handler
+				resultHandler.handle(Future.failedFuture("Could not resolve path. You can't resolve more then 4 segments."));
+			} else if (elements.length == 1) {
+				resultHandler.handle(Future.succeededFuture(projectRoot));
+			} else if (elements.length >= 2) {
+				String uuidSegment = elements[1];
+				projectRoot.findByUuid(uuidSegment, rh -> {
+					if (rh.succeeded()) {
+						Project project = rh.result();
+
+						if (elements.length == 2) {
+							resultHandler.handle(Future.succeededFuture(project));
+						} else if (elements.length > 2) {
+
+							String nestedRootNode = elements[2];
+							switch (nestedRootNode) {
+							case TagFamilyRoot.TYPE:
+
+								TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
+								if (elements.length == 3) {
+									resultHandler.handle(Future.succeededFuture(tagFamilyRoot));
+								} else {
+									tagFamilyRoot.findByUuid(elements[3], sh -> {
+										if (sh.succeeded()) {
+											resultHandler.handle(Future.succeededFuture(sh.result()));
+										} else {
+											resultHandler.handle(Future.failedFuture(sh.cause()));
+										}
+									});
+								}
+								break;
+							case SchemaContainerRoot.TYPE:
+								SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
+								if (elements.length == 3) {
+									resultHandler.handle(Future.succeededFuture(schemaRoot));
+								} else {
+									schemaRoot.findByUuid(elements[3], sh -> {
+										if (sh.succeeded()) {
+											resultHandler.handle(Future.succeededFuture(sh.result()));
+										} else {
+											resultHandler.handle(Future.failedFuture(sh.cause()));
+										}
+									});
+								}
+								break;
+							case MicroschemaContainerRoot.TYPE:
+								//project.getMicroschemaRoot();
+								throw new NotImplementedException();
+								//break;
+							case NodeRoot.TYPE:
+								NodeRoot nodeRoot = project.getNodeRoot();
+								if (elements.length == 3) {
+									resultHandler.handle(Future.succeededFuture(nodeRoot));
+								} else {
+									nodeRoot.findByUuid(elements[3], sh -> {
+										if (sh.succeeded()) {
+											resultHandler.handle(Future.succeededFuture(sh.result()));
+										} else {
+											resultHandler.handle(Future.failedFuture(sh.cause()));
+										}
+									});
+								}
+								break;
+							case TagRoot.TYPE:
+								TagRoot tagRoot = project.getTagRoot();
+								if (elements.length == 3) {
+									resultHandler.handle(Future.succeededFuture(tagRoot));
+								} else {
+									tagRoot.findByUuid(elements[3], sh -> {
+										if (sh.succeeded()) {
+											resultHandler.handle(Future.succeededFuture(sh.result()));
+										} else {
+											resultHandler.handle(Future.failedFuture(sh.cause()));
+										}
+									});
+								}
+								break;
+							default:
+								resultHandler.handle(Future.failedFuture("Unknown project element {" + nestedRootNode + "}"));
+								return;
+							}
+						}
+					} else {
+						resultHandler.handle(Future.failedFuture(rh.cause()));
+						return;
+					}
+				});
+			} else {
+				resultHandler.handle(Future.failedFuture("Could not resolve given path. You specified more then three segments."));
+				return;
+			}
+
+			return;
+		case UserRoot.TYPE:
+			rootVertex = root.getUserRoot();
+			break;
+		case GroupRoot.TYPE:
+			rootVertex = root.getGroupRoot();
+			break;
+		case RoleRoot.TYPE:
+			rootVertex = root.getRoleRoot();
+			break;
+		case SchemaContainerRoot.TYPE:
+			rootVertex = root.getSchemaContainerRoot();
+			break;
+		default:
+			resultHandler.handle(Future.failedFuture("Could not resolve given path. Unknown element {" + rootNodeSegment + "}"));
+			return;
+		}
+
+		if (rootVertex != null && elements.length == 1) {
+			resultHandler.handle(Future.succeededFuture(rootVertex));
+		} else if (rootVertex != null && elements.length == 2) {
+			String uuidSegment = elements[1];
+			rootVertex.findByUuid(uuidSegment, rh -> {
+				if (rh.succeeded()) {
+					resultHandler.handle(Future.succeededFuture(rh.result()));
+				} else {
+					resultHandler.handle(Future.failedFuture(rh.cause()));
+				}
+			});
+		} else {
+			resultHandler.handle(Future.failedFuture("path could not be resolved."));
+		}
 	}
 
 	@Override

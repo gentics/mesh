@@ -32,6 +32,14 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addPermissionHandler();
+	}
+
+	private void addPermissionHandler() {
+		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).handler(rc -> {
+			crudHandler.handlePermissionUpdate(rc);
+		});
 	}
 
 	private void addDeleteHandler() {

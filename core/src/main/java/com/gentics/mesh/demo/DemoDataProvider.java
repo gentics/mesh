@@ -323,7 +323,7 @@ public class DemoDataProvider {
 
 		String roleName = username + "_role";
 		Role role = root.getRoleRoot().create(roleName, group, user);
-		role.addPermissions(role, READ_PERM);
+		role.grantPermissions(role, READ_PERM);
 		roles.put(roleName, role);
 
 		UserInfo userInfo = new UserInfo(user, group, role, password);
@@ -410,17 +410,17 @@ public class DemoDataProvider {
 
 		// folder
 		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
-		project.getSchemaRoot().addSchemaContainer(folderSchemaContainer);
+		project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
 		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
-		project.getSchemaRoot().addSchemaContainer(contentSchemaContainer);
+		project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
 		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
-		project.getSchemaRoot().addSchemaContainer(binaryContentSchemaContainer);
+		project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
 	}
@@ -462,7 +462,7 @@ public class DemoDataProvider {
 			}
 
 			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-			role.addPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 		}
 		log.info("Added BasicPermissions to nodes");
 	}

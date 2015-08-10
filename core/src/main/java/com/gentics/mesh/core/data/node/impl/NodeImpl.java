@@ -17,6 +17,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -376,12 +377,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	@Override
 	public Future<Buffer> getBinaryFileBuffer() {
 		Future<Buffer> future = Future.future();
-		//TODO determine the path to the file
-		Mesh.vertx().fileSystem().readFile("/tmp/bogus", rh -> {
-			if (rh.failed()) {
-				future.fail(rh.cause());
-			} else {
+		Mesh.vertx().fileSystem().readFile(getFilePath(), rh -> {
+			if (rh.succeeded()) {
 				future.complete(rh.result());
+			} else {
+				future.fail(rh.cause());
 			}
 		});
 		return future;
@@ -396,7 +396,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public void delete() {
-		// TODO handle linked containers and other cases
+		//Delete subfolders
+		for (Node child : getChildren()) {
+			child.delete();
+		}
+		for (NodeFieldContainer container : getFieldContainers()) {
+			container.delete();
+		}
 		getElement().remove();
 	}
 
@@ -417,9 +423,22 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return TraversalHelper.getPagedResult(traversal, countTraversal, getPagingInfo(rc), TagImpl.class);
 	}
 
+	private String getFilePath() {
+		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath());
+		File binaryFile = new File(folder, getUuid() + ".bin");
+		return binaryFile.getAbsolutePath();
+	}
+
 	@Override
-	public NodeImpl getImpl() {
-		return this;
+	public String getSegmentedPath() {
+		String uuid = getUuid();
+		String[] parts = uuid.split("(?<=\\G.{4})");
+		StringBuffer buffer = new StringBuffer();
+		buffer.append('/');
+		for (String part : parts) {
+			buffer.append(part + '/');
+		}
+		return buffer.toString();
 	}
 
 }

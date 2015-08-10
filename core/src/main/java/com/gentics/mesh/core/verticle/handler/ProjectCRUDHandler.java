@@ -101,17 +101,15 @@ public class ProjectCRUDHandler extends AbstractCRUDHandler {
 				Project project = rh.result();
 				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 
-				// Check for conflicting project name
-				if (requestModel.getName() != null && project.getName() != requestModel.getName()) {
-					if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
-						return;
-					}
-					project.setName(requestModel.getName());
+				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					project.fillUpdateFromRest(rc, requestModel);
+					tx.success();
 				}
+
 				searchQueue.put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 				transformAndResponde(rc, project);
+
 			}
 		});
 	}

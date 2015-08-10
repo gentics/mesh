@@ -1,36 +1,63 @@
 package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.responde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import io.vertx.core.Future;
-import io.vertx.ext.web.RoutingContext;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
+
 @Component
 public class RoleCRUDHandler extends AbstractCRUDHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(RoleCRUDHandler.class);
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
@@ -98,9 +125,68 @@ public class RoleCRUDHandler extends AbstractCRUDHandler {
 			}
 		});
 	}
-	
+
 	@Override
 	public void handleReadList(RoutingContext rc) {
 		loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
+	}
+
+	
+
+	public void handlePermissionUpdate(RoutingContext rc) {
+		String roleUuid = rc.request().getParam("param0");
+		String pathToElement = rc.request().params().get("param1");
+		if (StringUtils.isEmpty(roleUuid)) {
+			fail(rc, "error_uuid_must_be_specified");
+		} else if (StringUtils.isEmpty(pathToElement)) {
+			fail(rc, "role_permission_path_missing");
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Handling permission request for element on path {" + pathToElement + "}");
+			}
+			loadObjectByUuid(rc, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Role role = rh.result();
+					RolePermissionRequest requestModel = fromJson(rc, RolePermissionRequest.class);
+					MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
+						if (hasSucceeded(rc, vertex)) {
+							MeshVertex targetElement = vertex.result();
+							//String[] permissions = requestModel.getPermissions().toArray(new String[requestModel.getPermissions().size()]);
+							Set<Permission> permissionsToGrant = new HashSet<>();
+							Set<Permission> permissionsToRevoke = new HashSet<>();
+							permissionsToRevoke.add(CREATE_PERM);
+							permissionsToRevoke.add(READ_PERM);
+							permissionsToRevoke.add(UPDATE_PERM);
+							permissionsToRevoke.add(DELETE_PERM);
+
+							for (String permName : requestModel.getPermissions()) {
+								Permission permission = Permission.valueOfSimpleName(permName);
+								if (permission == null) {
+									fail(rc, "role_error_permission_name_unknown", permName);
+								}
+								if (log.isDebugEnabled()) {
+									log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
+								}
+								permissionsToRevoke.remove(permission);
+								permissionsToGrant.add(permission);
+							}
+
+							if (log.isDebugEnabled()) {
+								for (Permission p : permissionsToGrant) {
+									log.debug("Granting permission: " + p);
+								}
+								for (Permission p : permissionsToRevoke) {
+									log.debug("Revoking permission: " + p);
+								}
+							}
+							role.grantPermissions(targetElement, permissionsToGrant.toArray(new Permission[permissionsToGrant.size()]));
+							role.revokePermissions(targetElement, permissionsToRevoke.toArray(new Permission[permissionsToRevoke.size()]));
+							responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "role_updated_permission", role.getName()))));
+						}
+					});
+
+				}
+			});
+		}
 	}
 }

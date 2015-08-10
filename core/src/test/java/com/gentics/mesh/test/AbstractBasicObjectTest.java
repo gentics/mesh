@@ -17,7 +17,7 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 	}
 
 	protected void testPermission(Permission perm, GenericVertex<?> node) {
-		role().addPermissions(node, perm);
+		role().grantPermissions(node, perm);
 		assertTrue(role().hasPermission(perm, node));
 		assertTrue(getRequestUser().hasPermission(node, perm));
 		role().revokePermissions(node, perm);

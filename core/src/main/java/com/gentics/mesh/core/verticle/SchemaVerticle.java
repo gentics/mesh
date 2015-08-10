@@ -52,7 +52,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						if (hasSucceeded(rc, srh)) {
 							Project project = rh.result();
 							SchemaContainer schema = srh.result();
-							project.getSchemaRoot().addSchemaContainer(schema);
+							project.getSchemaContainerRoot().addSchemaContainer(schema);
 
 							// TODO add simple message or return schema?
 							transformAndResponde(rc, schema);
@@ -72,7 +72,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 						if (hasSucceeded(rc, srh)) {
 							SchemaContainer schema = srh.result();
 							Project project = rh.result();
-							project.getSchemaRoot().removeSchemaContainer(schema);
+							project.getSchemaContainerRoot().removeSchemaContainer(schema);
 							transformAndResponde(rc, schema);
 						}
 					});

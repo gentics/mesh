@@ -201,14 +201,14 @@ traits:
           body:
             application/json:
               example: !include json/GenericMessageResponse.example.json
-    /chmod/{uuid}:
+    /permissions/{pathToElement}:
+      description: Update the role permission to the given element. Possible paths are: roles/:uuid or projects/:uuid/schemas or projects
       put:
         description: |
-          Add role permissions to the given entity. TODO: Add info about recursion and handle bitmark like permission flags.
-      delete:
-        description: |
-          Remove role permissions from the given entity. TODO: Add info about recursion and handle bitmark like permission flags. 
-
+          Add role permissions to the given entity. 
+      body:
+        application/json:
+          example: !include json/RolePermissionRequest.example.json
 
 #------------------------------------------------------------------------------
 # Group Verticle

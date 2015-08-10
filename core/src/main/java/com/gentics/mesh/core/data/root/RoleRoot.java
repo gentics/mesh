@@ -9,6 +9,8 @@ import com.gentics.mesh.core.data.User;
  */
 public interface RoleRoot extends RootVertex<Role> {
 
+	public static final String TYPE = "roles";
+
 	/**
 	 * Create a new role with the given name.
 	 * 

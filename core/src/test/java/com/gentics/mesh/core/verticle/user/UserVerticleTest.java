@@ -436,7 +436,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		User conflictingUser = userRoot.create("existing_username", group(), user());
 		// Add update permission to group in order to create the user in that group
-		role().addPermissions(group(), CREATE_PERM);
+		role().grantPermissions(group(), CREATE_PERM);
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
@@ -596,9 +596,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			User user = userRoot.create("extraUser", group(), user());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
-			role().addPermissions(user, UPDATE_PERM);
-			role().addPermissions(user, CREATE_PERM);
-			role().addPermissions(user, READ_PERM);
+			role().grantPermissions(user, UPDATE_PERM);
+			role().grantPermissions(user, CREATE_PERM);
+			role().grantPermissions(user, READ_PERM);
 			tx.success();
 		}
 
@@ -626,13 +626,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			User extraUser = userRoot.create(name, group(), user());
 			uuid = extraUser.getUuid();
-			role().addPermissions(extraUser, DELETE_PERM);
+			role().grantPermissions(extraUser, DELETE_PERM);
 			assertNotNull(extraUser.getUuid());
 			tx.success();
 		}
 		userRoot.findByUuid(uuid, rh -> {
 			User user = rh.result();
-			assertEquals(1, user.getGroupCount());
 			assertEquals(1, user.getGroups().size());
 		});
 
@@ -644,7 +643,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		userRoot.findByUuid(uuid, rh -> {
 			User user2 = rh.result();
 			assertNotNull(user2);
-			assertEquals(0, user2.getGroupCount());
 			assertEquals(0, user2.getGroups().size());
 			assertFalse("The user should have been disabled", user2.isEnabled());
 		});
