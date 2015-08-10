@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
 	public static final String TYPE = "schemas";
-	
+
 	SchemaContainer create(Schema schema, User creator);
 
 	void addSchemaContainer(SchemaContainer schemaContainer);

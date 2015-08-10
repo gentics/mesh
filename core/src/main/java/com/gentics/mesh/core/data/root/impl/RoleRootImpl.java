@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 
-public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
+public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 	@Override
 	protected Class<? extends Role> getPersistanceClass() {

@@ -2,12 +2,20 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LANGUAGE;
 
+import java.util.Stack;
+
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 
-public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
+public class LanguageRootImpl extends AbstractRootVertex<Language>implements LanguageRoot {
 
 	@Override
 	protected Class<LanguageImpl> getPersistanceClass() {
@@ -53,6 +61,11 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	@Override
 	public Language getTagDefaultLanguage() {
 		return findByLanguageTag(TagImpl.DEFAULT_TAG_LANGUAGE_TAG);
+	}
+
+	@Override
+	public void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler) {
+		throw new NotImplementedException();
 	}
 
 }

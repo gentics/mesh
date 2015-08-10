@@ -4,6 +4,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 import java.util.List;
+import java.util.Stack;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
@@ -56,5 +57,7 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	 *             if the paging options are malformed.
 	 */
 	Page<? extends T> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
+
+	void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler);
 
 }

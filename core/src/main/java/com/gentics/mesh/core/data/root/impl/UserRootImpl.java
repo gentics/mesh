@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 
-public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
+public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 	@Override
 	protected Class<? extends User> getPersistanceClass() {

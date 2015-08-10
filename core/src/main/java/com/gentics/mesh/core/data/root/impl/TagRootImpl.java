@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 
-public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
+public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 
 	@Override
 	protected Class<? extends Tag> getPersistanceClass() {

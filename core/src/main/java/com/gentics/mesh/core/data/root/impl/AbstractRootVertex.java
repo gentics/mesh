@@ -6,13 +6,17 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.List;
+import java.util.Stack;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -21,6 +25,8 @@ import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestModel>> extends MeshVertexImpl implements RootVertex<T> {
+
+	private static Logger log = LoggerFactory.getLogger(AbstractRootVertex.class);
 
 	abstract protected Class<? extends T> getPersistanceClass();
 
@@ -46,12 +52,12 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 
 	@Override
 	public RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
-		//		Vertx vertx = Mesh.vertx();
-		//		vertx.executeBlocking(rh -> {
-		resultHandler.handle(Future.succeededFuture(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid)
-				.nextOrDefaultExplicit(getPersistanceClass(), null)));
-		//rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
-		//		}, false, resultHandler);
+		// Vertx vertx = Mesh.vertx();
+		// vertx.executeBlocking(rh -> {
+		resultHandler.handle(Future.succeededFuture(
+				out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
+		// rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
+		// }, false, resultHandler);
 		return this;
 	}
 
@@ -63,6 +69,34 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 				.in(HAS_USER).retain(requestUser.getImpl()).back();
 		Page<? extends T> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
 		return items;
+	}
+
+	@Override
+	public void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler) {
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
+			if (stack.isEmpty()) {
+				log.debug("Stack: is empty");
+			} else {
+				log.debug("Stack: " + stack.peek());
+			}
+		}
+		if (stack.isEmpty()) {
+			resultHandler.handle(Future.succeededFuture(this));
+		} else {
+			String uuid = stack.pop();
+			if (stack.isEmpty()) {
+				findByUuid(uuid, rh -> {
+					if (rh.succeeded()) {
+						resultHandler.handle(Future.succeededFuture(rh.result()));
+					} else {
+						resultHandler.handle(Future.failedFuture(rh.cause()));
+					}
+				});
+			} else {
+				resultHandler.handle(Future.failedFuture("Can't resolve remaining segments. Next segment would be: " + stack.peek()));
+			}
+		}
 	}
 
 }

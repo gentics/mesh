@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 
-public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
+public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer>implements MicroschemaContainerRoot {
 
 	@Override
 	protected Class<? extends MicroschemaContainer> getPersistanceClass() {

@@ -12,12 +12,13 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGF
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER_ROOT;
 
-import org.apache.commons.lang.NotImplementedException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -26,7 +27,6 @@ import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -303,139 +303,40 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			resultHandler.handle(Future.failedFuture("Could not resolve path. The path must not end with a slash."));
 			return;
 		}
+		
+		// Prepare the stack which we use for resolving
 		String[] elements = pathToElement.split("\\/");
+		List<String> list = Arrays.asList(elements);
+		Collections.reverse(list);
+		Stack<String> stack = new Stack<String>();
+		stack.addAll(list);
+
 		if (log.isDebugEnabled()) {
-			log.debug("Found " + elements.length + " elements");
+			log.debug("Found " + stack.size() + " elements");
+			for (String segment : list) {
+				log.debug("Segment: " + segment);
+			}
 		}
-		String rootNodeSegment = elements[0];
-		RootVertex<? extends GenericVertex<?>> rootVertex = null;
+		String rootNodeSegment = stack.pop();
 		switch (rootNodeSegment) {
 		case ProjectRoot.TYPE:
-			ProjectRoot projectRoot = root.getProjectRoot();
-			if (elements.length > 4) {
-				//TODO maybe this will change in the future. It would be better to check this individually within each segment handler
-				resultHandler.handle(Future.failedFuture("Could not resolve path. You can't resolve more then 4 segments."));
-			} else if (elements.length == 1) {
-				resultHandler.handle(Future.succeededFuture(projectRoot));
-			} else if (elements.length >= 2) {
-				String uuidSegment = elements[1];
-				projectRoot.findByUuid(uuidSegment, rh -> {
-					if (rh.succeeded()) {
-						Project project = rh.result();
-
-						if (elements.length == 2) {
-							resultHandler.handle(Future.succeededFuture(project));
-						} else if (elements.length > 2) {
-
-							String nestedRootNode = elements[2];
-							switch (nestedRootNode) {
-							case TagFamilyRoot.TYPE:
-
-								TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-								if (elements.length == 3) {
-									resultHandler.handle(Future.succeededFuture(tagFamilyRoot));
-								} else {
-									tagFamilyRoot.findByUuid(elements[3], sh -> {
-										if (sh.succeeded()) {
-											resultHandler.handle(Future.succeededFuture(sh.result()));
-										} else {
-											resultHandler.handle(Future.failedFuture(sh.cause()));
-										}
-									});
-								}
-								break;
-							case SchemaContainerRoot.TYPE:
-								SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
-								if (elements.length == 3) {
-									resultHandler.handle(Future.succeededFuture(schemaRoot));
-								} else {
-									schemaRoot.findByUuid(elements[3], sh -> {
-										if (sh.succeeded()) {
-											resultHandler.handle(Future.succeededFuture(sh.result()));
-										} else {
-											resultHandler.handle(Future.failedFuture(sh.cause()));
-										}
-									});
-								}
-								break;
-							case MicroschemaContainerRoot.TYPE:
-								//project.getMicroschemaRoot();
-								throw new NotImplementedException();
-								//break;
-							case NodeRoot.TYPE:
-								NodeRoot nodeRoot = project.getNodeRoot();
-								if (elements.length == 3) {
-									resultHandler.handle(Future.succeededFuture(nodeRoot));
-								} else {
-									nodeRoot.findByUuid(elements[3], sh -> {
-										if (sh.succeeded()) {
-											resultHandler.handle(Future.succeededFuture(sh.result()));
-										} else {
-											resultHandler.handle(Future.failedFuture(sh.cause()));
-										}
-									});
-								}
-								break;
-							case TagRoot.TYPE:
-								TagRoot tagRoot = project.getTagRoot();
-								if (elements.length == 3) {
-									resultHandler.handle(Future.succeededFuture(tagRoot));
-								} else {
-									tagRoot.findByUuid(elements[3], sh -> {
-										if (sh.succeeded()) {
-											resultHandler.handle(Future.succeededFuture(sh.result()));
-										} else {
-											resultHandler.handle(Future.failedFuture(sh.cause()));
-										}
-									});
-								}
-								break;
-							default:
-								resultHandler.handle(Future.failedFuture("Unknown project element {" + nestedRootNode + "}"));
-								return;
-							}
-						}
-					} else {
-						resultHandler.handle(Future.failedFuture(rh.cause()));
-						return;
-					}
-				});
-			} else {
-				resultHandler.handle(Future.failedFuture("Could not resolve given path. You specified more then three segments."));
-				return;
-			}
-
+			root.getProjectRoot().resolveToElement(stack, resultHandler);
 			return;
 		case UserRoot.TYPE:
-			rootVertex = root.getUserRoot();
-			break;
+			root.getUserRoot().resolveToElement(stack, resultHandler);
+			return;
 		case GroupRoot.TYPE:
-			rootVertex = root.getGroupRoot();
-			break;
+			root.getGroupRoot().resolveToElement(stack, resultHandler);
+			return;
 		case RoleRoot.TYPE:
-			rootVertex = root.getRoleRoot();
-			break;
+			root.getRoleRoot().resolveToElement(stack, resultHandler);
+			return;
 		case SchemaContainerRoot.TYPE:
-			rootVertex = root.getSchemaContainerRoot();
-			break;
+			root.getSchemaContainerRoot().resolveToElement(stack, resultHandler);
+			return;
 		default:
 			resultHandler.handle(Future.failedFuture("Could not resolve given path. Unknown element {" + rootNodeSegment + "}"));
 			return;
-		}
-
-		if (rootVertex != null && elements.length == 1) {
-			resultHandler.handle(Future.succeededFuture(rootVertex));
-		} else if (rootVertex != null && elements.length == 2) {
-			String uuidSegment = elements[1];
-			rootVertex.findByUuid(uuidSegment, rh -> {
-				if (rh.succeeded()) {
-					resultHandler.handle(Future.succeededFuture(rh.result()));
-				} else {
-					resultHandler.handle(Future.failedFuture(rh.cause()));
-				}
-			});
-		} else {
-			resultHandler.handle(Future.failedFuture("path could not be resolved."));
 		}
 	}
 

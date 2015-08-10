@@ -1,8 +1,12 @@
 package com.gentics.mesh.core;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
@@ -23,82 +27,95 @@ public class MeshRootTest extends AbstractDBTest {
 	public void testResolvePath() throws InterruptedException {
 
 		// Valid paths
-		assertNotNull(resolve("projects"));
-		assertNotNull(resolve("projects/" + project().getUuid()));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/schemas"));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid()));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/tagFamilies"));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid()));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/nodes"));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid()));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/tags"));
-		assertNotNull(resolve("projects/" + project().getUuid() + "/tags/" + tag("red").getUuid()));
+		expectSuccess("projects", meshRoot().getProjectRoot());
+		expectSuccess("projects/" + project().getUuid(), project());
+		expectSuccess("projects/" + project().getUuid() + "/schemas", project().getSchemaContainerRoot());
+		expectSuccess("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
+		expectSuccess("projects/" + project().getUuid() + "/tagFamilies", project().getTagFamilyRoot());
+		expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), tagFamily("colors"));
+		expectSuccess("projects/" + project().getUuid() + "/nodes", project().getNodeRoot());
+		expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
+		expectSuccess("projects/" + project().getUuid() + "/tags", project().getTagRoot());
+		expectSuccess("projects/" + project().getUuid() + "/tags/" + tag("red").getUuid(), tag("red"));
 
-		assertNotNull(resolve("users"));
-		assertNotNull(resolve("users/" + user().getUuid()));
+		expectSuccess("users", meshRoot().getUserRoot());
+		expectSuccess("users/" + user().getUuid(), user());
 
-		assertNotNull(resolve("roles"));
-		assertNotNull(resolve("roles/" + role().getUuid()));
+		expectSuccess("roles", meshRoot().getRoleRoot());
+		expectSuccess("roles/" + role().getUuid(), role());
 
-		assertNotNull(resolve("groups"));
-		assertNotNull(resolve("groups/" + group().getUuid()));
+		expectSuccess("groups", meshRoot().getGroupRoot());
+		expectSuccess("groups/" + group().getUuid(), group());
 
-		assertNotNull(resolve("schemas"));
-		assertNotNull(resolve("schemas/" + schemaContainer("folder").getUuid()));
-		//assertNotNull(resolve("microschemas"));
-		//assertNotNull(resolve("microschemas/" + mircoschemas("gallery").getUuid()));
+		expectSuccess("schemas", meshRoot().getSchemaContainerRoot());
+		expectSuccess("schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
+		// assertNotNull(resolve("microschemas"));
+		// assertNotNull(resolve("microschemas/" + mircoschemas("gallery").getUuid()));
 
 		// Invalid paths
-		assertNull(resolve("bogus"));
-		assertNull(resolve("projects/"));
-		assertNull(resolve("projects/bogus"));
-		assertNull(resolve("projects/bogus/bogus"));
-		assertNull(resolve("projects/" + project().getUuid() + "/bogus"));
-		assertNull(resolve("projects/" + project().getUuid() + "/tagFamilies/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/tagFamilies/bogus"));
-		assertNull(resolve("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/bogus"));
+		expectFailure("bogus");
+		expectFailure("projects/");
+		expectFailure("projects/bogus");
+		expectFailure("projects/bogus/bogus");
+		expectFailure("projects/" + project().getUuid() + "/bogus");
+		expectFailure("projects/" + project().getUuid() + "/tagFamilies/");
+		expectFailure("projects/" + project().getUuid() + "/tagFamilies/bogus");
+		expectFailure("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/");
+		expectFailure("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/bogus");
 
-		assertNull(resolve("projects/" + project().getUuid() + "/nodes/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/nodes/bogus"));
-		assertNull(resolve("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid() + "/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid() + "/bogus"));
+		expectFailure("projects/" + project().getUuid() + "/nodes/");
+		expectFailure("projects/" + project().getUuid() + "/nodes/bogus");
+		expectFailure("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid() + "/");
+		expectFailure("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid() + "/bogus");
 
-		assertNull(resolve("projects/" + project().getUuid() + "/tags/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/tags/bogus"));
-		assertNull(resolve("projects/" + project().getUuid() + "/tags/" + folder("2015").getUuid() + "/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/tags/" + folder("2015").getUuid() + "/bogus"));
+		expectFailure("projects/" + project().getUuid() + "/tags/");
+		expectFailure("projects/" + project().getUuid() + "/tags/bogus");
+		expectFailure("projects/" + project().getUuid() + "/tags/" + folder("2015").getUuid() + "/");
+		expectFailure("projects/" + project().getUuid() + "/tags/" + folder("2015").getUuid() + "/bogus");
 
-		assertNull(resolve("projects/" + project().getUuid() + "/schemas/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/schemas/bogus"));
-		assertNull(resolve("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid() + "/"));
-		assertNull(resolve("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid() + "/bogus"));
+		expectFailure("projects/" + project().getUuid() + "/schemas/");
+		expectFailure("projects/" + project().getUuid() + "/schemas/bogus");
+		expectFailure("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid() + "/");
+		expectFailure("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid() + "/bogus");
 
-		assertNull(resolve("users/"));
-		assertNull(resolve("users/bogus"));
+		expectFailure("users/");
+		expectFailure("users/bogus");
 
-		assertNull(resolve("groups/"));
-		assertNull(resolve("groups/bogus"));
+		expectFailure("groups/");
+		expectFailure("groups/bogus");
 
-		assertNull(resolve("roles/"));
-		assertNull(resolve("roles/bogus"));
+		expectFailure("roles/");
+		expectFailure("roles/bogus");
 
-		assertNull(resolve("schemas/"));
-		assertNull(resolve("schemas/bogus"));
+		expectFailure("schemas/");
+		expectFailure("schemas/bogus");
 
+	}
+
+	private void expectSuccess(String path, MeshVertex vertex) throws InterruptedException {
+
+		MeshVertex resolvedVertex = resolve(path);
+		assertNotNull("We expected that the path {" + path + "} could be resolved but resolving failed.", resolvedVertex);
+		assertEquals(vertex.getUuid(), resolvedVertex.getUuid());
+	}
+
+	private void expectFailure(String path) throws InterruptedException {
+		assertNull("We expected that the path {" + path + "} can't be resolved successfully but it was.", resolve(path));
 	}
 
 	private MeshVertex resolve(String pathToElement) throws InterruptedException {
 		CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<MeshVertex> vertex = new AtomicReference<>();
 		MeshRoot.getInstance().resolvePathToElement(pathToElement, rh -> {
-			if(rh.failed()) {
+			if (rh.failed()) {
 				rh.cause().printStackTrace();
 			}
 			vertex.set(rh.result());
 			latch.countDown();
 		});
-		latch.await();
+		if (!latch.await(1, TimeUnit.SECONDS)) {
+			fail("Timeout reached for path {" + pathToElement + "}");
+		}
 		return vertex.get();
 	}
 

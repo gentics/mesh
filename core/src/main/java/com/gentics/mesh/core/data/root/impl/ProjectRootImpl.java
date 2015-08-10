@@ -2,12 +2,26 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PROJECT;
 
+import java.util.Stack;
+
+import org.apache.commons.lang.NotImplementedException;
+
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.TagRoot;
 
-public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
+public class ProjectRootImpl extends AbstractRootVertex<Project>implements ProjectRoot {
 
 	@Override
 	protected Class<? extends Project> getPersistanceClass() {
@@ -52,4 +66,51 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		return project;
 	}
 
+	@Override
+	public void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler) {
+		if (stack.isEmpty()) {
+			resultHandler.handle(Future.succeededFuture(this));
+		} else {
+			String uuidSegment = stack.pop();
+			findByUuid(uuidSegment, rh -> {
+				if (rh.succeeded()) {
+					Project project = rh.result();
+					if (stack.isEmpty()) {
+						resultHandler.handle(Future.succeededFuture(project));
+					} else {
+						String nestedRootNode = stack.pop();
+						switch (nestedRootNode) {
+						case TagFamilyRoot.TYPE:
+							TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
+							tagFamilyRoot.resolveToElement(stack, resultHandler);
+							break;
+						case SchemaContainerRoot.TYPE:
+							SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
+							schemaRoot.resolveToElement(stack, resultHandler);
+							break;
+						case MicroschemaContainerRoot.TYPE:
+							// MicroschemaContainerRoot microschemaRoot = project.get
+							// project.getMicroschemaRoot();
+							throw new NotImplementedException();
+							// break;
+						case NodeRoot.TYPE:
+							NodeRoot nodeRoot = project.getNodeRoot();
+							nodeRoot.resolveToElement(stack, resultHandler);
+							break;
+						case TagRoot.TYPE:
+							TagRoot tagRoot = project.getTagRoot();
+							tagRoot.resolveToElement(stack, resultHandler);
+							return;
+						default:
+							resultHandler.handle(Future.failedFuture("Unknown project element {" + nestedRootNode + "}"));
+							return;
+						}
+					}
+				} else {
+					resultHandler.handle(Future.failedFuture(rh.cause()));
+					return;
+				}
+			});
+		}
+	}
 }

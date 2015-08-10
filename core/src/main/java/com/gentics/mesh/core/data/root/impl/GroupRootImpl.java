@@ -7,10 +7,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 
-public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
+public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot {
 
-	// TODO unique node
-
+	@Override
 	protected Class<? extends Group> getPersistanceClass() {
 		return GroupImpl.class;
 	}
@@ -44,4 +43,5 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		return group;
 	}
 
+	
 }

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
 
-public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
+public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>implements SchemaContainerRoot {
 
 	@Override
 	protected Class<? extends SchemaContainer> getPersistanceClass() {
@@ -45,7 +45,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public boolean contains(SchemaContainer schema) {
-		//TODO this is not optimal
+		// TODO this is not optimal
 		if (findByName(schema.getName()) == null) {
 			return false;
 		} else {

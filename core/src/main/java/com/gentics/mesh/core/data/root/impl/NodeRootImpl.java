@@ -18,7 +18,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
+public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 
 	@Override
 	protected Class<? extends Node> getPersistanceClass() {

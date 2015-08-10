@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 
-public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {
+public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements TagFamilyRoot {
 
 	@Override
 	protected Class<? extends TagFamily> getPersistanceClass() {
@@ -28,7 +28,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		addTagFamily(tagFamily);
 		tagFamily.setCreator(creator);
 		tagFamily.setEditor(creator);
-		//TODO set creation and editing timestamps
+		// TODO set creation and editing timestamps
 		TagFamilyRoot root = BootstrapInitializer.getBoot().tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
