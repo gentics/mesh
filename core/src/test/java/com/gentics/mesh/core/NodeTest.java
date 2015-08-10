@@ -1,5 +1,6 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -276,10 +277,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			assertNull(rh.result());
 		});
 
-		for (Map.Entry<String, String> entry : uuidToBeDeleted.entrySet()) {
-			assertFalse("One vertex was not deleted. Uuid: {" + entry.getValue() + "} - Type: {" + entry.getKey() + "}",
-					fg.v().has("uuid", entry.getValue()).hasNext());
-		}
+		assertDeleted(uuidToBeDeleted);
 	}
 
 	@Test

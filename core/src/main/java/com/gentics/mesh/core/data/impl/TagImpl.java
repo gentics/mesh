@@ -7,6 +7,8 @@ import static com.gentics.mesh.util.VerticleHelper.getUser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
@@ -29,7 +31,9 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.util.BlueprintTransaction;
 
-public class TagImpl extends GenericFieldContainerNode<TagResponse> implements Tag {
+public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Tag {
+
+	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);
 
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
@@ -70,8 +74,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
 		TagResponse restTag = new TagResponse();
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
-				.framedThreadedTransactionalGraph())) {
+		try (BlueprintTransaction tx = new BlueprintTransaction(
+				MeshSpringConfiguration.getMeshSpringConfiguration().framedThreadedTransactionalGraph())) {
 			restTag.setPermissions(getUser(rc).getPermissionNames(this));
 			restTag.setUuid(getUuid());
 
@@ -112,7 +116,10 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 	}
 
 	public void delete() {
-		outE().removeAll();
+		// outE().removeAll();
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting tag {" + getName() + "}");
+		}
 		getVertex().remove();
 	}
 
@@ -147,11 +154,6 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 		reference.setUuid(getUuid());
 		reference.setName(getName());
 		return reference;
-	}
-
-	@Override
-	public TagImpl getImpl() {
-		return this;
 	}
 
 }

@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
@@ -23,7 +25,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse> implements TagFamily {
+public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>implements TagFamily {
+
+	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
 	@Override
 	public String getType() {
@@ -52,7 +56,7 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse> impl
 
 	@Override
 	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
-		//TODO check perms
+		// TODO check perms
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
@@ -93,8 +97,15 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse> impl
 
 	@Override
 	public void delete() {
-		//TODO also deletetags?
+
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting tagFamily {" + getName() + "}");
+		}
+		for (Tag tag : getTags()) {
+			tag.remove();
+		}
 		getElement().remove();
+
 	}
 
 	@Override

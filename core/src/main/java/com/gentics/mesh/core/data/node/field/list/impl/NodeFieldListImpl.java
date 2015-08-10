@@ -17,5 +17,11 @@ public class NodeFieldListImpl extends AbstractReferencingFieldList<NodeField> i
 	public Class<? extends NodeField> getListType() {
 		return NodeFieldImpl.class;
 	}
+	
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

@@ -4,13 +4,12 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 
 public interface Tag extends GenericVertex<TagResponse>, NamedNode {
-	
+
 	public static final String TYPE = "tag";
 
 	List<? extends TagFieldContainer> getFieldContainers();
@@ -23,9 +22,10 @@ public interface Tag extends GenericVertex<TagResponse>, NamedNode {
 
 	List<? extends Node> getNodes();
 
+	/**
+	 * Delete the tag.
+	 */
 	void remove();
-
-	TagImpl getImpl();
 
 	Page<Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo);
 }

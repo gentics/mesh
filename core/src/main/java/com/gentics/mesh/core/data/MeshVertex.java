@@ -8,4 +8,6 @@ public interface MeshVertex extends MeshElement {
 	Vertex getVertex();
 
 	MeshVertexImpl getImpl();
+
+	void delete();
 }

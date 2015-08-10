@@ -22,6 +22,4 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 
 	Long getCreationTimestamp();
 
-	void delete();
-
 }

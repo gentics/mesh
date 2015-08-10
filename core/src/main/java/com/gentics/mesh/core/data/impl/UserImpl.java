@@ -15,10 +15,6 @@ import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,7 +43,16 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
+
 public class UserImpl extends AbstractGenericVertex<UserResponse>implements User {
+
+	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
 	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 
@@ -71,7 +76,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 		setProperty(ENABLED_FLAG_PROPERTY_KEY, false);
 	}
 
-	//TODO do we really need disable and deactivate and remove?!
+	// TODO do we really need disable and deactivate and remove?!
 	@Override
 	public void deactivate() {
 		outE(HAS_GROUP).removeAll();
@@ -258,6 +263,9 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 	@Override
 	public void delete() {
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
+		}
 		outE(HAS_USER).removeAll();
 		disable();
 	}

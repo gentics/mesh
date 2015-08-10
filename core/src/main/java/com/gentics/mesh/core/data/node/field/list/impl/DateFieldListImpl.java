@@ -28,4 +28,10 @@ public class DateFieldListImpl extends AbstractBasicFieldList<DateField> impleme
 	public Class<? extends DateField> getListType() {
 		return DateFieldImpl.class;
 	}
+	
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
 }

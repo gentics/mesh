@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.generic;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
@@ -41,10 +43,10 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	public void setLinkOutTo(VertexFrame vertex, String... labels) {
 
-		// Unlink all edges between both objects with the given label 
-//		if (out(labels).retain(vertex).hasNext()) {
-			unlinkOut(vertex, labels);
-//		}
+		// Unlink all edges between both objects with the given label
+		// if (out(labels).retain(vertex).hasNext()) {
+		unlinkOut(vertex, labels);
+		// }
 		// Create a new edge with the given label
 		linkOut(vertex, labels);
 	}
@@ -68,5 +70,10 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	@Override
 	public MeshVertexImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public void delete() {
+		throw new NotImplementedException("The deletion behaviour for this vertex was not implemented.");
 	}
 }

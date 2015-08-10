@@ -1,14 +1,17 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.util.MeshAssert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.ext.web.RoutingContext;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +25,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.ext.web.RoutingContext;
 
 public class ProjectTest extends AbstractBasicObjectTest {
 
@@ -48,6 +53,13 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() {
 		String uuid = project().getUuid();
+
+		Map<String, String> uuidToBeDeleted = new HashMap<>();
+		uuidToBeDeleted.put("project", uuid);
+		uuidToBeDeleted.put("project.tagFamilyRoot", project().getTagFamilyRoot().getUuid());
+		uuidToBeDeleted.put("project.schemaContainerRoot", project().getSchemaContainerRoot().getUuid());
+		uuidToBeDeleted.put("project.nodeRoot", project().getNodeRoot().getUuid());
+
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			Project project = project();
 			project.delete();
@@ -56,6 +68,9 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		projectRoot.findByUuid(uuid, rh -> {
 			assertNull(rh.result());
 		});
+
+		assertDeleted(uuidToBeDeleted);
+
 		// TODO assert on tag families of the project
 	}
 
@@ -93,13 +108,17 @@ public class ProjectTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() {
+	public void testFindByUUID() throws InterruptedException {
+		CountDownLatch latch = new CountDownLatch(2);
 		projectRoot.findByUuid(project().getUuid(), rh -> {
 			assertNotNull(rh.result());
+			latch.countDown();
 		});
 		projectRoot.findByUuid("bogus", rh -> {
 			assertNull(rh.result());
+			latch.countDown();
 		});
+		failingLatch(latch);
 	}
 
 	@Test
@@ -115,23 +134,28 @@ public class ProjectTest extends AbstractBasicObjectTest {
 			assertEquals(project.getUuid(), response.getUuid());
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 	}
 
 	@Test
 	@Override
-	public void testCreateDelete() {
+	public void testCreateDelete() throws InterruptedException {
 		Project project = meshRoot().getProjectRoot().create("newProject", user());
 		assertNotNull(project);
 		String uuid = project.getUuid();
+		CountDownLatch latch = new CountDownLatch(2);
 		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
+			latch.countDown();
 		});
 		project.delete();
 		// TODO check for attached nodes
 		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
 			assertNull(rh.result());
+			latch.countDown();
 		});
+		failingLatch(latch);
+
 	}
 
 	@Test

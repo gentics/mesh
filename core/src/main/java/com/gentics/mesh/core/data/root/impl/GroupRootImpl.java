@@ -43,5 +43,11 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		return group;
 	}
 
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	
 }

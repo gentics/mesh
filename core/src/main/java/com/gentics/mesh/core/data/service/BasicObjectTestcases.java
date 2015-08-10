@@ -34,7 +34,7 @@ public interface BasicObjectTestcases {
 
 	void testTransformation() throws IOException, InterruptedException;
 
-	void testCreateDelete();
+	void testCreateDelete() throws InterruptedException;
 
 	void testCRUDPermissions();
 

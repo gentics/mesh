@@ -49,4 +49,9 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 		return role;
 	}
 
+	@Override
+	public void delete() {
+		getElement().remove();
+	}
+
 }

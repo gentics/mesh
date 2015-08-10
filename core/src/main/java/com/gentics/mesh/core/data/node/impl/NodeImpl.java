@@ -55,7 +55,7 @@ import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.VerticleHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
+public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements Node {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
@@ -238,13 +238,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				binaryProperties.setMimeType(getBinaryContentType());
 				binaryProperties.setFileSize(getBinaryFileSize());
 				binaryProperties.setSha512sum(getBinarySHA512Sum());
-				//TODO determine whether file is an image
-				//binaryProperties.setDpi(getImageDpi());
+				// TODO determine whether file is an image
+				// binaryProperties.setDpi(getImageDpi());
 				getBinaryImageDPI();
 				getBinaryImageHeight();
 				getBinaryImageWidth();
-				//binaryProperties.setHeight(getImageHeight());
-				//binaryProperties.setWidth(getImageWidth());
+				// binaryProperties.setHeight(getImageHeight());
+				// binaryProperties.setWidth(getImageWidth());
 				restNode.setBinaryProperties(binaryProperties);
 			}
 
@@ -261,11 +261,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 							expandField);
 					if (fieldEntry.isRequired() && restField == null) {
 						/* TODO i18n */
-						throw new HttpStatusCodeErrorException(
-								BAD_REQUEST,
-								"The field {"
-										+ fieldEntry.getName()
-										+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+						throw new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
+								+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
 					}
 					if (restField == null) {
 						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field");
@@ -396,7 +393,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public void delete() {
-		//Delete subfolders
+		// Delete subfolders
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting node {" + getUuid() + "}");
+		}
 		for (Node child : getChildren()) {
 			child.delete();
 		}

@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.node.field.impl.basic.NumberFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
 
-public class NumberFieldListImpl extends AbstractBasicFieldList<NumberField> implements NumberFieldList {
+public class NumberFieldListImpl extends AbstractBasicFieldList<NumberField>implements NumberFieldList {
 
 	@Override
 	public NumberField createNumber(String number) {
@@ -23,10 +23,16 @@ public class NumberFieldListImpl extends AbstractBasicFieldList<NumberField> imp
 	protected NumberField createField(String key) {
 		return new NumberFieldImpl(key, getImpl());
 	}
-	
+
 	@Override
 	public Class<? extends NumberField> getListType() {
 		return NumberFieldImpl.class;
+	}
+
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+
 	}
 
 }

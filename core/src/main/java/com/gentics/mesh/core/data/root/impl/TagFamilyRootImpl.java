@@ -5,10 +5,16 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements TagFamilyRoot {
+
+	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
 	@Override
 	protected Class<? extends TagFamily> getPersistanceClass() {
@@ -44,6 +50,18 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 	@Override
 	public void addTagFamily(TagFamily tagFamily) {
 		addItem(tagFamily);
+	}
+
+	@Override
+	public void delete() {
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting tagFamilyRoot {" + getUuid() + "}");
+		}
+		for (TagFamily tagFamily : findAll()) {
+			tagFamily.delete();
+		}
+		getElement().remove();
+
 	}
 
 }

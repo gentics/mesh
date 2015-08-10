@@ -28,5 +28,11 @@ public class StringFieldListImpl extends AbstractBasicFieldList<StringField> imp
 	public Class<? extends StringField> getListType() {
 		return StringFieldImpl.class;
 	}
+	
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

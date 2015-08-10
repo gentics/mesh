@@ -18,7 +18,12 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
 	@Override
 	protected Class<? extends Node> getPersistanceClass() {
@@ -65,6 +70,18 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 
 		addNode(node);
 		return node;
+	}
+
+	@Override
+	public void delete() {
+		// TODO maybe add a check to prevent deletion of meshRoot.nodeRoot
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting node root {" + getUuid() + "}");
+		}
+		for (Node node : findAll()) {
+			node.delete();
+		}
+		getElement().remove();
 	}
 
 }

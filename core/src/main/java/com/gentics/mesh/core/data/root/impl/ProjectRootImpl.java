@@ -113,4 +113,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 			});
 		}
 	}
+
+	@Override
+	public void delete() {
+		throw new NotImplementedException("The project root should never be deleted.");
+	}
 }

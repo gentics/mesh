@@ -12,4 +12,10 @@ public class TagFieldContainerImpl extends AbstractBasicFieldContainerImpl imple
 	public void setName(String name) {
 		setProperty("name", name);
 	}
+	
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
 }

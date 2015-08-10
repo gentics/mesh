@@ -34,5 +34,11 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 		return out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back()
 				.nextOrDefaultExplicit(TagImpl.class, null);
 	}
+	
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

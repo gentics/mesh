@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
@@ -9,7 +11,12 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
+
+	private static final Logger log = LoggerFactory.getLogger(UserRootImpl.class);
 
 	@Override
 	protected Class<? extends User> getPersistanceClass() {
@@ -59,6 +66,11 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		return out(HAS_USER).has(UserImpl.class).has(UserImpl.USERNAME_PROPERTY_KEY, username).nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
+	}
+
+	@Override
+	public void delete() {
+		throw new NotImplementedException("The user root should never be deleted");
 	}
 
 }

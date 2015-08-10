@@ -68,4 +68,8 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 		throw new NotImplementedException();
 	}
 
+	@Override
+	public void delete() {
+		throw new NotImplementedException("The language root should never be deleted.");
+	}
 }

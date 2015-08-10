@@ -37,7 +37,7 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectField;
 
-public class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl implements FieldContainer {
+public abstract class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl implements FieldContainer {
 
 	public List<String> getFieldnames() {
 		return null;

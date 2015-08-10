@@ -56,5 +56,10 @@ public class SelectFieldImpl<T extends ListableField> extends AbstractComplexFie
 		return null;
 	}
 
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

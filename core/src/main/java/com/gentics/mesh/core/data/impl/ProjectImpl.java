@@ -6,21 +6,15 @@ import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.node.Node;
@@ -34,15 +28,23 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
+
 public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implements Project {
 
 	// TODO index to name + unique constraint
+
+	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
 	@Override
 	public String getType() {
@@ -153,8 +155,21 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 
 	@Override
 	public void delete() {
-		// TODO handle this correctly
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting project {" + getName() + "}");
+		}
+
+		getBaseNode().delete();
+		getTagFamilyRoot().delete();
+		getNodeRoot().delete();
+
+		for (SchemaContainer container : getSchemaContainerRoot().findAll()) {
+			getSchemaContainerRoot().removeSchemaContainer(container);
+		}
+		getSchemaContainerRoot().delete();
+
 		getVertex().remove();
+
 		// TODO handle: routerStorage.removeProjectRouter(name);
 	}
 

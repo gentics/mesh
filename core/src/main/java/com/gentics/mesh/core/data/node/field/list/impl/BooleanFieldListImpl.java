@@ -28,5 +28,11 @@ public class BooleanFieldListImpl extends AbstractBasicFieldList<BooleanField> i
 	public Class<? extends BooleanField> getListType() {
 		return BooleanFieldImpl.class;
 	}
+	
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

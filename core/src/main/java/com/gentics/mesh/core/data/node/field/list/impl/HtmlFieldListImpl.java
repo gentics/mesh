@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.node.field.impl.basic.HtmlFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
 
-public class HtmlFieldListImpl extends AbstractBasicFieldList<HtmlField> implements HtmlFieldList {
+public class HtmlFieldListImpl extends AbstractBasicFieldList<HtmlField>implements HtmlFieldList {
 
 	@Override
 	public HtmlField createHTML(String html) {
@@ -29,4 +29,9 @@ public class HtmlFieldListImpl extends AbstractBasicFieldList<HtmlField> impleme
 		return HtmlFieldImpl.class;
 	}
 
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+
+	}
 }

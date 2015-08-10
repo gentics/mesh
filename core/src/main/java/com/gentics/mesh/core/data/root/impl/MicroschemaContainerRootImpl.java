@@ -35,4 +35,10 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		return null;
 	}
 
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+
+	}
+
 }
