@@ -90,7 +90,6 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Override
 	@Ignore("languages are currently not transformable")
 	public void testTransformation() {
-		fail("implement me");
 	}
 
 	@Test

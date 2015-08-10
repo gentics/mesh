@@ -1,6 +1,7 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.*;
 import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
@@ -57,7 +58,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		// node2
 		Node parentNode = folder("2015");
 		Node node2 = parentNode.create(user(), getSchemaContainer(), project());
-//		NodeFieldContainer englishContainer = node2.getFieldContainer(english());
+		// NodeFieldContainer englishContainer = node2.getFieldContainer(english());
 		// englishContainer.setI18nProperty("content", "Test");
 		role.grantPermissions(node2, READ_PERM, DELETE_PERM);
 		role.grantPermissions(node2, CREATE_PERM);
@@ -170,13 +171,13 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role extraRole = root.create("extraRole", group(), user());
-		
+
 		// Multiple add role calls should not affect the result
 		group().addRole(extraRole);
 		group().addRole(extraRole);
 		group().addRole(extraRole);
 		group().addRole(extraRole);
-		
+
 		role().grantPermissions(extraRole, READ_PERM);
 
 		RoutingContext rc = getMockedRoutingContext("");
@@ -231,7 +232,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 			assertEquals(role.getUuid(), restModel.getUuid());
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 
 	}
 
@@ -287,13 +288,16 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() {
+	public void testDelete() throws InterruptedException {
 		Role role = role();
 		String uuid = role.getUuid();
 		role.delete();
+		CountDownLatch latch = new CountDownLatch(1);
 		boot.roleRoot().findByUuid(uuid, rh -> {
 			assertNull(rh.result());
+			latch.countDown();
 		});
+		failingLatch(latch);
 	}
 
 	@Test

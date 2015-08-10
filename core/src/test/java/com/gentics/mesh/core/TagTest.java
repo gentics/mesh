@@ -1,6 +1,7 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -8,12 +9,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +31,10 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 public class TagTest extends AbstractBasicObjectTest {
 
@@ -109,10 +112,10 @@ public class TagTest extends AbstractBasicObjectTest {
 			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 			// Remove the file/content and check whether the content was really removed
-				reloadedTag.removeNode(contentFromTag);
-				// TODO verify for removed node
-				assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
-			});
+			reloadedTag.removeNode(contentFromTag);
+			// TODO verify for removed node
+			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
+		});
 
 	}
 
@@ -306,7 +309,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() {
+	public void testDelete() throws InterruptedException {
 		Tag tag = tag("red");
 		String uuid = tag.getUuid();
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
@@ -314,9 +317,12 @@ public class TagTest extends AbstractBasicObjectTest {
 			tx.success();
 		}
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			CountDownLatch latch = new CountDownLatch(1);
 			tagRoot.findByUuid(uuid, rh -> {
 				assertNull(rh.result());
+				latch.countDown();
 			});
+			failingLatch(latch);
 		}
 	}
 
