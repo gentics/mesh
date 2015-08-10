@@ -400,5 +400,6 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 	@Override
 	public void delete() {
 		//TODO delete linked aggregation nodes for node lists etc
+		getElement().remove();
 	}
 }

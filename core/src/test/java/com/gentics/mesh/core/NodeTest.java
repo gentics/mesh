@@ -6,13 +6,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,6 +36,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.ext.web.RoutingContext;
 
 public class NodeTest extends AbstractBasicObjectTest {
 
@@ -256,14 +257,14 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() {
 		Node node = folder("news");
-		Set<String> uuidToBeDeleted = new HashSet<>();
+		Map<String, String> uuidToBeDeleted = new HashMap<>();
 		for (FieldContainer container : node.getFieldContainers()) {
-			uuidToBeDeleted.add(container.getUuid());
+			uuidToBeDeleted.put("container-" + container.getLanguage().getLanguageTag(), container.getUuid());
 		}
 
 		// Add subfolders
-		uuidToBeDeleted.add(folder("2015").getUuid());
-		uuidToBeDeleted.add(folder("2014").getUuid());
+		uuidToBeDeleted.put("folder-2015", folder("2015").getUuid());
+		uuidToBeDeleted.put("folder-2014", folder("2014").getUuid());
 
 		String uuid = node.getUuid();
 		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
@@ -275,8 +276,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 			assertNull(rh.result());
 		});
 
-		for (String uuidOfDeletedVerticle : uuidToBeDeleted) {
-			assertFalse(fg.v().has("uuid", uuidOfDeletedVerticle).hasNext());
+		for (Map.Entry<String, String> entry : uuidToBeDeleted.entrySet()) {
+			assertFalse("One vertex was not deleted. Uuid: {" + entry.getValue() + "} - Type: {" + entry.getKey() + "}",
+					fg.v().has("uuid", entry.getValue()).hasNext());
 		}
 	}
 

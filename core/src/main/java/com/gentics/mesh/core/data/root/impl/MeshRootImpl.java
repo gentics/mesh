@@ -346,9 +346,4 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		}
 	}
 
-	@Override
-	public MeshRootImpl getImpl() {
-		return this;
-	}
-
 }
