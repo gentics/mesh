@@ -123,7 +123,7 @@ public class MeshSpringConfiguration {
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
 		BodyHandler handler = BodyHandler.create();
-		handler.setBodyLimit(Mesh.mesh().getOptions().getFileUploadByteLimit());
+		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
 		// TODO check for windows issues
 		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
 		return handler;

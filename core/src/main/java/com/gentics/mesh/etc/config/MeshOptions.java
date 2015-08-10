@@ -23,7 +23,6 @@ public class MeshOptions {
 	public static final int DEFAULT_NESTED_TAGS_LIMIT = 25;
 	public static final int DEFAULT_NESTED_NODES_LIMIT = 25;
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
-	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250;
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
 
 	private int httpPort = DEFAULT_HTTP_PORT;
@@ -31,8 +30,6 @@ public class MeshOptions {
 	private int maxDepth = DEFAULT_MAX_DEPTH;
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
-
-	private long fileUploadByteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
 
 	private int defaultNestedTagsLimit = DEFAULT_NESTED_TAGS_LIMIT;
 
@@ -51,6 +48,8 @@ public class MeshOptions {
 	private MailConfig mailServerOptions = new MailConfig();
 
 	private StorageOptions storageOptions = new StorageOptions();
+
+	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
 
 	public MeshOptions() {
 	}
@@ -81,10 +80,6 @@ public class MeshOptions {
 
 	public void setMaxDepth(int maxDepth) {
 		this.maxDepth = maxDepth;
-	}
-
-	public long getFileUploadByteLimit() {
-		return fileUploadByteLimit;
 	}
 
 	public String getDefaultLanguage() {
@@ -132,4 +127,11 @@ public class MeshOptions {
 		return this.enableCors != null && this.enableCors == true;
 	}
 
+	public MeshUploadOptions getUploadOptions() {
+		return uploadOptions;
+	}
+
+	public void setUploadOptions(MeshUploadOptions uploadOptions) {
+		this.uploadOptions = uploadOptions;
+	}
 }

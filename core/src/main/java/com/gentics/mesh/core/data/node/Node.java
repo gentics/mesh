@@ -165,4 +165,11 @@ public interface Node extends GenericVertex<NodeResponse> {
 	 */
 	void setBinaryImageHeight(Integer heigth);
 
+	/**
+	 * Returns the segmented path that points to the binary file within the binary file location. The segmented path is build using the uuid of the node.
+	 * 
+	 * @return
+	 */
+	String getSegmentedPath();
+
 }

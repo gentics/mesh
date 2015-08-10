@@ -129,4 +129,6 @@ public interface NodeClientMethods {
 	 * @return
 	 */
 	Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName, String contentType);
+
+	Future<Buffer> downloadBinaryField(String projectName, String nodeUuid);
 }

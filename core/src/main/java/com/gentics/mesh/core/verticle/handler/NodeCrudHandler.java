@@ -21,12 +21,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -56,10 +56,10 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.FileUtils;
-import com.jcraft.jsch.Buffer;
 
 @Component
 public class NodeCrudHandler extends AbstractCRUDHandler {
@@ -287,54 +287,135 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 	}
 
 	public void handleDownload(RoutingContext rc) {
-		// TODO Auto-generated method stub
-
+		Project project = getProject(rc);
+		loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+			if (hasSucceeded(rc, rh)) {
+				Node node = rh.result();
+				node.getBinaryFileBuffer().setHandler(bh-> {
+					rc.response().end(bh.result());
+				});
+			}
+		});
 	}
 
 	public void handleUpload(RoutingContext rc) {
+		FileSystem fileSystem = Mesh.vertx().fileSystem();
 		Project project = getProject(rc);
-		loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
-				Node node = rh.result();
-				try {
-					Schema schema = node.getSchema();
-					if (!schema.isBinary()) {
-						fail(rc, "node_error_no_binary_node");
-					} else {
-						Set<FileUpload> fileUploads = rc.fileUploads();
-						if (fileUploads.isEmpty()) {
-							fail(rc, "node_error_no_binarydata_found");
-						} else if (fileUploads.size() > 1) {
-							fail(rc, "node_error_more_than_one_binarydata_included");
-						} else {
-							FileUpload ul = fileUploads.iterator().next();
-							String contentType = ul.contentType();
-							String fileName = ul.fileName();
-							node.setBinaryFileName(fileName);
-							node.setBinaryFileSize(ul.size());
-							node.setBinaryContentType(contentType);
-							FileUtils.generateSha512Sum(ul.uploadedFileName(), hash -> {
-								if (hash.succeeded()) {
-									node.setBinarySHA512Sum(hash.result());
-									System.out.println("FILE: " + ul.uploadedFileName());
-									/* TODO handle sha512sum checksum */
-									// node.setBinaryImageDPI(dpi);
-									// node.setBinaryImageHeight(heigth);
-									// node.setBinaryImageWidth(width);
-									responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated", node.getUuid()))));
+		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		loadObject(
+				rc,
+				"uuid",
+				UPDATE_PERM,
+				project.getNodeRoot(),
+				rh -> {
+					if (hasSucceeded(rc, rh)) {
+						Node node = rh.result();
+						try {
+							Schema schema = node.getSchema();
+							if (!schema.isBinary()) {
+								fail(rc, "node_error_no_binary_node");
+							} else {
+								Set<FileUpload> fileUploads = rc.fileUploads();
+								if (fileUploads.isEmpty()) {
+									fail(rc, "node_error_no_binarydata_found");
+								} else if (fileUploads.size() > 1) {
+									fail(rc, "node_error_more_than_one_binarydata_included");
 								} else {
-									fail(rc, "node_error_hashing_failed");
-								}
-							});
-						}
-					}
-				} catch (Exception e) {
-					log.error("Could not load schema for node {" + node.getUuid() + "}");
-					rc.fail(e);
-				}
+									FileUpload ul = fileUploads.iterator().next();
+									long byteLimit = uploadOptions.getByteLimit();
+									if (ul.size() > byteLimit) {
+										String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+										String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+										fail(rc, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
+									} else {
+										String contentType = ul.contentType();
+										String fileName = ul.fileName();
+										node.setBinaryFileName(fileName);
+										node.setBinaryFileSize(ul.size());
+										node.setBinaryContentType(contentType);
 
-			}
-		});
+										Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
+
+											if (tfc.succeeded()) {
+												File targetFolder = tfc.result();
+												String targetPath = new File(targetFolder, node.getUuid() + ".bin").getAbsolutePath();
+												if (log.isDebugEnabled()) {
+													log.debug("Moving file from {" + ul.uploadedFileName() + "} to {" + targetPath + "}");
+												}
+
+												fileSystem.move(
+														ul.uploadedFileName(),
+														targetPath,
+														mh -> {
+															if (mh.succeeded()) {
+																responde(
+																		rc,
+																		toJson(new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated",
+																				node.getUuid()))));
+															} else {
+																log.error("Failed to move file to {" + targetPath + "}", mh.cause());
+																fail(rc, "node_error_upload_failed");
+															}
+														});
+											} else {
+												fail(rc, "node_error_upload_failed");
+											}
+										};
+
+										FileUtils.generateSha512Sum(
+												ul.uploadedFileName(),
+												hash -> {
+													if (hash.succeeded()) {
+														node.setBinarySHA512Sum(hash.result());
+														System.out.println("FILE: " + ul.uploadedFileName());
+
+														File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
+														if (log.isDebugEnabled()) {
+															log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
+														}
+														fileSystem.exists(
+																folder.getAbsolutePath(),
+																deh -> {
+																	if (deh.succeeded()) {
+																		if (!deh.result()) {
+																			fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
+																				if (mkh.succeeded()) {
+																					targetFolderChecked.handle(Future.succeededFuture(folder));
+																				} else {
+																					log.error(
+																							"Failed to create target folder {"
+																									+ folder.getAbsolutePath() + "}", mkh.cause());
+																					fail(rc, "node_error_upload_failed");
+																				}
+																			});
+																		} else {
+																			targetFolderChecked.handle(Future.succeededFuture(folder));
+																		}
+																	} else {
+																		log.error(
+																				"Could not check whether target directory {"
+																						+ folder.getAbsolutePath() + "} exists.", deh.cause());
+																		fail(rc, "node_error_upload_failed");
+																	}
+																});
+
+														// node.setBinaryImageDPI(dpi);
+														// node.setBinaryImageHeight(heigth);
+														// node.setBinaryImageWidth(width);
+													} else {
+														fail(rc, "node_error_hashing_failed");
+													}
+												});
+									}
+								}
+							}
+						} catch (Exception e) {
+							log.error("Could not load schema for node {" + node.getUuid() + "}");
+							rc.fail(e);
+						}
+
+					}
+				});
 	}
 
 	public void handleReadChildren(RoutingContext rc) {

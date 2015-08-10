@@ -14,6 +14,7 @@ import io.vertx.core.http.HttpMethod;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
@@ -595,4 +596,29 @@ public class MeshRestClient extends AbstractMeshRestClient {
 				bodyContentType);
 	}
 
+	@Override
+	public Future<Buffer> downloadBinaryField(String projectName, String uuid) {
+		Future<Buffer> future = Future.future();
+		String path = "/" + projectName + "/nodes/" + uuid + "/bin";
+
+		String uri = BASEURI + path;
+		HttpClientRequest request = client.request(GET, uri, rh -> {
+			rh.bodyHandler(buffer -> {
+				future.complete(buffer);
+			});
+		});
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking get request to {" + uri + "}");
+		}
+
+		if (getCookie() != null) {
+			request.headers().add("Cookie", getCookie());
+		} else {
+			request.headers().add("Authorization", "Basic " + authEnc);
+		}
+		request.headers().add("Accept", "application/json");
+
+		request.end();
+		return future;
+	}
 }
