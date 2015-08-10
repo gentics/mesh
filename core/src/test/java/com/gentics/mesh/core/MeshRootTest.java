@@ -54,6 +54,8 @@ public class MeshRootTest extends AbstractDBTest {
 
 		// Invalid paths
 		expectFailure("bogus");
+		expectFailure("/////////");
+		expectFailure("/1/2/3/4/5/6/7");
 		expectFailure("projects/");
 		expectFailure("projects/bogus");
 		expectFailure("projects/bogus/bogus");
