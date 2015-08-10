@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -299,11 +301,15 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public void resolvePathToElement(String pathToElement, Handler<AsyncResult<? extends MeshVertex>> resultHandler) {
 		MeshRoot root = BootstrapInitializer.getBoot().meshRoot();
+		if (StringUtils.isEmpty(pathToElement)) {
+			resultHandler.handle(Future.failedFuture("Could not resolve path. The path must must not be empty or null."));
+			return;
+		}
 		if (pathToElement.endsWith("/")) {
 			resultHandler.handle(Future.failedFuture("Could not resolve path. The path must not end with a slash."));
 			return;
 		}
-		
+
 		// Prepare the stack which we use for resolving
 		String[] elements = pathToElement.split("\\/");
 		List<String> list = Arrays.asList(elements);

@@ -53,6 +53,8 @@ public class MeshRootTest extends AbstractDBTest {
 		// assertNotNull(resolve("microschemas/" + mircoschemas("gallery").getUuid()));
 
 		// Invalid paths
+		expectFailure("");
+		expectFailure(null);
 		expectFailure("bogus");
 		expectFailure("/////////");
 		expectFailure("/1/2/3/4/5/6/7");
