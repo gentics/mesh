@@ -213,11 +213,11 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() {
 		User user = user();
-		assertEquals(1, user.getGroupCount());
+		assertEquals(1, user.getGroups().size());
 		assertTrue(user.isEnabled());
 		user.delete();
 		assertFalse(user.isEnabled());
-		assertEquals(0, user.getGroupCount());
+		assertEquals(0, user.getGroups().size());
 	}
 
 	@Test

@@ -8,6 +8,8 @@ import com.gentics.mesh.core.data.User;
  *
  */
 public interface TagFamilyRoot extends RootVertex<TagFamily> {
+	
+	public static final String TYPE = "tagFamilies";
 
 	TagFamily create(String name, User user);
 

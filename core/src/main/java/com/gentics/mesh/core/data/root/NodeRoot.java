@@ -13,6 +13,8 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface NodeRoot extends RootVertex<Node> {
 
+	public static final String TYPE = "nodes";
+	
 	Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 	Node create(User user, SchemaContainer container, Project project);

@@ -214,6 +214,8 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 									return;
 								}
 								/* TODO handle other fields, node.setEditor(requestUser); etc. */
+								node.setEditor(getUser(rc));
+								node.setLastEditedTimestamp(System.currentTimeMillis());
 								try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 									NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 									Schema schema = node.getSchema();

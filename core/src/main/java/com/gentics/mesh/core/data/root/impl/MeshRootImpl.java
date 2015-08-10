@@ -18,13 +18,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -40,6 +33,12 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
@@ -311,7 +310,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		String rootNodeSegment = elements[0];
 		RootVertex<? extends GenericVertex<?>> rootVertex = null;
 		switch (rootNodeSegment) {
-		case "projects":
+		case ProjectRoot.TYPE:
 			ProjectRoot projectRoot = root.getProjectRoot();
 			if (elements.length > 4) {
 				//TODO maybe this will change in the future. It would be better to check this individually within each segment handler
@@ -330,7 +329,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 							String nestedRootNode = elements[2];
 							switch (nestedRootNode) {
-							case "tagFamilies":
+							case TagFamilyRoot.TYPE:
+
 								TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 								if (elements.length == 3) {
 									resultHandler.handle(Future.succeededFuture(tagFamilyRoot));
@@ -344,7 +344,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 									});
 								}
 								break;
-							case "schemas":
+							case SchemaContainerRoot.TYPE:
 								SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
 								if (elements.length == 3) {
 									resultHandler.handle(Future.succeededFuture(schemaRoot));
@@ -358,11 +358,11 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 									});
 								}
 								break;
-							case "microschemas":
+							case MicroschemaContainerRoot.TYPE:
 								//project.getMicroschemaRoot();
 								throw new NotImplementedException();
 								//break;
-							case "nodes":
+							case NodeRoot.TYPE:
 								NodeRoot nodeRoot = project.getNodeRoot();
 								if (elements.length == 3) {
 									resultHandler.handle(Future.succeededFuture(nodeRoot));
@@ -376,7 +376,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 									});
 								}
 								break;
-							case "tags":
+							case TagRoot.TYPE:
 								TagRoot tagRoot = project.getTagRoot();
 								if (elements.length == 3) {
 									resultHandler.handle(Future.succeededFuture(tagRoot));
@@ -406,16 +406,16 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			}
 
 			return;
-		case "users":
+		case UserRoot.TYPE:
 			rootVertex = root.getUserRoot();
 			break;
-		case "groups":
+		case GroupRoot.TYPE:
 			rootVertex = root.getGroupRoot();
 			break;
-		case "roles":
+		case RoleRoot.TYPE:
 			rootVertex = root.getRoleRoot();
 			break;
-		case "schemas":
+		case SchemaContainerRoot.TYPE:
 			rootVertex = root.getSchemaContainerRoot();
 			break;
 		default:

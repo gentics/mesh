@@ -47,7 +47,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 
-public class UserImpl extends AbstractGenericVertex<UserResponse> implements User {
+public class UserImpl extends AbstractGenericVertex<UserResponse>implements User {
 
 	public static final String FIRSTNAME_KEY = "firstname";
 
@@ -71,6 +71,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 		setProperty(ENABLED_FLAG, false);
 	}
 
+	//TODO do we really need disable and deactivate and remove?!
 	@Override
 	public void deactivate() {
 		outE(HAS_GROUP).removeAll();
@@ -233,11 +234,6 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	}
 
 	@Override
-	public long getGroupCount() {
-		return out(HAS_USER).has(GroupImpl.class).count();
-	}
-
-	@Override
 	public String getPasswordHash() {
 		return getProperty(PASSWORD_HASH_KEY);
 	}
@@ -277,11 +273,6 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	}
 
 	@Override
-	public UserImpl getImpl() {
-		return this;
-	}
-
-	@Override
 	public void fillUpdateFromRest(RoutingContext rc, UserUpdateRequest requestModel, Handler<AsyncResult<User>> handler) {
 		I18NService i18n = I18NService.getI18n();
 
@@ -309,6 +300,9 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 			setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
 		}
 
+		setEditor(getUser(rc));
+		setLastEditedTimestamp(System.currentTimeMillis());
+
 		if (requestModel.getNodeReference() != null) {
 			NodeReference reference = requestModel.getNodeReference();
 			if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
@@ -320,7 +314,8 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 				/* TODO decide whether we need to check perms on the project as well */
 				Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 				if (project == null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
+					handler.handle(
+							Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
 				} else {
 					loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
 						if (hasSucceeded(rc, nrh)) {
@@ -358,7 +353,8 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 				/* TODO decide whether we need to check perms on the project as well */
 				Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 				if (project == null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
+					handler.handle(
+							Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
 				} else {
 					loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
 						if (hasSucceeded(rc, nrh)) {

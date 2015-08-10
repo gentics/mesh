@@ -632,7 +632,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		}
 		userRoot.findByUuid(uuid, rh -> {
 			User user = rh.result();
-			assertEquals(1, user.getGroupCount());
 			assertEquals(1, user.getGroups().size());
 		});
 
@@ -644,7 +643,6 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		userRoot.findByUuid(uuid, rh -> {
 			User user2 = rh.result();
 			assertNotNull(user2);
-			assertEquals(0, user2.getGroupCount());
 			assertEquals(0, user2.getGroups().size());
 			assertFalse("The user should have been disabled", user2.isEnabled());
 		});

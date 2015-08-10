@@ -7,6 +7,8 @@ import com.gentics.mesh.core.data.Tag;
  */
 public interface TagRoot extends RootVertex<Tag> {
 
+	public static final String TYPE = "tags";
+	
 	/**
 	 * Add the given tag to the aggregation vertex.
 	 * 

@@ -8,6 +8,8 @@ import com.gentics.mesh.core.data.User;
  */
 public interface ProjectRoot extends RootVertex<Project> {
 
+	public static final String TYPE = "projects";
+	
 	/**
 	 * Create a new project with the given name and add it to the aggregation vertex.
 	 * 

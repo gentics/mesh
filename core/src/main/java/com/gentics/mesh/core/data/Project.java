@@ -8,6 +8,9 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+
+import io.vertx.ext.web.RoutingContext;
 
 public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 
@@ -77,5 +80,7 @@ public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 	 * @return
 	 */
 	NodeRoot getNodeRoot();
+
+	void fillUpdateFromRest(RoutingContext rc, ProjectUpdateRequest requestModel);
 
 }
