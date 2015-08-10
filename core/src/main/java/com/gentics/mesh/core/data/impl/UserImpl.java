@@ -49,17 +49,17 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 
 public class UserImpl extends AbstractGenericVertex<UserResponse> implements User {
 
-	public static final String FIRSTNAME_KEY = "firstname";
+	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 
-	public static final String LASTNAME_KEY = "lastname";
+	public static final String LASTNAME_PROPERTY_KEY = "lastname";
 
-	public static final String USERNAME_KEY = "username";
+	public static final String USERNAME_PROPERTY_KEY = "username";
 
-	public static final String EMAIL_KEY = "emailAddress";
+	public static final String EMAIL_PROPERTY_KEY = "emailAddress";
 
-	public static final String PASSWORD_HASH_KEY = "passwordHash";
+	public static final String PASSWORD_HASH_PROPERTY_KEY = "passwordHash";
 
-	public static final String ENABLED_FLAG = "enabledFlag";
+	public static final String ENABLED_FLAG_PROPERTY_KEY = "enabledFlag";
 
 	@Override
 	public String getType() {
@@ -68,7 +68,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 
 	@Override
 	public void disable() {
-		setProperty(ENABLED_FLAG, false);
+		setProperty(ENABLED_FLAG_PROPERTY_KEY, false);
 	}
 
 	@Override
@@ -79,32 +79,32 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 
 	@Override
 	public void enable() {
-		setProperty(ENABLED_FLAG, true);
+		setProperty(ENABLED_FLAG_PROPERTY_KEY, true);
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG).toString());
+		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
 	@Override
 	public String getFirstname() {
-		return getProperty(FIRSTNAME_KEY);
+		return getProperty(FIRSTNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setFirstname(String name) {
-		setProperty(FIRSTNAME_KEY, name);
+		setProperty(FIRSTNAME_PROPERTY_KEY, name);
 	}
 
 	@Override
 	public String getLastname() {
-		return getProperty(LASTNAME_KEY);
+		return getProperty(LASTNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setLastname(String name) {
-		setProperty(LASTNAME_KEY, name);
+		setProperty(LASTNAME_PROPERTY_KEY, name);
 	}
 
 	@Override
@@ -115,12 +115,12 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 	// TODO add unique index
 	@Override
 	public String getUsername() {
-		return getProperty(USERNAME_KEY);
+		return getProperty(USERNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setUsername(String name) {
-		setProperty(USERNAME_KEY, name);
+		setProperty(USERNAME_PROPERTY_KEY, name);
 	}
 
 	@Override
@@ -130,12 +130,12 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 
 	@Override
 	public String getEmailAddress() {
-		return getProperty(EMAIL_KEY);
+		return getProperty(EMAIL_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setEmailAddress(String emailAddress) {
-		setProperty(EMAIL_KEY, emailAddress);
+		setProperty(EMAIL_PROPERTY_KEY, emailAddress);
 	}
 
 	/**
@@ -239,12 +239,12 @@ public class UserImpl extends AbstractGenericVertex<UserResponse> implements Use
 
 	@Override
 	public String getPasswordHash() {
-		return getProperty(PASSWORD_HASH_KEY);
+		return getProperty(PASSWORD_HASH_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setPasswordHash(String hash) {
-		setProperty(PASSWORD_HASH_KEY, hash);
+		setProperty(PASSWORD_HASH_PROPERTY_KEY, hash);
 	}
 
 	@Override
