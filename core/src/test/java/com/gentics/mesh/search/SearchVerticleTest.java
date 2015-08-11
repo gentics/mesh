@@ -16,6 +16,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
-
 
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public class SearchVerticleTest extends AbstractRestVerticleTest {
@@ -51,6 +51,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		elasticSearchNode.client().prepareDeleteByQuery("node").setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
 	}
 
+	@BeforeClass
 	@AfterClass
 	public static void cleanup() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
@@ -96,6 +97,11 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		response = future.result();
 		assertEquals("We added the delete action and therefore the document should no longer be part of the index.", 0, response.getData().size());
+
+	}
+
+	@Test
+	public void testCustomQuery() throws InterruptedException {
 
 	}
 

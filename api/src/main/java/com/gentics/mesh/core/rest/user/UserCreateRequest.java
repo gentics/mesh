@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.user;
 
-
 public class UserCreateRequest extends UserUpdateRequest {
 
 	/**
@@ -11,10 +10,20 @@ public class UserCreateRequest extends UserUpdateRequest {
 	public UserCreateRequest() {
 	}
 
+	/**
+	 * Return the group uuid for the group to which the user should be assigned.
+	 * 
+	 * @return
+	 */
 	public String getGroupUuid() {
 		return groupUuid;
 	}
 
+	/**
+	 * Set the group uuid for the group to which the user should be assigned
+	 * 
+	 * @param groupUuid
+	 */
 	public void setGroupUuid(String groupUuid) {
 		this.groupUuid = groupUuid;
 	}

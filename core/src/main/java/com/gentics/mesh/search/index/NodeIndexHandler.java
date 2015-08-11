@@ -21,9 +21,16 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.search.SearchVerticle;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
+
+	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
 
 	@Override
 	String getIndex() {
@@ -49,8 +56,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			map.put("language", language);
 
 			addFields(map, container, node.getSchema());
-			//			String json = JsonUtil.toJson(map);
-			//			System.out.println(json);
+			if (log.isDebugEnabled()) {
+				String json = JsonUtil.toJson(map);
+				log.debug(json);
+			}
 			store(node.getUuid(), map, getType() + "-" + language);
 		}
 
@@ -65,10 +74,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					update(node);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			//TODO reply error? discard? log?
+					e.printStackTrace();
+				}
+			} else {
+				//TODO reply error? discard? log?
 			}
 		});
 
@@ -171,10 +180,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					store(node);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			//TODO reply error? discard? log?
+					e.printStackTrace();
+				}
+			} else {
+				//TODO reply error? discard? log?
 			}
 		});
 	}

@@ -96,7 +96,6 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 
 	}
 
-	// TODO handle depth?
 	public Group transformToRest(RoutingContext rc, Handler<AsyncResult<GroupResponse>> handler) {
 		GroupResponse restGroup = new GroupResponse();
 		fillRest(restGroup, rc);

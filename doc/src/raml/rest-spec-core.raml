@@ -72,7 +72,7 @@ traits:
         page:
           description: The page to be displayed. Please note that page numbering is 1-based and that omitting the page parameter will return the first page 1.
           type: number
-        per_page: 
+        perPage: 
           description: The page size. A page size of 25 will be used when this parameter is omitted.
           type: number
 
@@ -84,7 +84,7 @@ traits:
                description: |
                         A link header will be provided accoring to [RFC5988](http://tools.ietf.org/html/rfc5988#page-6). 
                example: |
-                        Link: <https://localhost:8080/users?page=3&per_page=100>; rel="next", <https://localhost/users?page=50&per_page=100>; rel="last"
+                        Link: <https://localhost:8080/users?page=3&perPage=100>; rel="next", <https://localhost/users?page=50&perPage=100>; rel="last"
 
   - searchable:
       queryParameters:
@@ -203,6 +203,18 @@ traits:
               example: !include json/GenericMessageResponse.example.json
 
   /{uuid}/permissions/{pathToElement}:
+    uriParameters:
+      uuid:
+        description: Uuid of the role that should be used to update the permissions.
+        type: string
+      pathToElement:
+        description: Path to the element.
+        example: |
+            /:roleUuid/permissions/projects/:projectUuid/schemas/:schemaUuid
+            /:roleUuid/permissions/projects/:projectUuid/schemas
+            /:roleUuid/permissions/projects/:projectUuid/nodes
+            /:roleUuid/permissions/projects/:projectUuid
+        type: string
     put:
       description: |
         Update the role permission to the given element and update the permission to the given element. Possible paths are: roles/:uuid or projects/:uuid/schemas or projects
@@ -427,7 +439,7 @@ traits:
 #------------------------------------------------------------------------------
 # Node Verticle
 #------------------------------------------------------------------------------
-/{project_name}/nodes:
+/{projectName}/nodes:
   displayName: Nodes
   /:
     get: 
@@ -461,10 +473,7 @@ traits:
       queryParameters:
         lang:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
-          example: /{project_name}/nodes/?lang=de-DE,en-US
-        update:
-          description: The node will be locked when the *update* parameter is set to true.
-          example: /{project_name}/nodes/?update=true
+          example: /{projectName}/nodes/?lang=de,en
       responses:
         200:
           body:
@@ -512,10 +521,10 @@ traits:
 #------------------------------------------------------------------------------
 # TagFamily Verticle
 #------------------------------------------------------------------------------
-/{project_name}/tagFamilies:
+/{projectName}/tagFamilies:
   displayName: TagFamilies
   uriParameters:
-    project_name:
+    projectName:
       description: Name of the project.
       type: string
 
@@ -581,10 +590,10 @@ traits:
 #------------------------------------------------------------------------------
 # Tag Verticle
 #------------------------------------------------------------------------------
-/{project_name}/tags:
+/{projectName}/tags:
   displayName: Tags
   uriParameters:
-    project_name:
+    projectName:
       description: Name of the project.
       type: string
 
@@ -646,7 +655,7 @@ traits:
 # WebRoot Verticle
 #------------------------------------------------------------------------------
 
-/{project_name}/webroot:
+/{projectName}/webroot:
   is: [ localized ]
   displayName: WebRoot
   /{path}:
@@ -660,10 +669,7 @@ traits:
       queryParameters:
         lang:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
-          example: /{project_name}/nodes/?lang=de-DE,en-US
-        update:
-          description: The node will be locked when the *update* parameter is set to true.
-          example: /{project_name}/nodes/?update=true
+          example: /{projectName}/nodes/?lang=de,en
       responses:
         200:
           body:
@@ -771,7 +777,7 @@ traits:
 #------------------------------------------------------------------------------
 # Navigation Verticle
 #------------------------------------------------------------------------------
-/{project_name}/navigation:
+/{projectName}/navigation:
   is: [ localized ]
   displayName: Navigation
   get:

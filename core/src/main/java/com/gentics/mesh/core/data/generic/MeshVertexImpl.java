@@ -2,10 +2,13 @@ package com.gentics.mesh.core.data.generic;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.VertexFrame;
@@ -76,4 +79,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public void delete() {
 		throw new NotImplementedException("The deletion behaviour for this vertex was not implemented.");
 	}
+
+	@Override
+	public void applyPermissions(Role role, boolean recursive, Set<Permission> permissionsToGrant, Set<Permission> permissionsToRevoke) {
+		role.grantPermissions(this, permissionsToGrant.toArray(new Permission[permissionsToGrant.size()]));
+		role.revokePermissions(this, permissionsToRevoke.toArray(new Permission[permissionsToRevoke.size()]));
+	}
+
 }

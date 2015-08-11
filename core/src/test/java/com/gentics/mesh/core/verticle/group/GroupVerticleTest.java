@@ -13,7 +13,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +33,9 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.GroupVerticle;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+
+import io.vertx.core.Future;
 
 public class GroupVerticleTest extends AbstractRestVerticleTest {
 
@@ -236,9 +236,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		String response = JsonUtil.toJson(future.result());
-		String json = "{\"data\":[],\"_metainfo\":{\"page\":4242,\"per_page\":1,\"page_count\":36,\"total_count\":36}}";
-		assertEqualsSanitizedJson("The json did not match the expected one.", json, response);
+		assertEquals(0, future.result().getData().size());
+		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
+		assertEquals(36, future.result().getMetainfo().getPageCount());
+		assertEquals(36, future.result().getMetainfo().getTotalCount());
+		assertEquals(1, future.result().getMetainfo().getPerPage());
+
 	}
 
 	@Test

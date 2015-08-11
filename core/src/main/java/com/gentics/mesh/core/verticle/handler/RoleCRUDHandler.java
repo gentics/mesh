@@ -21,6 +21,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -121,8 +122,6 @@ public class RoleCRUDHandler extends AbstractCRUDHandler {
 		loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
 	}
 
-	
-
 	public void handlePermissionUpdate(RoutingContext rc) {
 		String roleUuid = rc.request().getParam("param0");
 		String pathToElement = rc.request().params().get("param1");
@@ -134,21 +133,23 @@ public class RoleCRUDHandler extends AbstractCRUDHandler {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
+			// 1. Load the role that should be used
 			loadObjectByUuid(rc, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					Role role = rh.result();
 					RolePermissionRequest requestModel = fromJson(rc, RolePermissionRequest.class);
+					//2. Resolve the path to element that is targeted
 					MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
 						if (hasSucceeded(rc, vertex)) {
 							MeshVertex targetElement = vertex.result();
-							//String[] permissions = requestModel.getPermissions().toArray(new String[requestModel.getPermissions().size()]);
+
+							// Prepare the sets for revoke and grant actions
 							Set<Permission> permissionsToGrant = new HashSet<>();
 							Set<Permission> permissionsToRevoke = new HashSet<>();
 							permissionsToRevoke.add(CREATE_PERM);
 							permissionsToRevoke.add(READ_PERM);
 							permissionsToRevoke.add(UPDATE_PERM);
 							permissionsToRevoke.add(DELETE_PERM);
-
 							for (String permName : requestModel.getPermissions()) {
 								Permission permission = Permission.valueOfSimpleName(permName);
 								if (permission == null) {
@@ -160,7 +161,6 @@ public class RoleCRUDHandler extends AbstractCRUDHandler {
 								permissionsToRevoke.remove(permission);
 								permissionsToGrant.add(permission);
 							}
-
 							if (log.isDebugEnabled()) {
 								for (Permission p : permissionsToGrant) {
 									log.debug("Granting permission: " + p);
@@ -169,8 +169,9 @@ public class RoleCRUDHandler extends AbstractCRUDHandler {
 									log.debug("Revoking permission: " + p);
 								}
 							}
-							role.grantPermissions(targetElement, permissionsToGrant.toArray(new Permission[permissionsToGrant.size()]));
-							role.revokePermissions(targetElement, permissionsToRevoke.toArray(new Permission[permissionsToRevoke.size()]));
+
+							// 3. Apply the permission actions
+							targetElement.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
 							responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "role_updated_permission", role.getName()))));
 						}
 					});
@@ -178,5 +179,4 @@ public class RoleCRUDHandler extends AbstractCRUDHandler {
 				}
 			});
 		}
-	}
-}
+}}

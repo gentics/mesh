@@ -6,11 +6,6 @@ import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QU
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
-import io.vertx.ext.web.RoutingContext;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -40,6 +35,12 @@ import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.ext.web.RoutingContext;
 
 public class VerticleHelper {
 
@@ -218,7 +219,7 @@ public class VerticleHelper {
 		int perPage = MeshOptions.DEFAULT_PAGE_SIZE;
 		if (params != null) {
 			page = NumberUtils.toInt(params.get("page"), 1);
-			perPage = NumberUtils.toInt(params.get("per_page"), MeshOptions.DEFAULT_PAGE_SIZE);
+			perPage = NumberUtils.toInt(params.get("perPage"), MeshOptions.DEFAULT_PAGE_SIZE);
 		}
 		if (page < 1) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));

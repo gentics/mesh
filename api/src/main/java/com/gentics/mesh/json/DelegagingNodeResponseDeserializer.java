@@ -14,6 +14,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
+/**
+ * The deserializer will be used for node responses. We need to determine the schema first before we can deserialize the node. This deserializer will extract
+ * the schema information from the json and delegate the deserialization to a different node mapper which will be able to handle the json using the schema
+ * information provided.
+ * 
+ * @author johannes2
+ *
+ * @param <T>
+ */
 public class DelegagingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 
 	private ObjectMapper nodeMapper;
