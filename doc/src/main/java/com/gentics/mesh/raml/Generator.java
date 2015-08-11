@@ -609,7 +609,7 @@ public class Generator {
 
 	private void write(Object object, ObjectMapper mapper) throws JsonGenerationException, JsonMappingException, IOException {
 		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
-		System.out.println("Write {" + object.getClass().getSimpleName() + "} to {" + file.getAbsolutePath() + "}");
+		System.out.println("Writing {" + object.getClass().getSimpleName() + "} to {" + file.getAbsolutePath() + "}");
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 	}
 }

@@ -238,6 +238,17 @@
 			</snapshots>
 		</repository>
 		<repository>
+			<id>lan.snapshots</id>
+			<name>Gentics Snapshots Repository</name>
+			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
 			<id>spring-snapshots</id>
 			<name>Spring Snapshots</name>
 			<url>http://repo.spring.io/snapshot</url>

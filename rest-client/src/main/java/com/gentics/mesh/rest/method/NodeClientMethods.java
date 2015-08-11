@@ -1,14 +1,15 @@
 package com.gentics.mesh.rest.method;
 
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.QueryParameterProvider;
+
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
 
 public interface NodeClientMethods {
 
@@ -130,5 +131,5 @@ public interface NodeClientMethods {
 	 */
 	Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName, String contentType);
 
-	Future<Buffer> downloadBinaryField(String projectName, String nodeUuid);
+	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid);
 }

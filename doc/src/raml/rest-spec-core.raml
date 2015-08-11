@@ -201,11 +201,11 @@ traits:
           body:
             application/json:
               example: !include json/GenericMessageResponse.example.json
-    /permissions/{pathToElement}:
-      description: Update the role permission to the given element. Possible paths are: roles/:uuid or projects/:uuid/schemas or projects
-      put:
-        description: |
-          Add role permissions to the given entity. 
+
+  /{uuid}/permissions/{pathToElement}:
+    put:
+      description: |
+        Update the role permission to the given element and update the permission to the given element. Possible paths are: roles/:uuid or projects/:uuid/schemas or projects
       body:
         application/json:
           example: !include json/RolePermissionRequest.example.json

@@ -98,5 +98,11 @@ public interface MeshRoot extends MeshVertex {
 	 */
 	void clearReferences();
 
+	/**
+	 * This method will try to resolve the given path and return the element that is matching the path.
+	 * 
+	 * @param pathToElement
+	 * @param resultHandler
+	 */
 	void resolvePathToElement(String pathToElement, Handler<AsyncResult<? extends MeshVertex>> resultHandler);
 }

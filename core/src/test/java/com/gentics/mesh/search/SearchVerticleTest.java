@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
@@ -28,7 +29,10 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
+
+@ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -158,16 +162,16 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
-		assertEquals("The node with name {" + oldName + "} should no longer be found since we updated the node and updated the index.", 0, response
-				.getData().size());
+		assertEquals("The node with name {" + oldName + "} should no longer be found since we updated the node and updated the index.", 0,
+				response.getData().size());
 
 		qb = QueryBuilders.queryStringQuery(newString);
 		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
-		assertEquals("There should be one item in the resultset since we updated the node and invoked the index update.", 1, response.getData()
-				.size());
+		assertEquals("There should be one item in the resultset since we updated the node and invoked the index update.", 1,
+				response.getData().size());
 
 	}
 

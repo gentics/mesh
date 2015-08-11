@@ -1,12 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
-import java.util.Stack;
-
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Tag;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 
 /**
  * Aggregation node for tags.

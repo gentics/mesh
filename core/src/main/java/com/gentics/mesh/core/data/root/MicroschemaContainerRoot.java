@@ -11,6 +11,14 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 
 	void removeMicroschema(MicroschemaContainer container);
 
+	/**
+	 * Create a new microschema container.
+	 * 
+	 * @param name
+	 * @param user
+	 *            User that is used to set creator and editor references.
+	 * @return
+	 */
 	MicroschemaContainer create(String name, User user);
 
 }

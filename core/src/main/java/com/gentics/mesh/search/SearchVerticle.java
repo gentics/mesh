@@ -7,15 +7,6 @@ import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static io.vertx.core.http.HttpMethod.POST;
 import static org.elasticsearch.client.Requests.refreshRequest;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +54,16 @@ import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.RoutingContext;
 
 @Component
 @Scope("singleton")

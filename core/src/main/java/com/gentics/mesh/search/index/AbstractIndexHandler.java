@@ -41,7 +41,7 @@ public abstract class AbstractIndexHandler<T> {
 	protected BootstrapInitializer boot;
 
 	@PostConstruct
-	public void test() {
+	public void registerEventHandler() {
 		Vertx vertx = Mesh.vertx();
 		// Event handler that deals with new index events for this type.
 		String address = INDEX_EVENT_ADDRESS_PREFIX + getType();

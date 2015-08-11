@@ -6,9 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.test.core.TestUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,11 +20,16 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
+
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.test.core.TestUtils;
 
 public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
@@ -48,12 +50,12 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@After
 	public void cleanUp() throws IOException {
-		//		String uploads = "target/testuploads";
-		//		FileUtils.deleteDirectory(new File(uploads));
-		//		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
-		//
-		//		FileUtils.deleteDirectory(new File("target/file-uploads"));
-		//		FileUtils.deleteDirectory(new File("file-uploads"));
+		String uploads = "target/testuploads";
+		FileUtils.deleteDirectory(new File(uploads));
+		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
+
+		FileUtils.deleteDirectory(new File("target/file-uploads"));
+		FileUtils.deleteDirectory(new File("file-uploads"));
 	}
 
 	@Test
@@ -135,14 +137,16 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getWidth());
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getHeight());
 
-		Future<Buffer> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid());
+		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid());
 		latchFor(downloadFuture);
 		assertSuccess(downloadFuture);
-		Buffer buffer = downloadFuture.result();
-		assertNotNull(buffer);
-		assertNotNull(buffer.getByte(1));
-		assertNotNull(buffer.getByte(binaryLen));
-		assertEquals(binaryLen, buffer.length());
+		NodeDownloadResponse downloadResponse = downloadFuture.result();
+		assertNotNull(downloadResponse);
+		assertNotNull(downloadResponse.getBuffer().getByte(1));
+		assertNotNull(downloadResponse.getBuffer().getByte(binaryLen));
+		assertEquals(binaryLen, downloadResponse.getBuffer().length());
+		assertEquals(contentType, downloadResponse.getContentType());
+		assertEquals(fileName, downloadResponse.getFilename());
 	}
 
 }

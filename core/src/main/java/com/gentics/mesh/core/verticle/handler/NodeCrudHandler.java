@@ -17,14 +17,6 @@ import static com.gentics.mesh.util.VerticleHelper.responde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.RoutingContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +52,16 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.FileUtils;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.RoutingContext;
 
 @Component
 public class NodeCrudHandler extends AbstractCRUDHandler {
@@ -294,6 +296,11 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 			if (hasSucceeded(rc, rh)) {
 				Node node = rh.result();
 				node.getBinaryFileBuffer().setHandler(bh-> {
+					//TODO set content disposition
+					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(node.getBinaryFileSize()));
+					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, node.getBinaryContentType());
+					//TODO encode filename?
+					rc.response().putHeader("content-disposition", "attachment; filename=" + node.getBinaryFileName());
 					rc.response().end(bh.result());
 				});
 			}

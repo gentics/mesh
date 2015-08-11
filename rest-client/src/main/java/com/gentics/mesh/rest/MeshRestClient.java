@@ -4,12 +4,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpMethod;
 
 import java.util.Objects;
 
@@ -24,6 +18,7 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -54,6 +49,14 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
+
 public class MeshRestClient extends AbstractMeshRestClient {
 
 	public MeshRestClient(String host) {
@@ -81,7 +84,8 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, QueryParameterProvider... parameters) {
+	public Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
+			QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUpdateRequest, "nodeUpdateRequest must not be null");
 		return handleRequest(PUT, "/" + projectName + "/nodes/" + uuid + getQuery(parameters), NodeResponse.class, nodeUpdateRequest);
@@ -603,17 +607,24 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<Buffer> downloadBinaryField(String projectName, String nodeUuid) {
+	public Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
-		Future<Buffer> future = Future.future();
+		Future<NodeDownloadResponse> future = Future.future();
 		String path = "/" + projectName + "/nodes/" + nodeUuid + "/bin";
 		String uri = BASEURI + path;
 
 		HttpClientRequest request = client.request(GET, uri, rh -> {
+			NodeDownloadResponse response = new NodeDownloadResponse();
+			String contentType = rh.getHeader(HttpHeaders.CONTENT_TYPE.toString());
+			response.setContentType(contentType);
+			String disposition = rh.getHeader("content-disposition");
+			String filename = disposition.substring(disposition.indexOf("=") + 1);
+			response.setFilename(filename);
 			rh.bodyHandler(buffer -> {
-				future.complete(buffer);
+				response.setBuffer(buffer);
+				future.complete(response);
 			});
 		});
 		if (log.isDebugEnabled()) {

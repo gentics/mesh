@@ -21,23 +21,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -47,9 +39,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
