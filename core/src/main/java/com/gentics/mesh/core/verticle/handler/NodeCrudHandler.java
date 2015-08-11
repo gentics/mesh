@@ -30,6 +30,7 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -125,8 +126,8 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							nodeCreated.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_no_language_found",
-									requestModel.getLanguage())));
+							nodeCreated.fail(new HttpStatusCodeErrorException(BAD_REQUEST,
+									i18n.get(rc, "node_no_language_found", requestModel.getLanguage())));
 						} else {
 							try {
 								NodeFieldContainer container = node.getOrCreateFieldContainer(language);
@@ -200,45 +201,40 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 				return;
 			}
 			Project project = getProject(rc);
-			loadObject(
-					rc,
-					"uuid",
-					READ_PERM,
-					project.getNodeRoot(),
-					rh -> {
-						if (hasSucceeded(rc, rh)) {
-							Node node = rh.result();
+			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Node node = rh.result();
+					try {
+						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+						if (language == null) {
+							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST,
+									i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
+							return;
+						}
+						/* TODO handle other fields, node.setEditor(requestUser); etc. */
+						node.setEditor(getUser(rc));
+						node.setLastEditedTimestamp(System.currentTimeMillis());
+						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+							NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+							Schema schema = node.getSchema();
 							try {
-								Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-								if (language == null) {
-									rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_found",
-											requestModel.getLanguage())));
-									return;
-								}
-								/* TODO handle other fields, node.setEditor(requestUser); etc. */
-								node.setEditor(getUser(rc));
-								node.setLastEditedTimestamp(System.currentTimeMillis());
-								try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-									NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-									Schema schema = node.getSchema();
-									try {
-										container.setFieldFromRest(rc, requestModel.getFields(), schema);
-										searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-										vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-										tx.success();
-										transformAndResponde(rc, node);
-									} catch (MeshSchemaException e) {
-										tx.failure();
-										/* TODO i18n */
-										rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
-									}
-								}
-
-							} catch (IOException e) {
-								rc.fail(e);
+								container.setFieldFromRest(rc, requestModel.getFields(), schema);
+								searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+								tx.success();
+								transformAndResponde(rc, node);
+							} catch (MeshSchemaException e) {
+								tx.failure();
+								/* TODO i18n */
+								rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
 							}
 						}
-					});
+
+					} catch (IOException e) {
+						rc.fail(e);
+					}
+				}
+			});
 		} catch (Exception e1) {
 			rc.fail(e1);
 		}
@@ -268,19 +264,48 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 		String toUuid = rc.request().params().get("toUuid");
 		loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), sourceNodeHandler -> {
 			if (hasSucceeded(rc, sourceNodeHandler)) {
-
 				loadObject(rc, "toUuid", UPDATE_PERM, project.getNodeRoot(), targetNodeHandler -> {
 					if (hasSucceeded(rc, targetNodeHandler)) {
 						Node sourceNode = sourceNodeHandler.result();
 						Node targetNode = targetNodeHandler.result();
-						// TODO check whether the targetnode is a child of the source node
-						// TODO check whether a child of the targetnode has the same name as the sourceNode
-						// Move the element
+
+						//TODO should we add a guard that terminates this loop when it runs to long?
+						// Check whether the target node is part of the subtree of the source node. 
+						Node parent = targetNode.getParentNode();
+						while (parent != null) {
+							if (parent.getUuid().equals(sourceNode.getUuid())) {
+								fail(rc, "node_move_error_not_allowd_to_move_node_into_one_of_its_children");
+								return;
+							}
+							parent = parent.getParentNode();
+						}
+
+						try {
+							if (!targetNode.getSchema().isFolder()) {
+								fail(rc, "node_move_error_targetnode_is_no_folder");
+								return;
+							}
+						} catch (Exception e) {
+							log.error("Could not load schema for target node during move action", e);
+							//TODO maybe add better i18n error
+							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error"), e));
+							return;
+						}
+
+						if (sourceNode.getUuid().equals(targetNode.getUuid())) {
+							fail(rc, "node_move_error_same_nodes");
+							return;
+						}
+
+						//TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
+
+						// Move the node
 						sourceNode.setParentNode(targetNode);
-						// TODO update the editor fields and timestamps
+
 						sourceNode.setEditor(getUser(rc));
+						sourceNode.setLastEditedTimestamp(System.currentTimeMillis());
 						targetNode.setEditor(getUser(rc));
-						// TODO also update editor of affected childnodes?
+						targetNode.setLastEditedTimestamp(System.currentTimeMillis());
 
 						// TODO update the search index
 						responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_moved_to", uuid, toUuid))));
@@ -295,7 +320,7 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 		loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 			if (hasSucceeded(rc, rh)) {
 				Node node = rh.result();
-				node.getBinaryFileBuffer().setHandler(bh-> {
+				node.getBinaryFileBuffer().setHandler(bh -> {
 					//TODO set content disposition
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(node.getBinaryFileSize()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, node.getBinaryContentType());
@@ -311,120 +336,104 @@ public class NodeCrudHandler extends AbstractCRUDHandler {
 		FileSystem fileSystem = Mesh.vertx().fileSystem();
 		Project project = getProject(rc);
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		loadObject(
-				rc,
-				"uuid",
-				UPDATE_PERM,
-				project.getNodeRoot(),
-				rh -> {
-					if (hasSucceeded(rc, rh)) {
-						Node node = rh.result();
-						try {
-							Schema schema = node.getSchema();
-							if (!schema.isBinary()) {
-								fail(rc, "node_error_no_binary_node");
+		loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+			if (hasSucceeded(rc, rh)) {
+				Node node = rh.result();
+				try {
+					Schema schema = node.getSchema();
+					if (!schema.isBinary()) {
+						fail(rc, "node_error_no_binary_node");
+					} else {
+						Set<FileUpload> fileUploads = rc.fileUploads();
+						if (fileUploads.isEmpty()) {
+							fail(rc, "node_error_no_binarydata_found");
+						} else if (fileUploads.size() > 1) {
+							fail(rc, "node_error_more_than_one_binarydata_included");
+						} else {
+							FileUpload ul = fileUploads.iterator().next();
+							long byteLimit = uploadOptions.getByteLimit();
+							if (ul.size() > byteLimit) {
+								String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+								String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+								fail(rc, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
 							} else {
-								Set<FileUpload> fileUploads = rc.fileUploads();
-								if (fileUploads.isEmpty()) {
-									fail(rc, "node_error_no_binarydata_found");
-								} else if (fileUploads.size() > 1) {
-									fail(rc, "node_error_more_than_one_binarydata_included");
-								} else {
-									FileUpload ul = fileUploads.iterator().next();
-									long byteLimit = uploadOptions.getByteLimit();
-									if (ul.size() > byteLimit) {
-										String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-										String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-										fail(rc, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-									} else {
-										String contentType = ul.contentType();
-										String fileName = ul.fileName();
-										node.setBinaryFileName(fileName);
-										node.setBinaryFileSize(ul.size());
-										node.setBinaryContentType(contentType);
+								String contentType = ul.contentType();
+								String fileName = ul.fileName();
+								node.setBinaryFileName(fileName);
+								node.setBinaryFileSize(ul.size());
+								node.setBinaryContentType(contentType);
 
-										Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
+								Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
 
-											if (tfc.succeeded()) {
-												File targetFolder = tfc.result();
-												String targetPath = new File(targetFolder, node.getUuid() + ".bin").getAbsolutePath();
-												if (log.isDebugEnabled()) {
-													log.debug("Moving file from {" + ul.uploadedFileName() + "} to {" + targetPath + "}");
-												}
+									if (tfc.succeeded()) {
+										File targetFolder = tfc.result();
+										String targetPath = new File(targetFolder, node.getUuid() + ".bin").getAbsolutePath();
+										if (log.isDebugEnabled()) {
+											log.debug("Moving file from {" + ul.uploadedFileName() + "} to {" + targetPath + "}");
+										}
 
-												fileSystem.move(
-														ul.uploadedFileName(),
-														targetPath,
-														mh -> {
-															if (mh.succeeded()) {
-																responde(
-																		rc,
-																		toJson(new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated",
-																				node.getUuid()))));
-															} else {
-																log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-																fail(rc, "node_error_upload_failed");
-															}
-														});
+										fileSystem.move(ul.uploadedFileName(), targetPath, mh -> {
+											if (mh.succeeded()) {
+												responde(rc, toJson(
+														new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated", node.getUuid()))));
 											} else {
+												log.error("Failed to move file to {" + targetPath + "}", mh.cause());
 												fail(rc, "node_error_upload_failed");
 											}
-										};
-
-										FileUtils.generateSha512Sum(
-												ul.uploadedFileName(),
-												hash -> {
-													if (hash.succeeded()) {
-														node.setBinarySHA512Sum(hash.result());
-														System.out.println("FILE: " + ul.uploadedFileName());
-
-														File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
-														if (log.isDebugEnabled()) {
-															log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
-														}
-														fileSystem.exists(
-																folder.getAbsolutePath(),
-																deh -> {
-																	if (deh.succeeded()) {
-																		if (!deh.result()) {
-																			fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
-																				if (mkh.succeeded()) {
-																					targetFolderChecked.handle(Future.succeededFuture(folder));
-																				} else {
-																					log.error(
-																							"Failed to create target folder {"
-																									+ folder.getAbsolutePath() + "}", mkh.cause());
-																					fail(rc, "node_error_upload_failed");
-																				}
-																			});
-																		} else {
-																			targetFolderChecked.handle(Future.succeededFuture(folder));
-																		}
-																	} else {
-																		log.error(
-																				"Could not check whether target directory {"
-																						+ folder.getAbsolutePath() + "} exists.", deh.cause());
-																		fail(rc, "node_error_upload_failed");
-																	}
-																});
-
-														// node.setBinaryImageDPI(dpi);
-														// node.setBinaryImageHeight(heigth);
-														// node.setBinaryImageWidth(width);
-													} else {
-														fail(rc, "node_error_hashing_failed");
-													}
-												});
+										});
+									} else {
+										fail(rc, "node_error_upload_failed");
 									}
-								}
-							}
-						} catch (Exception e) {
-							log.error("Could not load schema for node {" + node.getUuid() + "}");
-							rc.fail(e);
-						}
+								};
 
+								FileUtils.generateSha512Sum(ul.uploadedFileName(), hash -> {
+									if (hash.succeeded()) {
+										node.setBinarySHA512Sum(hash.result());
+										System.out.println("FILE: " + ul.uploadedFileName());
+
+										File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
+										if (log.isDebugEnabled()) {
+											log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
+										}
+										fileSystem.exists(folder.getAbsolutePath(), deh -> {
+											if (deh.succeeded()) {
+												if (!deh.result()) {
+													fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
+														if (mkh.succeeded()) {
+															targetFolderChecked.handle(Future.succeededFuture(folder));
+														} else {
+															log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}",
+																	mkh.cause());
+															fail(rc, "node_error_upload_failed");
+														}
+													});
+												} else {
+													targetFolderChecked.handle(Future.succeededFuture(folder));
+												}
+											} else {
+												log.error("Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.",
+														deh.cause());
+												fail(rc, "node_error_upload_failed");
+											}
+										});
+
+										// node.setBinaryImageDPI(dpi);
+										// node.setBinaryImageHeight(heigth);
+										// node.setBinaryImageWidth(width);
+									} else {
+										fail(rc, "node_error_hashing_failed");
+									}
+								});
+							}
+						}
 					}
-				});
+				} catch (Exception e) {
+					log.error("Could not load schema for node {" + node.getUuid() + "}");
+					rc.fail(e);
+				}
+
+			}
+		});
 	}
 
 	public void handleReadChildren(RoutingContext rc) {

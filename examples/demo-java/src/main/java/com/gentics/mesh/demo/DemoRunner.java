@@ -40,7 +40,7 @@ public class DemoRunner {
 			// deployAndWait(vertx, AuthenticationVerticle.class);
 			// deployAndWait(vertx, NavigationVerticle.class);
 			// deployAndWait(vertx, TagCloudVerticle.class);
-			//			deployAndWait(vertx, config, StaticContentVerticle.class);
+			// deployAndWait(vertx, config, StaticContentVerticle.class);
 			deployAndWait(vertx, config, AdminGUIVerticle.class);
 		});
 		// // DeploymentOptions options = new DeploymentOptions();
