@@ -65,7 +65,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
 @Component
-public class NodeCrudHandler extends AbstractCRUDHandler {
+public class NodeCrudHandler extends AbstractCrudHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 

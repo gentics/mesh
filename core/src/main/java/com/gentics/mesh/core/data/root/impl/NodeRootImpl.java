@@ -59,7 +59,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 
 	@Override
 	public Node create(User creator, SchemaContainer container, Project project) {
-		// TODO check whether the mesh node is in fact a container node.
+		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		node.setSchemaContainer(container);
 

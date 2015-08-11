@@ -19,14 +19,14 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.verticle.handler.SchemaContainerCRUDHandler;
+import com.gentics.mesh.core.verticle.handler.SchemaContainerCrudHandler;
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private SchemaContainerCRUDHandler crudHandler;
+	private SchemaContainerCrudHandler crudHandler;
 
 	protected SchemaVerticle() {
 		super("schemas");

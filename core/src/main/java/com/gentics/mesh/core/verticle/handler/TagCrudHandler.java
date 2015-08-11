@@ -5,16 +5,14 @@ import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import io.vertx.core.Future;
-import io.vertx.ext.web.RoutingContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -23,15 +21,17 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
 
+import io.vertx.core.Future;
+import io.vertx.ext.web.RoutingContext;
+
 @Component
-public class TagCRUDHandler extends AbstractCRUDHandler {
+public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
@@ -40,18 +40,23 @@ public class TagCRUDHandler extends AbstractCRUDHandler {
 			Project project = getProject(rc);
 			Future<Tag> tagCreated = Future.future();
 			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
-
-			if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
+			String tagName = requestModel.getFields().getName();
+			if (StringUtils.isEmpty(tagName)) {
+				fail(rc, "tag_name_not_set");
 			} else {
 				TagFamilyReference reference = requestModel.getTagFamilyReference();
 				if (reference == null || isEmpty(reference.getUuid())) {
-					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set")));
+					fail(rc, "tag_tagfamily_reference_not_set");
 				} else {
 					loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
 						if (hasSucceeded(rc, rh)) {
 							//							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 							TagFamily tagFamily = rh.result();
+							if (tagFamily.findTagByName(tagName) != null) {
+								//TODO fail with CONFLICT
+								fail(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
+								return;
+							}
 							Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
 							getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
 							project.getTagRoot().addTag(newTag);
@@ -95,10 +100,17 @@ public class TagCRUDHandler extends AbstractCRUDHandler {
 						}
 					}
 
-					if (StringUtils.isEmpty(requestModel.getFields().getName())) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set")));
+					String newTagName = requestModel.getFields().getName();
+					if (StringUtils.isEmpty(newTagName)) {
+						fail(rc, "tag_name_not_set");
 					} else {
-
+						TagFamily tagFamily = tag.getTagFamily();
+						Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
+						if (!foundTagWithSameName.getUuid().equals(tag.getUuid())) {
+							//TODO fail with CONFLICT
+							fail(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName());
+							return;
+						}
 						tag.setEditor(getUser(rc));
 						tag.setLastEditedTimestamp(System.currentTimeMillis());
 						// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {

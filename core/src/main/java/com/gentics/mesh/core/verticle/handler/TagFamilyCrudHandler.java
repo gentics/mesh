@@ -9,7 +9,7 @@ import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import io.vertx.ext.web.RoutingContext;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +27,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.util.BlueprintTransaction;
 
 @Component
-public class TagFamiylCRUDHandler extends AbstractCRUDHandler {
+public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
@@ -35,15 +35,21 @@ public class TagFamiylCRUDHandler extends AbstractCRUDHandler {
 		MeshAuthUser requestUser = getUser(rc);
 		TagFamilyCreateRequest requestModel = fromJson(rc, TagFamilyCreateRequest.class);
 
-		if (StringUtils.isEmpty(requestModel.getName())) {
+		String name = requestModel.getName();
+		if (StringUtils.isEmpty(name)) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
 		} else {
+			if (project.getTagFamilyRoot().findByName(name) != null) {
+				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", name)));
+				return;
+			}
+
 			TagFamilyRoot root = project.getTagFamilyRoot();
 			/* TODO check for null */
 			if (requestUser.hasPermission(root, CREATE_PERM)) {
 				TagFamily tagFamily = null;
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					tagFamily = root.create(requestModel.getName(), requestUser);
+					tagFamily = root.create(name, requestUser);
 					root.addTagFamily(tagFamily);
 					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
 					tx.success();
@@ -66,14 +72,20 @@ public class TagFamiylCRUDHandler extends AbstractCRUDHandler {
 		Project project = getProject(rc);
 		TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
 
-		if (StringUtils.isEmpty(requestModel.getName())) {
+		String newName = requestModel.getName();
+		if (StringUtils.isEmpty(newName)) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
 		} else {
 			loadObject(rc, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
+					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
+					TagFamily tagFamily = rh.result();
+					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
+						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", newName)));
+						return;
+					}
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						TagFamily tagFamily = rh.result();
-						tagFamily.setName(requestModel.getName());
+						tagFamily.setName(newName);
 						tx.success();
 						transformAndResponde(rc, tagFamily);
 					}

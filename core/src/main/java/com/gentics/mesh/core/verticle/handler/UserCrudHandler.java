@@ -27,8 +27,9 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.util.BlueprintTransaction;
+
 @Component
-public class UserCRUDHandler extends AbstractCRUDHandler {
+public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
@@ -71,20 +72,20 @@ public class UserCRUDHandler extends AbstractCRUDHandler {
 						MeshAuthUser requestUser = getUser(rc);
 						User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
 						//							User user = parentGroup.createUser(requestModel.getUsername());
-				user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
-					if (ch.failed()) {
-						rc.fail(ch.cause());
-					} else {
-						User createdUser = ch.result();
-						searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-						transformAndResponde(rc, createdUser);
+						user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
+							if (ch.failed()) {
+								rc.fail(ch.cause());
+							} else {
+								User createdUser = ch.result();
+								searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+								transformAndResponde(rc, createdUser);
+							}
+						});
 					}
-				});
+				}
 			}
-		}
-	}
-}		);
+		});
 	}
 
 	@Override

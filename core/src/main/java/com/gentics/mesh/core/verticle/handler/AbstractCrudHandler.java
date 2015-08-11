@@ -30,7 +30,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
-public abstract class AbstractCRUDHandler {
+public abstract class AbstractCrudHandler {
 
 	@Autowired
 	protected I18NService i18n;

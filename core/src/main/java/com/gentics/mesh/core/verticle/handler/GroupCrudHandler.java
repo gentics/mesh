@@ -30,7 +30,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 @Component
-public class GroupCRUDHandler extends AbstractCRUDHandler {
+public class GroupCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
@@ -82,7 +82,7 @@ public class GroupCRUDHandler extends AbstractCRUDHandler {
 				if (!group.getName().equals(requestModel.getName())) {
 					Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 					if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "group_conflicting_name")));
+						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
 						return;
 					}
 					group.setName(requestModel.getName());

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.verticle.handler.ProjectCRUDHandler;
+import com.gentics.mesh.core.verticle.handler.ProjectCrudHandler;
 
 @Component
 @Scope("singleton")
@@ -20,7 +20,7 @@ import com.gentics.mesh.core.verticle.handler.ProjectCRUDHandler;
 public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private ProjectCRUDHandler crudHandler;
+	private ProjectCrudHandler crudHandler;
 
 	protected ProjectVerticle() {
 		super("projects");

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -37,22 +38,32 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 		return TagFamily.TYPE;
 	}
 
+	@Override
 	public String getName() {
 		return getProperty("name");
 	}
 
+	@Override
 	public void setName(String name) {
 		setProperty("name", name);
 	}
 
+	@Override
 	public String getDescription() {
 		return getProperty("description");
 	}
 
+	@Override
 	public void setDescription(String description) {
 		setProperty("description", description);
 	}
 
+	@Override
+	public Tag findTagByName(String name) {
+		return out(HAS_TAG).has(TagImpl.class).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().nextOrDefaultExplicit(TagImpl.class, null);
+	}
+
+	@Override
 	public List<? extends Tag> getTags() {
 		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
 	}
@@ -65,15 +76,18 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
 	}
 
+	@Override
 	public void addTag(Tag tag) {
-		linkOut(tag.getImpl(), HAS_TAG);
+		setLinkOutTo(tag.getImpl(), HAS_TAG);
 	}
 
+	@Override
 	public void removeTag(Tag tag) {
 		unlinkOut(tag.getImpl(), HAS_TAG);
 		// TODO delete tag node?!
 	}
 
+	@Override
 	public Tag create(String name, Project project, User creator) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
@@ -125,4 +139,5 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
+
 }

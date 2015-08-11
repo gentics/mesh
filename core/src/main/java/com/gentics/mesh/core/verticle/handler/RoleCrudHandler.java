@@ -46,9 +46,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 @Component
-public class RoleCRUDHandler extends AbstractCRUDHandler {
+public class RoleCrudHandler extends AbstractCrudHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(RoleCRUDHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
 
 	@Override
 	public void handleCreate(RoutingContext rc) {

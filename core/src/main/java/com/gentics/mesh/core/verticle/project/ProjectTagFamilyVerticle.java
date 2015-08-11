@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.handler.TagFamiylCRUDHandler;
+import com.gentics.mesh.core.verticle.handler.TagFamilyCrudHandler;
 
 @Component
 @Scope("singleton")
@@ -33,7 +33,7 @@ import com.gentics.mesh.core.verticle.handler.TagFamiylCRUDHandler;
 public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
-	private TagFamiylCRUDHandler crudHandler;
+	private TagFamilyCrudHandler crudHandler;
 
 	public ProjectTagFamilyVerticle() {
 		super("tagFamilies");

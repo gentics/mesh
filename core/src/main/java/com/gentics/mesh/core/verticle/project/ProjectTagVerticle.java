@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.verticle.handler.TagCRUDHandler;
+import com.gentics.mesh.core.verticle.handler.TagCrudHandler;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
@@ -41,7 +41,7 @@ public class ProjectTagVerticle extends AbstractProjectRestVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ProjectTagVerticle.class);
 
 	@Autowired
-	private TagCRUDHandler crudHandler;
+	private TagCrudHandler crudHandler;
 
 	public ProjectTagVerticle() {
 		super("tags");

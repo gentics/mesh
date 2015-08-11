@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.verticle.handler.MicroschemaCRUDHandler;
+import com.gentics.mesh.core.verticle.handler.MicroschemaCrudHandler;
 
 @Component
 @Scope("singleton")
@@ -19,7 +19,7 @@ import com.gentics.mesh.core.verticle.handler.MicroschemaCRUDHandler;
 public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private MicroschemaCRUDHandler crudHandler;
+	private MicroschemaCrudHandler crudHandler;
 
 	protected MicroschemaVerticle() {
 		super("microschemas");

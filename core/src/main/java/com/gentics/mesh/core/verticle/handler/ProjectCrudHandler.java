@@ -11,6 +11,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ import com.gentics.mesh.util.BlueprintTransaction;
 import io.vertx.ext.web.RoutingContext;
 
 @Component
-public class ProjectCRUDHandler extends AbstractCRUDHandler {
+public class ProjectCrudHandler extends AbstractCrudHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectVerticle.class);
 
@@ -50,7 +51,7 @@ public class ProjectCRUDHandler extends AbstractCRUDHandler {
 
 		if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
 			if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_conflicting_name")));
+				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
 			} else {
 				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 					ProjectRoot projectRoot = boot.projectRoot();

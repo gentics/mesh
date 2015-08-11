@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 
 @Component
-public class MicroschemaCRUDHandler extends AbstractCRUDHandler {
+public class MicroschemaCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {

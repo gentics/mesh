@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.core.verticle.handler.GroupCRUDHandler;
+import com.gentics.mesh.core.verticle.handler.GroupCrudHandler;
 import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -37,7 +37,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private GroupCRUDHandler crudHandler;
+	private GroupCrudHandler crudHandler;
 
 	public GroupVerticle() {
 		super("groups");

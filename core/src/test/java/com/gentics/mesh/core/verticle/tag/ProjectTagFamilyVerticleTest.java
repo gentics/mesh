@@ -5,12 +5,12 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.core.Future;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -32,6 +32,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+
+import io.vertx.core.Future;
 
 public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
@@ -112,8 +114,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 			}
 			assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
-					.getCurrentPage());
+			assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page,
+					restResponse.getMetainfo().getCurrentPage());
 			assertEquals("The amount of total pages did not match the expected value. There are {" + totalTagFamilies + "} tags and {" + perPage
 					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
 			assertEquals("The total tag count does not match.", totalTagFamilies, restResponse.getMetainfo().getTotalCount());
@@ -155,6 +157,15 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(totalTagFamilies, tagList.getMetainfo().getTotalCount());
 		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 
+	}
+
+	@Test
+	public void testTagFamilyCreateWithConflictingName() {
+		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
+		request.setName("colors");
+		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, CONFLICT, "tagfamily_conflicting_name", "colors");
 	}
 
 	@Test
@@ -220,6 +231,19 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
 		});
+	}
+
+	@Test
+	public void testTagFamilyUpdateWithConflictingName() {
+		TagFamily tagFamily = tagFamily("basic");
+		String newName = "colors";
+
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName(newName);
+
+		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), request);
+		latchFor(future);
+		expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
 	}
 
 	@Test

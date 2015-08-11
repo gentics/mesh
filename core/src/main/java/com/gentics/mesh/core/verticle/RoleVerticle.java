@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.verticle.handler.RoleCRUDHandler;
+import com.gentics.mesh.core.verticle.handler.RoleCrudHandler;
 
 @Component
 @Scope("singleton")
@@ -19,7 +19,7 @@ import com.gentics.mesh.core.verticle.handler.RoleCRUDHandler;
 public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private RoleCRUDHandler crudHandler;
+	private RoleCrudHandler crudHandler;
 
 	public RoleVerticle() {
 		super("roles");

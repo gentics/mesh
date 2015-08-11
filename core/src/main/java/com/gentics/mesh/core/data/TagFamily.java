@@ -27,4 +27,6 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedNode {
 	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 	TagFamilyImpl getImpl();
+
+	Tag findTagByName(String name);
 }

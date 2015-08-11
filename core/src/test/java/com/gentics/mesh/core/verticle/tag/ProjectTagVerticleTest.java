@@ -81,8 +81,8 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 			}
 			assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
-					.getCurrentPage());
+			assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page,
+					restResponse.getMetainfo().getCurrentPage());
 			assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
 					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
 			assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
@@ -189,6 +189,21 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testUpdateTagWithConflictingName() {
+		Tag tag = tag("red");
+		final String newName = "green";
+		TagUpdateRequest request = new TagUpdateRequest();
+		request.getFields().setName(newName);
+		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+		tagUpdateRequest.getFields().setName(newName);
+		assertEquals(newName, tagUpdateRequest.getFields().getName());
+
+		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
+		latchFor(updatedTagFut);
+		expectException(updatedTagFut, BAD_REQUEST, "tag_create_tag_with_same_name_already_exists", newName, tag.getTagFamily().getName());
+	}
+
+	@Test
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 
@@ -267,6 +282,18 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals("SomeName", future.result().getFields().getName());
+	}
+
+	@Test
+	public void testCreateTagWithSameNameInSameTagFamily() {
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		assertNotNull("We expect that a tag with the name already exists.", tag("red"));
+		tagCreateRequest.getFields().setName("red");
+		TagFamily tagFamily = tagFamilies().get("colors");
+		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "tag_create_tag_with_same_name_already_exists", "red", tagFamily.getName());
 	}
 
 }

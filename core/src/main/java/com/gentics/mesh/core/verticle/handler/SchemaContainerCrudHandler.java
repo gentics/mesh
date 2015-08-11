@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
 @Component
-public class SchemaContainerCRUDHandler extends AbstractCRUDHandler {
+public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
