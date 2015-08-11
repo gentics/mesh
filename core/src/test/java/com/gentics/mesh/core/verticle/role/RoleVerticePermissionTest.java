@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.verticle.role;
 
-import io.vertx.core.Future;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,8 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.RoleVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
+import io.vertx.core.Future;
+
 public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -22,6 +23,22 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 	@Override
 	public AbstractWebVerticle getVerticle() {
 		return rolesVerticle;
+	}
+
+	@Test
+	public void testRevokeAllPermissionFromProject() {
+
+		// Add permission on own role
+		role().grantPermissions(role(), Permission.UPDATE_PERM);
+		assertTrue(role().hasPermission(Permission.DELETE_PERM, tagFamily("colors")));
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		Future<GenericMessageResponse> future = getClient().updateRolePermission(role().getUuid(), "projects/" + project().getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("role_updated_permission", future, role().getName());
+
+		assertFalse(role().hasPermission(Permission.READ_PERM, tagFamily("colors")));
 	}
 
 	@Test

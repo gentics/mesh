@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
@@ -45,9 +47,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
-		
+		throw new NotImplementedException("The group root node can't be deleted");
 	}
-	
-	
+
 }

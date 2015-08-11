@@ -9,16 +9,19 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -111,5 +114,15 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 	@Override
 	public TagFamilyImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public void applyPermissions(Role role, boolean recursive, Set<Permission> permissionsToGrant, Set<Permission> permissionsToRevoke) {
+		if (recursive) {
+			for (Tag tag : getTags()) {
+				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+			}
+		}
+		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 }

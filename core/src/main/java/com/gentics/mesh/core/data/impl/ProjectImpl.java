@@ -10,15 +10,18 @@ import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.relationship.Permission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -188,6 +191,16 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 		setEditor(getUser(rc));
 		setLastEditedTimestamp(System.currentTimeMillis());
 
+	}
+
+	@Override
+	public void applyPermissions(Role role, boolean recursive, Set<Permission> permissionsToGrant, Set<Permission> permissionsToRevoke) {
+		if (recursive) {
+			getSchemaContainerRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+			getTagFamilyRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+			getNodeRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+		}
+		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 }

@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -51,7 +53,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 	@Override
 	public void delete() {
-		getElement().remove();
+		throw new NotImplementedException("The role root node can't be deleted");
 	}
 
 }

@@ -61,7 +61,6 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 			tagFamily.delete();
 		}
 		getElement().remove();
-
 	}
 
 }

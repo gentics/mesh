@@ -7,7 +7,12 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
+
+	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);
 
 	@Override
 	protected Class<? extends Tag> getPersistanceClass() {
@@ -34,11 +39,17 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 		return out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back()
 				.nextOrDefaultExplicit(TagImpl.class, null);
 	}
-	
+
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
-		
+		//TODO add check to prevent deletion of MeshRoot.tagRoot
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting tag root {" + getUuid() + "}");
+		}
+		for (Tag tag : findAll()) {
+			tag.delete();
+		}
+		getElement().remove();
 	}
 
 }

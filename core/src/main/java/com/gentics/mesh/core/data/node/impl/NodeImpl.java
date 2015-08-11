@@ -443,10 +443,14 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		}
 		return buffer.toString();
 	}
-	
+
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<Permission> permissionsToGrant, Set<Permission> permissionsToRevoke) {
-		if(recursive)
+		if (recursive) {
+			for (Node child : getChildren()) {
+				child.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+			}
+		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
