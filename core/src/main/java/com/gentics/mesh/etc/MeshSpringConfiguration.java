@@ -108,7 +108,7 @@ public class MeshSpringConfiguration {
 	}
 
 	public CorsHandler corsHandler() {
-		String pattern = Mesh.mesh().getOptions().getCorsAllowedOriginPattern();
+		String pattern = Mesh.mesh().getOptions().getHttpServerOptions().getCorsAllowedOriginPattern();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
 		corsHandler.allowedMethod(HttpMethod.GET);
 		corsHandler.allowedMethod(HttpMethod.POST);

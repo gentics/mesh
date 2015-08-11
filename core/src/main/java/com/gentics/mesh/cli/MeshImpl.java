@@ -119,20 +119,7 @@ public class MeshImpl implements Mesh {
 	 */
 	@Override
 	public void handleArguments(String[] args) throws ParseException {
-		// TODO WIP
-		// create Options object
-		// Options options = new Options();
-		//
-		// // add t option
-		// options.addOption("t", false, "display current time");
-		// CommandLineParser parser = new BasicParser();
-		// CommandLine cmd = parser.parse(options, args);
-		// if (cmd.hasOption("t")) {
-		// System.out.println("OK t");
-		// } else {
-		// System.err.println("No option t");
-		// }
-
+		// TODO Not yet implemented
 	}
 
 	private void dontExit() {

@@ -1,15 +1,21 @@
 package com.gentics.mesh.core;
 
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
+import com.gentics.mesh.etc.config.MeshOptions;
+
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
 
 public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
@@ -31,12 +37,34 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		if (localRouter == null) {
 			throw new MeshConfigurationException("The local router was not setup correctly. Startup failed.");
 		}
+		if (log.isInfoEnabled()) {
+			log.info("Starting http server..");
+		}
+		HttpServerOptions options = new HttpServerOptions();
+		options.setPort(config().getInteger("port"));
 
-		log.info("Starting http server..");
-		server = vertx.createHttpServer(new HttpServerOptions().setPort(config().getInteger("port")));
+		MeshOptions meshOptions = Mesh.mesh().getOptions();
+		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
+		if (httpServerOptions.isSsl()) {
+			if (log.isErrorEnabled()) {
+				log.debug("Setting ssl server options");
+			}
+			options.setSsl(true);
+			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
+			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
+				throw new MeshConfigurationException("SSL is enabled but either the server key or the cert path was not specified.");
+			}
+			keyOptions.setKeyPath(httpServerOptions.getKeyPath());
+			keyOptions.setCertPath(httpServerOptions.getCertPath());
+			options.setPemKeyCertOptions(keyOptions);
+		}
+
+		server = vertx.createHttpServer(options);
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
-		log.info("Started http server.. Port: " + config().getInteger("port"));
+		if (log.isInfoEnabled()) {
+			log.info("Started http server.. Port: " + config().getInteger("port"));
+		}
 		registerEndPoints();
 
 	}
@@ -73,7 +101,5 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		Route route = localRouter.route();
 		return route;
 	}
-
-
 
 }

@@ -165,8 +165,6 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 
 	@Override
 	public void setReferencedNode(Node node) {
-		System.out.println(getId());
-		System.out.println(node.getImpl().getId());
 		setLinkOutTo(node.getImpl(), HAS_NODE_REFERENCE);
 	}
 

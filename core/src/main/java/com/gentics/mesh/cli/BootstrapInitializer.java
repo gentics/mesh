@@ -5,12 +5,6 @@ import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
 import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,6 +69,13 @@ import com.gentics.mesh.search.SearchVerticle;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
+
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 @Component
 public class BootstrapInitializer {
@@ -171,7 +172,7 @@ public class BootstrapInitializer {
 	 */
 	private void loadConfiguredVerticles() throws InterruptedException {
 		JsonObject defaultConfig = new JsonObject();
-		defaultConfig.put("port", configuration.getHttpPort());
+		defaultConfig.put("port", configuration.getHttpServerOptions().getPort());
 
 		for (Class<? extends AbstractVerticle> clazz : getMandatoryVerticleClasses().values()) {
 			try {
@@ -193,7 +194,7 @@ public class BootstrapInitializer {
 			if (verticleConf.getVerticleConfig() != null) {
 				mergedVerticleConfig = verticleConf.getVerticleConfig().copy();
 			}
-			mergedVerticleConfig.put("port", configuration.getHttpPort());
+			mergedVerticleConfig.put("port", configuration.getHttpServerOptions().getPort());
 			try {
 				log.info("Loading configured verticle {" + verticleName + "}.");
 				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName);

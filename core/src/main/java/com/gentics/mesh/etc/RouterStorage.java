@@ -139,7 +139,7 @@ public class RouterStorage {
 
 	private void initAPIRouter() {
 		Router router = getAPIRouter();
-		if (Mesh.mesh().getOptions().isCorsEnabled()) {
+		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(springConfiguration.corsHandler());
 		}
 		router.route().handler(springConfiguration.bodyHandler());

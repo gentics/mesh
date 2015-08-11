@@ -17,3 +17,4 @@ verticles/admin-gui/bower_components
 npm-debug.log*
 core/data
 server/data
+examples/demo-java/data

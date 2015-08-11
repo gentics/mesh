@@ -23,7 +23,7 @@ public class SpringTestConfiguration {
 	@PostConstruct
 	public void setup() {
 		MeshOptions options = new MeshOptions();
-		options.setHttpPort(TestUtil.getRandomPort());
+		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
 		Mesh.initalize(options);
 	}
 

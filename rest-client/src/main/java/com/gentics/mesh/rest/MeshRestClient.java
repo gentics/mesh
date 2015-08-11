@@ -508,53 +508,6 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		throw new NotImplementedException();
 	}
 
-	//
-	// @Override
-	// public Future<TagResponse> createTag(TagCreateRequest tagCreateRequest) {
-	// Future<TagResponse> future = Future.future();
-	//
-	// Map<String, String> extraHeaders = new HashMap<>();
-	// Buffer buffer = Buffer.buffer();
-	// buffer.appendString(JsonUtil.toJson(tagCreateRequest));
-	// extraHeaders.put("content-length", String.valueOf(buffer.length()));
-	// extraHeaders.put("content-type", "application/json");
-	//
-	// HttpClientRequest request = client.post(BASEURI + "/project/tags", rh -> {
-	// rh.bodyHandler(bh -> {
-	// if (rh.statusCode() == 200) {
-	// String json = bh.toString();
-	// try {
-	// TagResponse tagResponse = JsonUtil.readValue(json, TagResponse.class);
-	// future.complete(tagResponse);
-	// } catch (Exception e) {
-	// future.fail(e);
-	// }
-	// } else {
-	// future.fail("Could not fetch tag:" + rh.statusCode());
-	// }
-	// });
-	// });
-	//
-	// return future;
-	// }
-	//
-	// @Override
-	// public Future<TagResponse> findTag(String uuid) {
-	// Future<TagResponse> future = Future.future();
-	// HttpClientRequest request = client.get(BASEURI + "/tags", rh -> {
-	// rh.bodyHandler(bh -> {
-	//
-	// });
-	// System.out.println("Received response with status code " + rh.statusCode());
-	// });
-	//
-	// request.exceptionHandler(e -> {
-	// System.out.println("Received exception: " + e.getMessage());
-	// e.printStackTrace();
-	// });
-	// return future;
-	// }
-
 	@Override
 	public Future<NodeListResponse> searchNodes(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");

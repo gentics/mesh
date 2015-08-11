@@ -30,10 +30,9 @@ public abstract class AbstractBasicFieldList<T extends ListableField> extends Ab
 
 	@Override
 	public List<? extends T> getList() {
-		for (String key : getPropertyKeys()) {
-			System.out.println(key + "=" + getProperty(key));
-		}
-		System.out.println();
+//		for (String key : getPropertyKeys()) {
+//			log.debug(key + "=" + getProperty(key));
+//		}
 		Map<String, String> map = getProperties("item");
 		List<T> list = new ArrayList<>();
 		for (String itemKey : map.keySet()) {

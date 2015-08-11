@@ -1,21 +1,18 @@
 package com.gentics.mesh.etc.config;
 
-import io.vertx.ext.mail.MailConfig;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.StorageOptions;
+
+import io.vertx.ext.mail.MailConfig;
 
 public class MeshOptions {
 
 	private static final boolean ENABLED = true;
 	private static final boolean DISABLED = false;
 
-	public static final String HTTP_PORT_KEY = "httpPort";
-	public static final int DEFAULT_HTTP_PORT = 8080;
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final int DEFAULT_MAX_DEPTH = 5;
 	public static final int DEFAULT_PAGE_SIZE = 25;
@@ -23,9 +20,6 @@ public class MeshOptions {
 	public static final int DEFAULT_NESTED_TAGS_LIMIT = 25;
 	public static final int DEFAULT_NESTED_NODES_LIMIT = 25;
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
-	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
-
-	private int httpPort = DEFAULT_HTTP_PORT;
 
 	private int maxDepth = DEFAULT_MAX_DEPTH;
 
@@ -41,11 +35,9 @@ public class MeshOptions {
 
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
 
-	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
-
-	private Boolean enableCors = false;
-
 	private MailConfig mailServerOptions = new MailConfig();
+
+	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
 	private StorageOptions storageOptions = new StorageOptions();
 
@@ -64,14 +56,6 @@ public class MeshOptions {
 
 	public void setClusterMode(boolean clusterMode) {
 		this.clusterMode = clusterMode;
-	}
-
-	public int getHttpPort() {
-		return httpPort;
-	}
-
-	public void setHttpPort(int httpPort) {
-		this.httpPort = httpPort;
 	}
 
 	public int getMaxDepth() {
@@ -98,14 +82,6 @@ public class MeshOptions {
 		return defaultNestedTagsLimit;
 	}
 
-	public String getCorsAllowedOriginPattern() {
-		return this.corsAllowedOriginPattern;
-	}
-
-	public void setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
-		this.corsAllowedOriginPattern = corsAllowedOriginPattern;
-	}
-
 	public MailConfig getMailServerOptions() {
 		return this.mailServerOptions;
 	}
@@ -114,24 +90,19 @@ public class MeshOptions {
 		return this.storageOptions;
 	}
 
-	public Boolean getEnableCors() {
-		return enableCors;
-	}
-
-	public void setEnableCors(Boolean enableCors) {
-		this.enableCors = enableCors;
-	}
-
-	@JsonIgnore
-	public boolean isCorsEnabled() {
-		return this.enableCors != null && this.enableCors == true;
-	}
-
 	public MeshUploadOptions getUploadOptions() {
 		return uploadOptions;
 	}
 
 	public void setUploadOptions(MeshUploadOptions uploadOptions) {
 		this.uploadOptions = uploadOptions;
+	}
+
+	public HttpServerConfig getHttpServerOptions() {
+		return httpServerOptions;
+	}
+
+	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
+		this.httpServerOptions = httpServerOptions;
 	}
 }

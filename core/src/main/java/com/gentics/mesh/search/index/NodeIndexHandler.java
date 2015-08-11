@@ -97,8 +97,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			map.put("language", language);
 
 			addFields(map, container, node.getSchema());
-			//			String json = JsonUtil.toJson(map);
-			//			System.out.println(json);
+			if (log.isDebugEnabled()) {
+				String json = JsonUtil.toJson(map);
+				log.debug(json);
+			}
 			update(node.getUuid(), map, getType() + "-" + language);
 		}
 

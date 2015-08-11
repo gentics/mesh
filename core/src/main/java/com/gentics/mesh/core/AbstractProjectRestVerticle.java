@@ -1,10 +1,10 @@
 package com.gentics.mesh.core;
 
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.etc.RouterStorage;
+
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * A mesh project rest verticle is a verticle that provides rest endpoints for all registered projects. The router for this verticle will automatically be
@@ -24,14 +24,13 @@ public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
 		Router localRouter = routerStorage.getProjectSubRouter(basePath);
 		return localRouter;
 	}
-	
+
 	public Project getProject(RoutingContext rc) {
 		return boot.projectRoot().findByName(getProjectName(rc));
 	}
-	
+
 	public String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}
-
 
 }
