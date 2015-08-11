@@ -12,6 +12,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -53,8 +55,8 @@ public class TagCrudHandler extends AbstractCrudHandler {
 							//							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 							TagFamily tagFamily = rh.result();
 							if (tagFamily.findTagByName(tagName) != null) {
-								//TODO fail with CONFLICT
-								fail(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
+								rc.fail(new HttpStatusCodeErrorException(CONFLICT,
+										i18n.get(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName())));
 								return;
 							}
 							Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
@@ -107,8 +109,8 @@ public class TagCrudHandler extends AbstractCrudHandler {
 						TagFamily tagFamily = tag.getTagFamily();
 						Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
 						if (!foundTagWithSameName.getUuid().equals(tag.getUuid())) {
-							//TODO fail with CONFLICT
-							fail(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName());
+							rc.fail(new HttpStatusCodeErrorException(CONFLICT,
+									i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
 							return;
 						}
 						tag.setEditor(getUser(rc));
@@ -116,7 +118,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 						// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 						tag.setName(requestModel.getFields().getName());
 						if (updateTagFamily) {
-							/* TODO update the tagfamily */
+							// TODO update the tagfamily
 						}
 						searchQueue.put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
