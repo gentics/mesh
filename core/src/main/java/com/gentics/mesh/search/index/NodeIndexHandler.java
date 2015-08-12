@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.ActionResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -23,15 +25,17 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.search.SearchVerticle;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
-	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
 
 	@Override
 	String getIndex() {
@@ -44,7 +48,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public void store(Node node) throws IOException {
+	public void store(Node node, Handler<AsyncResult<ActionResponse>> handler) throws IOException {
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
 		addSchema(map, node.getSchemaContainer());
@@ -62,7 +66,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			store(node.getUuid(), map, getType() + "-" + language);
+			store(node.getUuid(), map, getType() + "-" + language, handler);
 		}
 
 	}
@@ -76,12 +80,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public void update(String uuid) {
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		boot.nodeRoot().findByUuid(uuid, rh -> {
 			if (rh.result() != null && rh.succeeded()) {
 				Node node = rh.result();
 				try {
-					update(node);
+					update(node, handler);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -93,7 +97,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
-	private void update(Node node) throws IOException {
+	private void update(Node node, Handler<AsyncResult<ActionResponse>> handler) throws IOException {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -111,17 +115,29 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			update(node.getUuid(), map, getType() + "-" + language);
+			update(node.getUuid(), map, getType() + "-" + language, handler);
 		}
 
 	}
 
 	@Override
-	public void delete(String uuid) {
-		//		DeleteResponse response = 
+	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		for (Language lang : BootstrapInitializer.getBoot().languageRoot().findAll()) {
 			String language = lang.getLanguageTag();
-			getClient().prepareDelete(getIndex(), getType() + "-" + language, uuid).execute().actionGet();
+			getClient().prepareDelete(getIndex(), getType() + "-" + language, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
+
+				@Override
+				public void onResponse(DeleteResponse response) {
+					//TODO log
+					handler.handle(Future.succeededFuture(response));
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					//TODO log
+					handler.handle(Future.failedFuture(e));
+				}
+			});
 		}
 	}
 
@@ -179,28 +195,40 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
-	public void store(String uuid, Map<String, Object> map, String type) {
-		Mesh.vertx().executeBlocking(bc -> {
-			long start = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
-			}
-			IndexResponse indexResponse = getClient().prepareIndex(getIndex(), type, uuid).setSource(map).execute().actionGet();
-			if (log.isDebugEnabled()) {
-				log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-			}
-		} , rh -> {
+	public void store(String uuid, Map<String, Object> map, String type, Handler<AsyncResult<ActionResponse>> handler) {
+		long start = System.currentTimeMillis();
+		if (log.isDebugEnabled()) {
+			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
+		}
+		getClient().prepareIndex(getIndex(), type, uuid).setSource(map).execute().addListener(new ActionListener<IndexResponse>() {
 
+			@Override
+			public void onResponse(IndexResponse response) {
+				if (log.isDebugEnabled()) {
+					log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				}
+				handler.handle(Future.succeededFuture(response));
+
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				if (log.isDebugEnabled()) {
+					log.debug("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				}
+				handler.handle(Future.failedFuture(e));
+			}
 		});
+
 	}
 
 	@Override
-	public void store(String uuid) {
+	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		boot.nodeRoot().findByUuid(uuid, rh -> {
 			if (rh.result() != null && rh.succeeded()) {
 				Node node = rh.result();
 				try {
-					store(node);
+					store(node, handler);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

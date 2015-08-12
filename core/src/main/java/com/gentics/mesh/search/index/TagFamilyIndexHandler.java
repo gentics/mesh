@@ -3,9 +3,13 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.TagFamily;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 @Component
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
@@ -21,20 +25,20 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public void store(TagFamily tagFamily) {
+	public void store(TagFamily tagFamily, Handler<AsyncResult<ActionResponse>> handler) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", tagFamily.getName());
 		addBasicReferences(map, tagFamily);
 		addTags(map, tagFamily.getTags());
-		store(tagFamily.getUuid(), map);
+		store(tagFamily.getUuid(), map, handler);
 	}
 
 	@Override
-	public void store(String uuid) {
+	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		boot.tagFamilyRoot().findByUuid(uuid, rh -> {
 			if (rh.result() != null && rh.succeeded()) {
 				TagFamily tagFamily = rh.result();
-				store(tagFamily);
+				store(tagFamily, handler);
 			} else {
 				//TODO reply error? discard? log?
 			}
@@ -42,9 +46,9 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	}
 
-	public void update(String uuid) {
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

@@ -1,38 +1,23 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.fail;
-import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.responde;
 import static io.vertx.core.http.HttpMethod.POST;
 import static org.elasticsearch.client.Requests.refreshRequest;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.search.SearchHit;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.GenericVertex;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
-import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -54,7 +39,6 @@ import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
 import com.gentics.mesh.util.BlueprintTransaction;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -64,7 +48,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
-import io.vertx.ext.web.RoutingContext;
 
 @Component
 @Scope("singleton")
@@ -75,6 +58,9 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
 	private org.elasticsearch.node.Node elasticSearchNode;
+
+	@Autowired
+	private SearchHandler searchHandler;
 
 	@Autowired
 	private UserIndexHandler userIndexHandler;
@@ -174,91 +160,11 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			try {
-				handleSearch(rc, root, classOfRL);
+				searchHandler.handleSearch(rc, root, classOfRL);
 			} catch (Exception e) {
 				fail(rc, "search_error_query");
 			}
 		});
-	}
-
-	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
-			RootVertex<T> rootVertex, Class<RL> classOfRL) throws InstantiationException, IllegalAccessException, InvalidArgumentException {
-
-		PagingInfo pagingInfo = getPagingInfo(rc);
-		if (pagingInfo.getPage() < 1) {
-			throw new InvalidArgumentException("The page must always be positive");
-		}
-		if (pagingInfo.getPerPage() < 1) {
-			throw new InvalidArgumentException("The pageSize must always be positive");
-		}
-
-		RL listResponse = classOfRL.newInstance();
-		MeshAuthUser requestUser = getUser(rc);
-		Client client = elasticSearchNode.client();
-
-		SearchRequestBuilder builder = client.prepareSearch().setSource(rc.getBodyAsString());
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-
-		/*
-		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (common known as DLS)
-		 */
-		builder.setSize(Integer.MAX_VALUE);
-		builder.setFrom(0);
-
-		SearchResponse response = builder.execute().actionGet();
-
-		List<T> elements = new ArrayList<>();
-		for (SearchHit hit : response.getHits()) {
-			String uuid = hit.getId();
-
-			// Locate the node
-			rootVertex.findByUuid(uuid, rh -> {
-				if (rh.result() != null && rh.succeeded()) {
-					T element = rh.result();
-					/* Check permissions */
-					if (requestUser.hasPermission(element, GraphPermission.READ_PERM)) {
-						elements.add(element);
-					}
-				} else {
-					// TODO log error info?
-				}
-			});
-		}
-
-		// Internally we start with page 0
-		int page = pagingInfo.getPage() - 1;
-
-		int low = page * pagingInfo.getPerPage();
-		int upper = low + pagingInfo.getPerPage() - 1;
-
-		int n = 0;
-		for (T element : elements) {
-			//Only transform elements that we want to list in our resultset
-			if (n >= low && n <= upper) {
-				// Transform node and add it to the list of nodes
-				element.transformToRest(rc, th -> {
-					listResponse.getData().add(th.result());
-				});
-			}
-			n++;
-		}
-
-		PagingMetaInfo metainfo = new PagingMetaInfo();
-		int totalPages = (int) Math.ceil(elements.size() / (double) pagingInfo.getPerPage());
-		// Cap totalpages to 1
-		if (totalPages == 0) {
-			totalPages = 1;
-		}
-		metainfo.setTotalCount(elements.size());
-
-		metainfo.setCurrentPage(pagingInfo.getPage());
-		metainfo.setPageCount(totalPages);
-		metainfo.setPerPage(pagingInfo.getPerPage());
-		listResponse.setMetainfo(metainfo);
-
-		responde(rc, toJson(listResponse));
-
 	}
 
 	private void addEventBusHandlers() {

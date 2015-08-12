@@ -3,9 +3,13 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 @Component
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
@@ -21,28 +25,28 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	public void store(Group group) {
+	public void store(Group group, Handler<AsyncResult<ActionResponse>> handler) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", group.getName());
 		addBasicReferences(map, group);
 		//TODO addusers
-		store(group.getUuid(),map);
+		store(group.getUuid(), map, handler);
 	}
 
 	@Override
-	public void store(String uuid) {
+	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		boot.groupRoot().findByUuid(uuid, rh -> {
 			if (rh.result() != null && rh.succeeded()) {
 				Group group = rh.result();
-				store(group);
+				store(group, handler);
 			} else {
 				//TODO reply error? discard? log?
 			}
 		});
 	}
 
-	public void update(String uuid) {
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

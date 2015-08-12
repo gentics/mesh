@@ -3,9 +3,13 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Project;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 @Component
 public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
@@ -21,19 +25,19 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public void store(Project project) {
+	public void store(Project project, Handler<AsyncResult<ActionResponse>> handler) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", project.getName());
 		addBasicReferences(map, project);
-		store(project.getUuid(), map);
+		store(project.getUuid(), map, handler);
 	}
 
 	@Override
-	public void store(String uuid) {
+	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		boot.projectRoot().findByUuid(uuid, rh -> {
 			if (rh.result() != null && rh.succeeded()) {
 				Project project = rh.result();
-				store(project);
+				store(project, handler);
 			} else {
 				//TODO reply error? discard? log?
 			}
@@ -41,9 +45,9 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	}
 
-	public void update(String uuid) {
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

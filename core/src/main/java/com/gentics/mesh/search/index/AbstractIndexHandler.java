@@ -1,11 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,8 +8,13 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.ActionResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,6 +25,15 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Component
 public abstract class AbstractIndexHandler<T> {
@@ -52,8 +60,13 @@ public abstract class AbstractIndexHandler<T> {
 			String type = message.body().getString("type");
 			String action = message.body().getString("action");
 			log.info("Handling index event for {" + uuid + ":" + type + "} event:" + action);
-			handleEvent(uuid, action);
-			message.reply(null);
+			handleEvent(uuid, action, rh -> {
+				if(rh.succeeded()) {
+					message.reply(null);
+				} else {
+					message.fail(500, rh.cause().getMessage());
+				}
+			});
 		});
 
 	}
@@ -62,9 +75,10 @@ public abstract class AbstractIndexHandler<T> {
 	 * Transform the given element to a elasticsearch model and store it in the index.
 	 * 
 	 * @param element
+	 * @param handler
 	 * @throws IOException
 	 */
-	abstract public void store(T element) throws IOException;
+	abstract public void store(T element, Handler<AsyncResult<ActionResponse>> handler) throws IOException;
 
 	abstract String getType();
 
@@ -75,52 +89,88 @@ public abstract class AbstractIndexHandler<T> {
 	 * 
 	 * @param uuid
 	 */
-	abstract public void store(String uuid);
+	abstract public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler);
 
-	abstract public void update(String uuid);
+	abstract public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler);
 
 	protected Client getClient() {
 		return elasticSearchNode.client();
 	}
 
-	public void delete(String uuid) {
-		//		DeleteResponse response = 
-		getClient().prepareDelete(getIndex(), getType(), uuid).execute().actionGet();
-	}
+	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+		getClient().prepareDelete(getIndex(), getType(), uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 
-	protected void update(String uuid, Map<String, Object> map, String type) {
-		Mesh.vertx().executeBlocking(bc -> {
-			long start = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Updating object {" + uuid + ":" + getType() + "} to index.");
+			@Override
+			public void onResponse(DeleteResponse response) {
+				//TODO log
+				handler.handle(Future.succeededFuture(response));
 			}
-			UpdateRequestBuilder builder = getClient().prepareUpdate(getIndex(), type, uuid);
-			builder.setDoc(map);
-			builder.execute().actionGet();
-			if (log.isDebugEnabled()) {
-				log.debug("Update object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-			}
-		} , rh -> {
 
+			@Override
+			public void onFailure(Throwable e) {
+				//TODO log
+				handler.handle(Future.failedFuture(e));
+			}
 		});
 	}
 
-	protected void store(String uuid, Map<String, Object> map) {
-		Mesh.vertx().executeBlocking(bc -> {
-			long start = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Adding object {" + uuid + ":" + getType() + "} to index.");
-			}
-			IndexRequestBuilder builder = getClient().prepareIndex(getIndex(), getType(), uuid);
-			builder.setSource(map);
-			builder.execute().actionGet();
+	protected void update(String uuid, Map<String, Object> map, String type, Handler<AsyncResult<ActionResponse>> handler) {
+		long start = System.currentTimeMillis();
+		if (log.isDebugEnabled()) {
+			log.debug("Updating object {" + uuid + ":" + getType() + "} to index.");
+		}
+		UpdateRequestBuilder builder = getClient().prepareUpdate(getIndex(), type, uuid);
+		builder.setDoc(map);
+		builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
-			if (log.isDebugEnabled()) {
-				log.debug("Added object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-			}
-		} , rh -> {
+			@Override
+			public void onResponse(UpdateResponse response) {
+				if (log.isDebugEnabled()) {
+					log.debug("Update object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				}
+				handler.handle(Future.succeededFuture(response));
 
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				log.error(
+						"Updating object {" + uuid + ":" + getType() + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
+						e);
+				handler.handle(Future.failedFuture(e));
+			}
 		});
+
+	}
+
+	protected void store(String uuid, Map<String, Object> map, Handler<AsyncResult<ActionResponse>> handler) {
+		long start = System.currentTimeMillis();
+		if (log.isDebugEnabled()) {
+			log.debug("Adding object {" + uuid + ":" + getType() + "} to index.");
+		}
+		IndexRequestBuilder builder = getClient().prepareIndex(getIndex(), getType(), uuid);
+		builder.setSource(map);
+		builder.execute().addListener(new ActionListener<IndexResponse>() {
+
+			@Override
+			public void onResponse(IndexResponse response) {
+				if (log.isDebugEnabled()) {
+					log.debug("Added object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				}
+				handler.handle(Future.succeededFuture(response));
+
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				if (log.isDebugEnabled()) {
+					log.error("Adding object {" + uuid + ":" + getType() + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+							+ "[ms]", e);
+				}
+				handler.handle(Future.failedFuture(e));
+			}
+		});
+
 	}
 
 	protected void addBasicReferences(Map<String, Object> map, GenericVertex<?> vertex) {
@@ -158,17 +208,17 @@ public abstract class AbstractIndexHandler<T> {
 
 	}
 
-	public void handleEvent(String uuid, String actionName) {
+	public void handleEvent(String uuid, String actionName, Handler<AsyncResult<ActionResponse>> handler) {
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		switch (action) {
 		case CREATE_ACTION:
-			store(uuid);
+			store(uuid, handler);
 			break;
 		case DELETE_ACTION:
-			delete(uuid);
+			delete(uuid, handler);
 			break;
 		case UPDATE_ACTION:
-			update(uuid);
+			update(uuid, handler);
 			break;
 		}
 	}
