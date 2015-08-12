@@ -5,12 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,8 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.BlueprintTransaction;
+
+import io.vertx.core.Future;
 
 public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
@@ -200,7 +202,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
 		latchFor(updatedTagFut);
-		expectException(updatedTagFut, BAD_REQUEST, "tag_create_tag_with_same_name_already_exists", newName, tag.getTagFamily().getName());
+		expectException(updatedTagFut, CONFLICT, "tag_create_tag_with_same_name_already_exists", newName, tag.getTagFamily().getName());
 	}
 
 	@Test
@@ -293,7 +295,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "tag_create_tag_with_same_name_already_exists", "red", tagFamily.getName());
+		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamily.getName());
 	}
 
 }

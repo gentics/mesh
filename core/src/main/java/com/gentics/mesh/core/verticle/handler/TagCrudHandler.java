@@ -108,7 +108,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 					} else {
 						TagFamily tagFamily = tag.getTagFamily();
 						Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
-						if (!foundTagWithSameName.getUuid().equals(tag.getUuid())) {
+						if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(tag.getUuid())) {
 							rc.fail(new HttpStatusCodeErrorException(CONFLICT,
 									i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
 							return;
