@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
-import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
+import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
@@ -87,16 +87,16 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	@Override
 	public List<? extends NodeFieldContainer> getFieldContainers() {
-		return out(HAS_FIELD_CONTAINER).has(NodeFieldContainerImpl.class).toListExplicit(NodeFieldContainerImpl.class);
+		return out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class).toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
 	public NodeFieldContainer getFieldContainer(Language language) {
-		return getFieldContainer(language, NodeFieldContainerImpl.class);
+		return getFieldContainer(language, NodeGraphFieldContainerImpl.class);
 	}
 
 	public NodeFieldContainer getOrCreateFieldContainer(Language language) {
-		return getOrCreateFieldContainer(language, NodeFieldContainerImpl.class);
+		return getOrCreateFieldContainer(language, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override

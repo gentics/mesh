@@ -2,11 +2,11 @@ package com.gentics.mesh.core.data.node.field.impl.nesting;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.node.field.nesting.AbstractComplexField;
+import com.gentics.mesh.core.data.node.field.nesting.AbstractComplexGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 
-public class GraphSelectFieldImpl<T extends ListableGraphField> extends AbstractComplexField implements GraphSelectField<T> {
+public class GraphSelectFieldImpl<T extends ListableGraphField> extends AbstractComplexGraphField implements GraphSelectField<T> {
 
 	@Override
 	public void addOption(T t) {

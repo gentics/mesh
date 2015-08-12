@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import com.gentics.mesh.core.data.TagFieldContainer;
 
 
-public class TagFieldContainerImpl extends AbstractBasicFieldContainerImpl implements TagFieldContainer {
+public class TagFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements TagFieldContainer {
 
 	public String getName() {
 		return getProperty("name");
