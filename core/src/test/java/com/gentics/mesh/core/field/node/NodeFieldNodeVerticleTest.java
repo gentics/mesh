@@ -18,6 +18,9 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.demo.DemoDataProvider;
+
+import io.vertx.core.Future;
 
 public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
@@ -36,10 +39,35 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		Node node = folder("news");
-		NodeResponse response = updateNode("nodeField", new NodeFieldImpl().setUuid(node.getUuid()));
-		NodeFieldImpl field = response.getField("nodeField");
-		assertEquals(node.getUuid(), field.getUuid());
 		Node node2 = folder("deals");
+
+		// Update the field to point to node
+		NodeResponse response = updateNode("nodeField", new NodeFieldImpl().setUuid(node.getUuid()));
+		NodeResponse field = response.getField("nodeField");
+		assertEquals(node.getUuid(), field.getUuid());
+
+		// Update the field to point to node2
+		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
+		field = response.getField("nodeField");
+		assertEquals(node2.getUuid(), field.getUuid());
+	}
+
+	@Test
+	public void testUpdateNodeFieldWithNodeResponseJson() {
+		Node node = folder("news");
+		Node node2 = folder("deals");
+
+		// Load the node so that we can use it to prepare the update request
+		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid());
+		latchFor(future);
+		NodeResponse loadedNode = future.result();
+
+		// Update the field to point to node
+		NodeResponse response = updateNode("nodeField", loadedNode);
+		NodeResponse field = response.getField("nodeField");
+		assertEquals(node.getUuid(), field.getUuid());
+
+		// Update the field to point to node2
 		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
 		field = response.getField("nodeField");
 		assertEquals(node2.getUuid(), field.getUuid());
@@ -49,7 +77,7 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testCreateNodeWithField() {
 		NodeResponse response = createNode("nodeField", new NodeFieldImpl().setUuid(folder("news").getUuid()));
-		NodeFieldImpl field = response.getField("nodeField");
+		NodeResponse field = response.getField("nodeField");
 		assertEquals(folder("news").getUuid(), field.getUuid());
 	}
 

@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.DateField;
+import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
@@ -45,7 +45,7 @@ public class DateFieldNodeTest extends AbstractDBTest {
 		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		DateField field = container.createDate("dateField");
+		DateGraphField field = container.createDate("dateField");
 		field.setDate("01.01.1971");
 
 		String json = getJson(node);

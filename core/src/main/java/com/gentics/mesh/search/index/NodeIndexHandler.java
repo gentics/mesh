@@ -13,11 +13,11 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlField;
-import com.gentics.mesh.core.data.node.field.basic.NumberField;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
+import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -49,6 +49,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
+		//addParentNodeInfo(map, node.getParentNode());
 		for (NodeFieldContainer container : node.getFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
@@ -63,6 +64,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			store(node.getUuid(), map, getType() + "-" + language);
 		}
 
+	}
+
+	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
+		Map<String, Object> parentNodeInfo = new HashMap<>();
+		parentNodeInfo.put("uuid", parentNode.getUuid());
+		Map<String, String> schemaFields = new HashMap<>();
+		schemaFields.put("name", parentNode.getSchemaContainer().getName());
+		schemaFields.put("uuid", parentNode.getSchemaContainer().getUuid());
+		parentNodeInfo.put("schema", schemaFields);
+		map.put("parent", parentNode);
 	}
 
 	@Override
@@ -123,31 +134,31 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			switch (type) {
 			case STRING:
-				StringField stringField = container.getString(name);
+				StringGraphField stringField = container.getString(name);
 				if (stringField != null) {
 					fieldsMap.put(name, stringField.getString());
 				}
 				break;
 			case HTML:
-				HtmlField htmlField = container.getHtml(name);
+				HtmlGraphField htmlField = container.getHtml(name);
 				if (htmlField != null) {
 					fieldsMap.put(name, htmlField.getHTML());
 				}
 				break;
 			case DATE:
-				DateField dateField = container.getDate(name);
+				DateGraphField dateField = container.getDate(name);
 				if (dateField != null) {
 					fieldsMap.put(name, dateField.getDate());
 				}
 				break;
 			case NUMBER:
-				NumberField numberField = container.getNumber(name);
+				NumberGraphField numberField = container.getNumber(name);
 				if (numberField != null) {
 					fieldsMap.put(name, numberField.getNumber());
 				}
 				break;
 			case NODE:
-				NodeField nodeField = container.getNode(name);
+				GraphNodeField nodeField = container.getNode(name);
 				if (nodeField != null) {
 					fieldsMap.put(name, nodeField.getNode());
 				}

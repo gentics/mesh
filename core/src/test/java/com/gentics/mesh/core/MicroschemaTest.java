@@ -15,7 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -100,7 +100,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(Permission.READ_PERM, microschema);
+		testPermission(GraphPermission.READ_PERM, microschema);
 	}
 
 	@Ignore("Not yet implemented")
@@ -108,7 +108,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDeletePermission() {
 		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(Permission.DELETE_PERM, microschema);
+		testPermission(GraphPermission.DELETE_PERM, microschema);
 
 	}
 
@@ -117,7 +117,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdatePermission() {
 		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(Permission.UPDATE_PERM, microschema);
+		testPermission(GraphPermission.UPDATE_PERM, microschema);
 	}
 
 	@Ignore("Not yet implemented")
@@ -125,7 +125,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreatePermission() {
 		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(Permission.CREATE_PERM, microschema);
+		testPermission(GraphPermission.CREATE_PERM, microschema);
 	}
 
 	@Ignore("Not yet implemented")
@@ -150,9 +150,9 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
 		MicroschemaContainer container = root.create("newContainer", user());
-		assertFalse(user().hasPermission(container, Permission.CREATE_PERM));
-		user().addCRUDPermissionOnRole(root, Permission.CREATE_PERM, container);
-		assertTrue(user().hasPermission(container, Permission.CREATE_PERM));
+		assertFalse(user().hasPermission(container, GraphPermission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, container);
+		assertTrue(user().hasPermission(container, GraphPermission.CREATE_PERM));
 	}
 
 }

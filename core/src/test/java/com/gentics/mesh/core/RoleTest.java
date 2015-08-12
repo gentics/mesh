@@ -1,10 +1,10 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.*;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -62,7 +62,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		// englishContainer.setI18nProperty("content", "Test");
 		role.grantPermissions(node2, READ_PERM, DELETE_PERM);
 		role.grantPermissions(node2, CREATE_PERM);
-		Set<Permission> permissions = role.getPermissions(node2);
+		Set<GraphPermission> permissions = role.getPermissions(node2);
 
 		assertNotNull(permissions);
 		assertTrue(permissions.contains(CREATE_PERM));
@@ -89,7 +89,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		role.grantPermissions(node, CREATE_PERM);
 		role.grantPermissions(node, CREATE_PERM);
 
-		Set<Permission> permissions = role.getPermissions(node);
+		Set<GraphPermission> permissions = role.getPermissions(node);
 		assertNotNull(permissions);
 		assertTrue(permissions.contains(CREATE_PERM));
 		assertTrue(permissions.contains(READ_PERM));
@@ -110,7 +110,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Node node = content("news overview");
 		role.revokePermissions(node, CREATE_PERM);
 
-		Set<Permission> permissions = role.getPermissions(node);
+		Set<GraphPermission> permissions = role.getPermissions(node);
 		assertNotNull(permissions);
 		assertFalse(permissions.contains(CREATE_PERM));
 		assertTrue(permissions.contains(DELETE_PERM));
@@ -160,7 +160,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		assertEquals(4, requestUser.getPermissions(node).size());
 
 		for (Role role : roles().values()) {
-			for (Permission permission : Permission.values()) {
+			for (GraphPermission permission : GraphPermission.values()) {
 				assertTrue(role.hasPermission(permission, node));
 			}
 		}
@@ -259,9 +259,9 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
 		Role role = root.getRoleRoot().create("SuperUser", null, user());
-		assertFalse(user().hasPermission(role, Permission.CREATE_PERM));
-		user().addCRUDPermissionOnRole(root.getUserRoot(), Permission.CREATE_PERM, role);
-		assertTrue(user().hasPermission(role, Permission.CREATE_PERM));
+		assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
+		assertTrue(user().hasPermission(role, GraphPermission.CREATE_PERM));
 	}
 
 	@Test
@@ -313,24 +313,24 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(Permission.READ_PERM, role());
+		testPermission(GraphPermission.READ_PERM, role());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(Permission.DELETE_PERM, role());
+		testPermission(GraphPermission.DELETE_PERM, role());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(Permission.UPDATE_PERM, role());
+		testPermission(GraphPermission.UPDATE_PERM, role());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(Permission.CREATE_PERM, role());
+		testPermission(GraphPermission.CREATE_PERM, role());
 	}
 }

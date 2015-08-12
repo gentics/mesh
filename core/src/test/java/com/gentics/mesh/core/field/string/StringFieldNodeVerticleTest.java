@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -56,7 +56,7 @@ public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node node = folder("2015");
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		StringField stringField = container.createString("stringField");
+		StringGraphField stringField = container.createString("stringField");
 		stringField.setString("someString");
 
 		NodeResponse response = readNode(node);

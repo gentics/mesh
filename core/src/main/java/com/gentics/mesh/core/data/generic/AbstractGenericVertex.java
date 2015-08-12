@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import io.vertx.ext.web.RoutingContext;
 

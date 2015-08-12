@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.tinkerpop.blueprints.Vertex;
 
 public interface MeshVertex extends MeshElement {
@@ -14,5 +14,5 @@ public interface MeshVertex extends MeshElement {
 
 	void delete();
 
-	void applyPermissions(Role role, boolean recursive, Set<Permission> permissionsToGrant, Set<Permission> permissionsToRevoke);
+	void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke);
 }

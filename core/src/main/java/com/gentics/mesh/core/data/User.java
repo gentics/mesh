@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -109,11 +109,11 @@ public interface User extends GenericVertex<UserResponse>, NamedNode {
 	 */
 	void setReferencedNode(Node node);
 
-	boolean hasPermission(MeshVertex vertex, Permission permission);
+	boolean hasPermission(MeshVertex vertex, GraphPermission permission);
 
 	String[] getPermissionNames(MeshVertex vertex);
 
-	Set<Permission> getPermissions(MeshVertex node);
+	Set<GraphPermission> getPermissions(MeshVertex node);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
@@ -130,7 +130,7 @@ public interface User extends GenericVertex<UserResponse>, NamedNode {
 	 * @param targetNode
 	 *            Node to which the CRUD permissions will be assigned.
 	 */
-	void addCRUDPermissionOnRole(MeshVertex node, Permission permission, MeshVertex targetNode);
+	void addCRUDPermissionOnRole(MeshVertex node, GraphPermission permission, MeshVertex targetNode);
 
 	/**
 	 * Return a list of groups to which the user was assigned.

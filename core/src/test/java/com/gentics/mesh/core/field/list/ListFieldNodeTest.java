@@ -13,12 +13,12 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
@@ -83,28 +83,28 @@ public class ListFieldNodeTest extends AbstractDBTest {
 
 		NodeFieldContainer container = node.getFieldContainer(english());
 
-		NodeFieldList nodeList = container.createNodeList("nodeList");
+		GraphNodeFieldList nodeList = container.createNodeList("nodeList");
 		nodeList.createNode("1", newsNode);
 		nodeList.createNode("2", newsNode);
 
-		BooleanFieldList booleanList = container.createBooleanList("booleanList");
+		GraphBooleanFieldList booleanList = container.createBooleanList("booleanList");
 		booleanList.createBoolean(true);
 		booleanList.createBoolean(null);
 		booleanList.createBoolean(false);
 
-		NumberFieldList numberList = container.createNumberList("numberList");
+		GraphNumberFieldList numberList = container.createNumberList("numberList");
 		numberList.createNumber("1");
 		numberList.createNumber("1.11");
 
-		DateFieldList dateList = container.createDateList("dateList");
+		GraphDateFieldList dateList = container.createDateList("dateList");
 		dateList.createDate("01.01.1971");
 		dateList.createDate("01.01.1972");
 
-		StringFieldList stringList = container.createStringList("stringList");
+		GraphStringFieldList stringList = container.createStringList("stringList");
 		stringList.createString("dummyString1");
 		stringList.createString("dummyString2");
 
-		HtmlFieldList htmlList = container.createHTMLList("htmlList");
+		GraphHtmlFieldList htmlList = container.createHTMLList("htmlList");
 		htmlList.createHTML("some<b>html</b>");
 		htmlList.createHTML("some<b>more html</b>");
 

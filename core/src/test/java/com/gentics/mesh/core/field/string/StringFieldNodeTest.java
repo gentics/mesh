@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -45,7 +45,7 @@ public class StringFieldNodeTest extends AbstractDBTest {
 		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		StringField field = container.createString("stringField");
+		StringGraphField field = container.createString("stringField");
 		field.setString("someString");
 
 		String json = getJson(node);

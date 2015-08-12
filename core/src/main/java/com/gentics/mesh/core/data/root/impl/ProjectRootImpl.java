@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 
 import java.util.Stack;
 

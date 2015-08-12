@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -144,7 +144,7 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node node = folder("2015");
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		NodeFieldList nodeList = container.createNodeList("listField");
+		GraphNodeFieldList nodeList = container.createNodeList("listField");
 		nodeList.createNode("1", folder("news"));
 
 		NodeResponse response = readNode(node);
@@ -161,7 +161,7 @@ public class ListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
 		// Create node list
 		NodeFieldContainer container = node.getFieldContainer(english());
-		NodeFieldList nodeList = container.createNodeList("listField");
+		GraphNodeFieldList nodeList = container.createNodeList("listField");
 		nodeList.createNode("1", newsNode);
 
 		// 1. Read node with collapsed fields and check that the collapsed node list item can be read

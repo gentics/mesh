@@ -26,7 +26,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
@@ -217,7 +217,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 				if (rh.result() != null && rh.succeeded()) {
 					T element = rh.result();
 					/* Check permissions */
-					if (requestUser.hasPermission(element, Permission.READ_PERM)) {
+					if (requestUser.hasPermission(element, GraphPermission.READ_PERM)) {
 						elements.add(element);
 					}
 				} else {

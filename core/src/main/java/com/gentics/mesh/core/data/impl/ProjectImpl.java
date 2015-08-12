@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_BASE_NODE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LANGUAGE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BASE_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -194,7 +194,7 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<Permission> permissionsToGrant, Set<Permission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			getSchemaContainerRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			getTagFamilyRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);

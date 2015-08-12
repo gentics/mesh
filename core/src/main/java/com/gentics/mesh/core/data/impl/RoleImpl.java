@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
@@ -45,17 +45,17 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Rol
 	}
 
 	@Override
-	public Set<Permission> getPermissions(MeshVertex node) {
-		Set<Permission> permissions = new HashSet<>();
-		Set<? extends String> labels = outE(Permission.labels()).mark().inV().retain((MeshVertexImpl) node).back().label().toSet();
+	public Set<GraphPermission> getPermissions(MeshVertex node) {
+		Set<GraphPermission> permissions = new HashSet<>();
+		Set<? extends String> labels = outE(GraphPermission.labels()).mark().inV().retain((MeshVertexImpl) node).back().label().toSet();
 		for (String label : labels) {
-			permissions.add(Permission.valueOfLabel(label));
+			permissions.add(GraphPermission.valueOfLabel(label));
 		}
 		return permissions;
 	}
 
 	@Override
-	public boolean hasPermission(Permission permission, GenericVertex<?> node) {
+	public boolean hasPermission(GraphPermission permission, GenericVertex<?> node) {
 		return out(permission.label()).retain(node.getImpl()).hasNext();
 	}
 
@@ -65,8 +65,8 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Rol
 	}
 
 	@Override
-	public void grantPermissions(MeshVertex node, Permission... permissions) {
-		for (Permission permission : permissions) {
+	public void grantPermissions(MeshVertex node, GraphPermission... permissions) {
+		for (GraphPermission permission : permissions) {
 			addFramedEdge(permission.label(), (MeshVertexImpl) node);
 		}
 	}
@@ -90,9 +90,9 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Rol
 	}
 
 	@Override
-	public void revokePermissions(MeshVertex node, Permission... permissions) {
+	public void revokePermissions(MeshVertex node, GraphPermission... permissions) {
 
-		for (Permission permission : permissions) {
+		for (GraphPermission permission : permissions) {
 			// System.out.println(inE(permission.label()).mark().outV().retain(node).back().next().getLabel());
 			outE(permission.label()).mark().inV().retain((MeshVertexImpl) node).back().removeAll();
 			// System.out.println(outE(permission.label()).mark().inV().retain(node).back().next().getLabel());

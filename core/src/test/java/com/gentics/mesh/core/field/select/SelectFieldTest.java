@@ -8,9 +8,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
-import com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl;
-import com.gentics.mesh.core.data.node.field.nesting.SelectField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class SelectFieldTest extends AbstractDBTest {
@@ -19,8 +19,8 @@ public class SelectFieldTest extends AbstractDBTest {
 	public void testStringSelection() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
 
-		SelectField<StringField> field = container.createSelect("dummySelect");
-		field.addOption(new StringFieldImpl("test", null));
+		GraphSelectField<StringGraphField> field = container.createSelect("dummySelect");
+		field.addOption(new StringGraphFieldImpl("test", null));
 		assertEquals(1, field.getOptions().size());
 	}
 

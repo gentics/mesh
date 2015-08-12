@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -16,17 +15,17 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.ListableField;
-import com.gentics.mesh.core.data.node.field.nesting.MicroschemaField;
-import com.gentics.mesh.core.data.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.node.field.impl.nesting.GraphMicroschemaFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -62,6 +61,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.syncleus.ferma.traversals.EdgeTraversal;
+
+import io.vertx.ext.web.RoutingContext;
 
 public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implements NodeFieldContainer {
 
@@ -104,27 +105,28 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				createDate(key).setDate(dateField.getDate());
 				break;
 			case NODE:
-				NodeField nodeField = (NodeFieldImpl) field;
+				NodeField nodeField = (NodeField) field;
 
 				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
 					Node node = rh.result();
 
-					/* Check whether the container already contains a node field */
+					// Check whether the container already contains a node field 
 					// TODO check node permissions
-						com.gentics.mesh.core.data.node.field.nesting.NodeField graphNodeField = getNode(key);
-						if (graphNodeField == null) {
-							createNode(key, node);
-						} else {
-							deleteField(key);
-							createNode(key, node);
-						}
-					});
+					com.gentics.mesh.core.data.node.field.nesting.GraphNodeField graphNodeField = getNode(key);
+					if (graphNodeField == null) {
+						createNode(key, node);
+					} else {
+						// We can't update the graphNodeField since it is in fact an edge. We need to delete it and create a new one.
+						deleteField(key);
+						createNode(key, node);
+					}
+				});
 				break;
 			case LIST:
 				if (field instanceof NodeFieldListImpl) {
 					NodeFieldListImpl nodeList = (NodeFieldListImpl) field;
 					AtomicInteger integer = new AtomicInteger();
-					NodeFieldList graphNodeList = createNodeList(key);
+					GraphNodeFieldList graphNodeList = createNodeList(key);
 
 					// Add the listed items
 					for (NodeFieldListItem item : nodeList.getList()) {
@@ -139,21 +141,21 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 					}
 				} else if (field instanceof StringFieldListImpl) {
 					StringFieldListImpl stringList = (StringFieldListImpl) field;
-					StringFieldList graphStringList = createStringList(key);
+					GraphStringFieldList graphStringList = createStringList(key);
 
 					for (String item : stringList.getList()) {
 						graphStringList.createString(item);
 					}
 				} else if (field instanceof HtmlFieldListImpl) {
 					HtmlFieldListImpl htmlList = (HtmlFieldListImpl) field;
-					HtmlFieldList graphHtmlList = createHTMLList(key);
+					GraphHtmlFieldList graphHtmlList = createHTMLList(key);
 
 					for (String item : htmlList.getList()) {
 						graphHtmlList.createHTML(item);
 					}
 				} else if (field instanceof NumberFieldListImpl) {
 					NumberFieldListImpl numberList = (NumberFieldListImpl) field;
-					NumberFieldList graphNumberList = createNumberList(key);
+					GraphNumberFieldList graphNumberList = createNumberList(key);
 
 					for (String item : numberList.getList()) {
 						graphNumberList.createNumber(item);
@@ -161,14 +163,14 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				} else if (field instanceof BooleanFieldListImpl) {
 
 					BooleanFieldListImpl booleanList = (BooleanFieldListImpl) field;
-					BooleanFieldList graphBooleanList = createBooleanList(key);
+					GraphBooleanFieldList graphBooleanList = createBooleanList(key);
 
 					for (Boolean item : booleanList.getList()) {
 						graphBooleanList.createBoolean(item);
 					}
 				} else if (field instanceof DateFieldListImpl) {
 					DateFieldListImpl dateList = (DateFieldListImpl) field;
-					DateFieldList graphDateList = createDateList(key);
+					GraphDateFieldList graphDateList = createDateList(key);
 
 					for (String item : dateList.getList()) {
 						graphDateList.createDate(item);
@@ -182,13 +184,13 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 				break;
 			case SELECT:
 				SelectField restSelectField = (SelectFieldImpl) field;
-				com.gentics.mesh.core.data.node.field.nesting.SelectField<ListableField> selectField = createSelect(key);
+				com.gentics.mesh.core.data.node.field.nesting.GraphSelectField<ListableGraphField> selectField = createSelect(key);
 				// TODO impl
 				throw new NotImplementedException();
 				// break;
 			case MICROSCHEMA:
 				com.gentics.mesh.core.rest.node.field.MicroschemaField restMicroschemaField = (com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl) field;
-				MicroschemaField microschemaField = createMicroschema(key);
+				GraphMicroschemaField microschemaField = createMicroschema(key);
 				// TODO impl
 				throw new NotImplementedException();
 				// break;
@@ -200,28 +202,29 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			extraFields += "[" + key + "]";
 		}
 		if (!StringUtils.isEmpty(extraFields)) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST,
+					I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
 			// throw new MeshSchemaException("The following fields were not specified within the {" + schema.getName() + "} schema: " + extraFields);
 		}
 	}
 
 	private void deleteField(String key) {
-		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has("fieldKey", key);
+		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(com.gentics.mesh.core.data.node.field.GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {
 			traversal.next().remove();
 		}
 	}
 
 	@Override
-	public MicroschemaField getMicroschema(String key) {
+	public GraphMicroschemaField getMicroschema(String key) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MicroschemaField createMicroschema(String key) {
-		MicroschemaFieldImpl field = getGraph().addFramedVertex(MicroschemaFieldImpl.class);
+	public GraphMicroschemaField createMicroschema(String key) {
+		GraphMicroschemaFieldImpl field = getGraph().addFramedVertex(GraphMicroschemaFieldImpl.class);
 		field.setFieldKey(key);
-		linkOut(field, MeshRelationships.HAS_FIELD);
+		linkOut(field, GraphRelationships.HAS_FIELD);
 		return field;
 	}
 
@@ -231,7 +234,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		// TODO replace switch case
 		if (FieldTypes.STRING.equals(type)) {
 			// TODO validate found fields has same type as schema
-			com.gentics.mesh.core.data.node.field.basic.StringField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl(
+			com.gentics.mesh.core.data.node.field.basic.StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
 					fieldKey, this);
 			// TODO handle null across all types
 
@@ -242,7 +245,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 
 		if (FieldTypes.NUMBER.equals(type)) {
-			com.gentics.mesh.core.data.node.field.basic.NumberField graphNumberField = getNumber(fieldKey);
+			com.gentics.mesh.core.data.node.field.basic.NumberGraphField graphNumberField = getNumber(fieldKey);
 			// TODO handle null across all types
 			if (graphNumberField != null) {
 				NumberFieldImpl numberField = new NumberFieldImpl();
@@ -252,7 +255,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 
 		if (FieldTypes.DATE.equals(type)) {
-			com.gentics.mesh.core.data.node.field.basic.DateField graphDateField = getDate(fieldKey);
+			com.gentics.mesh.core.data.node.field.basic.DateGraphField graphDateField = getDate(fieldKey);
 			// TODO handle null across all types
 			if (graphDateField != null) {
 				DateFieldImpl dateField = new DateFieldImpl();
@@ -262,7 +265,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 
 		if (FieldTypes.BOOLEAN.equals(type)) {
-			com.gentics.mesh.core.data.node.field.basic.BooleanField graphNumberField = getBoolean(fieldKey);
+			com.gentics.mesh.core.data.node.field.basic.BooleanGraphField graphNumberField = getBoolean(fieldKey);
 			// TODO handle null across all types
 			if (graphNumberField != null) {
 				BooleanFieldImpl booleanField = new BooleanFieldImpl();
@@ -272,7 +275,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 
 		if (FieldTypes.NODE.equals(type)) {
-			com.gentics.mesh.core.data.node.field.nesting.NodeField graphNodeField = getNode(fieldKey);
+			com.gentics.mesh.core.data.node.field.nesting.GraphNodeField graphNodeField = getNode(fieldKey);
 			// TODO handle null across all types
 			if (graphNodeField != null && graphNodeField.getNode() != null) {
 				if (expandField) {
@@ -298,7 +301,7 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 		}
 
 		if (FieldTypes.HTML.equals(type)) {
-			com.gentics.mesh.core.data.node.field.basic.HtmlField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HtmlFieldImpl(
+			com.gentics.mesh.core.data.node.field.basic.HtmlGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl(
 					fieldKey, this);
 			HtmlFieldImpl htmlField = new HtmlFieldImpl();
 			String text = graphStringField.getHTML();
@@ -310,13 +313,13 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 
 			switch (listFieldSchema.getListType()) {
-			case NodeFieldList.TYPE:
-				NodeFieldList nodeFieldList = getNodeList(fieldKey);
+			case GraphNodeFieldList.TYPE:
+				GraphNodeFieldList nodeFieldList = getNodeList(fieldKey);
 				NodeFieldListImpl restNodeFieldList = new NodeFieldListImpl();
 				if (nodeFieldList == null) {
 					return null;
 				}
-				for (com.gentics.mesh.core.data.node.field.nesting.NodeField item : nodeFieldList.getList()) {
+				for (com.gentics.mesh.core.data.node.field.nesting.GraphNodeField item : nodeFieldList.getList()) {
 					if (expandField) {
 						//TODO, FIXME get rid of the countdown latch
 						CountDownLatch latch = new CountDownLatch(1);
@@ -338,41 +341,41 @@ public class NodeFieldContainerImpl extends AbstractFieldContainerImpl implement
 					}
 				}
 				return restNodeFieldList;
-			case NumberFieldList.TYPE:
+			case GraphNumberFieldList.TYPE:
 				NumberFieldListImpl numberList = new NumberFieldListImpl();
-				NumberFieldList numberFieldList = getNumberList(fieldKey);
-				for (com.gentics.mesh.core.data.node.field.basic.NumberField item : numberFieldList.getList()) {
+				GraphNumberFieldList numberFieldList = getNumberList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.NumberGraphField item : numberFieldList.getList()) {
 					numberList.add(item.getNumber());
 				}
 				return numberList;
-			case BooleanFieldList.TYPE:
+			case GraphBooleanFieldList.TYPE:
 				BooleanFieldListImpl booleanList = new BooleanFieldListImpl();
-				BooleanFieldList booleanFieldList = getBooleanList(fieldKey);
-				for (com.gentics.mesh.core.data.node.field.basic.BooleanField item : booleanFieldList.getList()) {
+				GraphBooleanFieldList booleanFieldList = getBooleanList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.BooleanGraphField item : booleanFieldList.getList()) {
 					booleanList.add(item.getBoolean());
 				}
 				return booleanList;
-			case HtmlFieldList.TYPE:
+			case GraphHtmlFieldList.TYPE:
 				HtmlFieldListImpl htmlList = new HtmlFieldListImpl();
-				HtmlFieldList htmlFieldList = getHTMLList(fieldKey);
-				for (com.gentics.mesh.core.data.node.field.basic.HtmlField item : htmlFieldList.getList()) {
+				GraphHtmlFieldList htmlFieldList = getHTMLList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.HtmlGraphField item : htmlFieldList.getList()) {
 					htmlList.add(item.getHTML());
 				}
 				return htmlList;
-			case MicroschemaFieldList.TYPE:
+			case GraphMicroschemaFieldList.TYPE:
 				MicroschemaFieldListImpl microschemaList = new MicroschemaFieldListImpl();
 				return microschemaList;
-			case StringFieldList.TYPE:
+			case GraphStringFieldList.TYPE:
 				StringFieldListImpl stringList = new StringFieldListImpl();
-				StringFieldList stringFieldList = getStringList(fieldKey);
-				for (com.gentics.mesh.core.data.node.field.basic.StringField item : stringFieldList.getList()) {
+				GraphStringFieldList stringFieldList = getStringList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.StringGraphField item : stringFieldList.getList()) {
 					stringList.add(item.getString());
 				}
 				return stringList;
-			case DateFieldList.TYPE:
+			case GraphDateFieldList.TYPE:
 				DateFieldListImpl dateList = new DateFieldListImpl();
-				DateFieldList dateFieldList = getDateList(fieldKey);
-				for (com.gentics.mesh.core.data.node.field.basic.DateField item : dateFieldList.getList()) {
+				GraphDateFieldList dateFieldList = getDateList(fieldKey);
+				for (com.gentics.mesh.core.data.node.field.basic.DateGraphField item : dateFieldList.getList()) {
 					dateList.add(item.getDate());
 				}
 				return dateList;

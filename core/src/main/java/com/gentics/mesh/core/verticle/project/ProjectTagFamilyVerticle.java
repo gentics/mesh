@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.project;
 
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;

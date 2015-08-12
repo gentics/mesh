@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 
 import org.apache.commons.lang3.NotImplementedException;
 

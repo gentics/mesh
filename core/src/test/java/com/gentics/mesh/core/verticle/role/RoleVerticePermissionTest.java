@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.RoleVerticle;
@@ -29,8 +29,8 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 	public void testRevokeAllPermissionFromProject() {
 
 		// Add permission on own role
-		role().grantPermissions(role(), Permission.UPDATE_PERM);
-		assertTrue(role().hasPermission(Permission.DELETE_PERM, tagFamily("colors")));
+		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+		assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
 		Future<GenericMessageResponse> future = getClient().updateRolePermission(role().getUuid(), "projects/" + project().getUuid(), request);
@@ -38,15 +38,15 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
 
-		assertFalse(role().hasPermission(Permission.READ_PERM, tagFamily("colors")));
+		assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 	}
 
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
 
 		// Add permission on own role
-		role().grantPermissions(role(), Permission.UPDATE_PERM);
-		assertTrue(role().hasPermission(Permission.DELETE_PERM, tagFamily("colors")));
+		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+		assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(false);
 		request.getPermissions().add("read");
@@ -58,6 +58,6 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
 
-		assertFalse(role().hasPermission(Permission.DELETE_PERM, tagFamily("colors")));
+		assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 	}
 }

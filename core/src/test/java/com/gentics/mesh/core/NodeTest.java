@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -200,9 +200,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		Node node = folder("2015").create(user(), getSchemaContainer(), project());
-		assertFalse(user().hasPermission(node, Permission.CREATE_PERM));
-		user().addCRUDPermissionOnRole(folder("2015"), Permission.CREATE_PERM, node);
-		assertTrue(user().hasPermission(node, Permission.CREATE_PERM));
+		assertFalse(user().hasPermission(node, GraphPermission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
+		assertTrue(user().hasPermission(node, GraphPermission.CREATE_PERM));
 	}
 
 	@Test
@@ -294,25 +294,25 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(Permission.READ_PERM, content());
+		testPermission(GraphPermission.READ_PERM, content());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(Permission.DELETE_PERM, content());
+		testPermission(GraphPermission.DELETE_PERM, content());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(Permission.UPDATE_PERM, content());
+		testPermission(GraphPermission.UPDATE_PERM, content());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(Permission.CREATE_PERM, content());
+		testPermission(GraphPermission.CREATE_PERM, content());
 	}
 
 }

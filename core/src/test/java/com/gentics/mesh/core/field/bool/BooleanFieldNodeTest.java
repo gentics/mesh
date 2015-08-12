@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.BooleanField;
+import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -45,7 +45,7 @@ public class BooleanFieldNodeTest extends AbstractDBTest {
 		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		BooleanField field = container.createBoolean("booleanField");
+		BooleanGraphField field = container.createBoolean("booleanField");
 		field.setBoolean(true);
 
 		String json = getJson(node);

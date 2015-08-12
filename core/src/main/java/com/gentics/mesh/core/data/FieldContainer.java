@@ -1,78 +1,78 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.BooleanField;
-import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlField;
-import com.gentics.mesh.core.data.node.field.basic.NumberField;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.ListableField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
-import com.gentics.mesh.core.data.node.field.nesting.SelectField;
+import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 
 public interface FieldContainer extends BasicFieldContainer {
 
-	StringField getString(String key);
+	StringGraphField getString(String key);
 
-	StringField createString(String key);
+	StringGraphField createString(String key);
 
-	NodeField getNode(String key);
+	GraphNodeField getNode(String key);
 
-	NodeField createNode(String key, Node node);
+	GraphNodeField createNode(String key, Node node);
 
-	DateField getDate(String key);
+	DateGraphField getDate(String key);
 
-	DateField createDate(String key);
+	DateGraphField createDate(String key);
 
-	NumberField createNumber(String key);
+	NumberGraphField createNumber(String key);
 
-	NumberField getNumber(String key);
+	NumberGraphField getNumber(String key);
 
-	HtmlField createHTML(String key);
+	HtmlGraphField createHTML(String key);
 
-	HtmlField getHtml(String key);
+	HtmlGraphField getHtml(String key);
 
-	BooleanField getBoolean(String key);
+	BooleanGraphField getBoolean(String key);
 
-	BooleanField createBoolean(String key);
+	BooleanGraphField createBoolean(String key);
 
-	DateFieldList createDateList(String fieldKey);
+	GraphDateFieldList createDateList(String fieldKey);
 
-	DateFieldList getDateList(String fieldKey);
+	GraphDateFieldList getDateList(String fieldKey);
 
-	HtmlFieldList createHTMLList(String fieldKey);
+	GraphHtmlFieldList createHTMLList(String fieldKey);
 
-	HtmlFieldList getHTMLList(String fieldKey);
+	GraphHtmlFieldList getHTMLList(String fieldKey);
 
-	NumberFieldList createNumberList(String fieldKey);
+	GraphNumberFieldList createNumberList(String fieldKey);
 
-	NumberFieldList getNumberList(String fieldKey);
+	GraphNumberFieldList getNumberList(String fieldKey);
 
-	NodeFieldList createNodeList(String fieldKey);
+	GraphNodeFieldList createNodeList(String fieldKey);
 
-	NodeFieldList getNodeList(String fieldKey);
+	GraphNodeFieldList getNodeList(String fieldKey);
 
-	StringFieldList createStringList(String fieldKey);
+	GraphStringFieldList createStringList(String fieldKey);
 
-	StringFieldList getStringList(String fieldKey);
+	GraphStringFieldList getStringList(String fieldKey);
 
-	BooleanFieldList createBooleanList(String fieldKey);
+	GraphBooleanFieldList createBooleanList(String fieldKey);
 
-	BooleanFieldList getBooleanList(String fieldKey);
+	GraphBooleanFieldList getBooleanList(String fieldKey);
 
-	MicroschemaFieldList createMicroschemaFieldList(String fieldKey);
+	GraphMicroschemaFieldList createMicroschemaFieldList(String fieldKey);
 
-	MicroschemaFieldList getMicroschemaList(String fieldKey);
+	GraphMicroschemaFieldList getMicroschemaList(String fieldKey);
 
-	<T extends ListableField> SelectField<T> createSelect(String key);
+	<T extends ListableGraphField> GraphSelectField<T> createSelect(String key);
 
-	<T extends ListableField> SelectField<T> getSelect(String key);
+	<T extends ListableGraphField> GraphSelectField<T> getSelect(String key);
 
 }

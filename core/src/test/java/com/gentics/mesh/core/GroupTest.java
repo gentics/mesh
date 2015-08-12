@@ -17,7 +17,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -127,9 +127,9 @@ public class GroupTest extends AbstractBasicObjectTest {
 		MeshRoot root = meshRoot();
 		User user = user();
 		Group group = root.getGroupRoot().create("newGroup", user);
-		assertFalse(user.hasPermission(group, Permission.CREATE_PERM));
-		user.addCRUDPermissionOnRole(root.getGroupRoot(), Permission.CREATE_PERM, group);
-		assertTrue(user.hasPermission(group, Permission.CREATE_PERM));
+		assertFalse(user.hasPermission(group, GraphPermission.CREATE_PERM));
+		user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
+		assertTrue(user.hasPermission(group, GraphPermission.CREATE_PERM));
 	}
 
 	@Test
@@ -174,25 +174,25 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(Permission.READ_PERM, group());
+		testPermission(GraphPermission.READ_PERM, group());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(Permission.DELETE_PERM, group());
+		testPermission(GraphPermission.DELETE_PERM, group());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(Permission.UPDATE_PERM, group());
+		testPermission(GraphPermission.UPDATE_PERM, group());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(Permission.CREATE_PERM, group());
+		testPermission(GraphPermission.CREATE_PERM, group());
 	}
 
 }

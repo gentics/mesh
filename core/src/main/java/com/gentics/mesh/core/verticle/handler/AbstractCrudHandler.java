@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;

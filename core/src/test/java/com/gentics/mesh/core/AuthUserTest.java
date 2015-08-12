@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -39,7 +39,7 @@ public class AuthUserTest extends AbstractDBTest {
 		Language targetNode = english();
 		final CountDownLatch latch = new CountDownLatch(1);
 
-		requestUser.isAuthorised(targetNode, Permission.READ_PERM, rh -> {
+		requestUser.isAuthorised(targetNode, GraphPermission.READ_PERM, rh -> {
 			if (rh.failed()) {
 				rh.cause().printStackTrace();
 				fail(rh.cause().getMessage());
@@ -49,9 +49,9 @@ public class AuthUserTest extends AbstractDBTest {
 		});
 		failingLatch(latch);
 
-		info.getRole().revokePermissions(targetNode, Permission.READ_PERM);
+		info.getRole().revokePermissions(targetNode, GraphPermission.READ_PERM);
 		final CountDownLatch latch2 = new CountDownLatch(1);
-		requestUser.isAuthorised(targetNode, Permission.READ_PERM, rh -> {
+		requestUser.isAuthorised(targetNode, GraphPermission.READ_PERM, rh -> {
 			if (rh.failed()) {
 				rh.cause().printStackTrace();
 				fail(rh.cause().getMessage());

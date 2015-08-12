@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -135,10 +135,10 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		assertFalse(role().hasPermission(Permission.CREATE_PERM, newContainer));
-		getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), Permission.CREATE_PERM, newContainer);
+		assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
+		getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
 		assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
-				role().hasPermission(Permission.CREATE_PERM, newContainer));
+				role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
 
 	}
 
@@ -186,28 +186,28 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(Permission.READ_PERM, newContainer);
+		testPermission(GraphPermission.READ_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(Permission.DELETE_PERM, newContainer);
+		testPermission(GraphPermission.DELETE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(Permission.UPDATE_PERM, newContainer);
+		testPermission(GraphPermission.UPDATE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(Permission.CREATE_PERM, newContainer);
+		testPermission(GraphPermission.CREATE_PERM, newContainer);
 	}
 
 }

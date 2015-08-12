@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LANGUAGE_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_MICROSCHEMA_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_PROJECT_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SCHEMA_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_SEARCH_QUEUE_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAGFAMILY_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_ROOT;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SEARCH_QUEUE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER_ROOT;
 
 import java.util.Arrays;
 import java.util.Collections;

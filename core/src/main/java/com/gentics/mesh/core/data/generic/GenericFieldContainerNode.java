@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Language;

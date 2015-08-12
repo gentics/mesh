@@ -1,5 +1,21 @@
 package com.gentics.mesh.etc;
 
+import javax.annotation.PostConstruct;
+
+import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.etc.config.MeshConfigurationException;
+import com.gentics.mesh.graphdb.DatabaseService;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
@@ -17,20 +33,6 @@ import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
-
-import javax.annotation.PostConstruct;
-
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import com.gentics.mesh.auth.MeshAuthProvider;
-import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.graphdb.DatabaseService;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -60,7 +62,11 @@ public class MeshSpringConfiguration {
 	public FramedThreadedTransactionalGraph framedThreadedTransactionalGraph() {
 		try {
 			StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			return databaseService().getDatabase().getFramedGraph(options);
+			Database database = databaseService().getDatabase();
+			if (database == null) {
+				throw new MeshConfigurationException("Could not find any database provider");
+			}
+			return database.getFramedGraph(options);
 		} catch (Exception e) {
 			String msg = "Could not get framed graph from database provider";
 			log.error(msg, e);

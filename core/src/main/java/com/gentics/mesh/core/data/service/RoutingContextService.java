@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
@@ -40,7 +40,7 @@ public class RoutingContextService {
 	 * Check the permission and throw an invalid permission exception when no matching permission could be found.
 	 */
 	// TODO move this to MeshAuthUser class
-	public void hasPermission(RoutingContext rc, MeshVertex node, Permission type, Handler<AsyncResult<Boolean>> resultHandler,
+	public void hasPermission(RoutingContext rc, MeshVertex node, GraphPermission type, Handler<AsyncResult<Boolean>> resultHandler,
 			Handler<AsyncResult<Boolean>> transactionCompletedHandler) throws InvalidPermissionException {
 		MeshAuthUser requestUser = getUser(rc);
 		requestUser.isAuthorised(node, type, handler -> {

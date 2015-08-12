@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.HtmlField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -45,7 +45,7 @@ public class HtmlFieldNodeTest extends AbstractDBTest {
 		node.getSchemaContainer().setSchema(schema);
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		HtmlField field = container.createHTML("htmlField");
+		HtmlGraphField field = container.createHTML("htmlField");
 		field.setHtml("Some<b>htmlABCDE");
 
 		String json = getJson(node);

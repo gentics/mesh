@@ -20,11 +20,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.w3c.dom.NodeList;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.HtmlField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -101,7 +102,19 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testBogusQuery() {
+
+	}
+
+	@Test
 	public void testCustomQuery() throws InterruptedException {
+		String json = "{ \"schema.name\": \"content\" }";
+
+		Future<NodeListResponse> future = getClient().searchNodes(json);
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse response = future.result();
+		assertNotNull(response);
 
 	}
 
@@ -144,7 +157,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		String oldName = "Airbus A300";
 		Node node = content(oldName.toLowerCase());
 		assertNotNull(node);
-		HtmlField field = node.getFieldContainer(german()).getHtml("content");
+		HtmlGraphField field = node.getFieldContainer(german()).getHtml("content");
 		assertNotNull(field);
 		String newString = "ABCDEFGHI";
 		field.setHtml(newString);

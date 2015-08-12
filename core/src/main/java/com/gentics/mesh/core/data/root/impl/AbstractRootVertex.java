@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 
 import java.util.List;
 import java.util.Set;
@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -104,7 +104,7 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<Permission> permissionsToGrant, Set<Permission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (T t : findAll()) {
 				t.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);

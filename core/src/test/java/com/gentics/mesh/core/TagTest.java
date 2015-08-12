@@ -1,6 +1,6 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -287,10 +287,10 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		TagFamily tagFamily = tagFamily("basic");
 		Tag tag = tagFamily.create("someTag", project(), user());
-		assertTrue(user().hasPermission(tagFamily, Permission.READ_PERM));
-		assertFalse(user().hasPermission(tag, Permission.READ_PERM));
-		getRequestUser().addCRUDPermissionOnRole(tagFamily, Permission.CREATE_PERM, tag);
-		assertTrue(user().hasPermission(tag, Permission.READ_PERM));
+		assertTrue(user().hasPermission(tagFamily, GraphPermission.READ_PERM));
+		assertFalse(user().hasPermission(tag, GraphPermission.READ_PERM));
+		getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);
+		assertTrue(user().hasPermission(tag, GraphPermission.READ_PERM));
 	}
 
 	@Test
@@ -338,28 +338,28 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		Tag tag = tag("red");
-		testPermission(Permission.READ_PERM, tag);
+		testPermission(GraphPermission.READ_PERM, tag);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
 		Tag tag = tag("red");
-		testPermission(Permission.DELETE_PERM, tag);
+		testPermission(GraphPermission.DELETE_PERM, tag);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
 		Tag tag = tag("red");
-		testPermission(Permission.UPDATE_PERM, tag);
+		testPermission(GraphPermission.UPDATE_PERM, tag);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
 		Tag tag = tag("red");
-		testPermission(Permission.CREATE_PERM, tag);
+		testPermission(GraphPermission.CREATE_PERM, tag);
 	}
 
 }

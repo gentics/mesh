@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_TAG_FAMILY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.TagFamily;

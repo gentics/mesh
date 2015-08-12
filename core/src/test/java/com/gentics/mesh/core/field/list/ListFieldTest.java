@@ -9,16 +9,16 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlField;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
+import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -27,7 +27,7 @@ public class ListFieldTest extends AbstractDBTest {
 	@Test
 	public void testStringList() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
-		StringFieldList list = container.createStringList("dummyList");
+		GraphStringFieldList list = container.createStringList("dummyList");
 
 		list.createString("1");
 		assertEquals("dummyList", list.getFieldKey());
@@ -41,7 +41,7 @@ public class ListFieldTest extends AbstractDBTest {
 		assertEquals(3, list.getList().size());
 		assertEquals("Some string 3", list.getList().get(0).getString());
 
-		StringFieldList loadedList = container.getStringList("dummyList");
+		GraphStringFieldList loadedList = container.getStringList("dummyList");
 		assertNotNull(loadedList);
 		assertEquals(3, loadedList.getSize());
 	}
@@ -50,16 +50,16 @@ public class ListFieldTest extends AbstractDBTest {
 	public void testNodeList() {
 		Node node = fg.addFramedVertex(NodeImpl.class);
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
-		NodeFieldList list = container.createNodeList("dummyList");
+		GraphNodeFieldList list = container.createNodeList("dummyList");
 		assertEquals(0, list.getList().size());
 		list.createNode("1", node);
 		assertEquals(1, list.getList().size());
 
-		NodeField foundNodeField = list.getList().get(0);
+		GraphNodeField foundNodeField = list.getList().get(0);
 		assertNotNull(foundNodeField.getNode());
 		assertEquals(node.getUuid(), foundNodeField.getNode().getUuid());
 
-		NodeFieldList loadedList = container.getNodeList("dummyList");
+		GraphNodeFieldList loadedList = container.getNodeList("dummyList");
 		assertNotNull(loadedList);
 		assertEquals(1, loadedList.getSize());
 		assertEquals(node.getUuid(), loadedList.getList().get(0).getNode().getUuid());
@@ -68,7 +68,7 @@ public class ListFieldTest extends AbstractDBTest {
 	@Test
 	public void testNumberList() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
-		NumberFieldList list = container.createNumberList("dummyList");
+		GraphNumberFieldList list = container.createNumberList("dummyList");
 
 		list.createNumber("1");
 		assertEquals(1, list.getList().size());
@@ -80,9 +80,9 @@ public class ListFieldTest extends AbstractDBTest {
 	@Test
 	public void testDateList() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
-		DateFieldList list = container.createDateList("dummyList");
+		GraphDateFieldList list = container.createDateList("dummyList");
 		assertNotNull(list);
-		DateField dateField = list.createDate("Date One");
+		DateGraphField dateField = list.createDate("Date One");
 		assertNotNull(dateField);
 		assertEquals(1, list.getSize());
 		assertEquals(1, list.getList().size());
@@ -91,9 +91,9 @@ public class ListFieldTest extends AbstractDBTest {
 	@Test
 	public void testHTMLList() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
-		HtmlFieldList list = container.createHTMLList("dummyList");
+		GraphHtmlFieldList list = container.createHTMLList("dummyList");
 		assertNotNull(list);
-		HtmlField htmlField = list.createHTML("HTML 1");
+		HtmlGraphField htmlField = list.createHTML("HTML 1");
 		assertNotNull(htmlField);
 		assertEquals(1, list.getSize());
 		assertEquals(1, list.getList().size());
@@ -102,14 +102,14 @@ public class ListFieldTest extends AbstractDBTest {
 	@Test
 	public void testMicroschemaList() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
-		MicroschemaFieldList list = container.createMicroschemaFieldList("dummyList");
+		GraphMicroschemaFieldList list = container.createMicroschemaFieldList("dummyList");
 		assertNotNull(list);
 	}
 
 	@Test
 	public void testBooleanList() {
 		NodeFieldContainer container = fg.addFramedVertex(NodeFieldContainerImpl.class);
-		BooleanFieldList list = container.createBooleanList("dummyList");
+		GraphBooleanFieldList list = container.createBooleanList("dummyList");
 		list.createBoolean(true);
 		list.createBoolean(false);
 		list.createBoolean(null);

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -16,7 +16,7 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, User, MeshAuthUser {
@@ -36,7 +36,7 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 		throw new NotImplementedException("Please use the MeshShiroUser method instead.");
 	}
 
-	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, Permission permission, Handler<AsyncResult<Boolean>> resultHandler) {
+	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
 		final MeshAuthUserImpl user = this;
 		Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
 		return this;
@@ -57,7 +57,7 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 		throw new NotImplementedException();
 	}
 
-	public VertexTraversal<?, ?, ?> getPermTraversal(Permission permission) {
+	public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
 		// TODO out/in/out!
 		return out(HAS_USER).in(HAS_ROLE).out(permission.label());
 	}

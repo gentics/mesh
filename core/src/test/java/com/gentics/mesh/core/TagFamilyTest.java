@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -130,28 +130,28 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-		testPermission(Permission.READ_PERM, tagFamily);
+		testPermission(GraphPermission.READ_PERM, tagFamily);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
 		TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-		testPermission(Permission.DELETE_PERM, tagFamily);
+		testPermission(GraphPermission.DELETE_PERM, tagFamily);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
 		TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-		testPermission(Permission.UPDATE_PERM, tagFamily);
+		testPermission(GraphPermission.UPDATE_PERM, tagFamily);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
 		TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-		testPermission(Permission.CREATE_PERM, tagFamily);
+		testPermission(GraphPermission.CREATE_PERM, tagFamily);
 	}
 
 	@Test
@@ -196,9 +196,9 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		TagFamily tagFamily = root.create("test123", user());
-		assertFalse(user().hasPermission(tagFamily, Permission.CREATE_PERM));
-		user().addCRUDPermissionOnRole(root, Permission.CREATE_PERM, tagFamily);
-		assertTrue(user().hasPermission(tagFamily, Permission.CREATE_PERM));
+		assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
+		assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
 	}
 
 }

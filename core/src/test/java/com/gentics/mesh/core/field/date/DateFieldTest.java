@@ -7,9 +7,9 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
-import com.gentics.mesh.core.data.node.field.impl.basic.DateFieldImpl;
+import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.basic.DateGraphFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class DateFieldTest extends AbstractDBTest {
@@ -17,7 +17,7 @@ public class DateFieldTest extends AbstractDBTest {
 	@Test
 	public void testSimpleDate() {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
-		DateFieldImpl field = new DateFieldImpl("test", container);
+		DateGraphFieldImpl field = new DateGraphFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		assertNull(container.getProperty("test-date"));
 		field.setDate("dummyDate");
@@ -31,13 +31,13 @@ public class DateFieldTest extends AbstractDBTest {
 	public void testDateField() {
 
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
-		DateField dateField = container.createDate("dateField");
+		DateGraphField dateField = container.createDate("dateField");
 		assertEquals("dateField", dateField.getFieldKey());
 		dateField.setDate("dummyDate");
 		assertEquals("dummyDate", dateField.getDate());
-		StringField bogusField1 = container.getString("bogus");
+		StringGraphField bogusField1 = container.getString("bogus");
 		assertNull(bogusField1);
-		DateField reloadedDateField = container.getDate("dateField");
+		DateGraphField reloadedDateField = container.getDate("dateField");
 		assertNotNull(reloadedDateField);
 		assertEquals("dateField", reloadedDateField.getFieldKey());
 

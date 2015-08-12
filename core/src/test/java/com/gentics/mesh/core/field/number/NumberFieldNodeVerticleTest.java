@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.NumberField;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -58,7 +58,7 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node node = folder("2015");
 
 		NodeFieldContainer container = node.getFieldContainer(english());
-		NumberField numberField = container.createNumber("numberField");
+		NumberGraphField numberField = container.createNumber("numberField");
 		numberField.setNumber("100.9");
 
 		NodeResponse response = readNode(node);

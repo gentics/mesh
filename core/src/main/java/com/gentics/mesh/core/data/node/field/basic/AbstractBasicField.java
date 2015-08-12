@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.node.field.basic;
 
-import com.gentics.mesh.core.data.node.field.Field;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-public abstract class AbstractBasicField implements Field {
+public abstract class AbstractBasicField implements GraphField {
 
 	private String fieldKey;
 	private AbstractVertexFrame parentContainer;

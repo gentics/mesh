@@ -172,7 +172,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				map.put(fieldKey, expandedField);
 			} catch (MeshJsonException e) {
 				if (log.isDebugEnabled()) {
-					log.debug("Could not deserialize json to expanded Node Response", e);
+					log.debug("Could not deserialize json to expanded Node Response. I'll try to fallback to a collapsed version of that field.", e);
 				}
 				NodeFieldImpl collapsedField = oc.treeToValue(jsonNode, NodeFieldImpl.class);
 				NodeResponse restNode = new NodeResponse();

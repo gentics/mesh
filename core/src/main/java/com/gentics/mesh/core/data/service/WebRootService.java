@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.path.Path;
 import com.tinkerpop.blueprints.Direction;
@@ -78,7 +78,7 @@ public class WebRootService {
 		AtomicReference<Vertex> foundNode = new AtomicReference<>();
 		// TODO i wonder whether streams are useful in this case. We need to benchmark this section
 
-		for (Edge rel : node.getEdges(Direction.IN, MeshRelationships.HAS_PARENT_NODE)) {
+		for (Edge rel : node.getEdges(Direction.IN, GraphRelationships.HAS_PARENT_NODE)) {
 			Vertex nextHop = rel.getVertex(Direction.IN);
 			// String languageTag = getI18nPropertyLanguageTag(nextHop, SchemaContainer.NAME_KEYWORD, i18nTagName);
 			// if (languageTag != null) {
@@ -104,7 +104,7 @@ public class WebRootService {
 			return null;
 		}
 		key = "properties-" + key;
-		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_FIELD_CONTAINER)) {
+		for (Edge rel : node.getEdges(Direction.OUT, GraphRelationships.HAS_FIELD_CONTAINER)) {
 			String languageTag = (String) rel.getProperty("languageTag");
 			Vertex i18nPropertiesNode = rel.getVertex(Direction.OUT);
 			String i18nValue = i18nPropertiesNode.getProperty(key);
@@ -269,7 +269,7 @@ public class WebRootService {
 	 * @return
 	 */
 	private Vertex findSubTagWithName(Vertex rootTag, String name) {
-		for (Edge edge : rootTag.getEdges(Direction.OUT, MeshRelationships.HAS_TAG)) {
+		for (Edge edge : rootTag.getEdges(Direction.OUT, GraphRelationships.HAS_TAG)) {
 			Vertex endNode = edge.getVertex(Direction.OUT);
 			if (endNode != null && hasNodeI18NProperty(endNode, "name", name)) {
 				return endNode;
@@ -291,7 +291,7 @@ public class WebRootService {
 	 * @return true when the property could be found. Otherwise false.
 	 */
 	private boolean hasNodeI18NProperty(Vertex node, String key, String value) {
-		for (Edge rel : node.getEdges(Direction.OUT, MeshRelationships.HAS_FIELD_CONTAINER)) {
+		for (Edge rel : node.getEdges(Direction.OUT, GraphRelationships.HAS_FIELD_CONTAINER)) {
 			if (rel.getVertex(Direction.OUT) != null && value.equals(rel.getVertex(Direction.OUT).getProperty("properties-" + key))) {
 				return true;
 			}

@@ -24,7 +24,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
@@ -86,7 +86,7 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(RoutingContext rc, String uuidParameterName,
-			Permission permission, RootVertex<T> root) {
+			GraphPermission permission, RootVertex<T> root) {
 		loadAndTransform(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				responde(rc, toJson(rh.result()));
@@ -115,7 +115,7 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,
-			Permission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
+			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
 		loadObject(rc, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				// TODO handle nested exceptions differently
@@ -256,7 +256,7 @@ public class VerticleHelper {
 		rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, msg, parameters)));
 	}
 
-	public static <T extends GenericVertex<?>> void loadObject(RoutingContext rc, String uuidParameterName, Permission perm, RootVertex<T> root,
+	public static <T extends GenericVertex<?>> void loadObject(RoutingContext rc, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 
 		I18NService i18n = I18NService.getI18n();
@@ -269,7 +269,7 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<?>> void loadObjectByUuid(RoutingContext rc, String uuid, Permission perm, RootVertex<T> root,
+	public static <T extends GenericVertex<?>> void loadObjectByUuid(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root,
 
 	Handler<AsyncResult<T>> handler) {
 		if (root == null) {

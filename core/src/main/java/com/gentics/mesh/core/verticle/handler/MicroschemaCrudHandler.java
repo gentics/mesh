@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import io.vertx.ext.web.RoutingContext;
 

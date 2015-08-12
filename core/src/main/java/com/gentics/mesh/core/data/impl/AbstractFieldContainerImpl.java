@@ -1,41 +1,42 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 
 import java.util.List;
 
 import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.BooleanField;
-import com.gentics.mesh.core.data.node.field.basic.DateField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlField;
-import com.gentics.mesh.core.data.node.field.basic.NumberField;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
-import com.gentics.mesh.core.data.node.field.impl.basic.BooleanFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.DateFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.HtmlFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.NumberFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.StringFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.nesting.NodeFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.nesting.SelectFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicroschemaFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.node.field.list.impl.BooleanFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.DateFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.HtmlFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.MicroschemaFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NodeFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NumberFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.StringFieldListImpl;
-import com.gentics.mesh.core.data.node.field.nesting.ListableField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
-import com.gentics.mesh.core.data.node.field.nesting.SelectField;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.basic.BooleanGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.basic.DateGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.basic.NumberGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.nesting.GraphNodeFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.nesting.GraphSelectFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.list.impl.GraphBooleanFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.GraphDateFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.GraphHtmlFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.GraphMicroschemaFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.GraphNodeFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.GraphNumberFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.GraphStringFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 
 public abstract class AbstractFieldContainerImpl extends AbstractBasicFieldContainerImpl implements FieldContainer {
 
@@ -44,181 +45,181 @@ public abstract class AbstractFieldContainerImpl extends AbstractBasicFieldConta
 	}
 
 	@Override
-	public StringField createString(String key) {
+	public StringGraphField createString(String key) {
 		// TODO check whether the key is already occupied
-		StringFieldImpl field = new StringFieldImpl(key, this);
+		StringGraphFieldImpl field = new StringGraphFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
 	}
 
 	@Override
-	public StringField getString(String key) {
+	public StringGraphField getString(String key) {
 		if (fieldExists(key)) {
-			return new StringFieldImpl(key, this);
+			return new StringGraphFieldImpl(key, this);
 		}
 		return null;
 	}
 
 	@Override
-	public NodeField createNode(String key, Node node) {
-		NodeFieldImpl field = getGraph().addFramedEdge(this, node.getImpl(), HAS_FIELD, NodeFieldImpl.class);
+	public GraphNodeField createNode(String key, Node node) {
+		GraphNodeFieldImpl field = getGraph().addFramedEdge(this, node.getImpl(), HAS_FIELD, GraphNodeFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
 	}
 
 	@Override
-	public NodeField getNode(String key) {
-		return outE(HAS_FIELD).has(NodeFieldImpl.class).has("field-key", key).nextOrDefaultExplicit(NodeFieldImpl.class, null);
+	public GraphNodeField getNode(String key) {
+		return outE(HAS_FIELD).has(GraphNodeFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(GraphNodeFieldImpl.class, null);
 	}
 
 	@Override
-	public DateField createDate(String key) {
-		DateFieldImpl field = new DateFieldImpl(key, this);
+	public DateGraphField createDate(String key) {
+		DateGraphFieldImpl field = new DateGraphFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
 	}
 
 	@Override
-	public DateField getDate(String key) {
+	public DateGraphField getDate(String key) {
 		if (fieldExists(key)) {
-			return new DateFieldImpl(key, this);
+			return new DateGraphFieldImpl(key, this);
 		}
 		return null;
 	}
 
 	@Override
-	public NumberField createNumber(String key) {
-		NumberFieldImpl field = new NumberFieldImpl(key, this);
+	public NumberGraphField createNumber(String key) {
+		NumberGraphFieldImpl field = new NumberGraphFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
 	}
 
 	@Override
-	public NumberField getNumber(String key) {
+	public NumberGraphField getNumber(String key) {
 		if (fieldExists(key)) {
-			return new NumberFieldImpl(key, this);
+			return new NumberGraphFieldImpl(key, this);
 		}
 		return null;
 	}
 
 	@Override
-	public HtmlField createHTML(String key) {
-		HtmlFieldImpl field = new HtmlFieldImpl(key, this);
+	public HtmlGraphField createHTML(String key) {
+		HtmlGraphFieldImpl field = new HtmlGraphFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
 	}
 
 	@Override
-	public HtmlField getHtml(String key) {
+	public HtmlGraphField getHtml(String key) {
 		if (fieldExists(key)) {
-			return new HtmlFieldImpl(key, this);
+			return new HtmlGraphFieldImpl(key, this);
 		}
 		return null;
 	}
 
 	@Override
-	public BooleanField createBoolean(String key) {
-		BooleanFieldImpl field = new BooleanFieldImpl(key, this);
+	public BooleanGraphField createBoolean(String key) {
+		BooleanGraphFieldImpl field = new BooleanGraphFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
 	}
 
 	@Override
-	public BooleanField getBoolean(String key) {
+	public BooleanGraphField getBoolean(String key) {
 		if (fieldExists(key)) {
-			return new BooleanFieldImpl(key, this);
+			return new BooleanGraphFieldImpl(key, this);
 		}
 		return null;
 	}
 
 	@Override
-	public <T extends ListableField> SelectField<T> createSelect(String key) {
-		SelectFieldImpl<T> field = getGraph().addFramedVertex(SelectFieldImpl.class);
+	public <T extends ListableGraphField> GraphSelectField<T> createSelect(String key) {
+		GraphSelectFieldImpl<T> field = getGraph().addFramedVertex(GraphSelectFieldImpl.class);
 		field.setFieldKey(key);
 		linkOut(field, HAS_FIELD);
 		return field;
 	}
 
 	@Override
-	public <T extends ListableField> SelectField<T> getSelect(String key) {
-		return outE(HAS_FIELD).has(SelectFieldImpl.class).has("fieldKey", key).nextOrDefaultExplicit(SelectFieldImpl.class, null);
+	public <T extends ListableGraphField> GraphSelectField<T> getSelect(String key) {
+		return outE(HAS_FIELD).has(GraphSelectFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(GraphSelectFieldImpl.class, null);
 	}
 
 	@Override
-	public NumberFieldList createNumberList(String fieldKey) {
-		return createList(NumberFieldListImpl.class, fieldKey);
+	public GraphNumberFieldList createNumberList(String fieldKey) {
+		return createList(GraphNumberFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public NumberFieldList getNumberList(String fieldKey) {
-		return getList(NumberFieldListImpl.class, fieldKey);
+	public GraphNumberFieldList getNumberList(String fieldKey) {
+		return getList(GraphNumberFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public NodeFieldList createNodeList(String fieldKey) {
-		return createList(NodeFieldListImpl.class, fieldKey);
+	public GraphNodeFieldList createNodeList(String fieldKey) {
+		return createList(GraphNodeFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public NodeFieldList getNodeList(String fieldKey) {
-		return getList(NodeFieldListImpl.class, fieldKey);
+	public GraphNodeFieldList getNodeList(String fieldKey) {
+		return getList(GraphNodeFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public StringFieldList createStringList(String fieldKey) {
-		return createList(StringFieldListImpl.class, fieldKey);
+	public GraphStringFieldList createStringList(String fieldKey) {
+		return createList(GraphStringFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public StringFieldList getStringList(String fieldKey) {
-		return getList(StringFieldListImpl.class, fieldKey);
+	public GraphStringFieldList getStringList(String fieldKey) {
+		return getList(GraphStringFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public BooleanFieldList createBooleanList(String fieldKey) {
-		return createList(BooleanFieldListImpl.class, fieldKey);
+	public GraphBooleanFieldList createBooleanList(String fieldKey) {
+		return createList(GraphBooleanFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public BooleanFieldList getBooleanList(String fieldKey) {
-		return getList(BooleanFieldListImpl.class, fieldKey);
+	public GraphBooleanFieldList getBooleanList(String fieldKey) {
+		return getList(GraphBooleanFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public MicroschemaFieldList createMicroschemaFieldList(String fieldKey) {
-		return createList(MicroschemaFieldListImpl.class, fieldKey);
+	public GraphMicroschemaFieldList createMicroschemaFieldList(String fieldKey) {
+		return createList(GraphMicroschemaFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public MicroschemaFieldList getMicroschemaList(String fieldKey) {
-		return getList(MicroschemaFieldListImpl.class, fieldKey);
+	public GraphMicroschemaFieldList getMicroschemaList(String fieldKey) {
+		return getList(GraphMicroschemaFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public HtmlFieldList createHTMLList(String fieldKey) {
-		return createList(HtmlFieldListImpl.class, fieldKey);
+	public GraphHtmlFieldList createHTMLList(String fieldKey) {
+		return createList(GraphHtmlFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public HtmlFieldList getHTMLList(String fieldKey) {
-		return getList(HtmlFieldListImpl.class, fieldKey);
+	public GraphHtmlFieldList getHTMLList(String fieldKey) {
+		return getList(GraphHtmlFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public DateFieldList createDateList(String fieldKey) {
-		return createList(DateFieldListImpl.class, fieldKey);
+	public GraphDateFieldList createDateList(String fieldKey) {
+		return createList(GraphDateFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public DateFieldList getDateList(String fieldKey) {
-		return getList(DateFieldListImpl.class, fieldKey);
+	public GraphDateFieldList getDateList(String fieldKey) {
+		return getList(GraphDateFieldListImpl.class, fieldKey);
 	}
 
-	private <T extends com.gentics.mesh.core.data.node.field.list.ListField<?>> T getList(Class<T> classOfT, String fieldKey) {
-		return out(HAS_LIST).has(classOfT).has("fieldKey", fieldKey).nextOrDefaultExplicit(classOfT, null);
+	private <T extends com.gentics.mesh.core.data.node.field.list.GraphListField<?>> T getList(Class<T> classOfT, String fieldKey) {
+		return out(HAS_LIST).has(classOfT).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey).nextOrDefaultExplicit(classOfT, null);
 	}
 
-	private <T extends com.gentics.mesh.core.data.node.field.list.ListField<?>> T createList(Class<T> classOfT, String fieldKey) {
+	private <T extends com.gentics.mesh.core.data.node.field.list.GraphListField<?>> T createList(Class<T> classOfT, String fieldKey) {
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
 		linkOut(list.getImpl(), HAS_LIST);

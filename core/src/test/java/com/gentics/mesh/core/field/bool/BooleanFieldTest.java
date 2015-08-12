@@ -9,8 +9,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.BooleanField;
-import com.gentics.mesh.core.data.node.field.impl.basic.BooleanFieldImpl;
+import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.impl.basic.BooleanGraphFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class BooleanFieldTest extends AbstractDBTest {
@@ -18,7 +18,7 @@ public class BooleanFieldTest extends AbstractDBTest {
 	@Test
 	public void testSimpleBoolean() {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
-		BooleanFieldImpl field = new BooleanFieldImpl("test", container);
+		BooleanGraphFieldImpl field = new BooleanGraphFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		assertNull(container.getProperty("test-boolean"));
 		field.setBoolean(new Boolean(true));
@@ -35,7 +35,7 @@ public class BooleanFieldTest extends AbstractDBTest {
 	@Test
 	public void testBooleanField() {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
-		BooleanField booleanField = container.createBoolean("booleanField");
+		BooleanGraphField booleanField = container.createBoolean("booleanField");
 		assertEquals("booleanField", booleanField.getFieldKey());
 		booleanField.setBoolean(true);
 		assertTrue(booleanField.getBoolean());
@@ -43,9 +43,9 @@ public class BooleanFieldTest extends AbstractDBTest {
 		assertFalse(booleanField.getBoolean());
 		booleanField.setBoolean(null);
 		assertNull(booleanField.getBoolean());
-		BooleanField bogusField2 = container.getBoolean("bogus");
+		BooleanGraphField bogusField2 = container.getBoolean("bogus");
 		assertNull(bogusField2);
-		BooleanField reloadedBooleanField = container.getBoolean("booleanField");
+		BooleanGraphField reloadedBooleanField = container.getBoolean("booleanField");
 		assertNotNull(reloadedBooleanField);
 		assertEquals("booleanField", reloadedBooleanField.getFieldKey());
 	}

@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -163,9 +163,9 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
 		Project project = root.getProjectRoot().create("TestProject", user());
-		assertFalse(user().hasPermission(project, Permission.CREATE_PERM));
-		user().addCRUDPermissionOnRole(root.getProjectRoot(), Permission.CREATE_PERM, project);
-		assertTrue(user().hasPermission(project, Permission.CREATE_PERM));
+		assertFalse(user().hasPermission(project, GraphPermission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
+		assertTrue(user().hasPermission(project, GraphPermission.CREATE_PERM));
 	}
 
 	@Test
@@ -195,28 +195,28 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-		testPermission(Permission.READ_PERM, newProject);
+		testPermission(GraphPermission.READ_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
 		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-		testPermission(Permission.DELETE_PERM, newProject);
+		testPermission(GraphPermission.DELETE_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
 		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-		testPermission(Permission.UPDATE_PERM, newProject);
+		testPermission(GraphPermission.UPDATE_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
 		Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-		testPermission(Permission.CREATE_PERM, newProject);
+		testPermission(GraphPermission.CREATE_PERM, newProject);
 	}
 
 }

@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_GROUP;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_NODE_REFERENCE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -170,9 +170,9 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 
 	@Override
 	public String[] getPermissionNames(MeshVertex node) {
-		Set<Permission> permissions = getPermissions(node);
+		Set<GraphPermission> permissions = getPermissions(node);
 		String[] strings = new String[permissions.size()];
-		Iterator<Permission> it = permissions.iterator();
+		Iterator<GraphPermission> it = permissions.iterator();
 		for (int i = 0; i < permissions.size(); i++) {
 			strings[i] = it.next().getSimpleName();
 		}
@@ -180,19 +180,19 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 	}
 
 	@Override
-	public Set<Permission> getPermissions(MeshVertex node) {
+	public Set<GraphPermission> getPermissions(MeshVertex node) {
 
-		Set<Permission> permissions = new HashSet<>();
-		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(Permission.labels()).mark().inV().retain(node.getImpl()).back().label()
+		Set<GraphPermission> permissions = new HashSet<>();
+		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back().label()
 				.toSet();
 		for (String label : labels) {
-			permissions.add(Permission.valueOfLabel(label));
+			permissions.add(GraphPermission.valueOfLabel(label));
 		}
 		return permissions;
 	}
 
 	@Override
-	public boolean hasPermission(MeshVertex node, Permission permission) {
+	public boolean hasPermission(MeshVertex node, GraphPermission permission) {
 		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
@@ -247,7 +247,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 	}
 
 	@Override
-	public void addCRUDPermissionOnRole(MeshVertex node, Permission permission, MeshVertex targetNode) {
+	public void addCRUDPermissionOnRole(MeshVertex node, GraphPermission permission, MeshVertex targetNode) {
 
 		// 1. Determine all roles that grant given permission
 		List<? extends Role> rolesThatGrantPermission = node.getImpl().in(permission.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);

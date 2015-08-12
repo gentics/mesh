@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.core.data.relationship.Permission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.Permission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.json.JsonUtil.toJson;
@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -144,14 +144,14 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 							MeshVertex targetElement = vertex.result();
 
 							// Prepare the sets for revoke and grant actions
-							Set<Permission> permissionsToGrant = new HashSet<>();
-							Set<Permission> permissionsToRevoke = new HashSet<>();
+							Set<GraphPermission> permissionsToGrant = new HashSet<>();
+							Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 							permissionsToRevoke.add(CREATE_PERM);
 							permissionsToRevoke.add(READ_PERM);
 							permissionsToRevoke.add(UPDATE_PERM);
 							permissionsToRevoke.add(DELETE_PERM);
 							for (String permName : requestModel.getPermissions()) {
-								Permission permission = Permission.valueOfSimpleName(permName);
+								GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
 								if (permission == null) {
 									fail(rc, "role_error_permission_name_unknown", permName);
 								}
@@ -162,10 +162,10 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 								permissionsToGrant.add(permission);
 							}
 							if (log.isDebugEnabled()) {
-								for (Permission p : permissionsToGrant) {
+								for (GraphPermission p : permissionsToGrant) {
 									log.debug("Granting permission: " + p);
 								}
-								for (Permission p : permissionsToRevoke) {
+								for (GraphPermission p : permissionsToRevoke) {
 									log.debug("Revoking permission: " + p);
 								}
 							}

@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.core.data.node.field.nesting.MicroschemaField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
 
 public interface MicroschemaFieldContainer {
 
-	MicroschemaField createMicroschema(String key);
+	GraphMicroschemaField createMicroschema(String key);
 
-	MicroschemaField getMicroschema(String key);
+	GraphMicroschemaField getMicroschema(String key);
 
 }

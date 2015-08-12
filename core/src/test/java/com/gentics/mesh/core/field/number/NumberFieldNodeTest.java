@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.NumberField;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -46,7 +46,7 @@ public class NumberFieldNodeTest extends AbstractDBTest {
 
 		NodeFieldContainer container = node.getFieldContainer(english());
 
-		NumberField numberField = container.createNumber("numberField");
+		NumberGraphField numberField = container.createNumber("numberField");
 		numberField.setNumber("100.9");
 
 		String json = getJson(node);

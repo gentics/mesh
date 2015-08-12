@@ -7,9 +7,9 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.impl.AbstractFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.NumberField;
-import com.gentics.mesh.core.data.node.field.basic.StringField;
-import com.gentics.mesh.core.data.node.field.impl.basic.NumberFieldImpl;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.basic.NumberGraphFieldImpl;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class NumberFieldTest extends AbstractDBTest {
@@ -17,7 +17,7 @@ public class NumberFieldTest extends AbstractDBTest {
 	@Test
 	public void testSimpleNumber() {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
-		NumberFieldImpl field = new NumberFieldImpl("test", container);
+		NumberGraphFieldImpl field = new NumberGraphFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		assertNull(container.getProperty("test-number"));
 		assertEquals(2, container.getPropertyKeys().size());
@@ -33,13 +33,13 @@ public class NumberFieldTest extends AbstractDBTest {
 	@Test
 	public void testNumberField() {
 		AbstractFieldContainerImpl container = fg.addFramedVertex(AbstractFieldContainerImpl.class);
-		NumberField numberField = container.createNumber("numberField");
+		NumberGraphField numberField = container.createNumber("numberField");
 		assertEquals("numberField", numberField.getFieldKey());
 		numberField.setNumber("dummyNumber");
 		assertEquals("dummyNumber", numberField.getNumber());
-		StringField bogusField1 = container.getString("bogus");
+		StringGraphField bogusField1 = container.getString("bogus");
 		assertNull(bogusField1);
-		NumberField reloadedNumberField = container.getNumber("numberField");
+		NumberGraphField reloadedNumberField = container.getNumber("numberField");
 		assertNotNull(reloadedNumberField);
 		assertEquals("numberField", reloadedNumberField.getFieldKey());
 

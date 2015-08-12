@@ -70,12 +70,25 @@
 			<version>2.4</version>
 		</dependency>
 
-		<!-- Search -->
+		<!-- Elastic Search -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>1.7.0</version>
 		</dependency>
+		<!-- Import optional dependencies from ES -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-expressions</artifactId>
+			<version>4.10.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>2.4.4</version>
+			<scope>compile</scope>
+		</dependency>
+
 
 		<dependency>
 			<groupId>io.vertx</groupId>

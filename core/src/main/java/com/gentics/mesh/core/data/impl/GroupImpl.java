@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.MeshRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -79,9 +79,9 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 	 */
 	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
 
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(Permission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
 				.retain(requestUser.getImpl()).back().has(UserImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = in(HAS_USER).mark().in(Permission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+		VertexTraversal<?, ?, ?> countTraversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
 				.retain(requestUser.getImpl()).back().has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, UserImpl.class);
 	}

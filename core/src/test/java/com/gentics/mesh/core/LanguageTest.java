@@ -12,7 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.relationship.Permission;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -147,28 +147,28 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		Language language = english();
-		testPermission(Permission.READ_PERM, language);
+		testPermission(GraphPermission.READ_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
 		Language language = english();
-		testPermission(Permission.DELETE_PERM, language);
+		testPermission(GraphPermission.DELETE_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
 		Language language = english();
-		testPermission(Permission.UPDATE_PERM, language);
+		testPermission(GraphPermission.UPDATE_PERM, language);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
 		Language language = english();
-		testPermission(Permission.CREATE_PERM, language);
+		testPermission(GraphPermission.CREATE_PERM, language);
 	}
 
 }

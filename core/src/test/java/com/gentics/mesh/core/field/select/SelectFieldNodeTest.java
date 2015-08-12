@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.nesting.SelectField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
@@ -47,7 +47,7 @@ public class SelectFieldNodeTest extends AbstractDBTest {
 
 		NodeFieldContainer container = node.getFieldContainer(english());
 
-		SelectField selectField = container.createSelect("selectField");
+		GraphSelectField selectField = container.createSelect("selectField");
 
 		String json = getJson(node);
 		assertTrue(json.indexOf("selectField") > 1);

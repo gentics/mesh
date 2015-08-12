@@ -5,7 +5,7 @@ import java.util.Map;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.relationship.MeshRelationships;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 
 public abstract class AbstractBasicFieldContainerImpl extends MeshVertexImpl implements BasicFieldContainer {
 
@@ -13,12 +13,12 @@ public abstract class AbstractBasicFieldContainerImpl extends MeshVertexImpl imp
 
 	@Override
 	public Language getLanguage() {
-		return out(MeshRelationships.HAS_LANGUAGE).nextOrDefault(LanguageImpl.class, null);
+		return out(GraphRelationships.HAS_LANGUAGE).nextOrDefault(LanguageImpl.class, null);
 	}
 
 	@Override
 	public void setLanguage(Language language) {
-		setLinkOut(language.getImpl(), MeshRelationships.HAS_LANGUAGE);
+		setLinkOut(language.getImpl(), GraphRelationships.HAS_LANGUAGE);
 	}
 
 	public boolean fieldExists(String key) {
