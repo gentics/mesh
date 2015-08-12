@@ -2,22 +2,22 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+
+import org.apache.commons.lang.NotImplementedException;
+
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.syncleus.ferma.traversals.VertexTraversal;
+
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
-
-import org.apache.commons.lang.NotImplementedException;
-
-import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, User, MeshAuthUser {
 
@@ -33,12 +33,13 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 
 	@Override
 	public User isAuthorised(String authority, Handler<AsyncResult<Boolean>> resultHandler) {
-		throw new NotImplementedException("Please use the MeshShiroUser method instead.");
+		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
 	}
 
 	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
 		final MeshAuthUserImpl user = this;
-		Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
+		//Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
+		resultHandler.handle(Future.succeededFuture(user.hasPermission(targetNode, permission)));
 		return this;
 	}
 
@@ -60,10 +61,6 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 	public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
 		// TODO out/in/out!
 		return out(HAS_USER).in(HAS_ROLE).out(permission.label());
-	}
-
-	public String getPermissionNames(Tag tag) {
-		return null;
 	}
 
 	@Override
