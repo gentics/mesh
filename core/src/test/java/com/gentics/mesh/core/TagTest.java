@@ -196,7 +196,20 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		fail("Not yet implemented");
+		TagRoot root = meshRoot().getTagRoot();
+		assertEquals(tags().size(), root.findAll().size());
+		Tag tag = tag("red");
+		root.removeTag(tag);
+		assertEquals(tags().size() - 1, root.findAll().size());
+		root.removeTag(tag);
+		assertEquals(tags().size() - 1, root.findAll().size());
+		root.addTag(tag);
+		assertEquals(tags().size(), root.findAll().size());
+		root.addTag(tag);
+		assertEquals(tags().size(), root.findAll().size());
+		root.delete();
+		tag.getUuid();
+
 	}
 
 	@Test
