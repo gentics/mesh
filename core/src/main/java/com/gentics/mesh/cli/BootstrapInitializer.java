@@ -472,7 +472,7 @@ public class BootstrapInitializer {
 			}
 		}
 		long diff = System.currentTimeMillis() - start;
-		log.info("Handling languages took: " + diff + " [ms]");
+		log.info("Handling languages took: " + diff + "[ms]");
 	}
 
 }
