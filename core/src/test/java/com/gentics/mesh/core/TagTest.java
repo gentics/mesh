@@ -208,7 +208,6 @@ public class TagTest extends AbstractBasicObjectTest {
 		root.addTag(tag);
 		assertEquals(tags().size(), root.findAll().size());
 		root.delete();
-		tag.getUuid();
 
 	}
 

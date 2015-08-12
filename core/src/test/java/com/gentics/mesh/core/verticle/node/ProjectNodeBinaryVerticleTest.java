@@ -13,6 +13,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,8 +60,29 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUploadToNoBinaryNode() {
-		//TODO expect error
+	public void testUploadWithInvalidMimetype() throws IOException {
+		Node node = folder("news");
+		String contentType = "application/octet-stream";
+		int binaryLen = 10000;
+		String fileName = "somefile.dat";
+
+		prepareSchema(node, false, "image/.*");
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
+	}
+
+	@Test
+	public void testUploadToNoBinaryNode() throws IOException {
+		Node node = folder("news");
+		String contentType = "application/octet-stream";
+		int binaryLen = 10000;
+		String fileName = "somefile.dat";
+
+		prepareSchema(node, false, "");
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
 	}
 
 	/**
@@ -68,6 +90,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	 * should disappear.
 	 */
 	@Test
+	@Ignore("image prop handling not yet implemented")
 	public void testUpdateBinaryToImageAndNonImage() {
 
 	}
@@ -82,17 +105,21 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 
+		prepareSchema(node, true, "");
 		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
 	}
 
-	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
-
+	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
 		// Update the schema and enable binary support for folders
 		Schema schema = node.getSchemaContainer().getSchema();
-		schema.setBinary(true);
-		node.getSchemaContainer().setSchema(schema);
+		schema.setBinary(binaryFlag);
+//		schema.set
+//		node.getSchemaContainer().setSchema(schema);
+	}
+
+	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
 
 		resetClientSchemaStorage();
 		role().grantPermissions(node, UPDATE_PERM);
@@ -119,6 +146,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
+		prepareSchema(node, true, "");
 		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);

@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.responde;
@@ -175,8 +176,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			try {
 				handleSearch(rc, root, classOfRL);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				fail(rc, "search_error_query");
 			}
 		});
 	}
@@ -196,7 +196,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		MeshAuthUser requestUser = getUser(rc);
 		Client client = elasticSearchNode.client();
 
-		SearchRequestBuilder builder = client.prepareSearch().setQuery(rc.getBodyAsString());
+		SearchRequestBuilder builder = client.prepareSearch().setSource(rc.getBodyAsString());
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 
 		/*

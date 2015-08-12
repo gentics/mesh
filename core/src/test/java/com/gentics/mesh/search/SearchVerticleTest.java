@@ -2,10 +2,10 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import io.vertx.core.Future;
-import io.vertx.core.eventbus.DeliveryOptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.w3c.dom.NodeList;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
@@ -32,6 +31,9 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
+
+import io.vertx.core.Future;
+import io.vertx.core.eventbus.DeliveryOptions;
 
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public class SearchVerticleTest extends AbstractRestVerticleTest {
@@ -103,27 +105,32 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testBogusQuery() {
-
+		Future<NodeListResponse> future = getClient().searchNodes("bogus}J}son");
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "search_query_not_parsable");
 	}
 
 	@Test
 	public void testCustomQuery() throws InterruptedException {
-		String json = "{ \"schema.name\": \"content\" }";
+		setupFullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(json);
+		QueryBuilder qb = QueryBuilders.termQuery("schema.name", "content");
+
+		Future<NodeListResponse> future = getClient().searchNodes(qb.toString());
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
 
 	}
 
 	@Test
 	public void testAddContent() throws InterruptedException {
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-
 		Node node = folder("2015");
 
+		// Invoke a dummy search on an empty index
 		QueryBuilder qb = QueryBuilders.queryStringQuery("2015");
 		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -139,6 +146,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		});
 		latch.await();
 
+		// Search again and make sure we found our document
 		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);

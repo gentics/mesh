@@ -49,7 +49,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
-		//addParentNodeInfo(map, node.getParentNode());
+		addParentNodeInfo(map, node.getParentNode());
 		for (NodeFieldContainer container : node.getFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
@@ -69,11 +69,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put("uuid", parentNode.getUuid());
-		Map<String, String> schemaFields = new HashMap<>();
-		schemaFields.put("name", parentNode.getSchemaContainer().getName());
-		schemaFields.put("uuid", parentNode.getSchemaContainer().getUuid());
-		parentNodeInfo.put("schema", schemaFields);
-		map.put("parent", parentNode);
+		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
+		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
+		map.put("parent", parentNodeInfo);
 	}
 
 	@Override
