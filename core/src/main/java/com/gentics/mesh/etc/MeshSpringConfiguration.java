@@ -85,8 +85,8 @@ public class MeshSpringConfiguration {
 			log.debug("Creating elasticsearch node");
 		}
 		long start = System.currentTimeMillis();
-		Node node = NodeBuilder.nodeBuilder().node();
-		node.client().admin().cluster().prepareHealth().setWaitForActiveShards(1).execute().actionGet();
+		Node node = NodeBuilder.nodeBuilder().local(true).node();
+//		node.client().admin().cluster().prepareHealth().setWaitForActiveShards(1).execute().actionGet();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}

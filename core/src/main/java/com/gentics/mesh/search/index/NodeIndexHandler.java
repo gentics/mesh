@@ -8,6 +8,7 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -179,7 +180,18 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	public void store(String uuid, Map<String, Object> map, String type) {
-		IndexResponse indexResponse = getClient().prepareIndex(getIndex(), type, uuid).setSource(map).execute().actionGet();
+		Mesh.vertx().executeBlocking(bc -> {
+			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
+			}
+			IndexResponse indexResponse = getClient().prepareIndex(getIndex(), type, uuid).setSource(map).execute().actionGet();
+			if (log.isDebugEnabled()) {
+				log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+			}
+		} , rh -> {
+
+		});
 	}
 
 	@Override

@@ -75,6 +75,33 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testSearchAndSort() throws InterruptedException {
+		setupFullIndex();
+
+		String json = "{";
+		json += "				\"sort\" : {";
+		json += "			      \"created\" : {\"order\" : \"desc\"}";
+		json += "			    },";
+		json += "			    \"query\":{";
+		json += "			        \"bool\" : {";
+		json += "			            \"must\" : {";
+		json += "			                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "			            }";
+		json += "			        }";
+		json += "			    }";
+		json += "			}";
+
+		System.out.println(json);
+		
+		Future<NodeListResponse> future = getClient().searchNodes(json);
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse response = future.result();
+		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
+	}
+
+	@Test
 	public void testRemoveContent() throws InterruptedException {
 		setupFullIndex();
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();

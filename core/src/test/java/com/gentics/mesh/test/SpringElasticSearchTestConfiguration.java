@@ -12,7 +12,7 @@ public class SpringElasticSearchTestConfiguration extends SpringTestConfiguratio
 
 	@Bean
 	public Node elasticSearchNode() {
-		return NodeBuilder.nodeBuilder().node();
+		return NodeBuilder.nodeBuilder().local(true).node();
 	}
 
 }

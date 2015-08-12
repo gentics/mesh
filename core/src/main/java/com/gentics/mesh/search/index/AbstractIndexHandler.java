@@ -51,7 +51,7 @@ public abstract class AbstractIndexHandler<T> {
 			String uuid = message.body().getString("uuid");
 			String type = message.body().getString("type");
 			String action = message.body().getString("action");
-			log.info("Handling index event for " + uuid + ":" + type + " event:" + action);
+			log.info("Handling index event for {" + uuid + ":" + type + "} event:" + action);
 			handleEvent(uuid, action);
 			message.reply(null);
 		});
@@ -89,15 +89,38 @@ public abstract class AbstractIndexHandler<T> {
 	}
 
 	protected void update(String uuid, Map<String, Object> map, String type) {
-		UpdateRequestBuilder builder = getClient().prepareUpdate(getIndex(), type, uuid);
-		builder.setDoc(map);
-		builder.execute().actionGet();
+		Mesh.vertx().executeBlocking(bc -> {
+			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Updating object {" + uuid + ":" + getType() + "} to index.");
+			}
+			UpdateRequestBuilder builder = getClient().prepareUpdate(getIndex(), type, uuid);
+			builder.setDoc(map);
+			builder.execute().actionGet();
+			if (log.isDebugEnabled()) {
+				log.debug("Update object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+			}
+		} , rh -> {
+
+		});
 	}
 
 	protected void store(String uuid, Map<String, Object> map) {
-		IndexRequestBuilder builder = getClient().prepareIndex(getIndex(), getType(), uuid);
-		builder.setSource(map);
-		builder.execute().actionGet();
+		Mesh.vertx().executeBlocking(bc -> {
+			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Adding object {" + uuid + ":" + getType() + "} to index.");
+			}
+			IndexRequestBuilder builder = getClient().prepareIndex(getIndex(), getType(), uuid);
+			builder.setSource(map);
+			builder.execute().actionGet();
+
+			if (log.isDebugEnabled()) {
+				log.debug("Added object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+			}
+		} , rh -> {
+
+		});
 	}
 
 	protected void addBasicReferences(Map<String, Object> map, GenericVertex<?> vertex) {
