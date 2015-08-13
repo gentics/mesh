@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.VerticleHelper.responde;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.logging.Logger;
@@ -41,7 +43,7 @@ public class SearchHandler {
 	private org.elasticsearch.node.Node elasticSearchNode;
 
 	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
-			RootVertex<T> rootVertex, Class<RL> classOfRL) throws InstantiationException, IllegalAccessException, InvalidArgumentException {
+			RootVertex<T> rootVertex, Class<RL> classOfRL) throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingInfo pagingInfo = getPagingInfo(rc);
 		if (pagingInfo.getPage() < 1) {
@@ -59,16 +61,22 @@ public class SearchHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 		}
-		SearchRequestBuilder builder = client.prepareSearch().setSource(searchQuery);
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 
 		/*
 		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
 		 * to be written that deals with Document Level Permissions/Security (common known as DLS)
 		 */
-		builder.setSize(Integer.MAX_VALUE);
-		builder.setFrom(0);
+		SearchRequestBuilder builder = null;
+		try {
+			JSONObject queryStringObject = new JSONObject(searchQuery);
+			queryStringObject.put("from", 0);
+			queryStringObject.put("size", Integer.MAX_VALUE);
 
+			builder = client.prepareSearch().setSource(searchQuery);
+		} catch (Exception e) {
+			throw new MeshJsonException("Could not parse query string {" + searchQuery + "}", e);
+		}
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 		builder.execute().addListener(new ActionListener<SearchResponse>() {
 
 			@Override

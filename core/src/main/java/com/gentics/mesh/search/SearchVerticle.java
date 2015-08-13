@@ -122,6 +122,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 					counter.incrementAndGet();
 					vertx.eventBus().send(AbstractIndexHandler.INDEX_EVENT_ADDRESS_PREFIX + entry.getElementType(), entry.getMessage(), rh -> {
 						if (rh.failed()) {
+							log.error("Indexing failed", rh.cause());
 							//TODO handle this. Move item back into queue? queue is not a stack. broken entry would possibly directly retried.
 						} else {
 							log.info("Indexed element {" + currentEntry.getUuid() + "}");
