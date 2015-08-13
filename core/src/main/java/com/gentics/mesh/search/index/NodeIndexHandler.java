@@ -175,7 +175,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			case NODE:
 				GraphNodeField nodeField = container.getNode(name);
 				if (nodeField != null) {
-					fieldsMap.put(name, nodeField.getNode());
+					fieldsMap.put(name, nodeField.getNode().getUuid());
 				}
 				break;
 			case LIST:
