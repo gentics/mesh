@@ -16,6 +16,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<surefire.forkcount>10</surefire.forkcount>
+		<mesh.version>${project.version}</mesh.version>
+		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>
 
 	<dependencies>
@@ -247,6 +249,19 @@
 
 
 	<build>
+
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/mesh.build.properties</include>
+				</includes>
+			</resource>
+		</resources>
+
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
