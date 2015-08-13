@@ -35,6 +35,7 @@ import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

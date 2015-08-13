@@ -9,8 +9,8 @@ import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import io.vertx.ext.web.RoutingContext;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,9 @@ import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
+
+import io.vertx.ext.web.RoutingContext;
 
 @Component
 public class TagFamilyCrudHandler extends AbstractCrudHandler {

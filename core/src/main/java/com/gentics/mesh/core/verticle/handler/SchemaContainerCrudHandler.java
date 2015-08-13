@@ -11,7 +11,6 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import io.vertx.ext.web.RoutingContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,10 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.BlueprintTransaction;
+
+import io.vertx.ext.web.RoutingContext;
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 

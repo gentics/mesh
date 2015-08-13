@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.codehaus.jettison.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,7 +28,8 @@ public class SearchQueueTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testQueue() throws InterruptedException {
+	public void testQueue() throws InterruptedException, JSONException {
+
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 		for (Node node : boot.nodeRoot().findAll()) {
 			searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);

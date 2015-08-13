@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class BlueprintTransactionTest extends AbstractDBTest {

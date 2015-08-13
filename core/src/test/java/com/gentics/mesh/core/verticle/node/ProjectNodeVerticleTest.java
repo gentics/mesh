@@ -42,8 +42,8 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;

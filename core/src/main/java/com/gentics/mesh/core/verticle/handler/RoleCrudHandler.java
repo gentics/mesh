@@ -38,7 +38,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;

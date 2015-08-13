@@ -22,8 +22,8 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.ext.web.RoutingContext;

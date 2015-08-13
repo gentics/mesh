@@ -49,6 +49,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public void store(Node node, Handler<AsyncResult<ActionResponse>> handler) throws IOException {
+
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
 		addSchema(map, node.getSchemaContainer());

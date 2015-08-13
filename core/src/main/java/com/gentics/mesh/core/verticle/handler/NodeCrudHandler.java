@@ -30,7 +30,6 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -50,8 +49,8 @@ import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.FileUtils;
 
 import io.vertx.core.AsyncResult;

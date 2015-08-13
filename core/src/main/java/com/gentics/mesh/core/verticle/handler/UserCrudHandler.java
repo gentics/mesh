@@ -14,7 +14,6 @@ import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import io.vertx.ext.web.RoutingContext;
 
 import org.springframework.stereotype.Component;
 
@@ -26,7 +25,9 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
+
+import io.vertx.ext.web.RoutingContext;
 
 @Component
 public class UserCrudHandler extends AbstractCrudHandler {

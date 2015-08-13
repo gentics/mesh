@@ -1,6 +1,5 @@
-package com.gentics.mesh.util;
+package com.gentics.mesh.graphdb;
 
-import com.gentics.mesh.graphdb.ResettableGraph;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.TransactionalGraph;

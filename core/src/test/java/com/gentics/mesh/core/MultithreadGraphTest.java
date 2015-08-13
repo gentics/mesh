@@ -7,8 +7,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.test.AbstractDBTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 
 public class MultithreadGraphTest extends AbstractDBTest {
 

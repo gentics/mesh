@@ -11,7 +11,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.ext.web.Route;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +27,10 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.GroupCrudHandler;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")

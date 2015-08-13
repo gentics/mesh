@@ -5,10 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 import io.vertx.core.AsyncResult;

@@ -8,7 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +26,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.logging.Logger;

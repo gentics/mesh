@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;

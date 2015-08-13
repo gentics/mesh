@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 
 import io.vertx.ext.web.RoutingContext;
 

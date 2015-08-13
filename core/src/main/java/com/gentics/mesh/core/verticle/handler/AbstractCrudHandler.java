@@ -6,8 +6,6 @@ import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.responde;
-import io.vertx.core.Vertx;
-import io.vertx.ext.web.RoutingContext;
 
 import javax.annotation.PostConstruct;
 
@@ -27,8 +25,11 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+
+import io.vertx.core.Vertx;
+import io.vertx.ext.web.RoutingContext;
 
 public abstract class AbstractCrudHandler {
 

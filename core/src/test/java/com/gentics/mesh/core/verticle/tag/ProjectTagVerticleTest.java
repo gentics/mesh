@@ -31,8 +31,8 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 
 import io.vertx.core.Future;
 

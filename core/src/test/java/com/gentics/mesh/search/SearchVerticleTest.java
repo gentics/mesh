@@ -13,8 +13,11 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,6 +38,7 @@ import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonObject;
 
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public class SearchVerticleTest extends AbstractRestVerticleTest {
@@ -112,12 +116,15 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testRemoveContent() throws InterruptedException {
+	public void testRemoveContent() throws InterruptedException, JSONException {
 		setupFullIndex();
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 
 		QueryBuilder qb = QueryBuilders.queryStringQuery("Großraumflugzeug");
-		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		JSONObject request = new JSONObject();
+		request.put("query", new JsonObject(qb.toString()));
+
+		Future<NodeListResponse> future = getClient().searchNodes(request.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();

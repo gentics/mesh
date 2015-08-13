@@ -3,12 +3,6 @@ package com.gentics.mesh.test;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -40,12 +34,19 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestAssert;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)

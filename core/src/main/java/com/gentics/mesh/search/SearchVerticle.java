@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
@@ -38,7 +39,6 @@ import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
-import com.gentics.mesh.util.BlueprintTransaction;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

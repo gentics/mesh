@@ -39,8 +39,8 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 
 import io.vertx.core.Future;
 
