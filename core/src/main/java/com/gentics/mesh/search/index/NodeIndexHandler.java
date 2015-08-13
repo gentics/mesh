@@ -231,11 +231,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				try {
 					store(node, handler);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error("Error while storing node", e);
+					handler.handle(Future.failedFuture(e));
 				}
 			} else {
-				//TODO reply error? discard? log?
+				log.error("Could not find node {" + uuid + "}", rh.cause());
 			}
 		});
 	}
