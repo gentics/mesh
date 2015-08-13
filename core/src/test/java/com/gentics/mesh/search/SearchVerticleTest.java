@@ -92,13 +92,17 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		json += "			}";
 
 		System.out.println(json);
-		
+
 		Future<NodeListResponse> future = getClient().searchNodes(json);
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
+
+		for (NodeResponse nodeResponse : response.getData()) {
+			System.out.println(nodeResponse.getCreated());
+		}
 	}
 
 	@Test
