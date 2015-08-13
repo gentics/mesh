@@ -1,13 +1,15 @@
 package com.gentics.mesh.cli;
 
-import org.apache.commons.cli.ParseException;
+import java.util.Properties;
 
-import io.vertx.core.Vertx;
+import org.apache.commons.cli.ParseException;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+
+import io.vertx.core.Vertx;
 
 public interface Mesh {
 
@@ -68,8 +70,15 @@ public interface Mesh {
 	Vertx getVertx();
 
 	static String getVersion() {
-		Package pack = MeshImpl.class.getPackage();
-		return pack.getImplementationVersion();
+		try {
+			Properties buildProperties = new Properties();
+			buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
+			return buildProperties.get("mesh.version") + " " + buildProperties.get("mesh.build.timestamp");
+		} catch (Exception e) {
+			return "Unknown";
+		}
+		//Package pack = MeshImpl.class.getPackage();
+		//return pack.getImplementationVersion();
 	}
 
 	/**

@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 		String json = "{";
 		json += "				\"sort\" : {";
-		json += "			      \"created\" : {\"order\" : \"desc\"}";
+		json += "			      \"created\" : {\"order\" : \"asc\"}";
 		json += "			    },";
 		json += "			    \"query\":{";
 		json += "			        \"bool\" : {";
@@ -91,14 +92,23 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		json += "			    }";
 		json += "			}";
 
-		System.out.println(json);
-		
 		Future<NodeListResponse> future = getClient().searchNodes(json);
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
+
+		long lastCreated = 0;
+		for (NodeResponse nodeResponse : response.getData()) {
+			if (lastCreated > nodeResponse.getCreated()) {
+				fail("Found entry that was not sorted by create timestamp. Last entry: {" + lastCreated + "} current entry: {"
+						+ nodeResponse.getCreated() + "}");
+			} else {
+				lastCreated = nodeResponse.getCreated();
+			}
+			assertEquals("content", nodeResponse.getSchema().getName());
+		}
 	}
 
 	@Test
