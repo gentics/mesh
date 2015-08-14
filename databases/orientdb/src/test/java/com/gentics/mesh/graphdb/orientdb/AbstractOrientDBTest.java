@@ -22,13 +22,13 @@ public class AbstractOrientDBTest {
 		}
 	}
 
-	protected Person addPersonWithFriends(FramedGraph graph) {
+	protected Person addPersonWithFriends(FramedGraph graph, String name) {
 		Person p = graph.addFramedVertex(Person.class);
-		p.setName("SomePerson");
+		p.setName(name);
 
 		for (int i = 0; i < 10; i++) {
 			Person friend = graph.addFramedVertex(Person.class);
-			p.setName("Friend " + i);
+			friend.setName("Friend " + i);
 			p.addFriend(friend);
 		}
 		return p;

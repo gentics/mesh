@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 import io.vertx.core.AsyncResult;
@@ -41,10 +42,10 @@ public class MeshAuthProvider implements AuthProvider {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
-//			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 				user = boot.userRoot().findMeshAuthUserByUsername(username);
 //				tx.success();
-//			}
+			}
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
 				// TODO check if user is enabled

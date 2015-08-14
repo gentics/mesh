@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb;
 
 import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
 public class OrientThreadedTransactionalGraphWrapper extends ThreadedTransactionalGraphWrapper {
@@ -14,8 +15,9 @@ public class OrientThreadedTransactionalGraphWrapper extends ThreadedTransaction
 
 	@Override
 	public TransactionalGraph newTransaction() {
-//		return factory.getTx();
-		return graph;
+		OrientGraph newGraph = factory.getTx();
+		newGraph.getRawGraph().activateOnCurrentThread();
+		return newGraph;
 	}
 
 }

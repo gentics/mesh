@@ -67,9 +67,6 @@ public abstract class AbstractDBTest {
 	@Autowired
 	protected RestAssert test;
 
-	@Autowired
-	private I18NService i18n;
-
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
@@ -77,15 +74,8 @@ public abstract class AbstractDBTest {
 	}
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			purgeDatabase();
-			tx.success();
-		}
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			dataProvider.setup(1);
-			tx.success();
-			fg.commit();
-		}
+		dataProvider.setup(1);
+		dataProvider.updatePermissions();
 	}
 
 	@Deprecated
@@ -175,16 +165,6 @@ public abstract class AbstractDBTest {
 
 	public SchemaContainer getSchemaContainer() {
 		return data().getSchemaContainer("content");
-	}
-
-	protected void purgeDatabase() {
-		// fg.commit();
-		for (Edge edge : fg.getEdges()) {
-			edge.remove();
-		}
-		for (Vertex vertex : fg.getVertices()) {
-			vertex.remove();
-		}
 	}
 
 	protected String getJson(Node node) throws InterruptedException {

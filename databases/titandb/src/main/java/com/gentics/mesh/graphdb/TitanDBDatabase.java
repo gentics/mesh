@@ -10,6 +10,23 @@ import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 public class TitanDBDatabase implements Database {
 
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void clear() {
+		// TODO Auto-generated method stub
+
+	}
+
 	private Configuration getBerkleyDBConf(StorageOptions settings) {
 		Configuration conf = new BaseConfiguration();
 		conf.setProperty("storage.backend", "berkeleyje");

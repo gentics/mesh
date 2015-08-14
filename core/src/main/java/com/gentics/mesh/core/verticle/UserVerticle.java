@@ -38,7 +38,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleRead(rc);
-
 		});
 
 		/*

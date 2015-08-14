@@ -19,6 +19,24 @@ import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 public class Neo4jDatabase implements Database {
 
 	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void clear() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) throws IOException {
 
 		String DB_LOCATION = options.getDirectory();

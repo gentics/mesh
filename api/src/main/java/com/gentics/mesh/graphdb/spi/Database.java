@@ -9,4 +9,10 @@ public interface Database {
 
 	FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) throws IOException;
 
+	void close();
+
+	void reset();
+
+	void clear();
+
 }

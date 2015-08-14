@@ -7,7 +7,20 @@ import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 public class TinkerGraphDatabase implements Database {
 
-	public TinkerGraphDatabase() {
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void clear() {
+		// TODO Auto-generated method stub
 
 	}
 

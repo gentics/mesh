@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
-public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Role {
+public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role {
 
 	// TODO index on name
 
@@ -67,7 +67,7 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse> implements Rol
 	@Override
 	public void grantPermissions(MeshVertex node, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
-			addFramedEdge(permission.label(), (MeshVertexImpl) node);
+			addFramedEdge(permission.label(), node.getImpl());
 		}
 	}
 

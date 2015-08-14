@@ -4,17 +4,22 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class MultithreadGraphTest extends AbstractDBTest {
 
+	@Autowired
+	private DatabaseService databaseService;
+
 	@Before
 	public void cleanup() {
-		purgeDatabase();
+		databaseService.getDatabase().clear();
 	}
 
 	@Test
