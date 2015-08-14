@@ -17,23 +17,27 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 public class Neo4jDatabase implements Database {
+	private GraphDatabaseService graphDatabaseService;
+	private Neo4j2Graph neo4jBlueprintGraph;
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-
+		graphDatabaseService.shutdown();
 	}
 
 	@Override
 	public void reset() {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
-
+		for (Edge edge : neo4jBlueprintGraph.getEdges()) {
+			edge.remove();
+		}
+		for (Vertex vertex : neo4jBlueprintGraph.getVertices()) {
+			vertex.remove();
+		}
 	}
 
 	@Override
@@ -44,7 +48,7 @@ public class Neo4jDatabase implements Database {
 		//TODO move this somewhere else or handle it by settings
 		FileUtils.deleteDirectory(dbDir);
 		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbDir.getAbsolutePath());
-		GraphDatabaseService graphDatabaseService = builder.newGraphDatabase();
+		graphDatabaseService = builder.newGraphDatabase();
 		// Start the neo4j web console - by default it can be accessed using http://localhost:7474. It is handy for development and should not be enabled by
 		// default.
 		//		ServerConfigurator webConfig = new ServerConfigurator((GraphDatabaseAPI) graphDatabaseService);
@@ -52,7 +56,7 @@ public class Neo4jDatabase implements Database {
 		//		bootStrapper.start();
 
 		// Setup neo4j blueprint implementation
-		Neo4j2Graph neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
+		neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
 		registerShutdownHook(graphDatabaseService);
 
 		// Add some indices
