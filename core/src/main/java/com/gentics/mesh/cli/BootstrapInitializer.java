@@ -286,10 +286,8 @@ public class BootstrapInitializer {
 	}
 
 	public static void clearReferences() {
-		if (meshRoot != null) {
-			meshRoot.clearReferences();
-			meshRoot = null;
-		}
+		MeshRootImpl.clearReferences();
+		BootstrapInitializer.meshRoot = null;
 	}
 
 	/**

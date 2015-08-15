@@ -23,9 +23,15 @@ public class TinkerGraphDatabase implements Database {
 		// TODO Auto-generated method stub
 
 	}
+	
+	@Override
+	public void init(StorageOptions options) {
+		// TODO Auto-generated method stub
+		
+	}
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) {
+	public FramedThreadedTransactionalGraph getFramedGraph() {
 		ThreadedTransactionalGraphWrapper wrapper = new TinkerGraphThreadedTransactionalGraphWrapper(new TinkerTransactionalGraphMock());
 		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 		return fg;

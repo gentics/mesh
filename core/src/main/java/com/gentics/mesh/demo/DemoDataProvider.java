@@ -96,7 +96,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 
 			BootstrapInitializer.clearReferences();
 			bootstrapInitializer.initMandatoryData();
@@ -110,9 +110,9 @@ public class DemoDataProvider {
 			roles.clear();
 			groups.clear();
 
+			root = rootService.meshRoot();
 			english = rootService.languageRoot().findByLanguageTag("en");
 			german = rootService.languageRoot().findByLanguageTag("de");
-			root = rootService.meshRoot();
 
 			addBootstrappedData();
 			addUserGroupRoleProject(multiplicator);
@@ -131,8 +131,8 @@ public class DemoDataProvider {
 			log.info("Users:    " + users.size());
 			log.info("Groups:   " + groups.size());
 			log.info("Roles:    " + roles.size());
-			tx.success();
-		}
+//			tx.success();
+//		}
 
 	}
 
@@ -442,10 +442,10 @@ public class DemoDataProvider {
 
 	public void updatePermissions() {
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			Role role = userInfo.getRole();
 
-			for (Vertex vertex : tx.getGraph().getVertices()) {
+			for (Vertex vertex : fg.getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
 				// TODO typecheck? and verify how orient will behave
@@ -454,14 +454,14 @@ public class DemoDataProvider {
 					continue;
 				}
 
-				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				MeshVertex meshVertex =fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 				if (log.isDebugEnabled()) {
 					log.debug("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
 				}
 				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 			}
-			tx.success();
-		}
+//			tx.success();
+//		}
 		log.info("Added BasicPermissions to nodes");
 	}
 

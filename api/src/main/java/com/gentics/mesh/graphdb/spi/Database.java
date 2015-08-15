@@ -7,12 +7,14 @@ import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 public interface Database {
 
-	FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) throws IOException;
+	FramedThreadedTransactionalGraph getFramedGraph() throws IOException;
 
 	void close();
 
 	void reset();
 
 	void clear();
+
+	void init(StorageOptions options);
 
 }

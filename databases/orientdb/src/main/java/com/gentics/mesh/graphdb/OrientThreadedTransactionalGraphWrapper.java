@@ -13,6 +13,14 @@ public class OrientThreadedTransactionalGraphWrapper extends ThreadedTransaction
 		graph = factory.getTx();
 	}
 
+	public void setGraph(TransactionalGraph graph) {
+		this.graph = graph;
+	}
+
+	public void setFactory(OrientGraphFactory factory) {
+		this.factory = factory;
+	}
+
 	@Override
 	public TransactionalGraph newTransaction() {
 		OrientGraph newGraph = factory.getTx();

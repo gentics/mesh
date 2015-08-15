@@ -20,6 +20,7 @@ import java.util.Stack;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -285,16 +286,21 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		return microschemaContainerRoot;
 	}
 
-	@Override
-	public void clearReferences() {
+	/**
+	 * Clear static references to the aggregation vertices.
+	 */
+	public static void clearReferences() {
 		MeshRootImpl.projectRoot = null;
-		MeshRootImpl.tagRoot = null;
-		MeshRootImpl.roleRoot = null;
-		MeshRootImpl.groupRoot = null;
-		MeshRootImpl.userRoot = null;
 		MeshRootImpl.nodeRoot = null;
+		MeshRootImpl.tagRoot = null;
+
+		MeshRootImpl.userRoot = null;
+		MeshRootImpl.groupRoot = null;
+		MeshRootImpl.roleRoot = null;
+
 		MeshRootImpl.schemaContainerRoot = null;
 		MeshRootImpl.tagFamilyRoot = null;
+		MeshRootImpl.microschemaContainerRoot = null;
 		MeshRootImpl.languageRoot = null;
 	}
 

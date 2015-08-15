@@ -66,7 +66,8 @@ public class MeshSpringConfiguration {
 			if (database == null) {
 				throw new MeshConfigurationException("Could not find any database provider");
 			}
-			return database.getFramedGraph(options);
+			database.init(options);
+			return database.getFramedGraph();
 		} catch (Exception e) {
 			String msg = "Could not get framed graph from database provider";
 			log.error(msg, e);
