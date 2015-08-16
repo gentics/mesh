@@ -71,12 +71,6 @@ public abstract class AbstractDBTest {
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException {
 		dataProvider.setup(1);
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		dataProvider.updatePermissions();
 	}
 
