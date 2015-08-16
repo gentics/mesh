@@ -6,10 +6,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.graphdb.DatabaseService;
 

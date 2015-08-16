@@ -15,6 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -54,13 +55,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@Autowired
 	private RouterStorage routerStorage;
-	
+
 	@Autowired
 	private DatabaseService databaseService;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
 		databaseService.getDatabase().clear();
+		databaseService.getDatabase().reset();
 		setupData();
 		port = com.gentics.mesh.test.TestUtil.getRandomPort();
 		vertx = Mesh.vertx();
@@ -79,7 +81,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(user().getUsername(), data().getUserInfo().getPassword());
 		resetClientSchemaStorage();
-
 	}
 
 	protected void resetClientSchemaStorage() throws IOException {

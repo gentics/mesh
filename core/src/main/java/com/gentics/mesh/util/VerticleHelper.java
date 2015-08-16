@@ -289,7 +289,7 @@ public class VerticleHelper {
 						if (node == null) {
 							handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
 						} else {
-							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
+//							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
 
 								MeshAuthUser requestUser = getUser(rc);
 								if (requestUser.hasPermission(node, perm)) {
@@ -298,7 +298,7 @@ public class VerticleHelper {
 									handler.handle(
 											Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
 								}
-							}
+//							}
 						}
 					}
 				});

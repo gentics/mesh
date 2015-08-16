@@ -106,7 +106,10 @@ public class UserCrudHandler extends AbstractCrudHandler {
 							searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 							tx.success();
+							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
+
 							transformAndResponde(rc, uh.result());
+							}
 						}
 					});
 				}

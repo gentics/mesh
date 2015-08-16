@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -96,7 +97,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
-//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 
 			BootstrapInitializer.clearReferences();
 			bootstrapInitializer.initMandatoryData();
@@ -131,9 +132,54 @@ public class DemoDataProvider {
 			log.info("Users:    " + users.size());
 			log.info("Groups:   " + groups.size());
 			log.info("Roles:    " + roles.size());
-//			tx.success();
-//		}
+			tx.success();
+		}
 
+	}
+
+	public void updatePermissions() {
+
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			Role role = userInfo.getRole();
+
+			for (Vertex vertex : fg.getVertices()) {
+				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+
+				// TODO typecheck? and verify how orient will behave
+				if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+					log.info("Skipping own role");
+					continue;
+				}
+
+				MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				if (log.isDebugEnabled()) {
+					log.debug("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+				}
+				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+
+				// This is very odd. I don't yet fully understand why we need to commit the transaction from within the role
+				((FramedTransactionalGraph)	role.getImpl().getGraph()).commit();
+			}
+			tx.success();
+		}
+		log.info("Added BasicPermissions to nodes");
+
+//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+//			for (EdgeFrame frame : userInfo.getRole().getImpl().outE().toListExplicit(EdgeFrame.class)) {
+//				System.out.println(frame.getLabel());
+//				System.out.println(frame.outV().next().getId().toString());
+//				System.out.println(frame.inV().next().getId().toString());
+//				System.out.println("---------");
+//			}
+//
+//			if (userInfo.getRole().hasPermission(READ_PERM, userInfo.getUser())) {
+//				System.out.println("HAS PERM");
+//			} else {
+//				log.debug("permissions on {" + userInfo.getUser().getElement().getId() + "} with role {" + userInfo.getRole().getElement().getId()
+//						+ "}");
+//				System.out.println("HAS NO PERM");
+//			}
+//		}
 	}
 
 	private void addBootstrappedData() {
@@ -438,31 +484,6 @@ public class DemoDataProvider {
 		blogPostSchemaContainer.setSchema(schema);
 
 		schemaContainers.put("blogpost", blogPostSchemaContainer);
-	}
-
-	public void updatePermissions() {
-
-//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			Role role = userInfo.getRole();
-
-			for (Vertex vertex : fg.getVertices()) {
-				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-
-				// TODO typecheck? and verify how orient will behave
-				if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
-					log.info("Skipping own role");
-					continue;
-				}
-
-				MeshVertex meshVertex =fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-				if (log.isDebugEnabled()) {
-					log.debug("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
-				}
-				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-			}
-//			tx.success();
-//		}
-		log.info("Added BasicPermissions to nodes");
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {

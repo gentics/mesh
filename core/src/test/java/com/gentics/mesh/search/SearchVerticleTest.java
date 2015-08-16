@@ -17,7 +17,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.sort.SortBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -61,7 +60,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 	@BeforeClass
 	@AfterClass
-	public static void cleanup() throws IOException {
+	public static void removeSearchData() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
 	}
 
