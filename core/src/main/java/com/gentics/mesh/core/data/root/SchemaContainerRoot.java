@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.error.MeshSchemaException;
 
 public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
@@ -16,8 +17,9 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @param creator
 	 *            User that is used to set editor and creator references
 	 * @return
+	 * @throws MeshSchemaException 
 	 */
-	SchemaContainer create(Schema schema, User creator);
+	SchemaContainer create(Schema schema, User creator) throws MeshSchemaException;
 
 	/**
 	 * Add the schema to the aggregation node.

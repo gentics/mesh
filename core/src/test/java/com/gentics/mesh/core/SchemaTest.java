@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -48,7 +49,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testRootNode() {
+	public void testRootNode() throws MeshSchemaException {
 		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 		int nSchemasBefore = root.findAll().size();
 		Schema schema = new SchemaImpl();
@@ -121,7 +122,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() {
+	public void testCreateDelete() throws MeshSchemaException {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
@@ -133,7 +134,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCRUDPermissions() {
+	public void testCRUDPermissions() throws MeshSchemaException {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
 		assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
 		getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
@@ -184,28 +185,28 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testReadPermission() {
+	public void testReadPermission() throws MeshSchemaException {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
 		testPermission(GraphPermission.READ_PERM, newContainer);
 	}
 
 	@Test
 	@Override
-	public void testDeletePermission() {
+	public void testDeletePermission() throws MeshSchemaException {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
 		testPermission(GraphPermission.DELETE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
-	public void testUpdatePermission() {
+	public void testUpdatePermission() throws MeshSchemaException {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
 		testPermission(GraphPermission.UPDATE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
-	public void testCreatePermission() {
+	public void testCreatePermission() throws MeshSchemaException {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
 		testPermission(GraphPermission.CREATE_PERM, newContainer);
 	}

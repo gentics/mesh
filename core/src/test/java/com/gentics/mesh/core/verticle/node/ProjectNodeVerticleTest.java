@@ -370,7 +370,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		test.assertMeshNode(node, future.result());
-		assertEquals("en", future.result().getLanguage());
+		NodeResponse response = future.result();
+		assertEquals("name", response.getDisplayField());
+		assertNotNull(response.getParentNode());
+		assertEquals(node.getParentNode().getUuid(), response.getParentNode().getUuid());
+		assertEquals("News", response.getParentNode().getDisplayName());
+		assertEquals("en", response.getLanguage());
 	}
 
 	@Test

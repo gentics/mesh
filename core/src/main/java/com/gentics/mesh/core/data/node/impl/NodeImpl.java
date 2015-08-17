@@ -28,6 +28,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeFieldContainer;
@@ -53,6 +54,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.VerticleHelper;
@@ -201,8 +203,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				restNode.setSchema(schemaReference);
 			}
 
+			restNode.setDisplayField(schema.getDisplayField());
+
 			if (getParentNode() != null) {
-				restNode.setParentNodeUuid(getParentNode().getUuid());
+				NodeReference parentNodeReference = new NodeReference();
+				parentNodeReference.setUuid(getParentNode().getUuid());
+				parentNodeReference.setDisplayName(getParentNode().getDisplayName(rc));
+				restNode.setParentNode(parentNodeReference);
 			}
 
 			/* Load the children */
@@ -218,21 +225,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				restNode.setChildren(children);
 			}
 
-			NodeFieldContainer fieldContainer = null;
-			Language foundLanguage = null;
-			List<String> languageTags = getSelectedLanguageTags(rc);
-			for (String languageTag : languageTags) {
-				Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_language_not_found", languageTag));
-				}
-				fieldContainer = getFieldContainer(language);
-				// We found a container for one of the languages
-				if (fieldContainer != null) {
-					foundLanguage = language;
-					break;
-				}
-			}
+			NodeFieldContainer fieldContainer = findNextMatchingFieldContainer(rc);
 
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
 			if (schema.isBinary()) {
@@ -252,12 +245,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 
 			if (fieldContainer == null) {
+				List<String> languageTags = getSelectedLanguageTags(rc);
 				String langInfo = getLanguageInfo(languageTags);
 				log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
 						+ langInfo + "}. Fields will be empty.");
 				// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
 			} else {
-				restNode.setLanguage(foundLanguage.getLanguageTag());
+				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					boolean expandField = fieldToExpand.contains(fieldEntry.getName());
 					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(rc, fieldEntry.getName(), fieldEntry,
@@ -301,6 +295,24 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		}
 		return this;
 
+	}
+
+	@Override
+	public NodeFieldContainer findNextMatchingFieldContainer(RoutingContext rc) {
+		NodeFieldContainer fieldContainer = null;
+		List<String> languageTags = getSelectedLanguageTags(rc);
+		for (String languageTag : languageTags) {
+			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_language_not_found", languageTag));
+			}
+			fieldContainer = getFieldContainer(language);
+			// We found a container for one of the languages
+			if (fieldContainer != null) {
+				break;
+			}
+		}
+		return fieldContainer;
 	}
 
 	@Override
@@ -452,6 +464,23 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+	}
+
+	@Override
+	public String getDisplayName(RoutingContext rc) {
+		String displayFieldName = null;
+		try {
+			FieldContainer container = findNextMatchingFieldContainer(rc);
+			if (container == null) {
+				log.error("Could not find any matching i18n field container for node {" + getUuid() + "}.");
+			} else {
+				displayFieldName = getSchema().getDisplayField();
+				return container.getString(displayFieldName).getString();
+			}
+		} catch (Exception e) {
+			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}");
+		}
+		return null;
 	}
 
 }

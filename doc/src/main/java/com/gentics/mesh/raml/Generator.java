@@ -392,7 +392,10 @@ public class Generator {
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(getUUID());
-		nodeResponse.setParentNodeUuid(getUUID());
+		NodeReference parentNodeReference = new NodeReference();
+		parentNodeReference.setUuid(getUUID());
+		parentNodeReference.setDisplayName("parentNodeDisplayName");
+		nodeResponse.setParentNode(parentNodeReference);
 		nodeResponse.setCreated(getTimestamp());
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
@@ -429,7 +432,10 @@ public class Generator {
 	private NodeResponse getNodeResponse2() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(getUUID());
-		nodeResponse.setParentNodeUuid(getUUID());
+		NodeReference parentNodeReference = new NodeReference();
+		parentNodeReference.setUuid(getUUID());
+		parentNodeReference.setDisplayName("parentNodeDisplayName");
+		nodeResponse.setParentNode(parentNodeReference);
 		nodeResponse.setCreator(getUserReference());
 		nodeResponse.setCreated(getTimestamp());
 		nodeResponse.setEdited(getTimestamp());

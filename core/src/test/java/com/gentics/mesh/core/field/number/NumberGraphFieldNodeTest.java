@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.field.number;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -8,8 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
@@ -28,7 +28,7 @@ public class NumberGraphFieldNodeTest extends AbstractDBTest {
 	private ServerSchemaStorage schemaStorage;
 
 	@Before
-	public void setup() throws JsonParseException, JsonMappingException, IOException {
+	public void setup() throws Exception {
 		setupData();
 	}
 

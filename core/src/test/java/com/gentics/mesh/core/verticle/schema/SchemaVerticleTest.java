@@ -50,7 +50,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	public void testCreateSimpleSchema() throws HttpStatusCodeErrorException, Exception {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
-
+		request.setDisplayField("name");
 		Future<SchemaResponse> future = getClient().createSchema(request);
 		latchFor(future);
 		assertSuccess(future);
@@ -62,7 +62,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 			assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
-			});
+		});
 
 	}
 
@@ -72,6 +72,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		// request.setDescription("new description");
 		request.setName("new schema name");
+		request.setDisplayField("name");
 		// request.setProjectUuid(data().getProject().getUuid());
 		// PropertyTypeSchemaResponse propertySchema = new PropertyTypeSchemaResponse();
 		// propertySchema.setKey("extra-content");
@@ -109,6 +110,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		final int nSchemas = 22;
 		Schema schema = new SchemaImpl();
 		schema.setName("No Perm Schema");
+		schema.setDisplayField("name");
 		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
 		Schema dummySchema = new SchemaImpl();
 		dummySchema.setName("dummy");
@@ -116,6 +118,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		for (int i = 0; i < nSchemas; i++) {
 			schema = new SchemaImpl();
 			schema.setName("extra_schema_" + i);
+			schema.setDisplayField("name");
 			SchemaContainer extraSchema = schemaRoot.create(schema, user());
 			extraSchema.setSchema(dummySchema);
 			role().grantPermissions(extraSchema, READ_PERM);
@@ -234,7 +237,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 			SchemaContainer reloaded = rh.result();
 			// assertEquals("The name should have been updated", "new-name", reloaded.getName());
-			});
+		});
 
 	}
 
@@ -281,7 +284,7 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		fail("unspecified test");
-//		String json = "error";
+		//		String json = "error";
 		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
 
 		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {

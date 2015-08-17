@@ -117,10 +117,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
-	public void testMeshNodeFields() {
+	public void testMeshNodeFields() throws IOException {
 		Node newsNode = content("news overview");
 		Language german = german();
+		RoutingContext rc = getMockedRoutingContext("?lang=de,en");
 		NodeFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
+		assertEquals(germanFields.getString(newsNode.getSchema().getDisplayField()).getString(), newsNode.getDisplayName(rc));
 
 		// TODO add some fields
 

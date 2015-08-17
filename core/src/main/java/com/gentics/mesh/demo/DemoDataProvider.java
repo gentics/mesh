@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -93,7 +94,7 @@ public class DemoDataProvider {
 	private DemoDataProvider() {
 	}
 
-	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
+	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		BootstrapInitializer.clearReferences();
 		bootstrapInitializer.initMandatoryData();
 
@@ -401,7 +402,7 @@ public class DemoDataProvider {
 
 	}
 
-	private void addSchemaContainers() {
+	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
 		addBlogPostSchema();
 	}
@@ -425,7 +426,7 @@ public class DemoDataProvider {
 
 	}
 
-	private void addBlogPostSchema() {
+	private void addBlogPostSchema() throws MeshSchemaException {
 		Schema schema = new SchemaImpl();
 		schema.setName("blogpost");
 		schema.setDisplayField("title");

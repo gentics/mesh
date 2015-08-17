@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.BlueprintTransaction;
@@ -75,7 +76,7 @@ public abstract class AbstractDBTest {
 		JsonUtil.debugMode = true;
 	}
 
-	public void setupData() throws JsonParseException, JsonMappingException, IOException {
+	public void setupData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 			purgeDatabase();
 			tx.success();

@@ -6,14 +6,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -27,7 +24,7 @@ public class AuthUserTest extends AbstractDBTest {
 	protected UserInfo info;
 
 	@Before
-	public void setup() throws JsonParseException, JsonMappingException, IOException {
+	public void setup() throws Exception {
 		setupData();
 		info = data().getUserInfo();
 	}

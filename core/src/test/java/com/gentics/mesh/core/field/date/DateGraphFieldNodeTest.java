@@ -29,7 +29,7 @@ public class DateGraphFieldNodeTest extends AbstractDBTest {
 	private ServerSchemaStorage schemaStorage;
 
 	@Before
-	public void setup() throws JsonParseException, JsonMappingException, IOException {
+	public void setup() throws Exception {
 		setupData();
 	}
 

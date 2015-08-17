@@ -4,6 +4,7 @@ public class NodeReference {
 
 	private String projectName;
 	private String uuid;
+	private String displayName;
 
 	public String getUuid() {
 		return uuid;
@@ -19,6 +20,14 @@ public class NodeReference {
 
 	public void setProjectName(String projectName) {
 		this.projectName = projectName;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 }

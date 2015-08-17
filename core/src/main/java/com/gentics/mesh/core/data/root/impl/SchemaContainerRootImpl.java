@@ -2,11 +2,14 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.error.MeshSchemaException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -36,7 +39,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(Schema schema, User creator) {
+	public SchemaContainer create(Schema schema, User creator) throws MeshSchemaException {
+		validate(schema);
 		SchemaContainerImpl schemaContainer = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		schemaContainer.setSchema(schema);
 		schemaContainer.setName(schema.getName());
@@ -46,6 +50,13 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		schemaContainer.setEditor(creator);
 		schemaContainer.setLastEditedTimestamp(System.currentTimeMillis());
 		return schemaContainer;
+	}
+
+	private void validate(Schema schema) throws MeshSchemaException {
+		if (StringUtils.isEmpty(schema.getDisplayField())) {
+			throw new MeshSchemaException("The displayField must not be empty");
+		}
+
 	}
 
 	@Override

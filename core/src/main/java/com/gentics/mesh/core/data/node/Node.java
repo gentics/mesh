@@ -172,4 +172,13 @@ public interface Node extends GenericVertex<NodeResponse> {
 	 */
 	String getSegmentedPath();
 
+	/**
+	 * Returns the i18n display name for the node.
+	 * @param rc 
+	 * @return
+	 */
+	String getDisplayName(RoutingContext rc);
+
+	NodeFieldContainer findNextMatchingFieldContainer(RoutingContext rc);
+
 }
