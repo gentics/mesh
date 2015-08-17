@@ -10,10 +10,12 @@ public class Trx implements AutoCloseable {
 	private static ThreadLocal<TransactionalGraph> localGraph = new ThreadLocal<>();
 	private TransactionalGraph currentGraph;
 	private boolean isSuccess = false;
+	private TransactionalGraph oldLocalGraph;
 
 	public Trx(Database database) {
 		currentGraph = database.getFramedGraph().newTransaction();
-		if (localGraph.get() == null) {
+		oldLocalGraph = localGraph.get();
+		if (oldLocalGraph == null) {
 			localGraph.set(currentGraph);
 		} else {
 			currentGraph = localGraph.get();
@@ -39,7 +41,7 @@ public class Trx implements AutoCloseable {
 		} else {
 			currentGraph.rollback();
 		}
-//		setLocalGraph(null);
+		setLocalGraph(oldLocalGraph);
 	}
 
 	public static void setLocalGraph(TransactionalGraph graph) {

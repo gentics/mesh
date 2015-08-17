@@ -82,7 +82,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	
 	@After
 	public void cleanup() {
-//		databaseService.getDatabase().clear();
+		databaseService.getDatabase().clear();
 		databaseService.getDatabase().reset();
 	}
 
