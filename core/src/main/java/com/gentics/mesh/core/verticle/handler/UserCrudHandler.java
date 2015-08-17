@@ -72,18 +72,18 @@ public class UserCrudHandler extends AbstractCrudHandler {
 					try (Trx tx = new Trx(database)) {
 						MeshAuthUser requestUser = getUser(rc);
 						User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
-						//							User user = parentGroup.createUser(requestModel.getUsername());
 						user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
 							if (ch.failed()) {
 								rc.fail(ch.cause());
 							} else {
 								User createdUser = ch.result();
-								try (Trx tx2 = new Trx(database)) {
-									searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-									transformAndResponde(rc, createdUser);
-									tx2.success();
-								}
+//								try (Trx tx2 = new Trx(database)) {
+								searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+//								tx2.getGraph().commit();
+//								}
+								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+								tx.success();
+								transformAndResponde(rc, createdUser);
 							}
 						});
 					}
@@ -99,7 +99,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 				User user = rh.result();
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
-				//TODO not sure whether this is actually correct. The try-with might terminate while the async call may still run 
+				// TODO not sure whether this is actually correct. The try-with might terminate while the async call may still run
 				try (Trx tx = new Trx(database)) {
 					user.fillUpdateFromRest(rc, requestModel, uh -> {
 						if (uh.failed()) {

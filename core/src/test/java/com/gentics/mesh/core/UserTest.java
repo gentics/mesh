@@ -40,7 +40,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			UserRoot root = meshRoot().getUserRoot();
 			int nUserBefore = root.findAll().size();
 			assertNotNull(root.create("dummy12345", null, user()));
@@ -58,7 +58,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			MeshAuthUser requestUser = getUser(rc);
 
 			Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
@@ -108,7 +108,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			assertNull(boot.userRoot().findByUsername("bogus"));
 			boot.userRoot().findByUsername(user().getUsername());
 		}
@@ -176,7 +176,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			User user = user();
 			assertEquals("joe1", user.getUsername());
 			assertNotNull(user.getPasswordHash());

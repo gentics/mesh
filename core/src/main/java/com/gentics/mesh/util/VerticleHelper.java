@@ -292,16 +292,16 @@ public class VerticleHelper {
 						if (node == null) {
 							handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
 						} else {
-							//							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
+//							try (Trx tx2 = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
 
-							MeshAuthUser requestUser = getUser(rc);
-							if (requestUser.hasPermission(node, perm)) {
-								handler.handle(Future.succeededFuture(node));
-							} else {
-								handler.handle(
-										Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
-							}
-							//							}
+								MeshAuthUser requestUser = getUser(rc);
+								if (requestUser.hasPermission(node, perm)) {
+									handler.handle(Future.succeededFuture(node));
+								} else {
+									handler.handle(
+											Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+								}
+//							}
 						}
 					}
 				});

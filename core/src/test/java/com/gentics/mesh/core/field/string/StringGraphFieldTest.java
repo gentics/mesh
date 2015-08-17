@@ -16,7 +16,7 @@ public class StringGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleString() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphFieldImpl field = new StringGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
@@ -27,7 +27,7 @@ public class StringGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testStringField() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphField stringField = container.createString("stringField");
 			assertEquals("stringField", stringField.getFieldKey());

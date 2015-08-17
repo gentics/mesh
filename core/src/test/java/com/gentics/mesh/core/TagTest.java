@@ -323,11 +323,11 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testDelete() throws InterruptedException {
 		Tag tag = tag("red");
 		String uuid = tag.getUuid();
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			tag.remove();
 			tx.success();
 		}
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			CountDownLatch latch = new CountDownLatch(1);
 			tagRoot.findByUuid(uuid, rh -> {
 				assertNull(rh.result());

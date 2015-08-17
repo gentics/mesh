@@ -46,7 +46,6 @@ public class OrientDBDatabase implements Database {
 		factory = new OrientGraphFactory("memory:tinkerpop");
 		//factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
 		wrapper.setFactory(factory);
-		//		wrapper.setGraph(factory.getTx());
 	}
 
 	@Override

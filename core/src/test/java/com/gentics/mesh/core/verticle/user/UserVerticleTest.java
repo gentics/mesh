@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -18,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -58,20 +60,22 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		User user = user();
-		System.out.println("UserID: " + user.getImpl().getId());
-		System.out.println("RoleID: " + role().getImpl().getId());
+		try (Trx tx = new Trx(db)) {
+			User user = user();
+			System.out.println("UserID: " + user.getImpl().getId());
+			System.out.println("RoleID: " + role().getImpl().getId());
 
-		assertNotNull("The UUID of the user must not be null.", user.getUuid());
+			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
-		Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
+			Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse restUser = future.result();
 
-		test.assertUser(user, restUser);
-		// TODO assert groups
-		// TODO assert perms
+			test.assertUser(user, restUser);
+			// TODO assert groups
+			// TODO assert perms
+		}
 	}
 
 	@Test
@@ -79,7 +83,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = user();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(user, READ_PERM);
 			tx.success();
 		}
@@ -94,7 +98,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserRoot root = meshRoot().getUserRoot();
 
 		String username = "testuser_3";
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			User user3 = root.create(username, group(), user());
 			user3.setLastname("should_not_be_listed");
 			user3.setFirstname("should_not_be_listed");
@@ -185,7 +189,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		test.assertUser(updateRequest, restUser);
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -221,7 +225,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 
 		test.assertUser(updateRequest, restUser);
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -344,7 +348,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		test.assertUser(updateRequest, restUser);
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 			assertEquals(user.getUsername(), reloadedUser.getUsername());
@@ -358,7 +362,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(user, UPDATE_PERM);
 			tx.success();
 		}
@@ -405,7 +409,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = meshRoot().getUserRoot();
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			User conflictingUser = userRoot.create("existing_username", group(), user());
 			tx.success();
 		}
@@ -527,10 +531,15 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserResponse restUser = future.result();
 		test.assertUser(newUser, restUser);
 
-		boot.userRoot().findByUuid(restUser.getUuid(), rh -> {
-			User user = rh.result();
-			test.assertUser(user, restUser);
-		});
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.userRoot().findByUuid(restUser.getUuid(), rh -> {
+				User user = rh.result();
+				test.assertUser(user, restUser);
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
 	}
 
@@ -553,12 +562,15 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(createFuture);
 		assertSuccess(createFuture);
 		UserResponse restUser = createFuture.result();
-		test.assertUser(newUser, restUser);
 
-		Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
-		latchFor(deleteFuture);
-		assertSuccess(deleteFuture);
-		expectMessageResponse("user_deleted", deleteFuture, restUser.getUuid() + "/" + restUser.getUsername());
+		try (Trx tx = new Trx(db)) {
+			test.assertUser(newUser, restUser);
+
+			Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
+			latchFor(deleteFuture);
+			assertSuccess(deleteFuture);
+			expectMessageResponse("user_deleted", deleteFuture, restUser.getUuid() + "/" + restUser.getUsername());
+		}
 	}
 
 	@Test
@@ -582,7 +594,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			boot.userRoot().findByUuid(uuid, rh -> {
 				User loadedUser = rh.result();
 				assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
@@ -596,7 +608,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			User user = userRoot.create("extraUser", group(), user());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
@@ -627,7 +639,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
 		String name = "extraUser";
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			User extraUser = userRoot.create(name, group(), user());
 			uuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, DELETE_PERM);

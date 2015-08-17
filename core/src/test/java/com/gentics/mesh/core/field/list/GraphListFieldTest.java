@@ -27,7 +27,7 @@ public class GraphListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testStringList() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphStringFieldList list = container.createStringList("dummyList");
 
@@ -51,7 +51,7 @@ public class GraphListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeList() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphNodeFieldList list = container.createNodeList("dummyList");
@@ -72,7 +72,7 @@ public class GraphListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testNumberList() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphNumberFieldList list = container.createNumberList("dummyList");
 
@@ -86,7 +86,7 @@ public class GraphListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testDateList() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphDateFieldList list = container.createDateList("dummyList");
 			assertNotNull(list);
@@ -99,7 +99,7 @@ public class GraphListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testHTMLList() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphHtmlFieldList list = container.createHTMLList("dummyList");
 			assertNotNull(list);
@@ -112,7 +112,7 @@ public class GraphListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testMicroschemaList() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphMicroschemaFieldList list = container.createMicroschemaFieldList("dummyList");
 			assertNotNull(list);
@@ -121,7 +121,7 @@ public class GraphListFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testBooleanList() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphBooleanFieldList list = container.createBooleanList("dummyList");
 			list.createBoolean(true);

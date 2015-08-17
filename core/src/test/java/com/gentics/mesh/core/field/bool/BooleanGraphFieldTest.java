@@ -18,7 +18,7 @@ public class BooleanGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleBoolean() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldImpl field = new BooleanGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
@@ -37,7 +37,7 @@ public class BooleanGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testBooleanField() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphField booleanField = container.createBoolean("booleanField");
 			assertEquals("booleanField", booleanField.getFieldKey());

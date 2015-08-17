@@ -61,7 +61,7 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected Database database;
+	protected Database db;
 
 	@Autowired
 	protected DatabaseService databaseService;
@@ -184,7 +184,7 @@ public abstract class AbstractDBTest {
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			User user = data().getUserInfo().getUser();
 			Map<String, Object> map = new HashMap<>();
 			RoutingContext rc = mock(RoutingContext.class);

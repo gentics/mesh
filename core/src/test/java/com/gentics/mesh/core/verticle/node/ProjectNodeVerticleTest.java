@@ -415,7 +415,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
 		Node node = folder("2015");
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(node, READ_PERM);
 			tx.success();
 		}
@@ -624,7 +624,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteNodeWithNoPerm() throws Exception {
 
 		String uuid = folder("2015").getUuid();
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			Node node = folder("2015");
 			role().revokePermissions(node, DELETE_PERM);
 			tx.success();

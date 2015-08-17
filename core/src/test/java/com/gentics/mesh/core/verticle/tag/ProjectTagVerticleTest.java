@@ -141,7 +141,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -209,7 +209,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(tag, UPDATE_PERM);
 			tx.success();
 		}
@@ -241,7 +241,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNull("The tag should have been deleted", rh.result());
 			});
@@ -255,14 +255,14 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = tag("vehicle");
 		String uuid = tag.getUuid();
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(tag, DELETE_PERM);
 			tx.success();
 		}
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", tag.getUuid());
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			boot.tagRoot().findByUuid(tag.getUuid(), rh -> {
 				assertNotNull("The tag should not have been deleted", rh.result());
 			});

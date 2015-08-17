@@ -17,7 +17,7 @@ public class MicroschemaGraphFieldTest extends AbstractDBTest {
 	@Test
 	@Ignore("Not yet implemented")
 	public void testSimpleMicroschema() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphMicroschemaField gallery = container.createMicroschema("gallery");
 			assertNotNull(gallery);

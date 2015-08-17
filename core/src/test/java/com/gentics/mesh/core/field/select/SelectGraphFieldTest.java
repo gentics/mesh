@@ -18,7 +18,7 @@ public class SelectGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testStringSelection() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			GraphSelectField<StringGraphField> field = container.createSelect("dummySelect");

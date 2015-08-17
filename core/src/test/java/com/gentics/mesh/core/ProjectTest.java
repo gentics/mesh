@@ -60,7 +60,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		uuidToBeDeleted.put("project.schemaContainerRoot", project().getSchemaContainerRoot().getUuid());
 		uuidToBeDeleted.put("project.nodeRoot", project().getNodeRoot().getUuid());
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			Project project = project();
 			project.delete();
 			tx.success();

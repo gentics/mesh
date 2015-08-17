@@ -16,7 +16,7 @@ public class HtmlGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleHTML() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphFieldImpl field = new HtmlGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
@@ -33,7 +33,7 @@ public class HtmlGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testHTMLField() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField htmlField = container.createHTML("htmlField");
 			assertEquals("htmlField", htmlField.getFieldKey());

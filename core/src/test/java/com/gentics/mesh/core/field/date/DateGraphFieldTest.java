@@ -17,7 +17,7 @@ public class DateGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleDate() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldImpl field = new DateGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
@@ -32,7 +32,7 @@ public class DateGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testDateField() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphField dateField = container.createDate("dateField");
 			assertEquals("dateField", dateField.getFieldKey());

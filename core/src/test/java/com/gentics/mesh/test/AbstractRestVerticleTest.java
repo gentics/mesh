@@ -15,6 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -82,7 +83,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	
 	@After
 	public void cleanup() {
-		databaseService.getDatabase().clear();
+		BootstrapInitializer.clearReferences();
+//		databaseService.getDatabase().clear();
 		databaseService.getDatabase().reset();
 	}
 
