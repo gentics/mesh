@@ -1,12 +1,8 @@
 package com.gentics.mesh.core.data.service;
 
-import java.io.IOException;
-
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class RoutingContextServiceTest extends AbstractDBTest {
@@ -15,7 +11,7 @@ public class RoutingContextServiceTest extends AbstractDBTest {
 	private RoutingContextService meshDatabaseService;
 
 	@Before
-	public void setup() throws JsonParseException, JsonMappingException, IOException {
+	public void setup() throws Exception {
 		setupData();
 	}
 

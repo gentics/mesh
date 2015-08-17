@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
+import com.gentics.mesh.core.rest.user.NodeReference;
 
 public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField, NodeFieldListItem {
 
@@ -25,7 +26,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 
 	private String version;
 
-	private String parentNodeUuid;
+	private NodeReference parentNode;
 
 	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
 
@@ -50,12 +51,12 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	public NodeResponse() {
 	}
 
-	public String getParentNodeUuid() {
-		return parentNodeUuid;
+	public NodeReference getParentNode() {
+		return parentNode;
 	}
 
-	public void setParentNodeUuid(String parentNodeUuid) {
-		this.parentNodeUuid = parentNodeUuid;
+	public void setParentNode(NodeReference parentNode) {
+		this.parentNode = parentNode;
 	}
 
 	public Map<String, TagFamilyTagGroup> getTags() {

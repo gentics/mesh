@@ -3,14 +3,11 @@ package com.gentics.mesh.util;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.graphdb.BlueprintTransaction;
@@ -19,7 +16,7 @@ import com.gentics.mesh.test.AbstractDBTest;
 public class BlueprintTransactionTest extends AbstractDBTest {
 
 	@Before
-	public void setup() throws JsonParseException, JsonMappingException, IOException {
+	public void setup() throws Exception {
 		setupData();
 	}
 

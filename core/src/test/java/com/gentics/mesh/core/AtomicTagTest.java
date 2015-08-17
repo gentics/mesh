@@ -15,12 +15,13 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class AtomicTagTest extends AbstractDBTest {
 
 	@Test
-	public void testTagCreation() {
+	public void testTagCreation() throws MeshSchemaException {
 		MeshRoot meshRoot = boot.meshRoot();
 		User user = meshRoot.getUserRoot().create("test", null, null);
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();

@@ -58,6 +58,7 @@ import com.gentics.mesh.core.verticle.WebRootVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -296,8 +297,9 @@ public class BootstrapInitializer {
 	 * @throws IOException
 	 * @throws JsonMappingException
 	 * @throws JsonParseException
+	 * @throws MeshSchemaException 
 	 */
-	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException {
+	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		MeshRoot meshRoot = meshRoot();
 		MeshRootImpl.setInstance(meshRoot);
 

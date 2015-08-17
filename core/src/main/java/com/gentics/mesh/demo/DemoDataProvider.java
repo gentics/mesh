@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.BlueprintTransaction;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
@@ -96,7 +97,7 @@ public class DemoDataProvider {
 	private DemoDataProvider() {
 	}
 
-	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException {
+	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 
 			BootstrapInitializer.clearReferences();
@@ -438,7 +439,7 @@ public class DemoDataProvider {
 
 	}
 
-	private void addSchemaContainers() {
+	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
 		addBlogPostSchema();
 	}
@@ -462,7 +463,7 @@ public class DemoDataProvider {
 
 	}
 
-	private void addBlogPostSchema() {
+	private void addBlogPostSchema() throws MeshSchemaException {
 		Schema schema = new SchemaImpl();
 		schema.setName("blogpost");
 		schema.setDisplayField("title");

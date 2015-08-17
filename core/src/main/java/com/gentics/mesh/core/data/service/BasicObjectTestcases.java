@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.service;
 
 import java.io.IOException;
 
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface BasicObjectTestcases {
@@ -10,7 +11,7 @@ public interface BasicObjectTestcases {
 
 	void testFindAll() throws InvalidArgumentException;
 
-	void testRootNode();
+	void testRootNode() throws MeshSchemaException;
 
 	void testFindByName() throws IOException;
 
@@ -24,18 +25,18 @@ public interface BasicObjectTestcases {
 
 	void testUpdate() throws IOException;
 
-	void testReadPermission();
+	void testReadPermission() throws MeshSchemaException;
 
-	void testDeletePermission();
+	void testDeletePermission() throws MeshSchemaException;
 
-	void testUpdatePermission();
+	void testUpdatePermission() throws MeshSchemaException;
 
-	void testCreatePermission();
+	void testCreatePermission() throws MeshSchemaException;
 
 	void testTransformation() throws IOException, InterruptedException;
 
-	void testCreateDelete() throws InterruptedException;
+	void testCreateDelete() throws InterruptedException, MeshSchemaException;
 
-	void testCRUDPermissions();
+	void testCRUDPermissions() throws MeshSchemaException;
 
 }

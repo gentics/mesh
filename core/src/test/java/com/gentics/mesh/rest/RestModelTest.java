@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -123,7 +124,7 @@ public class RestModelTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodeList() throws IOException {
+	public void testNodeList() throws IOException, MeshSchemaException {
 		setupData();
 		Schema folderSchema = data().getSchemaContainer("folder").getSchema();
 		Schema contentSchema = data().getSchemaContainer("content").getSchema();

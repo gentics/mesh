@@ -23,7 +23,7 @@ import com.gentics.mesh.test.AbstractDBTest;
 public class SearchQueueTest extends AbstractDBTest {
 
 	@Before
-	public void setup() throws JsonParseException, JsonMappingException, IOException {
+	public void setup() throws Exception {
 		setupData();
 	}
 
