@@ -40,11 +40,11 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 
 	private String displayField;
 
+	private String segmentField;
+
 	private BinaryProperties binaryProperties;
 
 	private String fileName;
-
-	private String segmentField;
 
 	private FieldMap fields = new FieldMapImpl();
 
