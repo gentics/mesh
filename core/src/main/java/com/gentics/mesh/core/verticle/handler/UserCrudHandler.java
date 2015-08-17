@@ -78,9 +78,12 @@ public class UserCrudHandler extends AbstractCrudHandler {
 								rc.fail(ch.cause());
 							} else {
 								User createdUser = ch.result();
-								searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-								transformAndResponde(rc, createdUser);
+								try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
+									searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+									transformAndResponde(rc, createdUser);
+									tx2.success();
+								}
 							}
 						});
 					}
@@ -108,7 +111,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 							tx.success();
 							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
 
-							transformAndResponde(rc, uh.result());
+								transformAndResponde(rc, uh.result());
 							}
 						}
 					});

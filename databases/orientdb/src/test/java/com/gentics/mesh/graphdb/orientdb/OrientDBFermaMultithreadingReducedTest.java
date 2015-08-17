@@ -22,28 +22,32 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 	public void setup() {
 		ThreadedTransactionalGraphWrapper wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
 		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+		setupData();
+	}
+
+	Person p;
+
+	private void setupData() {
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			String name = "SomeName";
+			p = addPersonWithFriends(fg, name);
+			System.out.println(p.getGraph().getClass().getName());
+			tx.success();
+			//fg.commit();
+		}
 	}
 
 	@Test
 	public void testMultithreading() {
-		String name = "SomeName";
-		Person p = addPersonWithFriends(fg, name);
-		System.out.println(p.getGraph().getClass().getName());
-		fg.commit();
+
+//		fg.commit();
 		runAndWait(() -> {
-//			OrientGraph graph2 = factory.getTx();
-//			graph2.getRawGraph().activateOnCurrentThread();
 			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				//			FramedTransactionalGraph fg2 = new DelegatingFramedTransactionalGraph<>(graph2, true, false);
-				//graph.attach((OrientElement) p.getElement());
 				manipulatePerson(p);
+				String name = "newName";
 				p.setName(name);
 
-				// Reload example
-				//			for (VertexFrame vertex : fg.v().toList()) {
-				//				System.out.println(vertex.toString());
-				//			}
-				Person reloaded = fg.v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class, null);
+				Person reloaded = tx.getGraph().v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class, null);
 				System.out.println(reloaded.getName());
 				assertNotNull(reloaded);
 				manipulatePerson(reloaded);

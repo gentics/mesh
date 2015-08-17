@@ -42,8 +42,8 @@ public class OrientDBDatabase implements Database {
 			e.printStackTrace();
 		}
 		Orient.instance().startup();
-		// factory = new OrientGraphFactory("memory:tinkerpop");
-		factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
+		 factory = new OrientGraphFactory("memory:tinkerpop");
+		//factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
 		wrapper.setFactory(factory);
 		wrapper.setGraph(factory.getTx());
 	}
@@ -53,8 +53,11 @@ public class OrientDBDatabase implements Database {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing orientdb {" + factory.hashCode() + "}");
 		}
-		fg.e().removeAll();
-		fg.v().removeAll();
+		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			fg.e().removeAll();
+			fg.v().removeAll();
+			tx.success();
+		}
 		if (log.isDebugEnabled()) {
 			log.debug("Cleared orientdb {" + factory.hashCode() + "}");
 		}
@@ -63,7 +66,14 @@ public class OrientDBDatabase implements Database {
 	@Override
 	public void init(StorageOptions options) {
 		this.options = options;
-		factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
+		
+		factory = new OrientGraphFactory("memory:tinkerpop");
+		// Add some indices
+		// memoryGraph.createKeyIndex("name", Vertex.class);
+		// memoryGraph.createKeyIndex("ferma_type", Vertex.class);
+		// memoryGraph.createKeyIndex("ferma_type", Edge.class);
+		
+		//factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
 		wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
 		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 	}
@@ -71,12 +81,7 @@ public class OrientDBDatabase implements Database {
 	@Override
 	public FramedThreadedTransactionalGraph getFramedGraph() {
 
-		// factory = new OrientGraphFactory("memory:tinkerpop");
-
-		// Add some indices
-		// memoryGraph.createKeyIndex("name", Vertex.class);
-		// memoryGraph.createKeyIndex("ferma_type", Vertex.class);
-		// memoryGraph.createKeyIndex("ferma_type", Edge.class);
+		 
 
 		return fg;
 	}

@@ -61,8 +61,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@Before
 	public void setupVerticleTest() throws Exception {
-		databaseService.getDatabase().clear();
-		databaseService.getDatabase().reset();
 		setupData();
 		port = com.gentics.mesh.test.TestUtil.getRandomPort();
 		vertx = Mesh.vertx();
@@ -81,6 +79,12 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(user().getUsername(), data().getUserInfo().getPassword());
 		resetClientSchemaStorage();
+	}
+	
+	@After
+	public void cleanup() {
+//		databaseService.getDatabase().clear();
+		databaseService.getDatabase().reset();
 	}
 
 	protected void resetClientSchemaStorage() throws IOException {
