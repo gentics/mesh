@@ -50,7 +50,7 @@ public class Neo4jDatabase implements Database {
 	}
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph() throws IOException {
+	public FramedThreadedTransactionalGraph getFramedGraph() {
 
 		// Start the neo4j web console - by default it can be accessed using http://localhost:7474. It is handy for development and should not be enabled by
 		// default.

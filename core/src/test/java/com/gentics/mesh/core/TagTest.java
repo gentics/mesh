@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -323,11 +323,11 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testDelete() throws InterruptedException {
 		Tag tag = tag("red");
 		String uuid = tag.getUuid();
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			tag.remove();
 			tx.success();
 		}
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			CountDownLatch latch = new CountDownLatch(1);
 			tagRoot.findByUuid(uuid, rh -> {
 				assertNull(rh.result());

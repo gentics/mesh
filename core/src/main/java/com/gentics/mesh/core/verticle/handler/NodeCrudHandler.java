@@ -49,7 +49,7 @@ import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.FileUtils;
 
@@ -121,7 +121,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 				Handler<AsyncResult<Node>> nodeCreatedHandler = pnh -> {
 					Node node = pnh.result();
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					try (Trx tx = new Trx(database)) {
 
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
@@ -133,7 +133,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								container.setFieldFromRest(rc, requestModel.getFields(), schema);
 
 								// Inform elasticsearch about the new element
-								searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+								searchQueue().put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 								tx.success();
 								nodeCreated.complete(node);
@@ -213,12 +213,12 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						/* TODO handle other fields, node.setEditor(requestUser); etc. */
 						node.setEditor(getUser(rc));
 						node.setLastEditedTimestamp(System.currentTimeMillis());
-						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+						try (Trx tx = new Trx(database)) {
 							NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 							Schema schema = node.getSchema();
 							try {
 								container.setFieldFromRest(rc, requestModel.getFields(), schema);
-								searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+								searchQueue().put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 								tx.success();
 								transformAndResponde(rc, node);

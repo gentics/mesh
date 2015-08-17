@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
@@ -37,7 +37,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 
 			Project project = getProject(rc);
 			Future<Tag> tagCreated = Future.future();
@@ -63,7 +63,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 							getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
 							project.getTagRoot().addTag(newTag);
 							tagCreated.complete(newTag);
-							searchQueue.put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+							searchQueue().put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 							transformAndResponde(rc, newTag);
 							//							}
@@ -76,14 +76,14 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			delete(rc, "uuid", "tag_deleted", getProject(rc).getTagRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
@@ -120,7 +120,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 						if (updateTagFamily) {
 							// TODO update the tagfamily
 						}
-						searchQueue.put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+						searchQueue().put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 						// tx.success();
 						// }
@@ -133,7 +133,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			Project project = getProject(rc);
 			loadTransformAndResponde(rc, "uuid", READ_PERM, project.getTagRoot());
 		}
@@ -141,7 +141,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			Project project = getProject(rc);
 			loadTransformAndResponde(rc, project.getTagRoot(), new TagListResponse());
 		}

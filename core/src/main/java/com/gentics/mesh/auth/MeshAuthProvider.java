@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -27,12 +27,12 @@ public class MeshAuthProvider implements AuthProvider {
 
 	@Autowired
 	private BootstrapInitializer boot;
+	
+	@Autowired
+	private Database database;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
-
-	@Autowired
-	private FramedThreadedTransactionalGraph fg;
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
@@ -42,7 +42,7 @@ public class MeshAuthProvider implements AuthProvider {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(database)) {
 				user = boot.userRoot().findMeshAuthUserByUsername(username);
 //				tx.success();
 			}

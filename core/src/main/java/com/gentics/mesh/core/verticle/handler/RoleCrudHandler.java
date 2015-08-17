@@ -38,7 +38,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -72,14 +72,14 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 		loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
 			if (hasSucceeded(rc, rh)) {
 				Group parentGroup = rh.result();
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(database)) {
 					Role role = boot.roleRoot().create(requestModel.getName(), parentGroup, requestUser);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
 					tx.success();
 					roleCreated.complete(role);
 				}
 				Role role = roleCreated.result();
-				searchQueue.put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+				searchQueue().put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 				transformAndResponde(rc, role);
 			}
@@ -110,7 +110,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 					}
 					role.setName(requestModel.getName());
 				}
-				searchQueue.put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+				searchQueue().put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 				transformAndResponde(rc, role);
 			}

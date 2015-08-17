@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -50,7 +50,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 			/* TODO check for null */
 			if (requestUser.hasPermission(root, CREATE_PERM)) {
 				TagFamily tagFamily = null;
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(database)) {
 					tagFamily = root.create(name, requestUser);
 					root.addTagFamily(tagFamily);
 					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
@@ -86,7 +86,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", newName)));
 						return;
 					}
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					try (Trx tx = new Trx(database)) {
 						tagFamily.setName(newName);
 						tx.success();
 						transformAndResponde(rc, tagFamily);

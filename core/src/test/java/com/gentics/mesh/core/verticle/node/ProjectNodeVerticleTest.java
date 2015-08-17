@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -415,7 +415,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
 		Node node = folder("2015");
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			role().revokePermissions(node, READ_PERM);
 			tx.success();
 		}
@@ -624,7 +624,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	public void testDeleteNodeWithNoPerm() throws Exception {
 
 		String uuid = folder("2015").getUuid();
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			Node node = folder("2015");
 			role().revokePermissions(node, DELETE_PERM);
 			tx.success();

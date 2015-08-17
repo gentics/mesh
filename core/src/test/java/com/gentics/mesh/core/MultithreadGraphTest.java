@@ -4,18 +4,13 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
-import com.gentics.mesh.graphdb.DatabaseService;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class MultithreadGraphTest extends AbstractDBTest {
-
-	@Autowired
-	private DatabaseService databaseService;
 
 	@Before
 	public void cleanup() {
@@ -26,7 +21,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 	public void testMultithreading() throws InterruptedException {
 
 		runAndWait(() -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(database)) {
 				MeshRoot meshRoot = boot.meshRoot();
 				User user = meshRoot.getUserRoot().create("test", null, null);
 				assertNotNull(user);
@@ -36,7 +31,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 		});
 
 		runAndWait(() -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(database)) {
 				// fg.getEdges();
 				runAndWait(() -> {
 					User user = boot.meshRoot().getUserRoot().findByUsername("test");
@@ -49,7 +44,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 			}
 		});
 
-		// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		// try (BlueprintTransaction tx = new BlueprintTransaction(database)) {
 		User user = boot.meshRoot().getUserRoot().findByUsername("test");
 		assertNotNull(user);
 		// }

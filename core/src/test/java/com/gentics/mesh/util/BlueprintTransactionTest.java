@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class BlueprintTransactionTest extends AbstractDBTest {
@@ -26,7 +26,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 
 		UserRoot root = meshRoot().getUserRoot();
 		int e = i.incrementAndGet();
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			assertNotNull(root.create("testuser" + e, group(), user()));
 			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
 			tx.success();
@@ -35,7 +35,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(database)) {
 				assertNotNull(root.create("testuser" + u, group(), user()));
 				assertNotNull(boot.userRoot().findByUsername("testuser" + u));
 				tx.failure();
@@ -57,7 +57,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 		User user = user();
 
 		Runnable task2 = () -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(database)) {
 				user.setUsername("test2");
 				assertNotNull(boot.userRoot().findByUsername("test2"));
 				tx.success();
@@ -65,7 +65,7 @@ public class BlueprintTransactionTest extends AbstractDBTest {
 			assertNotNull(boot.userRoot().findByUsername("test2"));
 
 			Runnable task = () -> {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(database)) {
 					user.setUsername("test3");
 					assertNotNull(boot.userRoot().findByUsername("test3"));
 					tx.failure();

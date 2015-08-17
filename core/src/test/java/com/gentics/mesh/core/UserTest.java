@@ -8,7 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -25,9 +24,11 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.ext.web.RoutingContext;
 
 public class UserTest extends AbstractBasicObjectTest {
 
@@ -39,7 +40,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			UserRoot root = meshRoot().getUserRoot();
 			int nUserBefore = root.findAll().size();
 			assertNotNull(root.create("dummy12345", null, user()));
@@ -57,7 +58,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			MeshAuthUser requestUser = getUser(rc);
 
 			Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
@@ -107,7 +108,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			assertNull(boot.userRoot().findByUsername("bogus"));
 			boot.userRoot().findByUsername(user().getUsername());
 		}
@@ -175,7 +176,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			User user = user();
 			assertEquals("joe1", user.getUsername());
 			assertNotNull(user.getPasswordHash());

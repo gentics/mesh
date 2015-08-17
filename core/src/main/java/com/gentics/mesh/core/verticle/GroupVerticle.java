@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -17,18 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.rest.role.RoleListResponse;
-import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.GroupCrudHandler;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.ext.web.Route;
 
@@ -59,120 +42,31 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupRoleHandlers() {
 
 		route("/:groupUuid/roles").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			PagingInfo pagingInfo = getPagingInfo(rc);
-			MeshAuthUser requestUser = getUser(rc);
-
-			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
-				try {
-					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-					transformAndResponde(rc, rolePage, new RoleListResponse());
-				} catch (InvalidArgumentException e) {
-					rc.fail(e);
-				}
-			});
-
+			crudHandler.handleGroupRolesList(rc);
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				if (hasSucceeded(rc, grh)) {
-					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
-						if (hasSucceeded(rc, rrh)) {
-							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-								Group group = grh.result();
-								Role role = rrh.result();
-								group.addRole(role);
-								tx.success();
-								transformAndResponde(rc, group);
-							}
-						}
-					});
-				}
-			});
-
+			crudHandler.handleAddRoleToGroup(rc);
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				if (hasSucceeded(rc, grh)) {
-					// TODO check whether the role is actually part of the group
-					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
-						if (hasSucceeded(rc, rrh)) {
-							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-								Group group = grh.result();
-								Role role = rrh.result();
-								group.removeRole(role);
-								tx.success();
-								transformAndResponde(rc, group);
-							}
-						}
-					});
-
-				}
-			});
+			crudHandler.handleRemoveRoleFromGroup(rc);
 		});
 	}
 
 	private void addGroupUserHandlers() {
 		route("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-
-			PagingInfo pagingInfo = getPagingInfo(rc);
-
-			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
-
-				if (hasSucceeded(rc, grh)) {
-					Group group = grh.result();
-					Page<? extends User> userPage;
-					try {
-						userPage = group.getVisibleUsers(requestUser, pagingInfo);
-						transformAndResponde(rc, userPage, new UserListResponse());
-					} catch (Exception e) {
-						rc.fail(e);
-					}
-				}
-			});
-
+			crudHandler.handleGroupUserList(rc);
 		});
 
 		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				if (hasSucceeded(rc, grh)) {
-					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
-						if (hasSucceeded(rc, urh)) {
-							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-								Group group = grh.result();
-								User user = urh.result();
-								group.addUser(user);
-								tx.success();
-							}
-							Group group = grh.result();
-							transformAndResponde(rc, group);
-						}
-					});
-				}
-			});
+			crudHandler.handleAddUserToGroup(rc);
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				if (hasSucceeded(rc, grh)) {
-					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
-						if (hasSucceeded(rc, urh)) {
-							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-								Group group = grh.result();
-								User user = urh.result();
-								group.removeUser(user);
-								tx.success();
-							}
-							Group group = grh.result();
-							transformAndResponde(rc, group);
-						}
-					});
-				}
-			});
+			crudHandler.handleRemoveUserFromGroup(rc);
 		});
 	}
 

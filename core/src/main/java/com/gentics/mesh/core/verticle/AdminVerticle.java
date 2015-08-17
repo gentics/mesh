@@ -2,7 +2,6 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
-import io.vertx.core.json.JsonObject;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
@@ -14,6 +13,8 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.git.GitPullChecker;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * The admin verticle provides core administration rest endpoints.

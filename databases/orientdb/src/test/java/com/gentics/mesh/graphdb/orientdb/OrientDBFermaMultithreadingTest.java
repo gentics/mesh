@@ -5,38 +5,32 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.graphdb.BlueprintTransaction;
-import com.gentics.mesh.graphdb.OrientThreadedTransactionalGraphWrapper;
-import com.gentics.mesh.graphdb.ThreadedTransactionalGraphWrapper;
-import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientTransactionalGraph;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
-	OrientTransactionalGraph memoryGraph = new OrientGraph("memory:tinkerpop");
-	OrientGraphFactory factory = new OrientGraphFactory("memory:tinkerpop");//.setupPool(5, 100);
-
-	FramedThreadedTransactionalGraph fg;
+	private Database database = new OrientDBDatabase();
 
 	@Before
 	public void setup() {
-		ThreadedTransactionalGraphWrapper wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
-		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+		database.init(null);
 	}
+
+	Person p;
 
 	@Test
 	public void testMultithreading() {
-		Person p = addPersonWithFriends(fg, "SomePerson");
-		p.setName("joe");
-		fg.commit();
+		try (Trx tx = new Trx(database)) {
+			p = addPersonWithFriends(tx.getGraph(), "SomePerson");
+			p.setName("joe");
+			tx.success();
+		}
 		runAndWait(() -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				manipulatePerson(p);
+			try (Trx tx = new Trx(database)) {
+				manipulatePerson(tx.getGraph(), p);
 			}
 		});
 	}
@@ -45,33 +39,36 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 	public void testOrientThreadedTransactionalGraphWrapper() {
 
 		// Test creation of user in current thread
-		Person p = addPersonWithFriends(fg, "Person2");
-		manipulatePerson(p);
-		fg.commit();
+		try (Trx tx = new Trx(database)) {
+			Person p = addPersonWithFriends(tx.getGraph(), "Person2");
+			manipulatePerson(tx.getGraph(), p);
+			tx.success();
+		}
 
 		AtomicReference<Person> reference = new AtomicReference<>();
 		runAndWait(() -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				manipulatePerson(p);
+			try (Trx tx = new Trx(database)) {
+				manipulatePerson(tx.getGraph(), p);
 			}
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(database)) {
 				Person p2 = addPersonWithFriends(tx.getGraph(), "Person3");
 				tx.success();
 				reference.set(p2);
 			}
 			runAndWait(() -> {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-					manipulatePerson(p);
+				try (Trx tx = new Trx(database)) {
+					manipulatePerson(tx.getGraph(), p);
 				}
 			});
 		});
 
-		for (VertexFrame vertex : fg.v().toList()) {
-			System.out.println(vertex.toString());
+		try (Trx tx = new Trx(database)) {
+			for (VertexFrame vertex : tx.getGraph().v().toList()) {
+				System.out.println(vertex.toString());
+			}
 		}
-
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			manipulatePerson(reference.get());
+		try (Trx tx = new Trx(database)) {
+			manipulatePerson(tx.getGraph(), reference.get());
 		}
 	}
 

@@ -34,9 +34,11 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.DatabaseService;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestAssert;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -59,7 +61,10 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected FramedThreadedTransactionalGraph fg;
+	protected Database database;
+
+	@Autowired
+	protected DatabaseService databaseService;
 
 	@Autowired
 	protected RestAssert test;
@@ -179,23 +184,23 @@ public abstract class AbstractDBTest {
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {
+		try (Trx tx = new Trx(database)) {
+			User user = data().getUserInfo().getUser();
+			Map<String, Object> map = new HashMap<>();
+			RoutingContext rc = mock(RoutingContext.class);
+			Session session = mock(Session.class);
+			HttpServerRequest request = mock(HttpServerRequest.class);
+			when(request.query()).thenReturn(query);
 
-		User user = data().getUserInfo().getUser();
-		Map<String, Object> map = new HashMap<>();
-		RoutingContext rc = mock(RoutingContext.class);
-		Session session = mock(Session.class);
-		HttpServerRequest request = mock(HttpServerRequest.class);
-		when(request.query()).thenReturn(query);
-
-		MeshAuthUserImpl requestUser = fg.frameElement(user.getElement(), MeshAuthUserImpl.class);
-		when(rc.data()).thenReturn(map);
-		when(rc.request()).thenReturn(request);
-		when(rc.session()).thenReturn(session);
-		JsonObject principal = new JsonObject();
-		principal.put("uuid", user.getUuid());
-		when(rc.user()).thenReturn(requestUser);
-
-		return rc;
+			MeshAuthUserImpl requestUser = tx.getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+			when(rc.data()).thenReturn(map);
+			when(rc.request()).thenReturn(request);
+			when(rc.session()).thenReturn(session);
+			JsonObject principal = new JsonObject();
+			principal.put("uuid", user.getUuid());
+			when(rc.user()).thenReturn(requestUser);
+			return rc;
+		}
 	}
 
 }

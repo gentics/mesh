@@ -5,54 +5,82 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.graphdb.BlueprintTransaction;
-import com.gentics.mesh.graphdb.OrientThreadedTransactionalGraphWrapper;
-import com.gentics.mesh.graphdb.ThreadedTransactionalGraphWrapper;
-import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
 
 public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest {
 
-	OrientGraphFactory factory = new OrientGraphFactory("memory:tinkerpop");//.setupPool(5, 100);
-
-	FramedThreadedTransactionalGraph fg;
+	private Database database;
+	private Person p;
 
 	@Before
 	public void setup() {
-		ThreadedTransactionalGraphWrapper wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
-		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+		database = new OrientDBDatabase();
+		database.init(null);
 		setupData();
 	}
 
-	Person p;
-
 	private void setupData() {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		//TransactionalGraph graph = fg.newTransaction();
+		//FramedTransactionalGraph fg2 = new DelegatingFramedTransactionalGraph<>(graph, true, false);
+		try (Trx tx = new Trx(database)) {
 			String name = "SomeName";
-			p = addPersonWithFriends(fg, name);
-			System.out.println(p.getGraph().getClass().getName());
+			p = addPersonWithFriends(tx.getGraph(), name);
+			tx.getGraph().commit();
 			tx.success();
-			//fg.commit();
+			runAndWait(() -> {
+				try (Trx tx2 = new Trx(database)) {
+					readPerson(p);
+					manipulatePerson(tx2.getGraph(), p);
+				}
+			});
 		}
+
+		runAndWait(() -> {
+			try (Trx tx2 = new Trx(database)) {
+				readPerson(p);
+				manipulatePerson(tx2.getGraph(), p);
+			}
+		});
+
 	}
 
 	@Test
 	public void testMultithreading() {
 
-//		fg.commit();
+		//		fg.commit();
 		runAndWait(() -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-				manipulatePerson(p);
+			Person reloaded;
+			try (Trx tx = new Trx(database)) {
+				manipulatePerson(tx.getGraph(), p);
 				String name = "newName";
 				p.setName(name);
-
-				Person reloaded = tx.getGraph().v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class, null);
+				reloaded = tx.getGraph().v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class, null);
 				System.out.println(reloaded.getName());
 				assertNotNull(reloaded);
-				manipulatePerson(reloaded);
+				manipulatePerson(tx.getGraph(), reloaded);
+				tx.success();
 			}
+			runAndWait(() -> {
+				try (Trx tx2 = new Trx(database)) {
+					readPerson(reloaded);
+				}
+			});
 		});
+	}
+
+	private void readPerson(Person person) {
+		person.getName();
+		for (Person p : person.getFriends()) {
+			p.getName();
+			for (Person p2 : person.getFriends()) {
+				p2.getName();
+				for (Person p3 : p2.getFriends()) {
+					p3.getName();
+				}
+			}
+		}
 	}
 
 }

@@ -9,9 +9,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 import io.vertx.ext.web.RoutingContext;
 

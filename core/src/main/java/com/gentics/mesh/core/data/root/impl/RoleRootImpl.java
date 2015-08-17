@@ -10,7 +10,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
+
+	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
 	@Override
 	protected Class<? extends Role> getPersistanceClass() {
@@ -24,6 +29,9 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 	@Override
 	public void addRole(Role role) {
+		if (log.isDebugEnabled()) {
+			log.debug("Adding role {" + role.getUuid() + ":" + role.getName() + "#" + role.getImpl().getId() + "} to roleRoot {" + getId() + "}");
+		}
 		addItem(role);
 	}
 
@@ -33,8 +41,6 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 		// connecting edges.
 		removeItem(role);
 	}
-
-	// TODO unique index
 
 	@Override
 	public Role create(String name, Group group, User creator) {

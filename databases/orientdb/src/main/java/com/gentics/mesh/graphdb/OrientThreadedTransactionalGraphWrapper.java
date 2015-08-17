@@ -8,13 +8,10 @@ public class OrientThreadedTransactionalGraphWrapper extends ThreadedTransaction
 
 	private OrientGraphFactory factory;
 
+	private TransactionalGraph graph;
+
 	public OrientThreadedTransactionalGraphWrapper(OrientGraphFactory factory) {
 		this.factory = factory;
-		graph = factory.getTx();
-	}
-
-	public void setGraph(TransactionalGraph graph) {
-		this.graph = graph;
 	}
 
 	public void setFactory(OrientGraphFactory factory) {
@@ -26,6 +23,18 @@ public class OrientThreadedTransactionalGraphWrapper extends ThreadedTransaction
 		OrientGraph newGraph = factory.getTx();
 		newGraph.getRawGraph().activateOnCurrentThread();
 		return newGraph;
+	}
+
+	@Override
+	public TransactionalGraph getGraph() {
+		TransactionalGraph graph = null;
+		if (this.graph != null) {
+			graph = this.graph;
+		} else {
+			graph = newTransaction();
+			this.graph = graph;
+		}
+		return graph;
 	}
 
 }

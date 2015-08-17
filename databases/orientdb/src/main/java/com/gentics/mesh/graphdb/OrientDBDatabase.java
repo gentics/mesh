@@ -36,16 +36,17 @@ public class OrientDBDatabase implements Database {
 		}
 		factory.close();
 		Orient.instance().shutdown();
+		Trx.setLocalGraph(null);
 		try {
 			FileUtils.deleteDirectory(new File(options.getDirectory()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		Orient.instance().startup();
-		 factory = new OrientGraphFactory("memory:tinkerpop");
+		factory = new OrientGraphFactory("memory:tinkerpop");
 		//factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
 		wrapper.setFactory(factory);
-		wrapper.setGraph(factory.getTx());
+		//		wrapper.setGraph(factory.getTx());
 	}
 
 	@Override
@@ -53,7 +54,7 @@ public class OrientDBDatabase implements Database {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing orientdb {" + factory.hashCode() + "}");
 		}
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(this)) {
 			fg.e().removeAll();
 			fg.v().removeAll();
 			tx.success();
@@ -66,13 +67,13 @@ public class OrientDBDatabase implements Database {
 	@Override
 	public void init(StorageOptions options) {
 		this.options = options;
-		
+
 		factory = new OrientGraphFactory("memory:tinkerpop");
 		// Add some indices
 		// memoryGraph.createKeyIndex("name", Vertex.class);
 		// memoryGraph.createKeyIndex("ferma_type", Vertex.class);
 		// memoryGraph.createKeyIndex("ferma_type", Edge.class);
-		
+
 		//factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
 		wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
 		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
@@ -80,9 +81,6 @@ public class OrientDBDatabase implements Database {
 
 	@Override
 	public FramedThreadedTransactionalGraph getFramedGraph() {
-
-		 
-
 		return fg;
 	}
 

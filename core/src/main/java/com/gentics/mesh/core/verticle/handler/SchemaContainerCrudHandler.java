@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.ext.web.RoutingContext;
@@ -43,10 +43,10 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 			}
 			SchemaContainerRoot root = boot.schemaContainerRoot();
 			if (requestUser.hasPermission(root, CREATE_PERM)) {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(database)) {
 					SchemaContainer container = root.create(schema, requestUser);
 					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
-					searchQueue.put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+					searchQueue().put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					transformAndResponde(rc, container);
 				}
@@ -78,7 +78,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 				/*
 				 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
 				 */
-				searchQueue.put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+				searchQueue().put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 				transformAndResponde(rc, schemaContainer);
 			}

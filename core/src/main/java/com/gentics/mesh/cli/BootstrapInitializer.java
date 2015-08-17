@@ -66,8 +66,8 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.search.SearchVerticle;
-import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -216,9 +216,6 @@ public class BootstrapInitializer {
 	}
 
 	@Autowired
-	private FramedGraph fg;
-
-	@Autowired
 	private MeshSpringConfiguration springConfiguration;
 
 	@Autowired
@@ -228,14 +225,17 @@ public class BootstrapInitializer {
 		// Check reference graph and finally create the node when it can't be found.
 		if (meshRoot == null) {
 			synchronized (BootstrapInitializer.class) {
-				MeshRoot foundMeshRoot = fg.v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-				if (foundMeshRoot == null) {
-					meshRoot = fg.addFramedVertex(MeshRootImpl.class);
-					if (log.isInfoEnabled()) {
-						log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
+				try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+					MeshRoot foundMeshRoot = tx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+					if (foundMeshRoot == null) {
+						meshRoot = tx.getGraph().addFramedVertex(MeshRootImpl.class);
+						if (log.isInfoEnabled()) {
+							log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
+						}
+					} else {
+						meshRoot = foundMeshRoot;
 					}
-				} else {
-					meshRoot = foundMeshRoot;
+					tx.success();
 				}
 			}
 		}
@@ -297,7 +297,7 @@ public class BootstrapInitializer {
 	 * @throws IOException
 	 * @throws JsonMappingException
 	 * @throws JsonParseException
-	 * @throws MeshSchemaException 
+	 * @throws MeshSchemaException
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		MeshRoot meshRoot = meshRoot();
@@ -438,16 +438,19 @@ public class BootstrapInitializer {
 	}
 
 	private void initPermissions(Role role) {
-		for (Vertex vertex : fg.getVertices()) {
-			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+			for (Vertex vertex : tx.getGraph().getVertices()) {
+				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
-			// TODO typecheck? and verify how orient will behave
-			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
-				log.info("Skipping own role");
-				continue;
+				// TODO typecheck? and verify how orient will behave
+				if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+					log.info("Skipping own role");
+					continue;
+				}
+				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 			}
-			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+			tx.success();
 		}
 	}
 

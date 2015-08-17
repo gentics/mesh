@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -79,7 +79,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		User user = user();
 		assertNotNull("The username of the user must not be null.", user.getUsername());
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			role().revokePermissions(user, READ_PERM);
 			tx.success();
 		}
@@ -94,7 +94,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserRoot root = meshRoot().getUserRoot();
 
 		String username = "testuser_3";
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			User user3 = root.create(username, group(), user());
 			user3.setLastname("should_not_be_listed");
 			user3.setFirstname("should_not_be_listed");
@@ -184,9 +184,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse restUser = future.result();
-
 		test.assertUser(updateRequest, restUser);
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -222,7 +221,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 
 		test.assertUser(updateRequest, restUser);
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -345,7 +344,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		test.assertUser(updateRequest, restUser);
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 			assertEquals(user.getUsername(), reloadedUser.getUsername());
@@ -359,7 +358,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			role().revokePermissions(user, UPDATE_PERM);
 			tx.success();
 		}
@@ -406,7 +405,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = meshRoot().getUserRoot();
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			User conflictingUser = userRoot.create("existing_username", group(), user());
 			tx.success();
 		}
@@ -583,7 +582,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			boot.userRoot().findByUuid(uuid, rh -> {
 				User loadedUser = rh.result();
 				assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
@@ -597,7 +596,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			User user = userRoot.create("extraUser", group(), user());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
@@ -628,7 +627,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
 		String name = "extraUser";
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			User extraUser = userRoot.create(name, group(), user());
 			uuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, DELETE_PERM);

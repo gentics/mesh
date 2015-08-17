@@ -42,8 +42,6 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.util.TraversalHelper;
-import com.syncleus.ferma.VertexFrame;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

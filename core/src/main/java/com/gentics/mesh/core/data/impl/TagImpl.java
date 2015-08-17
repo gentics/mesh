@@ -22,8 +22,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -75,33 +73,29 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
 		TagResponse restTag = new TagResponse();
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(
-				MeshSpringConfiguration.getMeshSpringConfiguration().framedThreadedTransactionalGraph())) {
-			restTag.setPermissions(getUser(rc).getPermissionNames(this));
-			restTag.setUuid(getUuid());
+		restTag.setPermissions(getUser(rc).getPermissionNames(this));
+		restTag.setUuid(getUuid());
 
-			TagFamily tagFamily = getTagFamily();
+		TagFamily tagFamily = getTagFamily();
 
-			if (tagFamily != null) {
-				TagFamilyReference tagFamilyReference = new TagFamilyReference();
-				tagFamilyReference.setName(tagFamily.getName());
-				tagFamilyReference.setUuid(tagFamily.getUuid());
-				restTag.setTagFamilyReference(tagFamilyReference);
-			}
-
-			User creator = getCreator();
-			if (creator != null) {
-				restTag.setCreator(creator.transformToUserReference());
-			}
-
-			User editor = getEditor();
-			if (editor != null) {
-				restTag.setEditor(editor.transformToUserReference());
-			}
-
-			restTag.getFields().setName(getName());
-			tx.success();
+		if (tagFamily != null) {
+			TagFamilyReference tagFamilyReference = new TagFamilyReference();
+			tagFamilyReference.setName(tagFamily.getName());
+			tagFamilyReference.setUuid(tagFamily.getUuid());
+			restTag.setTagFamilyReference(tagFamilyReference);
 		}
+
+		User creator = getCreator();
+		if (creator != null) {
+			restTag.setCreator(creator.transformToUserReference());
+		}
+
+		User editor = getEditor();
+		if (editor != null) {
+			restTag.setEditor(editor.transformToUserReference());
+		}
+
+		restTag.getFields().setName(getName());
 
 		resultHandler.handle(Future.succeededFuture(restTag));
 

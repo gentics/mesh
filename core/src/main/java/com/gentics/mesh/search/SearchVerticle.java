@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
@@ -143,7 +143,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSearchEndpoints() {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			addSearch("users", boot.userRoot(), UserListResponse.class);
 			addSearch("groups", boot.groupRoot(), GroupListResponse.class);
 			addSearch("role", boot.roleRoot(), RoleListResponse.class);

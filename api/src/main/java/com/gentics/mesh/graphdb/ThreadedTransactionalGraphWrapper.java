@@ -7,73 +7,73 @@ import com.tinkerpop.blueprints.ThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
-public abstract class ThreadedTransactionalGraphWrapper implements TransactionalGraph, ThreadedTransactionalGraph, ResettableGraph {
+public abstract class ThreadedTransactionalGraphWrapper implements TransactionalGraph, ThreadedTransactionalGraph {
 
-	protected TransactionalGraph graph;
+	public abstract TransactionalGraph getGraph();
 
 	@Override
 	public Features getFeatures() {
-		return graph.getFeatures();
+		return getGraph().getFeatures();
 	}
 
 	@Override
 	public Vertex addVertex(Object id) {
-		return graph.addVertex(id);
+		return getGraph().addVertex(id);
 	}
 
 	@Override
 	public Vertex getVertex(Object id) {
-		return graph.getVertex(id);
+		return getGraph().getVertex(id);
 	}
 
 	@Override
 	public void removeVertex(Vertex vertex) {
-		graph.removeVertex(vertex);
+		getGraph().removeVertex(vertex);
 	}
 
 	@Override
 	public Iterable<Vertex> getVertices() {
-		return graph.getVertices();
+		return getGraph().getVertices();
 	}
 
 	@Override
 	public Iterable<Vertex> getVertices(String key, Object value) {
-		return graph.getVertices(key, value);
+		return getGraph().getVertices(key, value);
 	}
 
 	@Override
 	public Edge addEdge(Object id, Vertex outVertex, Vertex inVertex, String label) {
-		return graph.addEdge(id, outVertex, inVertex, label);
+		return getGraph().addEdge(id, outVertex, inVertex, label);
 	}
 
 	@Override
 	public Edge getEdge(Object id) {
-		return graph.getEdge(id);
+		return getGraph().getEdge(id);
 	}
 
 	@Override
 	public void removeEdge(Edge edge) {
-		graph.removeEdge(edge);
+		getGraph().removeEdge(edge);
 	}
 
 	@Override
 	public Iterable<Edge> getEdges() {
-		return graph.getEdges();
+		return getGraph().getEdges();
 	}
 
 	@Override
 	public Iterable<Edge> getEdges(String key, Object value) {
-		return graph.getEdges(key, value);
+		return getGraph().getEdges(key, value);
 	}
 
 	@Override
 	public GraphQuery query() {
-		return graph.query();
+		return getGraph().query();
 	}
 
 	@Override
 	public void shutdown() {
-		graph.shutdown();
+		getGraph().shutdown();
 	}
 
 	public abstract TransactionalGraph newTransaction();
@@ -81,27 +81,17 @@ public abstract class ThreadedTransactionalGraphWrapper implements Transactional
 	@SuppressWarnings("deprecation")
 	@Override
 	public void stopTransaction(Conclusion conclusion) {
-		graph.stopTransaction(conclusion);
+		getGraph().stopTransaction(conclusion);
 	}
 
 	@Override
 	public void commit() {
-		graph.commit();
+		getGraph().commit();
 	}
 
 	@Override
 	public void rollback() {
-		graph.rollback();
-	}
-
-	@Override
-	public TransactionalGraph getGraph() {
-		return graph;
-	}
-
-	@Override
-	public void setGraph(TransactionalGraph graph) {
-		this.graph = graph;
+		getGraph().rollback();
 	}
 
 }

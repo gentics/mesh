@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -34,7 +34,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			delete(rc, "uuid", "user_deleted", boot.userRoot());
 			tx.success();
 		}
@@ -69,7 +69,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 					String message = i18n.get(rc, "user_conflicting_username");
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
 				} else {
-					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+					try (Trx tx = new Trx(database)) {
 						MeshAuthUser requestUser = getUser(rc);
 						User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
 						//							User user = parentGroup.createUser(requestModel.getUsername());
@@ -78,8 +78,8 @@ public class UserCrudHandler extends AbstractCrudHandler {
 								rc.fail(ch.cause());
 							} else {
 								User createdUser = ch.result();
-								try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
-									searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+								try (Trx tx2 = new Trx(database)) {
+									searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 									transformAndResponde(rc, createdUser);
 									tx2.success();
@@ -100,19 +100,16 @@ public class UserCrudHandler extends AbstractCrudHandler {
 				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
 				//TODO not sure whether this is actually correct. The try-with might terminate while the async call may still run 
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(database)) {
 					user.fillUpdateFromRest(rc, requestModel, uh -> {
 						if (uh.failed()) {
 							rc.fail(uh.cause());
 							tx.failure();
 						} else {
-							searchQueue.put(user.getUuid(), User.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+							searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 							tx.success();
-							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
-
-								transformAndResponde(rc, uh.result());
-							}
+							transformAndResponde(rc, uh.result());
 						}
 					});
 				}
@@ -122,7 +119,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
 				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.userRoot());
 			});
@@ -131,7 +128,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			loadTransformAndResponde(rc, boot.userRoot(), new UserListResponse());
 		}
 	}

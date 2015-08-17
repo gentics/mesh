@@ -11,10 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -59,21 +57,29 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
-	public FramedThreadedTransactionalGraph framedThreadedTransactionalGraph() {
-		try {
-			StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			Database database = databaseService().getDatabase();
-			if (database == null) {
-				throw new MeshConfigurationException("Could not find any database provider");
-			}
-			database.init(options);
-			return database.getFramedGraph();
-		} catch (Exception e) {
-			String msg = "Could not get framed graph from database provider";
-			log.error(msg, e);
-			throw new RuntimeException(msg, e);
-		}
+	public Database database() {
+		Database database = databaseService().getDatabase();
+		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
+		database.init(options);
+		return database;
 	}
+
+//	@Bean
+//	public FramedThreadedTransactionalGraph framedThreadedTransactionalGraph() {
+//		try {
+//			StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
+//			Database database = database();
+//			if (database == null) {
+//				throw new MeshConfigurationException("Could not find any database provider");
+//			}
+//	database.init(options);
+//			return database.getFramedGraph();
+//		} catch (Exception e) {
+//			String msg = "Could not get framed graph from database provider";
+//			log.error(msg, e);
+//			throw new RuntimeException(msg, e);
+//		}
+//	}
 
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
@@ -87,7 +93,7 @@ public class MeshSpringConfiguration {
 		}
 		long start = System.currentTimeMillis();
 		Node node = NodeBuilder.nodeBuilder().local(true).node();
-//		node.client().admin().cluster().prepareHealth().setWaitForActiveShards(1).execute().actionGet();
+		//		node.client().admin().cluster().prepareHealth().setWaitForActiveShards(1).execute().actionGet();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}

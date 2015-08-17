@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -53,7 +53,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 			if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
 			} else {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(database)) {
 					ProjectRoot projectRoot = boot.projectRoot();
 					Project project = projectRoot.create(requestModel.getName(), requestUser);
 					project.setCreator(requestUser);
@@ -62,13 +62,13 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 						if (log.isInfoEnabled()) {
 							log.info("Registered project {" + project.getName() + "}");
 						}
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project);
+						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getBaseNode());
+						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagFamilyRoot());
+						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagRoot());
+						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getNodeRoot());
 						//Inform elasticsearch about the new element
-						searchQueue.put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+						searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 						tx.success();
 						transformAndResponde(rc, project);
@@ -89,7 +89,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			delete(rc, "uuid", "project_deleted", boot.projectRoot());
 		}
 	}
@@ -102,12 +102,12 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 				Project project = rh.result();
 				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(database)) {
 					project.fillUpdateFromRest(rc, requestModel);
 					tx.success();
 				}
 
-				searchQueue.put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+				searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 				transformAndResponde(rc, project);
 
@@ -127,7 +127,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			loadTransformAndResponde(rc, boot.projectRoot(), new ProjectListResponse());
 		}
 	}

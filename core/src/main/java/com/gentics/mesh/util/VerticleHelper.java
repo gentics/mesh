@@ -34,9 +34,9 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -47,6 +47,10 @@ import io.vertx.ext.web.RoutingContext;
 public class VerticleHelper {
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
+
+	public static String getProjectName(RoutingContext rc) {
+		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
+	}
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse) {
@@ -279,8 +283,7 @@ public class VerticleHelper {
 			handler.handle(Future.failedFuture("Could not find root node."));
 		} else {
 			I18NService i18n = I18NService.getI18n();
-			FramedThreadedTransactionalGraph fg = MeshSpringConfiguration.getMeshSpringConfiguration().framedThreadedTransactionalGraph();
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
 				root.findByUuid(uuid, rh -> {
 					if (rh.failed()) {
 						handler.handle(Future.failedFuture(rh.cause()));
@@ -289,16 +292,16 @@ public class VerticleHelper {
 						if (node == null) {
 							handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
 						} else {
-//							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
+							//							try (BlueprintTransaction tx2 = new BlueprintTransaction(fg)) {
 
-								MeshAuthUser requestUser = getUser(rc);
-								if (requestUser.hasPermission(node, perm)) {
-									handler.handle(Future.succeededFuture(node));
-								} else {
-									handler.handle(
-											Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
-								}
-//							}
+							MeshAuthUser requestUser = getUser(rc);
+							if (requestUser.hasPermission(node, perm)) {
+								handler.handle(Future.succeededFuture(node));
+							} else {
+								handler.handle(
+										Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+							}
+							//							}
 						}
 					}
 				});

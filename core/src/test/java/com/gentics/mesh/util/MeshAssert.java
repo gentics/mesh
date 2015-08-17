@@ -8,6 +8,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
 
 public final class MeshAssert {
 
@@ -18,9 +19,11 @@ public final class MeshAssert {
 	}
 
 	public static void assertDeleted(Map<String, String> uuidToBeDeleted) {
-		for (Map.Entry<String, String> entry : uuidToBeDeleted.entrySet()) {
-			assertFalse("One vertex was not deleted. Uuid: {" + entry.getValue() + "} - Type: {" + entry.getKey() + "}", MeshSpringConfiguration
-					.getMeshSpringConfiguration().framedThreadedTransactionalGraph().v().has("uuid", entry.getValue()).hasNext());
+		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+			for (Map.Entry<String, String> entry : uuidToBeDeleted.entrySet()) {
+				assertFalse("One vertex was not deleted. Uuid: {" + entry.getValue() + "} - Type: {" + entry.getKey() + "}",
+						tx.getGraph().v().has("uuid", entry.getValue()).hasNext());
+			}
 		}
 	}
 

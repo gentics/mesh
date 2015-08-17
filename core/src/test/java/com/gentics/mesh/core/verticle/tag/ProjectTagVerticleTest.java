@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
-import com.gentics.mesh.graphdb.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -141,7 +141,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -209,7 +209,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
 		Tag tag = tag("vehicle");
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			role().revokePermissions(tag, UPDATE_PERM);
 			tx.success();
 		}
@@ -241,7 +241,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNull("The tag should have been deleted", rh.result());
 			});
@@ -255,14 +255,14 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = tag("vehicle");
 		String uuid = tag.getUuid();
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			role().revokePermissions(tag, DELETE_PERM);
 			tx.success();
 		}
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", tag.getUuid());
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(database)) {
 			boot.tagRoot().findByUuid(tag.getUuid(), rh -> {
 				assertNotNull("The tag should not have been deleted", rh.result());
 			});
