@@ -43,6 +43,8 @@ import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.Future;
 
@@ -95,10 +97,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllUsers() throws Exception {
-		UserRoot root = meshRoot().getUserRoot();
 
 		String username = "testuser_3";
 		try (Trx tx = new Trx(db)) {
+			UserRoot root = meshRoot().getUserRoot();
 			User user3 = root.create(username, group(), user());
 			user3.setLastname("should_not_be_listed");
 			user3.setFirstname("should_not_be_listed");
@@ -366,25 +368,29 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			role().revokePermissions(user, UPDATE_PERM);
 			tx.success();
 		}
+
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setPassword("new_password");
-
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-		boot.userRoot().findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();
-			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.userRoot().findByUuid(user.getUuid(), rh -> {
+				User reloadedUser = rh.result();
+				assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+			});
+		}
 	}
 
 	@Test
 	public void testUpdateUserWithNoPermission() throws Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
-		role().revokePermissions(user, UPDATE_PERM);
-
+		try (Trx tx = new Trx(db)) {
+			role().revokePermissions(user, UPDATE_PERM);
+			tx.success();
+		}
 		UserUpdateRequest updatedUser = new UserUpdateRequest();
 		updatedUser.setEmailAddress("n.user@spam.gentics.com");
 		updatedUser.setFirstname("Joe");
@@ -395,21 +401,22 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-
-		boot.userRoot().findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();
-			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
-			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.userRoot().findByUuid(user.getUuid(), rh -> {
+				User reloadedUser = rh.result();
+				assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+				assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
+				assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
+			});
+		}
 	}
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		UserRoot userRoot = meshRoot().getUserRoot();
 		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
 			User conflictingUser = userRoot.create("existing_username", group(), user());
 			tx.success();
 		}
@@ -439,13 +446,15 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
+		try (Trx tx = new Trx(db)) {
 
-		// Create an user with a conflicting username
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User conflictingUser = userRoot.create("existing_username", group(), user());
-		// Add update permission to group in order to create the user in that group
-		role().grantPermissions(group(), CREATE_PERM);
-
+			// Create an user with a conflicting username
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User conflictingUser = userRoot.create("existing_username", group(), user());
+			// Add update permission to group in order to create the user in that group
+			role().grantPermissions(group(), CREATE_PERM);
+			tx.success();
+		}
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
 		newUser.setGroupUuid(group().getUuid());
@@ -565,12 +574,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 		try (Trx tx = new Trx(db)) {
 			test.assertUser(newUser, restUser);
-
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
-			latchFor(deleteFuture);
-			assertSuccess(deleteFuture);
-			expectMessageResponse("user_deleted", deleteFuture, restUser.getUuid() + "/" + restUser.getUsername());
 		}
+
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
+		latchFor(deleteFuture);
+		assertSuccess(deleteFuture);
+		expectMessageResponse("user_deleted", deleteFuture, restUser.getUuid() + "/" + restUser.getUsername());
 	}
 
 	@Test
@@ -606,9 +615,9 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
-		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
 		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", group(), user());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
@@ -621,9 +630,12 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		userRoot.findByUuid(uuid, rh -> {
-			assertNotNull("The user should not have been deleted", rh.result());
-		});
+		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			userRoot.findByUuid(uuid, rh -> {
+				assertNotNull("The user should not have been deleted", rh.result());
+			});
+		}
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -635,33 +647,40 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteByUUID() throws Exception {
-
-		UserRoot userRoot = meshRoot().getUserRoot();
 		String uuid;
 		String name = "extraUser";
 		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create(name, group(), user());
 			uuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, DELETE_PERM);
 			assertNotNull(extraUser.getUuid());
 			tx.success();
 		}
-		userRoot.findByUuid(uuid, rh -> {
-			User user = rh.result();
-			assertEquals(1, user.getGroups().size());
-		});
+		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			userRoot.findByUuid(uuid, rh -> {
+				User user = rh.result();
+				assertEquals(1, user.getGroups().size());
+			});
+		}
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		// Check whether the user was correctly disabled
-		userRoot.findByUuid(uuid, rh -> {
-			User user2 = rh.result();
-			assertNotNull(user2);
-			assertEquals(0, user2.getGroups().size());
-			assertFalse("The user should have been disabled", user2.isEnabled());
-		});
+
+		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+
+			// Check whether the user was correctly disabled
+			userRoot.findByUuid(uuid, rh -> {
+				User user2 = rh.result();
+				assertNotNull(user2);
+				assertEquals(0, user2.getGroups().size());
+				assertFalse("The user should have been disabled", user2.isEnabled());
+			});
+		}
 	}
 
 	@Test

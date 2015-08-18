@@ -73,215 +73,213 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	@Override
 	public UserRoot getUserRoot() {
-		if (userRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				UserRoot foundUserRoot = out(HAS_USER_ROOT).has(UserRootImpl.class).nextOrDefault(UserRootImpl.class, null);
-				if (foundUserRoot == null) {
-					userRoot = getGraph().addFramedVertex(UserRootImpl.class);
-					linkOut(userRoot.getImpl(), HAS_USER_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored tag root {" + userRoot.getUuid() + "}");
-					}
-				} else {
-					userRoot = foundUserRoot;
-				}
+		//		if (userRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		UserRoot foundUserRoot = out(HAS_USER_ROOT).has(UserRootImpl.class).nextOrDefault(UserRootImpl.class, null);
+		if (foundUserRoot == null) {
+			userRoot = getGraph().addFramedVertex(UserRootImpl.class);
+			linkOut(userRoot.getImpl(), HAS_USER_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored tag root {" + userRoot.getUuid() + "}");
 			}
+		} else {
+			userRoot = foundUserRoot;
 		}
+		//			}
+		//		}
 		return userRoot;
 	}
 
 	@Override
 	public RoleRoot getRoleRoot() {
-		if (roleRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				RoleRoot foundRoleRoot = out(HAS_ROLE_ROOT).has(RoleRootImpl.class).nextOrDefault(RoleRootImpl.class, null);
-				if (foundRoleRoot == null) {
-					roleRoot = getGraph().addFramedVertex(RoleRootImpl.class);
-					linkOut(roleRoot.getImpl(), HAS_ROLE_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored role root {" + roleRoot.getUuid() + "}");
-					}
-				} else {
-					roleRoot = foundRoleRoot;
-				}
+		//		if (roleRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		RoleRoot foundRoleRoot = out(HAS_ROLE_ROOT).has(RoleRootImpl.class).nextOrDefault(RoleRootImpl.class, null);
+		if (foundRoleRoot == null) {
+			roleRoot = getGraph().addFramedVertex(RoleRootImpl.class);
+			linkOut(roleRoot.getImpl(), HAS_ROLE_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored role root {" + roleRoot.getUuid() + "}");
 			}
+		} else {
+			roleRoot = foundRoleRoot;
 		}
+		//			}
+		//		}
 		return roleRoot;
 	}
 
 	@Override
 	public SearchQueue getSearchQueue() {
-		if (searchQueueRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				SearchQueue foundSearchQueueRoot = out(HAS_SEARCH_QUEUE_ROOT).has(SearchQueueImpl.class).nextOrDefault(SearchQueueImpl.class, null);
-				if (foundSearchQueueRoot == null) {
-					searchQueueRoot = getGraph().addFramedVertex(SearchQueueImpl.class);
-					linkOut(searchQueueRoot.getImpl(), HAS_SEARCH_QUEUE_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored search queue root {" + searchQueueRoot.getUuid() + "}");
-					}
-				} else {
-					searchQueueRoot = foundSearchQueueRoot;
-				}
+		//		if (searchQueueRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		SearchQueue foundSearchQueueRoot = out(HAS_SEARCH_QUEUE_ROOT).has(SearchQueueImpl.class).nextOrDefault(SearchQueueImpl.class, null);
+		if (foundSearchQueueRoot == null) {
+			searchQueueRoot = getGraph().addFramedVertex(SearchQueueImpl.class);
+			linkOut(searchQueueRoot.getImpl(), HAS_SEARCH_QUEUE_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored search queue root {" + searchQueueRoot.getUuid() + "}");
 			}
+		} else {
+			searchQueueRoot = foundSearchQueueRoot;
 		}
+		//			}
+		//		}
 		return searchQueueRoot;
 
 	}
 
 	@Override
 	public GroupRoot getGroupRoot() {
-		if (groupRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				GroupRoot foundGroupRoot = out(HAS_GROUP_ROOT).has(GroupRootImpl.class).nextOrDefault(GroupRootImpl.class, null);
-				if (foundGroupRoot == null) {
-					groupRoot = getGraph().addFramedVertex(GroupRootImpl.class);
-					linkOut(groupRoot.getImpl(), HAS_GROUP_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored group root {" + groupRoot.getUuid() + "}");
-					}
-				} else {
-					groupRoot = foundGroupRoot;
-				}
+		//		if (groupRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		GroupRoot foundGroupRoot = out(HAS_GROUP_ROOT).has(GroupRootImpl.class).nextOrDefault(GroupRootImpl.class, null);
+		if (foundGroupRoot == null) {
+			groupRoot = getGraph().addFramedVertex(GroupRootImpl.class);
+			linkOut(groupRoot.getImpl(), HAS_GROUP_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored group root {" + groupRoot.getUuid() + "}");
 			}
+		} else {
+			groupRoot = foundGroupRoot;
 		}
+		//			}
+		//		}
 		return groupRoot;
 	}
 
 	@Override
 	public TagRoot getTagRoot() {
-		if (tagRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				TagRoot foundTagRoot = out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefault(TagRootImpl.class, null);
-				if (foundTagRoot == null) {
-					tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
-					linkOut(tagRoot.getImpl(), HAS_TAG_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored tag root {" + tagRoot.getUuid() + "}");
-					}
-				} else {
-					tagRoot = foundTagRoot;
-				}
+		//		if (tagRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		TagRoot foundTagRoot = out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefault(TagRootImpl.class, null);
+		if (foundTagRoot == null) {
+			tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
+			linkOut(tagRoot.getImpl(), HAS_TAG_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored tag root {" + tagRoot.getUuid() + "}");
 			}
-
+		} else {
+			tagRoot = foundTagRoot;
 		}
+		//			}
+		//		}
 		return tagRoot;
 	}
 
 	@Override
 	public SchemaContainerRoot getSchemaContainerRoot() {
-		if (schemaContainerRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class)
-						.nextOrDefault(SchemaContainerRootImpl.class, null);
-				if (foundSchemaContainerRoot == null) {
-					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
-					linkOut(schemaContainerRoot.getImpl(), HAS_SCHEMA_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored schema container root {" + schemaContainerRoot.getUuid() + "}");
-					}
-				} else {
-					schemaContainerRoot = foundSchemaContainerRoot;
-				}
+		//		if (schemaContainerRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class)
+				.nextOrDefault(SchemaContainerRootImpl.class, null);
+		if (foundSchemaContainerRoot == null) {
+			schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
+			linkOut(schemaContainerRoot.getImpl(), HAS_SCHEMA_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored schema container root {" + schemaContainerRoot.getUuid() + "}");
 			}
+		} else {
+			schemaContainerRoot = foundSchemaContainerRoot;
 		}
+		//			}
+		//		}
 		return schemaContainerRoot;
 	}
 
 	@Override
 	public LanguageRoot getLanguageRoot() {
-		if (languageRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				LanguageRoot foundLanguageRoot = out(HAS_LANGUAGE_ROOT).has(LanguageRootImpl.class).nextOrDefault(LanguageRootImpl.class, null);
-				if (foundLanguageRoot == null) {
-					languageRoot = getGraph().addFramedVertex(LanguageRootImpl.class);
-					linkOut(languageRoot.getImpl(), HAS_LANGUAGE_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored language root {" + languageRoot.getUuid() + "}");
-					}
-				} else {
-					languageRoot = foundLanguageRoot;
-				}
+		//		if (languageRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		LanguageRoot foundLanguageRoot = out(HAS_LANGUAGE_ROOT).has(LanguageRootImpl.class).nextOrDefault(LanguageRootImpl.class, null);
+		if (foundLanguageRoot == null) {
+			languageRoot = getGraph().addFramedVertex(LanguageRootImpl.class);
+			linkOut(languageRoot.getImpl(), HAS_LANGUAGE_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored language root {" + languageRoot.getUuid() + "}");
 			}
+		} else {
+			languageRoot = foundLanguageRoot;
 		}
+		//			}
+		//		}
 		return languageRoot;
 	}
 
 	@Override
 	public ProjectRoot getProjectRoot() {
-		if (projectRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				ProjectRoot foundProjectRoot = out(HAS_PROJECT_ROOT).has(ProjectRootImpl.class).nextOrDefault(ProjectRootImpl.class, null);
-				if (foundProjectRoot == null) {
-					projectRoot = getGraph().addFramedVertex(ProjectRootImpl.class);
-					linkOut(projectRoot.getImpl(), HAS_PROJECT_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored project root {" + projectRoot.getUuid() + "}");
-					}
-				} else {
-					projectRoot = foundProjectRoot;
-				}
+		//		if (projectRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		ProjectRoot foundProjectRoot = out(HAS_PROJECT_ROOT).has(ProjectRootImpl.class).nextOrDefault(ProjectRootImpl.class, null);
+		if (foundProjectRoot == null) {
+			projectRoot = getGraph().addFramedVertex(ProjectRootImpl.class);
+			linkOut(projectRoot.getImpl(), HAS_PROJECT_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored project root {" + projectRoot.getUuid() + "}");
 			}
+		} else {
+			projectRoot = foundProjectRoot;
 		}
+		//			}
+		//		}
 		return projectRoot;
 	}
 
 	@Override
 	public NodeRoot getNodeRoot() {
-		if (nodeRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				NodeRoot foundNodeRoot = out(HAS_NODE_ROOT).has(NodeRootImpl.class).nextOrDefault(NodeRootImpl.class, null);
-				if (foundNodeRoot == null) {
-					nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
-					linkOut(nodeRoot.getImpl(), HAS_NODE_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored node root {" + nodeRoot.getUuid() + "}");
-					}
-				} else {
-					nodeRoot = foundNodeRoot;
-				}
+		//		if (nodeRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		NodeRoot foundNodeRoot = out(HAS_NODE_ROOT).has(NodeRootImpl.class).nextOrDefault(NodeRootImpl.class, null);
+		if (foundNodeRoot == null) {
+			nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
+			linkOut(nodeRoot.getImpl(), HAS_NODE_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored node root {" + nodeRoot.getUuid() + "}");
 			}
+		} else {
+			nodeRoot = foundNodeRoot;
 		}
+		//			}
+		//		}
 		return nodeRoot;
 	}
 
 	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
-		if (tagFamilyRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class,
-						null);
-				if (foundTagFamilyRoot == null) {
-					tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
-					linkOut(tagFamilyRoot.getImpl(), HAS_TAGFAMILY_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored tag family root {" + tagFamilyRoot.getUuid() + "}");
-					}
-				} else {
-					tagFamilyRoot = foundTagFamilyRoot;
-				}
+		//		if (tagFamilyRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
+		if (foundTagFamilyRoot == null) {
+			tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
+			linkOut(tagFamilyRoot.getImpl(), HAS_TAGFAMILY_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored tag family root {" + tagFamilyRoot.getUuid() + "}");
 			}
+		} else {
+			tagFamilyRoot = foundTagFamilyRoot;
 		}
+		//			}
+		//		}
 		return tagFamilyRoot;
 	}
 
 	@Override
 	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
-		if (microschemaContainerRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				MicroschemaContainerRoot foundMicroschemaContainerRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class)
-						.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
-				if (foundMicroschemaContainerRoot == null) {
-					microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
-					linkOut(microschemaContainerRoot.getImpl(), HAS_MICROSCHEMA_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Stored microschema root {" + microschemaContainerRoot.getUuid() + "}");
-					}
-				} else {
-					microschemaContainerRoot = foundMicroschemaContainerRoot;
-				}
+		//		if (microschemaContainerRoot == null) {
+		//			synchronized (MeshRootImpl.class) {
+		MicroschemaContainerRoot foundMicroschemaContainerRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class)
+				.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
+		if (foundMicroschemaContainerRoot == null) {
+			microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
+			linkOut(microschemaContainerRoot.getImpl(), HAS_MICROSCHEMA_ROOT);
+			if (log.isInfoEnabled()) {
+				log.info("Stored microschema root {" + microschemaContainerRoot.getUuid() + "}");
 			}
+		} else {
+			microschemaContainerRoot = foundMicroschemaContainerRoot;
 		}
+		//			}
+		//		}
 		return microschemaContainerRoot;
 	}
 

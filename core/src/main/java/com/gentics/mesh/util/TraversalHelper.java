@@ -10,6 +10,7 @@ import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.graphdb.Trx;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -67,8 +68,8 @@ public final class TraversalHelper {
 
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal,
 			PagingInfo pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
-		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(),
-				pagingInfo.getPerPage(), pagingInfo.getPerPage(), classOfT);
+		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
+				pagingInfo.getPerPage(), classOfT);
 	}
 
 	/**
@@ -92,6 +93,13 @@ public final class TraversalHelper {
 		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
 			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
+	}
+
+	public static void printDebugVertices() {
+		for (VertexFrame frame : Trx.getFramedLocalGraph().v()) {
+			System.out.println(frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name"));
+		}
+
 	}
 
 }

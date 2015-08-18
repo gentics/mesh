@@ -48,6 +48,10 @@ public class Trx implements AutoCloseable {
 		Trx.localGraph.set(graph);
 	}
 
+	public static FramedTransactionalGraph getFramedLocalGraph() {
+		return new DelegatingFramedTransactionalGraph<>(getLocalGraph(), true, false);
+	}
+
 	public static TransactionalGraph getLocalGraph() {
 		return Trx.localGraph.get();
 	}

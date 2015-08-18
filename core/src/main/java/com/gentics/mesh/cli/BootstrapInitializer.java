@@ -438,8 +438,8 @@ public class BootstrapInitializer {
 	}
 
 	private void initPermissions(Role role) {
-		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-			for (Vertex vertex : tx.getGraph().getVertices()) {
+//		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+			for (Vertex vertex : Trx.getFramedLocalGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
 				// TODO typecheck? and verify how orient will behave
@@ -447,11 +447,11 @@ public class BootstrapInitializer {
 					log.info("Skipping own role");
 					continue;
 				}
-				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				MeshVertex meshVertex = Trx.getFramedLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 			}
-			tx.success();
-		}
+//			tx.success();
+//		}
 	}
 
 	protected void initLanguages(LanguageRoot rootNode) throws JsonParseException, JsonMappingException, IOException {

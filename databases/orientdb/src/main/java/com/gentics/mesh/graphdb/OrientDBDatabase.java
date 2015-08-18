@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.Orient;
+import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;

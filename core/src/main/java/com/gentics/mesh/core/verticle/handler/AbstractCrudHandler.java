@@ -72,26 +72,26 @@ public abstract class AbstractCrudHandler {
 	public <T extends GenericVertex<? extends RestModel>> void delete(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
 		I18NService i18n = I18NService.getI18n();
+		try (Trx tx = new Trx(database)) {
 
-		loadObject(rc, uuidParameterName, DELETE_PERM, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
-				GenericVertex<?> vertex = rh.result();
-				String uuid = vertex.getUuid();
-				String name = null;
-				if (vertex instanceof NamedNode) {
-					name = ((NamedNode) vertex).getName();
-				}
-				try (Trx tx = new Trx(database)) {
+			loadObject(rc, uuidParameterName, DELETE_PERM, root, rh -> {
+				if (hasSucceeded(rc, rh)) {
+					GenericVertex<?> vertex = rh.result();
+					String uuid = vertex.getUuid();
+					String name = null;
+					if (vertex instanceof NamedNode) {
+						name = ((NamedNode) vertex).getName();
+					}
 					vertex.delete();
 					BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(vertex.getUuid(), vertex.getType(),
 							SearchQueueEntryAction.DELETE_ACTION);
 					Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					tx.success();
+					String id = name != null ? uuid + "/" + name : uuid;
+					responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
 				}
-				String id = name != null ? uuid + "/" + name : uuid;
-				responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
-			}
-		});
+			});
+		}
 	}
 
 }

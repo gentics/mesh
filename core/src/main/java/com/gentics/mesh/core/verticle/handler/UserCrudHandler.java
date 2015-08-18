@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.Trx;
+import com.syncleus.ferma.VertexFrame;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -61,15 +62,15 @@ public class UserCrudHandler extends AbstractCrudHandler {
 			return;
 		}
 
-		// Load the parent group for the user
-		loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
-				Group parentGroup = rh.result();
-				if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
-					String message = i18n.get(rc, "user_conflicting_username");
-					rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
-				} else {
-					try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(database)) {
+			// Load the parent group for the user
+			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Group parentGroup = rh.result();
+					if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
+						String message = i18n.get(rc, "user_conflicting_username");
+						rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
+					} else {
 						MeshAuthUser requestUser = getUser(rc);
 						User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
 						user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
@@ -77,30 +78,31 @@ public class UserCrudHandler extends AbstractCrudHandler {
 								rc.fail(ch.cause());
 							} else {
 								User createdUser = ch.result();
-//								try (Trx tx2 = new Trx(database)) {
+								//								try (Trx tx2 = new Trx(database)) {
 								searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-//								tx2.getGraph().commit();
-//								}
+								//								tx2.getGraph().commit();
+								//								}
 								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 								tx.success();
 								transformAndResponde(rc, createdUser);
 							}
 						});
+
 					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		loadObject(rc, "uuid", UPDATE_PERM, boot.userRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
-				User user = rh.result();
-				UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
+		try (Trx tx = new Trx(database)) {
+			loadObject(rc, "uuid", UPDATE_PERM, boot.userRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					User user = rh.result();
+					UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
 
-				// TODO not sure whether this is actually correct. The try-with might terminate while the async call may still run
-				try (Trx tx = new Trx(database)) {
+					// TODO not sure whether this is actually correct. The try-with might terminate while the async call may still run
 					user.fillUpdateFromRest(rc, requestModel, uh -> {
 						if (uh.failed()) {
 							rc.fail(uh.cause());
@@ -113,8 +115,8 @@ public class UserCrudHandler extends AbstractCrudHandler {
 						}
 					});
 				}
-			}
-		});
+			});
+		}
 	}
 
 	@Override

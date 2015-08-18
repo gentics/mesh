@@ -39,6 +39,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestAssert;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -146,7 +147,9 @@ public abstract class AbstractDBTest {
 	}
 
 	public Group group() {
-		return data().getUserInfo().getGroup();
+		Group group = data().getUserInfo().getGroup();
+		((OrientVertex)group.getImpl().getElement()).reload();
+		return group;
 	}
 
 	public Role role() {
