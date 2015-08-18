@@ -78,32 +78,45 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
-		UserRoot userRoot = meshRoot().getUserRoot();
+		String userUuid;
+		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User extraUser = userRoot.create("extraUser", null, user());
+			userUuid = extraUser.getUuid();
+			role().grantPermissions(extraUser, READ_PERM);
+			tx.success();
+		}
 
-		User extraUser = userRoot.create("extraUser", null, user());
-		role().grantPermissions(extraUser, READ_PERM);
-
-		Future<GroupResponse> future = getClient().addUserToGroup("bogus", extraUser.getUuid());
+		Future<GroupResponse> future = getClient().addUserToGroup("bogus", userUuid);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
-		Group group = group();
-		UserRoot userRoot = meshRoot().getUserRoot();
+		User extraUser;
+		try (Trx tx = new Trx(db)) {
+			Group group = group();
+			UserRoot userRoot = meshRoot().getUserRoot();
 
-		User extraUser = userRoot.create("extraUser", null, user());
-		role().grantPermissions(extraUser, READ_PERM);
+			extraUser = userRoot.create("extraUser", null, user());
+			role().grantPermissions(extraUser, READ_PERM);
 
-		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
+			assertFalse("User should not be member of the group.", group.hasUser(extraUser));
+			tx.success();
+		}
 
-		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		GroupResponse restGroup = future.result();
-		test.assertGroup(group, restGroup);
-		assertTrue("User should be member of the group.", group.hasUser(extraUser));
+		Future<GroupResponse> future;
+		try (Trx tx = new Trx(db)) {
+			future = getClient().addUserToGroup(group().getUuid(), extraUser.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			GroupResponse restGroup = future.result();
+			test.assertGroup(group(), restGroup);
+		}
+		try (Trx tx = new Trx(db)) {
+			assertTrue("User should be member of the group.", group().hasUser(extraUser));
+		}
 	}
 
 	@Test
@@ -133,44 +146,61 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
-		Group group = group();
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser", null, user());
-		role().grantPermissions(extraUser, DELETE_PERM);
+		User extraUser;
+		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			extraUser = userRoot.create("extraUser", null, user());
+			role().grantPermissions(extraUser, DELETE_PERM);
+			tx.success();
+		}
 
-		Future<GroupResponse> future = getClient().addUserToGroup(group.getUuid(), extraUser.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", extraUser.getUuid());
-		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
+		try (Trx tx = new Trx(db)) {
+			Future<GroupResponse> future = getClient().addUserToGroup(group().getUuid(), extraUser.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", extraUser.getUuid());
+		}
+		try (Trx tx = new Trx(db)) {
+			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
+		}
 	}
 
 	// Group User Testcases - DELETE / Remove
 	@Test
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
-		User user = user();
-		Group group = group();
-		assertTrue("User should be a member of the group.", group.hasUser(user));
+		try (Trx tx = new Trx(db)) {
+			User user = user();
+			Group group = group();
+			assertTrue("User should be a member of the group.", group.hasUser(user));
+			role().revokePermissions(group, UPDATE_PERM);
+			tx.success();
+		}
 
-		role().revokePermissions(group, UPDATE_PERM);
-		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
+		try (Trx tx = new Trx(db)) {
+			Future<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
+		}
 
-		assertTrue("User should still be a member of the group.", group.hasUser(user));
+		try (Trx tx = new Trx(db)) {
+			assertTrue("User should still be a member of the group.", group().hasUser(user()));
+		}
 	}
 
 	@Test
 	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		User user = user();
-		Group group = group();
 
-		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());
-		latchFor(future);
-		assertSuccess(future);
+		Future<GroupResponse> future;
+		try (Trx tx = new Trx(db)) {
+			future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid());
+			latchFor(future);
+			assertSuccess(future);
+		}
 
-		GroupResponse restGroup = future.result();
-		test.assertGroup(group, restGroup);
-		assertFalse("User should not be member of the group.", group.hasUser(user));
+		try (Trx tx = new Trx(db)) {
+			GroupResponse restGroup = future.result();
+			test.assertGroup(group(), restGroup);
+			assertFalse("User should not be member of the group.", group().hasUser(user()));
+		}
 	}
 
 	@Test
@@ -181,23 +211,28 @@ extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
-		User user = user();
-		Group group = group();
 
-		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), user.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		assertFalse("User should no longer be member of the group.", group.hasUser(user));
+		try (Trx tx = new Trx(db)) {
+			Future<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid());
+			latchFor(future);
+			assertSuccess(future);
+		}
+
+		try (Trx tx = new Trx(db)) {
+			assertFalse("User should no longer be member of the group.", group().hasUser(user()));
+		}
 	}
 
 	@Test
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
-		User user = user();
-		Group group = group();
 
-		Future<GroupResponse> future = getClient().removeUserFromGroup(group.getUuid(), "bogus");
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
-		assertTrue("User should still be member of the group.", group.hasUser(user));
+		try (Trx tx = new Trx(db)) {
+			Future<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), "bogus");
+			latchFor(future);
+			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		}
+		try (Trx tx = new Trx(db)) {
+			assertTrue("User should still be member of the group.", group().hasUser(user()));
+		}
 	}
 }

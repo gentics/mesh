@@ -17,17 +17,20 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.graphdb.Trx;
 
 public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
-		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
-		stringFieldSchema.setName("stringField");
-		stringFieldSchema.setLabel("Some label");
-		schema.addField(stringFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		try (Trx tx = new Trx(db)) {
+			Schema schema = schemaContainer("folder").getSchema();
+			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
+			stringFieldSchema.setName("stringField");
+			stringFieldSchema.setLabel("Some label");
+			schema.addField(stringFieldSchema);
+			schemaContainer("folder").setSchema(schema);
+		}
 	}
 
 	@Test
@@ -53,17 +56,15 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		Node node = folder("2015");
-
-		NodeFieldContainer container = node.getFieldContainer(english());
-		StringGraphField stringField = container.createString("stringField");
-		stringField.setString("someString");
-
-		NodeResponse response = readNode(node);
-
-		StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
-		assertNotNull(deserializedStringField);
-		assertEquals("someString", deserializedStringField.getString());
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			NodeFieldContainer container = node.getFieldContainer(english());
+			StringGraphField stringField = container.createString("stringField");
+			stringField.setString("someString");
+			NodeResponse response = readNode(node);
+			StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
+			assertNotNull(deserializedStringField);
+			assertEquals("someString", deserializedStringField.getString());
+		}
 	}
-
 }

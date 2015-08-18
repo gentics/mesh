@@ -147,16 +147,18 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = tag("vehicle");
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+		String uuid;
 		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			uuid = tag.getUuid();
+			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
 
-		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test

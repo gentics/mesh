@@ -277,8 +277,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							Node sourceNode = sourceNodeHandler.result();
 							Node targetNode = targetNodeHandler.result();
 
-							//TODO should we add a guard that terminates this loop when it runs to long?
-							// Check whether the target node is part of the subtree of the source node. 
+							// TODO should we add a guard that terminates this loop when it runs to long?
+							// Check whether the target node is part of the subtree of the source node.
 							Node parent = targetNode.getParentNode();
 							while (parent != null) {
 								if (parent.getUuid().equals(sourceNode.getUuid())) {
@@ -295,7 +295,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								}
 							} catch (Exception e) {
 								log.error("Could not load schema for target node during move action", e);
-								//TODO maybe add better i18n error
+								// TODO maybe add better i18n error
 								rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error"), e));
 								return;
 							}
@@ -305,7 +305,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								return;
 							}
 
-							//TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
+							// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
 
 							// Move the node
 							try (Trx txMove = new Trx(db)) {
@@ -332,10 +332,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(rc, rh)) {
 					Node node = rh.result();
 					node.getBinaryFileBuffer().setHandler(bh -> {
-						//TODO set content disposition
+						// TODO set content disposition
 						rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(node.getBinaryFileSize()));
 						rc.response().putHeader(HttpHeaders.CONTENT_TYPE, node.getBinaryContentType());
-						//TODO encode filename?
+						// TODO encode filename?
 						rc.response().putHeader("content-disposition", "attachment; filename=" + node.getBinaryFileName());
 						rc.response().end(bh.result());
 					});
@@ -497,8 +497,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						Node node = rh.result();
 						loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
 							if (hasSucceeded(rc, th)) {
-								Tag tag = th.result();
-								node.addTag(tag);
+								try (Trx txAdd = new Trx(db)) {
+									Tag tag = th.result();
+									node.addTag(tag);
+									txAdd.success();
+								}
 								transformAndResponde(rc, node);
 							}
 						});
@@ -516,7 +519,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					if (hasSucceeded(rc, srh) && hasSucceeded(rc, rh)) {
 						Node node = rh.result();
 						Tag tag = srh.result();
-						node.removeTag(tag);
+						try (Trx txRemove = new Trx(db)) {
+							node.removeTag(tag);
+							txRemove.success();
+						}
 						transformAndResponde(rc, node);
 					}
 				});

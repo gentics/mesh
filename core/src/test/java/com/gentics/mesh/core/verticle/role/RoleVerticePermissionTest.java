@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.RoleVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -29,8 +30,12 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 	public void testRevokeAllPermissionFromProject() {
 
 		// Add permission on own role
-		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-		assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+		try (Trx tx = new Trx(db)) {
+			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			tx.success();
+		}
+
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
 		Future<GenericMessageResponse> future = getClient().updateRolePermission(role().getUuid(), "projects/" + project().getUuid(), request);
@@ -45,8 +50,12 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 	public void testAddPermissionToProjectTagFamily() {
 
 		// Add permission on own role
-		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-		assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+		try (Trx tx = new Trx(db)) {
+			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			tx.success();
+		}
+
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(false);
 		request.getPermissions().add("read");

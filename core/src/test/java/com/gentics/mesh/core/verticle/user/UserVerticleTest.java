@@ -43,8 +43,6 @@ import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.Future;
 
@@ -82,17 +80,18 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadByUUIDWithNoPermission() throws Exception {
-		User user = user();
-		assertNotNull("The username of the user must not be null.", user.getUsername());
-
+		String uuid;
 		try (Trx tx = new Trx(db)) {
+			User user = user();
+			uuid = user.getUuid();
+			assertNotNull("The username of the user must not be null.", user.getUsername());
 			role().revokePermissions(user, READ_PERM);
 			tx.success();
 		}
 
-		Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
+		Future<UserResponse> future = getClient().findUserByUuid(uuid);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -178,6 +177,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUser() throws Exception {
+		
 		User user = user();
 		String username = user.getUsername();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();

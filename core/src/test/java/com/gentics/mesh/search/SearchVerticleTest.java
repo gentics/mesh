@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
@@ -65,17 +67,19 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	private void setupFullIndex() throws InterruptedException {
-		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-		for (Node node : boot.nodeRoot().findAll()) {
-			searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			for (Node node : boot.nodeRoot().findAll()) {
+				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
+			}
+			System.out.println("Search Queue size:" + searchQueue.getSize());
 		}
-		System.out.println("Search Queue size:" + searchQueue.getSize());
 
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 	}
 
 	@Test
@@ -117,6 +121,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveContent() throws InterruptedException, JSONException {
 		setupFullIndex();
+
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 
 		QueryBuilder qb = QueryBuilders.queryStringQuery("Großraumflugzeug");
