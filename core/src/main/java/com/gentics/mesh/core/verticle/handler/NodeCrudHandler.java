@@ -308,13 +308,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							//TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
 
 							// Move the node
-							sourceNode.setParentNode(targetNode);
-
-							sourceNode.setEditor(getUser(rc));
-							sourceNode.setLastEditedTimestamp(System.currentTimeMillis());
-							targetNode.setEditor(getUser(rc));
-							targetNode.setLastEditedTimestamp(System.currentTimeMillis());
-
+							try (Trx txMove = new Trx(db)) {
+								sourceNode.setParentNode(targetNode);
+								sourceNode.setEditor(getUser(rc));
+								sourceNode.setLastEditedTimestamp(System.currentTimeMillis());
+								targetNode.setEditor(getUser(rc));
+								targetNode.setLastEditedTimestamp(System.currentTimeMillis());
+								txMove.success();
+							}
 							// TODO update the search index
 							responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "node_moved_to", uuid, toUuid))));
 						}

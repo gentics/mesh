@@ -193,41 +193,45 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleAddUserToGroup(RoutingContext rc) {
-		loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-			if (hasSucceeded(rc, grh)) {
-				loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
-					if (hasSucceeded(rc, urh)) {
-						try (Trx tx = new Trx(db)) {
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+				if (hasSucceeded(rc, grh)) {
+					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
+						if (hasSucceeded(rc, urh)) {
+							try (Trx txAdd = new Trx(db)) {
+								Group group = grh.result();
+								User user = urh.result();
+								group.addUser(user);
+								txAdd.success();
+							}
 							Group group = grh.result();
-							User user = urh.result();
-							group.addUser(user);
-							tx.success();
+							transformAndResponde(rc, group);
 						}
-						Group group = grh.result();
-						transformAndResponde(rc, group);
-					}
-				});
-			}
-		});
+					});
+				}
+			});
+		}
 	}
 
 	public void handleRemoveUserFromGroup(RoutingContext rc) {
-		loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-			if (hasSucceeded(rc, grh)) {
-				loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
-					if (hasSucceeded(rc, urh)) {
-						try (Trx tx = new Trx(db)) {
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+				if (hasSucceeded(rc, grh)) {
+					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
+						if (hasSucceeded(rc, urh)) {
+							try (Trx txRemove = new Trx(db)) {
+								Group group = grh.result();
+								User user = urh.result();
+								group.removeUser(user);
+								txRemove.success();
+							}
 							Group group = grh.result();
-							User user = urh.result();
-							group.removeUser(user);
-							tx.success();
+							transformAndResponde(rc, group);
 						}
-						Group group = grh.result();
-						transformAndResponde(rc, group);
-					}
-				});
-			}
-		});
+					});
+				}
+			});
+		}
 	}
 
 }

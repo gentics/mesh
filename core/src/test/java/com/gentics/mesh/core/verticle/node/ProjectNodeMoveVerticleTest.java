@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.junit.Assert.assertNotEquals;
-import io.vertx.core.Future;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+
+import io.vertx.core.Future;
 
 public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
@@ -27,53 +30,94 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		Node sourceNode = folder("news");
-		Node targetNode = content("jeep wrangler");
-
-		String oldParentUuid = sourceNode.getParentNode().getUuid();
-		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+		String sourceUuid;
+		String targetUuid;
+		String oldParentUuid;
+		try (Trx tx = new Trx(db)) {
+			Node sourceNode = folder("news");
+			sourceUuid = sourceNode.getUuid();
+			Node targetNode = content("jeep wrangler");
+			targetUuid = targetNode.getUuid();
+			oldParentUuid = sourceNode.getParentNode().getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
+		}
+		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, targetUuid);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 
-		assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode().getUuid());
+		try (Trx tx = new Trx(db)) {
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
+		}
 	}
 
 	@Test
 	public void testMoveNodesSame() {
-		Node sourceNode = folder("news");
-		String oldParentUuid = sourceNode.getParentNode().getUuid();
-		assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode().getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid());
+		String sourceUuid;
+		String oldParentUuid;
+		try (Trx tx = new Trx(db)) {
+			Node sourceNode = folder("news");
+			sourceUuid = sourceNode.getUuid();
+			oldParentUuid = sourceNode.getParentNode().getUuid();
+			assertNotEquals(sourceUuid, sourceNode.getParentNode().getUuid());
+		}
+		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, sourceUuid);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_move_error_same_nodes");
 
-		assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode().getUuid());
+		try (Trx tx = new Trx(db)) {
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
+		}
 	}
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		Node sourceNode = folder("news");
-		String oldParentUuid = sourceNode.getParentNode().getUuid();
-		Node targetNode = folder("2015");
-		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+		String sourceUuid;
+		String targetUuid;
+		String oldParentUuid;
+		try (Trx tx = new Trx(db)) {
+			Node sourceNode = folder("news");
+			sourceUuid = sourceNode.getUuid();
+			oldParentUuid = sourceNode.getParentNode().getUuid();
+			Node targetNode = folder("2015");
+			targetUuid = targetNode.getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
+		}
+
+		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, targetUuid);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children");
 
-		assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode().getUuid());
+		try (Trx tx = new Trx(db)) {
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
+		}
+	}
+
+	@Test
+	public void testMoveNodeWithoutPerm() {
+		fail("not yet implemented");
 	}
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		Node sourceNode = folder("deals");
-		Node targetNode = folder("2015");
-		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+		String sourceUuid;
+		String targetUuid;
+		try (Trx tx = new Trx(db)) {
+			Node sourceNode = folder("deals");
+			sourceUuid = sourceNode.getUuid();
+			Node targetNode = folder("2015");
+			targetUuid = targetNode.getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
+		}
+
+		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, targetUuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("node_moved_to", future, sourceNode.getUuid(), targetNode.getUuid());
-		assertEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
+		expectMessageResponse("node_moved_to", future, sourceUuid, targetUuid);
+
+		try (Trx tx = new Trx(db)) {
+			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
+					targetUuid, folder("deals").getParentNode().getUuid());
+		}
 	}
 
 }
