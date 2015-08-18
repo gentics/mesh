@@ -62,7 +62,7 @@ public class DemoDataProvider {
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
 	@Autowired
-	private Database database;
+	private Database db;
 
 	@Autowired
 	private BootstrapInitializer rootService;
@@ -98,7 +98,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 
 			bootstrapInitializer.initMandatoryData();
 
@@ -139,7 +139,7 @@ public class DemoDataProvider {
 
 	public void updatePermissions() {
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			Role role = userInfo.getRole();
 
 			for (Vertex vertex : tx.getGraph().getVertices()) {
@@ -156,9 +156,6 @@ public class DemoDataProvider {
 					log.debug("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
 				}
 				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-
-				// This is very odd. I don't yet fully understand why we need to commit the transaction from within the role
-				((FramedTransactionalGraph) role.getImpl().getGraph()).commit();
 			}
 			tx.success();
 		}

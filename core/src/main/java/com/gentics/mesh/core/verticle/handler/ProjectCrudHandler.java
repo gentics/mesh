@@ -48,71 +48,78 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_missing_name")));
 			return;
 		}
+		try (Trx tx = new Trx(db)) {
 
-		if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
-			if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
-			} else {
-				try (Trx tx = new Trx(database)) {
+			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
+				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
+					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
+				} else {
 					ProjectRoot projectRoot = boot.projectRoot();
-					Project project = projectRoot.create(requestModel.getName(), requestUser);
-					project.setCreator(requestUser);
-					try {
-						routerStorage.addProjectRouter(project.getName());
-						if (log.isInfoEnabled()) {
-							log.info("Registered project {" + project.getName() + "}");
+					try (Trx txCreate = new Trx(db)) {
+						Project project = projectRoot.create(requestModel.getName(), requestUser);
+						project.setCreator(requestUser);
+						try {
+							routerStorage.addProjectRouter(project.getName());
+							if (log.isInfoEnabled()) {
+								log.info("Registered project {" + project.getName() + "}");
+							}
+							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project);
+							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getBaseNode());
+							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagFamilyRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getNodeRoot());
+							txCreate.success();
+						} catch (Exception e) {
+							// TODO should we really fail here?
+							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
+							tx.failure();
+							return;
 						}
-						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project);
-						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getBaseNode());
-						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagFamilyRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getNodeRoot());
-						//Inform elasticsearch about the new element
-						searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-						tx.success();
 						transformAndResponde(rc, project);
+						//Inform elasticsearch about the new element
+						try (Trx txSearch = new Trx(db)) {
+							searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+							txSearch.success();
+						}
 
-					} catch (Exception e) {
-						// TODO should we really fail here?
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
-						tx.failure();
-						return;
 					}
 				}
+			} else {
+				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid())));
 			}
-		} else {
-			rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid())));
 		}
 
 	}
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			delete(rc, "uuid", "project_deleted", boot.projectRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		loadObject(rc, "uuid", UPDATE_PERM, boot.projectRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "uuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
 
-				Project project = rh.result();
-				ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
+					Project project = rh.result();
+					ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
+					try (Trx txUpdate = new Trx(db)) {
+						project.fillUpdateFromRest(rc, requestModel);
+						txUpdate.success();
+					}
 
-				try (Trx tx = new Trx(database)) {
-					project.fillUpdateFromRest(rc, requestModel);
-					tx.success();
+					searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+					transformAndResponde(rc, project);
+
 				}
+			});
+		}
 
-				searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-				transformAndResponde(rc, project);
-
-			}
-		});
 	}
 
 	@Override
@@ -121,13 +128,15 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.projectRoot());
+			try (Trx tx = new Trx(db)) {
+				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.projectRoot());
+			}
 		}
 	}
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			loadTransformAndResponde(rc, boot.projectRoot(), new ProjectListResponse());
 		}
 	}

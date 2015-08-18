@@ -3,23 +3,30 @@ package com.gentics.mesh.graphdb;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
-import com.tinkerpop.blueprints.TransactionalGraph;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class Trx implements AutoCloseable {
 
-	private static ThreadLocal<TransactionalGraph> localGraph = new ThreadLocal<>();
-	private TransactionalGraph currentGraph;
+	private static final Logger log = LoggerFactory.getLogger(Trx.class);
+
+	private static ThreadLocal<FramedTransactionalGraph> localGraph = new ThreadLocal<>();
+	private FramedTransactionalGraph currentGraph;
 	private boolean isSuccess = false;
-	private TransactionalGraph oldLocalGraph;
+	private FramedTransactionalGraph oldLocalGraph;
 
 	public Trx(Database database) {
-		currentGraph = database.getFramedGraph().newTransaction();
-		oldLocalGraph = localGraph.get();
-		if (oldLocalGraph == null) {
-			localGraph.set(currentGraph);
-		} else {
-			currentGraph = localGraph.get();
+		currentGraph = new DelegatingFramedTransactionalGraph<>(database.getFramedGraph().newTransaction(), true, false);
+		if (log.isDebugEnabled()) {
+			log.debug("Starting transaction {" + currentGraph.hashCode() + "}");
 		}
+		oldLocalGraph = localGraph.get();
+		//if (oldLocalGraph == null) {
+		localGraph.set(currentGraph);
+		//} else {
+		//			currentGraph = localGraph.get();
+		//}
 	}
 
 	public void success() {
@@ -31,28 +38,34 @@ public class Trx implements AutoCloseable {
 	}
 
 	public FramedTransactionalGraph getGraph() {
-		return new DelegatingFramedTransactionalGraph<>(currentGraph, true, false);
+		return currentGraph;
 	}
 
 	@Override
 	public void close() {
 		if (isSuccess) {
+			if (log.isDebugEnabled()) {
+				log.debug("Commiting graph {" + currentGraph.hashCode() + "}.");
+			}
 			currentGraph.commit();
 		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Invoking rollback on graph {" + currentGraph.hashCode() + "}.");
+			}
 			currentGraph.rollback();
 		}
 		setLocalGraph(oldLocalGraph);
 	}
 
-	public static void setLocalGraph(TransactionalGraph graph) {
+	public static void setLocalGraph(FramedTransactionalGraph graph) {
 		Trx.localGraph.set(graph);
 	}
 
 	public static FramedTransactionalGraph getFramedLocalGraph() {
-		return new DelegatingFramedTransactionalGraph<>(getLocalGraph(), true, false);
+		return getLocalGraph();
 	}
 
-	public static TransactionalGraph getLocalGraph() {
+	public static FramedTransactionalGraph getLocalGraph() {
 		return Trx.localGraph.get();
 	}
 }

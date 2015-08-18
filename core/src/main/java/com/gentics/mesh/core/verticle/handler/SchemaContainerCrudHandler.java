@@ -27,6 +27,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.ext.web.RoutingContext;
+
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
@@ -43,7 +44,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 			}
 			SchemaContainerRoot root = boot.schemaContainerRoot();
 			if (requestUser.hasPermission(root, CREATE_PERM)) {
-				try (Trx tx = new Trx(database)) {
+				try (Trx tx = new Trx(db)) {
 					SchemaContainer container = root.create(schema, requestUser);
 					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
 					searchQueue().put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
@@ -91,13 +92,17 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
+			try (Trx tx = new Trx(db)) {
+				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
+			}
 		}
 	}
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
+		try (Trx tx = new Trx(db)) {
+			loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
+		}
 	}
 
 }

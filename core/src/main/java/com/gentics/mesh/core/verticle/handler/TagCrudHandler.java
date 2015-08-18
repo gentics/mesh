@@ -37,7 +37,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 
 			Project project = getProject(rc);
 			Future<Tag> tagCreated = Future.future();
@@ -76,14 +76,14 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			delete(rc, "uuid", "tag_deleted", getProject(rc).getTagRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
@@ -133,7 +133,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			Project project = getProject(rc);
 			loadTransformAndResponde(rc, "uuid", READ_PERM, project.getTagRoot());
 		}
@@ -141,7 +141,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			Project project = getProject(rc);
 			loadTransformAndResponde(rc, project.getTagRoot(), new TagListResponse());
 		}

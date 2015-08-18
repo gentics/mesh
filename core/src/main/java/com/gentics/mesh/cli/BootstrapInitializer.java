@@ -223,8 +223,8 @@ public class BootstrapInitializer {
 
 	public MeshRoot meshRoot() {
 		// Check reference graph and finally create the node when it can't be found.
-		if (meshRoot == null) {
-			synchronized (BootstrapInitializer.class) {
+//		if (meshRoot == null) {
+//			synchronized (BootstrapInitializer.class) {
 				try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
 					MeshRoot foundMeshRoot = tx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 					if (foundMeshRoot == null) {
@@ -237,8 +237,8 @@ public class BootstrapInitializer {
 					}
 					tx.success();
 				}
-			}
-		}
+//			}
+//		}
 		return meshRoot;
 	}
 

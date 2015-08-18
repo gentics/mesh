@@ -50,7 +50,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 			/* TODO check for null */
 			if (requestUser.hasPermission(root, CREATE_PERM)) {
 				TagFamily tagFamily = null;
-				try (Trx tx = new Trx(database)) {
+				try (Trx tx = new Trx(db)) {
 					tagFamily = root.create(name, requestUser);
 					root.addTagFamily(tagFamily);
 					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
@@ -86,7 +86,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", newName)));
 						return;
 					}
-					try (Trx tx = new Trx(database)) {
+					try (Trx tx = new Trx(db)) {
 						tagFamily.setName(newName);
 						tx.success();
 						transformAndResponde(rc, tagFamily);

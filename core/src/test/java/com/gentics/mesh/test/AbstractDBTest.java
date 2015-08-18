@@ -87,7 +87,10 @@ public abstract class AbstractDBTest {
 	}
 
 	public SchemaContainer schemaContainer(String key) {
-		return data().getSchemaContainer(key);
+		SchemaContainer container = data().getSchemaContainer(key);
+		((OrientVertex) container.getImpl().getElement()).reload();
+		return container;
+
 	}
 
 	public Map<String, ? extends Tag> tags() {
@@ -95,23 +98,34 @@ public abstract class AbstractDBTest {
 	}
 
 	public Tag tag(String key) {
-		return data().getTag(key);
+		Tag tag = data().getTag(key);
+		((OrientVertex) tag.getImpl().getElement()).reload();
+		return tag;
 	}
 
 	public TagFamily tagFamily(String key) {
-		return data().getTagFamily(key);
+		TagFamily family = data().getTagFamily(key);
+		((OrientVertex) family.getImpl().getElement()).reload();
+		return family;
 	}
 
 	public Project project() {
-		return data().getProject();
+		Project project = data().getProject();
+		((OrientVertex) project.getImpl().getElement()).reload();
+		return project;
 	}
 
 	public Node content(String key) {
-		return data().getContent(key);
+		Node node = data().getContent(key);
+		((OrientVertex) node.getImpl().getElement()).reload();
+		return node;
+
 	}
 
 	public Node folder(String key) {
-		return data().getFolder(key);
+		Node node = data().getFolder(key);
+		((OrientVertex) node.getImpl().getElement()).reload();
+		return node;
 	}
 
 	public Map<String, User> users() {
@@ -139,7 +153,9 @@ public abstract class AbstractDBTest {
 	}
 
 	public User user() {
-		return data().getUserInfo().getUser();
+		User user = data().getUserInfo().getUser();
+		((OrientVertex) user.getImpl().getElement()).reload();
+		return user;
 	}
 
 	public String password() {
@@ -148,12 +164,14 @@ public abstract class AbstractDBTest {
 
 	public Group group() {
 		Group group = data().getUserInfo().getGroup();
-		((OrientVertex)group.getImpl().getElement()).reload();
+		((OrientVertex) group.getImpl().getElement()).reload();
 		return group;
 	}
 
 	public Role role() {
-		return data().getUserInfo().getRole();
+		Role role = data().getUserInfo().getRole();
+		((OrientVertex) role.getImpl().getElement()).reload();
+		return role;
 	}
 
 	public MeshRoot meshRoot() {
@@ -161,7 +179,9 @@ public abstract class AbstractDBTest {
 	}
 
 	public Node content() {
-		return data().getContent("news overview");
+		Node content = data().getContent("news overview");
+		((OrientVertex) content.getImpl().getElement()).reload();
+		return content;
 	}
 
 	public MeshAuthUser getRequestUser() {

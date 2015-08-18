@@ -35,7 +35,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			delete(rc, "uuid", "user_deleted", boot.userRoot());
 			tx.success();
 		}
@@ -62,7 +62,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 			return;
 		}
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			// Load the parent group for the user
 			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
@@ -78,7 +78,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 								rc.fail(ch.cause());
 							} else {
 								User createdUser = ch.result();
-								//								try (Trx tx2 = new Trx(database)) {
+								//								try (Trx tx2 = new Trx(db)) {
 								searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 								//								tx2.getGraph().commit();
 								//								}
@@ -96,7 +96,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			loadObject(rc, "uuid", UPDATE_PERM, boot.userRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					User user = rh.result();
@@ -121,7 +121,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
 				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.userRoot());
 			});
@@ -130,7 +130,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			loadTransformAndResponde(rc, boot.userRoot(), new UserListResponse());
 		}
 	}

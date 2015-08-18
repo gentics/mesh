@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -17,9 +18,9 @@ import static org.junit.Assert.assertTrue;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,6 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -52,14 +52,6 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectNodeVerticle verticle;
-
-	private NodeRoot nodeRoot;
-
-	@Before
-	public void setup() throws Exception {
-		super.setupVerticleTest();
-		nodeRoot = boot.nodeRoot();
-	}
 
 	@Override
 	public AbstractWebVerticle getVerticle() {
@@ -115,7 +107,9 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		request.setParentNodeUuid(project().getBaseNode().getUuid());
+		try (Trx tx = new Trx(db)) {
+			request.setParentNodeUuid(project().getBaseNode().getUuid());
+		}
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -126,10 +120,13 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateNode() throws Exception {
-
-		Node parentNode = folder("news");
-		assertNotNull(parentNode);
-		assertNotNull(parentNode.getUuid());
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node parentNode = folder("news");
+			uuid = parentNode.getUuid();
+			assertNotNull(parentNode);
+			assertNotNull(parentNode.getUuid());
+		}
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
@@ -139,7 +136,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		request.setParentNodeUuid(parentNode.getUuid());
+		request.setParentNodeUuid(uuid);
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -147,12 +144,14 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
-		SearchQueue searchQueue = meshRoot().getSearchQueue();
-		assertEquals("We created the node. A search queue entry should have been created.", 1, searchQueue.getSize());
-		SearchQueueEntry entry = searchQueue.take();
-		assertEquals(restNode.getUuid(), entry.getElementUuid());
-		assertEquals(Node.TYPE, entry.getElementType());
-		assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getAction());
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = meshRoot().getSearchQueue();
+			assertEquals("We created the node. A search queue entry should have been created.", 1, searchQueue.getSize());
+			SearchQueueEntry entry = searchQueue.take();
+			assertEquals(restNode.getUuid(), entry.getElementUuid());
+			assertEquals(Node.TYPE, entry.getElementType());
+			assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getAction());
+		}
 
 	}
 
@@ -180,11 +179,13 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
-		nodeRoot.findByUuid(restNode.getUuid(), rh -> {
-			Node node = rh.result();
-			assertNotNull(node);
-			test.assertMeshNode(request, node);
-			// Load the node again
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(2);
+			meshRoot().getNodeRoot().findByUuid(restNode.getUuid(), rh -> {
+				Node node = rh.result();
+				assertNotNull(node);
+				test.assertMeshNode(request, node);
+				// Load the node again
 				Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
 				latchFor(future2);
 				assertSuccess(future2);
@@ -198,8 +199,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 				expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
 				meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
 					assertNull("The node should have been deleted.", rh2.result());
+					latch.countDown();
 				});
+				latch.countDown();
 			});
+			failingLatch(latch);
+		}
 
 	}
 
@@ -224,9 +229,14 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
-		Node node = folder("news");
 		// Revoke create perm
-		role().revokePermissions(node, CREATE_PERM);
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("news");
+			uuid = node.getUuid();
+			role().revokePermissions(node, CREATE_PERM);
+			tx.success();
+		}
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
@@ -236,11 +246,11 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 		request.setLanguage("en");
-		request.setParentNodeUuid(node.getUuid());
+		request.setParentNodeUuid(uuid);
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	// Read tests
@@ -256,6 +266,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME);
 		latchFor(future);
 		assertSuccess(future);
+
 		NodeListResponse restResponse = future.result();
 		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
@@ -265,13 +276,16 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodes() throws Exception {
+		final String noPermNodeUUID;
 
-		Node parentNode = folder("2015");
-		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
-		noPermNode.setCreator(user());
-		assertNotNull(noPermNode.getUuid());
-
+		try (Trx tx = new Trx(db)) {
+			Node parentNode = folder("2015");
+			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
+			Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
+			noPermNode.setCreator(user());
+			noPermNodeUUID = noPermNode.getUuid();
+			assertNotNull(noPermNode.getUuid());
+		}
 		int perPage = 11;
 		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(3, perPage));
 		latchFor(future);
@@ -299,7 +313,6 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalNodes, allNodes.size());
 
 		// Verify that the no_perm_node is not part of the response
-		final String noPermNodeUUID = noPermNode.getUuid();
 		List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID))
 				.collect(Collectors.toList());
 		assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
@@ -362,18 +375,26 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 
-		Node node = folder("2015");
-		assertNotNull(node);
-		assertNotNull(node.getUuid());
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			uuid = node.getUuid();
+			assertNotNull(node);
+			assertNotNull(node.getUuid());
+		}
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
-		test.assertMeshNode(node, future.result());
+		try (Trx tx = new Trx(db)) {
+			test.assertMeshNode(folder("2015"), future.result());
+		}
 		NodeResponse response = future.result();
 		assertEquals("name", response.getDisplayField());
 		assertNotNull(response.getParentNode());
-		assertEquals(node.getParentNode().getUuid(), response.getParentNode().getUuid());
+		try (Trx tx = new Trx(db)) {
+			assertEquals(folder("2015").getParentNode().getUuid(), response.getParentNode().getUuid());
+		}
 		assertEquals("News", response.getParentNode().getDisplayName());
 		assertEquals("en", response.getLanguage());
 	}
@@ -381,15 +402,22 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
-		Node node = folder("products");
+
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("products");
+			uuid = node.getUuid();
+		}
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de");
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
-		test.assertMeshNode(node, restNode);
+		try (Trx tx = new Trx(db)) {
+			test.assertMeshNode(folder("products"), restNode);
+		}
 
 		StringField field = restNode.getField("name");
 		String nameText = field.getString();
@@ -399,14 +427,18 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 
-		Node node = folder("2015");
-		assertNotNull(node);
-		assertNotNull(node.getUuid());
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			uuid = node.getUuid();
+			assertNotNull(node);
+			assertNotNull(node.getUuid());
+		}
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("blabla", "edgsdg");
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
 
@@ -414,14 +446,16 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDWithoutPermission() throws Exception {
-		Node node = folder("2015");
+		String uuid;
 		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
 			tx.success();
 		}
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -446,7 +480,12 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
-		Node node = folder("2015");
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			uuid = node.getUuid();
+			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
+		}
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("folder");
@@ -454,37 +493,44 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
 
-		assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
-
 		final String newName = "english renamed name";
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de", "en");
-		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
+
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
-		assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
+		}
 		StringField field = restNode.getField("name");
 		assertEquals(newName, field.getString());
 
-		SearchQueue searchQueue = meshRoot().getSearchQueue();
-		assertEquals("We updated the node. A search queue entry should have been created.", 1, searchQueue.getSize());
-		SearchQueueEntry entry = searchQueue.take();
-		assertEquals(restNode.getUuid(), entry.getElementUuid());
-		assertEquals(Node.TYPE, entry.getElementType());
-		assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getAction());
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = meshRoot().getSearchQueue();
+			assertEquals("We updated the node. A search queue entry should have been created.", 1, searchQueue.getSize());
+			SearchQueueEntry entry = searchQueue.take();
+			assertEquals(restNode.getUuid(), entry.getElementUuid());
+			assertEquals(Node.TYPE, entry.getElementType());
+			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getAction());
+		}
 
 	}
 
 	@Test
 	public void testUpdateNodeWithExtraField() throws UnknownHostException, InterruptedException {
-
-		Node parentNode = folder("news");
-		assertNotNull(parentNode);
-		assertNotNull(parentNode.getUuid());
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node parentNode = folder("news");
+			uuid = parentNode.getUuid();
+			assertNotNull(parentNode);
+			assertNotNull(parentNode.getUuid());
+		}
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
@@ -495,13 +541,11 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		request.setParentNodeUuid(parentNode.getUuid());
+		request.setParentNodeUuid(uuid);
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectMessage(
-				future,
-				BAD_REQUEST,
+		expectMessage(future, BAD_REQUEST,
 				"Can't handle field {extrafield} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeCreateRequest[\"fields\"])");
 		assertNull(future.result());
 
@@ -509,9 +553,13 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingRequiredField() {
-		Node parentNode = folder("news");
-		assertNotNull(parentNode);
-		assertNotNull(parentNode.getUuid());
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node parentNode = folder("news");
+			uuid = parentNode.getUuid();
+			assertNotNull(parentNode);
+			assertNotNull(parentNode.getUuid());
+		}
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
@@ -521,7 +569,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		request.setParentNodeUuid(parentNode.getUuid());
+		request.setParentNodeUuid(uuid);
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -532,9 +580,13 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
-		Node parentNode = folder("news");
-		assertNotNull(parentNode);
-		assertNotNull(parentNode.getUuid());
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node parentNode = folder("news");
+			uuid = parentNode.getUuid();
+			assertNotNull(parentNode);
+			assertNotNull(parentNode.getUuid());
+		}
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
@@ -544,7 +596,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		request.setParentNodeUuid(parentNode.getUuid());
+		request.setParentNodeUuid(uuid);
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -554,6 +606,11 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateNodeWithExtraField2() throws HttpStatusCodeErrorException, Exception {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			uuid = node.getUuid();
+		}
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
@@ -565,21 +622,19 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 		request.getFields().put("displayName", FieldUtil.createStringField(newDisplayName));
 
-		Node node = folder("2015");
-
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de", "en");
-		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);
-		expectMessage(
-				future,
-				BAD_REQUEST,
+		expectMessage(future, BAD_REQUEST,
 				"Can't handle field {displayName} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeUpdateRequest[\"fields\"])");
 
 		assertNull(future.result());
 
-		NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english());
-		assertNotEquals(newName, englishContainer.getString("name").getString());
+		try (Trx tx = new Trx(db)) {
+			NodeFieldContainer englishContainer = folder("2015").getOrCreateFieldContainer(english());
+			assertNotEquals(newName, englishContainer.getString("name").getString());
+		}
 
 	}
 
@@ -587,15 +642,24 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteBaseNode() throws Exception {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = project().getBaseNode();
+			uuid = node.getUuid();
+		}
 
-		Node node = project().getBaseNode();
-		String uuid = node.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
 		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
-		nodeRoot.findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-		});
+
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+				assertNotNull("The node should still exist.", rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
@@ -608,34 +672,47 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		expectMessageResponse("node_deleted", future, uuid);
-		nodeRoot.findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-		});
 
-		SearchQueue searchQueue = meshRoot().getSearchQueue();
-		assertEquals("We deleted the item. A search queue entry should have been created.", 1, searchQueue.getSize());
-		SearchQueueEntry entry = searchQueue.take();
-		assertEquals(uuid, entry.getElementUuid());
-		assertEquals(Node.TYPE, entry.getElementType());
-		assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getAction());
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+				assertNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
+
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = meshRoot().getSearchQueue();
+			assertEquals("We deleted the item. A search queue entry should have been created.", 1, searchQueue.getSize());
+			SearchQueueEntry entry = searchQueue.take();
+			assertEquals(uuid, entry.getElementUuid());
+			assertEquals(Node.TYPE, entry.getElementType());
+			assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getAction());
+		}
 	}
 
 	@Test
 	public void testDeleteNodeWithNoPerm() throws Exception {
-
-		String uuid = folder("2015").getUuid();
+		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Node node = folder("2015");
+			uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
 			tx.success();
 		}
 
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
-
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		nodeRoot.findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
+
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 }
