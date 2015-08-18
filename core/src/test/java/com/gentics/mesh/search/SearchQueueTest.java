@@ -58,6 +58,7 @@ public class SearchQueueTest extends AbstractDBTest {
 			SearchQueueEntry entry = searchQueue.take();
 			assertNotNull(entry);
 			assertEquals(size - 1, searchQueue.getSize());
+
 			size = searchQueue.getSize();
 			CountDownLatch latch = new CountDownLatch((int) size);
 			for (int i = 0; i < size; i++) {

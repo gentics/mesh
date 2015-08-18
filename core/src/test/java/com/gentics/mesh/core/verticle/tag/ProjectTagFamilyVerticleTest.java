@@ -205,12 +205,18 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyCreateWithoutPerm() {
+		try (Trx tx = new Trx(db)) {
+			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
+			tx.success();
+		}
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("SuperDoll");
-		role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
+
+		try (Trx tx = new Trx(db)) {
+			expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
+		}
 	}
 
 	@Test
@@ -252,20 +258,37 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyDeletionWithNoPerm() throws UnknownHostException, InterruptedException {
-		TagFamily basicTagFamily = tagFamily("basic");
-		String uuid = basicTagFamily.getUuid();
-		Role role = role();
-		role.revokePermissions(basicTagFamily, DELETE_PERM);
+		TagFamily basicTagFamily;
+		try (Trx tx = new Trx(db)) {
+			basicTagFamily = tagFamily("basic");
+			Role role = role();
+			role.revokePermissions(basicTagFamily, DELETE_PERM);
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			project().getTagFamilyRoot().findByUuid(basicTagFamily.getUuid(), rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
-		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
-		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
-		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
+		}
+
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			project().getTagFamilyRoot().findByUuid(basicTagFamily.getUuid(), rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+
+		}
 	}
 
 	@Test
