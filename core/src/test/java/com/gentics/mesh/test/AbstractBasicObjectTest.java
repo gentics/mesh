@@ -27,7 +27,7 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 	@After
 	public void cleanup() {
 		BootstrapInitializer.clearReferences();
-		//	databaseService.getDatabase().clear();
+//			databaseService.getDatabase().clear();
 		databaseService.getDatabase().reset();
 	}
 

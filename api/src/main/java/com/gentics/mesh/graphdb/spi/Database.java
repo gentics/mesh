@@ -19,7 +19,7 @@ public interface Database {
 	void start();
 
 	/**
-	 * Shortcut for stop/start.
+	 * Shortcut for stop/start. This will also drop the graph database.
 	 */
 	void reset();
 
