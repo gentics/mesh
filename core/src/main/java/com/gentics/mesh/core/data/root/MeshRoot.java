@@ -94,11 +94,6 @@ public interface MeshRoot extends MeshVertex {
 	SearchQueue getSearchQueue();
 
 	/**
-	 * Clear static references to the aggregation vertices.
-	 */
-	void clearReferences();
-
-	/**
 	 * This method will try to resolve the given path and return the element that is matching the path.
 	 * 
 	 * @param pathToElement

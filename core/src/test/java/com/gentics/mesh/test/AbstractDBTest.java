@@ -3,12 +3,6 @@ package com.gentics.mesh.test;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,17 +30,23 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.DatabaseService;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.BlueprintTransaction;
 import com.gentics.mesh.util.RestAssert;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -62,13 +62,13 @@ public abstract class AbstractDBTest {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	protected FramedThreadedTransactionalGraph fg;
+	protected Database db;
+
+	@Autowired
+	protected DatabaseService databaseService;
 
 	@Autowired
 	protected RestAssert test;
-
-	@Autowired
-	private I18NService i18n;
 
 	static {
 		// Use slf4j instead of jul
@@ -77,15 +77,8 @@ public abstract class AbstractDBTest {
 	}
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			purgeDatabase();
-			tx.success();
-		}
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			dataProvider.setup(1);
-			tx.success();
-			fg.commit();
-		}
+		dataProvider.setup(1);
+		dataProvider.updatePermissions();
 	}
 
 	@Deprecated
@@ -94,7 +87,10 @@ public abstract class AbstractDBTest {
 	}
 
 	public SchemaContainer schemaContainer(String key) {
-		return data().getSchemaContainer(key);
+		SchemaContainer container = data().getSchemaContainer(key);
+		((OrientVertex) container.getImpl().getElement()).reload();
+		return container;
+
 	}
 
 	public Map<String, ? extends Tag> tags() {
@@ -102,23 +98,34 @@ public abstract class AbstractDBTest {
 	}
 
 	public Tag tag(String key) {
-		return data().getTag(key);
+		Tag tag = data().getTag(key);
+		((OrientVertex) tag.getImpl().getElement()).reload();
+		return tag;
 	}
 
 	public TagFamily tagFamily(String key) {
-		return data().getTagFamily(key);
+		TagFamily family = data().getTagFamily(key);
+		((OrientVertex) family.getImpl().getElement()).reload();
+		return family;
 	}
 
 	public Project project() {
-		return data().getProject();
+		Project project = data().getProject();
+		((OrientVertex) project.getImpl().getElement()).reload();
+		return project;
 	}
 
 	public Node content(String key) {
-		return data().getContent(key);
+		Node node = data().getContent(key);
+		((OrientVertex) node.getImpl().getElement()).reload();
+		return node;
+
 	}
 
 	public Node folder(String key) {
-		return data().getFolder(key);
+		Node node = data().getFolder(key);
+		((OrientVertex) node.getImpl().getElement()).reload();
+		return node;
 	}
 
 	public Map<String, User> users() {
@@ -146,7 +153,9 @@ public abstract class AbstractDBTest {
 	}
 
 	public User user() {
-		return data().getUserInfo().getUser();
+		User user = data().getUserInfo().getUser();
+		((OrientVertex) user.getImpl().getElement()).reload();
+		return user;
 	}
 
 	public String password() {
@@ -154,11 +163,15 @@ public abstract class AbstractDBTest {
 	}
 
 	public Group group() {
-		return data().getUserInfo().getGroup();
+		Group group = data().getUserInfo().getGroup();
+		((OrientVertex) group.getImpl().getElement()).reload();
+		return group;
 	}
 
 	public Role role() {
-		return data().getUserInfo().getRole();
+		Role role = data().getUserInfo().getRole();
+		((OrientVertex) role.getImpl().getElement()).reload();
+		return role;
 	}
 
 	public MeshRoot meshRoot() {
@@ -166,7 +179,9 @@ public abstract class AbstractDBTest {
 	}
 
 	public Node content() {
-		return data().getContent("news overview");
+		Node content = data().getContent("news overview");
+		((OrientVertex) content.getImpl().getElement()).reload();
+		return content;
 	}
 
 	public MeshAuthUser getRequestUser() {
@@ -175,16 +190,6 @@ public abstract class AbstractDBTest {
 
 	public SchemaContainer getSchemaContainer() {
 		return data().getSchemaContainer("content");
-	}
-
-	protected void purgeDatabase() {
-		// fg.commit();
-		for (Edge edge : fg.getEdges()) {
-			edge.remove();
-		}
-		for (Vertex vertex : fg.getVertices()) {
-			vertex.remove();
-		}
 	}
 
 	protected String getJson(Node node) throws InterruptedException {
@@ -202,23 +207,23 @@ public abstract class AbstractDBTest {
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {
+		try (Trx tx = new Trx(db)) {
+			User user = data().getUserInfo().getUser();
+			Map<String, Object> map = new HashMap<>();
+			RoutingContext rc = mock(RoutingContext.class);
+			Session session = mock(Session.class);
+			HttpServerRequest request = mock(HttpServerRequest.class);
+			when(request.query()).thenReturn(query);
 
-		User user = data().getUserInfo().getUser();
-		Map<String, Object> map = new HashMap<>();
-		RoutingContext rc = mock(RoutingContext.class);
-		Session session = mock(Session.class);
-		HttpServerRequest request = mock(HttpServerRequest.class);
-		when(request.query()).thenReturn(query);
-
-		MeshAuthUserImpl requestUser = fg.frameElement(user.getElement(), MeshAuthUserImpl.class);
-		when(rc.data()).thenReturn(map);
-		when(rc.request()).thenReturn(request);
-		when(rc.session()).thenReturn(session);
-		JsonObject principal = new JsonObject();
-		principal.put("uuid", user.getUuid());
-		when(rc.user()).thenReturn(requestUser);
-
-		return rc;
+			MeshAuthUserImpl requestUser = tx.getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+			when(rc.data()).thenReturn(map);
+			when(rc.request()).thenReturn(request);
+			when(rc.session()).thenReturn(session);
+			JsonObject principal = new JsonObject();
+			principal.put("uuid", user.getUuid());
+			when(rc.user()).thenReturn(requestUser);
+			return rc;
+		}
 	}
 
 }

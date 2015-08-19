@@ -17,7 +17,7 @@ public interface SearchQueueEntry extends MeshVertex {
 	public SearchQueueEntryAction getAction();
 
 	SearchQueueEntry setAction(String action);
-	
+
 	JsonObject getMessage();
 
 }

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -31,8 +33,8 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 
 import io.vertx.core.Future;
 
@@ -49,12 +51,17 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadAllTags() throws Exception {
 
-		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-		TagFamily basicTagFamily = tagFamily("basic");
-		Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
-		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-		project().getTagRoot().addTag(noPermTag);
-		assertNotNull(noPermTag.getUuid());
+		String noPermTagUUID;
+		try (Trx tx = new Trx(db)) {
+			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+			TagFamily basicTagFamily = tagFamily("basic");
+			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
+			noPermTagUUID = noPermTag.getUuid();
+			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
+			project().getTagRoot().addTag(noPermTag);
+			assertNotNull(noPermTag.getUuid());
+			tx.success();
+		}
 
 		// Test default paging parameters
 		Future<TagListResponse> future = getClient().findTags(PROJECT_NAME);
@@ -94,7 +101,6 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalTags, allTags.size());
 
 		// Verify that the no_perm_tag is not part of the response
-		final String noPermTagUUID = noPermTag.getUuid();
 		List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID))
 				.collect(Collectors.toList());
 		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
@@ -129,42 +135,49 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadTagByUUID() throws Exception {
-		Tag tag = tag("red");
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		test.assertTag(tag, future.result());
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("red");
+			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			test.assertTag(tag, future.result());
+		}
 	}
 
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = tag("vehicle");
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			uuid = tag.getUuid();
+			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
 
-		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
 	public void testUpdateTagByUUID() throws Exception {
+		String tagUuid;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			tagUuid = tag.getUuid();
+			Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+			latchFor(readTagFut);
+			assertSuccess(readTagFut);
 
-		Tag tag = tag("vehicle");
-
-		// 1. Read the current tag
-		Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
-		latchFor(readTagFut);
-		assertSuccess(readTagFut);
-		String name = tag.getName();
-		assertNotNull("The name of the tag should be loaded.", name);
-		String restName = readTagFut.result().getFields().getName();
-		assertNotNull("The tag name must be set.", restName);
-		assertEquals(name, restName);
+			// 1. Read the current tag
+			String name = tag.getName();
+			assertNotNull("The name of the tag should be loaded.", name);
+			String restName = readTagFut.result().getFields().getName();
+			assertNotNull("The tag name must be set.", restName);
+			assertEquals(name, restName);
+		}
 
 		// 2. Update the tag
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -175,24 +188,38 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(newName, tagUpdateRequest.getFields().getName());
 
 		// 3. Send the request to the server
-		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
+		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, tagUuid, tagUpdateRequest);
 		latchFor(updatedTagFut);
 		assertSuccess(updatedTagFut);
 		TagResponse tag2 = updatedTagFut.result();
-		test.assertTag(tag, tag2);
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			test.assertTag(tag, tag2);
+		}
 
 		// 4. read the tag again and verify that it was changed
-		Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, tagUuid);
 		latchFor(reloadedTagFut);
 		assertSuccess(reloadedTagFut);
 		TagResponse reloadedTag = reloadedTagFut.result();
 		assertEquals(request.getFields().getName(), reloadedTag.getFields().getName());
-		test.assertTag(tag, reloadedTag);
+
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			test.assertTag(tag, reloadedTag);
+		}
 	}
 
 	@Test
 	public void testUpdateTagWithConflictingName() {
-		Tag tag = tag("red");
+		String uuid;
+		String tagFamilyName;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("red");
+			uuid = tag.getUuid();
+			tagFamilyName = tag.getTagFamily().getName();
+		}
+
 		final String newName = "green";
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.getFields().setName(newName);
@@ -200,16 +227,20 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		tagUpdateRequest.getFields().setName(newName);
 		assertEquals(newName, tagUpdateRequest.getFields().getName());
 
-		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
+		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, uuid, tagUpdateRequest);
 		latchFor(updatedTagFut);
-		expectException(updatedTagFut, CONFLICT, "tag_create_tag_with_same_name_already_exists", newName, tag.getTagFamily().getName());
+		expectException(updatedTagFut, CONFLICT, "tag_create_tag_with_same_name_already_exists", newName, tagFamilyName);
 	}
 
 	@Test
 	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = tag("vehicle");
 
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		String tagName;
+		String tagUuid;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			tagName = tag.getName();
+			tagUuid = tag.getUuid();
 			role().revokePermissions(tag, UPDATE_PERM);
 			tx.success();
 		}
@@ -218,54 +249,67 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.getFields().setName("new Name");
 
-		Future<TagResponse> tagUpdateFut = getClient().updateTag(PROJECT_NAME, tag.getUuid(), request);
+		Future<TagResponse> tagUpdateFut = getClient().updateTag(PROJECT_NAME, tagUuid, request);
 		latchFor(tagUpdateFut);
-		expectException(tagUpdateFut, FORBIDDEN, "error_missing_perm", tag.getUuid());
+		expectException(tagUpdateFut, FORBIDDEN, "error_missing_perm", tagUuid);
 
 		// read the tag again and verify that it was not changed
-		Future<TagResponse> tagReloadFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		Future<TagResponse> tagReloadFut = getClient().findTagByUuid(PROJECT_NAME, tagUuid);
 		latchFor(tagReloadFut);
 		assertTrue(tagReloadFut.succeeded());
 		TagResponse loadedTag = tagReloadFut.result();
-		String name = tag.getName();
-		assertEquals(name, loadedTag.getFields().getName());
+		assertEquals(tagName, loadedTag.getFields().getName());
 	}
 
 	// Delete Tests
 	@Test
 	public void testDeleteTagByUUID() throws Exception {
-		Tag tag = tag("vehicle");
-		String name = tag.getName();
-		String uuid = tag.getUuid();
+		String name;
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			name = tag.getName();
+			uuid = tag.getUuid();
+		}
+
 		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNull("The tag should have been deleted", rh.result());
+				latch.countDown();
 			});
+			failingLatch(latch);
+			Project project = boot.projectRoot().findByName(PROJECT_NAME);
+			assertNotNull(project);
 		}
-		Project project = boot.projectRoot().findByName(PROJECT_NAME);
-		assertNotNull(project);
 	}
 
 	@Test
 	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
-		Tag tag = tag("vehicle");
-		String uuid = tag.getUuid();
-
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("vehicle");
+			uuid = tag.getUuid();
 			role().revokePermissions(tag, DELETE_PERM);
 			tx.success();
 		}
+
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
-		expectException(messageFut, FORBIDDEN, "error_missing_perm", tag.getUuid());
-		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-			boot.tagRoot().findByUuid(tag.getUuid(), rh -> {
+		expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
+
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNotNull("The tag should not have been deleted", rh.result());
+				latch.countDown();
 			});
+			failingLatch(latch);
 		}
 	}
 
@@ -291,11 +335,15 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		assertNotNull("We expect that a tag with the name already exists.", tag("red"));
 		tagCreateRequest.getFields().setName("red");
-		TagFamily tagFamily = tagFamilies().get("colors");
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		String tagFamilyName;
+		try (Trx tx = new Trx(db)) {
+			TagFamily tagFamily = tagFamilies().get("colors");
+			tagFamilyName = tagFamily.getName();
+			tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		}
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
-		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamily.getName());
+		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 	}
 
 }

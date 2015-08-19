@@ -34,7 +34,9 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -46,13 +48,17 @@ public class VerticleHelper {
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
 
+	public static String getProjectName(RoutingContext rc) {
+		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
+	}
+
 	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse) {
 		loadObjects(rc, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				responde(rc, toJson(rh.result()));
 			}
-		}, listResponse);
+		} , listResponse);
 	}
 
 	public static void setPaging(AbstractListResponse<?> response, Page<?> page) {
@@ -76,7 +82,7 @@ public class VerticleHelper {
 						listResponse.getData().add(rh.result());
 					}
 					// TODO handle async issue
-					});
+				});
 			}
 			setPaging(listResponse, page);
 			handler.handle(Future.succeededFuture(listResponse));
@@ -100,7 +106,7 @@ public class VerticleHelper {
 			if (hasSucceeded(rc, th)) {
 				responde(rc, toJson(th.result()));
 			}
-		}, listResponse);
+		} , listResponse);
 	}
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
@@ -262,8 +268,8 @@ public class VerticleHelper {
 		I18NService i18n = I18NService.getI18n();
 		String uuid = rc.request().params().get(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_request_parameter_missing",
-					uuidParameterName))));
+			handler.handle(Future
+					.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_request_parameter_missing", uuidParameterName))));
 		} else {
 			loadObjectByUuid(rc, uuid, perm, root, handler);
 		}
@@ -277,29 +283,24 @@ public class VerticleHelper {
 			handler.handle(Future.failedFuture("Could not find root node."));
 		} else {
 			I18NService i18n = I18NService.getI18n();
-			try (BlueprintTransaction tx = new BlueprintTransaction(MeshSpringConfiguration.getMeshSpringConfiguration()
-					.framedThreadedTransactionalGraph())) {
-				root.findByUuid(
-						uuid,
-						rh -> {
-							if (rh.failed()) {
-								handler.handle(Future.failedFuture(rh.cause()));
-							} else {
-								T node = rh.result();
-								if (node == null) {
-									handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
-								} else {
-									MeshAuthUser requestUser = getUser(rc);
-									if (requestUser.hasPermission(node, perm)) {
-										handler.handle(Future.succeededFuture(node));
-									} else {
-										handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm",
-												node.getUuid()))));
-									}
-								}
-							}
-						});
-			}
+			root.findByUuid(uuid, rh -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					T node = rh.result();
+					if (node == null) {
+						handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
+					} else {
+
+						MeshAuthUser requestUser = getUser(rc);
+						if (requestUser.hasPermission(node, perm)) {
+							handler.handle(Future.succeededFuture(node));
+						} else {
+							handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+						}
+					}
+				}
+			});
 		}
 
 	}

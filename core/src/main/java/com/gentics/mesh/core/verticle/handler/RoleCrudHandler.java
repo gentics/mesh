@@ -38,9 +38,8 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.util.BlueprintTransaction;
+import com.gentics.mesh.graphdb.Trx;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -64,62 +63,69 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 			return;
 		}
 
-		if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-			rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
-			return;
-		}
-		Future<Role> roleCreated = Future.future();
-		loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
-				Group parentGroup = rh.result();
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		try (Trx tx = new Trx(db)) {
+			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
+				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
+				return;
+			}
+			loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Group parentGroup = rh.result();
+
 					Role role = boot.roleRoot().create(requestModel.getName(), parentGroup, requestUser);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
 					tx.success();
-					roleCreated.complete(role);
+					searchQueue().put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+					transformAndResponde(rc, role);
 				}
-				Role role = roleCreated.result();
-				searchQueue.put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-				transformAndResponde(rc, role);
-			}
-		});
+			});
+		}
 	}
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		delete(rc, "uuid", "role_deleted", boot.roleRoot());
+		try (Trx tx = new Trx(db)) {
+			delete(rc, "uuid", "role_deleted", boot.roleRoot());
+		}
 	}
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
+		try (Trx tx = new Trx(db)) {
+			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
+		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		loadObject(rc, "uuid", UPDATE_PERM, boot.roleRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
-				Role role = rh.result();
-				RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
+		try (Trx tx = new Trx(db)) {
 
-				if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
-					if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
-						return;
+			loadObject(rc, "uuid", UPDATE_PERM, boot.roleRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Role role = rh.result();
+					RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
+
+					if (!StringUtils.isEmpty(requestModel.getName()) && role.getName() != requestModel.getName()) {
+						if (boot.roleRoot().findByName(requestModel.getName()) != null) {
+							rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
+							return;
+						}
+						role.setName(requestModel.getName());
 					}
-					role.setName(requestModel.getName());
+					searchQueue().put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+					transformAndResponde(rc, role);
 				}
-				searchQueue.put(role.getUuid(), Role.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-				transformAndResponde(rc, role);
-			}
-		});
+			});
+		}
 	}
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
+		try (Trx tx = new Trx(db)) {
+			loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
+		}
 	}
 
 	public void handlePermissionUpdate(RoutingContext rc) {
@@ -171,7 +177,8 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 							}
 
 							// 3. Apply the permission actions
-							targetElement.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+							targetElement.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
+									permissionsToRevoke);
 							responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "role_updated_permission", role.getName()))));
 						}
 					});
@@ -179,4 +186,5 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 				}
 			});
 		}
-}}
+	}
+}

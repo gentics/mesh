@@ -4,8 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -45,9 +43,14 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Component
 public class DemoDataProvider {
@@ -59,7 +62,7 @@ public class DemoDataProvider {
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
 	@Autowired
-	private FramedTransactionalGraph fg;
+	private Database db;
 
 	@Autowired
 	private BootstrapInitializer rootService;
@@ -95,40 +98,85 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		BootstrapInitializer.clearReferences();
-		bootstrapInitializer.initMandatoryData();
+		try (Trx tx = new Trx(db)) {
 
-		schemaContainers.clear();
-		tagFamilies.clear();
-		contents.clear();
-		folders.clear();
-		tags.clear();
-		users.clear();
-		roles.clear();
-		groups.clear();
+			bootstrapInitializer.initMandatoryData();
 
-		english = rootService.languageRoot().findByLanguageTag("en");
-		german = rootService.languageRoot().findByLanguageTag("de");
-		root = rootService.meshRoot();
+			schemaContainers.clear();
+			tagFamilies.clear();
+			contents.clear();
+			folders.clear();
+			tags.clear();
+			users.clear();
+			roles.clear();
+			groups.clear();
 
-		addBootstrappedData();
-		addUserGroupRoleProject(multiplicator);
-		addSchemaContainers();
-		addTagFamilies();
-		addTags();
-		addFolderStructure();
-		addContents(multiplicator);
-		updatePermissions();
+			root = rootService.meshRoot();
+			english = rootService.languageRoot().findByLanguageTag("en");
+			german = rootService.languageRoot().findByLanguageTag("de");
 
-		log.info("Nodes:    " + getNodeCount());
-		log.info("Folders:  " + folders.size());
-		log.info("Contents: " + contents.size());
-		log.info("Tags:     " + tags.size());
-		log.info("Schemas: " + schemaContainers.size());
-		log.info("TagFamilies: " + tagFamilies.size());
-		log.info("Users:    " + users.size());
-		log.info("Groups:   " + groups.size());
-		log.info("Roles:    " + roles.size());
+			addBootstrappedData();
+			addUserGroupRoleProject(multiplicator);
+			addSchemaContainers();
+			addTagFamilies();
+			addTags();
+			addFolderStructure();
+			addContents(multiplicator);
+
+			log.info("Nodes:    " + getNodeCount());
+			log.info("Folders:  " + folders.size());
+			log.info("Contents: " + contents.size());
+			log.info("Tags:     " + tags.size());
+			log.info("Schemas: " + schemaContainers.size());
+			log.info("TagFamilies: " + tagFamilies.size());
+			log.info("Users:    " + users.size());
+			log.info("Groups:   " + groups.size());
+			log.info("Roles:    " + roles.size());
+			tx.success();
+		}
+
+	}
+
+	public void updatePermissions() {
+
+		try (Trx tx = new Trx(db)) {
+			Role role = userInfo.getRole();
+
+			for (Vertex vertex : tx.getGraph().getVertices()) {
+				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+
+				// TODO typecheck? and verify how orient will behave
+				if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+					log.info("Skipping own role");
+					continue;
+				}
+
+				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				if (log.isDebugEnabled()) {
+					log.debug("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+				}
+				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+			}
+			tx.success();
+		}
+		log.info("Added BasicPermissions to nodes");
+
+		//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		//			for (EdgeFrame frame : userInfo.getRole().getImpl().outE().toListExplicit(EdgeFrame.class)) {
+		//				System.out.println(frame.getLabel());
+		//				System.out.println(frame.outV().next().getId().toString());
+		//				System.out.println(frame.inV().next().getId().toString());
+		//				System.out.println("---------");
+		//			}
+		//
+		//			if (userInfo.getRole().hasPermission(READ_PERM, userInfo.getUser())) {
+		//				System.out.println("HAS PERM");
+		//			} else {
+		//				log.debug("permissions on {" + userInfo.getUser().getElement().getId() + "} with role {" + userInfo.getRole().getElement().getId()
+		//						+ "}");
+		//				System.out.println("HAS NO PERM");
+		//			}
+		//		}
 	}
 
 	private void addBootstrappedData() {
@@ -164,17 +212,13 @@ public class DemoDataProvider {
 			addContent(folders.get("2015"), "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 		}
 
-		Node porsche911 = addContent(
-				folders.get("products"),
-				"Porsche 911",
+		Node porsche911 = addContent(folders.get("products"), "Porsche 911",
 				"997 is the internal designation for the Porsche 911 model manufactured and sold by German manufacturer Porsche between 2004 (as Model Year 2005) and 2012.",
 				"Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.", contentSchema);
 		porsche911.addTag(tags.get("vehicle"));
 		porsche911.addTag(tags.get("car"));
 
-		Node nissanGTR = addContent(
-				folders.get("products"),
-				"Nissan GT-R",
+		Node nissanGTR = addContent(folders.get("products"), "Nissan GT-R",
 				"The Nissan GT-R is a 2-door 2+2 sports coupé produced by Nissan and first released in Japan in 2007",
 				"Der Nissan GT-R ist ein seit Dezember 2007 produziertes Sportcoupé des japanischen Automobilherstellers Nissan und der Nachfolger des Nissan Skyline GT-R R34.",
 				contentSchema);
@@ -182,9 +226,7 @@ public class DemoDataProvider {
 		nissanGTR.addTag(tags.get("car"));
 		nissanGTR.addTag(tags.get("green"));
 
-		Node bmwM3 = addContent(
-				folders.get("products"),
-				"BMW M3",
+		Node bmwM3 = addContent(folders.get("products"), "BMW M3",
 				"The BMW M3 (first launched in 1986) is a high-performance version of the BMW 3-Series, developed by BMW's in-house motorsport division, BMW M.",
 				"Der BMW M3 ist ein Sportmodell der 3er-Reihe von BMW, das seit Anfang 1986 hergestellt wird. Dabei handelt es sich um ein Fahrzeug, welches von der BMW-Tochterfirma BMW M GmbH entwickelt und anfangs (E30 und E36) auch produziert wurde.",
 				contentSchema);
@@ -192,9 +234,7 @@ public class DemoDataProvider {
 		bmwM3.addTag(tags.get("car"));
 		bmwM3.addTag(tags.get("blue"));
 
-		Node concorde = addContent(
-				folders.get("products"),
-				"Concorde",
+		Node concorde = addContent(folders.get("products"), "Concorde",
 				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
 				contentSchema);
@@ -202,18 +242,14 @@ public class DemoDataProvider {
 		concorde.addTag(tags.get("twinjet"));
 		concorde.addTag(tags.get("red"));
 
-		Node boeing737 = addContent(
-				folders.get("products"),
-				"Boeing 737",
+		Node boeing737 = addContent(folders.get("products"), "Boeing 737",
 				"The Boeing 737 is a short- to medium-range twinjet narrow-body airliner. Originally developed as a shorter, lower-cost twin-engined airliner derived from Boeing's 707 and 727, the 737 has developed into a family of nine passenger models with a capacity of 85 to 215 passengers.",
 				"Die Boeing 737 des US-amerikanischen Flugzeugherstellers Boeing ist die weltweit meistgebaute Familie strahlgetriebener Verkehrsflugzeuge.",
 				contentSchema);
 		boeing737.addTag(tags.get("plane"));
 		boeing737.addTag(tags.get("twinjet"));
 
-		Node a300 = addContent(
-				folders.get("products"),
-				"Airbus A300",
+		Node a300 = addContent(folders.get("products"), "Airbus A300",
 				"The Airbus A300 is a short- to medium-range wide-body twin-engine jet airliner that was developed and manufactured by Airbus. Released in 1972 as the world's first twin-engined widebody, it was the first product of Airbus Industrie, a consortium of European aerospace manufacturers, now a subsidiary of Airbus Group.",
 				"Der Airbus A300 ist das erste zweistrahlige Großraumflugzeug der Welt, produziert vom europäischen Flugzeughersteller Airbus.",
 				contentSchema);
@@ -221,9 +257,7 @@ public class DemoDataProvider {
 		a300.addTag(tags.get("twinjet"));
 		a300.addTag(tags.get("red"));
 
-		Node wrangler = addContent(
-				folders.get("products"),
-				"Jeep Wrangler",
+		Node wrangler = addContent(folders.get("products"), "Jeep Wrangler",
 				"The Jeep Wrangler is a compact and mid-size (Wrangler Unlimited models) four-wheel drive off-road and sport utility vehicle (SUV), manufactured by American automaker Chrysler, under its Jeep marque – and currently in its third generation.",
 				"Der Jeep Wrangler ist ein Geländewagen des US-amerikanischen Herstellers Jeep innerhalb des Chrysler-Konzerns.", contentSchema);
 		wrangler.addTag(tags.get("vehicle"));
@@ -239,9 +273,7 @@ public class DemoDataProvider {
 		hondact90.addTag(tags.get("vehicle"));
 		hondact90.addTag(tags.get("motorcycle"));
 
-		Node hondaNR = addContent(
-				folders.get("products"),
-				"Honda NR",
+		Node hondaNR = addContent(folders.get("products"), "Honda NR",
 				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
 				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
 				contentSchema);
@@ -324,6 +356,7 @@ public class DemoDataProvider {
 
 		String roleName = username + "_role";
 		Role role = root.getRoleRoot().create(roleName, group, user);
+		System.err.println("Created role: " + role.getElement().getId());
 		role.grantPermissions(role, READ_PERM);
 		roles.put(roleName, role);
 
@@ -448,24 +481,6 @@ public class DemoDataProvider {
 		blogPostSchemaContainer.setSchema(schema);
 
 		schemaContainers.put("blogpost", blogPostSchemaContainer);
-	}
-
-	private void updatePermissions() {
-		Role role = userInfo.getRole();
-
-		for (Vertex vertex : fg.getVertices()) {
-			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-
-			// TODO typecheck? and verify how orient will behave
-			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
-				log.info("Skipping own role");
-				continue;
-			}
-
-			MeshVertex meshVertex = fg.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-		}
-		log.info("Added BasicPermissions to nodes");
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {

@@ -16,17 +16,20 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.graphdb.Trx;
 
 public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
-		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
-		htmlFieldSchema.setName("htmlField");
-		htmlFieldSchema.setLabel("Some label");
-		schema.addField(htmlFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		try (Trx tx = new Trx(db)) {
+			Schema schema = schemaContainer("folder").getSchema();
+			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
+			htmlFieldSchema.setName("htmlField");
+			htmlFieldSchema.setLabel("Some label");
+			schema.addField(htmlFieldSchema);
+			schemaContainer("folder").setSchema(schema);
+		}
 	}
 
 	@Test

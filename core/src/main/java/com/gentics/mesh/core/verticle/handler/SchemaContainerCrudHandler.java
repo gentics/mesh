@@ -11,7 +11,6 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import io.vertx.ext.web.RoutingContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,11 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.BlueprintTransaction;
+
+import io.vertx.ext.web.RoutingContext;
+
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
@@ -42,10 +44,10 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 			}
 			SchemaContainerRoot root = boot.schemaContainerRoot();
 			if (requestUser.hasPermission(root, CREATE_PERM)) {
-				try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+				try (Trx tx = new Trx(db)) {
 					SchemaContainer container = root.create(schema, requestUser);
 					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
-					searchQueue.put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+					searchQueue().put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 					transformAndResponde(rc, container);
 				}
@@ -77,7 +79,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 				/*
 				 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
 				 */
-				searchQueue.put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+				searchQueue().put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 				transformAndResponde(rc, schemaContainer);
 			}
@@ -90,13 +92,17 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
+			try (Trx tx = new Trx(db)) {
+				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
+			}
 		}
 	}
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
+		try (Trx tx = new Trx(db)) {
+			loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
+		}
 	}
 
 }

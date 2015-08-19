@@ -7,12 +7,31 @@ import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 public class TinkerGraphDatabase implements Database {
 
-	public TinkerGraphDatabase() {
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) {
+	public void reset() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void clear() {
+		// TODO Auto-generated method stub
+
+	}
+	
+	@Override
+	public void init(StorageOptions options) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public FramedThreadedTransactionalGraph getFramedGraph() {
 		ThreadedTransactionalGraphWrapper wrapper = new TinkerGraphThreadedTransactionalGraphWrapper(new TinkerTransactionalGraphMock());
 		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 		return fg;

@@ -17,19 +17,22 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.graphdb.Trx;
 
 public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
-		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
-		numberFieldSchema.setRequired(true);
-		schema.addField(numberFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		try (Trx tx = new Trx(db)) {
+			Schema schema = schemaContainer("folder").getSchema();
+			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
+			numberFieldSchema.setName("numberField");
+			numberFieldSchema.setMin(10);
+			numberFieldSchema.setMax(1000);
+			numberFieldSchema.setRequired(true);
+			schema.addField(numberFieldSchema);
+			schemaContainer("folder").setSchema(schema);
+		}
 	}
 
 	@Test

@@ -1,7 +1,5 @@
 package com.gentics.mesh.core;
 
-import io.vertx.core.AbstractVerticle;
-
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +11,13 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.gentics.mesh.graphdb.spi.Database;
+
+import io.vertx.core.AbstractVerticle;
 
 public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	public abstract void start() throws Exception;
-
-	@Autowired
-	protected FramedThreadedTransactionalGraph fg;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfiguration;
@@ -37,15 +34,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	@Autowired
 	protected I18NService i18n;
 
-	protected SearchQueue searchQueue;
-
-	protected MeshRoot meshRoot;
-
-	@PostConstruct
-	public void setup() {
-		searchQueue = boot.meshRoot().getSearchQueue();
-		meshRoot = boot.meshRoot();
-	}
+	protected Database database;
 
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;

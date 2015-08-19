@@ -4,14 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.impl.EventLoopContext;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -23,6 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -30,8 +23,18 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
@@ -53,6 +56,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	@Autowired
 	private RouterStorage routerStorage;
 
+	@Autowired
+	private DatabaseService databaseService;
+
 	@Before
 	public void setupVerticleTest() throws Exception {
 		setupData();
@@ -73,7 +79,13 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(user().getUsername(), data().getUserInfo().getPassword());
 		resetClientSchemaStorage();
-
+	}
+	
+	@After
+	public void cleanup() {
+		BootstrapInitializer.clearReferences();
+//		databaseService.getDatabase().clear();
+		databaseService.getDatabase().reset();
 	}
 
 	protected void resetClientSchemaStorage() throws IOException {

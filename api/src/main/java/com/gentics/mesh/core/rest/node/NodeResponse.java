@@ -51,6 +51,12 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	public NodeResponse() {
 	}
 
+	/**
+	 * Return the parent node reference for the node. Note that no reference will be set for the base node of a project. This node has no parent. In those cases
+	 * the reference will be set to null.
+	 * 
+	 * @return
+	 */
 	public NodeReference getParentNode() {
 		return parentNode;
 	}

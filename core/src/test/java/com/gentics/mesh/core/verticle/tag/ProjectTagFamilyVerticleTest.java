@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -11,10 +12,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -31,6 +34,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -47,45 +51,66 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyReadWithPerm() throws UnknownHostException, InterruptedException {
-		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
-		assertNotNull(tagFamily);
+
+		TagFamily tagFamily;
+		try (Trx tx = new Trx(db)) {
+			tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			assertNotNull(tagFamily);
+		}
+
 		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		TagFamilyResponse response = future.result();
+
 		assertNotNull(response);
-		assertEquals(tagFamily.getUuid(), response.getUuid());
+		try (Trx tx = new Trx(db)) {
+			assertEquals(tagFamily.getUuid(), response.getUuid());
+		}
 	}
 
 	@Test
 	public void testTagFamilyReadWithoutPerm() throws UnknownHostException, InterruptedException {
-		Role role = role();
-		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
-		assertNotNull(tagFamily);
-		role.revokePermissions(tagFamily, READ_PERM);
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Role role = role();
+			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			uuid = tagFamily.getUuid();
+			assertNotNull(tagFamily);
+			role.revokePermissions(tagFamily, READ_PERM);
+			tx.success();
+		}
 
-		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid());
+		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", tagFamily.getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
 	public void testTagFamilyTagList() {
-		TagFamily tagFamily = data().getTagFamilies().get("colors");
-		Future<TagListResponse> future = getClient().findTagsForTagFamilies(PROJECT_NAME, tagFamily.getUuid());
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			TagFamily tagFamily = data().getTagFamilies().get("colors");
+			uuid = tagFamily.getUuid();
+		}
+		Future<TagListResponse> future = getClient().findTagsForTagFamilies(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 	}
 
 	@Test
 	public void testTagFamilyListing() throws UnknownHostException, InterruptedException {
-
-		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-		TagFamily basicTagFamily = tagFamily("basic");
-		TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
-		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-		// noPermTag.addProject(project());
-		assertNotNull(noPermTagFamily.getUuid());
+		final String noPermTagUUID;
+		try (Trx tx = new Trx(db)) {
+			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+			TagFamily basicTagFamily = tagFamily("basic");
+			TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
+			noPermTagUUID = noPermTagFamily.getUuid();
+			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
+			// noPermTag.addProject(project());
+			assertNotNull(noPermTagFamily.getUuid());
+			tx.success();
+		}
 
 		// Test default paging parameters
 		Future<TagFamilyListResponse> future = getClient().findTagFamilies(PROJECT_NAME);
@@ -125,7 +150,6 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalTagFamilies, allTagFamilies.size());
 
 		// Verify that the no_perm_tag is not part of the response
-		final String noPermTagUUID = noPermTagFamily.getUuid();
 		List<TagFamilyResponse> filteredUserList = allTagFamilies.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID))
 				.collect(Collectors.toList());
 		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
@@ -170,22 +194,29 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyCreateWithPerm() {
+		String name = "newTagFamily";
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
-		request.setName("SuperDoll");
+		request.setName(name);
 		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
 		latchFor(future);
 		assertSuccess(future);
-		assertEquals("SuperDoll", future.result().getName());
+		assertEquals(name, future.result().getName());
 	}
 
 	@Test
 	public void testTagFamilyCreateWithoutPerm() {
+		try (Trx tx = new Trx(db)) {
+			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
+			tx.success();
+		}
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("SuperDoll");
-		role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
+
+		try (Trx tx = new Trx(db)) {
+			expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
+		}
 	}
 
 	@Test
@@ -199,63 +230,95 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyDeletionWithPerm() throws UnknownHostException, InterruptedException {
-		TagFamily basicTagFamily = tagFamily("basic");
-		String uuid = basicTagFamily.getUuid();
-		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			TagFamily basicTagFamily = tagFamily("basic");
+			uuid = basicTagFamily.getUuid();
+			CountDownLatch latch = new CountDownLatch(1);
+			project().getTagFamilyRoot().findByUuid(uuid, rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
 		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 
-		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-		});
-
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			project().getTagFamilyRoot().findByUuid(uuid, rh -> {
+				assertNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	public void testTagFamilyDeletionWithNoPerm() throws UnknownHostException, InterruptedException {
-		TagFamily basicTagFamily = tagFamily("basic");
-		String uuid = basicTagFamily.getUuid();
-		Role role = role();
-		role.revokePermissions(basicTagFamily, DELETE_PERM);
+		TagFamily basicTagFamily;
+		try (Trx tx = new Trx(db)) {
+			basicTagFamily = tagFamily("basic");
+			Role role = role();
+			role.revokePermissions(basicTagFamily, DELETE_PERM);
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			project().getTagFamilyRoot().findByUuid(basicTagFamily.getUuid(), rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
-		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
-		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
-		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
+		}
+
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			project().getTagFamilyRoot().findByUuid(basicTagFamily.getUuid(), rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+
+		}
 	}
 
 	@Test
 	public void testTagFamilyUpdateWithConflictingName() {
-		TagFamily tagFamily = tagFamily("basic");
 		String newName = "colors";
-
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName(newName);
 
-		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
+		try (Trx tx = new Trx(db)) {
+			Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request);
+			latchFor(future);
+			expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
+		}
 	}
 
 	@Test
 	public void testTagFamilyUpdateWithPerm() throws UnknownHostException, InterruptedException {
 
-		TagFamily tagFamily = tagFamily("basic");
+		String uuid;
+		String name;
+		try (Trx tx = new Trx(db)) {
+			TagFamily tagFamily = tagFamily("basic");
+			uuid = tagFamily.getUuid();
+			name = tagFamily.getName();
+		}
 
 		// 1. Read the current tagfamily
-		Future<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid());
+		Future<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
 		latchFor(readTagFut);
 		assertSuccess(readTagFut);
-		String name = tagFamily.getName();
 		assertNotNull("The name of the tag should be loaded.", name);
 		String restName = readTagFut.result().getName();
 		assertNotNull("The tag name must be set.", restName);
@@ -270,25 +333,29 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(newName, tagUpdateRequest.getName());
 
 		// 3. Send the request to the server
-		Future<TagFamilyResponse> updatedTagFut = getClient().updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), tagUpdateRequest);
+		Future<TagFamilyResponse> updatedTagFut = getClient().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest);
 		latchFor(updatedTagFut);
 		assertSuccess(updatedTagFut);
 		TagFamilyResponse tagFamily2 = updatedTagFut.result();
-		test.assertTagFamily(tagFamily, tagFamily2);
+		try (Trx tx = new Trx(db)) {
+			test.assertTagFamily(tagFamily("basic"), tagFamily2);
+		}
 
 		// 4. read the tag again and verify that it was changed
-		Future<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid());
+		Future<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
 		latchFor(reloadedTagFut);
 		assertSuccess(reloadedTagFut);
 		TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
 		assertEquals(request.getName(), reloadedTagFamily.getName());
-		test.assertTagFamily(tagFamily, reloadedTagFamily);
+		try (Trx tx = new Trx(db)) {
+			test.assertTagFamily(tagFamily("basic"), reloadedTagFamily);
+		}
 
 	}
 
 	@Test
 	public void testTagFamilyUpdateWithNoPerm() {
-
+		fail("not implemented");
 	}
 
 }

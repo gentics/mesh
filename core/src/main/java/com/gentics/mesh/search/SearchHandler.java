@@ -43,7 +43,8 @@ public class SearchHandler {
 	private org.elasticsearch.node.Node elasticSearchNode;
 
 	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
-			RootVertex<T> rootVertex, Class<RL> classOfRL) throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
+			RootVertex<T> rootVertex, Class<RL> classOfRL)
+					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingInfo pagingInfo = getPagingInfo(rc);
 		if (pagingInfo.getPage() < 1) {
@@ -71,7 +72,6 @@ public class SearchHandler {
 			JSONObject queryStringObject = new JSONObject(searchQuery);
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-
 			builder = client.prepareSearch().setSource(searchQuery);
 		} catch (Exception e) {
 			throw new MeshJsonException("Could not parse query string {" + searchQuery + "}", e);
@@ -94,7 +94,7 @@ public class SearchHandler {
 								elements.add(element);
 							}
 						} else {
-							// TODO log error info?
+							log.error("Could not find node {" + uuid + "}", rh.cause());
 						}
 					});
 				}

@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
@@ -193,6 +193,11 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 
 	@Override
 	public boolean hasPermission(MeshVertex node, GraphPermission permission) {
+//		for (VertexFrame vertex : getGraph().v().toList()) {
+//			System.out.println(vertex.toString());
+//		}
+//		System.err.println("-----------------------");
+//		TraversalHelper.debug(out(HAS_USER).in(HAS_ROLE).outE(permission.labels()).outV());
 		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 

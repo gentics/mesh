@@ -6,13 +6,20 @@ import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 
 public class TinkerGraphThreadedTransactionalGraphWrapper extends ThreadedTransactionalGraphWrapper {
 
+	private TinkerGraph graph;
+
 	public TinkerGraphThreadedTransactionalGraphWrapper(TinkerGraph graph) {
-		this.graph = (TransactionalGraph) graph;
+		this.graph = graph;
 	}
 
 	@Override
 	public TransactionalGraph newTransaction() {
-		return graph;
+		return (TransactionalGraph) graph;
+	}
+
+	@Override
+	public TransactionalGraph getGraph() {
+		return (TransactionalGraph) graph;
 	}
 
 }

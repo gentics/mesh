@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -61,28 +62,40 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUploadWithInvalidMimetype() throws IOException {
-		Node node = folder("news");
+		Node node;
+		try (Trx tx = new Trx(db)) {
+			node = folder("news");
+			prepareSchema(node, false, "image/.*");
+			tx.success();
+		}
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		prepareSchema(node, false, "image/.*");
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_error_no_binary_node");
+		}
 	}
 
 	@Test
 	public void testUploadToNoBinaryNode() throws IOException {
-		Node node = folder("news");
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		prepareSchema(node, false, "");
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
+		Node node;
+		try (Trx tx = new Trx(db)) {
+			node = folder("news");
+			prepareSchema(node, false, "");
+		}
+
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_error_no_binary_node");
+		}
 	}
 
 	/**
@@ -100,23 +113,27 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 		int binaryLen = 10000;
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(binaryLen - 1);
-		Node node = folder("news");
-
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 
-		prepareSchema(node, true, "");
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
+		Node node;
+		try (Trx tx = new Trx(db)) {
+			node = folder("news");
+			prepareSchema(node, true, "");
+		}
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
+		}
 	}
 
 	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
 		// Update the schema and enable binary support for folders
 		Schema schema = node.getSchemaContainer().getSchema();
 		schema.setBinary(binaryFlag);
-//		schema.set
-//		node.getSchemaContainer().setSchema(schema);
+		// schema.set
+		// node.getSchemaContainer().setSchema(schema);
 	}
 
 	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
@@ -130,27 +147,35 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testPathSegmentation() {
-		Node node = folder("news");
-		node.setUuid(UUIDUtil.randomUUID());
-		String uuid = "b677504736ed47a1b7504736ed07a14a";
-		node.setUuid(uuid);
-		String path = node.getSegmentedPath();
-		assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/" + uuid + ".bin", path);
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("news");
+			node.setUuid(UUIDUtil.randomUUID());
+			String uuid = "b677504736ed47a1b7504736ed07a14a";
+			node.setUuid(uuid);
+			String path = node.getSegmentedPath();
+			assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/" + uuid + ".bin", path);
+		}
 	}
 
 	@Test
 	public void testUpload() throws Exception {
-		Node node = folder("news");
 
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		prepareSchema(node, true, "");
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-		latchFor(future);
-		assertSuccess(future);
-		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
+		Node node;
+		try (Trx tx = new Trx(db)) {
+			node = folder("news");
+			prepareSchema(node, true, "");
+		}
+
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+			latchFor(future);
+			assertSuccess(future);
+			expectMessageResponse("node_binary_field_updated", future, node.getUuid());
+		}
 
 		Future<NodeResponse> responseFuture = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
 		latchFor(responseFuture);

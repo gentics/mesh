@@ -1,65 +1,75 @@
 package com.gentics.mesh.graphdb.orientdb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.WrapperFramedTransactionalGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientTransactionalGraph;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.VertexFrame;
 
-public class OrientDBFermaMultithreadingTest {
+public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
-	OrientTransactionalGraph memoryGraph = new OrientGraph("memory:tinkerpop");
+	private Database database = new OrientDBDatabase();
 
 	@Before
-	public void cleanup() {
-
+	public void setup() {
+		database.init(null);
 	}
+
+	Person p;
 
 	@Test
 	public void testMultithreading() {
-
-		WrapperFramedTransactionalGraph<OrientTransactionalGraph> fg = new DelegatingFramedTransactionalGraph<>(memoryGraph, true, false);
-		Person p = fg.addFramedVertex(Person.class);
-		p.setName("joe");
-		assertEquals("joe", p.getName());
-		Person p1 = fg.v().has(Person.class).nextOrDefaultExplicit(Person.class, null);
-		assertNotNull(p1);
-		fg.commit();
-
-		p1.setName("dgasgds");
+		try (Trx tx = new Trx(database)) {
+			p = addPersonWithFriends(tx.getGraph(), "SomePerson");
+			p.setName("joe");
+			tx.success();
+		}
 		runAndWait(() -> {
-			Person p2 = fg.addFramedVertex(Person.class);
-			p2.setName("Huibuh");
-			fg.commit();
+			try (Trx tx = new Trx(database)) {
+				manipulatePerson(tx.getGraph(), p);
+			}
 		});
-		fg.rollback();
-
-		runAndWait(() -> {
-			Person foundPerson = fg.v().has(Person.class).has("name", "joe").nextOrDefaultExplicit(Person.class, null);
-			assertNotNull(foundPerson);
-			assertEquals("joe", foundPerson.getName());
-			foundPerson.setName("Marko");
-			fg.rollback();
-		});
-		assertEquals("joe", p1.getName());
-
 	}
 
-	public void runAndWait(Runnable runnable) {
-		Thread thread = new Thread(runnable);
-		thread.start();
-		try {
-			thread.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	@Test
+	public void testOrientThreadedTransactionalGraphWrapper() {
+
+		// Test creation of user in current thread
+		try (Trx tx = new Trx(database)) {
+			Person p = addPersonWithFriends(tx.getGraph(), "Person2");
+			manipulatePerson(tx.getGraph(), p);
+			tx.success();
 		}
-		System.out.println("Done waiting");
+
+		AtomicReference<Person> reference = new AtomicReference<>();
+		runAndWait(() -> {
+			try (Trx tx = new Trx(database)) {
+				manipulatePerson(tx.getGraph(), p);
+			}
+			try (Trx tx = new Trx(database)) {
+				Person p2 = addPersonWithFriends(tx.getGraph(), "Person3");
+				tx.success();
+				reference.set(p2);
+			}
+			runAndWait(() -> {
+				try (Trx tx = new Trx(database)) {
+					manipulatePerson(tx.getGraph(), p);
+				}
+			});
+		});
+
+		try (Trx tx = new Trx(database)) {
+			for (VertexFrame vertex : tx.getGraph().v().toList()) {
+				System.out.println(vertex.toString());
+			}
+		}
+		try (Trx tx = new Trx(database)) {
+			manipulatePerson(tx.getGraph(), reference.get());
+		}
 	}
 
 }

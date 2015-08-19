@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.After;
@@ -30,11 +33,13 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonObject;
 
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public class SearchVerticleTest extends AbstractRestVerticleTest {
@@ -57,22 +62,24 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 	@BeforeClass
 	@AfterClass
-	public static void cleanup() throws IOException {
+	public static void removeSearchData() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
 	}
 
 	private void setupFullIndex() throws InterruptedException {
-		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-		for (Node node : boot.nodeRoot().findAll()) {
-			searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			for (Node node : boot.nodeRoot().findAll()) {
+				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
+			}
+			System.out.println("Search Queue size:" + searchQueue.getSize());
 		}
-		System.out.println("Search Queue size:" + searchQueue.getSize());
 
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 	}
 
 	@Test
@@ -112,12 +119,16 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testRemoveContent() throws InterruptedException {
+	public void testRemoveContent() throws InterruptedException, JSONException {
 		setupFullIndex();
+
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 
 		QueryBuilder qb = QueryBuilders.queryStringQuery("Großraumflugzeug");
-		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		JSONObject request = new JSONObject();
+		request.put("query", new JsonObject(qb.toString()));
+
+		Future<NodeListResponse> future = getClient().searchNodes(request.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();

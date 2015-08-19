@@ -3,15 +3,19 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import io.vertx.ext.web.RoutingContext;
 
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.RestModel;
+
+import io.vertx.ext.web.RoutingContext;
+
 public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVertexImpl implements GenericVertex<T> {
 
+	private static final String CREATION_TIMESTAMP_PROPERTY_KEY = "creation_timestamp";
+	private static final String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
 
 	@Override
 	public User getCreator() {
@@ -20,18 +24,17 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 
 	@Override
 	public void setCreator(User user) {
-		outE(HAS_CREATOR).removeAll();
-		linkOut(user.getImpl(), HAS_CREATOR);
+		setLinkOutTo(user.getImpl(), HAS_CREATOR);
 	}
 
 	@Override
 	public Long getCreationTimestamp() {
-		return getProperty("creation_timestamp");
+		return getProperty(CREATION_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setCreationTimestamp(long timestamp) {
-		setProperty("creation_timestamp", timestamp);
+		setProperty(CREATION_TIMESTAMP_PROPERTY_KEY, timestamp);
 	}
 
 	@Override
@@ -40,43 +43,41 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 	}
 
 	protected void fillRest(AbstractGenericNodeRestModel model, RoutingContext rc) {
+
 		model.setUuid(getUuid());
 
 		User creator = getCreator();
 		if (creator != null) {
 			model.setCreator(creator.transformToUserReference());
 		} else {
-			//TODO throw error and log something
+			// TODO throw error and log something
 		}
 
 		User editor = getEditor();
 		if (editor != null) {
 			model.setEditor(editor.transformToUserReference());
 		} else {
-			//TODO throw error and log something
+			// TODO throw error and log something
 		}
 		model.setPermissions(getUser(rc).getPermissionNames(this));
 
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());
-
 	}
 
 	@Override
 	public void setEditor(User user) {
-		//TODO replace with setlinkout
-		outE(HAS_EDITOR).removeAll();
-		linkOut(user.getImpl(), HAS_EDITOR);
+		setLinkOutTo(user.getImpl(), HAS_EDITOR);
 	}
 
 	@Override
 	public void setLastEditedTimestamp(long timestamp) {
-		setProperty("last_edited_timestamp", timestamp);
+		setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
 	}
 
 	@Override
 	public Long getLastEditedTimestamp() {
-		return getProperty("last_edited_timestamp");
+		return getProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
 	}
 
 }

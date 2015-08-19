@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.user;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import io.vertx.core.Future;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,11 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.AuthenticationVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+
+import io.vertx.core.Future;
 
 public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
@@ -30,10 +32,16 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRestClient() throws Exception {
-		User user = user();
+		String uuid;
+		String username;
+		try (Trx tx = new Trx(db)) {
+			User user = user();
+			username = user.getUsername();
+			uuid = user.getUuid();
+		}
 
 		MeshRestClient client = new MeshRestClient("localhost", getPort());
-		client.setLogin(user.getUsername(), password());
+		client.setLogin(username, password());
 		Future<GenericMessageResponse> future = client.login();
 		latchFor(future);
 		assertSuccess(future);
@@ -47,7 +55,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		assertFalse("The request failed.", meResponse.failed());
 
 		assertNotNull(me);
-		assertEquals(user.getUuid(), me.getUuid());
+		assertEquals(uuid, me.getUuid());
 	}
 
 }

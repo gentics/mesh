@@ -11,17 +11,20 @@ import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SelectFieldSchemaImpl;
+import com.gentics.mesh.graphdb.Trx;
 
 public class SelectGraphFieldNodeVericleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
-		SelectFieldSchema selectFieldSchema = new SelectFieldSchemaImpl();
-		selectFieldSchema.setName("selectField");
-		selectFieldSchema.setLabel("Some label");
-		schema.addField(selectFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		try (Trx tx = new Trx(db)) {
+			Schema schema = schemaContainer("folder").getSchema();
+			SelectFieldSchema selectFieldSchema = new SelectFieldSchemaImpl();
+			selectFieldSchema.setName("selectField");
+			selectFieldSchema.setLabel("Some label");
+			schema.addField(selectFieldSchema);
+			schemaContainer("folder").setSchema(schema);
+		}
 	}
 
 	@Test
@@ -43,7 +46,6 @@ public class SelectGraphFieldNodeVericleTest extends AbstractGraphFieldNodeVerti
 	@Ignore
 	public void testReadNodeWithExitingField() {
 		throw new NotImplementedException();
-
 	}
 
 }

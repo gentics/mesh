@@ -1,37 +1,86 @@
 package com.gentics.mesh.graphdb;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.orientechnologies.orient.core.db.OPartitionedDatabasePoolFactory;
+import com.orientechnologies.orient.core.Orient;
+import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class OrientDBDatabase implements Database {
 
-	OrientGraphFactory factory = new OrientGraphFactory("memory:tinkerpop");//.setupPool(5, 100);
+	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private final OPartitionedDatabasePoolFactory poolFactory = new OPartitionedDatabasePoolFactory();
+	private OrientGraphFactory factory;
+	private OrientThreadedTransactionalGraphWrapper wrapper;
+	private StorageOptions options;
+	private FramedThreadedTransactionalGraph fg;
 
-	public OrientDBDatabase() {
-
+	@Override
+	public void close() {
+		factory.close();
 	}
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph(StorageOptions options) {
-		//OrientTransactionalGraph memoryGraph = new OrientGraph("memory:tinkerpop");
+	public void reset() {
+		if (log.isDebugEnabled()) {
+			log.debug("Resetting orientdb");
+		}
+		factory.close();
+		Orient.instance().shutdown();
+		Trx.setLocalGraph(null);
+		try {
+			FileUtils.deleteDirectory(new File(options.getDirectory()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Orient.instance().startup();
+		factory = new OrientGraphFactory("memory:tinkerpop");
+		//factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
+		wrapper.setFactory(factory);
+	}
 
-//		ODatabaseThreadLocalFactory customFactory = new MeshRecordFactory(poolFactory);
-//		Orient.instance().registerThreadDatabaseFactory(customFactory);
+	@Override
+	public void clear() {
+		if (log.isDebugEnabled()) {
+			log.debug("Clearing orientdb {" + factory.hashCode() + "}");
+		}
+		try (Trx tx = new Trx(this)) {
+			fg.e().removeAll();
+			fg.v().removeAll();
+			tx.success();
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Cleared orientdb {" + factory.hashCode() + "}");
+		}
+	}
 
-		ThreadedTransactionalGraphWrapper wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
+	@Override
+	public void init(StorageOptions options) {
+		this.options = options;
 
+		factory = new OrientGraphFactory("memory:tinkerpop");
 		// Add some indices
 		// memoryGraph.createKeyIndex("name", Vertex.class);
 		// memoryGraph.createKeyIndex("ferma_type", Vertex.class);
 		// memoryGraph.createKeyIndex("ferma_type", Edge.class);
 
-		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+		//factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
+		wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
+		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+	}
+
+	@Override
+	public FramedThreadedTransactionalGraph getFramedGraph() {
 		return fg;
 	}
 

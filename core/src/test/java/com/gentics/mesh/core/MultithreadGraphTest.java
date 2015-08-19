@@ -7,21 +7,21 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
-import com.gentics.mesh.util.BlueprintTransaction;
 
 public class MultithreadGraphTest extends AbstractDBTest {
 
 	@Before
 	public void cleanup() {
-		purgeDatabase();
+		databaseService.getDatabase().clear();
 	}
 
 	@Test
 	public void testMultithreading() throws InterruptedException {
 
 		runAndWait(() -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(db)) {
 				MeshRoot meshRoot = boot.meshRoot();
 				User user = meshRoot.getUserRoot().create("test", null, null);
 				assertNotNull(user);
@@ -31,7 +31,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 		});
 
 		runAndWait(() -> {
-			try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+			try (Trx tx = new Trx(db)) {
 				// fg.getEdges();
 				runAndWait(() -> {
 					User user = boot.meshRoot().getUserRoot().findByUsername("test");
@@ -44,7 +44,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 			}
 		});
 
-		// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
+		// try (BlueprintTransaction tx = new BlueprintTransaction(database)) {
 		User user = boot.meshRoot().getUserRoot().findByUsername("test");
 		assertNotNull(user);
 		// }

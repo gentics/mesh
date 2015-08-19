@@ -8,7 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -25,8 +24,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.ext.web.RoutingContext;
+
 public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
@@ -37,11 +40,13 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		UserRoot root = meshRoot().getUserRoot();
-		int nUserBefore = root.findAll().size();
-		assertNotNull(root.create("dummy12345", null, user()));
-		int nUserAfter = root.findAll().size();
-		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
+		try (Trx tx = new Trx(db)) {
+			UserRoot root = meshRoot().getUserRoot();
+			int nUserBefore = root.findAll().size();
+			assertNotNull(root.create("dummy12345", null, user()));
+			int nUserAfter = root.findAll().size();
+			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
+		}
 	}
 
 	@Test
@@ -53,14 +58,17 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
-		Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
-		assertEquals(users().size(), page.getTotalElements());
-		assertEquals(10, page.getSize());
+		try (Trx tx = new Trx(db)) {
+			MeshAuthUser requestUser = getUser(rc);
 
-		page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 15));
-		assertEquals(users().size(), page.getTotalElements());
-		assertEquals(users().size(), page.getSize());
+			Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
+			assertEquals(users().size(), page.getTotalElements());
+			assertEquals(10, page.getSize());
+
+			page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 15));
+			assertEquals(users().size(), page.getTotalElements());
+			assertEquals(users().size(), page.getSize());
+		}
 	}
 
 	@Test
@@ -100,8 +108,10 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		assertNull(boot.userRoot().findByUsername("bogus"));
-		boot.userRoot().findByUsername(user().getUsername());
+		try (Trx tx = new Trx(db)) {
+			assertNull(boot.userRoot().findByUsername("bogus"));
+			boot.userRoot().findByUsername(user().getUsername());
+		}
 	}
 
 	@Test
@@ -166,19 +176,21 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		User user = user();
-		assertEquals("joe1", user.getUsername());
-		assertNotNull(user.getPasswordHash());
-		assertEquals("Joe", user.getFirstname());
-		assertEquals("Doe", user.getLastname());
-		assertEquals("j.doe@spam.gentics.com", user.getEmailAddress());
+		try (Trx tx = new Trx(db)) {
+			User user = user();
+			assertEquals("joe1", user.getUsername());
+			assertNotNull(user.getPasswordHash());
+			assertEquals("Joe", user.getFirstname());
+			assertEquals("Doe", user.getLastname());
+			assertEquals("j.doe@spam.gentics.com", user.getEmailAddress());
 
-		assertNotNull(user.getLastEditedTimestamp());
-		assertNotNull(user.getCreator());
-		assertNotNull(user.getEditor());
-		assertNotNull(user.getCreationTimestamp());
-		assertEquals(1, user.getGroups().size());
-		assertNotNull(user.getImpl());
+			assertNotNull(user.getLastEditedTimestamp());
+			assertNotNull(user.getCreator());
+			assertNotNull(user.getEditor());
+			assertNotNull(user.getCreationTimestamp());
+			assertEquals(1, user.getGroups().size());
+			assertNotNull(user.getImpl());
+		}
 	}
 
 	@Test

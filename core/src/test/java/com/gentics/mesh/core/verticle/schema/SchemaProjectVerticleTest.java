@@ -2,11 +2,11 @@ package com.gentics.mesh.core.verticle.schema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import io.vertx.core.Future;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -19,7 +19,10 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+
+import io.vertx.core.Future;
 
 public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
@@ -35,26 +38,33 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddSchemaToProjectWithPerm() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
-		ProjectRoot projectRoot = meshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject", user());
+		SchemaContainer schema;
+		Project extraProject;
+		try (Trx tx = new Trx(db)) {
+			schema = schemaContainer("content");
+			ProjectRoot projectRoot = meshRoot().getProjectRoot();
+			extraProject = projectRoot.create("extraProject", user());
 
-		// Add only read perms
-		role().grantPermissions(schema, READ_PERM);
-		role().grantPermissions(extraProject, UPDATE_PERM);
+			// Add only read perms
+			role().grantPermissions(schema, READ_PERM);
+			role().grantPermissions(extraProject, UPDATE_PERM);
+			tx.success();
+		}
 
-		Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		SchemaResponse restSchema = future.result();
-		test.assertSchema(schema, restSchema);
+		try (Trx tx = new Trx(db)) {
+			Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			SchemaResponse restSchema = future.result();
+			test.assertSchema(schema, restSchema);
+		}
 
 		CountDownLatch latch = new CountDownLatch(1);
 		extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 			assertNotNull("The schema should be added to the extra project", rh.result());
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 
 	}
 
