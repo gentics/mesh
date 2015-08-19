@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -34,27 +35,29 @@ public class NumberGraphFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testNumberFieldTransformation() throws IOException, InterruptedException {
-		Node node = folder("2015");
-		Schema schema = node.getSchema();
-		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
-		numberFieldSchema.setRequired(true);
-		schema.addField(numberFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			Schema schema = node.getSchema();
+			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
+			numberFieldSchema.setName("numberField");
+			numberFieldSchema.setMin(10);
+			numberFieldSchema.setMax(1000);
+			numberFieldSchema.setRequired(true);
+			schema.addField(numberFieldSchema);
+			node.getSchemaContainer().setSchema(schema);
 
-		NodeFieldContainer container = node.getFieldContainer(english());
+			NodeFieldContainer container = node.getFieldContainer(english());
 
-		NumberGraphField numberField = container.createNumber("numberField");
-		numberField.setNumber("100.9");
+			NumberGraphField numberField = container.createNumber("numberField");
+			numberField.setNumber("100.9");
 
-		String json = getJson(node);
-		assertTrue(json.indexOf("100.9") > 1);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
-		assertNotNull(response);
-		NumberFieldImpl deserializedNumberField = response.getField("numberField");
-		assertEquals("100.9", deserializedNumberField.getNumber());
+			String json = getJson(node);
+			assertTrue(json.indexOf("100.9") > 1);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+			assertNotNull(response);
+			NumberFieldImpl deserializedNumberField = response.getField("numberField");
+			assertEquals("100.9", deserializedNumberField.getNumber());
+		}
 	}
 }

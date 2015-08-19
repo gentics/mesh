@@ -1,11 +1,13 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -14,6 +16,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -30,16 +33,19 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		LanguageRoot languageRoot = meshRoot().getLanguageRoot();
+		try (Trx tx = new Trx(db)) {
 
-		int nLanguagesBefore = languageRoot.findAll().size();
+			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 
-		final String languageName = "klingon";
-		final String languageTag = "tlh";
-		assertNotNull(languageRoot.create(languageName, languageTag));
+			int nLanguagesBefore = languageRoot.findAll().size();
 
-		int nLanguagesAfter = languageRoot.findAll().size();
-		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
+			final String languageName = "klingon";
+			final String languageTag = "tlh";
+			assertNotNull(languageRoot.create(languageName, languageTag));
+
+			int nLanguagesAfter = languageRoot.findAll().size();
+			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
+		}
 	}
 
 	@Test
@@ -51,39 +57,47 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		List<? extends Language> languages = languageRoot.findAll();
-		assertEquals(182, languages.size());
+		try (Trx tx = new Trx(db)) {
+			List<? extends Language> languages = languageRoot.findAll();
+			assertEquals(182, languages.size());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		Language language = languageRoot.findByName("German");
-		assertNotNull(language);
-		assertEquals("German", language.getName());
-		assertEquals("Deutsch", language.getNativeName());
-		assertEquals("de", language.getLanguageTag());
+		try (Trx tx = new Trx(db)) {
+			Language language = languageRoot.findByName("German");
+			assertNotNull(language);
+			assertEquals("German", language.getName());
+			assertEquals("Deutsch", language.getNativeName());
+			assertEquals("de", language.getLanguageTag());
 
-		language = languageRoot.findByName("bogus");
-		assertNull(language);
-
+			language = languageRoot.findByName("bogus");
+			assertNull(language);
+		}
 	}
 
 	@Test
 	@Override
-	public void testFindByUUID() {
-		Language language = languageRoot.findByName("German");
+	public void testFindByUUID() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			Language language = languageRoot.findByName("German");
 
-		languageRoot.findByUuid(language.getUuid(), rh -> {
-			Language foundLanguage = rh.result();
-			assertNotNull(foundLanguage);
-		});
+			CountDownLatch latch = new CountDownLatch(2);
+			languageRoot.findByUuid(language.getUuid(), rh -> {
+				Language foundLanguage = rh.result();
+				assertNotNull(foundLanguage);
+				latch.countDown();
+			});
 
-		languageRoot.findByUuid("bogus", rh -> {
-			Language foundLanguage = rh.result();
-			assertNull(foundLanguage);
-		});
-
+			languageRoot.findByUuid("bogus", rh -> {
+				Language foundLanguage = rh.result();
+				assertNull(foundLanguage);
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
@@ -107,28 +121,32 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		Language language = english();
-		assertNotNull(language.getName());
-		assertEquals("English", language.getName());
-		assertNotNull(language.getNativeName());
-		assertEquals("English", language.getNativeName());
-		assertNotNull(language.getLanguageTag());
-		assertEquals("en", language.getLanguageTag());
+		try (Trx tx = new Trx(db)) {
+			Language language = english();
+			assertNotNull(language.getName());
+			assertEquals("English", language.getName());
+			assertNotNull(language.getNativeName());
+			assertEquals("English", language.getNativeName());
+			assertNotNull(language.getLanguageTag());
+			assertEquals("en", language.getLanguageTag());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreate() {
-		LanguageRoot languageRoot = meshRoot().getLanguageRoot();
-		final String languageTag = "tlh";
-		final String languageName = "klingon";
-		Language lang = languageRoot.create(languageName, languageTag);
+		try (Trx tx = new Trx(db)) {
+			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
+			final String languageTag = "tlh";
+			final String languageName = "klingon";
+			Language lang = languageRoot.create(languageName, languageTag);
 
-		lang = languageRoot.findByName(languageName);
-		assertNotNull(lang);
-		assertEquals(languageName, lang.getName());
+			lang = languageRoot.findByName(languageName);
+			assertNotNull(lang);
+			assertEquals(languageName, lang.getName());
 
-		assertNotNull(languageRoot.findByLanguageTag(languageTag));
+			assertNotNull(languageRoot.findByLanguageTag(languageTag));
+		}
 	}
 
 	@Test
@@ -146,29 +164,25 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		Language language = english();
-		testPermission(GraphPermission.READ_PERM, language);
+		testPermission(GraphPermission.READ_PERM, english());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		Language language = english();
-		testPermission(GraphPermission.DELETE_PERM, language);
+		testPermission(GraphPermission.DELETE_PERM, english());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		Language language = english();
-		testPermission(GraphPermission.UPDATE_PERM, language);
+		testPermission(GraphPermission.UPDATE_PERM, english());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		Language language = english();
-		testPermission(GraphPermission.CREATE_PERM, language);
+		testPermission(GraphPermission.CREATE_PERM, english());
 	}
 
 }

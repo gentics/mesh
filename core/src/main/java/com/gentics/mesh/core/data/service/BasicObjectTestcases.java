@@ -19,7 +19,7 @@ public interface BasicObjectTestcases {
 
 	void testRead() throws IOException;
 
-	void testCreate() throws IOException;
+	void testCreate() throws IOException, InterruptedException;
 
 	void testDelete() throws InterruptedException;
 

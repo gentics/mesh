@@ -497,8 +497,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						Node node = rh.result();
 						loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
 							if (hasSucceeded(rc, th)) {
+								Tag tag = th.result();
 								try (Trx txAdd = new Trx(db)) {
-									Tag tag = th.result();
 									node.addTag(tag);
 									txAdd.success();
 								}

@@ -174,7 +174,8 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	/**
 	 * Returns the i18n display name for the node.
-	 * @param rc 
+	 * 
+	 * @param rc
 	 * @return
 	 */
 	String getDisplayName(RoutingContext rc);

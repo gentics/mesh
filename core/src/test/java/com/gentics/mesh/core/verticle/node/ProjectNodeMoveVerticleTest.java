@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.node;
+
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -18,6 +19,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -30,21 +32,21 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		String sourceUuid;
-		String targetUuid;
+
+		Node targetNode;
+		Node sourceNode;
 		String oldParentUuid;
 		try (Trx tx = new Trx(db)) {
-			Node sourceNode = folder("news");
-			sourceUuid = sourceNode.getUuid();
-			Node targetNode = content("jeep wrangler");
-			targetUuid = targetNode.getUuid();
+			sourceNode = folder("news");
+			targetNode = content("jeep wrangler");
 			oldParentUuid = sourceNode.getParentNode().getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
 		}
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, targetUuid);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
-
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
+		}
 		try (Trx tx = new Trx(db)) {
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
 		}
@@ -52,18 +54,18 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodesSame() {
-		String sourceUuid;
 		String oldParentUuid;
+		Node sourceNode;
 		try (Trx tx = new Trx(db)) {
-			Node sourceNode = folder("news");
-			sourceUuid = sourceNode.getUuid();
+			sourceNode = folder("news");
 			oldParentUuid = sourceNode.getParentNode().getUuid();
-			assertNotEquals(sourceUuid, sourceNode.getParentNode().getUuid());
+			assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode().getUuid());
 		}
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, sourceUuid);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_move_error_same_nodes");
-
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid());
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_move_error_same_nodes");
+		}
 		try (Trx tx = new Trx(db)) {
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
 		}
@@ -71,24 +73,22 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		String sourceUuid;
-		String targetUuid;
+		Node targetNode;
+		Node sourceNode;
 		String oldParentUuid;
 		try (Trx tx = new Trx(db)) {
-			Node sourceNode = folder("news");
-			sourceUuid = sourceNode.getUuid();
+			sourceNode = folder("news");
+			targetNode = folder("2015");
 			oldParentUuid = sourceNode.getParentNode().getUuid();
-			Node targetNode = folder("2015");
-			targetUuid = targetNode.getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
 		}
 
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, targetUuid);
+		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children");
 
 		try (Trx tx = new Trx(db)) {
-			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode().getUuid());
 		}
 	}
 
@@ -99,24 +99,22 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		String sourceUuid;
-		String targetUuid;
+		Node targetNode;
+		Node sourceNode;
 		try (Trx tx = new Trx(db)) {
-			Node sourceNode = folder("deals");
-			sourceUuid = sourceNode.getUuid();
-			Node targetNode = folder("2015");
-			targetUuid = targetNode.getUuid();
+			sourceNode = folder("deals");
+			targetNode = folder("2015");
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
 		}
-
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceUuid, targetUuid);
-		latchFor(future);
-		assertSuccess(future);
-		expectMessageResponse("node_moved_to", future, sourceUuid, targetUuid);
-
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			expectMessageResponse("node_moved_to", future, sourceNode.getUuid(), targetNode.getUuid());
+		}
 		try (Trx tx = new Trx(db)) {
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-					targetUuid, folder("deals").getParentNode().getUuid());
+					targetNode.getUuid(), folder("deals").getParentNode().getUuid());
 		}
 	}
 

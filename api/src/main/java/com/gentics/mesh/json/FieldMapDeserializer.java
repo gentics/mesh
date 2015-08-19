@@ -102,7 +102,11 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 			break;
 		case NUMBER:
 			NumberField numberField = new NumberFieldImpl();
-			numberField.setNumber(jsonNode.numberValue().toString());
+			Number number = jsonNode.numberValue();
+			if (number == null) {
+				throw new MeshJsonException("Could not find number for number field {" + fieldKey + "}");
+			}
+			numberField.setNumber(number.toString());
 			map.put(fieldKey, numberField);
 			break;
 		case BOOLEAN:
@@ -131,7 +135,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 						nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class, schemaStorage);
 					} catch (MeshJsonException e) {
 						if (log.isDebugEnabled()) {
-							log.debug("Could not deserialize json to expanded Node Response", e);
+							log.debug("Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: " + e.getMessage());
 						}
 						nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
 					} catch (IOException e) {

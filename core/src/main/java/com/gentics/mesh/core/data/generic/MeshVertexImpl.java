@@ -17,6 +17,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
@@ -92,6 +93,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
+	}
+
+	@Override
+	public void reload() {
+		((OrientVertex) getImpl().getElement()).reload();
 	}
 
 }

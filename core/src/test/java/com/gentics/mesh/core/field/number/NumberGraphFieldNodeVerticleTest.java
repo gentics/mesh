@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.number;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -32,19 +33,29 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 			numberFieldSchema.setRequired(true);
 			schema.addField(numberFieldSchema);
 			schemaContainer("folder").setSchema(schema);
+			tx.success();
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
-		NumberFieldImpl field = response.getField("numberField");
-		assertEquals("42", field.getNumber());
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
+			NumberFieldImpl field = response.getField("numberField");
+			assertEquals("42", field.getNumber());
+		}
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("43"));
+			NumberFieldImpl field = response.getField("numberField");
+			assertEquals("43", field.getNumber());
+		}
+	}
 
-		response = updateNode("numberField", new NumberFieldImpl().setNumber("43"));
-		field = response.getField("numberField");
-		assertEquals("43", field.getNumber());
+	@Test
+	public void testCreateNodeWithBooleanFieldInsteadOfNumber() {
+		//We expect the json serializer to fail.
+		fail("not yet implemented");
 	}
 
 	@Test
@@ -58,17 +69,23 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() throws IOException {
-		Node node = folder("2015");
+		Node node;
+		try (Trx tx = new Trx(db)) {
+			node = folder("2015");
 
-		NodeFieldContainer container = node.getFieldContainer(english());
-		NumberGraphField numberField = container.createNumber("numberField");
-		numberField.setNumber("100.9");
+			NodeFieldContainer container = node.getFieldContainer(english());
+			NumberGraphField numberField = container.createNumber("numberField");
+			numberField.setNumber("100.9");
+			tx.success();
+		}
 
-		NodeResponse response = readNode(node);
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = readNode(node);
 
-		NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);
-		assertNotNull(deserializedNumberField);
-		assertEquals("100.9", deserializedNumberField.getNumber());
+			NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);
+			assertNotNull(deserializedNumberField);
+			assertEquals("100.9", deserializedNumberField.getNumber());
+		}
 	}
 
 }

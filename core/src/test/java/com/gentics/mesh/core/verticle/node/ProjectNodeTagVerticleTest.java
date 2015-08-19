@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.node;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
@@ -25,6 +26,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -40,7 +42,6 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 		try (Trx tx = new Trx(db)) {
 			Node node = folder("2015");
 			assertNotNull(node);
-			System.out.println(node.getUuid());
 			assertNotNull(node.getUuid());
 			assertNotNull(node.getSchemaContainer());
 			Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid());
@@ -71,6 +72,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		try (Trx tx = new Trx(db)) {
+			node.reload();
 			NodeResponse restNode = future.result();
 			assertTrue(test.containsTag(restNode, tag));
 			assertTrue(node.getTags().contains(tag));

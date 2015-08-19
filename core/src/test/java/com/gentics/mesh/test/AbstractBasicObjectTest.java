@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.graphdb.DatabaseService;
+import com.gentics.mesh.graphdb.Trx;
 
 public abstract class AbstractBasicObjectTest extends AbstractDBTest implements BasicObjectTestcases {
 
@@ -26,17 +27,19 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 	@After
 	public void cleanup() {
 		BootstrapInitializer.clearReferences();
-//		databaseService.getDatabase().clear();
+		//		databaseService.getDatabase().clear();
 		databaseService.getDatabase().reset();
 	}
 
 	protected void testPermission(GraphPermission perm, GenericVertex<?> node) {
-		role().grantPermissions(node, perm);
-		assertTrue(role().hasPermission(perm, node));
-		assertTrue(getRequestUser().hasPermission(node, perm));
-		role().revokePermissions(node, perm);
-		assertFalse(role().hasPermission(perm, node));
-		assertFalse(getRequestUser().hasPermission(node, perm));
+		try (Trx tx = new Trx(db)) {
+			role().grantPermissions(node, perm);
+			assertTrue(role().hasPermission(perm, node));
+			assertTrue(getRequestUser().hasPermission(node, perm));
+			role().revokePermissions(node, perm);
+			assertFalse(role().hasPermission(perm, node));
+			assertFalse(getRequestUser().hasPermission(node, perm));
+		}
 	}
 
 }

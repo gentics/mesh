@@ -16,16 +16,16 @@ public interface MeshVertex extends MeshElement {
 	Vertex getVertex();
 
 	/**
-	 * Return the implementation for this element.
-	 * 
-	 * @return
-	 */
-	MeshVertexImpl getImpl();
-
-	/**
 	 * Delete the element.
 	 */
 	void delete();
 
 	void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke);
+
+	/**
+	 * Return the implementation for this element.
+	 * 
+	 * @return
+	 */
+	MeshVertexImpl getImpl();
 }

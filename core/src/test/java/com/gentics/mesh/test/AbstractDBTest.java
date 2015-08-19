@@ -39,7 +39,6 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestAssert;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -88,7 +87,7 @@ public abstract class AbstractDBTest {
 
 	public SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = data().getSchemaContainer(key);
-		((OrientVertex) container.getImpl().getElement()).reload();
+		container.reload();
 		return container;
 
 	}
@@ -99,32 +98,32 @@ public abstract class AbstractDBTest {
 
 	public Tag tag(String key) {
 		Tag tag = data().getTag(key);
-		((OrientVertex) tag.getImpl().getElement()).reload();
+		tag.reload();
 		return tag;
 	}
 
 	public TagFamily tagFamily(String key) {
 		TagFamily family = data().getTagFamily(key);
-		((OrientVertex) family.getImpl().getElement()).reload();
+		family.reload();
 		return family;
 	}
 
 	public Project project() {
 		Project project = data().getProject();
-		((OrientVertex) project.getImpl().getElement()).reload();
+		project.reload();
 		return project;
 	}
 
 	public Node content(String key) {
 		Node node = data().getContent(key);
-		((OrientVertex) node.getImpl().getElement()).reload();
+		node.reload();
 		return node;
 
 	}
 
 	public Node folder(String key) {
 		Node node = data().getFolder(key);
-		((OrientVertex) node.getImpl().getElement()).reload();
+		node.reload();
 		return node;
 	}
 
@@ -154,7 +153,7 @@ public abstract class AbstractDBTest {
 
 	public User user() {
 		User user = data().getUserInfo().getUser();
-		((OrientVertex) user.getImpl().getElement()).reload();
+		user.reload();
 		return user;
 	}
 
@@ -164,13 +163,13 @@ public abstract class AbstractDBTest {
 
 	public Group group() {
 		Group group = data().getUserInfo().getGroup();
-		((OrientVertex) group.getImpl().getElement()).reload();
+		group.reload();
 		return group;
 	}
 
 	public Role role() {
 		Role role = data().getUserInfo().getRole();
-		((OrientVertex) role.getImpl().getElement()).reload();
+		role.reload();
 		return role;
 	}
 
@@ -180,7 +179,7 @@ public abstract class AbstractDBTest {
 
 	public Node content() {
 		Node content = data().getContent("news overview");
-		((OrientVertex) content.getImpl().getElement()).reload();
+		content.reload();
 		return content;
 	}
 
@@ -189,7 +188,9 @@ public abstract class AbstractDBTest {
 	}
 
 	public SchemaContainer getSchemaContainer() {
-		return data().getSchemaContainer("content");
+		SchemaContainer container = data().getSchemaContainer("content");
+		container.reload();
+		return container;
 	}
 
 	protected String getJson(Node node) throws InterruptedException {

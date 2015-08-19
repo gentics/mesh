@@ -7,6 +7,7 @@ import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.impls.orient.OrientEdge;
 
 public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
@@ -35,6 +36,11 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	public MeshEdgeImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public void reload() {
+		((OrientEdge) getImpl().getElement()).reload();
 	}
 
 }

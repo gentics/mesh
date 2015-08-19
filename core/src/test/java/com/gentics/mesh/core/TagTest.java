@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.api.common.PagingInfo;
@@ -39,142 +38,150 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	private static Logger log = LoggerFactory.getLogger(TagTest.class);
 
-	private TagRoot tagRoot;
-
 	public static final String GERMAN_NAME = "test german name";
 
 	public static final String ENGLISH_NAME = "test english name";
 
-	@Before
-	public void setup() throws Exception {
-		super.setup();
-		tagRoot = boot.tagRoot();
-	}
-
 	@Test
 	public void testTagFamilyTagCreation() {
-		final String TAG_FAMILY_NAME = "mycustomtagFamily";
-		TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
-		assertNotNull(tagFamily);
-		assertEquals(TAG_FAMILY_NAME, tagFamily.getName());
-		assertNull(tagFamily.getDescription());
-		tagFamily.setDescription("description");
-		assertEquals("description", tagFamily.getDescription());
-		assertEquals(0, tagFamily.getTags().size());
-		assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
-		assertEquals(1, tagFamily.getTags().size());
+		try (Trx tx = new Trx(db)) {
+			final String TAG_FAMILY_NAME = "mycustomtagFamily";
+			TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
+			assertNotNull(tagFamily);
+			assertEquals(TAG_FAMILY_NAME, tagFamily.getName());
+			assertNull(tagFamily.getDescription());
+			tagFamily.setDescription("description");
+			assertEquals("description", tagFamily.getDescription());
+			assertEquals(0, tagFamily.getTags().size());
+			assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
+			assertEquals(1, tagFamily.getTags().size());
+		}
 	}
 
 	@Test
 	public void testSimpleTag() {
-		TagFamily root = tagFamily("basic");
-		Tag tag = root.create("test", project(), user());
-		assertEquals("test", tag.getName());
-		tag.setName("test2");
-		assertEquals("test2", tag.getName());
+		try (Trx tx = new Trx(db)) {
+			TagFamily root = tagFamily("basic");
+			Tag tag = root.create("test", project(), user());
+			assertEquals("test", tag.getName());
+			tag.setName("test2");
+			assertEquals("test2", tag.getName());
+		}
 	}
 
 	@Test
-	public void testNodeTaggging() {
+	public void testNodeTaggging() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			// 1. Create the tag
+			TagFamily root = tagFamily("basic");
+			Tag tag = root.create(ENGLISH_NAME, project(), user());
+			String uuid = tag.getUuid();
+			meshRoot().getTagRoot().findByUuid(uuid, rh -> {
+				assertNotNull(rh.result());
+			});
 
-		// 1. Create the tag
-		TagFamily root = tagFamily("basic");
-		Tag tag = root.create(ENGLISH_NAME, project(), user());
-		String uuid = tag.getUuid();
-		tagRoot.findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
+			// 2. Create the node
+			final String GERMAN_TEST_FILENAME = "german.html";
+			Node parentNode = folder("2015");
+			Node node = parentNode.create(user(), getSchemaContainer(), project());
+			Language german = boot.languageRoot().findByLanguageTag("de");
+			NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
-		// 2. Create the node
-		final String GERMAN_TEST_FILENAME = "german.html";
-		Node parentNode = folder("2015");
-		Node node = parentNode.create(user(), getSchemaContainer(), project());
-		Language german = boot.languageRoot().findByLanguageTag("de");
-		NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
+			germanContainer.createString("name").setString("german node name");
 
-		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
-		germanContainer.createString("name").setString("german node name");
+			// 3. Assign the tag to the node
+			node.addTag(tag);
 
-		// 3. Assign the tag to the node
-		node.addTag(tag);
+			// 4. Reload the tag and inspect the tagged nodes
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
+				Tag reloadedTag = rh.result();
+				assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
+				Node contentFromTag = reloadedTag.getNodes().iterator().next();
+				NodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
 
-		// 4. Reload the tag and inspect the tagged nodes
-		tagRoot.findByUuid(tag.getUuid(), rh -> {
-			Tag reloadedTag = rh.result();
-			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
-			Node contentFromTag = reloadedTag.getNodes().iterator().next();
-			NodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
+				assertNotNull(contentFromTag);
+				assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
+				String filename = fieldContainer.getString("displayName").getString();
+				assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
-			assertNotNull(contentFromTag);
-			assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
-			String filename = fieldContainer.getString("displayName").getString();
-			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
-
-			// Remove the file/content and check whether the content was really removed
-			reloadedTag.removeNode(contentFromTag);
-			// TODO verify for removed node
-			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
-		});
+				// Remove the file/content and check whether the content was really removed
+				reloadedTag.removeNode(contentFromTag);
+				// TODO verify for removed node
+				assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
 	}
 
 	@Test
-	public void testNodeTagging() {
-		final String TEST_TAG_NAME = "testTag";
-		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create(TEST_TAG_NAME, project(), user());
+	public void testNodeTagging() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			final String TEST_TAG_NAME = "testTag";
+			TagFamily tagFamily = tagFamily("basic");
+			Tag tag = tagFamily.create(TEST_TAG_NAME, project(), user());
 
-		Node node = folder("news");
-		node.addTag(tag);
+			Node node = folder("news");
+			node.addTag(tag);
 
-		boot.nodeRoot().findByUuid(node.getUuid(), rh -> {
-			Node reloadedNode = rh.result();
-			boolean found = false;
-			for (Tag currentTag : reloadedNode.getTags()) {
-				if (currentTag.getUuid().equals(tag.getUuid())) {
-					found = true;
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.nodeRoot().findByUuid(node.getUuid(), rh -> {
+				Node reloadedNode = rh.result();
+				boolean found = false;
+				for (Tag currentTag : reloadedNode.getTags()) {
+					if (currentTag.getUuid().equals(tag.getUuid())) {
+						found = true;
+					}
 				}
-			}
-			assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
-		});
+				assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
 	}
 
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		try (Trx tx = new Trx(db)) {
+			RoutingContext rc = getMockedRoutingContext("");
+			MeshAuthUser requestUser = getUser(rc);
 
-		Page<? extends Tag> tagPage = tagRoot.findAll(requestUser, new PagingInfo(1, 10));
-		assertEquals(12, tagPage.getTotalElements());
-		assertEquals(10, tagPage.getSize());
+			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingInfo(1, 10));
+			assertEquals(12, tagPage.getTotalElements());
+			assertEquals(10, tagPage.getSize());
 
-		tagPage = tagRoot.findAll(requestUser, new PagingInfo(1, 14));
-		assertEquals(tags().size(), tagPage.getTotalElements());
-		assertEquals(12, tagPage.getSize());
+			tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingInfo(1, 14));
+			assertEquals(tags().size(), tagPage.getTotalElements());
+			assertEquals(12, tagPage.getSize());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
+		try (Trx tx = new Trx(db)) {
+			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+			TagFamily basicTagFamily = tagFamily("basic");
+			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
+			project().getTagRoot().addTag(noPermTag);
+			assertNotNull(noPermTag.getUuid());
+			assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
-		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-		TagFamily basicTagFamily = tagFamily("basic");
-		Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
-		project().getTagRoot().addTag(noPermTag);
-		assertNotNull(noPermTag.getUuid());
-		assertEquals(tags().size() + 1, tagRoot.findAll().size());
+			Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+			assertPage(projectTagpage, tags().size());
 
-		Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
-		assertPage(projectTagpage, tags().size());
+			Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+			assertPage(globalTagPage, tags().size());
 
-		Page<? extends Tag> globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
-		assertPage(globalTagPage, tags().size());
-
-		role().grantPermissions(noPermTag, READ_PERM);
-		globalTagPage = tagRoot.findAll(getRequestUser(), new PagingInfo(1, 20));
-		assertPage(globalTagPage, tags().size() + 1);
+			role().grantPermissions(noPermTag, READ_PERM);
+			globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+			assertPage(globalTagPage, tags().size() + 1);
+		}
 	}
 
 	private void assertPage(Page<? extends Tag> page, int totalTags) {
@@ -195,141 +202,165 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		TagRoot root = meshRoot().getTagRoot();
-		assertEquals(tags().size(), root.findAll().size());
-		Tag tag = tag("red");
-		root.removeTag(tag);
-		assertEquals(tags().size() - 1, root.findAll().size());
-		root.removeTag(tag);
-		assertEquals(tags().size() - 1, root.findAll().size());
-		root.addTag(tag);
-		assertEquals(tags().size(), root.findAll().size());
-		root.addTag(tag);
-		assertEquals(tags().size(), root.findAll().size());
-		root.delete();
-
+		try (Trx tx = new Trx(db)) {
+			TagRoot root = meshRoot().getTagRoot();
+			assertEquals(tags().size(), root.findAll().size());
+			Tag tag = tag("red");
+			root.removeTag(tag);
+			assertEquals(tags().size() - 1, root.findAll().size());
+			root.removeTag(tag);
+			assertEquals(tags().size() - 1, root.findAll().size());
+			root.addTag(tag);
+			assertEquals(tags().size(), root.findAll().size());
+			root.addTag(tag);
+			assertEquals(tags().size(), root.findAll().size());
+			root.delete();
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		Tag tag = tag("car");
-		Tag foundTag = tagRoot.findByName("Car");
-		assertNotNull(foundTag);
-		assertEquals("Car", foundTag.getName());
-		assertNotNull(tagRoot.findByName(tag.getName()));
-		assertNull(tagRoot.findByName("bogus"));
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("car");
+			Tag foundTag = meshRoot().getTagRoot().findByName("Car");
+			assertNotNull(foundTag);
+			assertEquals("Car", foundTag.getName());
+			assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()));
+			assertNull(meshRoot().getTagRoot().findByName("bogus"));
+		}
 	}
 
 	@Test
 	@Override
-	public void testFindByUUID() {
-		Tag tag = tag("car");
-		tagRoot.findByUuid(tag.getUuid(), rh -> {
-			assertNotNull(rh.result());
-		});
-		tagRoot.findByUuid("bogus", rh -> {
-			assertNull(rh.result());
-		});
+	public void testFindByUUID() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("car");
+			CountDownLatch latch = new CountDownLatch(2);
+			meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			meshRoot().getTagRoot().findByUuid("bogus", rh -> {
+				assertNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
-	public void testCreate() {
-		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
-		assertNotNull(tag);
-		String uuid = tag.getUuid();
-		tagRoot.findByUuid(uuid, rh -> {
-			Tag loadedTag = rh.result();
-			assertNotNull("The folder could not be found.", loadedTag);
-			String name = loadedTag.getName();
-			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			assertEquals(10, tagFamily.getTags().size());
-		});
+	public void testCreate() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			TagFamily tagFamily = tagFamily("basic");
+			Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
+			assertNotNull(tag);
+			String uuid = tag.getUuid();
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getTagRoot().findByUuid(uuid, rh -> {
+				Tag loadedTag = rh.result();
+				assertNotNull("The folder could not be found.", loadedTag);
+				String name = loadedTag.getName();
+				assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
+				assertEquals(10, tagFamily.getTags().size());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
 	public void testTransformation() {
-		Tag tag = tag("red");
-		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-		List<String> languageTags = new ArrayList<>();
-		languageTags.add("en");
-		languageTags.add("de");
-		int depth = 3;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("red");
+			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+			List<String> languageTags = new ArrayList<>();
+			languageTags.add("en");
+			languageTags.add("de");
+			int depth = 3;
 
-		RoutingContext rc = getMockedRoutingContext("lang=de,en");
-		for (int i = 0; i < 100; i++) {
-			long start = System.currentTimeMillis();
-			tag.transformToRest(rc, th -> {
-				if (th.failed()) {
-					rc.fail(th.cause());
-				}
-				TagResponse response = th.result();
-				assertNotNull(response);
-				long dur = System.currentTimeMillis() - start;
-				log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
-				JsonUtil.toJson(response);
-			});
+			RoutingContext rc = getMockedRoutingContext("lang=de,en");
+			for (int i = 0; i < 100; i++) {
+				long start = System.currentTimeMillis();
+				tag.transformToRest(rc, th -> {
+					if (th.failed()) {
+						rc.fail(th.cause());
+					}
+					TagResponse response = th.result();
+					assertNotNull(response);
+					long dur = System.currentTimeMillis() - start;
+					log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
+					JsonUtil.toJson(response);
+				});
+			}
+			// assertEquals(2, response.getChildTags().size());
+			// assertEquals(4, response.getPerms().length);
 		}
-		// assertEquals(2, response.getChildTags().size());
-		// assertEquals(4, response.getPerms().length);
 
 	}
 
 	@Test
 	@Override
-	public void testCreateDelete() {
-		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create("someTag", project(), user());
-		String uuid = tag.getUuid();
-		tagRoot.findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			tag.delete();
-			tagRoot.findByUuid(uuid, rh2 -> {
-				assertNull(rh2.result());
+	public void testCreateDelete() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			TagFamily tagFamily = tagFamily("basic");
+			Tag tag = tagFamily.create("someTag", project(), user());
+			String uuid = tag.getUuid();
+			CountDownLatch latch = new CountDownLatch(2);
+			meshRoot().getTagRoot().findByUuid(uuid, rh -> {
+				assertNotNull(rh.result());
+				tag.delete();
+				meshRoot().getTagRoot().findByUuid(uuid, rh2 -> {
+					assertNull(rh2.result());
+					latch.countDown();
+				});
+				latch.countDown();
 			});
-		});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create("someTag", project(), user());
-		assertTrue(user().hasPermission(tagFamily, GraphPermission.READ_PERM));
-		assertFalse(user().hasPermission(tag, GraphPermission.READ_PERM));
-		getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);
-		assertTrue(user().hasPermission(tag, GraphPermission.READ_PERM));
+		try (Trx tx = new Trx(db)) {
+			TagFamily tagFamily = tagFamily("basic");
+			Tag tag = tagFamily.create("someTag", project(), user());
+			assertTrue(user().hasPermission(tagFamily, GraphPermission.READ_PERM));
+			assertFalse(user().hasPermission(tag, GraphPermission.READ_PERM));
+			getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);
+			assertTrue(user().hasPermission(tag, GraphPermission.READ_PERM));
+		}
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		Tag tag = tag("car");
-
-		assertEquals("Car", tag.getName());
-		assertNotNull(tag.getCreationTimestamp());
-		assertNotNull(tag.getLastEditedTimestamp());
-		assertNotNull(tag.getEditor());
-		assertNotNull(tag.getCreator());
-		assertNotNull(tag.getTagFamily());
-
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("car");
+			assertEquals("Car", tag.getName());
+			assertNotNull(tag.getCreationTimestamp());
+			assertNotNull(tag.getLastEditedTimestamp());
+			assertNotNull(tag.getEditor());
+			assertNotNull(tag.getCreator());
+			assertNotNull(tag.getTagFamily());
+		}
 	}
 
 	@Test
 	@Override
 	public void testDelete() throws InterruptedException {
-		Tag tag = tag("red");
-		String uuid = tag.getUuid();
+		Tag tag;
 		try (Trx tx = new Trx(db)) {
+			tag = tag("red");
 			tag.remove();
 			tx.success();
 		}
 		try (Trx tx = new Trx(db)) {
 			CountDownLatch latch = new CountDownLatch(1);
-			tagRoot.findByUuid(uuid, rh -> {
+			meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
 				assertNull(rh.result());
 				latch.countDown();
 			});
@@ -340,37 +371,35 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		Tag tag = tag("red");
-		tag.setName("Blue");
-		assertEquals("Blue", tag.getName());
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("red");
+			tag.setName("Blue");
+			assertEquals("Blue", tag.getName());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		Tag tag = tag("red");
-		testPermission(GraphPermission.READ_PERM, tag);
+		testPermission(GraphPermission.READ_PERM, tag("red"));
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		Tag tag = tag("red");
-		testPermission(GraphPermission.DELETE_PERM, tag);
+		testPermission(GraphPermission.DELETE_PERM, tag("red"));
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		Tag tag = tag("red");
-		testPermission(GraphPermission.UPDATE_PERM, tag);
+		testPermission(GraphPermission.UPDATE_PERM, tag("red"));
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		Tag tag = tag("red");
-		testPermission(GraphPermission.CREATE_PERM, tag);
+		testPermission(GraphPermission.CREATE_PERM, tag("red"));
 	}
 
 }

@@ -1,16 +1,15 @@
 package com.gentics.mesh.core.field;
+
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -22,15 +21,11 @@ import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private ProjectNodeVerticle verticle;
-
-	@Before
-	public void setup() throws Exception {
-		super.setupVerticleTest();
-	}
 
 	@Override
 	public AbstractWebVerticle getVerticle() {
