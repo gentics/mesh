@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.data.generic;
 
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.tinkerpop.blueprints.impls.orient.OrientEdge;
 
 public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
@@ -40,7 +40,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public void reload() {
-		((OrientEdge) getImpl().getElement()).reload();
+		MeshSpringConfiguration.getMeshSpringConfiguration().database().reload(this);
 	}
 
 }

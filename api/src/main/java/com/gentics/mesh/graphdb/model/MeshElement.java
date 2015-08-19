@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data;
+package com.gentics.mesh.graphdb.model;
 
 import com.tinkerpop.blueprints.Element;
 

@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.tinkerpop.blueprints.Vertex;
 
 public interface MeshVertex extends MeshElement {

@@ -4,33 +4,32 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import com.gentics.mesh.etc.StorageOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
-public class TitanDBDatabase implements Database {
+public class TitanDBDatabase extends AbstractDatabase {
 
 	ThreadedTransactionalGraphWrapper wrapper;
 
 	@Override
-	public void close() {
+	public void stop() {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void reset() {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void clear() {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void init(StorageOptions options) {
+	public void start() {
 		wrapper = new TitanDBThreadedTransactionalGraphWrapper(getBerkleyDBConf(options));
+
+		// You may use getCassandraConf() or getInMemoryConf() to switch the backend graph db
+
+		// Add some indices
+		// graphDb.createKeyIndex("name", Vertex.class);
+		// graphDb.createKeyIndex("ferma_type", Vertex.class);
+		// graphDb.createKeyIndex("ferma_type", Edge.class);
+
+		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 
 	}
 
@@ -62,16 +61,7 @@ public class TitanDBDatabase implements Database {
 	}
 
 	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph() {
-		// You may use getCassandraConf() or getInMemoryConf() to switch the backend graph db
-
-		// Add some indices
-		// graphDb.createKeyIndex("name", Vertex.class);
-		// graphDb.createKeyIndex("ferma_type", Vertex.class);
-		// graphDb.createKeyIndex("ferma_type", Edge.class);
-
-		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
-		return fg;
+	public void reload(MeshElement element) {
+		// Not supported
 	}
-
 }

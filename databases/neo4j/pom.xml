@@ -37,7 +37,7 @@
 			<version>2.7.0-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
-					<artifactId>neo4j</artifactId>
+					<artifactId>neo4j-kernel</artifactId>
 					<groupId>org.neo4j</groupId>
 				</exclusion>
 				<exclusion>
@@ -46,6 +46,10 @@
 				</exclusion>
 				<exclusion>
 					<artifactId>neo4j-management</artifactId>
+					<groupId>org.neo4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>neo4j</artifactId>
 					<groupId>org.neo4j</groupId>
 				</exclusion>
 			</exclusions>
@@ -75,22 +79,6 @@
 			<version>${neo4j.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<version>${neo4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.neo4j.app</groupId>
-			<artifactId>neo4j-server</artifactId>
-			<classifier>static-web</classifier>
-			<version>${neo4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-cypher</artifactId>
-			<version>${neo4j.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>javax.transaction</groupId>
 			<artifactId>jta</artifactId>
 			<version>1.1</version>
@@ -104,8 +92,8 @@
 			<classifier>tests</classifier>
 			<scope>compile</scope>
 		</dependency>
-	</dependencies>
 
+	</dependencies>
 
 	<repositories>
 		<repository>

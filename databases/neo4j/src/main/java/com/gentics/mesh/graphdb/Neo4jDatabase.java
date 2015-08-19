@@ -1,71 +1,49 @@
 package com.gentics.mesh.graphdb;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
-import com.gentics.mesh.etc.StorageOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
-public class Neo4jDatabase implements Database {
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+public class Neo4jDatabase extends AbstractDatabase {
+
+	private static final Logger log = LoggerFactory.getLogger(Neo4jDatabase.class);
+
+	private Neo4jThreadedTransactionalGraphWrapper wrapper;
 	private GraphDatabaseService graphDatabaseService;
-	private Neo4j2Graph neo4jBlueprintGraph;
 
 	@Override
-	public void close() {
+	public void stop() {
 		graphDatabaseService.shutdown();
+		Trx.setLocalGraph(null);
 	}
 
 	@Override
-	public void reset() {
-		// FileUtils.deleteDirectory(dbDir);
-	}
-
-	@Override
-	public void clear() {
-		for (Edge edge : neo4jBlueprintGraph.getEdges()) {
-			edge.remove();
-		}
-		for (Vertex vertex : neo4jBlueprintGraph.getVertices()) {
-			vertex.remove();
-		}
-	}
-
-	@Override
-	public void init(StorageOptions options) {
+	public void start() {
 		String DB_LOCATION = options.getDirectory();
 		File dbDir = new File(DB_LOCATION);
+
 		// TODO move this somewhere else or handle it by settings
-		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbDir.getAbsolutePath());
-		graphDatabaseService = builder.newGraphDatabase();
-
-	}
-
-	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph() {
-
-		// Start the neo4j web console - by default it can be accessed using http://localhost:7474. It is handy for development and should not be enabled by
-		// default.
-		// ServerConfigurator webConfig = new ServerConfigurator((GraphDatabaseAPI) graphDatabaseService);
-		// WrappingNeoServerBootstrapper bootStrapper = new WrappingNeoServerBootstrapper((GraphDatabaseAPI) graphDatabaseService, webConfig);
-		// bootStrapper.start();
+		// GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbDir.getAbsolutePath());
+		// graphDatabaseService = builder.newGraphDatabase();
+		graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase(dbDir.getAbsolutePath());
 
 		// Setup neo4j blueprint implementation
-		neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
+		Neo4j2Graph neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
 		registerShutdownHook(graphDatabaseService);
 
 		// Add some indices
-		neo4jBlueprintGraph.createKeyIndex("name", Vertex.class);
-		neo4jBlueprintGraph.createKeyIndex("ferma_type", Vertex.class);
-		neo4jBlueprintGraph.createKeyIndex("ferma_type", Edge.class);
+		// neo4jBlueprintGraph.createKeyIndex("name", Vertex.class);
+		// neo4jBlueprintGraph.createKeyIndex("ferma_type", Vertex.class);
+		// neo4jBlueprintGraph.createKeyIndex("ferma_type", Edge.class);
 
 		// Neo4j2Graph graph = new Neo4j2Graph(graphDatabaseService());
 		// //TODO configure indices
@@ -79,10 +57,12 @@ public class Neo4jDatabase implements Database {
 		// graph.createKeyIndex("key", Vertex.class);
 		// FramedTransactionalGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
 
-		ThreadedTransactionalGraphWrapper wrapper = new Neo4jThreadedTransactionalGraphWrapper(neo4jBlueprintGraph);
+		wrapper = new Neo4jThreadedTransactionalGraphWrapper(neo4jBlueprintGraph);
+		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+	}
 
-		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
-		return fg;
+	public GraphDatabaseService getGraphDatabaseService() {
+		return graphDatabaseService;
 	}
 
 	private void registerShutdownHook(final GraphDatabaseService graphDatabaseService) {
@@ -92,6 +72,11 @@ public class Neo4jDatabase implements Database {
 				graphDatabaseService.shutdown();
 			}
 		});
+	}
+
+	@Override
+	public void reload(MeshElement element) {
+		// Not supported
 	}
 
 }

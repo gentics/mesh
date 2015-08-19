@@ -1,40 +1,26 @@
 package com.gentics.mesh.graphdb;
 
-import com.gentics.mesh.etc.StorageOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
-public class TinkerGraphDatabase implements Database {
+public class TinkerGraphDatabase extends AbstractDatabase {
+
+	ThreadedTransactionalGraphWrapper wrapper;
 
 	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-
+	public void stop() {
 	}
 
 	@Override
-	public void reset() {
-		// TODO Auto-generated method stub
+	public void start() {
+		wrapper = new TinkerGraphThreadedTransactionalGraphWrapper(new TinkerTransactionalGraphMock());
+		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 	}
 
 	@Override
-	public void clear() {
-		// TODO Auto-generated method stub
-
-	}
-	
-	@Override
-	public void init(StorageOptions options) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph() {
-		ThreadedTransactionalGraphWrapper wrapper = new TinkerGraphThreadedTransactionalGraphWrapper(new TinkerTransactionalGraphMock());
-		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
-		return fg;
+	public void reload(MeshElement element) {
+		// Not supported
 	}
 
 }
