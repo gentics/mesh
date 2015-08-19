@@ -222,7 +222,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-orientdb</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
