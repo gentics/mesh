@@ -210,29 +210,37 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() throws MeshSchemaException {
-		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(GraphPermission.READ_PERM, newContainer);
+		try (Trx tx = new Trx(db)) {
+			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
+			testPermission(GraphPermission.READ_PERM, newContainer);
+		}
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() throws MeshSchemaException {
-		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(GraphPermission.DELETE_PERM, newContainer);
+		try (Trx tx = new Trx(db)) {
+			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
+			testPermission(GraphPermission.DELETE_PERM, newContainer);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() throws MeshSchemaException {
-		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(GraphPermission.UPDATE_PERM, newContainer);
+		try (Trx tx = new Trx(db)) {
+			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
+			testPermission(GraphPermission.UPDATE_PERM, newContainer);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() throws MeshSchemaException {
-		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		testPermission(GraphPermission.CREATE_PERM, newContainer);
+		try (Trx tx = new Trx(db)) {
+			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
+			testPermission(GraphPermission.CREATE_PERM, newContainer);
+		}
 	}
 
 }

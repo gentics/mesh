@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -21,14 +20,6 @@ import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public class LanguageTest extends AbstractBasicObjectTest {
-
-	private LanguageRoot languageRoot;
-
-	@Before
-	public void setup() throws Exception {
-		super.setup();
-		languageRoot = boot.languageRoot();
-	}
 
 	@Test
 	@Override
@@ -58,7 +49,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Trx tx = new Trx(db)) {
-			List<? extends Language> languages = languageRoot.findAll();
+			List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
 			assertEquals(182, languages.size());
 		}
 	}
@@ -67,13 +58,13 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByName() {
 		try (Trx tx = new Trx(db)) {
-			Language language = languageRoot.findByName("German");
+			Language language = meshRoot().getLanguageRoot().findByName("German");
 			assertNotNull(language);
 			assertEquals("German", language.getName());
 			assertEquals("Deutsch", language.getNativeName());
 			assertEquals("de", language.getLanguageTag());
 
-			language = languageRoot.findByName("bogus");
+			language = meshRoot().getLanguageRoot().findByName("bogus");
 			assertNull(language);
 		}
 	}
@@ -82,16 +73,16 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() throws InterruptedException {
 		try (Trx tx = new Trx(db)) {
-			Language language = languageRoot.findByName("German");
+			Language language = meshRoot().getLanguageRoot().findByName("German");
 
 			CountDownLatch latch = new CountDownLatch(2);
-			languageRoot.findByUuid(language.getUuid(), rh -> {
+			meshRoot().getLanguageRoot().findByUuid(language.getUuid(), rh -> {
 				Language foundLanguage = rh.result();
 				assertNotNull(foundLanguage);
 				latch.countDown();
 			});
 
-			languageRoot.findByUuid("bogus", rh -> {
+			meshRoot().getLanguageRoot().findByUuid("bogus", rh -> {
 				Language foundLanguage = rh.result();
 				assertNull(foundLanguage);
 				latch.countDown();

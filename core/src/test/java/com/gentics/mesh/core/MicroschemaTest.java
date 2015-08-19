@@ -21,6 +21,7 @@ import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public class MicroschemaTest extends AbstractBasicObjectTest {
+	
 	@Ignore("Not yet implemented")
 	@Test
 	@Override
