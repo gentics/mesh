@@ -3,6 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,7 +41,6 @@ import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
-
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public class SearchVerticleTest extends AbstractRestVerticleTest {
 

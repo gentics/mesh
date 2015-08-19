@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field;
 
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
-import io.vertx.core.Future;
 
 import java.io.IOException;
 
@@ -21,6 +21,7 @@ import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
+import io.vertx.core.Future;
 public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired

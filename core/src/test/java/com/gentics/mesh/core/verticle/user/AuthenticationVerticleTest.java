@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.user;
 
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -17,7 +18,6 @@ import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
-
 public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
 
 import io.vertx.core.Future;
-
 public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before

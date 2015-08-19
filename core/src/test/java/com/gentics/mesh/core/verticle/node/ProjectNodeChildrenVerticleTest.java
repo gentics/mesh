@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,7 +24,6 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
-
 public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired

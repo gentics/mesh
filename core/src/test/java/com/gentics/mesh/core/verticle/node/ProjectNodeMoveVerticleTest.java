@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -17,7 +18,6 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
-
 public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired

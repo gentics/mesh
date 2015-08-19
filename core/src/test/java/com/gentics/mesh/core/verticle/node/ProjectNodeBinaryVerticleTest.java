@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.verticle.node;
-
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -31,8 +31,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.test.core.TestUtils;
-
+import io.vertx.test.core.TestUtils;	
 public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
