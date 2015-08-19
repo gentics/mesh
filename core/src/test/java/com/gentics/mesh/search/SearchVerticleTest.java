@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
-
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -13,6 +13,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
@@ -41,8 +42,13 @@ import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public class SearchVerticleTest extends AbstractRestVerticleTest {
+
+	private static final Logger log = LoggerFactory.getLogger(SearchVerticleTest.class);
 
 	@Autowired
 	private SearchVerticle searchVerticle;
@@ -72,14 +78,15 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 			for (Node node : boot.nodeRoot().findAll()) {
 				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
 			}
-			System.out.println("Search Queue size:" + searchQueue.getSize());
+			log.debug("Search Queue size:" + searchQueue.getSize());
+			tx.success();
 		}
 
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
-		failingLatch(latch);
+		latch.await(20, TimeUnit.SECONDS);
 	}
 
 	@Test
@@ -163,8 +170,12 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		setupFullIndex();
 
 		QueryBuilder qb = QueryBuilders.termQuery("schema.name", "content");
+		String json = "{";
+		json += "	 \"query\":"+ qb.toString();
+		json += "	}";
 
-		Future<NodeListResponse> future = getClient().searchNodes(qb.toString());
+
+		Future<NodeListResponse> future = getClient().searchNodes(json);
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
@@ -175,27 +186,35 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddContent() throws InterruptedException {
-		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-		Node node = folder("2015");
-
 		// Invoke a dummy search on an empty index
 		QueryBuilder qb = QueryBuilders.queryStringQuery("2015");
-		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+
+		String json = "{";
+		json += "	 \"query\":"+ qb.toString();
+		json += "	}";
+
+		log.debug("Query: " + json);
+		Future<NodeListResponse> future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertEquals(0, response.getData().size());
 
 		// Create the update entry in the search queue
-		searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			Node node = folder("2015");
+			searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+			tx.success();
+		}
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 
 		// Search again and make sure we found our document
-		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();

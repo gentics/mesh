@@ -39,16 +39,9 @@
 			<artifactId>mesh-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-orientdb</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		 -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-tinkergraph</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

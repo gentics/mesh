@@ -1,12 +1,8 @@
 package com.gentics.mesh.core;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.RoutingContextService;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -34,6 +30,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	@Autowired
 	protected I18NService i18n;
 
+	@Autowired
 	protected Database database;
 
 	public void setSpringConfig(MeshSpringConfiguration config) {

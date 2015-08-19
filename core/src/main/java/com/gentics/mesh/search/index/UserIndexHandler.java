@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -56,20 +57,22 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.userRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				User user = rh.result();
-				store(user, sh-> {
-					
-				});
-			} else {
-				//TODO reply error? discard? log?
-			}
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.userRoot().findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					User user = rh.result();
+					store(user, sh -> {
+
+					});
+				} else {
+					//TODO reply error? discard? log?
+				}
+			});
+		}
 	}
 
-	public void update(String uuid,  Handler<AsyncResult<ActionResponse>> handler) {
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

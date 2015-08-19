@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -55,7 +56,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
-		addParentNodeInfo(map, node.getParentNode());
+		
+		// The basenode has no parent.
+		if (node.getParentNode() != null) {
+			addParentNodeInfo(map, node.getParentNode());
+		}
 		for (NodeFieldContainer container : node.getFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
@@ -225,19 +230,21 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.nodeRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				Node node = rh.result();
-				try {
-					store(node, handler);
-				} catch (Exception e) {
-					log.error("Error while storing node", e);
-					handler.handle(Future.failedFuture(e));
+		try (Trx tx = new Trx(db)) {
+			boot.nodeRoot().findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					Node node = rh.result();
+					try {
+						store(node, handler);
+					} catch (Exception e) {
+						log.error("Error while storing node", e);
+						handler.handle(Future.failedFuture(e));
+					}
+				} else {
+					log.error("Could not find node {" + uuid + "}", rh.cause());
 				}
-			} else {
-				log.error("Could not find node {" + uuid + "}", rh.cause());
-			}
-		});
+			});
+		}
 	}
 
 	private void removeFieldEntries(Map<String, Object> map) {

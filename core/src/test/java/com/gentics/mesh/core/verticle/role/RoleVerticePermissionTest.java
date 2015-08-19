@@ -1,5 +1,5 @@
 package com.gentics.mesh.core.verticle.role;
-
+import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

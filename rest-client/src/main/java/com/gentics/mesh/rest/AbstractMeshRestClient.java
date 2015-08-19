@@ -27,9 +27,9 @@ import com.gentics.mesh.rest.method.TagFamilyClientMethods;
 import com.gentics.mesh.rest.method.UserClientMethods;
 import com.gentics.mesh.rest.method.WebRootClientMethods;
 
-public abstract class AbstractMeshRestClient implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods,
-		WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods,
-		AdminClientMethods {
+public abstract class AbstractMeshRestClient
+		implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods, SchemaClientMethods,
+		GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
 
@@ -139,8 +139,12 @@ public abstract class AbstractMeshRestClient implements NodeClientMethods, TagCl
 
 	protected String getQuery(QueryParameterProvider... parameters) {
 		StringBuilder builder = new StringBuilder();
-		for (QueryParameterProvider provider : parameters) {
+		for (int i = 0; i < parameters.length; i++) {
+			QueryParameterProvider provider = parameters[i];
 			builder.append(provider.getQueryParameters());
+			if(i!=parameters.length-1) {
+				builder.append("&");
+			}
 		}
 		if (builder.length() > 0) {
 			return "?" + builder.toString();

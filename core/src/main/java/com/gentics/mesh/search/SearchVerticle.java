@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
@@ -58,6 +59,9 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
 	private org.elasticsearch.node.Node elasticSearchNode;
+
+	@Autowired
+	private Database db;
 
 	@Autowired
 	private SearchHandler searchHandler;
@@ -98,45 +102,57 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		route("/*").handler(springConfiguration.authHandler());
 		addSearchEndpoints();
 		addEventBusHandlers();
+		// Trigger a search queue scan on startup in order to process old queue entries
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true);
 	}
 
 	synchronized private void checkPendingQueueEntries(Handler<AsyncResult<Void>> handler) {
-		SearchQueue root = boot.meshRoot().getSearchQueue();
-		AtomicInteger counter = new AtomicInteger();
+		try (Trx tx = new Trx(db)) {
 
-		Handler<AsyncResult<JsonObject>> completeHandler = ach -> {
-			if (counter.decrementAndGet() == 0) {
-				elasticSearchNode.client().admin().indices().refresh(refreshRequest()).actionGet();
-				handler.handle(Future.succeededFuture());
-			}
-		};
+			SearchQueue root = boot.meshRoot().getSearchQueue();
+			AtomicInteger counter = new AtomicInteger();
 
-		while (true) {
-			SearchQueueEntry entry = null;
-			try {
-				SearchQueueEntry currentEntry = root.take();
-				entry = currentEntry;
-				if (entry != null) {
-					//TODO wait for all index events to complete
-					counter.incrementAndGet();
-					vertx.eventBus().send(AbstractIndexHandler.INDEX_EVENT_ADDRESS_PREFIX + entry.getElementType(), entry.getMessage(), rh -> {
-						if (rh.failed()) {
-							log.error("Indexing failed", rh.cause());
-							//TODO handle this. Move item back into queue? queue is not a stack. broken entry would possibly directly retried.
-						} else {
-							log.info("Indexed element {" + currentEntry.getUuid() + "}");
-						}
-						completeHandler.handle(Future.succeededFuture(currentEntry.getMessage()));
-					});
-				} else {
-					break;
+			Handler<AsyncResult<JsonObject>> completeHandler = ach -> {
+				if (counter.decrementAndGet() == 0) {
+					elasticSearchNode.client().admin().indices().refresh(refreshRequest()).actionGet();
+					handler.handle(Future.succeededFuture());
 				}
-			} catch (InterruptedException e) {
-				handler.handle(Future.failedFuture(e));
-				// In case of an error put the entry back into the queue
-				if (entry != null) {
-					root.put(entry);
+			};
+
+			while (true) {
+				SearchQueueEntry entry = null;
+				try {
+					//TODO better to move this code into a mutex secured autoclosable
+					SearchQueueEntry currentEntry;
+					try (Trx txTake = new Trx(db)) {
+						currentEntry = root.take();
+						entry = currentEntry;
+						txTake.success();
+					}
+					if (entry != null) {
+						//TODO wait for all index events to complete
+						counter.incrementAndGet();
+						vertx.eventBus().send(AbstractIndexHandler.INDEX_EVENT_ADDRESS_PREFIX + entry.getElementType(), entry.getMessage(), rh -> {
+							if (rh.failed()) {
+								log.error("Indexing failed", rh.cause());
+								//TODO handle this. Move item back into queue? queue is not a stack. broken entry would possibly directly retried.
+							} else {
+								log.info("Indexed element {" + currentEntry.getUuid() + "}");
+							}
+							completeHandler.handle(Future.succeededFuture(currentEntry.getMessage()));
+						});
+					} else {
+						break;
+					}
+				} catch (InterruptedException e) {
+					handler.handle(Future.failedFuture(e));
+					// In case of an error put the entry back into the queue
+					try (Trx txPutBack = new Trx(db)) {
+						if (entry != null) {
+							root.put(entry);
+							txPutBack.success();
+						}
+					}
 				}
 			}
 		}
@@ -171,11 +187,15 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	private void addEventBusHandlers() {
 		EventBus bus = vertx.eventBus();
 
+		// Message bus consumer that handles events that indicate changes to the search queue 
 		bus.consumer(SEARCH_QUEUE_ENTRY_ADDRESS, mh -> {
 			checkPendingQueueEntries(rh -> {
 				if (rh.failed()) {
 					mh.fail(500, rh.cause().getMessage());
 				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("Handled all pending search queue entries.");
+					}
 					mh.reply(true);
 				}
 			});

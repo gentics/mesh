@@ -7,6 +7,7 @@ import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -34,14 +35,16 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.schemaContainerRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				SchemaContainer container = rh.result();
-				store(container, handler);
-			} else {
-				//TODO reply error? discard? log?
-			}
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.schemaContainerRoot().findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					SchemaContainer container = rh.result();
+					store(container, handler);
+				} else {
+					//TODO reply error? discard? log?
+				}
+			});
+		}
 	}
 
 	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {

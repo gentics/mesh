@@ -7,6 +7,7 @@ import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -34,14 +35,16 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.microschemaContainerRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				MicroschemaContainer microschema = rh.result();
-				store(microschema, handler);
-			} else {
-				//TODO reply error? discard? log?
-			}
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.microschemaContainerRoot().findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					MicroschemaContainer microschema = rh.result();
+					store(microschema, handler);
+				} else {
+					//TODO reply error? discard? log?
+				}
+			});
+		}
 
 	}
 

@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -48,6 +49,9 @@ public abstract class AbstractIndexHandler<T> {
 	@Autowired
 	protected BootstrapInitializer boot;
 
+	@Autowired
+	protected Database db;
+
 	@PostConstruct
 	public void registerEventHandler() {
 		Vertx vertx = Mesh.vertx();
@@ -61,7 +65,7 @@ public abstract class AbstractIndexHandler<T> {
 			String action = message.body().getString("action");
 			log.info("Handling index event for {" + uuid + ":" + type + "} event:" + action);
 			handleEvent(uuid, action, rh -> {
-				if(rh.succeeded()) {
+				if (rh.succeeded()) {
 					message.reply(null);
 				} else {
 					message.fail(500, rh.cause().getMessage());

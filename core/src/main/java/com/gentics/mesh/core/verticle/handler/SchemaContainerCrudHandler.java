@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -33,27 +34,36 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		MeshAuthUser requestUser = getUser(rc);
+		try (Trx tx = new Trx(db)) {
 
-		SchemaCreateRequest schema;
-		try {
-			schema = JsonUtil.readSchema(rc.getBodyAsString(), SchemaCreateRequest.class);
-			if (StringUtils.isEmpty(schema.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "schema_missing_name")));
-				return;
-			}
-			SchemaContainerRoot root = boot.schemaContainerRoot();
-			if (requestUser.hasPermission(root, CREATE_PERM)) {
-				try (Trx tx = new Trx(db)) {
-					SchemaContainer container = root.create(schema, requestUser);
-					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
-					searchQueue().put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+			MeshAuthUser requestUser = getUser(rc);
+
+			SchemaCreateRequest schema;
+			try {
+				schema = JsonUtil.readSchema(rc.getBodyAsString(), SchemaCreateRequest.class);
+				if (StringUtils.isEmpty(schema.getName())) {
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "schema_missing_name")));
+					return;
+				}
+				SchemaContainerRoot root = boot.schemaContainerRoot();
+				if (requestUser.hasPermission(root, CREATE_PERM)) {
+					SchemaContainer container;
+					try (Trx txCreate = new Trx(db)) {
+						container = root.create(schema, requestUser);
+						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
+						txCreate.success();
+					}
+					try (Trx txSearch = new Trx(db)) {
+						searchQueue().put(container.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+						txSearch.success();
+					}
 					transformAndResponde(rc, container);
 				}
+
+			} catch (Exception e1) {
+				rc.fail(e1);
 			}
-		} catch (Exception e1) {
-			rc.fail(e1);
 		}
 
 	}
@@ -102,6 +112,49 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 	public void handleReadList(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
 			loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
+		}
+	}
+
+	public void handleAddProjectToSchema(RoutingContext rc) {
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
+						if (hasSucceeded(rc, srh)) {
+							Project project = rh.result();
+							SchemaContainer schema = srh.result();
+							try (Trx txAdd = new Trx(db)) {
+								project.getSchemaContainerRoot().addSchemaContainer(schema);
+								txAdd.success();
+							}
+							// TODO add simple message or return schema?
+							transformAndResponde(rc, schema);
+						}
+					});
+				}
+			});
+		}
+
+	}
+
+	public void handleRemoveProjectFromSchema(RoutingContext rc) {
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					// TODO check whether schema is assigned to project
+					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
+						if (hasSucceeded(rc, srh)) {
+							SchemaContainer schema = srh.result();
+							Project project = rh.result();
+							try (Trx txRemove = new Trx(db)) {
+								project.getSchemaContainerRoot().removeSchemaContainer(schema);
+								txRemove.success();
+							}
+							transformAndResponde(rc, schema);
+						}
+					});
+				}
+			});
 		}
 	}
 

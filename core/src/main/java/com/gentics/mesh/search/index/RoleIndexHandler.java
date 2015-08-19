@@ -7,6 +7,7 @@ import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -34,20 +35,22 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.roleRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				Role role = rh.result();
-				store(role, handler);
-			} else {
-				//TODO reply error? discard? log?
-			}
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.roleRoot().findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					Role role = rh.result();
+					store(role, handler);
+				} else {
+					//TODO reply error? discard? log?
+				}
+			});
+		}
 
 	}
 
-	public void update(String uuid,  Handler<AsyncResult<ActionResponse>> handler) {
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

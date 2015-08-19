@@ -26,7 +26,6 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.Trx;
-import com.syncleus.ferma.VertexFrame;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -72,21 +71,23 @@ public class UserCrudHandler extends AbstractCrudHandler {
 						rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
 					} else {
 						MeshAuthUser requestUser = getUser(rc);
-						User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
-						user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
-							if (ch.failed()) {
-								rc.fail(ch.cause());
-							} else {
-								User createdUser = ch.result();
-								//								try (Trx tx2 = new Trx(db)) {
-								searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-								//								tx2.getGraph().commit();
-								//								}
-								vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-								tx.success();
-								transformAndResponde(rc, createdUser);
-							}
-						});
+						try (Trx txCreate = new Trx(db)) {
+							User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
+							user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
+								if (ch.failed()) {
+									rc.fail(ch.cause());
+								} else {
+									User createdUser = ch.result();
+									//								try (Trx tx2 = new Trx(db)) {
+									searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+									//								tx2.getGraph().commit();
+									//								}
+									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+									txCreate.success();
+									transformAndResponde(rc, createdUser);
+								}
+							});
+						}
 
 					}
 				}

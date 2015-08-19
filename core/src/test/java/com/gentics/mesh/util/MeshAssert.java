@@ -25,6 +25,14 @@ public final class MeshAssert {
 
 	private static final Integer DEV_TIMEOUT_SECONDS = 100000;
 
+	public static void assertSuccess(Future<?> future) {
+		if (future.cause() != null) {
+			future.cause().printStackTrace();
+		}
+		assertTrue("The future failed with error {" + (future.cause() == null ? "Unknown error" : future.cause().getMessage()) + "}",
+				future.succeeded());
+	}
+	
 	public static int getTimeout() throws UnknownHostException {
 		int timeout = DEV_TIMEOUT_SECONDS;
 		if (TestUtil.isHost("jenkins.office")) {

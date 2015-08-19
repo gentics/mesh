@@ -7,6 +7,7 @@ import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -35,14 +36,16 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.groupRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				Group group = rh.result();
-				store(group, handler);
-			} else {
-				//TODO reply error? discard? log?
-			}
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.groupRoot().findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					Group group = rh.result();
+					store(group, handler);
+				} else {
+					//TODO reply error? discard? log?
+				}
+			});
+		}
 	}
 
 	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {

@@ -80,7 +80,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			userRoot = getGraph().addFramedVertex(UserRootImpl.class);
 			linkOut(userRoot.getImpl(), HAS_USER_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored tag root {" + userRoot.getUuid() + "}");
+				log.info("Created tag root {" + userRoot.getUuid() + "}");
 			}
 		} else {
 			userRoot = foundUserRoot;
@@ -99,7 +99,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			roleRoot = getGraph().addFramedVertex(RoleRootImpl.class);
 			linkOut(roleRoot.getImpl(), HAS_ROLE_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored role root {" + roleRoot.getUuid() + "}");
+				log.info("Created role root {" + roleRoot.getUuid() + "}");
 			}
 		} else {
 			roleRoot = foundRoleRoot;
@@ -118,7 +118,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			searchQueueRoot = getGraph().addFramedVertex(SearchQueueImpl.class);
 			linkOut(searchQueueRoot.getImpl(), HAS_SEARCH_QUEUE_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored search queue root {" + searchQueueRoot.getUuid() + "}");
+				log.info("Created search queue root {" + searchQueueRoot.getUuid() + "}");
 			}
 		} else {
 			searchQueueRoot = foundSearchQueueRoot;
@@ -138,7 +138,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			groupRoot = getGraph().addFramedVertex(GroupRootImpl.class);
 			linkOut(groupRoot.getImpl(), HAS_GROUP_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored group root {" + groupRoot.getUuid() + "}");
+				log.info("Created group root {" + groupRoot.getUuid() + "}");
 			}
 		} else {
 			groupRoot = foundGroupRoot;
@@ -157,7 +157,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
 			linkOut(tagRoot.getImpl(), HAS_TAG_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored tag root {" + tagRoot.getUuid() + "}");
+				log.info("Created tag root {" + tagRoot.getUuid() + "}");
 			}
 		} else {
 			tagRoot = foundTagRoot;
@@ -177,7 +177,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 			linkOut(schemaContainerRoot.getImpl(), HAS_SCHEMA_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored schema container root {" + schemaContainerRoot.getUuid() + "}");
+				log.info("Created schema container root {" + schemaContainerRoot.getUuid() + "}");
 			}
 		} else {
 			schemaContainerRoot = foundSchemaContainerRoot;
@@ -196,7 +196,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			languageRoot = getGraph().addFramedVertex(LanguageRootImpl.class);
 			linkOut(languageRoot.getImpl(), HAS_LANGUAGE_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored language root {" + languageRoot.getUuid() + "}");
+				log.info("Created language root {" + languageRoot.getUuid() + "}");
 			}
 		} else {
 			languageRoot = foundLanguageRoot;
@@ -215,7 +215,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			projectRoot = getGraph().addFramedVertex(ProjectRootImpl.class);
 			linkOut(projectRoot.getImpl(), HAS_PROJECT_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored project root {" + projectRoot.getUuid() + "}");
+				log.info("Created project root {" + projectRoot.getUuid() + "}");
 			}
 		} else {
 			projectRoot = foundProjectRoot;
@@ -234,7 +234,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
 			linkOut(nodeRoot.getImpl(), HAS_NODE_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored node root {" + nodeRoot.getUuid() + "}");
+				log.info("Created node root {" + nodeRoot.getUuid() + "}");
 			}
 		} else {
 			nodeRoot = foundNodeRoot;
@@ -253,7 +253,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
 			linkOut(tagFamilyRoot.getImpl(), HAS_TAGFAMILY_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored tag family root {" + tagFamilyRoot.getUuid() + "}");
+				log.info("Created tag family root {" + tagFamilyRoot.getUuid() + "}");
 			}
 		} else {
 			tagFamilyRoot = foundTagFamilyRoot;
@@ -273,7 +273,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
 			linkOut(microschemaContainerRoot.getImpl(), HAS_MICROSCHEMA_ROOT);
 			if (log.isInfoEnabled()) {
-				log.info("Stored microschema root {" + microschemaContainerRoot.getUuid() + "}");
+				log.info("Created microschema root {" + microschemaContainerRoot.getUuid() + "}");
 			}
 		} else {
 			microschemaContainerRoot = foundMicroschemaContainerRoot;

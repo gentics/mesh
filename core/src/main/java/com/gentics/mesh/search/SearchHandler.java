@@ -27,6 +27,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -41,6 +43,9 @@ public class SearchHandler {
 
 	@Autowired
 	private org.elasticsearch.node.Node elasticSearchNode;
+
+	@Autowired
+	private Database db;
 
 	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
@@ -81,57 +86,59 @@ public class SearchHandler {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				List<T> elements = new ArrayList<>();
-				for (SearchHit hit : response.getHits()) {
-					String uuid = hit.getId();
+				try (Trx tx = new Trx(db)) {
+					List<T> elements = new ArrayList<>();
+					for (SearchHit hit : response.getHits()) {
+						String uuid = hit.getId();
 
-					// Locate the node
-					rootVertex.findByUuid(uuid, rh -> {
-						if (rh.result() != null && rh.succeeded()) {
-							T element = rh.result();
-							/* Check permissions */
-							if (requestUser.hasPermission(element, GraphPermission.READ_PERM)) {
-								elements.add(element);
+						// Locate the node
+						rootVertex.findByUuid(uuid, rh -> {
+							if (rh.result() != null && rh.succeeded()) {
+								T element = rh.result();
+								/* Check permissions */
+								if (requestUser.hasPermission(element, GraphPermission.READ_PERM)) {
+									elements.add(element);
+								}
+							} else {
+								log.error("Could not find node {" + uuid + "}", rh.cause());
 							}
-						} else {
-							log.error("Could not find node {" + uuid + "}", rh.cause());
-						}
-					});
-				}
-
-				// Internally we start with page 0
-				int page = pagingInfo.getPage() - 1;
-
-				int low = page * pagingInfo.getPerPage();
-				int upper = low + pagingInfo.getPerPage() - 1;
-
-				int n = 0;
-				for (T element : elements) {
-					//Only transform elements that we want to list in our resultset
-					if (n >= low && n <= upper) {
-						// Transform node and add it to the list of nodes
-						element.transformToRest(rc, th -> {
-							listResponse.getData().add(th.result());
 						});
+
 					}
-					n++;
+
+					// Internally we start with page 0
+					int page = pagingInfo.getPage() - 1;
+
+					int low = page * pagingInfo.getPerPage();
+					int upper = low + pagingInfo.getPerPage() - 1;
+
+					int n = 0;
+					for (T element : elements) {
+						//Only transform elements that we want to list in our resultset
+						if (n >= low && n <= upper) {
+							// Transform node and add it to the list of nodes
+							element.transformToRest(rc, th -> {
+								listResponse.getData().add(th.result());
+							});
+						}
+						n++;
+					}
+
+					PagingMetaInfo metainfo = new PagingMetaInfo();
+					int totalPages = (int) Math.ceil(elements.size() / (double) pagingInfo.getPerPage());
+					// Cap totalpages to 1
+					if (totalPages == 0) {
+						totalPages = 1;
+					}
+					metainfo.setTotalCount(elements.size());
+
+					metainfo.setCurrentPage(pagingInfo.getPage());
+					metainfo.setPageCount(totalPages);
+					metainfo.setPerPage(pagingInfo.getPerPage());
+					listResponse.setMetainfo(metainfo);
+
+					responde(rc, toJson(listResponse));
 				}
-
-				PagingMetaInfo metainfo = new PagingMetaInfo();
-				int totalPages = (int) Math.ceil(elements.size() / (double) pagingInfo.getPerPage());
-				// Cap totalpages to 1
-				if (totalPages == 0) {
-					totalPages = 1;
-				}
-				metainfo.setTotalCount(elements.size());
-
-				metainfo.setCurrentPage(pagingInfo.getPage());
-				metainfo.setPageCount(totalPages);
-				metainfo.setPerPage(pagingInfo.getPerPage());
-				listResponse.setMetainfo(metainfo);
-
-				responde(rc, toJson(listResponse));
-
 			}
 
 			@Override

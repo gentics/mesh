@@ -58,11 +58,12 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 				if (groupRoot.findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
 				} else {
-					Group group = groupRoot.create(requestModel.getName(), requestUser);
-					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-					tx.success();
-					transformAndResponde(rc, group);
-
+					try (Trx txCreate = new Trx(db)) {
+						Group group = groupRoot.create(requestModel.getName(), requestUser);
+						requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
+						transformAndResponde(rc, group);
+						txCreate.success();
+					}
 				}
 			} else {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", groupRoot.getUuid())));

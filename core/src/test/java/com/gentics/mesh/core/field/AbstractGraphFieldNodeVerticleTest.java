@@ -1,5 +1,5 @@
 package com.gentics.mesh.core.field;
-
+import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,9 +26,6 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 
 	@Autowired
 	private ProjectNodeVerticle verticle;
-
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
 
 	@Before
 	public void setup() throws Exception {

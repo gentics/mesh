@@ -1,15 +1,9 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.ext.web.Route;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +11,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.verticle.handler.SchemaContainerCrudHandler;
+
+import io.vertx.ext.web.Route;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -46,38 +41,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addSchemaProjectHandlers() {
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
-						if (hasSucceeded(rc, srh)) {
-							Project project = rh.result();
-							SchemaContainer schema = srh.result();
-							project.getSchemaContainerRoot().addSchemaContainer(schema);
-
-							// TODO add simple message or return schema?
-							transformAndResponde(rc, schema);
-						}
-					});
-				}
-			});
-
+			crudHandler.handleAddProjectToSchema(rc);
 		});
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					// TODO check whether schema is assigned to project
-					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
-						if (hasSucceeded(rc, srh)) {
-							SchemaContainer schema = srh.result();
-							Project project = rh.result();
-							project.getSchemaContainerRoot().removeSchemaContainer(schema);
-							transformAndResponde(rc, schema);
-						}
-					});
-				}
-			});
+			crudHandler.handleRemoveProjectFromSchema(rc);
 		});
 	}
 

@@ -42,7 +42,6 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 			transformAndResponde(rc, requestUser);
 		});
 
-		// route("/login").handler(springConfiguration.jsonAuthHandler());
 		route("/login").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			try {
 				LoginRequest request = JsonUtil.readValue(rc.getBodyAsString(), LoginRequest.class);
@@ -50,7 +49,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 				JsonObject authInfo = new JsonObject().put("username", request.getUsername()).put("password", request.getPassword());
 				springConfiguration.authProvider().authenticate(authInfo, rh -> {
 					if (rh.failed()) {
-						rc.fail(new HttpStatusCodeErrorException(UNAUTHORIZED, i18n.get(rc, "login_failed"), rh.cause()));
+						rc.fail(new HttpStatusCodeErrorException(UNAUTHORIZED, i18n.get(rc, "auth_login_failed"), rh.cause()));
 					} else {
 						User authenticated = rh.result();
 						rc.setUser(authenticated);
@@ -59,7 +58,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 					}
 				});
 			} catch (Exception e) {
-				rc.fail(new HttpStatusCodeErrorException(UNAUTHORIZED, i18n.get(rc, "login_failed"), e));
+				rc.fail(new HttpStatusCodeErrorException(UNAUTHORIZED, i18n.get(rc, "auth_login_failed"), e));
 			}
 		});
 

@@ -139,11 +139,4 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		expectMessage(future, status, message);
 	}
 
-	protected void assertSuccess(Future<?> future) {
-		if (future.cause() != null) {
-			future.cause().printStackTrace();
-		}
-		assertTrue("The future failed with error {" + (future.cause() == null ? "Unknown error" : future.cause().getMessage()) + "}",
-				future.succeeded());
-	}
 }

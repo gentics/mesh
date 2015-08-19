@@ -67,6 +67,7 @@ import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchVerticle;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -87,6 +88,9 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
+
+	@Autowired
+	private Database db;
 
 	private static BootstrapInitializer instance;
 	private static MeshRoot meshRoot;
@@ -126,7 +130,9 @@ public class BootstrapInitializer {
 	private void initProjects() throws InvalidNameException {
 		for (Project project : meshRoot().getProjectRoot().findAll()) {
 			routerStorage.addProjectRouter(project.getName());
-			log.info("Initalized project {" + project.getName() + "}");
+			if (log.isInfoEnabled()) {
+				log.info("Initalized project {" + project.getName() + "}");
+			}
 		}
 	}
 
@@ -155,13 +161,14 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-
 		initMandatoryData();
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		initProjects();
+		try (Trx tx = new Trx(db)) {
+			initProjects();
+		}
 		Mesh.vertx().eventBus().send("mesh-startup-complete", true);
 
 	}
@@ -177,7 +184,9 @@ public class BootstrapInitializer {
 
 		for (Class<? extends AbstractVerticle> clazz : getMandatoryVerticleClasses().values()) {
 			try {
-				log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+				if (log.isInfoEnabled()) {
+					log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+				}
 				// TODO handle custom config? i assume we will not allow this
 				deployAndWait(Mesh.vertx(), defaultConfig, clazz);
 			} catch (InterruptedException e) {
@@ -197,12 +206,15 @@ public class BootstrapInitializer {
 			}
 			mergedVerticleConfig.put("port", configuration.getHttpServerOptions().getPort());
 			try {
-				log.info("Loading configured verticle {" + verticleName + "}.");
+				if (log.isInfoEnabled()) {
+					log.info("Loading configured verticle {" + verticleName + "}.");
+				}
 				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName);
 			} catch (InterruptedException e) {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}
 		}
+
 	}
 
 	@PostConstruct
@@ -225,21 +237,20 @@ public class BootstrapInitializer {
 		// Check reference graph and finally create the node when it can't be found.
 //		if (meshRoot == null) {
 //			synchronized (BootstrapInitializer.class) {
-				try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-					MeshRoot foundMeshRoot = tx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-					if (foundMeshRoot == null) {
-						meshRoot = tx.getGraph().addFramedVertex(MeshRootImpl.class);
-						if (log.isInfoEnabled()) {
-							log.info("Stored mesh root {" + meshRoot.getUuid() + "}");
-						}
-					} else {
-						meshRoot = foundMeshRoot;
+				MeshRoot foundMeshRoot = Trx.getFramedLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+				if (foundMeshRoot == null) {
+					foundMeshRoot = Trx.getFramedLocalGraph().addFramedVertex(MeshRootImpl.class);
+					if (log.isInfoEnabled()) {
+						log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
 					}
-					tx.success();
-				}
+				} 
+//				else {
+//					meshRoot = foundMeshRoot;
+//				}
 //			}
+	return foundMeshRoot;
 //		}
-		return meshRoot;
+//		((OrientVertex) meshRoot.getImpl().getElement()).reload();
 	}
 
 	public SchemaContainerRoot findSchemaContainerRoot() {
@@ -300,158 +311,163 @@ public class BootstrapInitializer {
 	 * @throws MeshSchemaException
 	 */
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		MeshRoot meshRoot = meshRoot();
-		MeshRootImpl.setInstance(meshRoot);
+		Role adminRole;
+		MeshRoot meshRoot;
 
-		meshRoot.getNodeRoot();
-		meshRoot.getTagRoot();
-		meshRoot.getTagFamilyRoot();
-		meshRoot.getProjectRoot();
-		meshRoot.getSearchQueue();
-		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
-		GroupRoot groupRoot = meshRoot.getGroupRoot();
-		UserRoot userRoot = meshRoot.getUserRoot();
-		RoleRoot roleRoot = meshRoot.getRoleRoot();
-		SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
+		try (Trx tx = new Trx(db)) {
+			meshRoot = meshRoot();
+			MeshRootImpl.setInstance(meshRoot);
 
-		// Verify that an admin user exists
-		User adminUser = userRoot.findByUsername("admin");
-		if (adminUser == null) {
-			adminUser = userRoot.create("admin", null, adminUser);
+			meshRoot.getNodeRoot();
+			meshRoot.getTagRoot();
+			meshRoot.getTagFamilyRoot();
+			meshRoot.getProjectRoot();
+			meshRoot.getSearchQueue();
+			GroupRoot groupRoot = meshRoot.getGroupRoot();
+			UserRoot userRoot = meshRoot.getUserRoot();
+			RoleRoot roleRoot = meshRoot.getRoleRoot();
+			SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
 
-			adminUser.setCreator(adminUser);
-			adminUser.setCreationTimestamp(System.currentTimeMillis());
-			adminUser.setEditor(adminUser);
-			adminUser.setLastEditedTimestamp(System.currentTimeMillis());
+			// Verify that an admin user exists
+			User adminUser = userRoot.findByUsername("admin");
+			if (adminUser == null) {
+				adminUser = userRoot.create("admin", null, adminUser);
 
-			System.out.println("Enter admin password:");
-			// Scanner scanIn = new Scanner(System.in);
-			// String pw = scanIn.nextLine();
-			// TODO remove later on
-			String pw = "finger";
-			// scanIn.close();
-			adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
-			log.info("Stored admin user");
+				adminUser.setCreator(adminUser);
+				adminUser.setCreationTimestamp(System.currentTimeMillis());
+				adminUser.setEditor(adminUser);
+				adminUser.setLastEditedTimestamp(System.currentTimeMillis());
+
+				log.info("Enter admin password:");
+				// Scanner scanIn = new Scanner(System.in);
+				// String pw = scanIn.nextLine();
+				// TODO remove later on
+				String pw = "finger";
+				// scanIn.close();
+				adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
+				log.info("Created admin user {" + adminUser.getUuid() + "}");
+			}
+
+			// Content
+			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");
+			if (contentSchemaContainer == null) {
+				Schema schema = new SchemaImpl();
+				schema.setName("content");
+				schema.setDisplayField("title");
+				schema.setMeshVersion(Mesh.getVersion());
+				schema.setSchemaVersion("1.0.0");
+
+				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+				nameFieldSchema.setName("name");
+				nameFieldSchema.setLabel("Name");
+				nameFieldSchema.setRequired(true);
+				schema.addField(nameFieldSchema);
+
+				StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
+				filenameFieldSchema.setName("filename");
+				filenameFieldSchema.setLabel("Filename");
+				schema.addField(filenameFieldSchema);
+
+				StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
+				titleFieldSchema.setName("title");
+				titleFieldSchema.setLabel("Title");
+				schema.addField(titleFieldSchema);
+
+				HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
+				contentFieldSchema.setName("content");
+				contentFieldSchema.setLabel("Content");
+				schema.addField(contentFieldSchema);
+
+				schema.setBinary(false);
+				schema.setFolder(false);
+				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				log.info("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
+			}
+
+			// Folder
+			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder");
+			if (folderSchemaContainer == null) {
+				Schema schema = new SchemaImpl();
+				schema.setName("folder");
+				schema.setDisplayField("name");
+				schema.setMeshVersion(Mesh.getVersion());
+				schema.setSchemaVersion("1.0.0");
+
+				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+				nameFieldSchema.setName("name");
+				nameFieldSchema.setLabel("Name");
+				schema.addField(nameFieldSchema);
+
+				schema.setBinary(false);
+				schema.setFolder(true);
+				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				log.info("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
+			}
+
+			// Binary content for images and other downloads
+			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content");
+			if (binarySchemaContainer == null) {
+
+				Schema schema = new SchemaImpl();
+				schema.setName("binary-content");
+				schema.setDisplayField("name");
+				schema.setMeshVersion(Mesh.getVersion());
+				schema.setSchemaVersion("1.0.0");
+
+				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+				nameFieldSchema.setName("name");
+				nameFieldSchema.setLabel("Name");
+				schema.addField(nameFieldSchema);
+
+				StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
+				nameFieldSchema.setName("filename");
+				nameFieldSchema.setLabel("Filename");
+				schema.addField(filenameFieldSchema);
+
+				schema.setBinary(true);
+				schema.setFolder(false);
+				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				log.info("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
+			}
+
+			Group adminGroup = groupRoot.findByName("admin");
+			if (adminGroup == null) {
+				adminGroup = groupRoot.create("admin", adminUser);
+				adminGroup.addUser(adminUser);
+				log.info("Created admin group {" + adminGroup.getUuid() + "}");
+			}
+
+			adminRole = roleRoot.findByName("admin");
+			if (adminRole == null) {
+				adminRole = roleRoot.create("admin", adminGroup, adminUser);
+				log.info("Created admin role {" + adminRole.getUuid() + "}");
+			}
+
+			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
+			initLanguages(languageRoot);
+
+			initPermissions(adminRole);
+
+			schemaStorage.init();
+			tx.success();
 		}
-
-		// Content
-		SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");
-		if (contentSchemaContainer == null) {
-			Schema schema = new SchemaImpl();
-			schema.setName("content");
-			schema.setDisplayField("title");
-			schema.setMeshVersion(Mesh.getVersion());
-			schema.setSchemaVersion("1.0.0");
-
-			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-			nameFieldSchema.setName("name");
-			nameFieldSchema.setLabel("Name");
-			nameFieldSchema.setRequired(true);
-			schema.addField(nameFieldSchema);
-
-			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-			filenameFieldSchema.setName("filename");
-			filenameFieldSchema.setLabel("Filename");
-			schema.addField(filenameFieldSchema);
-
-			StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-			titleFieldSchema.setName("title");
-			titleFieldSchema.setLabel("Title");
-			schema.addField(titleFieldSchema);
-
-			HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-			contentFieldSchema.setName("content");
-			contentFieldSchema.setLabel("Content");
-			schema.addField(contentFieldSchema);
-
-			schema.setBinary(false);
-			schema.setFolder(false);
-			contentSchemaContainer = schemaContainerRoot.create(schema, adminUser);
-
-		}
-
-		// Folder
-		SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder");
-		if (folderSchemaContainer == null) {
-			Schema schema = new SchemaImpl();
-			schema.setName("folder");
-			schema.setDisplayField("name");
-			schema.setMeshVersion(Mesh.getVersion());
-			schema.setSchemaVersion("1.0.0");
-
-			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-			nameFieldSchema.setName("name");
-			nameFieldSchema.setLabel("Name");
-			schema.addField(nameFieldSchema);
-
-			schema.setBinary(false);
-			schema.setFolder(true);
-			folderSchemaContainer = schemaContainerRoot.create(schema, adminUser);
-
-		}
-
-		// Binary content for images and other downloads
-		SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content");
-		if (binarySchemaContainer == null) {
-
-			Schema schema = new SchemaImpl();
-			schema.setName("binary-content");
-			schema.setDisplayField("name");
-			schema.setMeshVersion(Mesh.getVersion());
-			schema.setSchemaVersion("1.0.0");
-
-			StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-			nameFieldSchema.setName("name");
-			nameFieldSchema.setLabel("Name");
-			schema.addField(nameFieldSchema);
-
-			StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-			nameFieldSchema.setName("filename");
-			nameFieldSchema.setLabel("Filename");
-			schema.addField(filenameFieldSchema);
-
-			schema.setBinary(true);
-			schema.setFolder(false);
-			binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
-		}
-
-		log.info("Stored mesh root node");
-
-		initLanguages(languageRoot);
-
-		Group adminGroup = groupRoot.findByName("admin");
-		if (adminGroup == null) {
-			adminGroup = groupRoot.create("admin", adminUser);
-			adminGroup.addUser(adminUser);
-			log.info("Stored admin group");
-		}
-
-		Role adminRole = roleRoot.findByName("admin");
-		if (adminRole == null) {
-			adminRole = roleRoot.create("admin", adminGroup, adminUser);
-		}
-
-		initPermissions(adminRole);
-
-		schemaStorage.init();
 
 	}
 
 	private void initPermissions(Role role) {
-//		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-			for (Vertex vertex : Trx.getFramedLocalGraph().getVertices()) {
-				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-
-				// TODO typecheck? and verify how orient will behave
-				if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
-					log.info("Skipping own role");
-					continue;
-				}
-				MeshVertex meshVertex = Trx.getFramedLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+		for (Vertex vertex : Trx.getFramedLocalGraph().getVertices()) {
+			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+			// TODO typecheck? and verify how orient will behave
+			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+				log.info("Skipping own role");
+				continue;
 			}
-//			tx.success();
-//		}
+			MeshVertex meshVertex = Trx.getFramedLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+			if (log.isDebugEnabled()) {
+				log.debug("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + role.getUuid() + "}");
+			}
+		}
 	}
 
 	protected void initLanguages(LanguageRoot rootNode) throws JsonParseException, JsonMappingException, IOException {

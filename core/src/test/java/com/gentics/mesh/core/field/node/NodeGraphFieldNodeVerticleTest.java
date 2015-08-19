@@ -20,19 +20,24 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
+
 public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws Exception {
-		Schema schema = schemaContainer("folder").getSchema();
-		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
-		nodeFieldSchema.setName("nodeField");
-		nodeFieldSchema.setLabel("Some label");
-		nodeFieldSchema.setAllowedSchemas("folder");
-		schema.addField(nodeFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		try (Trx tx = new Trx(db)) {
+			Schema schema = schemaContainer("folder").getSchema();
+			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
+			nodeFieldSchema.setName("nodeField");
+			nodeFieldSchema.setLabel("Some label");
+			nodeFieldSchema.setAllowedSchemas("folder");
+			schema.addField(nodeFieldSchema);
+			schemaContainer("folder").setSchema(schema);
+			tx.success();
+		}
 	}
 
 	@Test
@@ -97,42 +102,50 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	@Test
-	public void testReadExpandedNodeWithExitingField() throws IOException {
-		resetClientSchemaStorage();
-		Node newsNode = folder("news");
-		Node node = folder("2015");
+	public void testReadExpandedNodeWithExistingField() throws IOException {
+		Node node;
+		Node newsNode;
+		try (Trx tx = new Trx(db)) {
+			resetClientSchemaStorage();
+			newsNode = folder("news");
+			node = folder("2015");
 
-		// Create test field
-		NodeFieldContainer container = node.getFieldContainer(english());
-		container.createNode("nodeField", newsNode);
+			// Create test field
+			NodeFieldContainer container = node.getFieldContainer(english());
+			container.createNode("nodeField", newsNode);
+			tx.success();
+		}
 
-		// 1. Read node with collapsed fields and check that the collapsed node field can be read
-		NodeResponse responseCollapsed = readNode(node);
-		NodeField deserializedNodeField = responseCollapsed.getField("nodeField", NodeFieldImpl.class);
-		assertNotNull(deserializedNodeField);
-		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		try (Trx tx = new Trx(db)) {
 
-		// Check whether it is possible to read the field in an expanded form.
-		NodeResponse deserializedExpandedNodeField = responseCollapsed.getField("nodeField", NodeResponse.class);
-		assertNotNull(deserializedExpandedNodeField);
+			// 1. Read node with collapsed fields and check that the collapsed node field can be read
+			NodeResponse responseCollapsed = readNode(node);
+			NodeField deserializedNodeField = responseCollapsed.getField("nodeField", NodeFieldImpl.class);
+			assertNotNull(deserializedNodeField);
+			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
-		// 2. Read node with expanded fields
-		NodeResponse responseExpanded = readNode(node, "nodeField", "bogus");
+			// Check whether it is possible to read the field in an expanded form.
+			NodeResponse deserializedExpandedNodeField = responseCollapsed.getField("nodeField", NodeResponse.class);
+			assertNotNull(deserializedExpandedNodeField);
 
-		// Check collapsed node field
-		deserializedNodeField = responseExpanded.getField("nodeField", NodeFieldImpl.class);
-		assertNotNull(deserializedNodeField);
-		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+			// 2. Read node with expanded fields
+			NodeResponse responseExpanded = readNode(node, "nodeField", "bogus");
 
-		// Check expanded node field
-		deserializedExpandedNodeField = responseExpanded.getField("nodeField", NodeResponse.class);
-		if (deserializedExpandedNodeField instanceof NodeResponse) {
-			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
-			assertNotNull(expandedField);
-			assertEquals(newsNode.getUuid(), expandedField.getUuid());
-			assertNotNull(expandedField.getCreator());
-		} else {
-			fail("The returned object should be a NodeResponse object");
+			// Check collapsed node field
+			deserializedNodeField = responseExpanded.getField("nodeField", NodeFieldImpl.class);
+			assertNotNull(deserializedNodeField);
+			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+
+			// Check expanded node field
+			deserializedExpandedNodeField = responseExpanded.getField("nodeField", NodeResponse.class);
+			if (deserializedExpandedNodeField instanceof NodeResponse) {
+				NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
+				assertNotNull(expandedField);
+				assertEquals(newsNode.getUuid(), expandedField.getUuid());
+				assertNotNull(expandedField.getCreator());
+			} else {
+				fail("The returned object should be a NodeResponse object");
+			}
 		}
 	}
 

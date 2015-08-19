@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -37,15 +38,16 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.tagRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				Tag tag = rh.result();
-				store(tag, handler);
-			} else {
-				//TODO reply error? discard? log?
-			}
-		});
-
+		try (Trx tx = new Trx(db)) {
+			boot.tagRoot().findByUuid(uuid, rh -> {
+				if (rh.result() != null && rh.succeeded()) {
+					Tag tag = rh.result();
+					store(tag, handler);
+				} else {
+					//TODO reply error? discard? log?
+				}
+			});
+		}
 	}
 
 	private void addTagFamily(Map<String, Object> map, TagFamily tagFamily) {
@@ -55,8 +57,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		map.put("tagFamily", tagFamilyFields);
 	}
 
-	public void update(String uuid,  Handler<AsyncResult<ActionResponse>> handler) {
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
