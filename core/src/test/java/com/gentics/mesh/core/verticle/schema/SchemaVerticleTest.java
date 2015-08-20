@@ -62,13 +62,19 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		SchemaResponse restSchemaResponse = future.result();
 		test.assertSchema(request, restSchemaResponse);
-		boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
-			SchemaContainer schemaContainer = rh.result();
-			assertNotNull(schemaContainer);
-			assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
-			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
-			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
-		});
+
+		CountDownLatch latch = new CountDownLatch(1);
+		try (Trx tx = new Trx(db)) {
+			boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
+				SchemaContainer schemaContainer = rh.result();
+				assertNotNull(schemaContainer);
+				assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
+				// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
+				// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
 	}
 
@@ -93,10 +99,15 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(request, restSchema);
 
 		// Verify that the object was created
-		data().getMeshRoot().getSchemaContainerRoot().findByUuid(restSchema.getUuid(), rh -> {
-			SchemaContainer schemaContainer = rh.result();
-			assertNotNull(schemaContainer);
-		});
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			data().getMeshRoot().getSchemaContainerRoot().findByUuid(restSchema.getUuid(), rh -> {
+				SchemaContainer schemaContainer = rh.result();
+				assertNotNull(schemaContainer);
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 		// test.assertSchema(schema, restSchema);
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
@@ -209,16 +220,21 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadSchemaByUUIDWithNoPerm() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
+		SchemaContainer schema;
+		try (Trx tx = new Trx(db)) {
+			schema = schemaContainer("content");
 
-		role().grantPermissions(schema, DELETE_PERM);
-		role().grantPermissions(schema, UPDATE_PERM);
-		role().grantPermissions(schema, CREATE_PERM);
-		role().revokePermissions(schema, READ_PERM);
-
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
+			role().grantPermissions(schema, DELETE_PERM);
+			role().grantPermissions(schema, UPDATE_PERM);
+			role().grantPermissions(schema, CREATE_PERM);
+			role().revokePermissions(schema, READ_PERM);
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
+			Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
+		}
 	}
 
 	@Test
@@ -241,11 +257,12 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
 		// assertEquals(request.getName(), restSchema.getName());
-
-		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			SchemaContainer reloaded = rh.result();
-			// assertEquals("The name should have been updated", "new-name", reloaded.getName());
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+				SchemaContainer reloaded = rh.result();
+				// assertEquals("The name should have been updated", "new-name", reloaded.getName());
+			});
+		}
 
 	}
 
@@ -275,33 +292,45 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteSchemaByUUID() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
+		SchemaContainer schema;
+		try (Trx tx = new Trx(db)) {
+			schema = schemaContainer("content");
 
-		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
+			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
+		}
 
-		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			SchemaContainer reloaded = rh.result();
-			assertNull("The schema should have been deleted.", reloaded);
-		});
+		try (Trx tx = new Trx(db)) {
+			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+				SchemaContainer reloaded = rh.result();
+				assertNull("The schema should have been deleted.", reloaded);
+			});
+		}
 	}
 
 	public void testDeleteSchemaWithMissingPermission() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
-		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
-		latchFor(future);
-		assertSuccess(future);
+		SchemaContainer schema;
+		try (Trx tx = new Trx(db)) {
+			schema = schemaContainer("content");
+			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+		}
 
 		fail("unspecified test");
 		//		String json = "error";
 		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-
-		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			SchemaContainer reloaded = rh.result();
-			assertNotNull("The schema should not have been deleted.", reloaded);
-		});
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+				SchemaContainer reloaded = rh.result();
+				assertNotNull("The schema should not have been deleted.", reloaded);
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
 	}
 }

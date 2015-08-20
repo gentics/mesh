@@ -70,30 +70,34 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		delete(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
+		try (Trx tx = new Trx(db)) {
+			delete(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
+		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		loadObject(rc, "uuid", UPDATE_PERM, boot.schemaContainerRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
-				SchemaContainer schemaContainer = rh.result();
-				SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "uuid", UPDATE_PERM, boot.schemaContainerRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					SchemaContainer schemaContainer = rh.result();
+					SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
 
-				if (StringUtils.isEmpty(requestModel.getName())) {
-					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-					return;
+					if (StringUtils.isEmpty(requestModel.getName())) {
+						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
+						return;
+					}
+
+					schemaContainer.setSchema(requestModel);
+					/*
+					 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
+					 */
+					searchQueue().put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+					transformAndResponde(rc, schemaContainer);
 				}
-
-				schemaContainer.setSchema(requestModel);
-				/*
-				 * // if (!schema.getName().equals(requestModel.getName())) { // schema.setName(requestModel.getName()); // } //TODO handle request
-				 */
-				searchQueue().put(schemaContainer.getUuid(), SchemaContainer.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-				vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-				transformAndResponde(rc, schemaContainer);
-			}
-		});
+			});
+		}
 	}
 
 	@Override

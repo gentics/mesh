@@ -7,20 +7,28 @@ import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
+import com.thinkaurelius.titan.core.TitanFactory;
+import com.thinkaurelius.titan.core.TitanGraph;
 
 public class TitanDBDatabase extends AbstractDatabase {
 
 	ThreadedTransactionalGraphWrapper wrapper;
+	TitanGraph graph;
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-
+		graph.shutdown();
 	}
 
 	@Override
 	public void start() {
-		wrapper = new TitanDBThreadedTransactionalGraphWrapper(getBerkleyDBConf(options));
+
+		//		Configuration configuration
+		//		graph = TitanFactory.open(configuration);
+		//		this.configuration = configuration;
+		Configuration configuration = getBerkleyDBConf(options);
+		graph = TitanFactory.open(configuration);
+		wrapper = new TitanDBThreadedTransactionalGraphWrapper(graph);
 
 		// You may use getCassandraConf() or getInMemoryConf() to switch the backend graph db
 

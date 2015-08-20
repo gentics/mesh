@@ -168,6 +168,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		try (Trx tx = new Trx(db)) {
 			node = folder("news");
 			prepareSchema(node, true, "");
+			tx.success();
 		}
 
 		try (Trx tx = new Trx(db)) {

@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class BootstrapInitializerTest extends AbstractDBTest {
@@ -22,10 +23,12 @@ public class BootstrapInitializerTest extends AbstractDBTest {
 
 	@Test
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
-		boot.initLanguages(meshRoot().getLanguageRoot());
-		Language language = boot.languageRoot().findByLanguageTag("xh");
-		assertNotNull(language);
-		assertEquals("Xhosa", language.getName());
-		assertEquals("isiXhosa", language.getNativeName());
+		try (Trx tx = new Trx(db)) {
+			boot.initLanguages(meshRoot().getLanguageRoot());
+			Language language = boot.languageRoot().findByLanguageTag("xh");
+			assertNotNull(language);
+			assertEquals("Xhosa", language.getName());
+			assertEquals("isiXhosa", language.getNativeName());
+		}
 	}
 }

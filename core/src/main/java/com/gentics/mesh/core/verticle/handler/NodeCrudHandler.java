@@ -372,71 +372,75 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								} else {
 									String contentType = ul.contentType();
 									String fileName = ul.fileName();
-									node.setBinaryFileName(fileName);
-									node.setBinaryFileSize(ul.size());
-									node.setBinaryContentType(contentType);
+									try (Trx txUpdate = new Trx(db)) {
+										node.setBinaryFileName(fileName);
+										node.setBinaryFileSize(ul.size());
+										node.setBinaryContentType(contentType);
 
-									Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
+										Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
 
-										if (tfc.succeeded()) {
-											File targetFolder = tfc.result();
-											String targetPath = new File(targetFolder, node.getUuid() + ".bin").getAbsolutePath();
-											if (log.isDebugEnabled()) {
-												log.debug("Moving file from {" + ul.uploadedFileName() + "} to {" + targetPath + "}");
-											}
-
-											fileSystem.move(ul.uploadedFileName(), targetPath, mh -> {
-												if (mh.succeeded()) {
-													responde(rc, toJson(
-															new GenericMessageResponse(i18n.get(rc, "node_binary_field_updated", node.getUuid()))));
-												} else {
-													log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-													fail(rc, "node_error_upload_failed");
+											if (tfc.succeeded()) {
+												File targetFolder = tfc.result();
+												String targetPath = new File(targetFolder, node.getUuid() + ".bin").getAbsolutePath();
+												if (log.isDebugEnabled()) {
+													log.debug("Moving file from {" + ul.uploadedFileName() + "} to {" + targetPath + "}");
 												}
-											});
-										} else {
-											fail(rc, "node_error_upload_failed");
-										}
-									};
 
-									FileUtils.generateSha512Sum(ul.uploadedFileName(), hash -> {
-										if (hash.succeeded()) {
-											node.setBinarySHA512Sum(hash.result());
-											System.out.println("FILE: " + ul.uploadedFileName());
-
-											File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
-											if (log.isDebugEnabled()) {
-												log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
-											}
-											fileSystem.exists(folder.getAbsolutePath(), deh -> {
-												if (deh.succeeded()) {
-													if (!deh.result()) {
-														fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
-															if (mkh.succeeded()) {
-																targetFolderChecked.handle(Future.succeededFuture(folder));
-															} else {
-																log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}",
-																		mkh.cause());
-																fail(rc, "node_error_upload_failed");
-															}
-														});
+												fileSystem.move(ul.uploadedFileName(), targetPath, mh -> {
+													if (mh.succeeded()) {
+														txUpdate.success();
+														responde(rc, toJson(new GenericMessageResponse(
+																i18n.get(rc, "node_binary_field_updated", node.getUuid()))));
 													} else {
-														targetFolderChecked.handle(Future.succeededFuture(folder));
+														log.error("Failed to move file to {" + targetPath + "}", mh.cause());
+														fail(rc, "node_error_upload_failed");
 													}
-												} else {
-													log.error("Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.",
-															deh.cause());
-													fail(rc, "node_error_upload_failed");
-												}
-											});
+												});
+											} else {
+												fail(rc, "node_error_upload_failed");
+											}
+										};
 
-											// node.setBinaryImageDPI(dpi);
-											// node.setBinaryImageHeight(heigth);
-											// node.setBinaryImageWidth(width);
-										} else {
-											fail(rc, "node_error_hashing_failed");
-										}
-									});
+										FileUtils.generateSha512Sum(ul.uploadedFileName(), hash -> {
+											if (hash.succeeded()) {
+												node.setBinarySHA512Sum(hash.result());
+												System.out.println("FILE: " + ul.uploadedFileName());
+
+												File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
+												if (log.isDebugEnabled()) {
+													log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
+												}
+												fileSystem.exists(folder.getAbsolutePath(), deh -> {
+													if (deh.succeeded()) {
+														if (!deh.result()) {
+															fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
+																if (mkh.succeeded()) {
+																	targetFolderChecked.handle(Future.succeededFuture(folder));
+																} else {
+																	log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}",
+																			mkh.cause());
+																	fail(rc, "node_error_upload_failed");
+																}
+															});
+														} else {
+															targetFolderChecked.handle(Future.succeededFuture(folder));
+														}
+													} else {
+														log.error(
+																"Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.",
+																deh.cause());
+														fail(rc, "node_error_upload_failed");
+													}
+												});
+
+												// node.setBinaryImageDPI(dpi);
+												// node.setBinaryImageHeight(heigth);
+												// node.setBinaryImageWidth(width);
+											} else {
+												fail(rc, "node_error_hashing_failed");
+											}
+										});
+									}
 								}
 							}
 						}

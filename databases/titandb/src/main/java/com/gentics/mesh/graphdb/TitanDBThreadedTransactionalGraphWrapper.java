@@ -11,9 +11,8 @@ public class TitanDBThreadedTransactionalGraphWrapper extends ThreadedTransactio
 	private Configuration configuration;
 	private TitanGraph graph;
 
-	public TitanDBThreadedTransactionalGraphWrapper(Configuration configuration) {
-		this.configuration = configuration;
-		graph = TitanFactory.open(configuration);
+	public TitanDBThreadedTransactionalGraphWrapper(TitanGraph graph) {
+		this.graph = graph;
 	}
 
 	@Override
