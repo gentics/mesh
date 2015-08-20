@@ -251,10 +251,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-			try (Trx tx = new Trx(db)) {
-				Project project = getProject(rc);
-				loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
-			}
+			Mesh.vertx().executeBlocking(bc -> {
+				try (Trx tx = new Trx(db)) {
+					Project project = getProject(rc);
+					loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
+				}
+			} , rh -> {
+
+			});
 		}
 	}
 

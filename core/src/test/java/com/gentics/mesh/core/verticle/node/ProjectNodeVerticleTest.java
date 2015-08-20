@@ -19,8 +19,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -370,6 +373,24 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		Future<NodeResponse> future = getClient().findNodeByUuid("BOGUS", "someUuuid");
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "project_not_found", "BOGUS");
+	}
+
+	@Test
+	public void testReadNodeByUUIDMultithreaded() throws InterruptedException {
+		int nJobs = 5;
+		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		Trx.enableDebug();
+		Trx.setBarrier(barrier);
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
+		}
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+		Trx.disableDebug();
+
 	}
 
 	@Test

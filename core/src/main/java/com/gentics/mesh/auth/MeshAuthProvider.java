@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
@@ -37,14 +38,13 @@ public class MeshAuthProvider implements AuthProvider {
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
 
-//		Mesh.vertx().executeBlocking(fut -> {
+		Mesh.vertx().executeBlocking(fut -> {
 
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
 			try (Trx tx = new Trx(database)) {
 				user = boot.userRoot().findMeshAuthUserByUsername(username);
-//				tx.success();
 			}
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
@@ -77,6 +77,9 @@ public class MeshAuthProvider implements AuthProvider {
 //				resultHandler.handle(Future.failedFuture(rh.cause()));
 //			}
 //		});
+		}, rh -> {
+			
+		});
 
 	}
 }
