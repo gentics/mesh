@@ -3,6 +3,7 @@ package com.gentics.mesh.graphdb;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.orientechnologies.orient.core.Orient;
+import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
@@ -27,6 +28,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void start() {
 		Orient.instance().startup();
+		OGlobalConfiguration.CACHE_LOCAL_ENABLED.setValue(false);
 		factory = new OrientGraphFactory("memory:tinkerpop");
 		// Add some indices
 		// memoryGraph.createKeyIndex("name", Vertex.class);

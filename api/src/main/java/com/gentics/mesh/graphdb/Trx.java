@@ -69,4 +69,12 @@ public class Trx implements AutoCloseable {
 	public static FramedTransactionalGraph getLocalGraph() {
 		return Trx.localGraph.get();
 	}
+
+	public void commit() {
+		currentGraph.commit();
+	}
+
+	public void rollback() {
+		currentGraph.rollback();
+	}
 }

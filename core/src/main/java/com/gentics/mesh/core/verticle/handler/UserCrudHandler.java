@@ -26,8 +26,12 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.util.TraversalHelper;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.rxjava.core.Future;
 
 @Component
 public class UserCrudHandler extends AbstractCrudHandler {
@@ -42,6 +46,11 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
+
+		try (Trx tx = new Trx(db)) {
+			TraversalHelper.printDebugVertices();
+		}
+
 		UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 		if (requestModel == null) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_parse_request_json_error")));
@@ -60,7 +69,6 @@ public class UserCrudHandler extends AbstractCrudHandler {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_parentgroup_field")));
 			return;
 		}
-
 		try (Trx tx = new Trx(db)) {
 			// Load the parent group for the user
 			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
@@ -70,21 +78,22 @@ public class UserCrudHandler extends AbstractCrudHandler {
 						String message = i18n.get(rc, "user_conflicting_username");
 						rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
 					} else {
-						MeshAuthUser requestUser = getUser(rc);
+
 						try (Trx txCreate = new Trx(db)) {
+							MeshAuthUser requestUser = getUser(rc);
 							User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
 							user.fillCreateFromRest(rc, requestModel, parentGroup, ch -> {
 								if (ch.failed()) {
 									rc.fail(ch.cause());
 								} else {
-									User createdUser = ch.result();
-									//								try (Trx tx2 = new Trx(db)) {
-									searchQueue().put(user.getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-									//								tx2.getGraph().commit();
-									//								}
-									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-									txCreate.success();
-									transformAndResponde(rc, createdUser);
+									requestUser.reload();
+									txCreate.commit();
+									transformAndResponde(rc, ch.result());
+									try (Trx tx2 = new Trx(db)) {
+										searchQueue().put(ch.result().getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+										vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+										tx2.success();
+									}
 								}
 							});
 						}

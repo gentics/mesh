@@ -214,7 +214,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								return;
 							}
 							try (Trx txUpdate = new Trx(db)) {
-								/* TODO handle other fields, node.setEditor(requestUser); etc. */
+								/* TODO handle other fields, etc. */
 								node.setEditor(getUser(rc));
 								node.setLastEditedTimestamp(System.currentTimeMillis());
 								NodeFieldContainer container = node.getOrCreateFieldContainer(language);

@@ -133,13 +133,13 @@ public class MeshImpl implements Mesh {
 	}
 
 	private void printProductInformation() {
-		log.info("#################################################");
+		log.info("#####################################################");
 		log.info(infoLine("Mesh Version " + Mesh.getVersion()));
 		log.info(infoLine("Gentics Software GmbH"));
-		log.info("#-----------------------------------------------#");
+		log.info("#---------------------------------------------------#");
 		//log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
-		log.info("#################################################");
+		log.info("#####################################################");
 	}
 
 	private String getVertxVersion() {
@@ -147,7 +147,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	private static String infoLine(String text) {
-		return "# " + StringUtils.rightPad(text, 45) + " #";
+		return "# " + StringUtils.rightPad(text, 49) + " #";
 	}
 
 	/**
