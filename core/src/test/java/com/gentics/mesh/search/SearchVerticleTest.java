@@ -1,4 +1,5 @@
 package com.gentics.mesh.search;
+
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -31,10 +32,13 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
@@ -171,9 +175,8 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 
 		QueryBuilder qb = QueryBuilders.termQuery("schema.name", "content");
 		String json = "{";
-		json += "	 \"query\":"+ qb.toString();
+		json += "	 \"query\":" + qb.toString();
 		json += "	}";
-
 
 		Future<NodeListResponse> future = getClient().searchNodes(json);
 		latchFor(future);
@@ -185,15 +188,36 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testAddContent() throws InterruptedException {
+	public void testAddContent() throws InterruptedException, IOException {
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			Node node = folder("2015");
+
+			GraphStringFieldList list = node.getFieldContainer(english()).createStringList("stringList");
+			list.createString("one");
+			list.createString("two");
+			list.createString("three");
+			list.createString("four");
+
+			Schema schema = node.getSchemaContainer().getSchema();
+			schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
+			node.getSchemaContainer().setSchema(schema);
+			tx.success();
+		}
 		// Invoke a dummy search on an empty index
-		QueryBuilder qb = QueryBuilders.queryStringQuery("2015");
-
 		String json = "{";
-		json += "	 \"query\":"+ qb.toString();
-		json += "	}";
+		json += "				\"sort\" : {";
+		json += "			      \"created\" : {\"order\" : \"asc\"}";
+		json += "			    },";
+		json += "			    \"query\":{";
+		json += "			        \"bool\" : {";
+		json += "			            \"must\" : {";
+		json += "			                \"term\" : { \"fields.stringList\" : \"three\" }";
+		json += "			            }";
+		json += "			        }";
+		json += "			    }";
+		json += "			}";
 
-		log.debug("Query: " + json);
 		Future<NodeListResponse> future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);

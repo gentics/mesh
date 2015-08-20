@@ -8,6 +8,7 @@ public interface FieldSchema {
 
 	FieldSchema setLabel(String label);
 
+	//TODO is this not the fieldkey? is the key the name? höö?
 	String getName();
 
 	FieldSchema setName(String name);
