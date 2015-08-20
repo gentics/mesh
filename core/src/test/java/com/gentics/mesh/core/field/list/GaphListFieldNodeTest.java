@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -43,81 +44,83 @@ public class GaphListFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeListTransformation() throws IOException, InterruptedException {
-		Node node = folder("2015");
-		Node newsNode = folder("news");
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			Node newsNode = folder("news");
 
-		Schema schema = node.getSchema();
-		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
-		nodeListFieldSchema.setName("nodeList");
-		nodeListFieldSchema.setListType("node");
-		schema.addField(nodeListFieldSchema);
+			Schema schema = node.getSchema();
+			ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
+			nodeListFieldSchema.setName("nodeList");
+			nodeListFieldSchema.setListType("node");
+			schema.addField(nodeListFieldSchema);
 
-		ListFieldSchema stringListFieldSchema = new ListFieldSchemaImpl();
-		stringListFieldSchema.setName("stringList");
-		stringListFieldSchema.setListType("string");
-		schema.addField(stringListFieldSchema);
+			ListFieldSchema stringListFieldSchema = new ListFieldSchemaImpl();
+			stringListFieldSchema.setName("stringList");
+			stringListFieldSchema.setListType("string");
+			schema.addField(stringListFieldSchema);
 
-		ListFieldSchema htmlListFieldSchema = new ListFieldSchemaImpl();
-		htmlListFieldSchema.setName("htmlList");
-		htmlListFieldSchema.setListType("html");
-		schema.addField(htmlListFieldSchema);
+			ListFieldSchema htmlListFieldSchema = new ListFieldSchemaImpl();
+			htmlListFieldSchema.setName("htmlList");
+			htmlListFieldSchema.setListType("html");
+			schema.addField(htmlListFieldSchema);
 
-		ListFieldSchema numberListFieldSchema = new ListFieldSchemaImpl();
-		numberListFieldSchema.setName("numberList");
-		numberListFieldSchema.setListType("number");
-		schema.addField(numberListFieldSchema);
+			ListFieldSchema numberListFieldSchema = new ListFieldSchemaImpl();
+			numberListFieldSchema.setName("numberList");
+			numberListFieldSchema.setListType("number");
+			schema.addField(numberListFieldSchema);
 
-		ListFieldSchema booleanListFieldSchema = new ListFieldSchemaImpl();
-		booleanListFieldSchema.setName("booleanList");
-		booleanListFieldSchema.setListType("boolean");
-		schema.addField(booleanListFieldSchema);
+			ListFieldSchema booleanListFieldSchema = new ListFieldSchemaImpl();
+			booleanListFieldSchema.setName("booleanList");
+			booleanListFieldSchema.setListType("boolean");
+			schema.addField(booleanListFieldSchema);
 
-		ListFieldSchema dateListFieldSchema = new ListFieldSchemaImpl();
-		dateListFieldSchema.setName("dateList");
-		dateListFieldSchema.setListType("date");
-		schema.addField(dateListFieldSchema);
+			ListFieldSchema dateListFieldSchema = new ListFieldSchemaImpl();
+			dateListFieldSchema.setName("dateList");
+			dateListFieldSchema.setListType("date");
+			schema.addField(dateListFieldSchema);
 
-		node.getSchemaContainer().setSchema(schema);
+			node.getSchemaContainer().setSchema(schema);
 
-		NodeFieldContainer container = node.getFieldContainer(english());
+			NodeFieldContainer container = node.getFieldContainer(english());
 
-		GraphNodeFieldList nodeList = container.createNodeList("nodeList");
-		nodeList.createNode("1", newsNode);
-		nodeList.createNode("2", newsNode);
+			GraphNodeFieldList nodeList = container.createNodeList("nodeList");
+			nodeList.createNode("1", newsNode);
+			nodeList.createNode("2", newsNode);
 
-		GraphBooleanFieldList booleanList = container.createBooleanList("booleanList");
-		booleanList.createBoolean(true);
-		booleanList.createBoolean(null);
-		booleanList.createBoolean(false);
+			GraphBooleanFieldList booleanList = container.createBooleanList("booleanList");
+			booleanList.createBoolean(true);
+			booleanList.createBoolean(null);
+			booleanList.createBoolean(false);
 
-		GraphNumberFieldList numberList = container.createNumberList("numberList");
-		numberList.createNumber("1");
-		numberList.createNumber("1.11");
+			GraphNumberFieldList numberList = container.createNumberList("numberList");
+			numberList.createNumber("1");
+			numberList.createNumber("1.11");
 
-		GraphDateFieldList dateList = container.createDateList("dateList");
-		dateList.createDate("01.01.1971");
-		dateList.createDate("01.01.1972");
+			GraphDateFieldList dateList = container.createDateList("dateList");
+			dateList.createDate("01.01.1971");
+			dateList.createDate("01.01.1972");
 
-		GraphStringFieldList stringList = container.createStringList("stringList");
-		stringList.createString("dummyString1");
-		stringList.createString("dummyString2");
+			GraphStringFieldList stringList = container.createStringList("stringList");
+			stringList.createString("dummyString1");
+			stringList.createString("dummyString2");
 
-		GraphHtmlFieldList htmlList = container.createHTMLList("htmlList");
-		htmlList.createHTML("some<b>html</b>");
-		htmlList.createHTML("some<b>more html</b>");
+			GraphHtmlFieldList htmlList = container.createHTMLList("htmlList");
+			htmlList.createHTML("some<b>html</b>");
+			htmlList.createHTML("some<b>more html</b>");
 
-		String json = getJson(node);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
-		assertNotNull(response);
+			String json = getJson(node);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+			assertNotNull(response);
 
-		assertList(2, "stringList", StringFieldListImpl.class, response);
-		assertList(2, "htmlList", StringFieldListImpl.class, response);
-		assertList(2, "dateList", DateFieldListImpl.class, response);
-		assertList(2, "numberList", NumberFieldListImpl.class, response);
-		assertList(2, "nodeList", NodeFieldListImpl.class, response);
-		assertList(3, "booleanList", BooleanFieldListImpl.class, response);
-		//		assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
+			assertList(2, "stringList", StringFieldListImpl.class, response);
+			assertList(2, "htmlList", StringFieldListImpl.class, response);
+			assertList(2, "dateList", DateFieldListImpl.class, response);
+			assertList(2, "numberList", NumberFieldListImpl.class, response);
+			assertList(2, "nodeList", NodeFieldListImpl.class, response);
+			assertList(3, "booleanList", BooleanFieldListImpl.class, response);
+			//		assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
+		}
 
 	}
 
