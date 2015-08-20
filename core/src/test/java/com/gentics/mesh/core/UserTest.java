@@ -276,7 +276,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 			user.setEditor(newUser);
 			assertNotNull(user.getEditor());
-			assertEquals(newUser, user.getEditor());
+			assertEquals(newUser.getUuid(), user.getEditor().getUuid());
 			user.setLastEditedTimestamp(1);
 			assertEquals(1, user.getLastEditedTimestamp().longValue());
 

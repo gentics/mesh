@@ -209,13 +209,17 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadSchemaByUUID() throws Exception {
-
-		SchemaContainer schemaContainer = schemaContainer("content");
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		SchemaResponse restSchema = future.result();
-		test.assertSchema(schemaContainer, restSchema);
+		SchemaContainer schemaContainer;
+		try (Trx tx = new Trx(db)) {
+			schemaContainer = schemaContainer("content");
+		}
+		try (Trx tx = new Trx(db)) {
+			Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			SchemaResponse restSchema = future.result();
+			test.assertSchema(schemaContainer, restSchema);
+		}
 	}
 
 	@Test

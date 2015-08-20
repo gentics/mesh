@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
@@ -37,6 +38,10 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 		map.put("firstname", user.getFirstname());
 		map.put("lastname", user.getLastname());
 		addGroups(map, user.getGroups());
+		Node referencedNode = user.getReferencedNode();
+		if (referencedNode != null) {
+			map.put("nodeReference", referencedNode.getUuid());
+		}
 		//TODO add node reference?
 		//TODO add disabled / enabled flag
 		store(user.getUuid(), map, handler);

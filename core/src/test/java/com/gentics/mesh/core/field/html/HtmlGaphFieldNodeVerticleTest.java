@@ -35,13 +35,15 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
-		HtmlFieldImpl field = response.getField("htmlField");
-		assertEquals("some<b>html", field.getHTML());
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
+			HtmlFieldImpl field = response.getField("htmlField");
+			assertEquals("some<b>html", field.getHTML());
 
-		response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html2"));
-		field = response.getField("htmlField");
-		assertEquals("some<b>html2", field.getHTML());
+			response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html2"));
+			field = response.getField("htmlField");
+			assertEquals("some<b>html2", field.getHTML());
+		}
 	}
 
 	@Test
@@ -50,20 +52,27 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 		NodeResponse response = createNode("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 		HtmlFieldImpl htmlField = response.getField("htmlField");
 		assertEquals("Some<b>html", htmlField.getHTML());
+
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		Node node = folder("2015");
+		Node node;
+		try (Trx tx = new Trx(db)) {
+			node = folder("2015");
 
-		NodeFieldContainer container = node.getFieldContainer(english());
-		container.createHTML("htmlField").setHtml("some<b>html");
+			NodeFieldContainer container = node.getFieldContainer(english());
+			container.createHTML("htmlField").setHtml("some<b>html");
+			tx.success();
+		}
 
-		NodeResponse response = readNode(node);
-		HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");
-		assertNotNull(deserializedHtmlField);
-		assertEquals("some<b>html", deserializedHtmlField.getHTML());
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = readNode(node);
+			HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");
+			assertNotNull(deserializedHtmlField);
+			assertEquals("some<b>html", deserializedHtmlField.getHTML());
+		}
 
 	}
 

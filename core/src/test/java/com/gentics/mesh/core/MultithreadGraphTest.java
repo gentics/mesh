@@ -44,10 +44,10 @@ public class MultithreadGraphTest extends AbstractDBTest {
 			}
 		});
 
-		// try (BlueprintTransaction tx = new BlueprintTransaction(database)) {
-		User user = boot.meshRoot().getUserRoot().findByUsername("test");
-		assertNotNull(user);
-		// }
+		try (Trx tx = new Trx(db)) {
+			User user = boot.meshRoot().getUserRoot().findByUsername("test");
+			assertNotNull(user);
+		}
 	}
 
 	public void runAndWait(Runnable runnable) {

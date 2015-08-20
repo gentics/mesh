@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.webroot;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -13,9 +14,11 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.WebRootVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -28,33 +31,35 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
+		try (Trx tx = new Trx(db)) {
+			Node folder = folder("2015");
+			String path = "/News/2015";
 
-		Node folder = folder("2015");
-		String path = "/News/2015";
-
-		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse restNode = future.result();
-		test.assertMeshNode(folder, restNode);
-		//		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
-		//				restNode.getProperties());
-		//		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
-		//				restNode.getProperties());
+			Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
+			latchFor(future);
+			assertSuccess(future);
+			NodeResponse restNode = future.result();
+			test.assertMeshNode(folder, restNode);
+			//		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
+			//				restNode.getProperties());
+			//		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
+			//				restNode.getProperties());
+		}
 	}
 
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
-		Node concordeNode = content("concorde");
-
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 
-		test.assertMeshNode(concordeNode, restNode);
-		//		assertNotNull(restNode.getProperties());
+		try (Trx tx = new Trx(db)) {
+			Node concordeNode = content("concorde");
+			test.assertMeshNode(concordeNode, restNode);
+			//		assertNotNull(restNode.getProperties());
+		}
 
 	}
 
@@ -69,12 +74,18 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "News/2015";
-		Node newsFolder = folder("2015");
-		role().revokePermissions(newsFolder, READ_PERM);
+		Node newsFolder;
+		try (Trx tx = new Trx(db)) {
+			newsFolder = folder("2015");
+			role().revokePermissions(newsFolder, READ_PERM);
+			tx.success();
+		}
 
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, englishPath);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", newsFolder.getUuid());
+		try (Trx tx = new Trx(db)) {
+			expectException(future, FORBIDDEN, "error_missing_perm", newsFolder.getUuid());
+		}
 	}
 
 	@Test
