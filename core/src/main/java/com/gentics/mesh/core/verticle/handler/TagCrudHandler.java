@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.fail;
+import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
+import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
@@ -18,11 +20,14 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -144,6 +149,25 @@ public class TagCrudHandler extends AbstractCrudHandler {
 		try (Trx tx = new Trx(db)) {
 			Project project = getProject(rc);
 			loadTransformAndResponde(rc, project.getTagRoot(), new TagListResponse());
+		}
+	}
+
+	public void handleTaggedNodesList(RoutingContext rc) {
+		try (Trx tx = new Trx(db)) {
+			Project project = getProject(rc);
+			loadObject(rc, "uuid", READ_PERM, project.getTagRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					Tag tag = rh.result();
+					Page<? extends Node> page;
+					try {
+						page = tag.findTaggedNodes(getUser(rc), getSelectedLanguageTags(rc), getPagingInfo(rc));
+						transformAndResponde(rc, page, new NodeListResponse());
+					} catch (Exception e) {
+						//TODO i18n - exception handling
+						fail(rc, "Could not load nodes");
+					}
+				}
+			});
 		}
 	}
 
