@@ -40,6 +40,8 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private ProjectNodeVerticle verticle;
 
+	String uploads = "target/testuploads";
+
 	@Override
 	public AbstractWebVerticle getVerticle() {
 		return verticle;
@@ -47,14 +49,12 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Before
 	public void setup() throws IOException {
-		String uploads = "target/testuploads";
 		FileUtils.deleteDirectory(new File(uploads));
 		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
 	}
 
 	@After
 	public void cleanUp() throws IOException {
-		String uploads = "target/testuploads";
 		FileUtils.deleteDirectory(new File(uploads));
 		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
 

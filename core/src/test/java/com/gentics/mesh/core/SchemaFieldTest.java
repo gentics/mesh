@@ -9,11 +9,9 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
@@ -30,9 +28,6 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class SchemaFieldTest extends AbstractDBTest {
-
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
 
 	@Before
 	public void setup() throws Exception {
