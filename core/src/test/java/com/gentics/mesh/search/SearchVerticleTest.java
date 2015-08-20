@@ -26,10 +26,13 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
@@ -163,13 +166,35 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testAddContent() throws InterruptedException {
+	public void testAddContent() throws InterruptedException, IOException {
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 		Node node = folder("2015");
 
+		GraphStringFieldList list = node.getFieldContainer(english()).createStringList("stringList");
+		list.createString("one");
+		list.createString("two");
+		list.createString("three");
+		list.createString("four");
+
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
+		node.getSchemaContainer().setSchema(schema);
+
 		// Invoke a dummy search on an empty index
-		QueryBuilder qb = QueryBuilders.queryStringQuery("2015");
-		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		String json = "{";
+		json += "				\"sort\" : {";
+		json += "			      \"created\" : {\"order\" : \"asc\"}";
+		json += "			    },";
+		json += "			    \"query\":{";
+		json += "			        \"bool\" : {";
+		json += "			            \"must\" : {";
+		json += "			                \"term\" : { \"fields.stringList\" : \"three\" }";
+		json += "			            }";
+		json += "			        }";
+		json += "			    }";
+		json += "			}";
+
+		Future<NodeListResponse> future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
@@ -184,7 +209,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		latch.await();
 
 		// Search again and make sure we found our document
-		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();

@@ -1,7 +1,9 @@
 package com.gentics.mesh.search.index;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.action.ActionListener;
@@ -20,10 +22,15 @@ import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -54,7 +61,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
-		addParentNodeInfo(map, node.getParentNode());
+
+		// The basenode has no parent.
+		if (node.getParentNode() != null) {
+			addParentNodeInfo(map, node.getParentNode());
+		}
 		for (NodeFieldContainer container : node.getFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
@@ -179,6 +190,53 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				}
 				break;
 			case LIST:
+				if (fieldSchema instanceof ListFieldSchemaImpl) {
+					ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
+					switch (listFieldSchema.getListType()) {
+					case "node":
+						break;
+					case "date":
+						GraphDateFieldList graphDateList = container.getDateList(fieldSchema.getName());
+						List<String> dateItems = new ArrayList<>();
+						for (DateGraphField listItem : graphDateList.getList()) {
+							dateItems.add(listItem.getDate());
+						}
+						fieldsMap.put(fieldSchema.getName(), dateItems);
+						break;
+					case "number":
+						GraphNumberFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
+						List<String> numberItems = new ArrayList<>();
+						for (NumberGraphField listItem : graphNumberList.getList()) {
+							numberItems.add(listItem.getNumber());
+						}
+						fieldsMap.put(fieldSchema.getName(), numberItems);
+						break;
+					case "boolean":
+						break;
+					case "microschema":
+						break;
+					case "string":
+						GraphStringFieldList graphStringList = container.getStringList(fieldSchema.getName());
+						List<String> stringItems = new ArrayList<>();
+						for (StringGraphField listItem : graphStringList.getList()) {
+							stringItems.add(listItem.getString());
+						}
+						fieldsMap.put(fieldSchema.getName(), stringItems);
+						break;
+					case "html":
+						GraphHtmlFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
+						List<String> htmlItems = new ArrayList<>();
+						for (HtmlGraphField listItem : graphHtmlList.getList()) {
+							htmlItems.add(listItem.getHTML());
+						}
+						fieldsMap.put(fieldSchema.getName(), htmlItems);
+						break;
+					default:
+						log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
+						break;
+					}
+				}
+				//container.getStringList(fieldKey)
 				//ListField listField = container.getN(name);
 				//fieldsMap.put(name, htmlField.getHTML());
 				break;
