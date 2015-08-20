@@ -78,6 +78,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	private static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
+	private static final String PUBLISHED_PROPERTY_KEY = "published";
+
 	@Override
 	public String getType() {
 		return Node.TYPE;
@@ -189,6 +191,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		if (container == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
+		restNode.setPublished(isPublished());
 
 		try {
 			Schema schema = container.getSchema();
@@ -204,7 +207,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 
 			restNode.setDisplayField(schema.getDisplayField());
-
 			if (getParentNode() != null) {
 				NodeReference parentNodeReference = new NodeReference();
 				parentNodeReference.setUuid(getParentNode().getUuid());
@@ -481,6 +483,17 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}");
 		}
 		return null;
+	}
+
+	@Override
+	public void setPublished(boolean published) {
+		setProperty(PUBLISHED_PROPERTY_KEY, String.valueOf(published));
+	}
+
+	@Override
+	public boolean isPublished() {
+		String fieldValue = getProperty(PUBLISHED_PROPERTY_KEY);
+		return Boolean.valueOf(fieldValue);
 	}
 
 }

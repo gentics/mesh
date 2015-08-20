@@ -104,6 +104,7 @@ public class RestAssert {
 		assertEquals("The schemaname of the request does not match the response schema name", schemaName, restNode.getSchema().getName());
 		// assertEquals(request.getOrder(), restNode.getOrder());
 		String tagUuid = request.getParentNodeUuid();
+		assertEquals(request.isPublished(), restNode.isPublished());
 		// TODO how to match the parent tag?
 
 		assertNotNull(restNode.getUuid());

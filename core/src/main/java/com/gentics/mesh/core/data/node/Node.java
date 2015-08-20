@@ -181,4 +181,8 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	NodeFieldContainer findNextMatchingFieldContainer(RoutingContext rc);
 
+	void setPublished(boolean published);
+
+	boolean isPublished();
+
 }

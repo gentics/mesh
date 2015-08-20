@@ -138,7 +138,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-
+		request.setPublished(true);
 		request.setParentNodeUuid(parentNode.getUuid());
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
@@ -185,21 +185,21 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 			assertNotNull(node);
 			test.assertMeshNode(request, node);
 			// Load the node again
-				Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
-				latchFor(future2);
-				assertSuccess(future2);
-				NodeResponse restNode2 = future2.result();
-				test.assertMeshNode(node, restNode2);
+			Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
+			latchFor(future2);
+			assertSuccess(future2);
+			NodeResponse restNode2 = future2.result();
+			test.assertMeshNode(node, restNode2);
 
-				// Delete the node
-				Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
-				latchFor(deleteFut);
-				assertSuccess(deleteFut);
-				expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
-				meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
-					assertNull("The node should have been deleted.", rh2.result());
-				});
+			// Delete the node
+			Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
+			latchFor(deleteFut);
+			assertSuccess(deleteFut);
+			expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
+			meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
+				assertNull("The node should have been deleted.", rh2.result());
 			});
+		});
 
 	}
 
@@ -453,6 +453,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setUuid(schemaContainer("folder").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
+		request.setPublished(true);
 
 		assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
 
@@ -466,6 +467,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
+		assertTrue(restNode.isPublished());
 		assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
 		StringField field = restNode.getField("name");
 		assertEquals(newName, field.getString());
@@ -499,9 +501,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectMessage(
-				future,
-				BAD_REQUEST,
+		expectMessage(future, BAD_REQUEST,
 				"Can't handle field {extrafield} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeCreateRequest[\"fields\"])");
 		assertNull(future.result());
 
@@ -571,9 +571,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		parameters.setLanguages("de", "en");
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
 		latchFor(future);
-		expectMessage(
-				future,
-				BAD_REQUEST,
+		expectMessage(future, BAD_REQUEST,
 				"Can't handle field {displayName} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeUpdateRequest[\"fields\"])");
 
 		assertNull(future.result());

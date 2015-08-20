@@ -30,7 +30,6 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -124,6 +123,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					Node node = pnh.result();
 					try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 
+						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
 							nodeCreated.fail(new HttpStatusCodeErrorException(BAD_REQUEST,
@@ -212,6 +212,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							return;
 						}
 						/* TODO handle other fields, node.setEditor(requestUser); etc. */
+						node.setPublished(requestModel.isPublished());
 						node.setEditor(getUser(rc));
 						node.setLastEditedTimestamp(System.currentTimeMillis());
 						try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
