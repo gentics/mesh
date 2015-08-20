@@ -17,6 +17,7 @@ import com.gentics.mesh.test.AbstractDBTest;
 public class SelectGraphFieldTest extends AbstractDBTest {
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testStringSelection() {
 		try (Trx tx = new Trx(db)) {
 			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);

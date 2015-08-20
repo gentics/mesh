@@ -31,15 +31,6 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
-import com.gentics.mesh.search.index.GroupIndexHandler;
-import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.NodeIndexHandler;
-import com.gentics.mesh.search.index.ProjectIndexHandler;
-import com.gentics.mesh.search.index.RoleIndexHandler;
-import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
-import com.gentics.mesh.search.index.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.TagIndexHandler;
-import com.gentics.mesh.search.index.UserIndexHandler;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -65,33 +56,6 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
 	private SearchHandler searchHandler;
-
-	@Autowired
-	private UserIndexHandler userIndexHandler;
-
-	@Autowired
-	private GroupIndexHandler groupIndexHandler;
-
-	@Autowired
-	private RoleIndexHandler roleIndexHandler;
-
-	@Autowired
-	private ProjectIndexHandler projectIndexHandler;
-
-	@Autowired
-	private TagIndexHandler tagIndexHandler;
-
-	@Autowired
-	private NodeIndexHandler nodeIndexHandler;
-
-	@Autowired
-	private TagFamilyIndexHandler tagFamilyIndexHandler;
-
-	@Autowired
-	private SchemaContainerIndexHandler schemaContainerIndexHandler;
-
-	@Autowired
-	private MicroschemaContainerIndexHandler microschemaContainerIndexHandler;
 
 	public SearchVerticle() {
 		super("search");

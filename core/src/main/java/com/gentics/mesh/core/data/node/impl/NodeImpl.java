@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Id;
+
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
@@ -438,7 +440,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		return TraversalHelper.getPagedResult(traversal, countTraversal, getPagingInfo(rc), TagImpl.class);
 	}
 
-	private String getFilePath() {
+	@Override
+	public String getFilePath() {
 		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath());
 		File binaryFile = new File(folder, getUuid() + ".bin");
 		return binaryFile.getAbsolutePath();

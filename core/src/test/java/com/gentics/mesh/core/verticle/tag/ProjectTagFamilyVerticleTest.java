@@ -103,7 +103,6 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		final String noPermTagUUID;
 		try (Trx tx = new Trx(db)) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-			TagFamily basicTagFamily = tagFamily("basic");
 			TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
 			noPermTagUUID = noPermTagFamily.getUuid();
 			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags

@@ -137,7 +137,7 @@ public class RestAssert {
 
 	}
 
-	public void assertGenericNode(GenericVertex node, AbstractGenericNodeRestModel model) {
+	public void assertGenericNode(GenericVertex<?> node, AbstractGenericNodeRestModel model) {
 		assertNotNull(node);
 		assertNotNull(model);
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());

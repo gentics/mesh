@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.node;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -32,7 +33,8 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.test.core.TestUtils;	
+import io.vertx.test.core.TestUtils;
+
 public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -62,15 +64,16 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUploadWithInvalidMimetype() throws IOException {
+
+		String contentType = "application/octet-stream";
+		int binaryLen = 10000;
+		String fileName = "somefile.dat";
 		Node node;
 		try (Trx tx = new Trx(db)) {
 			node = folder("news");
 			prepareSchema(node, false, "image/.*");
 			tx.success();
 		}
-		String contentType = "application/octet-stream";
-		int binaryLen = 10000;
-		String fileName = "somefile.dat";
 
 		try (Trx tx = new Trx(db)) {
 			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
@@ -89,6 +92,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		try (Trx tx = new Trx(db)) {
 			node = folder("news");
 			prepareSchema(node, false, "");
+			tx.success();
 		}
 
 		try (Trx tx = new Trx(db)) {
@@ -120,6 +124,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		try (Trx tx = new Trx(db)) {
 			node = folder("news");
 			prepareSchema(node, true, "");
+			tx.success();
 		}
 		try (Trx tx = new Trx(db)) {
 			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
@@ -153,7 +158,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 			String uuid = "b677504736ed47a1b7504736ed07a14a";
 			node.setUuid(uuid);
 			String path = node.getSegmentedPath();
-			assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/" + uuid + ".bin", path);
+			assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
 		}
 	}
 
@@ -163,7 +168,6 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
-
 		Node node;
 		try (Trx tx = new Trx(db)) {
 			node = folder("news");

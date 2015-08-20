@@ -12,7 +12,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;

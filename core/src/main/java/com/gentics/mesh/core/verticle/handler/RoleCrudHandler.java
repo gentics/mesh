@@ -129,62 +129,68 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handlePermissionUpdate(RoutingContext rc) {
-		String roleUuid = rc.request().getParam("param0");
-		String pathToElement = rc.request().params().get("param1");
-		if (StringUtils.isEmpty(roleUuid)) {
-			fail(rc, "error_uuid_must_be_specified");
-		} else if (StringUtils.isEmpty(pathToElement)) {
-			fail(rc, "role_permission_path_missing");
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Handling permission request for element on path {" + pathToElement + "}");
-			}
-			// 1. Load the role that should be used
-			loadObjectByUuid(rc, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					Role role = rh.result();
-					RolePermissionRequest requestModel = fromJson(rc, RolePermissionRequest.class);
-					//2. Resolve the path to element that is targeted
-					MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
-						if (hasSucceeded(rc, vertex)) {
-							MeshVertex targetElement = vertex.result();
-
-							// Prepare the sets for revoke and grant actions
-							Set<GraphPermission> permissionsToGrant = new HashSet<>();
-							Set<GraphPermission> permissionsToRevoke = new HashSet<>();
-							permissionsToRevoke.add(CREATE_PERM);
-							permissionsToRevoke.add(READ_PERM);
-							permissionsToRevoke.add(UPDATE_PERM);
-							permissionsToRevoke.add(DELETE_PERM);
-							for (String permName : requestModel.getPermissions()) {
-								GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
-								if (permission == null) {
-									fail(rc, "role_error_permission_name_unknown", permName);
-								}
-								if (log.isDebugEnabled()) {
-									log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
-								}
-								permissionsToRevoke.remove(permission);
-								permissionsToGrant.add(permission);
-							}
-							if (log.isDebugEnabled()) {
-								for (GraphPermission p : permissionsToGrant) {
-									log.debug("Granting permission: " + p);
-								}
-								for (GraphPermission p : permissionsToRevoke) {
-									log.debug("Revoking permission: " + p);
-								}
-							}
-
-							// 3. Apply the permission actions
-							targetElement.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
-									permissionsToRevoke);
-							responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "role_updated_permission", role.getName()))));
-						}
-					});
-
+		try (Trx tx = new Trx(db)) {
+			String roleUuid = rc.request().getParam("param0");
+			String pathToElement = rc.request().params().get("param1");
+			if (StringUtils.isEmpty(roleUuid)) {
+				fail(rc, "error_uuid_must_be_specified");
+			} else if (StringUtils.isEmpty(pathToElement)) {
+				fail(rc, "role_permission_path_missing");
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
-			});
+				// 1. Load the role that should be used
+				loadObjectByUuid(rc, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
+					if (hasSucceeded(rc, rh)) {
+						Role role = rh.result();
+						RolePermissionRequest requestModel = fromJson(rc, RolePermissionRequest.class);
+						//2. Resolve the path to element that is targeted
+						MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
+							if (hasSucceeded(rc, vertex)) {
+								MeshVertex targetElement = vertex.result();
+
+								// Prepare the sets for revoke and grant actions
+								try (Trx txUpdate = new Trx(db)) {
+									Set<GraphPermission> permissionsToGrant = new HashSet<>();
+									Set<GraphPermission> permissionsToRevoke = new HashSet<>();
+									permissionsToRevoke.add(CREATE_PERM);
+									permissionsToRevoke.add(READ_PERM);
+									permissionsToRevoke.add(UPDATE_PERM);
+									permissionsToRevoke.add(DELETE_PERM);
+									for (String permName : requestModel.getPermissions()) {
+										GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
+										if (permission == null) {
+											txUpdate.failure();
+											fail(rc, "role_error_permission_name_unknown", permName);
+										}
+										if (log.isDebugEnabled()) {
+											log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
+										}
+										permissionsToRevoke.remove(permission);
+										permissionsToGrant.add(permission);
+									}
+									if (log.isDebugEnabled()) {
+										for (GraphPermission p : permissionsToGrant) {
+											log.debug("Granting permission: " + p);
+										}
+										for (GraphPermission p : permissionsToRevoke) {
+											log.debug("Revoking permission: " + p);
+										}
+									}
+
+									// 3. Apply the permission actions
+									targetElement.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
+											permissionsToRevoke);
+									txUpdate.success();
+								}
+								responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, "role_updated_permission", role.getName()))));
+							}
+						});
+
+					}
+				});
+			}
 		}
 	}
 }

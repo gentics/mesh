@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -13,8 +12,6 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.git.GitPullChecker;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -76,36 +73,36 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	}
 
-	private void addServiceHandler() {
-		route("/deployService/:mavenCoordinates").method(GET).handler(rc -> {
-			// TODO impl me
-				rc.response().end("Deploy " + rc.request().params().get("mavenCoordinates"));
-			});
-
-		route("/undeployService/:mavenCoordinates").method(GET).handler(rc -> {
-			// TODO impl me
-				rc.response().end("Undeploy " + rc.request().params().get("mavenCoordinates"));
-			});
-
-	}
-
-	private void addVerticleHandler() {
-		route("/deployVerticle/:clazz").method(GET).handler(rc -> {
-			String clazz = rc.request().params().get("clazz");
-			try {
-				// TODO create merged jsonconfig (see mesh init)
-				JsonObject config = new JsonObject();
-				String id = deployAndWait(vertx, config, clazz);
-				rc.response().end("Deployed " + clazz + " id: " + id);
-			} catch (Exception e) {
-				rc.fail(e);
-			}
-		});
-
-		route("/undeployVerticle/:clazz").method(GET).handler(rc -> {
-			// TODO impl me
-				rc.response().end("Undeploy " + rc.request().params().get("clazz"));
-			});
-	}
+//	private void addServiceHandler() {
+//		route("/deployService/:mavenCoordinates").method(GET).handler(rc -> {
+//			// TODO impl me
+//				rc.response().end("Deploy " + rc.request().params().get("mavenCoordinates"));
+//			});
+//
+//		route("/undeployService/:mavenCoordinates").method(GET).handler(rc -> {
+//			// TODO impl me
+//				rc.response().end("Undeploy " + rc.request().params().get("mavenCoordinates"));
+//			});
+//
+//	}
+//
+//	private void addVerticleHandler() {
+//		route("/deployVerticle/:clazz").method(GET).handler(rc -> {
+//			String clazz = rc.request().params().get("clazz");
+//			try {
+//				// TODO create merged jsonconfig (see mesh init)
+//				JsonObject config = new JsonObject();
+//				String id = deployAndWait(vertx, config, clazz);
+//				rc.response().end("Deployed " + clazz + " id: " + id);
+//			} catch (Exception e) {
+//				rc.fail(e);
+//			}
+//		});
+//
+//		route("/undeployVerticle/:clazz").method(GET).handler(rc -> {
+//			// TODO impl me
+//				rc.response().end("Undeploy " + rc.request().params().get("clazz"));
+//			});
+//	}
 
 }

@@ -179,23 +179,23 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleGroupUserList(RoutingContext rc) {
-		MeshAuthUser requestUser = getUser(rc);
+		try (Trx tx = new Trx(db)) {
+			MeshAuthUser requestUser = getUser(rc);
+			PagingInfo pagingInfo = getPagingInfo(rc);
+			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
 
-		PagingInfo pagingInfo = getPagingInfo(rc);
-
-		loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
-
-			if (hasSucceeded(rc, grh)) {
-				Group group = grh.result();
-				Page<? extends User> userPage;
-				try {
-					userPage = group.getVisibleUsers(requestUser, pagingInfo);
-					transformAndResponde(rc, userPage, new UserListResponse());
-				} catch (Exception e) {
-					rc.fail(e);
+				if (hasSucceeded(rc, grh)) {
+					Group group = grh.result();
+					Page<? extends User> userPage;
+					try {
+						userPage = group.getVisibleUsers(requestUser, pagingInfo);
+						transformAndResponde(rc, userPage, new UserListResponse());
+					} catch (Exception e) {
+						rc.fail(e);
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	public void handleAddUserToGroup(RoutingContext rc) {

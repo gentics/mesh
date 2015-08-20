@@ -180,16 +180,21 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testReadExpandedNodeListWithExitingField() throws IOException {
+		Node node;
+		Node newsNode;
 		try (Trx tx = new Trx(db)) {
 			resetClientSchemaStorage();
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+			newsNode = folder("news");
+			node = folder("2015");
 
 			// Create node list
 			NodeFieldContainer container = node.getFieldContainer(english());
 			GraphNodeFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", newsNode);
+			tx.success();
+		}
 
+		try (Trx tx = new Trx(db)) {
 			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 			NodeResponse responseCollapsed = readNode(node);
 			com.gentics.mesh.core.rest.node.field.list.NodeFieldList deserializedNodeListField = responseCollapsed.getField("listField",

@@ -200,7 +200,9 @@ public class RoleTest extends AbstractBasicObjectTest {
 			group().addRole(extraRole);
 
 			role().grantPermissions(extraRole, READ_PERM);
-
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
 			RoutingContext rc = getMockedRoutingContext("");
 			MeshAuthUser requestUser = getUser(rc);
 			Page<? extends Role> roles = group().getRoles(requestUser, new PagingInfo(1, 10));

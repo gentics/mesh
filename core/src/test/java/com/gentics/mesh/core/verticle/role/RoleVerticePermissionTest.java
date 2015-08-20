@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.role;
+
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertFalse;
@@ -16,6 +17,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -43,7 +45,9 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
 
-		assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
+		try (Trx tx = new Trx(db)) {
+			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
+		}
 	}
 
 	@Test
@@ -66,7 +70,9 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
-
-		assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+		
+		try (Trx tx = new Trx(db)) {
+			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+		}
 	}
 }

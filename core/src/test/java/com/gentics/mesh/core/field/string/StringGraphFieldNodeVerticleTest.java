@@ -30,6 +30,7 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 			stringFieldSchema.setLabel("Some label");
 			schema.addField(stringFieldSchema);
 			schemaContainer("folder").setSchema(schema);
+			tx.success();
 		}
 	}
 
@@ -56,11 +57,15 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
+		Node node;
 		try (Trx tx = new Trx(db)) {
-			Node node = folder("2015");
+			node = folder("2015");
 			NodeFieldContainer container = node.getFieldContainer(english());
 			StringGraphField stringField = container.createString("stringField");
 			stringField.setString("someString");
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
 			NodeResponse response = readNode(node);
 			StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
 			assertNotNull(deserializedStringField);

@@ -45,7 +45,7 @@ public class SelectGraphFieldNodeTest extends AbstractDBTest {
 
 		NodeFieldContainer container = node.getFieldContainer(english());
 
-		GraphSelectField selectField = container.createSelect("selectField");
+		GraphSelectField<?> selectField = container.createSelect("selectField");
 
 		String json = getJson(node);
 		assertTrue(json.indexOf("selectField") > 1);

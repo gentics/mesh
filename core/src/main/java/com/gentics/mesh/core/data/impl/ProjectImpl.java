@@ -180,7 +180,7 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 	public void fillUpdateFromRest(RoutingContext rc, ProjectUpdateRequest requestModel) {
 		I18NService i18n = I18NService.getI18n();
 		// Check for conflicting project name
-		if (requestModel.getName() != null && getName() != requestModel.getName()) {
+		if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
 			if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
 				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
 				return;

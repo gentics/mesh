@@ -182,4 +182,6 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	NodeFieldContainer findNextMatchingFieldContainer(RoutingContext rc);
 
+	String getFilePath();
+
 }

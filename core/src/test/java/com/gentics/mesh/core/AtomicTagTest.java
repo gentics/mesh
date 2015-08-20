@@ -36,6 +36,7 @@ public class AtomicTagTest extends AbstractDBTest {
 
 			Schema schema = new SchemaImpl();
 			schema.setName("folder");
+			schema.setDisplayField("name");
 			meshRoot.getSchemaContainerRoot().create(schema, user);
 
 			meshRoot.getTagFamilyRoot();

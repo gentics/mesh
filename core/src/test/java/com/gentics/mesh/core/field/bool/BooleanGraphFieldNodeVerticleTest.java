@@ -30,18 +30,21 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 			booleanFieldSchema.setLabel("Some label");
 			schema.addField(booleanFieldSchema);
 			schemaContainer("folder").setSchema(schema);
+			tx.success();
 		}
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
+		Node node;
 		try (Trx tx = new Trx(db)) {
-			Node node = folder("2015");
-
+			node = folder("2015");
 			NodeFieldContainer container = node.getFieldContainer(english());
 			container.createBoolean("booleanField").setBoolean(true);
-
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
 			NodeResponse response = readNode(node);
 			BooleanFieldImpl deserializedBooleanField = response.getField("booleanField");
 			assertNotNull(deserializedBooleanField);
@@ -56,9 +59,10 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(true));
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertTrue(field.getValue());
-
-			response = updateNode("booleanField", new BooleanFieldImpl().setValue(false));
-			field = response.getField("booleanField");
+		}
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(false));
+			BooleanFieldImpl field = response.getField("booleanField");
 			assertFalse(field.getValue());
 		}
 	}

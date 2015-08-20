@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.group;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -33,6 +34,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class GroupUserVerticleTest
 
 extends AbstractRestVerticleTest {
@@ -57,23 +59,27 @@ extends AbstractRestVerticleTest {
 			extraUserUuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, READ_PERM);
 			groupUuid = group().getUuid();
+			tx.success();
 		}
 
 		Future<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingInfo());
 		latchFor(future);
 		assertSuccess(future);
-		UserListResponse userList = future.result();
-		assertEquals(2, userList.getMetainfo().getTotalCount());
-		assertEquals(2, userList.getData().size());
-		Iterator<UserResponse> userIt = userList.getData().iterator();
-		UserResponse userB = userIt.next();
-		UserResponse userA = userIt.next();
-		Map<String, UserResponse> map = new HashMap<>();
-		map.put(userA.getUuid(), userA);
-		map.put(userB.getUuid(), userB);
-		assertEquals(2, map.size());
-		assertNotNull(map.get(user().getUuid()));
-		assertNotNull(map.get(extraUserUuid));
+
+		try (Trx tx = new Trx(db)) {
+			UserListResponse userList = future.result();
+			assertEquals(2, userList.getMetainfo().getTotalCount());
+			assertEquals(2, userList.getData().size());
+			Iterator<UserResponse> userIt = userList.getData().iterator();
+			UserResponse userB = userIt.next();
+			UserResponse userA = userIt.next();
+			Map<String, UserResponse> map = new HashMap<>();
+			map.put(userA.getUuid(), userA);
+			map.put(userB.getUuid(), userB);
+			assertEquals(2, map.size());
+			assertNotNull(map.get(user().getUuid()));
+			assertNotNull(map.get(extraUserUuid));
+		}
 	}
 
 	@Test

@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -43,62 +42,74 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		Node node = folder("news");
-		Node node2 = folder("deals");
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("news");
+			Node node2 = folder("deals");
 
-		// Update the field to point to node
-		NodeResponse response = updateNode("nodeField", new NodeFieldImpl().setUuid(node.getUuid()));
-		NodeResponse field = response.getField("nodeField");
-		assertEquals(node.getUuid(), field.getUuid());
+			// Update the field to point to node
+			NodeResponse response = updateNode("nodeField", new NodeFieldImpl().setUuid(node.getUuid()));
+			NodeResponse field = response.getField("nodeField");
+			assertEquals(node.getUuid(), field.getUuid());
 
-		// Update the field to point to node2
-		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
-		field = response.getField("nodeField");
-		assertEquals(node2.getUuid(), field.getUuid());
+			// Update the field to point to node2
+			response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
+			field = response.getField("nodeField");
+			assertEquals(node2.getUuid(), field.getUuid());
+		}
 	}
 
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
-		Node node = folder("news");
-		Node node2 = folder("deals");
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("news");
+			Node node2 = folder("deals");
 
-		// Load the node so that we can use it to prepare the update request
-		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid());
-		latchFor(future);
-		NodeResponse loadedNode = future.result();
+			// Load the node so that we can use it to prepare the update request
+			Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid());
+			latchFor(future);
+			NodeResponse loadedNode = future.result();
 
-		// Update the field to point to node
-		NodeResponse response = updateNode("nodeField", loadedNode);
-		NodeResponse field = response.getField("nodeField");
-		assertEquals(node.getUuid(), field.getUuid());
+			// Update the field to point to node
+			NodeResponse response = updateNode("nodeField", loadedNode);
+			NodeResponse field = response.getField("nodeField");
+			assertEquals(node.getUuid(), field.getUuid());
 
-		// Update the field to point to node2
-		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
-		field = response.getField("nodeField");
-		assertEquals(node2.getUuid(), field.getUuid());
+			// Update the field to point to node2
+			response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
+			field = response.getField("nodeField");
+			assertEquals(node2.getUuid(), field.getUuid());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("nodeField", new NodeFieldImpl().setUuid(folder("news").getUuid()));
-		NodeResponse field = response.getField("nodeField");
-		assertEquals(folder("news").getUuid(), field.getUuid());
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = createNode("nodeField", new NodeFieldImpl().setUuid(folder("news").getUuid()));
+			NodeResponse field = response.getField("nodeField");
+			assertEquals(folder("news").getUuid(), field.getUuid());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() throws IOException {
-		Node newsNode = folder("news");
-		Node node = folder("2015");
+		Node node;
+		Node newsNode;
+		try (Trx tx = new Trx(db)) {
+			newsNode = folder("news");
+			node = folder("2015");
 
-		NodeFieldContainer container = node.getFieldContainer(english());
-		container.createNode("nodeField", newsNode);
-
-		NodeResponse response = readNode(node);
-		NodeField deserializedNodeField = response.getField("nodeField", NodeFieldImpl.class);
-		assertNotNull(deserializedNodeField);
-		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+			NodeFieldContainer container = node.getFieldContainer(english());
+			container.createNode("nodeField", newsNode);
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
+			NodeResponse response = readNode(node);
+			NodeField deserializedNodeField = response.getField("nodeField", NodeFieldImpl.class);
+			assertNotNull(deserializedNodeField);
+			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		}
 	}
 
 	@Test
@@ -138,14 +149,10 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 			// Check expanded node field
 			deserializedExpandedNodeField = responseExpanded.getField("nodeField", NodeResponse.class);
-			if (deserializedExpandedNodeField instanceof NodeResponse) {
-				NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
-				assertNotNull(expandedField);
-				assertEquals(newsNode.getUuid(), expandedField.getUuid());
-				assertNotNull(expandedField.getCreator());
-			} else {
-				fail("The returned object should be a NodeResponse object");
-			}
+			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
+			assertNotNull(expandedField);
+			assertEquals(newsNode.getUuid(), expandedField.getUuid());
+			assertNotNull(expandedField.getCreator());
 		}
 	}
 
