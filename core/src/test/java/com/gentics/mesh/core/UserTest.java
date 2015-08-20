@@ -1,6 +1,7 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -51,7 +52,9 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testHasPermission() {
-		assertTrue(user().hasPermission(english(), READ_PERM));
+		try (Trx tx = new Trx(db)) {
+			assertTrue(user().hasPermission(english(), READ_PERM));
+		}
 	}
 
 	@Test
@@ -74,35 +77,40 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		Page<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
-		assertNotNull(page);
-		assertEquals(users().size(), page.getTotalElements());
+		try (Trx tx = new Trx(db)) {
+			Page<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
+			assertNotNull(page);
+			assertEquals(users().size(), page.getTotalElements());
+		}
 	}
 
 	@Test
 	public void testGetPermissions() {
-		Language language = english();
-		String[] perms = { "create", "update", "delete", "read" };
-		String[] loadedPerms = user().getPermissionNames(language);
-		Arrays.sort(perms);
-		Arrays.sort(loadedPerms);
-		assertArrayEquals("Permissions do not match", perms, loadedPerms);
+		try (Trx tx = new Trx(db)) {
+			Language language = english();
+			String[] perms = { "create", "update", "delete", "read" };
+			String[] loadedPerms = user().getPermissionNames(language);
+			Arrays.sort(perms);
+			Arrays.sort(loadedPerms);
+			assertArrayEquals("Permissions do not match", perms, loadedPerms);
+		}
 	}
 
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
+		try (Trx tx = new Trx(db)) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User extraUser = userRoot.create("extraUser", group(), user());
+			Group group = group();
+			Role role = role();
+			role.grantPermissions(extraUser, READ_PERM);
 
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser", group(), user());
-		Group group = group();
-		Role role = role();
-		role.grantPermissions(extraUser, READ_PERM);
+			RoutingContext rc = getMockedRoutingContext("");
+			MeshAuthUser requestUser = getUser(rc);
+			Page<? extends User> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
-		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
-		Page<? extends User> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
-
-		assertEquals(2, userPage.getTotalElements());
+			assertEquals(2, userPage.getTotalElements());
+		}
 	}
 
 	@Test
@@ -117,60 +125,71 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		String uuid = user().getUuid();
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.userRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			assertEquals(uuid, rh.result().getUuid());
-			latch.countDown();
-		});
-		latch.await();
+		try (Trx tx = new Trx(db)) {
+			String uuid = user().getUuid();
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.userRoot().findByUuid(uuid, rh -> {
+				assertNotNull(rh.result());
+				assertEquals(uuid, rh.result().getUuid());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		CountDownLatch latch = new CountDownLatch(1);
-		RoutingContext rc = getMockedRoutingContext("");
-		user().transformToRest(rc, rh -> {
-			UserResponse restUser = rh.result();
-			assertNotNull(restUser);
-			assertEquals(user().getUsername(), restUser.getUsername());
-			assertEquals(user().getUuid(), restUser.getUuid());
-			assertEquals(user().getLastname(), restUser.getLastname());
-			assertEquals(user().getFirstname(), restUser.getFirstname());
-			assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
-			assertEquals(1, restUser.getGroups().size());
-			latch.countDown();
-		});
-		latch.await();
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			RoutingContext rc = getMockedRoutingContext("");
+			user().transformToRest(rc, rh -> {
+				UserResponse restUser = rh.result();
+				assertNotNull(restUser);
+				assertEquals(user().getUsername(), restUser.getUsername());
+				assertEquals(user().getUuid(), restUser.getUuid());
+				assertEquals(user().getLastname(), restUser.getLastname());
+				assertEquals(user().getFirstname(), restUser.getFirstname());
+				assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
+				assertEquals(1, restUser.getGroups().size());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
-	public void testCreateDelete() {
-		MeshRoot root = meshRoot();
-		User user = root.getUserRoot().create("Anton", null, user());
-		assertTrue(user.isEnabled());
-		assertNotNull(user);
-		String uuid = user.getUuid();
-		user.delete();
-		root.getUserRoot().findByUuid(uuid, rh -> {
-			User foundUser = rh.result();
-			assertNotNull(foundUser);
-			assertFalse(foundUser.isEnabled());
-		});
+	public void testCreateDelete() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			MeshRoot root = meshRoot();
+			User user = root.getUserRoot().create("Anton", null, user());
+			assertTrue(user.isEnabled());
+			assertNotNull(user);
+			String uuid = user.getUuid();
+			user.delete();
+			CountDownLatch latch = new CountDownLatch(1);
+			root.getUserRoot().findByUuid(uuid, rh -> {
+				User foundUser = rh.result();
+				assertNotNull(foundUser);
+				assertFalse(foundUser.isEnabled());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		MeshRoot root = meshRoot();
-		User user = user();
-		User newUser = root.getUserRoot().create("Anton", null, user());
-		assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
-		user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
-		assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+		try (Trx tx = new Trx(db)) {
+			MeshRoot root = meshRoot();
+			User user = user();
+			User newUser = root.getUserRoot().create("Anton", null, user());
+			assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+			user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
+			assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+		}
 	}
 
 	@Test
@@ -195,105 +214,128 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreate() {
-		final String USERNAME = "test";
-		final String EMAIL = "joe@nowhere.org";
-		final String FIRSTNAME = "joe";
-		final String LASTNAME = "doe";
-		final String PASSWDHASH = "RANDOM";
+	public void testCreate() throws InterruptedException {
+		try (Trx tx = new Trx(db)) {
+			final String USERNAME = "test";
+			final String EMAIL = "joe@nowhere.org";
+			final String FIRSTNAME = "joe";
+			final String LASTNAME = "doe";
+			final String PASSWDHASH = "RANDOM";
 
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User user = userRoot.create(USERNAME, null, user());
-		user.setEmailAddress(EMAIL);
-		user.setFirstname(FIRSTNAME);
-		user.setLastname(LASTNAME);
-		user.setPasswordHash(PASSWDHASH);
-		assertTrue(user.isEnabled());
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User user = userRoot.create(USERNAME, null, user());
+			user.setEmailAddress(EMAIL);
+			user.setFirstname(FIRSTNAME);
+			user.setLastname(LASTNAME);
+			user.setPasswordHash(PASSWDHASH);
+			assertTrue(user.isEnabled());
 
-		userRoot.findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();
-			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
-			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
-			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
-			assertEquals("The email address did not match.", EMAIL, reloadedUser.getEmailAddress());
-			assertEquals("The password did not match.", PASSWDHASH, reloadedUser.getPasswordHash());
-		});
-
+			CountDownLatch latch = new CountDownLatch(1);
+			userRoot.findByUuid(user.getUuid(), rh -> {
+				User reloadedUser = rh.result();
+				assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
+				assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
+				assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
+				assertEquals("The email address did not match.", EMAIL, reloadedUser.getEmailAddress());
+				assertEquals("The password did not match.", PASSWDHASH, reloadedUser.getPasswordHash());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
 	public void testDelete() {
-		User user = user();
-		assertEquals(1, user.getGroups().size());
-		assertTrue(user.isEnabled());
-		user.delete();
-		assertFalse(user.isEnabled());
-		assertEquals(0, user.getGroups().size());
+		try (Trx tx = new Trx(db)) {
+			User user = user();
+			assertEquals(1, user.getGroups().size());
+			assertTrue(user.isEnabled());
+			user.delete();
+			assertFalse(user.isEnabled());
+			assertEquals(0, user.getGroups().size());
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
+		try (Trx tx = new Trx(db)) {
+			User newUser = meshRoot().getUserRoot().create("newUser", null, user());
 
-		User newUser = meshRoot().getUserRoot().create("newUser", null, user());
+			User user = user();
 
-		User user = user();
+			user.setEmailAddress("changed");
+			assertEquals("changed", user.getEmailAddress());
 
-		user.setEmailAddress("changed");
-		assertEquals("changed", user.getEmailAddress());
+			user.setFirstname("changed_firstname");
+			assertEquals("changed_firstname", user.getFirstname());
 
-		user.setFirstname("changed_firstname");
-		assertEquals("changed_firstname", user.getFirstname());
+			user.setLastname("changed_lastname");
+			assertEquals("changed_lastname", user.getLastname());
 
-		user.setLastname("changed_lastname");
-		assertEquals("changed_lastname", user.getLastname());
+			user.setEditor(newUser);
+			assertNotNull(user.getEditor());
+			assertEquals(newUser, user.getEditor());
+			user.setLastEditedTimestamp(1);
+			assertEquals(1, user.getLastEditedTimestamp().longValue());
 
-		user.setEditor(newUser);
-		assertNotNull(user.getEditor());
-		assertEquals(newUser, user.getEditor());
-		user.setLastEditedTimestamp(1);
-		assertEquals(1, user.getLastEditedTimestamp().longValue());
+			user.setCreator(newUser);
+			assertNotNull(user.getCreator());
+			assertEquals(newUser, user.getCreator());
 
-		user.setCreator(newUser);
-		assertNotNull(user.getCreator());
-		assertEquals(newUser, user.getCreator());
+			user.setCreationTimestamp(0);
+			assertEquals(0, user.getCreationTimestamp().longValue());
 
-		user.setCreationTimestamp(0);
-		assertEquals(0, user.getCreationTimestamp().longValue());
+			assertTrue(user.isEnabled());
+			user.disable();
+			assertFalse(user.isEnabled());
 
-		assertTrue(user.isEnabled());
-		user.disable();
-		assertFalse(user.isEnabled());
-
-		assertNotNull(user.getPasswordHash());
+			assertNotNull(user.getPasswordHash());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user;
+		try (Trx tx = new Trx(db)) {
+			user = meshRoot().getUserRoot().create("Anton", null, user());
+			tx.success();
+		}
 		testPermission(GraphPermission.READ_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user;
+		try (Trx tx = new Trx(db)) {
+			user = meshRoot().getUserRoot().create("Anton", null, user());
+			tx.success();
+		}
 		testPermission(GraphPermission.DELETE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user;
+		try (Trx tx = new Trx(db)) {
+			user = meshRoot().getUserRoot().create("Anton", null, user());
+			tx.success();
+		}
 		testPermission(GraphPermission.UPDATE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user;
+		try (Trx tx = new Trx(db)) {
+			user = meshRoot().getUserRoot().create("Anton", null, user());
+			tx.success();
+		}
 		testPermission(GraphPermission.CREATE_PERM, user);
 	}
 }

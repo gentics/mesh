@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.verticle.schema;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -15,6 +17,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +35,11 @@ import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -106,26 +111,29 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadAllSchemaList() throws Exception {
-
-		SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
-		final int nSchemas = 22;
-		Schema schema = new SchemaImpl();
-		schema.setName("No Perm Schema");
-		schema.setDisplayField("name");
-		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
-		Schema dummySchema = new SchemaImpl();
-		dummySchema.setName("dummy");
-		noPermSchema.setSchema(dummySchema);
-		for (int i = 0; i < nSchemas; i++) {
-			schema = new SchemaImpl();
-			schema.setName("extra_schema_" + i);
+		int totalSchemas;
+		try (Trx tx = new Trx(db)) {
+			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
+			final int nSchemas = 22;
+			Schema schema = new SchemaImpl();
+			schema.setName("No Perm Schema");
 			schema.setDisplayField("name");
-			SchemaContainer extraSchema = schemaRoot.create(schema, user());
-			extraSchema.setSchema(dummySchema);
-			role().grantPermissions(extraSchema, READ_PERM);
+			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
+			Schema dummySchema = new SchemaImpl();
+			dummySchema.setName("dummy");
+			noPermSchema.setSchema(dummySchema);
+			for (int i = 0; i < nSchemas; i++) {
+				schema = new SchemaImpl();
+				schema.setName("extra_schema_" + i);
+				schema.setDisplayField("name");
+				SchemaContainer extraSchema = schemaRoot.create(schema, user());
+				extraSchema.setSchema(dummySchema);
+				role().grantPermissions(extraSchema, READ_PERM);
+			}
+			// Don't grant permissions to no perm schema
+			totalSchemas = nSchemas + data().getSchemaContainers().size();
+			tx.success();
 		}
-		// Don't grant permissions to no perm schema
-
 		// Test default paging parameters
 		Future<SchemaListResponse> future = getClient().findSchemas();
 		latchFor(future);
@@ -143,7 +151,6 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra schemas + default schema
-		int totalSchemas = nSchemas + data().getSchemaContainers().size();
 		int totalPages = (int) Math.ceil(totalSchemas / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", 11, restResponse.getData().size());
 		assertEquals(2, restResponse.getMetainfo().getCurrentPage());
@@ -244,21 +251,24 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateSchemaByBogusUUID() throws HttpStatusCodeErrorException, Exception {
-		SchemaContainer schema = schemaContainer("content");
+		try (Trx tx = new Trx(db)) {
+			SchemaContainer schema = schemaContainer("content");
+			String oldName = schema.getName();
+			SchemaUpdateRequest request = new SchemaUpdateRequest();
+			request.setName("new-name");
 
-		String oldName = schema.getName();
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
-		request.setName("new-name");
+			Future<SchemaResponse> future = getClient().updateSchema("bogus", request);
+			latchFor(future);
+			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-		Future<SchemaResponse> future = getClient().updateSchema("bogus", request);
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
-
-		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			SchemaContainer reloaded = rh.result();
-			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
-		});
-
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+				SchemaContainer reloaded = rh.result();
+				assertEquals("The name should not have been changed.", oldName, reloaded.getName());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	// Delete Tests

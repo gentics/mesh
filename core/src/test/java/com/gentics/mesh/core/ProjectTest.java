@@ -212,37 +212,45 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
+		Project newProject;
 		try (Trx tx = new Trx(db)) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-			testPermission(GraphPermission.READ_PERM, newProject);
+			newProject = meshRoot().getProjectRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.READ_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
+		Project newProject;
 		try (Trx tx = new Trx(db)) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-			testPermission(GraphPermission.DELETE_PERM, newProject);
+			newProject = meshRoot().getProjectRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.DELETE_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
+		Project newProject;
 		try (Trx tx = new Trx(db)) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-			testPermission(GraphPermission.UPDATE_PERM, newProject);
+			newProject = meshRoot().getProjectRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.UPDATE_PERM, newProject);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
+		Project newProject;
 		try (Trx tx = new Trx(db)) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user());
-			testPermission(GraphPermission.CREATE_PERM, newProject);
+			newProject = meshRoot().getProjectRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.CREATE_PERM, newProject);
 	}
 
 }

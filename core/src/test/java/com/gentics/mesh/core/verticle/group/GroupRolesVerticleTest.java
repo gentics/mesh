@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.group;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -10,7 +11,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -49,6 +53,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 			roleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, READ_PERM);
 			groupUuid = group().getUuid();
+			tx.success();
 		}
 
 		Future<RoleListResponse> future = getClient().findRolesForGroup(groupUuid);
@@ -58,11 +63,15 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		assertEquals(2, roleList.getMetainfo().getTotalCount());
 		assertEquals(2, roleList.getData().size());
 
-		Iterator<RoleResponse> roleIt = roleList.getData().iterator();
-		RoleResponse roleB = roleIt.next();
-		RoleResponse roleA = roleIt.next();
-		assertEquals(role().getUuid(), roleA.getUuid());
-		assertEquals(roleUuid, roleB.getUuid());
+		Set<String> listedRoleUuids = new HashSet<>();
+		for (RoleResponse role : roleList.getData()) {
+			listedRoleUuids.add(role.getUuid());
+		}
+
+		try (Trx tx = new Trx(db)) {
+			assertTrue(listedRoleUuids.contains(role().getUuid()));
+			assertTrue(listedRoleUuids.contains(roleUuid));
+		}
 	}
 
 	@Test
@@ -85,8 +94,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = future.result();
 		assertTrue(restGroup.getRoles().contains("extraRole"));
 
-		Group group = group();
-		assertEquals(2, group.getRoles().size());
+		try (Trx tx = new Trx(db)) {
+			Group group = group();
+			assertEquals(2, group.getRoles().size());
+		}
 
 	}
 
@@ -120,8 +131,10 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", roleUuid);
 
-		Group group = group();
-		assertEquals(1, group.getRoles().size());
+		try (Trx tx = new Trx(db)) {
+			Group group = group();
+			assertEquals(1, group.getRoles().size());
+		}
 	}
 
 	@Test
@@ -134,9 +147,9 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 			roleUuid = extraRole.getUuid();
 			group().addRole(extraRole);
 			role().grantPermissions(extraRole, READ_PERM);
-			tx.success();
 			assertEquals(2, group().getRoles().size());
 			groupUuid = group().getUuid();
+			tx.success();
 		}
 
 		Future<GroupResponse> future = getClient().removeRoleFromGroup(groupUuid, roleUuid);
@@ -144,8 +157,11 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		assertFalse(restGroup.getRoles().contains("extraRole"));
-		Group group = group();
-		assertEquals(1, group.getRoles().size());
+
+		try (Trx tx = new Trx(db)) {
+			Group group = group();
+			assertEquals(1, group.getRoles().size());
+		}
 
 	}
 
@@ -153,7 +169,6 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testAddRoleToGroupWithPerm() throws Exception {
 		Role extraRole;
 		try (Trx tx = new Trx(db)) {
-			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 
 			extraRole = root.create("extraRole", null, user());

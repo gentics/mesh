@@ -51,6 +51,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 			int nSchemasBefore = root.findAll().size();
 			Schema schema = new SchemaImpl();
 			schema.setName("test123");
+			schema.setDisplayField("name");
 			assertNotNull(root.create(schema, user()));
 			int nSchemasAfter = root.findAll().size();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
@@ -67,11 +68,13 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testSchemaStorage() {
-		schemaStorage.clear();
-		schemaStorage.init();
-		Schema schema = schemaStorage.getSchema("folder");
-		assertNotNull(schema);
-		assertEquals("folder", schema.getName());
+		try (Trx tx = new Trx(db)) {
+			schemaStorage.clear();
+			schemaStorage.init();
+			Schema schema = schemaStorage.getSchema("folder");
+			assertNotNull(schema);
+			assertEquals("folder", schema.getName());
+		}
 	}
 
 	@Test
@@ -140,24 +143,30 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws MeshSchemaException, InterruptedException {
-		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-		assertNotNull(newContainer);
-		String uuid = newContainer.getUuid();
-		newContainer.delete();
+		try (Trx tx = new Trx(db)) {
+			Schema schema = new SchemaImpl();
+			schema.setDisplayField("name");
+			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			assertNotNull(newContainer);
+			String uuid = newContainer.getUuid();
+			newContainer.delete();
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getSchemaContainerRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getSchemaContainerRoot().findByUuid(uuid, rh -> {
+				assertNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
 		try (Trx tx = new Trx(db)) {
-			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
+			Schema schema = new SchemaImpl();
+			schema.setDisplayField("name");
+			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
 			getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
@@ -169,13 +178,17 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		assertNotNull(getSchemaContainer().getSchema());
+		try (Trx tx = new Trx(db)) {
+			assertNotNull(getSchemaContainer().getSchema());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		assertNotNull(getSchemaContainer().getSchema());
+		try (Trx tx = new Trx(db)) {
+			assertNotNull(getSchemaContainer().getSchema());
+		}
 	}
 
 	@Test
@@ -210,37 +223,54 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() throws MeshSchemaException {
+		SchemaContainer newContainer;
 		try (Trx tx = new Trx(db)) {
-			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-			testPermission(GraphPermission.READ_PERM, newContainer);
+			Schema schema = new SchemaImpl();
+			schema.setDisplayField("name");
+			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			tx.success();
 		}
+		testPermission(GraphPermission.READ_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() throws MeshSchemaException {
+		SchemaContainer newContainer;
 		try (Trx tx = new Trx(db)) {
-			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-			testPermission(GraphPermission.DELETE_PERM, newContainer);
+			Schema schema = new SchemaImpl();
+			schema.setDisplayField("name");
+			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			tx.success();
 		}
+		testPermission(GraphPermission.DELETE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() throws MeshSchemaException {
+		SchemaContainer newContainer;
 		try (Trx tx = new Trx(db)) {
-			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-			testPermission(GraphPermission.UPDATE_PERM, newContainer);
+			Schema schema = new SchemaImpl();
+			schema.setDisplayField("name");
+			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			tx.success();
 		}
+		testPermission(GraphPermission.UPDATE_PERM, newContainer);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() throws MeshSchemaException {
+		SchemaContainer newContainer;
 		try (Trx tx = new Trx(db)) {
-			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(new SchemaImpl(), user());
-			testPermission(GraphPermission.CREATE_PERM, newContainer);
+			Schema schema = new SchemaImpl();
+			schema.setDisplayField("name");
+			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			tx.success();
 		}
+		testPermission(GraphPermission.CREATE_PERM, newContainer);
+
 	}
 
 }

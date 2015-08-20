@@ -148,37 +148,46 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
+		TagFamily tagFamily;
 		try (Trx tx = new Trx(db)) {
-			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.READ_PERM, tagFamily);
+			tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.READ_PERM, tagFamily);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
+		TagFamily tagFamily;
 		try (Trx tx = new Trx(db)) {
-			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.DELETE_PERM, tagFamily);
+			tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.DELETE_PERM, tagFamily);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
+		TagFamily tagFamily;
 		try (Trx tx = new Trx(db)) {
-			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.UPDATE_PERM, tagFamily);
+			tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.UPDATE_PERM, tagFamily);
+
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
+		TagFamily tagFamily;
 		try (Trx tx = new Trx(db)) {
-			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.CREATE_PERM, tagFamily);
+			tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			tx.success();
 		}
+		testPermission(GraphPermission.CREATE_PERM, tagFamily);
 	}
 
 	@Test

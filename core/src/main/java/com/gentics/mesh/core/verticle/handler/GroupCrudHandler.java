@@ -123,54 +123,59 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleGroupRolesList(RoutingContext rc) {
-		PagingInfo pagingInfo = getPagingInfo(rc);
-		MeshAuthUser requestUser = getUser(rc);
-
-		loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
-			try {
-				Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-				transformAndResponde(rc, rolePage, new RoleListResponse());
-			} catch (InvalidArgumentException e) {
-				rc.fail(e);
-			}
-		});
+		try (Trx tx = new Trx(db)) {
+			PagingInfo pagingInfo = getPagingInfo(rc);
+			MeshAuthUser requestUser = getUser(rc);
+			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
+				try {
+					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
+					transformAndResponde(rc, rolePage, new RoleListResponse());
+				} catch (InvalidArgumentException e) {
+					rc.fail(e);
+				}
+			});
+		}
 	}
 
 	public void handleAddRoleToGroup(RoutingContext rc) {
-		loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-			if (hasSucceeded(rc, grh)) {
-				loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
-					if (hasSucceeded(rc, rrh)) {
-						try (Trx tx = new Trx(db)) {
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+				if (hasSucceeded(rc, grh)) {
+					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
+						if (hasSucceeded(rc, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							group.addRole(role);
-							tx.success();
+							try (Trx txAdd = new Trx(db)) {
+								group.addRole(role);
+								txAdd.success();
+							}
 							transformAndResponde(rc, group);
 						}
-					}
-				});
-			}
-		});
+					});
+				}
+			});
+		}
 	}
 
 	public void handleRemoveRoleFromGroup(RoutingContext rc) {
-		loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-			if (hasSucceeded(rc, grh)) {
-				// TODO check whether the role is actually part of the group
-				loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
-					if (hasSucceeded(rc, rrh)) {
-						try (Trx tx = new Trx(db)) {
+		try (Trx tx = new Trx(db)) {
+			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+				if (hasSucceeded(rc, grh)) {
+					// TODO check whether the role is actually part of the group
+					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
+						if (hasSucceeded(rc, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							group.removeRole(role);
-							tx.success();
+							try (Trx txRemove = new Trx(db)) {
+								group.removeRole(role);
+								txRemove.success();
+							}
 							transformAndResponde(rc, group);
 						}
-					}
-				});
-			}
-		});
+					});
+				}
+			});
+		}
 	}
 
 	public void handleGroupUserList(RoutingContext rc) {
