@@ -110,13 +110,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
 					Node node = rh.result();
 
-					// Check whether the container already contains a node field 
+					// Check whether the container already contains a node field
 					// TODO check node permissions
 					com.gentics.mesh.core.data.node.field.nesting.GraphNodeField graphNodeField = getNode(key);
 					if (graphNodeField == null) {
 						createNode(key, node);
 					} else {
-						// We can't update the graphNodeField since it is in fact an edge. We need to delete it and create a new one.
+						// We can't update the graphNodeField since it is in
+						// fact an edge. We need to delete it and create a new
+						// one.
 						deleteField(key);
 						createNode(key, node);
 					}
@@ -132,7 +134,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					for (NodeFieldListItem item : nodeList.getList()) {
 						boot.nodeRoot().findByUuid(item.getUuid(), rh -> {
 							if (rh.failed() || rh.result() == null) {
-								// TODO log info that node was not found or throw error? -> throw error
+								// TODO log info that node was not found or
+								// throw error? -> throw error
 							} else {
 								Node node = rh.result();
 								graphNodeList.createNode(String.valueOf(integer.incrementAndGet()), node);
@@ -202,9 +205,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			extraFields += "[" + key + "]";
 		}
 		if (!StringUtils.isEmpty(extraFields)) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST,
-					I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
-			// throw new MeshSchemaException("The following fields were not specified within the {" + schema.getName() + "} schema: " + extraFields);
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
+			// throw new MeshSchemaException("The following fields were not
+			// specified within the {" + schema.getName() + "} schema: " +
+			// extraFields);
 		}
 	}
 
@@ -234,8 +238,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// TODO replace switch case
 		if (FieldTypes.STRING.equals(type)) {
 			// TODO validate found fields has same type as schema
-			com.gentics.mesh.core.data.node.field.basic.StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
-					fieldKey, this);
+			com.gentics.mesh.core.data.node.field.basic.StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(fieldKey,
+					this);
 			// TODO handle null across all types
 
 			StringFieldImpl stringField = new StringFieldImpl();
@@ -301,8 +305,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 
 		if (FieldTypes.HTML.equals(type)) {
-			com.gentics.mesh.core.data.node.field.basic.HtmlGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl(
-					fieldKey, this);
+			com.gentics.mesh.core.data.node.field.basic.HtmlGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl(fieldKey, this);
 			HtmlFieldImpl htmlField = new HtmlFieldImpl();
 			String text = graphStringField.getHTML();
 			htmlField.setHTML(text == null ? "" : text);
@@ -321,7 +324,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				for (com.gentics.mesh.core.data.node.field.nesting.GraphNodeField item : nodeFieldList.getList()) {
 					if (expandField) {
-						//TODO, FIXME get rid of the countdown latch
+						// TODO, FIXME get rid of the countdown latch
 						CountDownLatch latch = new CountDownLatch(1);
 						AtomicReference<NodeResponse> reference = new AtomicReference<>();
 						item.getNode().transformToRest(rc, rh -> {
@@ -344,6 +347,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case GraphNumberFieldList.TYPE:
 				NumberFieldListImpl numberList = new NumberFieldListImpl();
 				GraphNumberFieldList numberFieldList = getNumberList(fieldKey);
+				if (numberFieldList == null) {
+					return null;
+				}
 				for (com.gentics.mesh.core.data.node.field.basic.NumberGraphField item : numberFieldList.getList()) {
 					numberList.add(item.getNumber());
 				}
@@ -351,6 +357,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case GraphBooleanFieldList.TYPE:
 				BooleanFieldListImpl booleanList = new BooleanFieldListImpl();
 				GraphBooleanFieldList booleanFieldList = getBooleanList(fieldKey);
+				if (booleanFieldList == null) {
+					return null;
+				}
 				for (com.gentics.mesh.core.data.node.field.basic.BooleanGraphField item : booleanFieldList.getList()) {
 					booleanList.add(item.getBoolean());
 				}
@@ -358,6 +367,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case GraphHtmlFieldList.TYPE:
 				HtmlFieldListImpl htmlList = new HtmlFieldListImpl();
 				GraphHtmlFieldList htmlFieldList = getHTMLList(fieldKey);
+				if (htmlFieldList == null) {
+					return null;
+				}
 				for (com.gentics.mesh.core.data.node.field.basic.HtmlGraphField item : htmlFieldList.getList()) {
 					htmlList.add(item.getHTML());
 				}
@@ -368,13 +380,22 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case GraphStringFieldList.TYPE:
 				StringFieldListImpl stringList = new StringFieldListImpl();
 				GraphStringFieldList stringFieldList = getStringList(fieldKey);
+
+				if (stringFieldList == null) {
+					return null;
+				}
+
 				for (com.gentics.mesh.core.data.node.field.basic.StringGraphField item : stringFieldList.getList()) {
 					stringList.add(item.getString());
 				}
 				return stringList;
+
 			case GraphDateFieldList.TYPE:
 				DateFieldListImpl dateList = new DateFieldListImpl();
 				GraphDateFieldList dateFieldList = getDateList(fieldKey);
+				if (dateFieldList == null) {
+					return null;
+				}
 				for (com.gentics.mesh.core.data.node.field.basic.DateGraphField item : dateFieldList.getList()) {
 					dateList.add(item.getDate());
 				}
@@ -402,7 +423,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void delete() {
-		//TODO delete linked aggregation nodes for node lists etc
+		// TODO delete linked aggregation nodes for node lists etc
 		getElement().remove();
 	}
 }
