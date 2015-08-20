@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -512,6 +513,54 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	public Future<NodeListResponse> searchNodes(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/nodes" + getQuery(parameters), NodeListResponse.class, json);
+	}
+
+	@Override
+	public Future<UserListResponse> searchUsers(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/users" + getQuery(parameters), UserListResponse.class, json);
+	}
+
+	@Override
+	public Future<GroupListResponse> searchGroups(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/groups" + getQuery(parameters), GroupListResponse.class, json);
+	}
+
+	@Override
+	public Future<RoleListResponse> searchRoles(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/roles" + getQuery(parameters), RoleListResponse.class, json);
+	}
+
+	@Override
+	public Future<MicroschemaListResponse> searchMicroschemas(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/microschemas" + getQuery(parameters), MicroschemaListResponse.class, json);
+	}
+
+	@Override
+	public Future<ProjectListResponse> searchProject(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/projects" + getQuery(parameters), ProjectListResponse.class, json);
+	}
+
+	@Override
+	public Future<TagListResponse> searchTags(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/tags" + getQuery(parameters), TagListResponse.class, json);
+	}
+
+	@Override
+	public Future<SchemaListResponse> searchSchemas(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/schemas" + getQuery(parameters), SchemaListResponse.class, json);
+	}
+
+	@Override
+	public Future<TagFamilyListResponse> searchTagFamilies(String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/search/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class, json);
 	}
 
 	@Override
