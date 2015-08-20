@@ -28,7 +28,7 @@ public class TitanDBDatabase extends AbstractDatabase {
 		//		this.configuration = configuration;
 		Configuration configuration = getBerkleyDBConf(options);
 		graph = TitanFactory.open(configuration);
-		wrapper = new TitanDBThreadedTransactionalGraphWrapper(graph);
+		wrapper = new TitanDBThreadedTransactionalGraphWrapper(graph, configuration);
 
 		// You may use getCassandraConf() or getInMemoryConf() to switch the backend graph db
 

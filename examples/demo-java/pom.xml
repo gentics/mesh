@@ -29,7 +29,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-tinkergraph</artifactId>
+			<artifactId>${mesh.database.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
