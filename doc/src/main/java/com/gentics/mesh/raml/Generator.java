@@ -399,6 +399,7 @@ public class Generator {
 		nodeResponse.setCreated(getTimestamp());
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
+		nodeResponse.setPublished(true);
 
 		nodeResponse.setFileName("flower.jpg");
 		BinaryProperties binaryProperties = new BinaryProperties();
@@ -456,6 +457,7 @@ public class Generator {
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(getUUID());
 		contentCreate.setLanguage("en");
+		contentCreate.setPublished(true);
 
 		Map<String, Field> fields = contentCreate.getFields();
 		fields.put("name", createStringField("English name"));
@@ -478,6 +480,7 @@ public class Generator {
 	private NodeUpdateRequest getNodeUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
+		nodeUpdate.setPublished(true);
 
 		Map<String, Field> fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));

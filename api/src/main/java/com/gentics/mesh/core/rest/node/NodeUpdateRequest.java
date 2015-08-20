@@ -10,6 +10,8 @@ public class NodeUpdateRequest implements RestModel {
 
 	private SchemaReference schema;
 
+	private boolean published;
+
 	private String language;
 
 	private FieldMap fields = new FieldMapImpl();
@@ -37,4 +39,11 @@ public class NodeUpdateRequest implements RestModel {
 		return fields;
 	}
 
+	public boolean isPublished() {
+		return published;
+	}
+
+	public void setPublished(boolean published) {
+		this.published = published;
+	}
 }

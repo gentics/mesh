@@ -17,9 +17,8 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 
 public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField, NodeFieldListItem {
 
-	private boolean published;
-
 	private String language;
+
 	private List<String> availableLanguages;
 
 	private String path;
@@ -36,6 +35,8 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 
 	private SchemaReference schema;
 
+	private boolean published = false;
+	
 	private boolean isContainer;
 
 	private String displayField;

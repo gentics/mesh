@@ -137,7 +137,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-
+		request.setPublished(true);
 		request.setParentNodeUuid(uuid);
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
@@ -494,6 +494,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		schemaReference.setUuid(schemaContainer("folder").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
+		request.setPublished(true);
 
 		final String newName = "english renamed name";
 		request.getFields().put("name", FieldUtil.createStringField(newName));
@@ -506,6 +507,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		assertNotNull(restNode);
+		assertTrue(restNode.isPublished());
 		try (Trx tx = new Trx(db)) {
 			Node node = folder("2015");
 			assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());

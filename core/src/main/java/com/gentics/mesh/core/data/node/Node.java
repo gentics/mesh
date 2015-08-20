@@ -184,4 +184,8 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	String getFilePath();
 
+	void setPublished(boolean published);
+
+	boolean isPublished();
+
 }

@@ -104,7 +104,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					e.printStackTrace();
 				}
 			} else {
-				//TODO reply error? discard? log?
+				// TODO reply error? discard? log?
 			}
 		});
 
@@ -141,13 +141,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 				@Override
 				public void onResponse(DeleteResponse response) {
-					//TODO log
+					// TODO log
 					handler.handle(Future.succeededFuture(response));
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					//TODO log
+					// TODO log
 					handler.handle(Future.failedFuture(e));
 				}
 			});
@@ -199,19 +199,23 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						break;
 					case "date":
 						GraphDateFieldList graphDateList = container.getDateList(fieldSchema.getName());
-						List<String> dateItems = new ArrayList<>();
-						for (DateGraphField listItem : graphDateList.getList()) {
-							dateItems.add(listItem.getDate());
+						if (graphDateList != null) {
+							List<String> dateItems = new ArrayList<>();
+							for (DateGraphField listItem : graphDateList.getList()) {
+								dateItems.add(listItem.getDate());
+							}
+							fieldsMap.put(fieldSchema.getName(), dateItems);
 						}
-						fieldsMap.put(fieldSchema.getName(), dateItems);
 						break;
 					case "number":
 						GraphNumberFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
-						List<String> numberItems = new ArrayList<>();
-						for (NumberGraphField listItem : graphNumberList.getList()) {
-							numberItems.add(listItem.getNumber());
+						if (graphNumberList != null) {
+							List<String> numberItems = new ArrayList<>();
+							for (NumberGraphField listItem : graphNumberList.getList()) {
+								numberItems.add(listItem.getNumber());
+							}
+							fieldsMap.put(fieldSchema.getName(), numberItems);
 						}
-						fieldsMap.put(fieldSchema.getName(), numberItems);
 						break;
 					case "boolean":
 						break;
@@ -219,28 +223,32 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						break;
 					case "string":
 						GraphStringFieldList graphStringList = container.getStringList(fieldSchema.getName());
-						List<String> stringItems = new ArrayList<>();
-						for (StringGraphField listItem : graphStringList.getList()) {
-							stringItems.add(listItem.getString());
+						if (graphStringList != null) {
+							List<String> stringItems = new ArrayList<>();
+							for (StringGraphField listItem : graphStringList.getList()) {
+								stringItems.add(listItem.getString());
+							}
+							fieldsMap.put(fieldSchema.getName(), stringItems);
 						}
-						fieldsMap.put(fieldSchema.getName(), stringItems);
 						break;
 					case "html":
 						GraphHtmlFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
-						List<String> htmlItems = new ArrayList<>();
-						for (HtmlGraphField listItem : graphHtmlList.getList()) {
-							htmlItems.add(listItem.getHTML());
+						if (graphHtmlList != null) {
+							List<String> htmlItems = new ArrayList<>();
+							for (HtmlGraphField listItem : graphHtmlList.getList()) {
+								htmlItems.add(listItem.getHTML());
+							}
+							fieldsMap.put(fieldSchema.getName(), htmlItems);
 						}
-						fieldsMap.put(fieldSchema.getName(), htmlItems);
 						break;
 					default:
 						log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
 						break;
 					}
 				}
-				//container.getStringList(fieldKey)
-				//ListField listField = container.getN(name);
-				//fieldsMap.put(name, htmlField.getHTML());
+				// container.getStringList(fieldKey)
+				// ListField listField = container.getN(name);
+				// fieldsMap.put(name, htmlField.getHTML());
 				break;
 			case SELECT:
 				break;

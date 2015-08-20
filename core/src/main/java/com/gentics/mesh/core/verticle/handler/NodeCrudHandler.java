@@ -123,6 +123,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					Handler<AsyncResult<Node>> nodeCreatedHandler = pnh -> {
 						Node node = pnh.result();
 
+						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
 							nodeCreated.fail(new HttpStatusCodeErrorException(BAD_REQUEST,
@@ -215,6 +216,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							}
 							try (Trx txUpdate = new Trx(db)) {
 								/* TODO handle other fields, etc. */
+								node.setPublished(requestModel.isPublished());
 								node.setEditor(getUser(rc));
 								node.setLastEditedTimestamp(System.currentTimeMillis());
 								NodeFieldContainer container = node.getOrCreateFieldContainer(language);
