@@ -6,8 +6,6 @@ import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.User;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,11 @@ import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 
 @Component
 @Scope("singleton")
@@ -38,8 +40,10 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 		route("/me").handler(springConfiguration.authHandler());
 		route("/me").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			MeshAuthUser requestUser = getUser(rc);
-			transformAndResponde(rc, requestUser);
+			try (Trx tx = new Trx(db)) {
+				MeshAuthUser requestUser = getUser(rc);
+				transformAndResponde(rc, requestUser);
+			}
 		});
 
 		route("/login").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {

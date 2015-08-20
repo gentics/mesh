@@ -28,7 +28,7 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 	protected I18NService i18n;
 
 	@Autowired
-	protected Database database;
+	protected Database db;
 
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;

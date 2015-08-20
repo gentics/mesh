@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
@@ -94,7 +96,25 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		fail("not yet implemented");
+		Node targetNode;
+		Node sourceNode;
+		try (Trx tx = new Trx(db)) {
+			sourceNode = folder("deals");
+			targetNode = folder("2015");
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
+			
+			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
+			Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", sourceNode.getUuid());
+		}
+		try (Trx tx = new Trx(db)) {
+			assertNotEquals("The source node should not have been moved.",
+					targetNode.getUuid(), folder("deals").getParentNode().getUuid());
+		}
 	}
 
 	@Test

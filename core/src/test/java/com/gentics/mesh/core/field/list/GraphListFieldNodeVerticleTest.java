@@ -161,13 +161,16 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
+		Node node;
 		try (Trx tx = new Trx(db)) {
-			Node node = folder("2015");
+			node = folder("2015");
 
 			NodeFieldContainer container = node.getFieldContainer(english());
 			GraphNodeFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", folder("news"));
-
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
 			NodeResponse response = readNode(node);
 			NodeFieldListImpl deserializedListField = response.getField("listField", NodeFieldListImpl.class);
 			assertNotNull(deserializedListField);

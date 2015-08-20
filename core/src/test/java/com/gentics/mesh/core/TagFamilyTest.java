@@ -124,12 +124,15 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
+		Map<String, String> uuidToBeDeleted = new HashMap<>();
 		try (Trx tx = new Trx(db)) {
 			TagFamily tagFamily = tagFamily("colors");
-			Map<String, String> uuidToBeDeleted = new HashMap<>();
 			uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
 			uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
 			tagFamily.delete();
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
 			assertDeleted(uuidToBeDeleted);
 		}
 	}

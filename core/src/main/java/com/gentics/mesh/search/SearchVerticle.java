@@ -159,7 +159,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSearchEndpoints() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = new Trx(db)) {
 			addSearch("users", boot.userRoot(), UserListResponse.class);
 			addSearch("groups", boot.groupRoot(), GroupListResponse.class);
 			addSearch("role", boot.roleRoot(), RoleListResponse.class);
