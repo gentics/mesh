@@ -197,7 +197,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 				reference.set(rh.result());
 				latch.countDown();
 			});
-			latch.await();
+			failingLatch(latch);
 			NodeResponse response = reference.get();
 
 			String json = JsonUtil.toJson(response);

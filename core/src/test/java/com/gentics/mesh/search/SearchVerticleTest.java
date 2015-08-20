@@ -152,7 +152,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 
 		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -274,7 +274,7 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 
 		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);

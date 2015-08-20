@@ -1,5 +1,5 @@
 package com.gentics.mesh.test;
-
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -203,7 +203,7 @@ public abstract class AbstractDBTest {
 			assertNotNull(response);
 			latch.countDown();
 		});
-		latch.await();
+		failingLatch(latch);
 		return reference.get();
 	}
 
