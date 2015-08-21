@@ -163,7 +163,10 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
 					return;
 				}
-				setName(requestModel.getName());
+				try (Trx txUpdate = new Trx(db)) {
+					setName(requestModel.getName());
+					txUpdate.success();
+				}
 			}
 		}
 	}

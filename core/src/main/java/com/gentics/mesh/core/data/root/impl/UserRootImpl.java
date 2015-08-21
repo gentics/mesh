@@ -107,20 +107,20 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 		UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 		if (requestModel == null) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_parse_request_json_error")));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_parse_request_json_error"))));
 			return;
 		}
 		if (isEmpty(requestModel.getPassword())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_password")));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_password"))));
 			return;
 		}
 		if (isEmpty(requestModel.getUsername())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_username")));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_username"))));
 			return;
 		}
 		String groupUuid = requestModel.getGroupUuid();
 		if (isEmpty(groupUuid)) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_parentgroup_field")));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_parentgroup_field"))));
 			return;
 		}
 		try (Trx tx = new Trx(db)) {

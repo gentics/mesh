@@ -30,7 +30,7 @@ public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 	void setBaseNode(Node baseNode);
 
 	/**
-	 * Return the tagFamilyRoot for the project.
+	 * Return the tagFamilyRoot for the project. This method will create a new tag family root when no one could be found.
 	 * 
 	 * @return
 	 */

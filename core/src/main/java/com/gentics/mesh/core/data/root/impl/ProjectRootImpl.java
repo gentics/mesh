@@ -155,13 +155,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 		MeshAuthUser requestUser = getUser(rc);
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_missing_name")));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_missing_name"))));
 			return;
 		}
 		try (Trx tx = new Trx(db)) {
 			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
+					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name"))));
 				} else {
 					try (Trx txCreate = new Trx(db)) {
 						Project project = create(requestModel.getName(), requestUser);
@@ -181,13 +181,14 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 						} catch (Exception e) {
 							// TODO should we really fail here?
 							tx.rollback();
-							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
+							handler.handle(Future.failedFuture(
+									new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e)));
 						}
 					}
 
 				}
 			} else {
-				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid())));
+				handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid()))));
 			}
 		}
 
