@@ -543,11 +543,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					txUpdate.failure();
 				}
 			}
-			//			try (Trx tx = new Trx(db)) {
-			//				boot.meshRoot().getSearchQueue().put(getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-			//				Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-			//				tx.success();
-			//			}
 		} catch (IOException e1) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));
 		}
