@@ -1,16 +1,21 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
+import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.getProjectName;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObject;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -24,10 +29,24 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>implements TagFamily {
 
@@ -122,6 +141,36 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 			tag.remove();
 		}
 		getElement().remove();
+
+	}
+
+	@Override
+	public void update(RoutingContext rc) {
+		TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
+		I18NService i18n = I18NService.getI18n();
+		Project project = BootstrapInitializer.getBoot().projectRoot().findByName(getProjectName(rc));
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		String newName = requestModel.getName();
+		if (StringUtils.isEmpty(newName)) {
+			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
+		} else {
+			loadObject(rc, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
+				if (hasSucceeded(rc, rh)) {
+					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
+					TagFamily tagFamily = rh.result();
+					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
+						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", newName)));
+						return;
+					}
+					try (Trx txUpdate = new Trx(db)) {
+						tagFamily.setName(newName);
+						txUpdate.success();
+					}
+					transformAndResponde(rc, tagFamily);
+					triggerEvent(tagFamily.getUuid(), TagFamily.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+				}
+			});
+		}
 
 	}
 

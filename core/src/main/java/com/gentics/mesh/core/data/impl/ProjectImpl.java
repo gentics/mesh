@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -35,6 +36,9 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -177,19 +181,25 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public void fillUpdateFromRest(RoutingContext rc, ProjectUpdateRequest requestModel) {
-		I18NService i18n = I18NService.getI18n();
-		// Check for conflicting project name
-		if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
-			if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
-				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
-				return;
+	public void update(RoutingContext rc) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
+		try (Trx tx = new Trx(db)) {
+			I18NService i18n = I18NService.getI18n();
+			// Check for conflicting project name
+			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
+				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
+					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
+					tx.failure();
+					return;
+				}
+				setName(requestModel.getName());
 			}
-			setName(requestModel.getName());
-		}
 
-		setEditor(getUser(rc));
-		setLastEditedTimestamp(System.currentTimeMillis());
+			setEditor(getUser(rc));
+			setLastEditedTimestamp(System.currentTimeMillis());
+			tx.success();
+		}
 
 	}
 

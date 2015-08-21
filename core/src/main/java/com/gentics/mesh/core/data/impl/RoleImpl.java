@@ -1,15 +1,16 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
+import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -17,8 +18,16 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role {
 
@@ -107,6 +116,20 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 	@Override
 	public RoleImpl getImpl() {
 		return this;
+	}
+
+	@Override
+	public void update(RoutingContext rc) {
+		RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
+		I18NService i18n = I18NService.getI18n();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		if (!StringUtils.isEmpty(requestModel.getName()) && getName() != requestModel.getName()) {
+			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
+				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
+				return;
+			}
+			setName(requestModel.getName());
+		}
 	}
 
 }

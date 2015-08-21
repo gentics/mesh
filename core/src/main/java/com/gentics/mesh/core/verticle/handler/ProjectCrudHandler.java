@@ -2,14 +2,13 @@ package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
+import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -25,7 +24,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
-import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.graphdb.Trx;
@@ -49,41 +47,15 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 			return;
 		}
 		try (Trx tx = new Trx(db)) {
-
 			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
 				} else {
 					ProjectRoot projectRoot = boot.projectRoot();
-					try (Trx txCreate = new Trx(db)) {
-						Project project = projectRoot.create(requestModel.getName(), requestUser);
-						project.setCreator(requestUser);
-						try {
-							routerStorage.addProjectRouter(project.getName());
-							if (log.isInfoEnabled()) {
-								log.info("Registered project {" + project.getName() + "}");
-							}
-							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project);
-							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getBaseNode());
-							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagFamilyRoot());
-							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getTagRoot());
-							requestUser.addCRUDPermissionOnRole(meshRoot(), CREATE_PERM, project.getNodeRoot());
-							txCreate.success();
-						} catch (Exception e) {
-							// TODO should we really fail here?
-							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
-							tx.failure();
-							return;
-						}
-						transformAndResponde(rc, project);
-						//Inform elasticsearch about the new element
-						try (Trx txSearch = new Trx(db)) {
-							searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-							txSearch.success();
-						}
-
-					}
+					Project project = projectRoot.create(rc, requestModel, requestUser);
+					transformAndResponde(rc, project);
+					//Inform elasticsearch about the new element
+					triggerEvent(project.getUuid(), Project.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 				}
 			} else {
 				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid())));
@@ -95,29 +67,14 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleDelete(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
-			delete(rc, "uuid", "project_deleted", boot.projectRoot());
+			deleteObject(rc, "uuid", "project_deleted", boot.projectRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
-			loadObject(rc, "uuid", UPDATE_PERM, boot.projectRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-
-					Project project = rh.result();
-					ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
-					try (Trx txUpdate = new Trx(db)) {
-						project.fillUpdateFromRest(rc, requestModel);
-						txUpdate.success();
-					}
-
-					searchQueue().put(project.getUuid(), Project.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-					transformAndResponde(rc, project);
-
-				}
-			});
+			updateObject(rc, "uuid", boot.projectRoot());
 		}
 
 	}

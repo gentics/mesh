@@ -49,6 +49,8 @@ public class RouterStorage {
 	public static final String DEFAULT_CUSTOM_MOUNTPOINT = "/custom";
 	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
 
+	private static RouterStorage instance;
+
 	@Autowired
 	private LocaleContextDataHandler dataHandler;
 
@@ -59,6 +61,15 @@ public class RouterStorage {
 	public void init() {
 		this.vertx = Mesh.vertx();
 		initAPIRouter();
+	}
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static RouterStorage getRouterStorage() {
+		return instance;
 	}
 
 	/**
@@ -217,10 +228,8 @@ public class RouterStorage {
 	 */
 	public Router addProjectRouter(String name) throws InvalidNameException {
 		if (coreRouters.containsKey(name)) {
-			throw new InvalidNameException(
-					"The project name {"
-							+ name
-							+ "} is conflicting with a core router. Best guess is that an core verticle is already occupying the name. Please choose a different name or remove the conflicting core verticle.");
+			throw new InvalidNameException("The project name {" + name
+					+ "} is conflicting with a core router. Best guess is that an core verticle is already occupying the name. Please choose a different name or remove the conflicting core verticle.");
 		}
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter == null) {

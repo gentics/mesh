@@ -45,7 +45,8 @@ public interface Tag extends GenericVertex<TagResponse>, NamedNode {
 	 * @param languageTags
 	 * @param pagingInfo
 	 * @return
-	 * @throws InvalidArgumentException 
+	 * @throws InvalidArgumentException
 	 */
 	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
+
 }

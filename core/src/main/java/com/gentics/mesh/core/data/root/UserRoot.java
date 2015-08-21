@@ -3,6 +3,11 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Aggregation node for users.
@@ -41,5 +46,7 @@ public interface UserRoot extends RootVertex<User> {
 	 * @param user
 	 */
 	void removeUser(User user);
+
+	void create(RoutingContext rc, UserCreateRequest requestModel, Group parentGroup, MeshAuthUser requestUser, Handler<AsyncResult<User>> handler);
 
 }

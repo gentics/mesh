@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.role;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -41,6 +42,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -65,6 +67,15 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 		RoleResponse restRole = future.result();
 		test.assertRole(request, restRole);
+
+		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getRoleRoot().findByUuid(restRole.getUuid(), rh -> {
+				assertNotNull(rh.result());
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 	}
 
 	@Test

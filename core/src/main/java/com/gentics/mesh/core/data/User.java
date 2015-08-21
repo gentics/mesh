@@ -5,14 +5,8 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public interface User extends GenericVertex<UserResponse>, NamedNode {
 
@@ -176,24 +170,5 @@ public interface User extends GenericVertex<UserResponse>, NamedNode {
 	 * @return
 	 */
 	UserReference transformToUserReference();
-
-	/**
-	 * Update user properties from the requestmodel.
-	 * 
-	 * @param rc
-	 * @param requestModel
-	 * @param handler
-	 */
-	void fillUpdateFromRest(RoutingContext rc, UserUpdateRequest requestModel, Handler<AsyncResult<User>> handler);
-
-	/**
-	 * Set the initial user properties from the requestmodel.
-	 * 
-	 * @param rc
-	 * @param requestModel
-	 * @param parentGroup
-	 * @param handler
-	 */
-	void fillCreateFromRest(RoutingContext rc, UserCreateRequest requestModel, Group parentGroup, Handler<AsyncResult<User>> handler);
 
 }

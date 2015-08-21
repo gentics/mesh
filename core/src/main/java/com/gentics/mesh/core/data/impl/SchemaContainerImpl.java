@@ -108,5 +108,11 @@ public class SchemaContainerImpl extends AbstractGenericVertex<SchemaResponse> i
 	public String getName() {
 		return getProperty("name");
 	}
+	
+	@Override
+	public void update(RoutingContext rc) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

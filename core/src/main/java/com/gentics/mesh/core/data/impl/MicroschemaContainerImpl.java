@@ -1,16 +1,18 @@
 package com.gentics.mesh.core.data.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 
-public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaResponse> implements MicroschemaContainer {
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
+
+public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaResponse>implements MicroschemaContainer {
 
 	@Override
 	public String getType() {
@@ -39,8 +41,11 @@ public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaR
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
-
+		throw new NotImplementedException();
 	}
 
+	@Override
+	public void update(RoutingContext rc) {
+		throw new NotImplementedException();
+	}
 }

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.json.JsonUtil.*;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -25,7 +26,6 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -37,11 +37,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -193,11 +194,11 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 
 	@Override
 	public boolean hasPermission(MeshVertex node, GraphPermission permission) {
-//		for (VertexFrame vertex : getGraph().v().toList()) {
-//			System.out.println(vertex.toString());
-//		}
-//		System.err.println("-----------------------");
-//		TraversalHelper.debug(out(HAS_USER).in(HAS_ROLE).outE(permission.labels()).outV());
+		//		for (VertexFrame vertex : getGraph().v().toList()) {
+		//			System.out.println(vertex.toString());
+		//		}
+		//		System.err.println("-----------------------");
+		//		TraversalHelper.debug(out(HAS_USER).in(HAS_ROLE).outE(permission.labels()).outV());
 		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
@@ -284,99 +285,63 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 	}
 
 	@Override
-	public void fillUpdateFromRest(RoutingContext rc, UserUpdateRequest requestModel, Handler<AsyncResult<User>> handler) {
+	public void update(RoutingContext rc) {
 		I18NService i18n = I18NService.getI18n();
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
+		try (Trx tx = new Trx(db)) {
 
-		if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
-			if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "user_conflicting_username"))));
-				return;
-			}
-			setUsername(requestModel.getUsername());
-		}
-
-		if (!isEmpty(requestModel.getFirstname()) && !getFirstname().equals(requestModel.getFirstname())) {
-			setFirstname(requestModel.getFirstname());
-		}
-
-		if (!isEmpty(requestModel.getLastname()) && !getLastname().equals(requestModel.getLastname())) {
-			setLastname(requestModel.getLastname());
-		}
-
-		if (!isEmpty(requestModel.getEmailAddress()) && !getEmailAddress().equals(requestModel.getEmailAddress())) {
-			setEmailAddress(requestModel.getEmailAddress());
-		}
-
-		if (!isEmpty(requestModel.getPassword())) {
-			setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
-		}
-
-		setEditor(getUser(rc));
-		setLastEditedTimestamp(System.currentTimeMillis());
-
-		if (requestModel.getNodeReference() != null) {
-			NodeReference reference = requestModel.getNodeReference();
-			if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference"))));
-				return;
-			} else {
-				String referencedNodeUuid = requestModel.getNodeReference().getUuid();
-				String projectName = requestModel.getNodeReference().getProjectName();
-				/* TODO decide whether we need to check perms on the project as well */
-				Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
-				if (project == null) {
-					handler.handle(
-							Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
-				} else {
-					loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
-						if (hasSucceeded(rc, nrh)) {
-							setReferencedNode(nrh.result());
-							handler.handle(Future.succeededFuture(this));
-						}
-					});
+			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
+				if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
+					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "user_conflicting_username")));
+					return;
 				}
+				setUsername(requestModel.getUsername());
 			}
-		} else {
-			handler.handle(Future.succeededFuture(this));
-		}
 
-	}
+			if (!isEmpty(requestModel.getFirstname()) && !getFirstname().equals(requestModel.getFirstname())) {
+				setFirstname(requestModel.getFirstname());
+			}
 
-	@Override
-	public void fillCreateFromRest(RoutingContext rc, UserCreateRequest requestModel, Group parentGroup, Handler<AsyncResult<User>> handler) {
-		I18NService i18n = I18NService.getI18n();
+			if (!isEmpty(requestModel.getLastname()) && !getLastname().equals(requestModel.getLastname())) {
+				setLastname(requestModel.getLastname());
+			}
 
-		setFirstname(requestModel.getFirstname());
-		setUsername(requestModel.getUsername());
-		setLastname(requestModel.getLastname());
-		setEmailAddress(requestModel.getEmailAddress());
-		setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
-		addGroup(parentGroup);
-		MeshAuthUser requestUser = getUser(rc);
-		requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, this);
-		NodeReference reference = requestModel.getNodeReference();
-		if (reference != null) {
-			if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference"))));
-			} else {
-				String referencedNodeUuid = requestModel.getNodeReference().getUuid();
-				String projectName = requestModel.getNodeReference().getProjectName();
-				/* TODO decide whether we need to check perms on the project as well */
-				Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
-				if (project == null) {
-					handler.handle(
-							Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
+			if (!isEmpty(requestModel.getEmailAddress()) && !getEmailAddress().equals(requestModel.getEmailAddress())) {
+				setEmailAddress(requestModel.getEmailAddress());
+			}
+
+			if (!isEmpty(requestModel.getPassword())) {
+				setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+			}
+
+			setEditor(getUser(rc));
+			setLastEditedTimestamp(System.currentTimeMillis());
+
+			if (requestModel.getNodeReference() != null) {
+				NodeReference reference = requestModel.getNodeReference();
+				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference")));
+					return;
 				} else {
-					loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
-						if (hasSucceeded(rc, nrh)) {
-							setReferencedNode(nrh.result());
-							handler.handle(Future.succeededFuture(this));
-						}
-					});
+					String referencedNodeUuid = requestModel.getNodeReference().getUuid();
+					String projectName = requestModel.getNodeReference().getProjectName();
+					/* TODO decide whether we need to check perms on the project as well */
+					Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
+					if (project == null) {
+						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName)));
+					} else {
+						loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
+							if (hasSucceeded(rc, nrh)) {
+								setReferencedNode(nrh.result());
+								tx.success();
+							}
+						});
+					}
 				}
+			} else {
+				tx.success();
 			}
-		} else {
-			handler.handle(Future.succeededFuture(this));
 		}
 
 	}

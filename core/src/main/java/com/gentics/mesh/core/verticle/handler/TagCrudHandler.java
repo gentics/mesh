@@ -2,9 +2,8 @@ package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
@@ -14,6 +13,8 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
+import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -31,12 +32,10 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
-
 @Component
 public class TagCrudHandler extends AbstractCrudHandler {
 
@@ -57,7 +56,6 @@ public class TagCrudHandler extends AbstractCrudHandler {
 				} else {
 					loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
 						if (hasSucceeded(rc, rh)) {
-							//							try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 							TagFamily tagFamily = rh.result();
 							if (tagFamily.findTagByName(tagName) != null) {
 								rc.fail(new HttpStatusCodeErrorException(CONFLICT,
@@ -68,10 +66,8 @@ public class TagCrudHandler extends AbstractCrudHandler {
 							getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
 							project.getTagRoot().addTag(newTag);
 							tagCreated.complete(newTag);
-							searchQueue().put(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-							vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 							transformAndResponde(rc, newTag);
-							//							}
+							triggerEvent(newTag.getUuid(), Tag.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 						}
 					});
 				}
@@ -82,7 +78,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleDelete(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
-			delete(rc, "uuid", "tag_deleted", getProject(rc).getTagRoot());
+			deleteObject(rc, "uuid", "tag_deleted", getProject(rc).getTagRoot());
 		}
 	}
 
@@ -90,49 +86,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 	public void handleUpdate(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
 			Project project = getProject(rc);
-			loadObject(rc, "uuid", UPDATE_PERM, project.getTagRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					Tag tag = rh.result();
-
-					TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
-
-					TagFamilyReference reference = requestModel.getTagFamilyReference();
-					boolean updateTagFamily = false;
-					if (reference != null) {
-						// Check whether a uuid was specified and whether the tag family changed
-						if (!isEmpty(reference.getUuid())) {
-							if (!tag.getTagFamily().getUuid().equals(reference.getUuid())) {
-								updateTagFamily = true;
-							}
-						}
-					}
-
-					String newTagName = requestModel.getFields().getName();
-					if (StringUtils.isEmpty(newTagName)) {
-						fail(rc, "tag_name_not_set");
-					} else {
-						TagFamily tagFamily = tag.getTagFamily();
-						Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
-						if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(tag.getUuid())) {
-							rc.fail(new HttpStatusCodeErrorException(CONFLICT,
-									i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
-							return;
-						}
-						tag.setEditor(getUser(rc));
-						tag.setLastEditedTimestamp(System.currentTimeMillis());
-						// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-						tag.setName(requestModel.getFields().getName());
-						if (updateTagFamily) {
-							// TODO update the tagfamily
-						}
-						searchQueue().put(tag.getUuid(), Tag.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-						vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-						// tx.success();
-						// }
-						transformAndResponde(rc, tag);
-					}
-				}
-			});
+			updateObject(rc, "uuid", project.getTagRoot());
 		}
 	}
 

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
@@ -28,7 +29,6 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.ext.web.RoutingContext;
-
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
@@ -71,7 +71,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleDelete(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
-			delete(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
+			deleteObject(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
 		}
 	}
 

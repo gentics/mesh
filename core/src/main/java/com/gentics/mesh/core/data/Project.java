@@ -81,6 +81,4 @@ public interface Project extends GenericVertex<ProjectResponse>, NamedNode {
 	 */
 	NodeRoot getNodeRoot();
 
-	void fillUpdateFromRest(RoutingContext rc, ProjectUpdateRequest requestModel);
-
 }

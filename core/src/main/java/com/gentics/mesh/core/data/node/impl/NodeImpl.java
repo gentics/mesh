@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
@@ -16,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -39,15 +42,23 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.VerticleHelper;
@@ -496,6 +507,51 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	public boolean isPublished() {
 		String fieldValue = getProperty(PUBLISHED_PROPERTY_KEY);
 		return Boolean.valueOf(fieldValue);
+	}
+
+	@Override
+	public void update(RoutingContext rc) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		I18NService i18n = I18NService.getI18n();
+
+		NodeUpdateRequest requestModel;
+		try {
+			requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			if (StringUtils.isEmpty(requestModel.getLanguage())) {
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
+				return;
+			}
+			try (Trx txUpdate = new Trx(db)) {
+				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
+				if (language == null) {
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
+					return;
+				}
+
+				/* TODO handle other fields, etc. */
+				setPublished(requestModel.isPublished());
+				setEditor(getUser(rc));
+				setLastEditedTimestamp(System.currentTimeMillis());
+				NodeFieldContainer container = getOrCreateFieldContainer(language);
+				try {
+					Schema schema = getSchema();
+					container.setFieldFromRest(rc, requestModel.getFields(), schema);
+				} catch (MeshSchemaException | IOException e) {
+					// TODO i18n
+					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
+					txUpdate.failure();
+				}
+			}
+			//			try (Trx tx = new Trx(db)) {
+			//				boot.meshRoot().getSearchQueue().put(getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+			//				Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+			//				tx.success();
+			//			}
+		} catch (IOException e1) {
+			//TODO i18n
+			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "json error",e1));
+		}
 	}
 
 }

@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
-public class LanguageImpl extends AbstractGenericVertex<LanguageResponse> implements Language {
+public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
 
 	@Override
 	public String getType() {
@@ -68,6 +68,10 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse> implem
 
 	@Override
 	public void delete() {
+		throw new NotImplementedException();
+	}
+
+	public void update(RoutingContext rc) {
 		throw new NotImplementedException();
 	}
 }

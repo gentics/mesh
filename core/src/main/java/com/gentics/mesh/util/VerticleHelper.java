@@ -1,9 +1,14 @@
 package com.gentics.mesh.util;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
 import static com.gentics.mesh.core.rest.node.NodeRequestParameters.EXPANDFIELDS_QUERY_PARAM_KEY;
 import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QUERY_PARAM_KEY;
 import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -19,22 +24,30 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NamedNode;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -260,6 +273,62 @@ public class VerticleHelper {
 		rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, msg, parameters)));
 	}
 
+	public static <T extends GenericVertex<?>> void updateObject(RoutingContext rc, String uuidParameterName, RootVertex<T> root) {
+		loadObject(rc, uuidParameterName, UPDATE_PERM, root, rh -> {
+			if (hasSucceeded(rc, rh)) {
+				GenericVertex<?> vertex = rh.result();
+				String uuid = vertex.getUuid();
+				String type = vertex.getType();
+			
+				vertex.update(rc);
+				transformAndResponde(rc, vertex);
+				triggerEvent(uuid, type, SearchQueueEntryAction.UPDATE_ACTION);
+			}
+		});
+	}
+
+	/**
+	 * Trigger a search event for the given type and uuid and action.
+	 * 
+	 * @param uuid
+	 * @param type
+	 * @param action
+	 */
+	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+
+		try (Trx tx = new Trx(db)) {
+			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
+			Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+			tx.success();
+		}
+	}
+
+	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
+			RootVertex<T> root) {
+		I18NService i18n = I18NService.getI18n();
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+
+		loadObject(rc, uuidParameterName, DELETE_PERM, root, rh -> {
+			if (hasSucceeded(rc, rh)) {
+				GenericVertex<?> vertex = rh.result();
+				String uuid = vertex.getUuid();
+				String name = null;
+				String type = vertex.getType();
+				if (vertex instanceof NamedNode) {
+					name = ((NamedNode) vertex).getName();
+				}
+				try (Trx tx = new Trx(db)) {
+					vertex.delete();
+					tx.success();
+				}
+				String id = name != null ? uuid + "/" + name : uuid;
+				responde(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
+				triggerEvent(uuid, type, SearchQueueEntryAction.DELETE_ACTION);
+			}
+		});
+	}
+
 	public static <T extends GenericVertex<?>> void loadObject(RoutingContext rc, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 
@@ -274,8 +343,7 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<?>> void loadObjectByUuid(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root,
-
-	Handler<AsyncResult<T>> handler) {
+			Handler<AsyncResult<T>> handler) {
 		if (root == null) {
 			// TODO i18n
 			handler.handle(Future.failedFuture("Could not find root node."));

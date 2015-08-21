@@ -3,14 +3,14 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -25,11 +25,9 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
-import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -38,7 +36,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.ext.web.RoutingContext;
-
 @Component
 public class GroupCrudHandler extends AbstractCrudHandler {
 
@@ -74,36 +71,14 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleDelete(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
-			delete(rc, "uuid", "group_deleted", boot.groupRoot());
+			deleteObject(rc, "uuid", "group_deleted", boot.groupRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
-			loadObject(rc, "uuid", UPDATE_PERM, boot.groupRoot(), grh -> {
-				if (hasSucceeded(rc, grh)) {
-					Group group = grh.result();
-					GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
-
-					if (StringUtils.isEmpty(requestModel.getName())) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-						return;
-					}
-
-					if (!group.getName().equals(requestModel.getName())) {
-						Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
-						if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
-							rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
-							return;
-						}
-						group.setName(requestModel.getName());
-					}
-					searchQueue().put(group.getUuid(), Group.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-					vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-					transformAndResponde(rc, group);
-				}
-			});
+			updateObject(rc, "uuid", boot.groupRoot());
 		}
 
 	}

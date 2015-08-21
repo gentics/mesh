@@ -2,14 +2,14 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import org.apache.commons.lang3.StringUtils;
+import static com.gentics.mesh.json.JsonUtil.*;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -17,12 +17,23 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements Group {
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
+
+public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Group {
 
 	public static final String NAME_KEY = "name";
 
@@ -130,6 +141,31 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse> implements G
 	@Override
 	public void delete() {
 		getElement().remove();
+	}
+
+	@Override
+	public void update(RoutingContext rc) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		I18NService i18n = I18NService.getI18n();
+		try (Trx tx = new Trx(db)) {
+
+			GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
+
+			if (StringUtils.isEmpty(requestModel.getName())) {
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
+				return;
+			}
+
+			if (!getName().equals(requestModel.getName())) {
+				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
+				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
+					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
+					return;
+				}
+				setName(requestModel.getName());
+			}
+		}
 	}
 
 	@Override

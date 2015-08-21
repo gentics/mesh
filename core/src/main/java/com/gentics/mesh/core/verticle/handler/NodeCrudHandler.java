@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
@@ -15,11 +16,11 @@ import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,13 +42,11 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
@@ -62,7 +61,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
-
 @Component
 public class NodeCrudHandler extends AbstractCrudHandler {
 
@@ -188,61 +186,18 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 			if (project.getBaseNode().getUuid().equals(uuid)) {
 				rc.fail(new HttpStatusCodeErrorException(METHOD_NOT_ALLOWED, i18n.get(rc, "node_basenode_not_deletable")));
 			} else {
-				delete(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
+				deleteObject(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
 			}
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		NodeUpdateRequest requestModel;
-		try {
-			requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, schemaStorage);
-			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
-				return;
-			}
-			try (Trx tx = new Trx(db)) {
-				Project project = getProject(rc);
-				loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
-						Node node = rh.result();
-						try {
-							Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-							if (language == null) {
-								rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST,
-										i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
-								return;
-							}
-							try (Trx txUpdate = new Trx(db)) {
-								/* TODO handle other fields, etc. */
-								node.setPublished(requestModel.isPublished());
-								node.setEditor(getUser(rc));
-								node.setLastEditedTimestamp(System.currentTimeMillis());
-								NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-								Schema schema = node.getSchema();
-								try {
-									container.setFieldFromRest(rc, requestModel.getFields(), schema);
-									searchQueue().put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-									vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-									txUpdate.success();
-									transformAndResponde(rc, node);
-								} catch (MeshSchemaException e) {
-									txUpdate.failure();
-									/* TODO i18n */
-									rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
-								}
-							}
-
-						} catch (IOException e) {
-							rc.fail(e);
-						}
-					}
-				});
-			}
-		} catch (Exception e1) {
-			rc.fail(e1);
+		try (Trx tx = new Trx(db)) {
+			Project project = getProject(rc);
+			updateObject(rc, "uuid", project.getNodeRoot());
 		}
+		
 	}
 
 	@Override

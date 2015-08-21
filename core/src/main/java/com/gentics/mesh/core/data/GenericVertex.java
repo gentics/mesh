@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 
+import io.vertx.ext.web.RoutingContext;
+
 public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
 
 	String getType();
@@ -61,5 +63,7 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 * @param timestamp
 	 */
 	void setCreationTimestamp(long timestamp);
+
+	void update(RoutingContext rc);
 
 }

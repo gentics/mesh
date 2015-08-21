@@ -1,27 +1,44 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 public class ProjectRootImpl extends AbstractRootVertex<Project>implements ProjectRoot {
+
+	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
 
 	@Override
 	protected Class<? extends Project> getPersistanceClass() {
@@ -117,5 +134,37 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 	@Override
 	public void delete() {
 		throw new NotImplementedException("The project root should never be deleted.");
+	}
+
+	@Override
+	public Project create(RoutingContext rc, ProjectCreateRequest requestModel, MeshAuthUser requestUser) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		RouterStorage routerStorage = RouterStorage.getRouterStorage();
+		I18NService i18n = I18NService.getI18n();
+		MeshRoot meshRoot = BootstrapInitializer.getBoot().meshRoot();
+		try (Trx tx = new Trx(db)) {
+			Project project = create(requestModel.getName(), requestUser);
+			project.setCreator(requestUser);
+			try {
+				routerStorage.addProjectRouter(project.getName());
+				if (log.isInfoEnabled()) {
+					log.info("Registered project {" + project.getName() + "}");
+				}
+				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
+				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
+				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
+				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
+				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+				tx.success();
+				return project;
+			} catch (Exception e) {
+				// TODO should we really fail here?
+				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
+				tx.failure();
+			}
+			tx.failure();
+		}
+		return null;
+
 	}
 }
