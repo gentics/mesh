@@ -504,8 +504,10 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
 		String uuid;
+		Node node;
+		final String newName = "english renamed name";
 		try (Trx tx = new Trx(db)) {
-			Node node = folder("2015");
+			 node =folder("2015");
 			uuid = node.getUuid();
 			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
 		}
@@ -516,25 +518,23 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
 		request.setPublished(true);
-
-		final String newName = "english renamed name";
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
-		parameters.setLanguages("de", "en");
+		parameters.setLanguages("en", "de");
 
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
+		assertEquals("en", restNode.getLanguage());
+		StringField field = restNode.getField("name");
+		assertEquals(newName, field.getString());
 		assertNotNull(restNode);
 		assertTrue(restNode.isPublished());
 		try (Trx tx = new Trx(db)) {
-			Node node = folder("2015");
 			assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
 		}
-		StringField field = restNode.getField("name");
-		assertEquals(newName, field.getString());
 
 		try (Trx tx = new Trx(db)) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();

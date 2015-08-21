@@ -28,7 +28,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void start() {
 		Orient.instance().startup();
-		OGlobalConfiguration.CACHE_LOCAL_ENABLED.setValue(false);
+		//OGlobalConfiguration.CACHE_LOCAL_ENABLED.setValue(false);
 		factory = new OrientGraphFactory("memory:tinkerpop");
 		// Add some indices
 		// memoryGraph.createKeyIndex("name", Vertex.class);

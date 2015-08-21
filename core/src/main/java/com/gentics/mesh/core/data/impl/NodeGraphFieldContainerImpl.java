@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.nesting.GraphMicroschemaFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
@@ -23,8 +24,8 @@ import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
+import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -87,22 +88,31 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case HTML:
 				HtmlField htmlField = (HtmlFieldImpl) field;
 				createHTML(key).setHtml(htmlField.getHTML());
+				//TODO handle update
 				break;
 			case STRING:
 				StringField stringField = (StringFieldImpl) field;
-				createString(key).setString(stringField.getString());
+				StringGraphField graphStringField = getString(key);
+				if (graphStringField == null) {
+					createString(key).setString(stringField.getString());
+				} else {
+					graphStringField.setString(stringField.getString());
+				}
 				break;
 			case NUMBER:
 				NumberField numberField = (NumberFieldImpl) field;
 				createNumber(key).setNumber(numberField.getNumber());
+				//TODO handle update
 				break;
 			case BOOLEAN:
 				BooleanField booleanField = (BooleanFieldImpl) field;
 				createBoolean(key).setBoolean(booleanField.getValue());
+				//TODO handle update
 				break;
 			case DATE:
 				DateField dateField = (DateFieldImpl) field;
 				createDate(key).setDate(dateField.getDate());
+				//TODO handle update
 				break;
 			case NODE:
 				NodeField nodeField = (NodeField) field;
@@ -205,7 +215,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			extraFields += "[" + key + "]";
 		}
 		if (!StringUtils.isEmpty(extraFields)) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST,
+					I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
 			// throw new MeshSchemaException("The following fields were not
 			// specified within the {" + schema.getName() + "} schema: " +
 			// extraFields);
@@ -238,8 +249,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// TODO replace switch case
 		if (FieldTypes.STRING.equals(type)) {
 			// TODO validate found fields has same type as schema
-			com.gentics.mesh.core.data.node.field.basic.StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(fieldKey,
-					this);
+			com.gentics.mesh.core.data.node.field.basic.StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
+					fieldKey, this);
 			// TODO handle null across all types
 
 			StringFieldImpl stringField = new StringFieldImpl();
@@ -305,7 +316,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 
 		if (FieldTypes.HTML.equals(type)) {
-			com.gentics.mesh.core.data.node.field.basic.HtmlGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl(fieldKey, this);
+			com.gentics.mesh.core.data.node.field.basic.HtmlGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl(
+					fieldKey, this);
 			HtmlFieldImpl htmlField = new HtmlFieldImpl();
 			String text = graphStringField.getHTML();
 			htmlField.setHTML(text == null ? "" : text);

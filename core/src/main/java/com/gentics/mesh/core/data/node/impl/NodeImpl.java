@@ -512,12 +512,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public void update(RoutingContext rc) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		I18NService i18n = I18NService.getI18n();
 
-		NodeUpdateRequest requestModel;
 		try {
-			requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			NodeUpdateRequest requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
 				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
 				return;
@@ -542,6 +540,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
 					txUpdate.failure();
 				}
+				txUpdate.success();
 			}
 		} catch (IOException e1) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));

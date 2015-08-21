@@ -292,13 +292,18 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<?>> void updateObject(RoutingContext rc, String uuidParameterName, RootVertex<T> root) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+
 		loadObject(rc, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				String uuid = vertex.getUuid();
 				String type = vertex.getType();
 				vertex.update(rc);
-				transformAndResponde(rc, vertex);
+				// Transform the vertex using a fresh transaction in order to start with a clean cache
+				try (Trx tx = new Trx(db)) {
+					transformAndResponde(rc, vertex);
+				}
 				triggerEvent(uuid, type, SearchQueueEntryAction.UPDATE_ACTION);
 			}
 		});
