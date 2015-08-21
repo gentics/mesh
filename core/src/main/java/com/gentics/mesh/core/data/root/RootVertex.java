@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.data.root;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-
 import java.util.List;
 import java.util.Stack;
 
@@ -13,6 +10,10 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -59,5 +60,13 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	Page<? extends T> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 	void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler);
+
+	/**
+	 * Create a new object within this aggregation vertex.
+	 * 
+	 * @param rc
+	 * @param handler
+	 */
+	void create(RoutingContext rc, Handler<AsyncResult<T>> handler);
 
 }

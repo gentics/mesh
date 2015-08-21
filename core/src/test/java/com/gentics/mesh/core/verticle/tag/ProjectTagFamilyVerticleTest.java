@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.verticle.tag;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -13,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -354,7 +356,28 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTagFamilyUpdateWithNoPerm() {
-		fail("not implemented");
+		String uuid;
+		String name;
+		TagFamily tagFamily;
+		try (Trx tx = new Trx(db)) {
+			tagFamily = tagFamily("basic");
+			uuid = tagFamily.getUuid();
+			name = tagFamily.getName();
+			role().revokePermissions(tagFamily, UPDATE_PERM);
+			tx.success();
+		}
+
+		// Update the tagfamily
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("new Name");
+
+		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, uuid, request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+
+		try (Trx tx = new Trx(db)) {
+			assertEquals(name, tagFamily.getName());
+		}
 	}
 
 }

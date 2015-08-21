@@ -6,6 +6,7 @@ import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
+import static com.gentics.mesh.util.VerticleHelper.getProject;
 import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;

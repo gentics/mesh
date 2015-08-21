@@ -2,11 +2,15 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -24,6 +28,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.Trx;
@@ -137,34 +142,54 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 	}
 
 	@Override
-	public Project create(RoutingContext rc, ProjectCreateRequest requestModel, MeshAuthUser requestUser) {
+	public void create(RoutingContext rc, Handler<AsyncResult<Project>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		RouterStorage routerStorage = RouterStorage.getRouterStorage();
 		I18NService i18n = I18NService.getI18n();
 		MeshRoot meshRoot = BootstrapInitializer.getBoot().meshRoot();
-		try (Trx tx = new Trx(db)) {
-			Project project = create(requestModel.getName(), requestUser);
-			project.setCreator(requestUser);
-			try {
-				routerStorage.addProjectRouter(project.getName());
-				if (log.isInfoEnabled()) {
-					log.info("Registered project {" + project.getName() + "}");
-				}
-				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
-				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
-				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
-				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
-				requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
-				tx.success();
-				return project;
-			} catch (Exception e) {
-				// TODO should we really fail here?
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
-				tx.failure();
-			}
-			tx.failure();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+
+		// TODO also create a default object schema for the project. Move this into service class
+		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(, name)
+		ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
+		MeshAuthUser requestUser = getUser(rc);
+
+		if (StringUtils.isEmpty(requestModel.getName())) {
+			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_missing_name")));
+			return;
 		}
-		return null;
+		try (Trx tx = new Trx(db)) {
+			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
+				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
+					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
+				} else {
+					try (Trx txCreate = new Trx(db)) {
+						Project project = create(requestModel.getName(), requestUser);
+						project.setCreator(requestUser);
+						try {
+							routerStorage.addProjectRouter(project.getName());
+							if (log.isInfoEnabled()) {
+								log.info("Registered project {" + project.getName() + "}");
+							}
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+							txCreate.commit();
+							handler.handle(Future.succeededFuture(project));
+						} catch (Exception e) {
+							// TODO should we really fail here?
+							tx.rollback();
+							rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e));
+						}
+					}
+
+				}
+			} else {
+				rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid())));
+			}
+		}
 
 	}
 }

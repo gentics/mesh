@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.data.node;
 
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.RoutingContext;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -18,9 +14,12 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.RoutingContext;
 
 public interface Node extends GenericVertex<NodeResponse> {
 

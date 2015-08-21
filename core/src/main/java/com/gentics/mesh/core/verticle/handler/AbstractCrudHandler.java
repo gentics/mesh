@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.util.VerticleHelper.getProjectName;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.I18NService;
@@ -31,10 +28,6 @@ public abstract class AbstractCrudHandler {
 	protected Database db;
 
 	protected Vertx vertx = Mesh.vertx();
-
-	protected Project getProject(RoutingContext rc) {
-		return boot.projectRoot().findByName(getProjectName(rc));
-	}
 
 	abstract public void handleCreate(RoutingContext rc);
 

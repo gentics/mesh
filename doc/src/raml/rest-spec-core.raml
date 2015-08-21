@@ -510,6 +510,10 @@ traits:
       is: [ sortable, paged ]
       get:
         description: Load the tags that tag the node.
+      post:
+        description: Add the tag to the node.
+      delete:
+        description: Remove the tag from the node.
     /children:
       get:
         is: [ localized, sortable, paged, expandable ]

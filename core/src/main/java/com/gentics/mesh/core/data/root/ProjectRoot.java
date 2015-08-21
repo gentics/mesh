@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * Aggregation node for projects.
@@ -38,7 +34,5 @@ public interface ProjectRoot extends RootVertex<Project> {
 	 * @param project
 	 */
 	void addProject(Project project);
-
-	Project create(RoutingContext rc,  ProjectCreateRequest requestModel, MeshAuthUser requestUser);
 
 }

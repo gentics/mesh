@@ -6,18 +6,14 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.fail;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.responde;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,16 +22,11 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.graphdb.Trx;
@@ -51,36 +42,8 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		RoleCreateRequest requestModel = fromJson(rc, RoleCreateRequest.class);
-		MeshAuthUser requestUser = getUser(rc);
-		if (StringUtils.isEmpty(requestModel.getName())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-			return;
-		}
-
-		if (StringUtils.isEmpty(requestModel.getGroupUuid())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "role_missing_parentgroup_field")));
-			return;
-		}
-
 		try (Trx tx = new Trx(db)) {
-			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
-				return;
-			}
-			loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					Group parentGroup = rh.result();
-					Role role;
-					try (Trx txCreate = new Trx(db)) {
-						role = boot.roleRoot().create(requestModel.getName(), parentGroup, requestUser);
-						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
-						txCreate.success();
-					}
-					transformAndResponde(rc, role);
-					triggerEvent(role.getUuid(), Role.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-				}
-			});
+			createObject(rc, boot.roleRoot());
 		}
 	}
 

@@ -11,8 +11,11 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshSchemaException;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>implements SchemaContainerRoot {
 
@@ -76,6 +79,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			log.debug("Deleting schema container root {" + getUuid() + "}");
 		}
 		getElement().remove();
+	}
+	
+	@Override
+	public void create(RoutingContext rc, Handler<AsyncResult<SchemaContainer>> handler) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

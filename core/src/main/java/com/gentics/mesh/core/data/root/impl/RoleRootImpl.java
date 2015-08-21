@@ -1,17 +1,37 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.getUser;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
@@ -55,6 +75,43 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 			group.addRole(role);
 		}
 		return role;
+	}
+
+	public void create(RoutingContext rc, Handler<AsyncResult<Role>> handler) {
+		I18NService i18n = I18NService.getI18n();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+
+		RoleCreateRequest requestModel = fromJson(rc, RoleCreateRequest.class);
+		MeshAuthUser requestUser = getUser(rc);
+		if (StringUtils.isEmpty(requestModel.getName())) {
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set"))));
+			return;
+		}
+
+		if (StringUtils.isEmpty(requestModel.getGroupUuid())) {
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "role_missing_parentgroup_field"))));
+			return;
+		}
+
+		if (boot.roleRoot().findByName(requestModel.getName()) != null) {
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name"))));
+			return;
+		}
+
+		loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
+			if (hasSucceeded(rc, rh)) {
+				Group parentGroup = rh.result();
+				Role role = null;
+				try (Trx txCreate = new Trx(db)) {
+					role = boot.roleRoot().create(requestModel.getName(), parentGroup, requestUser);
+					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
+					txCreate.commit();
+					handler.handle(Future.succeededFuture(role));
+				}
+				return;
+			}
+		});
 	}
 
 	@Override

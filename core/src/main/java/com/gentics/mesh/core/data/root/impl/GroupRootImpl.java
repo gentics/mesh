@@ -9,6 +9,10 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
+
 public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot {
 
 	@Override
@@ -48,6 +52,12 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 	@Override
 	public void delete() {
 		throw new NotImplementedException("The group root node can't be deleted");
+	}
+	
+	@Override
+	public void create(RoutingContext rc, Handler<AsyncResult<Group>> handler) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

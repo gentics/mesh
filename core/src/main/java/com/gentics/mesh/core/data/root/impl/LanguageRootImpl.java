@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.root.LanguageRoot;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 public class LanguageRootImpl extends AbstractRootVertex<Language>implements LanguageRoot {
 
@@ -41,6 +42,11 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 		language.setLanguageTag(languageTag);
 		addLanguage(language);
 		return language;
+	}
+
+	@Override
+	public void create(RoutingContext rc, Handler<AsyncResult<Language>> handler) {
+		throw new NotImplementedException("Languages can be created using REST");
 	}
 
 	/**

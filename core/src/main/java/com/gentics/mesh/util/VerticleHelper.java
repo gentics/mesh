@@ -7,8 +7,6 @@ import static com.gentics.mesh.core.data.service.I18NService.getI18n;
 import static com.gentics.mesh.core.rest.node.NodeRequestParameters.EXPANDFIELDS_QUERY_PARAM_KEY;
 import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QUERY_PARAM_KEY;
 import static com.gentics.mesh.json.JsonUtil.toJson;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -31,7 +29,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedNode;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -61,6 +59,16 @@ public class VerticleHelper {
 
 	public static String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
+	}
+
+	/**
+	 * Shortcut method to access projectRoot aggregation vertex.
+	 * 
+	 * @param rc
+	 * @return
+	 */
+	public static Project getProject(RoutingContext rc) {
+		return BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(getProjectName(rc));
 	}
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
@@ -273,13 +281,22 @@ public class VerticleHelper {
 		rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, msg, parameters)));
 	}
 
+	public static <T extends GenericVertex<?>> void createObject(RoutingContext rc, RootVertex<T> root) {
+		root.create(rc, rh -> {
+			if (hasSucceeded(rc, rh)) {
+				GenericVertex<?> vertex = rh.result();
+				transformAndResponde(rc, vertex);
+				triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
+			}
+		});
+	}
+
 	public static <T extends GenericVertex<?>> void updateObject(RoutingContext rc, String uuidParameterName, RootVertex<T> root) {
 		loadObject(rc, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				String uuid = vertex.getUuid();
 				String type = vertex.getType();
-			
 				vertex.update(rc);
 				transformAndResponde(rc, vertex);
 				triggerEvent(uuid, type, SearchQueueEntryAction.UPDATE_ACTION);

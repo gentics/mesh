@@ -123,7 +123,7 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 		RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		if (!StringUtils.isEmpty(requestModel.getName()) && getName() != requestModel.getName()) {
+		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
 				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
 				return;

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -17,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -67,9 +69,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		test.assertGroup(request, restGroup);
 
 		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
 			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
 				assertNotNull("Group should have been created.", rh.result());
+				latch.countDown();
 			});
+			failingLatch(latch);
 		}
 	}
 
@@ -95,7 +100,7 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testConflicingGroupCreation() {
+	public void testConflicingGroupCreation() throws InterruptedException {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
@@ -110,9 +115,12 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		test.assertGroup(request, restGroup);
 
 		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
 			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
 				assertNotNull("Group should have been created.", rh.result());
+				latch.countDown();
 			});
+			failingLatch(latch);
 		}
 
 		future = getClient().createGroup(request);
@@ -290,7 +298,6 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
-
 		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());

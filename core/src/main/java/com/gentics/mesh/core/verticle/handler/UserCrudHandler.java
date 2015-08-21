@@ -1,34 +1,19 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.util.TraversalHelper;
 
 import io.vertx.ext.web.RoutingContext;
+
 @Component
 public class UserCrudHandler extends AbstractCrudHandler {
 
@@ -36,55 +21,13 @@ public class UserCrudHandler extends AbstractCrudHandler {
 	public void handleDelete(RoutingContext rc) {
 		try (Trx tx = new Trx(db)) {
 			deleteObject(rc, "uuid", "user_deleted", boot.userRoot());
-			tx.success();
 		}
 	}
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-
 		try (Trx tx = new Trx(db)) {
-			TraversalHelper.printDebugVertices();
-		}
-
-		UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
-		if (requestModel == null) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_parse_request_json_error")));
-			return;
-		}
-		if (isEmpty(requestModel.getPassword())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_password")));
-			return;
-		}
-		if (isEmpty(requestModel.getUsername())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_username")));
-			return;
-		}
-		String groupUuid = requestModel.getGroupUuid();
-		if (isEmpty(groupUuid)) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_parentgroup_field")));
-			return;
-		}
-		try (Trx tx = new Trx(db)) {
-			// Load the parent group for the user
-			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					Group parentGroup = rh.result();
-					if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
-						String message = i18n.get(rc, "user_conflicting_username");
-						rc.fail(new HttpStatusCodeErrorException(CONFLICT, message));
-					} else {
-						MeshAuthUser requestUser = getUser(rc);
-						boot.userRoot().create(rc, requestModel, parentGroup, requestUser, rh2 -> {
-							if (hasSucceeded(rc, rh2)) {
-								transformAndResponde(rc, rh2.result());
-								triggerEvent(rh2.result().getUuid(), User.TYPE, SearchQueueEntryAction.CREATE_ACTION);
-							}
-						});
-
-					}
-				}
-			});
+			createObject(rc, boot.userRoot());
 		}
 	}
 

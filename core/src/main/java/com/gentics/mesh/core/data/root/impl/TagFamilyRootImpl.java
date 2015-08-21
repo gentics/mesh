@@ -9,8 +9,11 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements TagFamilyRoot {
 
@@ -61,6 +64,12 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 			tagFamily.delete();
 		}
 		getElement().remove();
+	}
+	
+	@Override
+	public void create(RoutingContext rc, Handler<AsyncResult<TagFamily>> handler) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
