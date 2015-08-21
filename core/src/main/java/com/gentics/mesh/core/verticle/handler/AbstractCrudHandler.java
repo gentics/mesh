@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -38,14 +36,5 @@ public abstract class AbstractCrudHandler {
 	abstract public void handleRead(RoutingContext rc);
 
 	abstract public void handleReadList(RoutingContext rc);
-
-	public SearchQueue searchQueue() {
-		return boot.meshRoot().getSearchQueue();
-	}
-
-	public MeshRoot meshRoot() {
-		return boot.meshRoot();
-	}
-
 
 }
