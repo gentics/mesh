@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -27,11 +28,15 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	private Class<T> classOfT;
 	private Handler<HttpClientResponse> handler;
 	private AbstractMeshRestClient client;
+	private HttpMethod method;
+	private String uri;
 
-	public MeshResponseHandler(Class<T> classOfT, AbstractMeshRestClient client) {
+	public MeshResponseHandler(Class<T> classOfT, AbstractMeshRestClient client, HttpMethod method, String uri) {
 		this.classOfT = classOfT;
 		this.client = client;
 		this.future = Future.future();
+		this.method = method;
+		this.uri = uri;
 	}
 
 	@Override
@@ -67,7 +72,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 		} else {
 			response.bodyHandler(bh -> {
 				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {"
-						+ bh.toString() + "}");
+						+ bh.toString() + "} for method {" + this.method + "} and uri {" + this.uri + "}");
 
 				GenericMessageResponse responseMessage = null;
 				try {
@@ -75,7 +80,6 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 				} catch (Exception e) {
 					// ignored
 				}
-
 				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));
 			});
 		}

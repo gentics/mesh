@@ -86,9 +86,9 @@ public abstract class AbstractMeshRestClient
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType) {
-		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, this);
-
 		String uri = BASEURI + path;
+		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, this, method, uri);
+
 		HttpClientRequest request = client.request(method, uri, handler);
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
