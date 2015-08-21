@@ -549,8 +549,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			//				tx.success();
 			//			}
 		} catch (IOException e1) {
-			//TODO i18n
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "json error",e1));
+			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));
 		}
 	}
 

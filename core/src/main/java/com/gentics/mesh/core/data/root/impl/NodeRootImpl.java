@@ -126,36 +126,35 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 			MeshAuthUser requestUser = getUser(rc);
 
 			String body = rc.getBodyAsString();
+
+			// 1. Extract the schema information from the given json
 			SchemaReferenceInfo schemaInfo;
 			try {
 				schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
 			} catch (Exception e) {
-				rc.fail(e);
+				handler.handle(Future.failedFuture(e));
 				return;
 			}
-
 			boolean missingSchemaInfo = schemaInfo.getSchema() == null
 					|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 			if (missingSchemaInfo) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_schema_parameter_missing")));
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_schema_parameter_missing"))));
 				return;
 			}
 
 			Handler<AsyncResult<SchemaContainer>> containerFoundHandler = rh -> {
-				/*
-				 * SchemaContainer schema = boot.schemaContainerRoot().findByName(requestModel.getSchema().getName()); if (schema == null) { rc.fail(new
-				 * HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "schema_not_found", requestModel.getSchema() .getName()))); return; }
-				 */
 				SchemaContainer schemaContainer = rh.result();
 				try {
 					Schema schema = schemaContainer.getSchema();
 					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
 					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_missing_parentnode_field")));
+						handler.handle(
+								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_missing_parentnode_field"))));
 						return;
 					}
 					if (StringUtils.isEmpty(requestModel.getLanguage())) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_no_languagecode_specified")));
+						handler.handle(
+								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_no_languagecode_specified"))));
 						return;
 					}
 
@@ -167,20 +166,21 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						if (language == null) {
 							handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST,
 									i18n.get(rc, "node_no_language_found", requestModel.getLanguage()))));
-						} else {
-							try {
-								NodeFieldContainer container = node.getOrCreateFieldContainer(language);
-								container.setFieldFromRest(rc, requestModel.getFields(), schema);
-
-								tx.success();
-								handler.handle(Future.succeededFuture(node));
-							} catch (Exception e) {
-								rc.fail(e);
-								return;
-							}
+							return;
 						}
+						try {
+							NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+							container.setFieldFromRest(rc, requestModel.getFields(), schema);
+							tx.success();
+							handler.handle(Future.succeededFuture(node));
+						} catch (Exception e) {
+							handler.handle(Future.failedFuture(e));
+							return;
+						}
+
 					};
 
+					// Load the parent node in order to create the node
 					loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
 						if (hasSucceeded(rc, rhp)) {
 							Node parentNode = rhp.result();
@@ -190,26 +190,32 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						}
 					});
 				} catch (Exception e) {
-					rc.fail(e);
+					handler.handle(Future.failedFuture(e));
 					return;
 				}
 			};
+
 			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 				if (containerByName != null) {
 					if (requestUser.hasPermission(containerByName, READ_PERM)) {
 						containerFoundHandler.handle(Future.succeededFuture(containerByName));
 					} else {
-						rc.fail(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", containerByName.getUuid())));
+						handler.handle(
+								Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", containerByName.getUuid()))));
+						return;
 					}
 				} else {
-					rc.fail(new EntityNotFoundException(i18n.get(rc, "schema_not_found", schemaInfo.getSchema().getName())));
+					handler.handle(
+							Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "schema_not_found", schemaInfo.getSchema().getName()))));
+					return;
 				}
 			} else {
 				loadObjectByUuid(rc, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaContainerRoot(), rh -> {
 					if (hasSucceeded(rc, rh)) {
 						SchemaContainer schemaContainer = rh.result();
 						containerFoundHandler.handle(Future.succeededFuture(schemaContainer));
+						return;
 					}
 				});
 			}

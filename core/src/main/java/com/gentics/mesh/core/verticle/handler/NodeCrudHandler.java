@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
+import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
@@ -22,7 +23,6 @@ import java.io.File;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.Mesh;
@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -50,17 +49,17 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
+
 @Component
 public class NodeCrudHandler extends AbstractCrudHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
-
 	@Override
 	public void handleCreate(RoutingContext rc) {
-	
+		try (Trx tx = new Trx(db)) {
+			createObject(rc, boot.meshRoot().getNodeRoot());
+		}
 	}
 
 	@Override
@@ -82,7 +81,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 			Project project = getProject(rc);
 			updateObject(rc, "uuid", project.getNodeRoot());
 		}
-		
+
 	}
 
 	@Override
