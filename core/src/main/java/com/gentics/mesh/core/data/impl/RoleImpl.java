@@ -23,6 +23,9 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -122,13 +125,18 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 	public void update(RoutingContext rc) {
 		RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
 				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
 				return;
 			}
-			setName(requestModel.getName());
+			try (Trx txUpdate = new Trx(db)) {
+				setName(requestModel.getName());
+				txUpdate.success();
+			}
 		}
 	}
 

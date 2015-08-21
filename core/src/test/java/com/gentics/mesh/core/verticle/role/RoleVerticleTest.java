@@ -355,10 +355,13 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		// Check that the extra role was updated as expected
 		try (Trx tx = new Trx(db)) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
+			CountDownLatch latch = new CountDownLatch(1);
 			roleRoot.findByUuid(roleUuid, rh -> {
 				Role reloadedRole = rh.result();
 				assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
+				latch.countDown();
 			});
+			failingLatch(latch);
 		}
 	}
 
