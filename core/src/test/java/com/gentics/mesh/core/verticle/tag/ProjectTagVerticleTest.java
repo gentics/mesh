@@ -42,13 +42,14 @@ import io.vertx.core.Future;
 public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectTagVerticle tagVerticle;
+	private ProjectTagVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return tagVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
-
 	@Test
 	public void testReadAllTags() throws Exception {
 

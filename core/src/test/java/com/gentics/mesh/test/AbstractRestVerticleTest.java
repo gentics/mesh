@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.After;
@@ -60,15 +61,19 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
-		AbstractWebVerticle verticle = getVerticle();
-		// Inject spring config
-		verticle.setSpringConfig(springConfig);
+		List<AbstractWebVerticle> vertices = getVertices();
+
 		JsonObject config = new JsonObject();
 		config.put("port", port);
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
-		verticle.init(vertx, context);
-		verticle.start();
-		verticle.registerEndPoints();
+
+		for (AbstractWebVerticle verticle : vertices) {
+			// Inject spring config
+			verticle.setSpringConfig(springConfig);
+			verticle.init(vertx, context);
+			verticle.start();
+			verticle.registerEndPoints();
+		}
 		client = new MeshRestClient("localhost", getPort());
 		client.setLogin(user().getUsername(), data().getUserInfo().getPassword());
 		resetClientSchemaStorage();
@@ -77,7 +82,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	@After
 	public void cleanup() {
 		BootstrapInitializer.clearReferences();
-		//		databaseService.getDatabase().clear();
+		// databaseService.getDatabase().clear();
 		databaseService.getDatabase().reset();
 	}
 
@@ -88,7 +93,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 	}
 
-	public abstract AbstractWebVerticle getVerticle();
+	public abstract List<AbstractWebVerticle> getVertices();
 
 	@After
 	public void tearDown() throws Exception {

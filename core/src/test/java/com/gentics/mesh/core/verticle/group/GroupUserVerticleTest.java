@@ -13,8 +13,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Ignore;
@@ -40,13 +42,14 @@ public class GroupUserVerticleTest
 extends AbstractRestVerticleTest {
 
 	@Autowired
-	private GroupVerticle groupsVerticle;
+	private GroupVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return groupsVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
-
 	// Group User Testcases - PUT / Add
 
 	@Test

@@ -7,6 +7,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,8 +30,10 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 	private ProjectNodeVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return verticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Test
@@ -101,7 +106,7 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 			sourceNode = folder("deals");
 			targetNode = folder("2015");
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
-			
+
 			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
 			tx.success();
 		}
@@ -111,8 +116,7 @@ public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
 			expectException(future, FORBIDDEN, "error_missing_perm", sourceNode.getUuid());
 		}
 		try (Trx tx = new Trx(db)) {
-			assertNotEquals("The source node should not have been moved.",
-					targetNode.getUuid(), folder("deals").getParentNode().getUuid());
+			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(), folder("deals").getParentNode().getUuid());
 		}
 	}
 

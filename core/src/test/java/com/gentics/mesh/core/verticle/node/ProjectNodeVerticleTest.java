@@ -12,10 +12,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -49,18 +51,25 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.definition.MultithreadingTestCases;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
-public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
+public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements MultithreadingTestCases {
+
+	private static final Logger log = LoggerFactory.getLogger(ProjectNodeVerticleTest.class);
 
 	@Autowired
 	private ProjectNodeVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return verticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	// Create tests
@@ -376,13 +385,141 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadNodeByUUIDMultithreaded() throws InterruptedException {
+	@Override
+	public void testCreateNodeMultithreaded() throws InterruptedException {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node parentNode = folder("news");
+			uuid = parentNode.getUuid();
+			assertNotNull(parentNode);
+			assertNotNull(parentNode.getUuid());
+		}
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setPublished(true);
+		request.setParentNodeUuid(uuid);
+
 		int nJobs = 5;
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		Trx.enableDebug();
 		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking updateNode REST call");
+			set.add(getClient().createNode(PROJECT_NAME, request));
+		}
+
+		Set<String> uuids = new HashSet<>();
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+			String currentUuid = future.result().getUuid();
+			assertFalse("The rest api returned a node response with a uuid that was returned before. Each create request must always be atomic.",
+					uuids.contains(currentUuid));
+			uuids.add(currentUuid);
+		}
+		Trx.disableDebug();
+		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateNodeMultithreaded() throws InterruptedException {
+
+		String uuid;
+		Node node;
+		final String newName = "english renamed name";
+		try (Trx tx = new Trx(db)) {
+			node = folder("2015");
+			uuid = node.getUuid();
+			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
+		}
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		request.setSchema(schemaReference);
+		request.setLanguage("en");
+		request.setPublished(true);
+		request.getFields().put("name", FieldUtil.createStringField(newName));
+
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("en", "de");
+
+		int nJobs = 5;
+		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		Trx.enableDebug();
+		Trx.setBarrier(barrier);
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking updateNode REST call");
+			set.add(getClient().updateNode(PROJECT_NAME, uuid, request, parameters));
+		}
+
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+		Trx.disableDebug();
+		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+
+
+	}
+
+	@Test
+	@Override
+	public void testDeleteNodeByUUIDMultithreaded() {
+
+		int nJobs = 3;
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			uuid = folder("2015").getUuid();
+		}
+		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		Trx.enableDebug();
+		Trx.setBarrier(barrier);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking deleteNode REST call");
+			set.add(getClient().deleteNode(PROJECT_NAME, uuid));
+		}
+
+		boolean foundDelete = false;
+		for (Future<GenericMessageResponse> future : set) {
+			latchFor(future);
+			if (future.succeeded() && future.result() != null) {
+				System.out.println(future.result().getMessage());
+				foundDelete = true;
+				continue;
+			}
+			if (future.succeeded() && future.result() != null && foundDelete == true) {
+				fail("We found more than one request that succeeded. Only one of the requests should be able to delete the node.");
+			}
+		}
+		assertTrue(foundDelete);
+
+		Trx.disableDebug();
+		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+
+	}
+
+	@Test
+	@Override
+	public void testReadNodeByUUIDMultithreaded() throws InterruptedException {
+		int nJobs = 10;
+		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		Trx.enableDebug();
+		Trx.setBarrier(barrier);
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking findNodeByUuid REST call");
 			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
 		}
 		for (Future<NodeResponse> future : set) {
@@ -390,7 +527,22 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 			assertSuccess(future);
 		}
 		Trx.disableDebug();
+	}
 
+	@Test
+	@Override
+	public void testReadNodeByUUIDMultithreadedNonBlocking() throws InterruptedException {
+		int nJobs = 200;
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking findNodeByUuid REST call");
+			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
+		}
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+		Trx.disableDebug();
 	}
 
 	@Test
@@ -507,7 +659,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest {
 		Node node;
 		final String newName = "english renamed name";
 		try (Trx tx = new Trx(db)) {
-			 node =folder("2015");
+			node = folder("2015");
 			uuid = node.getUuid();
 			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
 		}

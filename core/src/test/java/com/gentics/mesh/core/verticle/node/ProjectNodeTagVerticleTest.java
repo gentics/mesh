@@ -12,6 +12,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,8 +36,10 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	private ProjectNodeVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return verticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Test

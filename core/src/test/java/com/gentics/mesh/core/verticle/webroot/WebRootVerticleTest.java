@@ -7,6 +7,9 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,11 +25,13 @@ import io.vertx.core.Future;
 public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private WebRootVerticle webRootVerticle;
+	private WebRootVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return webRootVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Test
@@ -40,10 +45,10 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 			assertSuccess(future);
 			NodeResponse restNode = future.result();
 			test.assertMeshNode(folder, restNode);
-			//		assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
-			//				restNode.getProperties());
-			//		assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
-			//				restNode.getProperties());
+			// assertNull("The path {" + path + "} leads to the english version of this tag thus the german properties should not be loaded",
+			// restNode.getProperties());
+			// assertNotNull("The path {" + path + "} leads to the english version of this tag thus the english properties should be loaded.",
+			// restNode.getProperties());
 		}
 	}
 
@@ -58,7 +63,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		try (Trx tx = new Trx(db)) {
 			Node concordeNode = content("concorde");
 			test.assertMeshNode(concordeNode, restNode);
-			//		assertNotNull(restNode.getProperties());
+			// assertNotNull(restNode.getProperties());
 		}
 
 	}

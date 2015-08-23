@@ -5,6 +5,8 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,8 +30,10 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	private ProjectNodeVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return verticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {

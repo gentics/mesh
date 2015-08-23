@@ -47,14 +47,17 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private UserVerticle userVerticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return userVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(userVerticle);
+		return list;
 	}
 
 	// Read Tests
@@ -175,7 +178,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateUser() throws Exception {
-		
+
 		User user = user();
 		String username = user.getUsername();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();

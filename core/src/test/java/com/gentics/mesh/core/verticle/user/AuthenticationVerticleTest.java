@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,8 +27,10 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 	private AuthenticationVerticle authenticationVerticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return authenticationVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(authenticationVerticle);
+		return list;
 	}
 
 	// Read Tests

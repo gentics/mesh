@@ -307,6 +307,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			// TODO i18n
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
 		}
+
 		return this;
 
 	}

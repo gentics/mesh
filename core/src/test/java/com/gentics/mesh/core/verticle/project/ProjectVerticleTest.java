@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.project;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -41,14 +42,17 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class ProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectVerticle projectVerticle;
+	private ProjectVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return projectVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	// Create Tests

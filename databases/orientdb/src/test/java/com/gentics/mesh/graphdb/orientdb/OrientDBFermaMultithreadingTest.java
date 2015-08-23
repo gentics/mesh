@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb.orientdb;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
@@ -20,6 +22,20 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 	}
 
 	Person p;
+
+	@Test
+	public void testCyclicBarrier() throws InterruptedException, BrokenBarrierException {
+		int nThreads = 3;
+		CyclicBarrier barrier = new CyclicBarrier(nThreads);
+		for (int i = 0; i < nThreads; i++) {
+			Thread.sleep(1000);
+			TestThread t = new TestThread(i, barrier);
+			t.start();
+		}
+
+		Thread.sleep(4000);
+
+	}
 
 	@Test
 	public void testMultithreading() {

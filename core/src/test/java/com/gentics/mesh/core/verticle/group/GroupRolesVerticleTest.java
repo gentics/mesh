@@ -11,7 +11,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -33,11 +35,13 @@ import io.vertx.core.Future;
 public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private GroupVerticle groupsVerticle;
+	private GroupVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return groupsVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	// Group Role Testcases - PUT / Add

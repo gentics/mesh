@@ -11,6 +11,8 @@ import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -43,8 +45,10 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	String uploads = "target/testuploads";
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return verticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Before

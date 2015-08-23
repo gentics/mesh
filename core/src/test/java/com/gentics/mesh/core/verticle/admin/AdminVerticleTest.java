@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.verticle.admin;
+
 import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -12,11 +16,13 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 public class AdminVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private AdminVerticle adminVerticle;
+	private AdminVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return adminVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Test

@@ -46,13 +46,14 @@ import io.vertx.core.Future;
 public class RoleVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private RoleVerticle rolesVerticle;
+	private RoleVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return rolesVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
-
 	// Create tests
 
 	@Test

@@ -44,13 +44,14 @@ import io.vertx.core.Future;
 public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectTagFamilyVerticle tagFamilyVerticle;
+	private ProjectTagFamilyVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return tagFamilyVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
-
 	@Test
 	public void testTagFamilyReadWithPerm() throws UnknownHostException, InterruptedException {
 

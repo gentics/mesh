@@ -13,6 +13,8 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -55,14 +57,16 @@ public class SearchVerticleTest extends AbstractRestVerticleTest {
 	private static final Logger log = LoggerFactory.getLogger(SearchVerticleTest.class);
 
 	@Autowired
-	private SearchVerticle searchVerticle;
+	private SearchVerticle verticle;
 
 	@Autowired
 	private org.elasticsearch.node.Node elasticSearchNode;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return searchVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@After

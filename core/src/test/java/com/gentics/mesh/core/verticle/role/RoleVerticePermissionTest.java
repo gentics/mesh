@@ -5,6 +5,9 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,11 +24,13 @@ import io.vertx.core.Future;
 public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private RoleVerticle rolesVerticle;
+	private RoleVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return rolesVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Test

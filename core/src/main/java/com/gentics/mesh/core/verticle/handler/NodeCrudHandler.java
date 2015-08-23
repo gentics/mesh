@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
@@ -16,7 +17,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.io.File;
@@ -64,23 +65,35 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
-			String uuid = rc.request().params().get("uuid");
-			Project project = getProject(rc);
-			if (project.getBaseNode().getUuid().equals(uuid)) {
-				rc.fail(new HttpStatusCodeErrorException(METHOD_NOT_ALLOWED, i18n.get(rc, "node_basenode_not_deletable")));
-			} else {
-				deleteObject(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
+		Mesh.vertx().executeBlocking(bc -> {
+			try (Trx tx = new Trx(db)) {
+				String uuid = rc.request().params().get("uuid");
+				Project project = getProject(rc);
+				if (project.getBaseNode().getUuid().equals(uuid)) {
+					rc.fail(new HttpStatusCodeErrorException(METHOD_NOT_ALLOWED, i18n.get(rc, "node_basenode_not_deletable")));
+				} else {
+					deleteObject(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
+				}
 			}
-		}
+		} , false, rh -> {
+			if (rh.failed()) {
+				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, rh.cause().getMessage()));
+			}
+		});
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
-			Project project = getProject(rc);
-			updateObject(rc, "uuid", project.getNodeRoot());
-		}
+		Mesh.vertx().executeBlocking(bc -> {
+			try (Trx tx = new Trx(db)) {
+				Project project = getProject(rc);
+				updateObject(rc, "uuid", project.getNodeRoot());
+			}
+		} , false, rh -> {
+			if (rh.failed()) {
+				rh.cause().printStackTrace();
+			}
+		});
 
 	}
 
@@ -95,8 +108,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					Project project = getProject(rc);
 					loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
 				}
-			} , rh -> {
-
+			} , false, rh -> {
+				if (rh.failed()) {
+					rh.cause().printStackTrace();
+				}
 			});
 		}
 	}

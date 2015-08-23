@@ -43,11 +43,12 @@ import io.vertx.core.Future;
 public class SchemaVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private SchemaVerticle schemaVerticle;
-
+	private SchemaVerticle verticle;
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return schemaVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	// Create Tests

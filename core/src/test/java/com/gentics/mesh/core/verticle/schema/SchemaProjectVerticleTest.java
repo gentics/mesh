@@ -10,6 +10,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -29,13 +31,14 @@ import io.vertx.core.Future;
 public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private SchemaVerticle schemaVerticle;
+	private SchemaVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return schemaVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
-
 	// Schema Project Testcases - PUT / Add
 
 	@Test

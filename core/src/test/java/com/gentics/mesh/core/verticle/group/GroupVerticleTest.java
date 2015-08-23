@@ -43,11 +43,13 @@ import io.vertx.core.Future;
 public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private GroupVerticle groupsVerticle;
+	private GroupVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return groupsVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	// Create Tests

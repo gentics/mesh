@@ -39,7 +39,6 @@ public class MeshAuthProvider implements AuthProvider {
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
 
 		Mesh.vertx().executeBlocking(fut -> {
-
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
@@ -77,7 +76,7 @@ public class MeshAuthProvider implements AuthProvider {
 //				resultHandler.handle(Future.failedFuture(rh.cause()));
 //			}
 //		});
-		}, rh -> {
+		}, false, rh -> {
 			
 		});
 

@@ -2,6 +2,9 @@ package com.gentics.mesh.nav;
 
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +16,13 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 public class NavigationVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private NavigationVerticle navigationVerticle;
+	private NavigationVerticle verticle;
 
 	@Override
-	public AbstractWebVerticle getVerticle() {
-		return navigationVerticle;
+	public List<AbstractWebVerticle> getVertices() {
+		List<AbstractWebVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Test

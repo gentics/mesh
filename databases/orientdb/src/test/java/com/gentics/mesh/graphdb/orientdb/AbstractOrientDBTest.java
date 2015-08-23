@@ -15,6 +15,7 @@ public class AbstractOrientDBTest {
 		System.out.println("Done waiting");
 	}
 
+
 	protected void manipulatePerson(FramedGraph graph, Person p) {
 		p.setName("Changed " + System.currentTimeMillis());
 		for (int i = 0; i < 10; i++) {
