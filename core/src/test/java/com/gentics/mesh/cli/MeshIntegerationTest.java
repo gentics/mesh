@@ -17,7 +17,9 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 	public void testStartup() throws Exception {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
 
+		Mesh.initalize();
 		final Mesh mesh = Mesh.mesh();
+
 		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);
 		final AtomicBoolean meshStarted = new AtomicBoolean(false);
 		mesh.setCustomLoader((vertx) -> {
