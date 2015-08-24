@@ -15,6 +15,11 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
+import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.nesting.GraphMicroschemaFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
@@ -25,6 +30,7 @@ import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
+import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.service.I18NService;
@@ -67,32 +73,48 @@ import io.vertx.ext.web.RoutingContext;
 
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeFieldContainer {
 
+	private void failOnMissingMandatoryField(GraphField field, Field restField, FieldSchema schema, String key) throws MeshSchemaException {
+		if (field == null && schema.isRequired() && restField == null) {
+			throw new MeshSchemaException("Could not find value for required schema field with key {" + key + "}");
+		}
+	}
+
 	@Override
-	public void setFieldFromRest(RoutingContext rc, Map<String, Field> fields, Schema schema) throws MeshSchemaException {
+	public void setFieldFromRest(RoutingContext rc, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
+		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
-			Field field = fields.get(key);
+			Field restField = restFields.get(key);
+			restFields.remove(key);
 
-			if (field == null && entry.isRequired()) {
-				throw new MeshSchemaException("Could not find value for required schema field with key {" + key + "}");
-			} else if (field == null) {
-				continue;
-			}
-			fields.remove(key);
-
-			FieldTypes type = FieldTypes.valueByName(field.getType());
+			FieldTypes type = FieldTypes.valueByName(entry.getType());
 			switch (type) {
 			case HTML:
-				HtmlField htmlField = (HtmlFieldImpl) field;
-				createHTML(key).setHtml(htmlField.getHTML());
-				//TODO handle update
+				HtmlGraphField htmlGraphField = getHtml(key);
+				failOnMissingMandatoryField(htmlGraphField, restField, entry, key);
+				HtmlField htmlField = (HtmlFieldImpl) restField;
+				if (restField == null) {
+					continue;
+				}
+
+				// Create new graph field if no existing one could be found
+				if (htmlGraphField == null) {
+					createHTML(key).setHtml(htmlField.getHTML());
+				} else {
+					htmlGraphField.setHtml(htmlField.getHTML());
+				}
 				break;
 			case STRING:
-				StringField stringField = (StringFieldImpl) field;
 				StringGraphField graphStringField = getString(key);
+				failOnMissingMandatoryField(graphStringField, restField, entry, key);
+				StringField stringField = (StringFieldImpl) restField;
+				if (restField == null) {
+					continue;
+				}
+				// Create new graph field if no existing one could be found
 				if (graphStringField == null) {
 					createString(key).setString(stringField.getString());
 				} else {
@@ -100,29 +122,58 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				break;
 			case NUMBER:
-				NumberField numberField = (NumberFieldImpl) field;
-				createNumber(key).setNumber(numberField.getNumber());
-				//TODO handle update
+				NumberGraphField numberGraphField = getNumber(key);
+				failOnMissingMandatoryField(numberGraphField, restField, entry, key);
+				NumberField numberField = (NumberFieldImpl) restField;
+				if (restField == null) {
+					continue;
+				}
+				if (numberGraphField == null) {
+					createNumber(key).setNumber(numberField.getNumber());
+				} else {
+					numberGraphField.setNumber(numberField.getNumber());
+				}
+
 				break;
 			case BOOLEAN:
-				BooleanField booleanField = (BooleanFieldImpl) field;
-				createBoolean(key).setBoolean(booleanField.getValue());
-				//TODO handle update
+				BooleanGraphField booleanGraphField = getBoolean(key);
+				failOnMissingMandatoryField(booleanGraphField, restField, entry, key);
+				BooleanField booleanField = (BooleanFieldImpl) restField;
+				if (restField == null) {
+					continue;
+				}
+				if (booleanGraphField == null) {
+					createBoolean(key).setBoolean(booleanField.getValue());
+				} else {
+					booleanGraphField.setBoolean(booleanField.getValue());
+				}
+
 				break;
 			case DATE:
-				DateField dateField = (DateFieldImpl) field;
-				createDate(key).setDate(dateField.getDate());
-				//TODO handle update
+				DateGraphField dateGraphField = getDate(key);
+				failOnMissingMandatoryField(dateGraphField, restField, entry, key);
+				DateField dateField = (DateFieldImpl) restField;
+				if (restField == null) {
+					continue;
+				}
+				if (dateGraphField == null) {
+					createDate(key).setDate(dateField.getDate());
+				} else {
+					dateGraphField.setDate(dateField.getDate());
+				}
 				break;
 			case NODE:
-				NodeField nodeField = (NodeField) field;
-
+				GraphNodeField graphNodeField = getNode(key);
+				failOnMissingMandatoryField(graphNodeField, restField, entry, key);
+				NodeField nodeField = (NodeField) restField;
+				if (restField == null) {
+					continue;
+				}
 				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
 					Node node = rh.result();
 
 					// Check whether the container already contains a node field
 					// TODO check node permissions
-					com.gentics.mesh.core.data.node.field.nesting.GraphNodeField graphNodeField = getNode(key);
 					if (graphNodeField == null) {
 						createNode(key, node);
 					} else {
@@ -135,8 +186,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				});
 				break;
 			case LIST:
-				if (field instanceof NodeFieldListImpl) {
-					NodeFieldListImpl nodeList = (NodeFieldListImpl) field;
+				if (restField instanceof NodeFieldListImpl) {
+					GraphNodeFieldList graphNodeFieldList = getNodeList(key);
+					failOnMissingMandatoryField(graphNodeFieldList, restField, entry, key);
+					NodeFieldListImpl nodeList = (NodeFieldListImpl) restField;
+
 					AtomicInteger integer = new AtomicInteger();
 					GraphNodeFieldList graphNodeList = createNodeList(key);
 
@@ -152,43 +206,76 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 							}
 						});
 					}
-				} else if (field instanceof StringFieldListImpl) {
-					StringFieldListImpl stringList = (StringFieldListImpl) field;
-					GraphStringFieldList graphStringList = createStringList(key);
+				} else if (restField instanceof StringFieldListImpl) {
+					GraphStringFieldList graphStringList = getStringList(key);
+					failOnMissingMandatoryField(graphStringList, restField, entry, key);
+					StringFieldListImpl stringList = (StringFieldListImpl) restField;
 
-					for (String item : stringList.getList()) {
-						graphStringList.createString(item);
+					if (graphStringList == null) {
+						graphStringList = createStringList(key);
+						for (String item : stringList.getList()) {
+							graphStringList.createString(item);
+						}
+					} else {
+						//TODO handle update - remove all strings and set the new ones
+
 					}
-				} else if (field instanceof HtmlFieldListImpl) {
-					HtmlFieldListImpl htmlList = (HtmlFieldListImpl) field;
-					GraphHtmlFieldList graphHtmlList = createHTMLList(key);
 
-					for (String item : htmlList.getList()) {
-						graphHtmlList.createHTML(item);
+				} else if (restField instanceof HtmlFieldListImpl) {
+					GraphHtmlFieldList graphHtmlFieldList = getHTMLList(key);
+					failOnMissingMandatoryField(graphHtmlFieldList, restField, entry, key);
+					HtmlFieldListImpl htmlList = (HtmlFieldListImpl) restField;
+
+					if (graphHtmlFieldList == null) {
+						GraphHtmlFieldList graphHtmlList = createHTMLList(key);
+						for (String item : htmlList.getList()) {
+							graphHtmlList.createHTML(item);
+						}
+					} else {
+						//TODO handle update
 					}
-				} else if (field instanceof NumberFieldListImpl) {
-					NumberFieldListImpl numberList = (NumberFieldListImpl) field;
-					GraphNumberFieldList graphNumberList = createNumberList(key);
+				} else if (restField instanceof NumberFieldListImpl) {
+					GraphNumberFieldList graphNumberFieldList = getNumberList(key);
+					failOnMissingMandatoryField(graphNumberFieldList, restField, entry, key);
+					NumberFieldListImpl numberList = (NumberFieldListImpl) restField;
 
-					for (String item : numberList.getList()) {
-						graphNumberList.createNumber(item);
+					if (graphNumberFieldList == null) {
+						GraphNumberFieldList graphNumberList = createNumberList(key);
+						for (String item : numberList.getList()) {
+							graphNumberList.createNumber(item);
+						}
+					} else {
+						//TODO handle update
 					}
-				} else if (field instanceof BooleanFieldListImpl) {
+				} else if (restField instanceof BooleanFieldListImpl) {
+					GraphBooleanFieldList graphBooleanFieldList = getBooleanList(key);
+					failOnMissingMandatoryField(graphBooleanFieldList, restField, entry, key);
+					BooleanFieldListImpl booleanList = (BooleanFieldListImpl) restField;
 
-					BooleanFieldListImpl booleanList = (BooleanFieldListImpl) field;
-					GraphBooleanFieldList graphBooleanList = createBooleanList(key);
-
-					for (Boolean item : booleanList.getList()) {
-						graphBooleanList.createBoolean(item);
+					if (graphBooleanFieldList == null) {
+						GraphBooleanFieldList graphBooleanList = createBooleanList(key);
+						for (Boolean item : booleanList.getList()) {
+							graphBooleanList.createBoolean(item);
+						}
+					} else {
+						//TODO handle update
 					}
-				} else if (field instanceof DateFieldListImpl) {
-					DateFieldListImpl dateList = (DateFieldListImpl) field;
-					GraphDateFieldList graphDateList = createDateList(key);
+				} else if (restField instanceof DateFieldListImpl) {
 
-					for (String item : dateList.getList()) {
-						graphDateList.createDate(item);
+					GraphDateFieldList graphDateFieldList = getDateList(key);
+					failOnMissingMandatoryField(graphDateFieldList, restField, entry, key);
+					DateFieldListImpl dateList = (DateFieldListImpl) restField;
+
+					// Create new list if no existing one could be found
+					if (graphDateFieldList == null) {
+						graphDateFieldList = createDateList(key);
+						for (String item : dateList.getList()) {
+							graphDateFieldList.createDate(item);
+						}
+					} else {
+						//TODO handle Update
 					}
-				} else if (field instanceof MicroschemaFieldListImpl) {
+				} else if (restField instanceof MicroschemaFieldListImpl) {
 					throw new NotImplementedException();
 				} else {
 					// TODO unknown type - throw better error
@@ -196,13 +283,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				break;
 			case SELECT:
-				SelectField restSelectField = (SelectFieldImpl) field;
+				SelectField restSelectField = (SelectFieldImpl) restField;
 				com.gentics.mesh.core.data.node.field.nesting.GraphSelectField<ListableGraphField> selectField = createSelect(key);
 				// TODO impl
 				throw new NotImplementedException();
 				// break;
 			case MICROSCHEMA:
-				com.gentics.mesh.core.rest.node.field.MicroschemaField restMicroschemaField = (com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl) field;
+				com.gentics.mesh.core.rest.node.field.MicroschemaField restMicroschemaField = (com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl) restField;
 				GraphMicroschemaField microschemaField = createMicroschema(key);
 				// TODO impl
 				throw new NotImplementedException();
@@ -211,7 +298,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		}
 		String extraFields = "";
-		for (String key : fields.keySet()) {
+		for (String key : restFields.keySet()) {
 			extraFields += "[" + key + "]";
 		}
 		if (!StringUtils.isEmpty(extraFields)) {

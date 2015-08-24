@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.tag;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -9,14 +10,18 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -28,18 +33,21 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
+import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectTagVerticle;
+import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
+public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private ProjectTagVerticle verticle;
@@ -50,8 +58,10 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		list.add(verticle);
 		return list;
 	}
+
 	@Test
-	public void testReadAllTags() throws Exception {
+	@Override
+	public void testReadMultiple() throws Exception {
 
 		String noPermTagUUID;
 		try (Trx tx = new Trx(db)) {
@@ -136,7 +146,7 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadTagByUUID() throws Exception {
+	public void testReadByUUID() throws Exception {
 		try (Trx tx = new Trx(db)) {
 			Tag tag = tag("red");
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
@@ -164,7 +174,8 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateTagByUUID() throws Exception {
+	@Override
+	public void testUpdate() throws Exception {
 		String tagUuid;
 		try (Trx tx = new Trx(db)) {
 			Tag tag = tag("vehicle");
@@ -235,7 +246,8 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateTagByUUIDWithoutPerm() throws Exception {
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws Exception {
 
 		String tagName;
 		String tagUuid;
@@ -265,7 +277,8 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 
 	// Delete Tests
 	@Test
-	public void testDeleteTagByUUID() throws Exception {
+	@Override
+	public void testDeleteByUUID() throws Exception {
 		String name;
 		String uuid;
 		try (Trx tx = new Trx(db)) {
@@ -292,7 +305,8 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testDeleteTagByUUIDWithoutPerm() throws Exception {
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Tag tag = tag("vehicle");
@@ -316,7 +330,8 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateTag() {
+	@Override
+	public void testCreate() {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
@@ -346,6 +361,133 @@ public class ProjectTagVerticleTest extends AbstractRestVerticleTest {
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
 		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
+	}
+
+	@Override
+	public void testUpdateMultithreaded() throws Exception {
+		int nJobs = 5;
+		TagUpdateRequest request = new TagUpdateRequest();
+		request.setFields(new TagFieldContainer().setName("newName"));
+		String uuid = tag("red").getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().updateTag(DemoDataProvider.PROJECT_NAME, uuid, request));
+		}
+		validateSet(set, barrier);
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreaded() throws Exception {
+		int nJobs = 10;
+		String uuid = tag("red").getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, uuid));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws Exception {
+		int nJobs = 3;
+		String uuid = tag("red").getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().deleteTag(DemoDataProvider.PROJECT_NAME, uuid));
+		}
+		validateDeletion(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		int nJobs = 5;
+		TagCreateRequest request = new TagCreateRequest();
+		request.getFields().setName("newcolor");
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().createTag(DemoDataProvider.PROJECT_NAME, request));
+		}
+		validateCreation(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
+		int nJobs = 200;
+		Set<Future<TagResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
+		}
+		for (Future<TagResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateReadDelete() throws Exception {
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		tagCreateRequest.getFields().setName("SomeName");
+		TagFamily tagFamily = tagFamilies().get("colors");
+		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+
+		// Create
+		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("SomeName", future.result().getFields().getName());
+
+		// Read
+		future = getClient().findTagByUuid(PROJECT_NAME, future.result().getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("SomeName", future.result().getFields().getName());
+
+		// Delete
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteTag(PROJECT_NAME, future.result().getUuid());
+		latchFor(deleteFuture);
+		assertSuccess(deleteFuture);
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Tag tag = tag("red");
+			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+			uuid = tag.getUuid();
+			role().revokePermissions(tag, READ_PERM);
+			tx.success();
+		}
+
+		Future<TagResponse> future = getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, uuid);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		TagUpdateRequest request = new TagUpdateRequest();
+		request.setFields(new TagFieldContainer().setName("newName"));
+
+		Future<TagResponse> future = getClient().updateTag(DemoDataProvider.PROJECT_NAME, "bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+
 	}
 
 }

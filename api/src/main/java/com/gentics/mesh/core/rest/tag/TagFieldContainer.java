@@ -8,8 +8,9 @@ public class TagFieldContainer {
 		return name;
 	}
 
-	public void setName(String name) {
+	public TagFieldContainer setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 }

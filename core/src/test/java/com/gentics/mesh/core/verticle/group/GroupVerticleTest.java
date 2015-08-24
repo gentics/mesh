@@ -1,10 +1,11 @@
 package com.gentics.mesh.core.verticle.group;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -13,12 +14,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -28,6 +30,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -35,12 +38,21 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
+import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
-public class GroupVerticleTest extends AbstractRestVerticleTest {
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
+
+	private static final Logger log = LoggerFactory.getLogger(GroupVerticleTest.class);
 
 	@Autowired
 	private GroupVerticle verticle;
@@ -54,7 +66,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 
 	// Create Tests
 	@Test
-	public void testCreateGroup() throws Exception {
+	@Override
+	public void testCreate() throws Exception {
 
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
@@ -69,15 +82,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
+		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
-				assertNotNull("Group should have been created.", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
 	}
 
 	@Test
@@ -116,22 +122,15 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
-				assertNotNull("Group should have been created.", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
-
+		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 		future = getClient().createGroup(request);
 		latchFor(future);
 		expectException(future, CONFLICT, "group_conflicting_name");
 	}
 
 	@Test
-	public void testCreateDeleteGroup() throws Exception {
+	@Override
+	public void testCreateReadDelete() throws Exception {
 
 		// Create the group
 		final String name = "test12345";
@@ -149,6 +148,10 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 				assertNotNull("Group should have been created.", rh.result());
 			});
 		}
+
+		Future<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid());
+		latchFor(readFuture);
+		assertSuccess(readFuture);
 
 		// Now delete the group
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid());
@@ -197,7 +200,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
-	public void testReadGroups() throws Exception {
+	@Override
+	public void testReadMultiple() throws Exception {
 
 		int totalGroups = 0;
 		String extraGroupName = "no_perm_group";
@@ -280,7 +284,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadGroupByUUID() throws Exception {
+	@Override
+	public void testReadByUUID() throws Exception {
 		Group group = group();
 		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
@@ -291,7 +296,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadGroupByUUIDWithNoPermission() throws Exception {
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
 		Group group = group();
 
 		try (Trx tx = new Trx(db)) {
@@ -316,7 +322,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	// Update Tests
 
 	@Test
-	public void testUpdateGroup() throws HttpStatusCodeErrorException, Exception {
+	@Override
+	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
 		Group group = group();
 
 		final String name = "New Name";
@@ -335,6 +342,22 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 				assertEquals("The group should have been updated", name, reloadedGroup.getName());
 			});
 		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			role().revokePermissions(group(), UPDATE_PERM);
+			uuid = group().getUuid();
+		}
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName("new Name");
+
+		Future<GroupResponse> future = getClient().updateGroup(uuid, request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -389,13 +412,8 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateGroupWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
-
-		Group group = group();
-		try (Trx tx = new Trx(db)) {
-			role().grantPermissions(group, UPDATE_PERM);
-			tx.success();
-		}
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
@@ -403,19 +421,13 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		Future<GroupResponse> future = getClient().updateGroup("bogus", request);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
-
-		try (Trx tx = new Trx(db)) {
-			boot.groupRoot().findByUuid(group.getUuid(), rh -> {
-				Group reloadedGroup = rh.result();
-				assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
-			});
-		}
 	}
 
 	// Delete Tests
 
 	@Test
-	public void testDeleteGroupByUUID() throws Exception {
+	@Override
+	public void testDeleteByUUID() throws Exception {
 		Group group = group();
 		String name = group.getName();
 		String uuid = group.getUuid();
@@ -425,15 +437,13 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("group_deleted", future, uuid + "/" + name);
 
-		try (Trx tx = new Trx(db)) {
-			boot.groupRoot().findByUuid(uuid, rh -> {
-				assertNull("The group should have been deleted", rh.result());
-			});
-		}
+		assertElement(boot.groupRoot(), uuid, false);
+
 	}
 
 	@Test
-	public void testDeleteGroupByUUIDWithMissingPermission() throws Exception {
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		Group group = group();
 		String uuid = group.getUuid();
 		assertNotNull(uuid);
@@ -447,10 +457,84 @@ public class GroupVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 
-		try (Trx tx = new Trx(db)) {
-			boot.groupRoot().findByUuid(group.getUuid(), rh -> {
-				assertNotNull("The group should not have been deleted", rh.result());
-			});
+		assertElement(boot.groupRoot(), group.getUuid(), true);
+	}
+
+	@Test
+	@Override
+	public void testUpdateMultithreaded() throws InterruptedException {
+
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName("changed");
+
+		int nJobs = 5;
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().updateGroup(group().getUuid(), request));
+		}
+		validateSet(set, barrier);
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreaded() throws InterruptedException {
+		int nJobs = 10;
+		String uuid = user().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking findGroupByUuid REST call");
+			set.add(getClient().findGroupByUuid(uuid));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws InterruptedException {
+
+		int nJobs = 3;
+		String uuid = group().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking deleteUser REST call");
+			set.add(getClient().deleteGroup(uuid));
+		}
+		validateDeletion(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		GroupCreateRequest request = new GroupCreateRequest();
+		request.setName("test12345");
+
+		int nJobs = 5;
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking createGroup REST call");
+			set.add(getClient().createGroup(request));
+		}
+		validateCreation(set, barrier);
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
+		int nJobs = 200;
+		Set<Future<GroupResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking findGroupByUuid REST call");
+			set.add(getClient().findGroupByUuid(group().getUuid()));
+		}
+		for (Future<GroupResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 

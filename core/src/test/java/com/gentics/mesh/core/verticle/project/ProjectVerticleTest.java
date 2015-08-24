@@ -4,34 +4,36 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -39,11 +41,11 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class ProjectVerticleTest extends AbstractRestVerticleTest {
+public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private ProjectVerticle verticle;
@@ -58,7 +60,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	// Create Tests
 
 	@Test
-	public void testCreateProject() throws Exception {
+	@Override
+	public void testCreate() throws Exception {
 
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -93,7 +96,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateDeleteProject() throws Exception {
+	@Override
+	public void testCreateReadDelete() throws Exception {
 
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -113,6 +117,11 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 		}
 
+		// Read the project
+		Future<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid());
+		latchFor(readFuture);
+		assertSuccess(readFuture);
+
 		// Now delete the project
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid());
 		latchFor(deleteFuture);
@@ -124,7 +133,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
-	public void testReadProjectList() throws Exception {
+	@Override
+	public void testReadMultiple() throws Exception {
 
 		try (Trx tx = new Trx(db)) {
 			role().grantPermissions(project(), READ_PERM);
@@ -214,7 +224,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadProjectByUUID() throws Exception {
+	@Override
+	public void testReadByUUID() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Project project = project();
@@ -240,7 +251,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadProjectByUUIDWithNoPerm() throws Exception {
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Project project = project();
@@ -258,7 +270,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	// Update Tests
 
 	@Test
-	public void testUpdateProject() throws JsonGenerationException, JsonMappingException, IOException, Exception {
+	@Override
+	public void testUpdate() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Project project = project();
@@ -288,7 +301,20 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateProjectWithNoPerm() throws JsonProcessingException, Exception {
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("new Name");
+
+		Future<ProjectResponse> future = getClient().updateProject("bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
 		String uuid;
 		String name;
 		try (Trx tx = new Trx(db)) {
@@ -321,7 +347,8 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 	// Delete Tests
 
 	@Test
-	public void testDeleteProjectByUUID() throws Exception {
+	@Override
+	public void testDeleteByUUID() throws Exception {
 		String uuid;
 		String name;
 		try (Trx tx = new Trx(db)) {
@@ -339,20 +366,14 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("project_deleted", future, uuid + "/" + name);
 
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-				assertNull("The project should have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		assertElement(meshRoot().getProjectRoot(), uuid, false);
 
 		// TODO check for removed routers?
 	}
 
 	@Test
-	public void testDeleteProjectByUUIDWithNoPermission() throws Exception {
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Project project = project();
@@ -372,6 +393,76 @@ public class ProjectVerticleTest extends AbstractRestVerticleTest {
 				latch.countDown();
 			});
 			failingLatch(latch);
+		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateMultithreaded() throws Exception {
+		int nJobs = 5;
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("New Name");
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().updateProject(project().getUuid(), request));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreaded() throws Exception {
+		int nJobs = 10;
+		String uuid = project().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findProjectByUuid(uuid));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws Exception {
+		int nJobs = 3;
+		String uuid = project().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().deleteProject(uuid));
+		}
+		validateDeletion(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		int nJobs = 5;
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName("test12345");
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().createProject(request));
+		}
+		validateCreation(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
+		int nJobs = 200;
+		Set<Future<ProjectResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findProjectByUuid(project().getUuid()));
+		}
+		for (Future<ProjectResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 

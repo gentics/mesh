@@ -90,7 +90,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set"))));
 				return;
 			}
-
+			//TODO first check uuid - then use uuid or use name if possible
+			
 			TagFamilyReference reference = requestModel.getTagFamilyReference();
 			if (reference == null || isEmpty(reference.getUuid())) {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set"))));

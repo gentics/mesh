@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static com.gentics.mesh.util.MeshAssert.*;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -36,14 +37,15 @@ import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class SchemaVerticleTest extends AbstractRestVerticleTest {
+public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private SchemaVerticle verticle;
+
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
@@ -122,7 +124,8 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
-	public void testReadAllSchemaList() throws Exception {
+	@Override
+	public void testReadMultiple() throws Exception {
 		int totalSchemas;
 		try (Trx tx = new Trx(db)) {
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
@@ -252,7 +255,8 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	// Update Tests
 
 	@Test
-	public void testUpdateSchemaByUUID() throws HttpStatusCodeErrorException, Exception {
+	@Override
+	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
 		SchemaContainer schema = schemaContainer("content");
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setName("new-name");
@@ -296,7 +300,8 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 	// Delete Tests
 
 	@Test
-	public void testDeleteSchemaByUUID() throws Exception {
+	@Override
+	public void testDeleteByUUID() throws Exception {
 		SchemaContainer schema;
 		try (Trx tx = new Trx(db)) {
 			schema = schemaContainer("content");
@@ -315,7 +320,9 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		}
 	}
 
-	public void testDeleteSchemaWithMissingPermission() throws Exception {
+	@Test
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		SchemaContainer schema;
 		try (Trx tx = new Trx(db)) {
 			schema = schemaContainer("content");
@@ -327,15 +334,85 @@ public class SchemaVerticleTest extends AbstractRestVerticleTest {
 		fail("unspecified test");
 		//		String json = "error";
 		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-				SchemaContainer reloaded = rh.result();
-				assertNotNull("The schema should not have been deleted.", reloaded);
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 
 	}
+
+	@Test
+	@Override
+	public void testUpdateMultithreaded() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreaded() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCreate() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testCreateReadDelete() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUUID() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		// TODO Auto-generated method stub
+
+	}
+
 }

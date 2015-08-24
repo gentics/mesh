@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -17,7 +18,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -49,16 +49,16 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
+import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.test.definition.MultithreadingTestCases;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements MultithreadingTestCases {
+public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectNodeVerticleTest.class);
 
@@ -133,7 +133,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	}
 
 	@Test
-	public void testCreateNode() throws Exception {
+	@Override
+	public void testCreate() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Node parentNode = folder("news");
@@ -170,7 +171,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	}
 
 	@Test
-	public void testCreateReadDeleteNode() throws Exception {
+	@Override
+	public void testCreateReadDelete() throws Exception {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
@@ -289,7 +291,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	}
 
 	@Test
-	public void testReadNodes() throws Exception {
+	@Override
+	public void testReadMultiple() throws Exception {
 		final String noPermNodeUUID;
 
 		try (Trx tx = new Trx(db)) {
@@ -386,7 +389,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 
 	@Test
 	@Override
-	public void testCreateNodeMultithreaded() throws InterruptedException {
+	public void testCreateMultithreaded() throws InterruptedException {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Node parentNode = folder("news");
@@ -411,7 +414,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			log.debug("Invoking updateNode REST call");
+			log.debug("Invoking createNode REST call");
 			set.add(getClient().createNode(PROJECT_NAME, request));
 		}
 
@@ -431,7 +434,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 
 	@Test
 	@Override
-	public void testUpdateNodeMultithreaded() throws InterruptedException {
+	public void testUpdateMultithreaded() throws InterruptedException {
 
 		String uuid;
 		Node node;
@@ -470,12 +473,11 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 		Trx.disableDebug();
 		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
-
 	}
 
 	@Test
 	@Override
-	public void testDeleteNodeByUUIDMultithreaded() {
+	public void testDeleteByUUIDMultithreaded() {
 
 		int nJobs = 3;
 		String uuid;
@@ -491,28 +493,13 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 			set.add(getClient().deleteNode(PROJECT_NAME, uuid));
 		}
 
-		boolean foundDelete = false;
-		for (Future<GenericMessageResponse> future : set) {
-			latchFor(future);
-			if (future.succeeded() && future.result() != null) {
-				System.out.println(future.result().getMessage());
-				foundDelete = true;
-				continue;
-			}
-			if (future.succeeded() && future.result() != null && foundDelete == true) {
-				fail("We found more than one request that succeeded. Only one of the requests should be able to delete the node.");
-			}
-		}
-		assertTrue(foundDelete);
-
-		Trx.disableDebug();
-		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		validateDeletion(set, barrier);
 
 	}
 
 	@Test
 	@Override
-	public void testReadNodeByUUIDMultithreaded() throws InterruptedException {
+	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		Trx.enableDebug();
@@ -531,7 +518,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 
 	@Test
 	@Override
-	public void testReadNodeByUUIDMultithreadedNonBlocking() throws InterruptedException {
+	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
@@ -546,7 +533,7 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	}
 
 	@Test
-	public void testReadNodeByUUID() throws Exception {
+	public void testReadByUUID() throws Exception {
 
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 
@@ -620,7 +607,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	}
 
 	@Test
-	public void testReadNodeByUUIDWithoutPermission() throws Exception {
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Node node = folder("2015");
@@ -654,7 +642,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	// Update
 
 	@Test
-	public void testUpdateNode() throws HttpStatusCodeErrorException, Exception {
+	@Override
+	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
 		String uuid;
 		Node node;
 		final String newName = "english renamed name";
@@ -697,6 +686,42 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getAction());
 		}
 
+	}
+
+	@Test
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			Node node = folder("2015");
+			role().revokePermissions(node, UPDATE_PERM);
+			uuid = node.getUuid();
+		}
+		NodeUpdateRequest request = new NodeUpdateRequest();
+
+		Future<NodeResponse> future = getClient().updateNode(DemoDataProvider.PROJECT_NAME, uuid, request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		request.setSchema(schemaReference);
+		request.setLanguage("en");
+		request.setPublished(true);
+
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("en", "de");
+
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, "bogus", request, parameters);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -840,7 +865,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	}
 
 	@Test
-	public void testDeleteNode() throws Exception {
+	@Override
+	public void testDeleteByUUID() throws Exception {
 
 		Node node = folder("2015");
 		String uuid = node.getUuid();
@@ -870,7 +896,8 @@ public class ProjectNodeVerticleTest extends AbstractRestVerticleTest implements
 	}
 
 	@Test
-	public void testDeleteNodeWithNoPerm() throws Exception {
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Node node = folder("2015");

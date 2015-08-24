@@ -7,24 +7,24 @@ public interface MultithreadingTestCases {
 	 * 
 	 * @throws InterruptedException
 	 */
-	void testUpdateNodeMultithreaded() throws InterruptedException;
+	void testUpdateMultithreaded() throws Exception;
 
 	/**
 	 * Test multithreaded read calls and block in Trx.commit() to check for collision issues.
 	 * 
 	 * @throws InterruptedException
 	 */
-	void testReadNodeByUUIDMultithreaded() throws InterruptedException;
+	void testReadByUuidMultithreaded() throws Exception;
 
-	void testDeleteNodeByUUIDMultithreaded() throws InterruptedException;
+	void testDeleteByUUIDMultithreaded() throws Exception;
 
-	void testCreateNodeMultithreaded() throws InterruptedException;
+	void testCreateMultithreaded() throws Exception;
 
 	/**
 	 * Test multithreaded read calls which exceed the worker pool size.
 	 * 
 	 * @throws InterruptedException
 	 */
-	void testReadNodeByUUIDMultithreadedNonBlocking() throws InterruptedException;
+	void testReadByUuidMultithreadedNonBlocking() throws Exception;
 
 }

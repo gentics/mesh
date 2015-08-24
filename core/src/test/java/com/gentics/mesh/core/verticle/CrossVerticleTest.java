@@ -13,6 +13,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -49,9 +50,14 @@ public class CrossVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		Future<NodeListResponse> listFuture = getClient().findNodes(name);
-		latchFor(listFuture);
-		assertSuccess(listFuture);
+		Future<NodeListResponse> nodelistFuture = getClient().findNodes(name);
+		latchFor(nodelistFuture);
+		assertSuccess(nodelistFuture);
+
+		Future<TagFamilyListResponse> tagFamilyListFuture = getClient().findTagFamilies(name);
+		latchFor(tagFamilyListFuture);
+		assertSuccess(tagFamilyListFuture);
+
 	}
 
 }

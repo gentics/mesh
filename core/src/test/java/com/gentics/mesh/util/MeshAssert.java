@@ -1,6 +1,8 @@
 package com.gentics.mesh.util;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -9,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.TestUtil;
@@ -32,7 +35,23 @@ public final class MeshAssert {
 		assertTrue("The future failed with error {" + (future.cause() == null ? "Unknown error" : future.cause().getMessage()) + "}",
 				future.succeeded());
 	}
-	
+
+	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws InterruptedException {
+		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+			CountDownLatch latch = new CountDownLatch(1);
+			root.findByUuid(uuid, rh -> {
+				if (exists) {
+					assertNotNull("The element should not exist.", rh.result());
+				} else {
+					assertNull("The element should not exist.", rh.result());
+				}
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
+
+	}
+
 	public static int getTimeout() throws UnknownHostException {
 		int timeout = DEV_TIMEOUT_SECONDS;
 		if (TestUtil.isHost("jenkins.office")) {

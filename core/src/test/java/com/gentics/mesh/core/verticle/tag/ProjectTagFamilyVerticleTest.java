@@ -5,21 +5,25 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -30,6 +34,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -37,11 +42,11 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
+public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private ProjectTagFamilyVerticle verticle;
@@ -52,8 +57,10 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		list.add(verticle);
 		return list;
 	}
+
 	@Test
-	public void testTagFamilyReadWithPerm() throws UnknownHostException, InterruptedException {
+	@Override
+	public void testReadByUUID() throws UnknownHostException, InterruptedException {
 
 		TagFamily tagFamily;
 		try (Trx tx = new Trx(db)) {
@@ -73,7 +80,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyReadWithoutPerm() throws UnknownHostException, InterruptedException {
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Role role = role();
@@ -90,7 +98,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyTagList() {
+	public void testReadMultiple2() {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			TagFamily tagFamily = data().getTagFamilies().get("colors");
@@ -102,7 +110,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyListing() throws UnknownHostException, InterruptedException {
+	@Override
+	public void testReadMultiple() throws UnknownHostException, InterruptedException {
 		final String noPermTagUUID;
 		try (Trx tx = new Trx(db)) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
@@ -186,7 +195,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyCreateWithConflictingName() {
+	public void testCreateWithConflictingName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("colors");
 		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
@@ -195,7 +204,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyCreateWithPerm() {
+	@Override
+	public void testCreate() {
 		String name = "newTagFamily";
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName(name);
@@ -206,7 +216,26 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyCreateWithoutPerm() {
+	@Override
+	public void testCreateReadDelete() throws Exception {
+		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
+		request.setName("newTagFamily");
+		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+
+		Future<TagFamilyResponse> readFuture = getClient().findTagFamilyByUuid(PROJECT_NAME, future.result().getUuid());
+		latchFor(readFuture);
+		assertSuccess(readFuture);
+
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteTagFamily(PROJECT_NAME, future.result().getUuid());
+		latchFor(deleteFuture);
+		assertSuccess(deleteFuture);
+
+	}
+
+	@Test
+	public void testCreateWithoutPerm() {
 		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 			tx.success();
@@ -222,7 +251,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyCreateWithNoName() {
+	public void testCreateWithNoName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		// Don't set the name
 		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
@@ -231,7 +260,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyDeletionWithPerm() throws UnknownHostException, InterruptedException {
+	@Override
+	public void testDeleteByUUID() throws UnknownHostException, InterruptedException {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			TagFamily basicTagFamily = tagFamily("basic");
@@ -248,18 +278,13 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-				assertNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		assertElement(project().getTagFamilyRoot(), uuid, false);
+
 	}
 
 	@Test
-	public void testTagFamilyDeletionWithNoPerm() throws UnknownHostException, InterruptedException {
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws UnknownHostException, InterruptedException {
 		TagFamily basicTagFamily;
 		try (Trx tx = new Trx(db)) {
 			basicTagFamily = tagFamily("basic");
@@ -267,14 +292,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 			role.revokePermissions(basicTagFamily, DELETE_PERM);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			project().getTagFamilyRoot().findByUuid(basicTagFamily.getUuid(), rh -> {
-				assertNotNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+
+		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
 		try (Trx tx = new Trx(db)) {
 			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
@@ -282,19 +301,12 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
 		}
 
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			project().getTagFamilyRoot().findByUuid(basicTagFamily.getUuid(), rh -> {
-				assertNotNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
+		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-		}
 	}
 
 	@Test
-	public void testTagFamilyUpdateWithConflictingName() {
+	public void testUpdateWithConflictingName() {
 		String newName = "colors";
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName(newName);
@@ -307,7 +319,8 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyUpdateWithPerm() throws UnknownHostException, InterruptedException {
+	@Override
+	public void testUpdate() throws UnknownHostException, InterruptedException {
 
 		String uuid;
 		String name;
@@ -356,7 +369,19 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testTagFamilyUpdateWithNoPerm() {
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("new Name");
+
+		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, "bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+	}
+
+	@Test
+	@Override
+	public void testUpdateByUUIDWithoutPerm() {
 		String uuid;
 		String name;
 		TagFamily tagFamily;
@@ -378,6 +403,76 @@ public class ProjectTagFamilyVerticleTest extends AbstractRestVerticleTest {
 
 		try (Trx tx = new Trx(db)) {
 			assertEquals(name, tagFamily.getName());
+		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateMultithreaded() throws Exception {
+		int nJobs = 5;
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("New Name");
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreaded() throws Exception {
+		int nJobs = 10;
+		String uuid = tagFamily("colors").getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, uuid));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws Exception {
+		int nJobs = 3;
+		String uuid = project().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().deleteTagFamily(PROJECT_NAME, uuid));
+		}
+		validateDeletion(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		int nJobs = 5;
+		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
+		request.setName("test12345");
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().createTagFamily(PROJECT_NAME, request));
+		}
+		validateCreation(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
+		int nJobs = 200;
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()));
+		}
+		for (Future<?> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 

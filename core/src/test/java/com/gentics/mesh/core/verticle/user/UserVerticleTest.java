@@ -20,8 +20,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -36,6 +39,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -44,11 +48,11 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class UserVerticleTest extends AbstractRestVerticleTest {
+public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private UserVerticle userVerticle;
@@ -63,6 +67,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	// Read Tests
 
 	@Test
+	@Override
 	public void testReadByUUID() throws Exception {
 		try (Trx tx = new Trx(db)) {
 			User user = user();
@@ -80,7 +85,35 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadByUUIDWithNoPermission() throws Exception {
+	@Override
+	public void testReadByUuidMultithreaded() throws InterruptedException {
+		int nJobs = 10;
+		String uuid = user().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findUserByUuid(uuid));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
+		int nJobs = 200;
+		Set<Future<UserResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findUserByUuid(user().getUuid()));
+		}
+		for (Future<UserResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+	}
+
+	@Test
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			User user = user();
@@ -96,7 +129,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadAllUsers() throws Exception {
+	@Override
+	public void testReadMultiple() throws Exception {
 
 		String username = "testuser_3";
 		try (Trx tx = new Trx(db)) {
@@ -177,7 +211,27 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	// Update tests
 
 	@Test
-	public void testUpdateUser() throws Exception {
+	@Override
+	public void testUpdateMultithreaded() throws InterruptedException {
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setEmailAddress("t.stark@stark-industries.com");
+		updateRequest.setFirstname("Tony Awesome");
+		updateRequest.setLastname("Epic Stark");
+		updateRequest.setUsername("dummy_user_changed");
+
+		int nJobs = 5;
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().updateUser(user().getUuid(), updateRequest));
+		}
+		validateSet(set, barrier);
+
+	}
+
+	@Test
+	@Override
+	public void testUpdate() throws Exception {
 
 		User user = user();
 		String username = user.getUsername();
@@ -201,6 +255,17 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
 			assertEquals("dummy_user_changed", reloadedUser.getUsername());
 		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		UserUpdateRequest request = new UserUpdateRequest();
+		request.setUsername("New Name");
+
+		Future<UserResponse> future = getClient().updateUser("bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -385,7 +450,8 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateUserWithNoPermission() throws Exception {
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
 		try (Trx tx = new Trx(db)) {
@@ -418,7 +484,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		// Create an user with a conflicting username
 		try (Trx tx = new Trx(db)) {
 			UserRoot userRoot = meshRoot().getUserRoot();
-			User conflictingUser = userRoot.create("existing_username", group(), user());
+			userRoot.create("existing_username", group(), user());
 			tx.success();
 		}
 
@@ -526,20 +592,21 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateUser() throws Exception {
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setEmailAddress("n.user@spam.gentics.com");
-		newUser.setFirstname("Joe");
-		newUser.setLastname("Doe");
-		newUser.setUsername("new_user");
-		newUser.setPassword("test123456");
-		newUser.setGroupUuid(group().getUuid());
+	@Override
+	public void testCreate() throws Exception {
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setFirstname("Joe");
+		request.setLastname("Doe");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+		request.setGroupUuid(group().getUuid());
 
-		Future<UserResponse> future = getClient().createUser(newUser);
+		Future<UserResponse> future = getClient().createUser(request);
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse restUser = future.result();
-		test.assertUser(newUser, restUser);
+		test.assertUser(request, restUser);
 
 		try (Trx tx = new Trx(db)) {
 			CountDownLatch latch = new CountDownLatch(1);
@@ -553,13 +620,34 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 
 	}
 
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		int nJobs = 5;
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setFirstname("Joe");
+		request.setLastname("Doe");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+		request.setGroupUuid(group().getUuid());
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().createUser(request));
+		}
+		validateCreation(set, barrier);
+	}
+
 	/**
 	 * Test whether the create rest call will create the correct permissions that allow removal of the object.
 	 * 
 	 * @throws Exception
 	 */
 	@Test
-	public void testCreateDeleteUser() throws Exception {
+	@Override
+	public void testCreateReadDelete() throws Exception {
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setEmailAddress("n.user@spam.gentics.com");
 		newUser.setFirstname("Joe");
@@ -576,6 +664,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 		try (Trx tx = new Trx(db)) {
 			test.assertUser(newUser, restUser);
 		}
+
+		Future<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid());
+		latchFor(readFuture);
+		assertSuccess(readFuture);
 
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
 		latchFor(deleteFuture);
@@ -594,8 +686,10 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	// Delete tests
+
 	@Test
-	public void testDeleteUserByUUID() throws Exception {
+	@Override
+	public void testDeleteByUUID() throws Exception {
 		User user = user();
 		assertTrue(user.isEnabled());
 		String uuid = user.getUuid();
@@ -614,6 +708,21 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws InterruptedException {
+		int nJobs = 3;
+		String uuid = user().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().deleteUser(uuid));
+		}
+		validateDeletion(set, barrier);
+
+	}
+
+	@Test
+	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
 		String uuid;
@@ -647,7 +756,7 @@ public class UserVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testDeleteByUUID() throws Exception {
+	public void testDeleteByUUID2() throws Exception {
 		String uuid;
 		String name = "extraUser";
 		try (Trx tx = new Trx(db)) {

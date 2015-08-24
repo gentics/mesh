@@ -4,21 +4,25 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -33,17 +37,18 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.verticle.RoleVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class RoleVerticleTest extends AbstractRestVerticleTest {
+public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private RoleVerticle verticle;
@@ -57,7 +62,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	// Create tests
 
 	@Test
-	public void testCreateRole() throws Exception {
+	@Override
+	public void testCreate() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 		request.setGroupUuid(group().getUuid());
@@ -66,17 +72,13 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
+		Future<RoleResponse> readFuture = getClient().findRoleByUuid(future.result().getUuid());
+		latchFor(readFuture);
+		assertSuccess(readFuture);
+
 		RoleResponse restRole = future.result();
 		test.assertRole(request, restRole);
-
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getRoleRoot().findByUuid(restRole.getUuid(), rh -> {
-				assertNotNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		assertElement(meshRoot().getRoleRoot(), restRole.getUuid(), true);
 	}
 
 	@Test
@@ -98,7 +100,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateDeleteRole() throws Exception {
+	@Override
+	public void testCreateReadDelete() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 		request.setGroupUuid(group().getUuid());
@@ -118,7 +121,7 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateRoleWithNoPermissionOnGroup() throws Exception {
+	public void testCreateWithNoPermissionOnGroup() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 		request.setGroupUuid(group().getUuid());
@@ -183,7 +186,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadExtraRoleByUUID() throws Exception {
+	@Override
+	public void testReadByUUID() throws Exception {
 		Role extraRole;
 		try (Trx tx = new Trx(db)) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
@@ -204,7 +208,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadExtraRoleByUUIDWithMissingPermission() throws Exception {
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
 		Role extraRole;
 		try (Trx tx = new Trx(db)) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
@@ -215,7 +220,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-
 		Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", extraRole.getUuid());
@@ -238,7 +242,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testReadRoles() throws Exception {
+	@Override
+	public void testReadMultiple() throws Exception {
 
 		final int nRoles = 21;
 		String noPermRoleName;
@@ -333,7 +338,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	// Update tests
 
 	@Test
-	public void testUpdateRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
+	@Override
+	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 
 		String roleUuid;
 		try (Trx tx = new Trx(db)) {
@@ -364,6 +370,35 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 			});
 			failingLatch(latch);
 		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		String uuid;
+		try (Trx tx = new Trx(db)) {
+			role().revokePermissions(role(), UPDATE_PERM);
+			uuid = role().getUuid();
+		}
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("New Name");
+
+		Future<RoleResponse> future = getClient().updateRole(uuid, request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("renamed role");
+
+		Future<RoleResponse> future = getClient().updateRole("bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+
 	}
 
 	@Test
@@ -400,7 +435,6 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 				latch.countDown();
 			});
 			failingLatch(latch);
-			;
 		}
 
 	}
@@ -408,7 +442,8 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 	// Delete tests
 
 	@Test
-	public void testDeleteRoleByUUID() throws Exception {
+	@Override
+	public void testDeleteByUUID() throws Exception {
 		String roleUuid;
 		String roleName;
 		try (Trx tx = new Trx(db)) {
@@ -424,31 +459,86 @@ public class RoleVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_deleted", future, roleUuid + "/" + roleName);
-
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			roleRoot.findByUuid(roleUuid, rh -> {
-				assertNull("The user should have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 	}
 
 	@Test
-	public void testDeleteRoleByUUIDWithMissingPermission() throws Exception {
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		Future<GenericMessageResponse> future = getClient().deleteRole(role().getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", role().getUuid());
+		assertElement(meshRoot().getRoleRoot(), role().getUuid(), true);
+	}
 
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.roleRoot().findByUuid(role().getUuid(), rh -> {
-				assertNotNull("The role should not have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
+	@Test
+	@Override
+	public void testUpdateMultithreaded() throws InterruptedException {
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("renamed role");
+
+		int nJobs = 5;
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().updateRole(role().getUuid(), request));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreaded() throws Exception {
+		int nJobs = 10;
+		String uuid = role().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findRoleByUuid(uuid));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws Exception {
+		int nJobs = 3;
+		String uuid = role().getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().deleteRole(uuid));
+		}
+		validateDeletion(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		int nJobs = 5;
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("new_role");
+		request.setGroupUuid(group().getUuid());
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().createRole(request));
+		}
+		validateCreation(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
+		int nJobs = 200;
+		Set<Future<RoleResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findRoleByUuid(group().getUuid()));
+		}
+		for (Future<RoleResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 
