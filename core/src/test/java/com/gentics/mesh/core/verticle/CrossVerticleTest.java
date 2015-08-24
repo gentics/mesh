@@ -22,7 +22,7 @@ import io.vertx.core.Future;
 public class CrossVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectNodeVerticle projectVerticle;
+	private ProjectVerticle projectVerticle;
 
 	@Autowired
 	private ProjectTagFamilyVerticle tagFamilyVerticle;
