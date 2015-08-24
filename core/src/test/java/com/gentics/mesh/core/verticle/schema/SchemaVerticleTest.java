@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -13,12 +14,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static com.gentics.mesh.util.MeshAssert.*;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +59,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	// Create Tests
 
 	@Test
-	public void testCreateSimpleSchema() throws HttpStatusCodeErrorException, Exception {
+	@Override
+	public void testCreate() throws HttpStatusCodeErrorException, Exception {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
@@ -82,37 +86,25 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testCreateDeleteSimpleSchema() throws HttpStatusCodeErrorException, Exception {
+	@Override
+	public void testCreateReadDelete() throws HttpStatusCodeErrorException, Exception {
 
 		SchemaCreateRequest request = new SchemaCreateRequest();
-		// request.setDescription("new description");
 		request.setName("new schema name");
 		request.setDisplayField("name");
-		// request.setProjectUuid(data().getProject().getUuid());
-		// PropertyTypeSchemaResponse propertySchema = new PropertyTypeSchemaResponse();
-		// propertySchema.setKey("extra-content");
-		// propertySchema.setType("html");
-		// propertySchema.setDescription("Some extra content");
-		// request.getPropertyTypeSchemas().add(propertySchema);
-		//
 		Future<SchemaResponse> createFuture = getClient().createSchema(request);
 		latchFor(createFuture);
 		assertSuccess(createFuture);
 		SchemaResponse restSchema = createFuture.result();
 		test.assertSchema(request, restSchema);
 
-		// Verify that the object was created
-		try (Trx tx = new Trx(db)) {
-			CountDownLatch latch = new CountDownLatch(1);
-			data().getMeshRoot().getSchemaContainerRoot().findByUuid(restSchema.getUuid(), rh -> {
-				SchemaContainer schemaContainer = rh.result();
-				assertNotNull(schemaContainer);
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 		// test.assertSchema(schema, restSchema);
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
+
+		Future<SchemaResponse> readFuture = getClient().findSchemaByUuid(restSchema.getUuid());
+		latchFor(readFuture);
+		assertSuccess(readFuture);
 
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid());
 		latchFor(deleteFuture);
@@ -212,7 +204,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testReadSchemaByUUID() throws Exception {
+	@Override
+	public void testReadByUUID() throws Exception {
 		SchemaContainer schemaContainer;
 		try (Trx tx = new Trx(db)) {
 			schemaContainer = schemaContainer("content");
@@ -227,7 +220,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testReadSchemaByUUIDWithNoPerm() throws Exception {
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
 		SchemaContainer schema;
 		try (Trx tx = new Trx(db)) {
 			schema = schemaContainer("content");
@@ -265,18 +259,21 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
-		// assertEquals(request.getName(), restSchema.getName());
+		assertEquals(request.getName(), restSchema.getName());
 		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
 			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 				SchemaContainer reloaded = rh.result();
-				// assertEquals("The name should have been updated", "new-name", reloaded.getName());
+				assertEquals("The name should have been updated", "new-name", reloaded.getName());
+				latch.countDown();
 			});
+			failingLatch(latch);
 		}
 
 	}
 
 	@Test
-	public void testUpdateSchemaByBogusUUID() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
 		try (Trx tx = new Trx(db)) {
 			SchemaContainer schema = schemaContainer("content");
 			String oldName = schema.getName();
@@ -341,77 +338,93 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateMultithreaded() throws Exception {
-		// TODO Auto-generated method stub
+		SchemaContainer schema = schemaContainer("content");
+		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		request.setName("new-name");
 
+		int nJobs = 5;
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().updateSchema(schema.getUuid(), request));
+		}
+		validateSet(set, barrier);
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
-		// TODO Auto-generated method stub
-
+		int nJobs = 10;
+		SchemaContainer schema = schemaContainer("content");
+		String uuid = schema.getUuid();
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findSchemaByUuid(uuid));
+		}
+		validateSet(set, barrier);
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws Exception {
-		// TODO Auto-generated method stub
-
+		int nJobs = 3;
+		SchemaContainer schema = schemaContainer("content");
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().deleteSchema(schema.getUuid()));
+		}
+		validateDeletion(set, barrier);
 	}
 
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws Exception {
-		// TODO Auto-generated method stub
+		int nJobs = 5;
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("new schema name");
+		request.setDisplayField("name");
 
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().createSchema(request));
+		}
+		validateCreation(set, barrier);
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Test
-	@Override
-	public void testCreate() throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Test
-	@Override
-	public void testCreateReadDelete() throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Test
-	@Override
-	public void testReadByUUID() throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Test
-	@Override
-	public void testReadByUUIDWithMissingPermission() throws Exception {
-		// TODO Auto-generated method stub
-
+		int nJobs = 200;
+		SchemaContainer schema = schemaContainer("content");
+		Set<Future<SchemaResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findSchemaByUuid(schema.getUuid()));
+		}
+		for (Future<SchemaResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		// TODO Auto-generated method stub
+		SchemaContainer schema = schemaContainer("content");
 
-	}
+		try (Trx tx = new Trx(db)) {
+			role().revokePermissions(schema, UPDATE_PERM);
+			tx.success();
+		}
 
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
-		// TODO Auto-generated method stub
+		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		request.setName("new-name");
+
+		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 
 	}
 

@@ -469,12 +469,15 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 		try (Trx tx = new Trx(db)) {
+			CountDownLatch latch = new CountDownLatch(1);
 			boot.userRoot().findByUuid(user.getUuid(), rh -> {
 				User reloadedUser = rh.result();
 				assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 				assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 				assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
+				latch.countDown();
 			});
+			latch.await();
 		}
 	}
 
