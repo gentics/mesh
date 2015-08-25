@@ -21,7 +21,10 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.verticle.ProjectVerticle;
 import com.gentics.mesh.core.verticle.SchemaVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -31,15 +34,37 @@ import io.vertx.core.Future;
 public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private SchemaVerticle verticle;
+	private SchemaVerticle schemaVerticle;
+
+	@Autowired
+	private ProjectVerticle projectVerticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(schemaVerticle);
+		list.add(projectVerticle);
 		return list;
 	}
 	// Schema Project Testcases - PUT / Add
+
+	@Test
+	public void testAddSchemaToExtraProject() {
+		final String name = "test12345";
+		SchemaContainer schema = schemaContainer("content");
+
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(name);
+
+		Future<ProjectResponse> future = getClient().createProject(request);
+		latchFor(future);
+		assertSuccess(future);
+		ProjectResponse restProject = future.result();
+
+		Future<SchemaResponse> addSchemaFuture = getClient().addSchemaToProject(schema.getUuid(), restProject.getUuid());
+		latchFor(addSchemaFuture);
+		assertSuccess(addSchemaFuture);
+	}
 
 	@Test
 	public void testAddSchemaToProjectWithPerm() throws Exception {

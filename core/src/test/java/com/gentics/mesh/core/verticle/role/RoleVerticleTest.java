@@ -484,6 +484,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws InterruptedException {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
@@ -499,6 +500,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testReadByUuidMultithreaded() throws Exception {
 
 		Future<GenericMessageResponse> future = getClient().login();
@@ -517,6 +519,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		String uuid = role().getUuid();
@@ -530,6 +533,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
 
 		Future<GenericMessageResponse> future = getClient().login();

@@ -163,8 +163,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name"))));
 				} else {
+					Project project;
 					try (Trx txCreate = new Trx(db)) {
-						Project project = create(requestModel.getName(), requestUser);
+						project = create(requestModel.getName(), requestUser);
 						project.setCreator(requestUser);
 						try {
 							routerStorage.addProjectRouter(project.getName());
@@ -174,18 +175,20 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
 							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
 							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
+							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getSchemaContainerRoot());
+							//TODO add microschema root crud perms
 							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
 							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
-							txCreate.commit();
-							handler.handle(Future.succeededFuture(project));
+
+							txCreate.success();
 						} catch (Exception e) {
 							// TODO should we really fail here?
-							tx.rollback();
+							txCreate.failure();
 							handler.handle(Future.failedFuture(
 									new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e)));
 						}
 					}
-
+					handler.handle(Future.succeededFuture(project));
 				}
 			} else {
 				handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid()))));

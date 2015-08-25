@@ -25,6 +25,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -398,6 +399,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws Exception {
 		int nJobs = 5;
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
@@ -413,6 +415,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		String uuid = project().getUuid();
@@ -426,6 +429,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		String uuid = project().getUuid();
@@ -439,6 +443,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 		ProjectCreateRequest request = new ProjectCreateRequest();
