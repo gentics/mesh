@@ -20,6 +20,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 
 	private NodeReference nodeReference;
 
+	//TODO we should use a reference here to include name and uuid
 	private List<String> groups = new ArrayList<>();
 
 	public UserResponse() {
