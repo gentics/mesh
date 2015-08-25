@@ -64,23 +64,6 @@ public class MeshSpringConfiguration {
 		return database;
 	}
 
-//	@Bean
-//	public FramedThreadedTransactionalGraph framedThreadedTransactionalGraph() {
-//		try {
-//			StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-//			Database database = database();
-//			if (database == null) {
-//				throw new MeshConfigurationException("Could not find any database provider");
-//			}
-//	database.init(options);
-//			return database.getFramedGraph();
-//		} catch (Exception e) {
-//			String msg = "Could not get framed graph from database provider";
-//			log.error(msg, e);
-//			throw new RuntimeException(msg, e);
-//		}
-//	}
-
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
@@ -93,7 +76,6 @@ public class MeshSpringConfiguration {
 		}
 		long start = System.currentTimeMillis();
 		Node node = NodeBuilder.nodeBuilder().local(true).node();
-		//		node.client().admin().cluster().prepareHealth().setWaitForActiveShards(1).execute().actionGet();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}

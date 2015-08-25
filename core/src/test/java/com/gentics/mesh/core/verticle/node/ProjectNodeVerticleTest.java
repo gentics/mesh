@@ -171,6 +171,10 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testCreateNodeAndCheckReadOnlyRole() {
+	}
+
+	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
 		NodeCreateRequest request = new NodeCreateRequest();

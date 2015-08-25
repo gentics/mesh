@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -46,14 +47,19 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 public class VerticleHelper {
+
+	private static final Logger log = LoggerFactory.getLogger(VerticleHelper.class);
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
 
@@ -290,6 +296,47 @@ public class VerticleHelper {
 			}
 		});
 	}
+	
+//	public static <T extends GenericVertex<?>> void createObject(RoutingContext rc, RootVertex<T> root) {
+//		final int RETRY_COUNT = 15;
+////		Mesh.vertx().executeBlocking(bc -> {
+//			AtomicBoolean hasFinished = new AtomicBoolean(false);
+//			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
+//				try {
+//					log.debug("Opening new transaction for try: {" + i + "}");
+//					try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+//						if (log.isDebugEnabled()) {
+//							log.debug("Invoking create on root vertex");
+//						}
+//						root.create(rc, rh -> {
+//							if (rh.failed()) {
+//								log.debug("Request for creation failed.", rh.cause());
+//							} else {
+//								GenericVertex<?> vertex = rh.result();
+//								//triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
+//								try (Trx txRead = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+//									vertex.reload();
+//									transformAndResponde(rc, vertex);
+//								}
+//							}
+//							hasFinished.set(true);
+//						});
+//					}
+//				} catch (OConcurrentModificationException e) {
+//					log.error("Creation failed in try {" + i + "} retrying.");
+//				}
+//			}
+//			if (!hasFinished.get()) {
+//				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
+//				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepmts."));
+//			}
+////		} , false, rh -> {
+////			if (rh.failed()) {
+////				rc.fail(rh.cause());
+////			}
+////		});
+//
+//	}
 
 	public static <T extends GenericVertex<?>> void updateObject(RoutingContext rc, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
@@ -321,11 +368,12 @@ public class VerticleHelper {
 		Mesh.vertx().executeBlocking(bc -> {
 			try (Trx tx = new Trx(db)) {
 				BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
-				Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 				tx.success();
 			}
+			Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
 		} , false, rh -> {
-			if(rh.failed()) {
+			if (rh.failed()) {
+				//TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
 				rh.cause().printStackTrace();
 			}
 		});
@@ -377,19 +425,21 @@ public class VerticleHelper {
 		} else {
 			I18NService i18n = I18NService.getI18n();
 			root.findByUuid(uuid, rh -> {
-				if (rh.failed()) {
-					handler.handle(Future.failedFuture(rh.cause()));
-				} else {
-					T node = rh.result();
-					if (node == null) {
-						handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
+				try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+					if (rh.failed()) {
+						handler.handle(Future.failedFuture(rh.cause()));
 					} else {
-
-						MeshAuthUser requestUser = getUser(rc);
-						if (requestUser.hasPermission(node, perm)) {
-							handler.handle(Future.succeededFuture(node));
+						T node = rh.result();
+						if (node == null) {
+							handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
 						} else {
-							handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+							MeshAuthUser requestUser = getUser(rc);
+							if (requestUser.hasPermission(node, perm)) {
+								handler.handle(Future.succeededFuture(node));
+							} else {
+								handler.handle(
+										Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+							}
 						}
 					}
 				}

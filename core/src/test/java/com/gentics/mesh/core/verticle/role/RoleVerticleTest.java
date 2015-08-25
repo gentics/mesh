@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.verticle.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.RoleVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
@@ -51,12 +52,16 @@ import io.vertx.core.Future;
 public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
-	private RoleVerticle verticle;
+	private RoleVerticle roleVerticle;
+
+	@Autowired
+	private AuthenticationVerticle authVerticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(authVerticle);
+		list.add(roleVerticle);
 		return list;
 	}
 	// Create tests
@@ -521,17 +526,22 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws Exception {
-		int nJobs = 5;
-		RoleCreateRequest request = new RoleCreateRequest();
-		request.setName("new_role");
-		request.setGroupUuid(group().getUuid());
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Future<GenericMessageResponse> future = getClient().login();
+		latchFor(future);
+		assertSuccess(future);
+
+		int nJobs = 20;
+		//		CyclicBarrier barrier = prepareBarrier(1);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			RoleCreateRequest request = new RoleCreateRequest();
+			request.setName("new_role_" + i);
+			request.setGroupUuid(group().getUuid());
 			set.add(getClient().createRole(request));
 		}
-		validateCreation(set, barrier);
+		validateFutures(set);
+		Thread.sleep(10000);
 	}
 
 	@Test

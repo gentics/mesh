@@ -44,16 +44,15 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	public void setLinkInTo(VertexFrame vertex, String... labels) {
+		// Unlink all edges between both objects with the given label
 		unlinkIn(vertex, labels);
+		// Create a new edge with the given label
 		linkIn(vertex, labels);
 	}
 
 	public void setLinkOutTo(VertexFrame vertex, String... labels) {
-
 		// Unlink all edges between both objects with the given label
-		// if (out(labels).retain(vertex).hasNext()) {
 		unlinkOut(vertex, labels);
-		// }
 		// Create a new edge with the given label
 		linkOut(vertex, labels);
 	}

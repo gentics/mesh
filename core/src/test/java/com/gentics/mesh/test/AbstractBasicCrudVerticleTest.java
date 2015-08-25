@@ -47,6 +47,13 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 	}
 
+	protected void validateFutures(Set<Future<?>> set) {
+		for (Future<?> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+	}
+
 	protected void validateCreation(Set<Future<?>> set, CyclicBarrier barrier)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Set<String> uuids = new HashSet<>();
@@ -55,7 +62,7 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 			assertSuccess(future);
 			Object result = future.result();
 			// Rest responses do not share a common class. We just use reflection to extract the uuid from the response pojo
-			Object uuidObject = result.getClass().getDeclaredMethod("getUuid").invoke(result);
+			Object uuidObject = result.getClass().getMethod("getUuid").invoke(result);
 			String currentUuid = uuidObject.toString();
 			assertFalse("The rest api returned a response with a uuid that was returned before. Each create request must always be atomic.",
 					uuids.contains(currentUuid));

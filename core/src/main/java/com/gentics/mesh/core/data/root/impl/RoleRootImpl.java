@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -70,6 +69,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 		role.setCreationTimestamp(System.currentTimeMillis());
 		role.setEditor(creator);
 		role.setLastEditedTimestamp(System.currentTimeMillis());
+
 		addRole(role);
 		if (group != null) {
 			group.addRole(role);
@@ -94,22 +94,25 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 			return;
 		}
 
-		if (boot.roleRoot().findByName(requestModel.getName()) != null) {
+		if (findByName(requestModel.getName()) != null) {
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name"))));
 			return;
 		}
 
 		loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
-			if (hasSucceeded(rc, rh)) {
+			if (rh.succeeded()) {
 				Group parentGroup = rh.result();
 				Role role = null;
 				try (Trx txCreate = new Trx(db)) {
-					role = boot.roleRoot().create(requestModel.getName(), parentGroup, requestUser);
+					role = create(requestModel.getName(), parentGroup, requestUser);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
 					txCreate.commit();
 					handler.handle(Future.succeededFuture(role));
 				}
 				return;
+			} else {
+				handler.handle(Future.failedFuture(
+						new HttpStatusCodeErrorException(BAD_REQUEST, "Could not load group {" + requestModel.getGroupUuid() + "}", rh.cause())));
 			}
 		});
 	}

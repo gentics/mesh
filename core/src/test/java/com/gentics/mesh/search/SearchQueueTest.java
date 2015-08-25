@@ -1,13 +1,14 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
-import static com.gentics.mesh.util.MeshAssert.*;
+
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 public class SearchQueueTest extends AbstractDBTest {
 
@@ -50,28 +52,49 @@ public class SearchQueueTest extends AbstractDBTest {
 
 	@Test
 	public void testQueueThreadSafety() throws InterruptedException {
+
+		SearchQueue searchQueue;
+
+		// Add some entries to the search queue
 		try (Trx tx = new Trx(db)) {
-			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			searchQueue = boot.meshRoot().getSearchQueue();
 			for (Node node : boot.nodeRoot().findAll()) {
 				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
 			}
+			tx.success();
+		}
+
+		try (Trx tx = new Trx(db)) {
 			long size = searchQueue.getSize();
 			SearchQueueEntry entry = searchQueue.take();
 			assertNotNull(entry);
 			assertEquals(size - 1, searchQueue.getSize());
+		}
 
-			size = searchQueue.getSize();
+		try (Trx tx = new Trx(db)) {
+			long size = searchQueue.getSize();
+			System.out.println("Size: " + size);
 			CountDownLatch latch = new CountDownLatch((int) size);
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i <= size; i++) {
 				Runnable r = () -> {
-					try (Trx tx2 = new Trx(db)) {
+					int z = 0;
+					while (true) {
 						try {
-							SearchQueueEntry currentEntry = searchQueue.take();
+							try (Trx txTake = new Trx(db)) {
+								try {
+									SearchQueueEntry currentEntry = searchQueue.take();
+									assertNotNull("entry was null." + currentEntry);
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+								txTake.success();
+							}
+							System.out.println("Got the element");
 							latch.countDown();
-							assertNotNull("entry was null." + currentEntry);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							break;
+						} catch (OConcurrentModificationException e) {
+							System.out.println("Got it  - Try: " + z + " Size: " + searchQueue.getSize());
+							z++;
 						}
 					}
 				};
@@ -79,8 +102,12 @@ public class SearchQueueTest extends AbstractDBTest {
 				t.start();
 			}
 			failingLatch(latch);
+		}
+
+		try (Trx tx = new Trx(db)) {
+			searchQueue.reload();
 			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
-			entry = searchQueue.take();
+			SearchQueueEntry entry = searchQueue.take();
 			assertNull(entry);
 
 			CountDownLatch latch2 = new CountDownLatch(10);

@@ -28,7 +28,7 @@ public class MeshAuthProvider implements AuthProvider {
 
 	@Autowired
 	private BootstrapInitializer boot;
-	
+
 	@Autowired
 	private Database database;
 
@@ -53,7 +53,11 @@ public class MeshAuthProvider implements AuthProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("The account password hash or token password string are invalid.");
 					}
+					resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
 				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("Validating password using the bcrypt password encoder");
+					}
 					hashMatches = springConfiguration.passwordEncoder().matches(password, accountPasswordHash);
 				}
 				if (hashMatches) {
@@ -68,16 +72,11 @@ public class MeshAuthProvider implements AuthProvider {
 				// TODO Don't let the user know that we know that he did not exist?
 				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
 			}
-//		} , (AsyncResult<MeshAuthUser> rh) -> {
-//			if (rh.succeeded()) {
-//				resultHandler.handle(Future.succeededFuture(rh.result()));
-//			} else {
-//				log.error("Error while authenticating user.", rh.cause());
-//				resultHandler.handle(Future.failedFuture(rh.cause()));
-//			}
-//		});
-		}, false, rh -> {
-			
+		} , false, rh -> {
+			if (!rh.succeeded()) {
+				log.error("Error while authenticating user.", rh.cause());
+				resultHandler.handle(Future.failedFuture(rh.cause()));
+			}
 		});
 
 	}

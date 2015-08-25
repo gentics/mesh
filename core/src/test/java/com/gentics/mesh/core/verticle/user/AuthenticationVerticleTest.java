@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.user;
+
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
@@ -21,6 +22,7 @@ import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -50,6 +52,8 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = client.login();
 		latchFor(future);
 		assertSuccess(future);
+		assertNotNull(getClient().getCookie());
+
 		GenericMessageResponse loginResponse = future.result();
 		assertNotNull(loginResponse);
 		assertEquals("OK", loginResponse.getMessage());

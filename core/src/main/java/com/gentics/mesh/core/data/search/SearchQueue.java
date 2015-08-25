@@ -17,8 +17,19 @@ public interface SearchQueue extends MeshVertex {
 	 */
 	void put(String uuid, String type, SearchQueueEntryAction action);
 
+	/**
+	 * Add a search queue entry to the queue.
+	 * 
+	 * @param entry
+	 */
 	void put(SearchQueueEntry entry);
 
+	/**
+	 * Fetch a search queue entry and remove it from the queue.
+	 * 
+	 * @return
+	 * @throws InterruptedException
+	 */
 	SearchQueueEntry take() throws InterruptedException;
 
 	/**
