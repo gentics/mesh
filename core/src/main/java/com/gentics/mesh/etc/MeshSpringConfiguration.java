@@ -59,6 +59,9 @@ public class MeshSpringConfiguration {
 	@Bean
 	public Database database() {
 		Database database = databaseService().getDatabase();
+		if (database == null) {
+			throw new RuntimeException("No database provider could be found.");
+		}
 		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
 		database.init(options);
 		return database;

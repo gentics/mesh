@@ -24,6 +24,7 @@ public class SpringTestConfiguration {
 	public void setup() {
 		MeshOptions options = new MeshOptions();
 		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
+		options.getStorageOptions().setDirectory(null);
 		Mesh.initalize(options);
 	}
 

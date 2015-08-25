@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 public class SearchQueueTest extends AbstractDBTest {
 
@@ -79,7 +78,7 @@ public class SearchQueueTest extends AbstractDBTest {
 				Runnable r = () -> {
 					int z = 0;
 					while (true) {
-						try {
+//						try {
 							try (Trx txTake = new Trx(db)) {
 								try {
 									SearchQueueEntry currentEntry = searchQueue.take();
@@ -92,10 +91,10 @@ public class SearchQueueTest extends AbstractDBTest {
 							System.out.println("Got the element");
 							latch.countDown();
 							break;
-						} catch (OConcurrentModificationException e) {
-							System.out.println("Got it  - Try: " + z + " Size: " + searchQueue.getSize());
-							z++;
-						}
+//						} catch (OConcurrentModificationException e) {
+//							System.out.println("Got it  - Try: " + z + " Size: " + searchQueue.getSize());
+//							z++;
+//						}
 					}
 				};
 				Thread t = new Thread(r);
