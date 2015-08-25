@@ -98,7 +98,9 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaResponse restSchema = createFuture.result();
 		test.assertSchema(request, restSchema);
 
-		assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
+		}
 		// test.assertSchema(schema, restSchema);
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
@@ -329,9 +331,9 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		}
 
 		fail("unspecified test");
-		//		String json = "error";
-		// assertEqualsSanitizedJson("Response json does not match the expected one.", json, response);
-		assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
+		}
 
 	}
 

@@ -78,7 +78,9 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		RoleResponse restRole = future.result();
 		test.assertRole(request, restRole);
-		assertElement(meshRoot().getRoleRoot(), restRole.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(meshRoot().getRoleRoot(), restRole.getUuid(), true);
+		}
 	}
 
 	@Test
@@ -459,7 +461,9 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_deleted", future, roleUuid + "/" + roleName);
-		assertElement(meshRoot().getRoleRoot(), roleUuid, false);
+		try (Trx tx = new Trx(db)) {
+			assertElement(meshRoot().getRoleRoot(), roleUuid, false);
+		}
 	}
 
 	@Test
@@ -468,7 +472,9 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteRole(role().getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", role().getUuid());
-		assertElement(meshRoot().getRoleRoot(), role().getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(meshRoot().getRoleRoot(), role().getUuid(), true);
+		}
 	}
 
 	@Test

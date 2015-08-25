@@ -82,7 +82,9 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
-		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
+		}
 
 	}
 
@@ -122,7 +124,9 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
+		}
 		future = getClient().createGroup(request);
 		latchFor(future);
 		expectException(future, CONFLICT, "group_conflicting_name");
@@ -436,8 +440,9 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("group_deleted", future, uuid + "/" + name);
-
-		assertElement(boot.groupRoot(), uuid, false);
+		try (Trx tx = new Trx(db)) {
+			assertElement(boot.groupRoot(), uuid, false);
+		}
 
 	}
 
@@ -456,8 +461,9 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
-
-		assertElement(boot.groupRoot(), group.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(boot.groupRoot(), group.getUuid(), true);
+		}
 	}
 
 	@Test

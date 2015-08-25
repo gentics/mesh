@@ -37,19 +37,16 @@ public final class MeshAssert {
 	}
 
 	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws InterruptedException {
-		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-			CountDownLatch latch = new CountDownLatch(1);
-			root.findByUuid(uuid, rh -> {
-				if (exists) {
-					assertNotNull("The element should not exist.", rh.result());
-				} else {
-					assertNull("The element should not exist.", rh.result());
-				}
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
-
+		CountDownLatch latch = new CountDownLatch(1);
+		root.findByUuid(uuid, rh -> {
+			if (exists) {
+				assertNotNull("The element should not exist.", rh.result());
+			} else {
+				assertNull("The element should not exist.", rh.result());
+			}
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	public static int getTimeout() throws UnknownHostException {

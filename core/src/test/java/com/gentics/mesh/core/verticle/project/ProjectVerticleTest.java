@@ -365,9 +365,9 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("project_deleted", future, uuid + "/" + name);
-
-		assertElement(meshRoot().getProjectRoot(), uuid, false);
-
+		try (Trx tx = new Trx(db)) {
+			assertElement(meshRoot().getProjectRoot(), uuid, false);
+		}
 		// TODO check for removed routers?
 	}
 

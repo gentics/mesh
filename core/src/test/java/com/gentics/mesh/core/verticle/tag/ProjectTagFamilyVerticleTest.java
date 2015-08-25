@@ -277,8 +277,9 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
-
-		assertElement(project().getTagFamilyRoot(), uuid, false);
+		try (Trx tx = new Trx(db)) {
+			assertElement(project().getTagFamilyRoot(), uuid, false);
+		}
 
 	}
 
@@ -293,7 +294,9 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 			tx.success();
 		}
 
-		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+		}
 
 		try (Trx tx = new Trx(db)) {
 			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
@@ -301,7 +304,9 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
 		}
 
-		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+		try (Trx tx = new Trx(db)) {
+			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+		}
 
 	}
 
