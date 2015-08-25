@@ -54,10 +54,10 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 			groupUuids.add(group.getUuid());
 			groupNames.add(group.getName());
 		}
-		Map<String, List<String>> tagFields = new HashMap<>();
-		tagFields.put("uuid", groupUuids);
-		tagFields.put("name", groupNames);
-		map.put("groups", tagFields);
+		Map<String, List<String>> groupFields = new HashMap<>();
+		groupFields.put("uuid", groupUuids);
+		groupFields.put("name", groupNames);
+		map.put("groups", groupFields);
 	}
 
 	@Override
