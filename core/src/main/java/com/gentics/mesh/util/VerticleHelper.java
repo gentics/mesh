@@ -294,47 +294,47 @@ public class VerticleHelper {
 			}
 		});
 	}
-	
-//	public static <T extends GenericVertex<?>> void createObject(RoutingContext rc, RootVertex<T> root) {
-//		final int RETRY_COUNT = 15;
-////		Mesh.vertx().executeBlocking(bc -> {
-//			AtomicBoolean hasFinished = new AtomicBoolean(false);
-//			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
-//				try {
-//					log.debug("Opening new transaction for try: {" + i + "}");
-//					try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-//						if (log.isDebugEnabled()) {
-//							log.debug("Invoking create on root vertex");
-//						}
-//						root.create(rc, rh -> {
-//							if (rh.failed()) {
-//								log.debug("Request for creation failed.", rh.cause());
-//							} else {
-//								GenericVertex<?> vertex = rh.result();
-//								//triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
-//								try (Trx txRead = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-//									vertex.reload();
-//									transformAndResponde(rc, vertex);
-//								}
-//							}
-//							hasFinished.set(true);
-//						});
-//					}
-//				} catch (OConcurrentModificationException e) {
-//					log.error("Creation failed in try {" + i + "} retrying.");
-//				}
-//			}
-//			if (!hasFinished.get()) {
-//				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
-//				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepmts."));
-//			}
-////		} , false, rh -> {
-////			if (rh.failed()) {
-////				rc.fail(rh.cause());
-////			}
-////		});
-//
-//	}
+
+	//	public static <T extends GenericVertex<?>> void createObject(RoutingContext rc, RootVertex<T> root) {
+	//		final int RETRY_COUNT = 15;
+	////		Mesh.vertx().executeBlocking(bc -> {
+	//			AtomicBoolean hasFinished = new AtomicBoolean(false);
+	//			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
+	//				try {
+	//					log.debug("Opening new transaction for try: {" + i + "}");
+	//					try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+	//						if (log.isDebugEnabled()) {
+	//							log.debug("Invoking create on root vertex");
+	//						}
+	//						root.create(rc, rh -> {
+	//							if (rh.failed()) {
+	//								log.debug("Request for creation failed.", rh.cause());
+	//							} else {
+	//								GenericVertex<?> vertex = rh.result();
+	//								//triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
+	//								try (Trx txRead = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+	//									vertex.reload();
+	//									transformAndResponde(rc, vertex);
+	//								}
+	//							}
+	//							hasFinished.set(true);
+	//						});
+	//					}
+	//				} catch (OConcurrentModificationException e) {
+	//					log.error("Creation failed in try {" + i + "} retrying.");
+	//				}
+	//			}
+	//			if (!hasFinished.get()) {
+	//				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
+	//				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepmts."));
+	//			}
+	////		} , false, rh -> {
+	////			if (rh.failed()) {
+	////				rc.fail(rh.cause());
+	////			}
+	////		});
+	//
+	//	}
 
 	public static <T extends GenericVertex<?>> void updateObject(RoutingContext rc, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
@@ -363,18 +363,18 @@ public class VerticleHelper {
 	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-//		Mesh.vertx().executeBlocking(bc -> {
-			try (Trx tx = new Trx(db)) {
-				BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
-				tx.success();
-			}
-			Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-//		} , false, rh -> {
-//			if (rh.failed()) {
-//				TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
-//				rh.cause().printStackTrace();
-//			}
-//		});
+		//		Mesh.vertx().executeBlocking(bc -> {
+		try (Trx tx = new Trx(db)) {
+			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
+			tx.success();
+		}
+		Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+		//		} , false, rh -> {
+		//			if (rh.failed()) {
+		//				TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
+		//				rh.cause().printStackTrace();
+		//			}
+		//		});
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
@@ -412,6 +412,27 @@ public class VerticleHelper {
 					.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_request_parameter_missing", uuidParameterName))));
 		} else {
 			loadObjectByUuid(rc, uuid, perm, root, handler);
+		}
+	}
+
+	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root) {
+		if (root == null) {
+			// TODO i18n
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not find root node.");
+		} else {
+			I18NService i18n = I18NService.getI18n();
+			T object = root.findByUuidBlocking(uuid);
+			if (object == null) {
+				throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
+			} else {
+				MeshAuthUser requestUser = getUser(rc);
+				if (requestUser.hasPermission(object, perm)) {
+					return object;
+				} else {
+					throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", object.getUuid()));
+				}
+
+			}
 		}
 	}
 

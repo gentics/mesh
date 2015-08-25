@@ -288,6 +288,11 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse restUser = future.result();
+
+		try (Trx tx = new Trx(db)) {
+			assertNotNull(user().getReferencedNode());
+		}
+
 		assertNotNull(restUser.getNodeReference());
 		assertEquals(DemoDataProvider.PROJECT_NAME, restUser.getNodeReference().getProjectName());
 		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
@@ -627,17 +632,17 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		UserCreateRequest request = new UserCreateRequest();
-		request.setEmailAddress("n.user@spam.gentics.com");
-		request.setFirstname("Joe");
-		request.setLastname("Doe");
-		request.setUsername("new_user");
-		request.setPassword("test123456");
-		request.setGroupUuid(group().getUuid());
 
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			UserCreateRequest request = new UserCreateRequest();
+			request.setEmailAddress("n.user@spam.gentics.com");
+			request.setFirstname("Joe");
+			request.setLastname("Doe");
+			request.setUsername("new_user_" + i);
+			request.setPassword("test123456");
+			request.setGroupUuid(group().getUuid());
 			set.add(getClient().createUser(request));
 		}
 		validateCreation(set, barrier);

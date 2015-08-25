@@ -69,4 +69,6 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	 */
 	void create(RoutingContext rc, Handler<AsyncResult<T>> handler);
 
+	T findByUuidBlocking(String uuid);
+
 }

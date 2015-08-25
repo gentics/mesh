@@ -334,7 +334,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 						loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
 							if (hasSucceeded(rc, nrh)) {
 								setReferencedNode(nrh.result());
-								tx.success();
+								tx.commit();
 							}
 						});
 					}

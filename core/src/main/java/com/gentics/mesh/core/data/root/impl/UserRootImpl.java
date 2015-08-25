@@ -7,6 +7,7 @@ import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -154,21 +156,18 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 							String referencedNodeUuid = requestModel.getNodeReference().getUuid();
 							String projectName = requestModel.getNodeReference().getProjectName();
-							/* TODO decide whether we need to check perms on the project as well */
+							// TODO decide whether we need to check perms on the project as well 
 							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 							if (project == null) {
 								handler.handle(Future
 										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
 								return;
 							}
-							loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
-								if (hasSucceeded(rc, nrh)) {
-									user.setReferencedNode(nrh.result());
-									txCreate.commit();
-									handler.handle(Future.succeededFuture(user));
-									return;
-								}
-							});
+							Node node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+
+							user.setReferencedNode(node);
+							txCreate.commit();
+							handler.handle(Future.succeededFuture(user));
 
 						} else {
 							txCreate.commit();

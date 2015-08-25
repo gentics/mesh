@@ -56,13 +56,14 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 
 	@Override
 	public RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
-		// Vertx vertx = Mesh.vertx();
-		// vertx.executeBlocking(rh -> {
 		resultHandler.handle(Future.succeededFuture(
 				out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
-		// rh.complete(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
-		// }, false, resultHandler);
 		return this;
+	}
+
+	@Override
+	public T findByUuidBlocking(String uuid) {
+		return out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	@Override
