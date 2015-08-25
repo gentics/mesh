@@ -22,6 +22,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -56,9 +57,15 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
-			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
-		}
+		Mesh.vertx().executeBlocking(bc -> {
+			try (Trx tx = new Trx(db)) {
+				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
+			}
+		} , false, rh -> {
+			if (rh.failed()) {
+				rc.fail(rh.cause());
+			}
+		});
 	}
 
 	@Override

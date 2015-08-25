@@ -30,11 +30,7 @@ public class Trx implements AutoCloseable {
 			log.debug("Starting transaction {" + currentGraph.hashCode() + "}");
 		}
 		oldLocalGraph = localGraph.get();
-		// if (oldLocalGraph == null) {
 		localGraph.set(currentGraph);
-		// } else {
-		// currentGraph = localGraph.get();
-		// }
 	}
 
 	public void success() {
@@ -66,6 +62,9 @@ public class Trx implements AutoCloseable {
 		setLocalGraph(oldLocalGraph);
 	}
 
+	/**
+	 * This method is used for testing multithreading issues.
+	 */
 	private void handleDebug() {
 		if (debug && barrier != null) {
 			if (log.isDebugEnabled()) {

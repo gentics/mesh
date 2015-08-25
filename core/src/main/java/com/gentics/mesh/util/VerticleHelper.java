@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -47,7 +46,6 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -445,7 +443,6 @@ public class VerticleHelper {
 				}
 			});
 		}
-
 	}
 
 	public static boolean hasSucceeded(RoutingContext rc, AsyncResult<?> result) {
