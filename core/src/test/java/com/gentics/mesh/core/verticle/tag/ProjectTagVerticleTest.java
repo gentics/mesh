@@ -336,6 +336,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		tagCreateRequest.getFields().setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
 		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
 		assertSuccess(future);
@@ -408,12 +409,12 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		TagCreateRequest request = new TagCreateRequest();
-		request.getFields().setName("newcolor");
 
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			TagCreateRequest request = new TagCreateRequest();
+			request.getFields().setName("newcolor_" + i);
 			set.add(getClient().createTag(DemoDataProvider.PROJECT_NAME, request));
 		}
 		validateCreation(set, barrier);

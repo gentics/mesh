@@ -7,7 +7,7 @@ import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getProject;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static com.gentics.mesh.util.VerticleHelper.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -80,7 +80,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 	public void create(RoutingContext rc, Handler<AsyncResult<Tag>> handler) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-
+		Tag newTag;
 		try (Trx txCreate = new Trx(db)) {
 
 			Project project = getProject(rc);
@@ -91,31 +91,43 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				return;
 			}
 			//TODO first check uuid - then use uuid or use name if possible
-			
+
 			TagFamilyReference reference = requestModel.getTagFamilyReference();
 			if (reference == null || isEmpty(reference.getUuid())) {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set"))));
 				return;
 			}
 
-			loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					TagFamily tagFamily = rh.result();
-					if (tagFamily.findTagByName(tagName) != null) {
-						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
-								i18n.get(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
-						return;
-					}
-					Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
-					getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
-					project.getTagRoot().addTag(newTag);
-					txCreate.commit();
-					handler.handle(Future.succeededFuture(newTag));
-					return;
-				}
-			});
+			TagFamily tagFamily = loadObjectByUuidBlocking(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM,
+					project.getTagFamilyRoot());
+			if (tagFamily.findTagByName(tagName) != null) {
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
+						i18n.get(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
+				return;
+			}
+			newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
+			getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
+			project.getTagRoot().addTag(newTag);
+			txCreate.success();
+			//			loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
+			//				if (hasSucceeded(rc, rh)) {
+			//					TagFamily tagFamily = rh.result();
+			//					if (tagFamily.findTagByName(tagName) != null) {
+			//						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
+			//								i18n.get(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
+			//						return;
+			//					}
+			//					Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
+			//					getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
+			//					project.getTagRoot().addTag(newTag);
+			//					txCreate.commit();
+			//					handler.handle(Future.succeededFuture(newTag));
+			//					return;
+			//				}
+			//			});
 
 		}
+		handler.handle(Future.succeededFuture(newTag));
 
 	}
 
