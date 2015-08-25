@@ -65,7 +65,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		Mesh.vertx().executeBlocking(bc -> {
+//		Mesh.vertx().executeBlocking(bc -> {
 			try (Trx tx = new Trx(db)) {
 				String uuid = rc.request().params().get("uuid");
 				Project project = getProject(rc);
@@ -75,25 +75,25 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					deleteObject(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
 				}
 			}
-		} , false, rh -> {
-			if (rh.failed()) {
-				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, rh.cause().getMessage()));
-			}
-		});
+//		} , false, rh -> {
+//			if (rh.failed()) {
+//				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, rh.cause().getMessage()));
+//			}
+//		});
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		Mesh.vertx().executeBlocking(bc -> {
+//		Mesh.vertx().executeBlocking(bc -> {
 			try (Trx tx = new Trx(db)) {
 				Project project = getProject(rc);
 				updateObject(rc, "uuid", project.getNodeRoot());
 			}
-		} , false, rh -> {
-			if (rh.failed()) {
-				rh.cause().printStackTrace();
-			}
-		});
+//		} , false, rh -> {
+//			if (rh.failed()) {
+//				rh.cause().printStackTrace();
+//			}
+//		});
 
 	}
 
@@ -103,16 +103,16 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-			Mesh.vertx().executeBlocking(bc -> {
+//			Mesh.vertx().executeBlocking(bc -> {
 				try (Trx tx = new Trx(db)) {
 					Project project = getProject(rc);
 					loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
 				}
-			} , false, rh -> {
-				if (rh.failed()) {
-					rh.cause().printStackTrace();
-				}
-			});
+//			} , false, rh -> {
+//				if (rh.failed()) {
+//					rh.cause().printStackTrace();
+//				}
+//			});
 		}
 	}
 

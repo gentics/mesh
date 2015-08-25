@@ -363,18 +363,18 @@ public class VerticleHelper {
 	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		Mesh.vertx().executeBlocking(bc -> {
+//		Mesh.vertx().executeBlocking(bc -> {
 			try (Trx tx = new Trx(db)) {
 				BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
 				tx.success();
 			}
 			Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-		} , false, rh -> {
-			if (rh.failed()) {
-				//TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
-				rh.cause().printStackTrace();
-			}
-		});
+//		} , false, rh -> {
+//			if (rh.failed()) {
+//				TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
+//				rh.cause().printStackTrace();
+//			}
+//		});
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(RoutingContext rc, String uuidParameterName, String i18nMessageKey,

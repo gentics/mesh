@@ -507,7 +507,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int nJobs = 10;
 		String uuid = role().getUuid();
-		CyclicBarrier barrier = prepareBarrier(5);
+		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findRoleByUuid(uuid));
@@ -552,7 +552,12 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		int nJobs = 200;
+
+		Future<GenericMessageResponse> loginFuture = getClient().login();
+		latchFor(loginFuture);
+		assertSuccess(loginFuture);
+
+		int nJobs = 400;
 		Set<Future<RoleResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findRoleByUuid(role().getUuid()));

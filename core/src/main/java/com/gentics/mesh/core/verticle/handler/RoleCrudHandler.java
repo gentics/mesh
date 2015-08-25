@@ -57,15 +57,15 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		Mesh.vertx().executeBlocking(bc -> {
+//		Mesh.vertx().executeBlocking(bc -> {
 			try (Trx tx = new Trx(db)) {
 				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
 			}
-		} , false, rh -> {
-			if (rh.failed()) {
-				rc.fail(rh.cause());
-			}
-		});
+//		} , false, rh -> {
+//			if (rh.failed()) {
+//				rc.fail(rh.cause());
+//			}
+//		});
 	}
 
 	@Override
