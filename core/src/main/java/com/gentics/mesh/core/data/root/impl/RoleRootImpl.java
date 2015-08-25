@@ -111,8 +111,12 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 				}
 				return;
 			} else {
-				handler.handle(Future.failedFuture(
-						new HttpStatusCodeErrorException(BAD_REQUEST, "Could not load group {" + requestModel.getGroupUuid() + "}", rh.cause())));
+				if (rh.cause() != null) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					handler.handle(Future.failedFuture(
+							new HttpStatusCodeErrorException(BAD_REQUEST, "Could not load group {" + requestModel.getGroupUuid() + "}", rh.cause())));
+				}
 			}
 		});
 	}

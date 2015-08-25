@@ -30,7 +30,6 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -38,11 +37,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.GroupVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -355,6 +350,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = new Trx(db)) {
 			role().revokePermissions(group(), UPDATE_PERM);
 			uuid = group().getUuid();
+			tx.success();
 		}
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName("new Name");
@@ -515,14 +511,14 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws Exception {
-		GroupCreateRequest request = new GroupCreateRequest();
-		request.setName("test12345");
 
 		int nJobs = 5;
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking createGroup REST call");
+			GroupCreateRequest request = new GroupCreateRequest();
+			request.setName("test12345_" + i);
 			set.add(getClient().createGroup(request));
 		}
 		validateCreation(set, barrier);
