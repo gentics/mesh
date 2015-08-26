@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.util.VerticleHelper.getProject;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.util.VerticleHelper.*;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -158,37 +159,33 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						return;
 					}
 
-					Handler<AsyncResult<Node>> nodeCreatedHandler = pnh -> {
-						Node node = pnh.result();
-
+					Node node;
+					try (Trx txCreate = new Trx(db)) {
+						requestUser.reload();
+						project.reload();
+						// Load the parent node in order to create the node
+						Node parentNode = loadObjectByUuidBlocking(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot());
+						node = parentNode.create(requestUser, schemaContainer, project);
+						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
 							handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST,
 									i18n.get(rc, "node_no_language_found", requestModel.getLanguage()))));
+							txCreate.failure();
 							return;
 						}
 						try {
 							NodeFieldContainer container = node.getOrCreateFieldContainer(language);
 							container.setFieldFromRest(rc, requestModel.getFields(), schema);
-							tx.success();
-							handler.handle(Future.succeededFuture(node));
 						} catch (Exception e) {
 							handler.handle(Future.failedFuture(e));
+							txCreate.failure();
 							return;
 						}
-
-					};
-
-					// Load the parent node in order to create the node
-					loadObjectByUuid(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot(), rhp -> {
-						if (hasSucceeded(rc, rhp)) {
-							Node parentNode = rhp.result();
-							Node node = parentNode.create(requestUser, schemaContainer, project);
-							requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-							nodeCreatedHandler.handle(Future.succeededFuture(node));
-						}
-					});
+						txCreate.success();
+					}
+					handler.handle(Future.succeededFuture(node));
 				} catch (Exception e) {
 					handler.handle(Future.failedFuture(e));
 					return;

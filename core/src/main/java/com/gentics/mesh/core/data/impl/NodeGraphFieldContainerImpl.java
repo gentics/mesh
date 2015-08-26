@@ -69,9 +69,13 @@ import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeFieldContainer {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
 	private void failOnMissingMandatoryField(GraphField field, Field restField, FieldSchema schema, String key) throws MeshSchemaException {
 		if (field == null && schema.isRequired() && restField == null) {
@@ -279,6 +283,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					throw new NotImplementedException();
 				} else {
 					// TODO unknown type - throw better error
+
 					throw new NotImplementedException();
 				}
 				break;

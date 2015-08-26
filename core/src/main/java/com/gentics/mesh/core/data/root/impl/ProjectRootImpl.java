@@ -165,6 +165,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 				} else {
 					Project project;
 					try (Trx txCreate = new Trx(db)) {
+						requestUser.reload();
 						project = create(requestModel.getName(), requestUser);
 						project.setCreator(requestUser);
 						try {

@@ -3,10 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getProject;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -14,13 +11,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -93,7 +88,6 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		try (Trx tx = new Trx(db)) {
-			Project project = getProject(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			TagFamilyCreateRequest requestModel = fromJson(rc, TagFamilyCreateRequest.class);
 
@@ -101,23 +95,23 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 			if (StringUtils.isEmpty(name)) {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set"))));
 			} else {
-				if (project.getTagFamilyRoot().findByName(name) != null) {
+				if (findByName(name) != null) {
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", name))));
 					return;
 				}
 
-				TagFamilyRoot root = project.getTagFamilyRoot();
-				if (requestUser.hasPermission(root, CREATE_PERM)) {
+				if (requestUser.hasPermission(this, CREATE_PERM)) {
 					TagFamily tagFamily = null;
 					try (Trx txCreate = new Trx(db)) {
-						tagFamily = root.create(name, requestUser);
-						root.addTagFamily(tagFamily);
-						requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, tagFamily);
+						requestUser.reload();
+						tagFamily = create(name, requestUser);
+						addTagFamily(tagFamily);
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
 						txCreate.success();
 					}
 					handler.handle(Future.succeededFuture(tagFamily));
 				} else {
-					handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", root.getUuid()))));
+					handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", this.getUuid()))));
 				}
 			}
 		}

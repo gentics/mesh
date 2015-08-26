@@ -104,11 +104,12 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 				Group parentGroup = rh.result();
 				Role role = null;
 				try (Trx txCreate = new Trx(db)) {
+					requestUser.reload();
 					role = create(requestModel.getName(), parentGroup, requestUser);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
-					txCreate.commit();
-					handler.handle(Future.succeededFuture(role));
+					txCreate.success();
 				}
+				handler.handle(Future.succeededFuture(role));
 				return;
 			} else {
 				if (rh.cause() != null) {

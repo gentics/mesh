@@ -24,6 +24,8 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.VerticleHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -86,22 +88,23 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		}
 		try (Trx tx = new Trx(db)) {
 			MeshRoot root = boot.meshRoot();
-			GroupRoot groupRoot = root.getGroupRoot();
-			if (requestUser.hasPermission(groupRoot, CREATE_PERM)) {
-				if (groupRoot.findByName(requestModel.getName()) != null) {
+			if (requestUser.hasPermission(this, CREATE_PERM)) {
+				if (findByName(requestModel.getName()) != null) {
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name"))));
 					return;
 				}
+				TraversalHelper.printDebugVertices();
 				Group group;
 				try (Trx txCreate = new Trx(db)) {
-					group = groupRoot.create(requestModel.getName(), requestUser);
+					requestUser.reload();
+					group = create(requestModel.getName(), requestUser);
 					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
 					txCreate.success();
 				}
 				handler.handle(Future.succeededFuture(group));
 				return;
 			} else {
-				handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", groupRoot.getUuid()))));
+				handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", this.getUuid()))));
 				return;
 			}
 		}

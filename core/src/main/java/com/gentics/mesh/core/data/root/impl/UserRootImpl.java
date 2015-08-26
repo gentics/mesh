@@ -103,10 +103,6 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		//		try (Trx tx = new Trx(db)) {
-		//			TraversalHelper.printDebugVertices();
-		//		}
-
 		UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
 		if (requestModel == null) {
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_parse_request_json_error"))));
@@ -130,14 +126,16 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					Group parentGroup = rh.result();
-					if (boot.userRoot().findByUsername(requestModel.getUsername()) != null) {
+					if (findByUsername(requestModel.getUsername()) != null) {
 						String message = i18n.get(rc, "user_conflicting_username");
 						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, message)));
 						return;
 					}
 					MeshAuthUser requestUser = getUser(rc);
+					User user;
 					try (Trx txCreate = new Trx(db)) {
-						User user = boot.userRoot().create(requestModel.getUsername(), parentGroup, requestUser);
+						requestUser.reload();
+						user = create(requestModel.getUsername(), parentGroup, requestUser);
 						user.setFirstname(requestModel.getFirstname());
 						user.setUsername(requestModel.getUsername());
 						user.setLastname(requestModel.getLastname());
@@ -166,16 +164,11 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 							Node node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
 
 							user.setReferencedNode(node);
-							txCreate.commit();
-							handler.handle(Future.succeededFuture(user));
-
-						} else {
-							txCreate.commit();
-							handler.handle(Future.succeededFuture(user));
-							return;
 						}
-
+						txCreate.success();
 					}
+					handler.handle(Future.succeededFuture(user));
+
 				}
 			});
 		}

@@ -97,7 +97,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public void create(RoutingContext rc, Handler<AsyncResult<SchemaContainer>> handler) {
 		MeshAuthUser requestUser = getUser(rc);
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
@@ -108,12 +107,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "schema_missing_name"))));
 				return;
 			}
-			SchemaContainerRoot root = boot.schemaContainerRoot();
-			if (requestUser.hasPermission(root, CREATE_PERM)) {
+			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				SchemaContainer container;
 				try (Trx txCreate = new Trx(db)) {
-					container = root.create(schema, requestUser);
-					requestUser.addCRUDPermissionOnRole(root, CREATE_PERM, container);
+					requestUser.reload();
+					container = create(schema, requestUser);
+					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 					txCreate.success();
 				}
 				handler.handle(Future.succeededFuture(container));
