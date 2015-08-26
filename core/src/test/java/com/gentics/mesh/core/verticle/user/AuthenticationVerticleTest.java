@@ -16,7 +16,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.verticle.AuthenticationVerticle;
+import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractRestVerticleTest;

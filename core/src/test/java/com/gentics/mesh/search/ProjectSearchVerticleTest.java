@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
-import com.gentics.mesh.core.verticle.ProjectVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 
 import io.vertx.core.Future;
 

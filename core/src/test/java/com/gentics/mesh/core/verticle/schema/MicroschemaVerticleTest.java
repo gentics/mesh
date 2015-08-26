@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.verticle.MicroschemaVerticle;
+import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class MicroschemaVerticleTest extends AbstractRestVerticleTest {

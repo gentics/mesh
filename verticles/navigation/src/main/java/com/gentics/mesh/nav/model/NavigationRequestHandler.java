@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.verticle.NodeNotFoundException;
+import com.gentics.mesh.error.NodeNotFoundException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 
 @Component

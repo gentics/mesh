@@ -14,8 +14,9 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
-import com.gentics.mesh.core.verticle.project.ProjectNodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectTagFamilyVerticle;
+import com.gentics.mesh.core.verticle.node.ProjectNodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.ProjectTagFamilyVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;

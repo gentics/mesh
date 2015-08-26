@@ -4,7 +4,7 @@ import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.responde;
+import static com.gentics.mesh.util.VerticleHelper.send;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,7 +137,7 @@ public class SearchHandler {
 					metainfo.setPerPage(pagingInfo.getPerPage());
 					listResponse.setMetainfo(metainfo);
 
-					responde(rc, toJson(listResponse));
+					send(rc, toJson(listResponse));
 				}
 			}
 
