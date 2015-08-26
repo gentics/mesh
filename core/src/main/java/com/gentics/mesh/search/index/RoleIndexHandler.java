@@ -18,12 +18,12 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	String getIndex() {
-		return "role";
+		return Role.TYPE;
 	}
 
 	@Override
 	String getType() {
-		return "role";
+		return Role.TYPE;
 	}
 
 	@Override
