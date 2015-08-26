@@ -101,7 +101,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 								log.error("Indexing failed", rh.cause());
 								//TODO handle this. Move item back into queue? queue is not a stack. broken entry would possibly directly retried.
 							} else {
-								log.info("Indexed element {" + currentEntry.getUuid() + "}");
+								log.info("Indexed element {" + currentEntry.getElementUuid() + ":" + currentEntry.getElementType() + "}");
 							}
 							completeHandler.handle(Future.succeededFuture(currentEntry.getMessage()));
 						});
