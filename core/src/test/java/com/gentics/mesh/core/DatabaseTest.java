@@ -1,5 +1,7 @@
 package com.gentics.mesh.core;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class DatabaseTest extends AbstractDBTest {
@@ -50,8 +53,27 @@ public class DatabaseTest extends AbstractDBTest {
 
 	@Test
 	public void testRestore() throws IOException {
+		String name = "username";
+		try (Trx tx = new Trx(db)) {
+			user().setUsername(name);
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
+			assertEquals(name, user().getUsername());
+		}
 		db.backupGraph(outputDirectory.getAbsolutePath());
+		try (Trx tx = new Trx(db)) {
+			user().setUsername("changed");
+			tx.success();
+		}
+		try (Trx tx = new Trx(db)) {
+			assertEquals("changed", user().getUsername());
+		}
 		db.restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
+		try (Trx tx = new Trx(db)) {
+			assertEquals("username", user().getUsername());
+		}
+
 	}
 
 }
