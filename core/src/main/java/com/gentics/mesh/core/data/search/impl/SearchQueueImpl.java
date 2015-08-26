@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITE
 
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
@@ -26,6 +27,11 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		entry.setElementType(type);
 		entry.setAction(action.getName());
 		put(entry);
+	}
+
+	@Override
+	public void put(GenericVertex<?> vertex, SearchQueueEntryAction action) {
+		put(vertex.getUuid(), vertex.getType(), action);
 	}
 
 	@Override

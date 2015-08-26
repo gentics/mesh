@@ -23,7 +23,7 @@ public interface SearchClientMethods {
 
 	Future<RoleListResponse> searchRoles(String json, QueryParameterProvider... parameters);
 
-	Future<ProjectListResponse> searchProject(String json, QueryParameterProvider... parameters);
+	Future<ProjectListResponse> searchProjects(String json, QueryParameterProvider... parameters);
 
 	Future<TagListResponse> searchTags(String json, QueryParameterProvider... parameters);
 

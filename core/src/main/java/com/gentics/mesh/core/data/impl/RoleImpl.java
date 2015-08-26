@@ -53,7 +53,7 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 
 	@Override
 	public List<? extends Group> getGroups() {
-		return out(HAS_ROLE).has(RoleImpl.class).toListExplicit(GroupImpl.class);
+		return out(HAS_ROLE).has(GroupImpl.class).toListExplicit(GroupImpl.class);
 	}
 
 	@Override

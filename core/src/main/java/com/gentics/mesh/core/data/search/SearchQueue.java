@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.search;
 
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 
 public interface SearchQueue extends MeshVertex {
@@ -16,6 +17,8 @@ public interface SearchQueue extends MeshVertex {
 	 * @param action
 	 */
 	void put(String uuid, String type, SearchQueueEntryAction action);
+
+	void put(GenericVertex<?> vertex, SearchQueueEntryAction action);
 
 	/**
 	 * Add a search queue entry to the queue.

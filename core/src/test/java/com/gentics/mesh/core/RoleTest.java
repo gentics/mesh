@@ -189,9 +189,10 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testRolesOfGroup() throws InvalidArgumentException {
+		Role extraRole;
 		try (Trx tx = new Trx(db)) {
 			RoleRoot root = meshRoot().getRoleRoot();
-			Role extraRole = root.create("extraRole", group(), user());
+			extraRole = root.create("extraRole", group(), user());
 
 			// Multiple add role calls should not affect the result
 			group().addRole(extraRole);
@@ -207,6 +208,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 			MeshAuthUser requestUser = getUser(rc);
 			Page<? extends Role> roles = group().getRoles(requestUser, new PagingInfo(1, 10));
 			assertEquals(2, roles.getSize());
+			assertEquals(1, extraRole.getGroups().size());
+
 			// assertEquals(2, roles.getTotalElements());
 		}
 	}

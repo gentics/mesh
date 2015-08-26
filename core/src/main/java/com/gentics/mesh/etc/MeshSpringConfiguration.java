@@ -2,6 +2,7 @@ package com.gentics.mesh.etc;
 
 import javax.annotation.PostConstruct;
 
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.springframework.context.annotation.Bean;
@@ -78,7 +79,10 @@ public class MeshSpringConfiguration {
 			log.debug("Creating elasticsearch node");
 		}
 		long start = System.currentTimeMillis();
-		Node node = NodeBuilder.nodeBuilder().local(true).node();
+		String dataDirectory =Mesh.mesh().getOptions().getSearchOptions().getDirectory();
+		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder().put("http.enabled", "false").put("path.data",
+				dataDirectory);
+		Node node = NodeBuilder.nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}

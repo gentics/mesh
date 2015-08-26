@@ -1,15 +1,8 @@
 package com.gentics.mesh.cli;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
-
 import java.util.Objects;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -17,6 +10,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 public class MeshImpl implements Mesh {
 
@@ -93,6 +92,7 @@ public class MeshImpl implements Mesh {
 	 */
 	@Override
 	public void run(Runnable startupHandler) throws Exception {
+		registerShutdownHook();
 
 		printProductInformation();
 
@@ -110,6 +110,15 @@ public class MeshImpl implements Mesh {
 			}
 
 		}
+	}
+
+	private void registerShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				close();
+			}
+		});
 	}
 
 	/**
@@ -168,7 +177,10 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public void close() {
-		throw new NotImplementedException();
+		log.info("Mesh shutting down...");
+		//Orientdb has a dedicated shutdown hook
+		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchNode().close();
+		getVertx().close();
 	}
 
 }

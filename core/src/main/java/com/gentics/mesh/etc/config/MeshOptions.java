@@ -3,6 +3,7 @@ package com.gentics.mesh.etc.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.StorageOptions;
 
@@ -40,6 +41,8 @@ public class MeshOptions {
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
 	private StorageOptions storageOptions = new StorageOptions();
+
+	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
 
@@ -104,5 +107,9 @@ public class MeshOptions {
 
 	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		this.httpServerOptions = httpServerOptions;
+	}
+
+	public ElasticSearchOptions getSearchOptions() {
+		return searchOptions;
 	}
 }

@@ -393,6 +393,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws InterruptedException {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
@@ -438,6 +439,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		String uuid;
@@ -481,6 +483,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testDeleteByUUIDMultithreaded() {
 
 		int nJobs = 3;

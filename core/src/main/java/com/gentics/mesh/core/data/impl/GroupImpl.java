@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 
 import java.util.List;
+import java.util.Set;
+
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import org.apache.commons.lang3.StringUtils;
 import static com.gentics.mesh.json.JsonUtil.*;
@@ -169,6 +171,16 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 				}
 			}
 		}
+	}
+
+	@Override
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+		if (recursive) {
+			for (User user : getUsers()) {
+				user.applyPermissions(role, false, permissionsToGrant, permissionsToRevoke);
+			}
+		}
+		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override

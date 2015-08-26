@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -339,6 +340,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
@@ -355,6 +357,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		SchemaContainer schema = schemaContainer("content");
@@ -382,6 +385,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 		SchemaCreateRequest request = new SchemaCreateRequest();

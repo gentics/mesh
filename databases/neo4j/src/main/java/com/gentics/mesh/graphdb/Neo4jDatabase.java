@@ -65,15 +65,6 @@ public class Neo4jDatabase extends AbstractDatabase {
 		return graphDatabaseService;
 	}
 
-	private void registerShutdownHook(final GraphDatabaseService graphDatabaseService) {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				graphDatabaseService.shutdown();
-			}
-		});
-	}
-
 	@Override
 	public void reload(MeshElement element) {
 		// Not supported

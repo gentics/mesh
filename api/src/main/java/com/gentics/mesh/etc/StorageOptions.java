@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
  */
 public class StorageOptions {
 
-	public static final String DEFAULT_DIRECTORY = "/tmp/graphdb";
+	public static final String DEFAULT_DIRECTORY = "mesh-graphdb";
 
 	private String directory = DEFAULT_DIRECTORY;
 

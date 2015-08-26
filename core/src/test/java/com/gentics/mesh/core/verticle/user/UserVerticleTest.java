@@ -86,6 +86,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		String uuid = user().getUuid();
@@ -212,6 +213,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws InterruptedException {
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -630,6 +632,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 
@@ -717,6 +720,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws InterruptedException {
 		int nJobs = 3;
 		String uuid = user().getUuid();

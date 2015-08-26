@@ -1,7 +1,6 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -11,24 +10,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
@@ -42,8 +33,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -51,50 +40,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
-public class SearchVerticleTest extends AbstractRestVerticleTest {
+public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
-	private static final Logger log = LoggerFactory.getLogger(SearchVerticleTest.class);
-
-	@Autowired
-	private SearchVerticle verticle;
-
-	@Autowired
-	private org.elasticsearch.node.Node elasticSearchNode;
+	private static final Logger log = LoggerFactory.getLogger(NodeSearchVerticleTest.class);
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(searchVerticle);
 		return list;
-	}
-
-	@After
-	public void resetElasticSearch() {
-		elasticSearchNode.client().prepareDeleteByQuery("node").setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
-	}
-
-	@BeforeClass
-	@AfterClass
-	public static void removeSearchData() throws IOException {
-		FileUtils.deleteDirectory(new File("data"));
-	}
-
-	private void setupFullIndex() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
-			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			for (Node node : boot.nodeRoot().findAll()) {
-				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
-			}
-			log.debug("Search Queue size:" + searchQueue.getSize());
-			tx.success();
-		}
-
-		CountDownLatch latch = new CountDownLatch(1);
-		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-			latch.countDown();
-		});
-		latch.await(20, TimeUnit.SECONDS);
 	}
 
 	@Test
