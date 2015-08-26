@@ -1,7 +1,9 @@
 package com.gentics.mesh.graphdb;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
@@ -76,7 +78,27 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	@Override
 	public void reload(MeshElement element) {
-		// Not supported
+		// Not needed
+	}
+
+	@Override
+	public void importGraph(String importFile) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void exportGraph(String outputDirectory) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void backupGraph(String backupDirectory) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void restoreGraph(String backupFile) throws IOException {
+		throw new NotImplementedException();
 	}
 
 }

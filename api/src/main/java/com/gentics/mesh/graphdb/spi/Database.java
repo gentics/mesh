@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb.spi;
 
+import java.io.IOException;
+
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
@@ -41,5 +43,37 @@ public interface Database {
 	 * @param element
 	 */
 	void reload(MeshElement element);
+
+	/**
+	 * Create a database export.
+	 * 
+	 * @param outputDirectory
+	 * @throws IOException
+	 */
+	void exportGraph(String outputDirectory) throws IOException;
+
+	/**
+	 * Import an database export
+	 * 
+	 * @param importFile
+	 * @throws IOException
+	 */
+	void importGraph(String importFile) throws IOException;
+
+	/**
+	 * Create a database backup.
+	 * 
+	 * @param backupDirectory
+	 * @throws IOException
+	 */
+	void backupGraph(String backupDirectory) throws IOException;
+
+	/**
+	 * Restore a previously created database backup.
+	 * 
+	 * @param backupFile
+	 * @throws IOException
+	 */
+	void restoreGraph(String backupFile) throws IOException;
 
 }

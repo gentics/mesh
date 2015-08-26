@@ -53,7 +53,10 @@ public abstract class AbstractDatabase implements Database {
 		stop();
 		try {
 			if (options.getDirectory() != null) {
-				FileUtils.deleteDirectory(new File(options.getDirectory()));
+				File storageDirectory = new File(options.getDirectory());
+				if (storageDirectory.exists()) {
+					FileUtils.deleteDirectory(storageDirectory);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

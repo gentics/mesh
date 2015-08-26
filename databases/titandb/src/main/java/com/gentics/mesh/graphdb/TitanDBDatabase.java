@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -23,9 +24,9 @@ public class TitanDBDatabase extends AbstractDatabase {
 	@Override
 	public void start() {
 
-		//		Configuration configuration
-		//		graph = TitanFactory.open(configuration);
-		//		this.configuration = configuration;
+		// Configuration configuration
+		// graph = TitanFactory.open(configuration);
+		// this.configuration = configuration;
 		Configuration configuration = getBerkleyDBConf(options);
 		graph = TitanFactory.open(configuration);
 		wrapper = new TitanDBThreadedTransactionalGraphWrapper(graph, configuration);
@@ -61,7 +62,7 @@ public class TitanDBDatabase extends AbstractDatabase {
 		conf.setProperty("cache.db-cache", "true");
 		conf.setProperty("cache.tx-cache-size", "100000");
 		conf.setProperty("storage.index.search.backend", "elasticsearch");
-		conf.setProperty("storage.index.search.directory", "/tmp/searchindex");
+		conf.setProperty("storage.index.search.directory", settings.getDirectory());
 		conf.setProperty("storage.index.search.client-only", "false");
 		conf.setProperty("storage.index.search.local-mode", "true");
 
@@ -71,5 +72,25 @@ public class TitanDBDatabase extends AbstractDatabase {
 	@Override
 	public void reload(MeshElement element) {
 		// Not supported
+	}
+
+	@Override
+	public void exportGraph(String outputDirectory) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void importGraph(String importFile) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void backupGraph(String backupDirectory) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void restoreGraph(String backupFile) {
+		throw new NotImplementedException();
 	}
 }
