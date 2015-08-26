@@ -13,7 +13,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
@@ -73,7 +73,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
-public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeFieldContainer {
+public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
@@ -190,6 +190,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				});
 				break;
 			case LIST:
+
 				if (restField instanceof NodeFieldListImpl) {
 					GraphNodeFieldList graphNodeFieldList = getNodeList(key);
 					failOnMissingMandatoryField(graphNodeFieldList, restField, entry, key);
@@ -282,9 +283,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				} else if (restField instanceof MicroschemaFieldListImpl) {
 					throw new NotImplementedException();
 				} else {
-					// TODO unknown type - throw better error
-
-					throw new NotImplementedException();
+					if (restField == null) {
+						continue;
+					} else {
+						throw new NotImplementedException();
+					}
 				}
 				break;
 			case SELECT:

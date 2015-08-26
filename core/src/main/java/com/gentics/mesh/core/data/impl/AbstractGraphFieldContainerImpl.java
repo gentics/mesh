@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 
-public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements FieldContainer {
+public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
 
 	public List<String> getFieldnames() {
 		return null;

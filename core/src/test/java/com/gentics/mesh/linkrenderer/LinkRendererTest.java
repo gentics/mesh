@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.link.LinkReplacer;
@@ -43,12 +43,12 @@ public class LinkRendererTest extends AbstractDBTest {
 
 		// Create some dummy content
 		Node content = parentNode.create(user(), data().getSchemaContainer("content"), project());
-		NodeFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
+		NodeGraphFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
 		germanContainer.createString("displayName").setString("german name");
 		germanContainer.createString("name").setString("german.html");
 
 		Node content2 = parentNode.create(user(), data().getSchemaContainer("content"),project());
-		NodeFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
+		NodeGraphFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 

@@ -20,7 +20,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -176,7 +176,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 							return;
 						}
 						try {
-							NodeFieldContainer container = node.getOrCreateFieldContainer(language);
+							NodeGraphFieldContainer container = node.getOrCreateFieldContainer(language);
 							container.setFieldFromRest(rc, requestModel.getFields(), schema);
 						} catch (Exception e) {
 							handler.handle(Future.failedFuture(e));

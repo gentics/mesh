@@ -24,10 +24,10 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -102,16 +102,16 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public List<? extends NodeFieldContainer> getFieldContainers() {
+	public List<? extends NodeGraphFieldContainer> getFieldContainers() {
 		return out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class).toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public NodeFieldContainer getFieldContainer(Language language) {
+	public NodeGraphFieldContainer getFieldContainer(Language language) {
 		return getFieldContainer(language, NodeGraphFieldContainerImpl.class);
 	}
 
-	public NodeFieldContainer getOrCreateFieldContainer(Language language) {
+	public NodeGraphFieldContainer getOrCreateFieldContainer(Language language) {
 		return getOrCreateFieldContainer(language, NodeGraphFieldContainerImpl.class);
 	}
 
@@ -239,7 +239,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				restNode.setChildren(children);
 			}
 
-			NodeFieldContainer fieldContainer = findNextMatchingFieldContainer(rc);
+			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(rc);
 
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
 			if (schema.isBinary()) {
@@ -313,8 +313,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public NodeFieldContainer findNextMatchingFieldContainer(RoutingContext rc) {
-		NodeFieldContainer fieldContainer = null;
+	public NodeGraphFieldContainer findNextMatchingFieldContainer(RoutingContext rc) {
+		NodeGraphFieldContainer fieldContainer = null;
 		List<String> languageTags = getSelectedLanguageTags(rc);
 		for (String languageTag : languageTags) {
 			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
@@ -430,7 +430,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		for (Node child : getChildren()) {
 			child.delete();
 		}
-		for (NodeFieldContainer container : getFieldContainers()) {
+		for (NodeGraphFieldContainer container : getFieldContainers()) {
 			container.delete();
 		}
 		getElement().remove();
@@ -486,7 +486,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	public String getDisplayName(RoutingContext rc) {
 		String displayFieldName = null;
 		try {
-			FieldContainer container = findNextMatchingFieldContainer(rc);
+			GraphFieldContainer container = findNextMatchingFieldContainer(rc);
 			if (container == null) {
 				log.error("Could not find any matching i18n field container for node {" + getUuid() + "}.");
 			} else {
@@ -532,7 +532,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				setPublished(requestModel.isPublished());
 				setEditor(getUser(rc));
 				setLastEditedTimestamp(System.currentTimeMillis());
-				NodeFieldContainer container = getOrCreateFieldContainer(language);
+				NodeGraphFieldContainer container = getOrCreateFieldContainer(language);
 				try {
 					Schema schema = getSchema();
 					container.setFieldFromRest(rc, requestModel.getFields(), schema);

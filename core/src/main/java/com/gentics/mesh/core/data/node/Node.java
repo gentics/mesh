@@ -8,7 +8,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
@@ -74,11 +74,11 @@ public interface Node extends GenericVertex<NodeResponse> {
 	 * @param language
 	 * @return
 	 */
-	NodeFieldContainer getFieldContainer(Language language);
+	NodeGraphFieldContainer getFieldContainer(Language language);
 
-	NodeFieldContainer getOrCreateFieldContainer(Language language);
+	NodeGraphFieldContainer getOrCreateFieldContainer(Language language);
 
-	List<? extends NodeFieldContainer> getFieldContainers();
+	List<? extends NodeGraphFieldContainer> getFieldContainers();
 
 	Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException;
 
@@ -180,7 +180,7 @@ public interface Node extends GenericVertex<NodeResponse> {
 	 */
 	String getDisplayName(RoutingContext rc);
 
-	NodeFieldContainer findNextMatchingFieldContainer(RoutingContext rc);
+	NodeGraphFieldContainer findNextMatchingFieldContainer(RoutingContext rc);
 
 	String getFilePath();
 

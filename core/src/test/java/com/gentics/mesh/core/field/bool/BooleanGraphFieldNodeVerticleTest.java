@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -40,7 +40,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 		Node node;
 		try (Trx tx = new Trx(db)) {
 			node = folder("2015");
-			NodeFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			container.createBoolean("booleanField").setBoolean(true);
 			tx.success();
 		}

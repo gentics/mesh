@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -486,12 +486,12 @@ public class DemoDataProvider {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);
 
 		if (germanName != null) {
-			NodeFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
 		}
 		if (englishName != null) {
-			NodeFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
@@ -532,7 +532,7 @@ public class DemoDataProvider {
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
 		if (englishContent != null) {
-			NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
 			englishContainer.createString("name").setString(name + " english name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -541,7 +541,7 @@ public class DemoDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 			germanContainer.createString("name").setString(name + " german");
 			germanContainer.createString("title").setString(name + " english title");
 			germanContainer.createString("displayName").setString(name + " german");

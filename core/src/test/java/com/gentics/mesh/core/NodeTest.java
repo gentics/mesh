@@ -24,10 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
@@ -57,11 +57,11 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Node node = folder.create(user(), getSchemaContainer(), project());
 			Node node2 = folder.create(user(), getSchemaContainer(), project());
 
-			NodeFieldContainer englishContainer = node2.getOrCreateFieldContainer(english());
+			NodeGraphFieldContainer englishContainer = node2.getOrCreateFieldContainer(english());
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
 
-			NodeFieldContainer englishContainer2 = node.getOrCreateFieldContainer(german());
+			NodeGraphFieldContainer englishContainer2 = node.getOrCreateFieldContainer(german());
 			englishContainer2.createString("content").setString("english2 content");
 			englishContainer2.createString("name").setString("english2.html");
 			node.createLink(node2);
@@ -131,7 +131,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Node newsNode = content("news overview");
 			Language german = german();
 			RoutingContext rc = getMockedRoutingContext("?lang=de,en");
-			NodeFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
 			assertEquals(germanFields.getString(newsNode.getSchema().getDisplayField()).getString(), newsNode.getDisplayName(rc));
 		}
 		// TODO add some fields
@@ -263,20 +263,20 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Language english = english();
 			Language german = german();
 
-			NodeFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
 			assertNotNull(node.getUuid());
 
-			List<? extends FieldContainer> allProperties = node.getFieldContainers();
+			List<? extends GraphFieldContainer> allProperties = node.getFieldContainers();
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
-			NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 			germanContainer.createString("content").setString("german content");
 			assertEquals(2, node.getFieldContainers().size());
 
-			NodeFieldContainer container = node.getFieldContainer(english);
+			NodeGraphFieldContainer container = node.getFieldContainer(english);
 			assertNotNull(container);
 			String text = container.getString("content").getString();
 			assertNotNull(text);
@@ -292,7 +292,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Node node = folder("news");
-			for (FieldContainer container : node.getFieldContainers()) {
+			for (GraphFieldContainer container : node.getFieldContainers()) {
 				uuidToBeDeleted.put("container-" + container.getLanguage().getLanguageTag(), container.getUuid());
 			}
 

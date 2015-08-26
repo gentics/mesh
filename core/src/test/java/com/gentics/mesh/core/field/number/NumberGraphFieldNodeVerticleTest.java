@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
@@ -73,7 +73,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		try (Trx tx = new Trx(db)) {
 			node = folder("2015");
 
-			NodeFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			NumberGraphField numberField = container.createNumber("numberField");
 			numberField.setNumber("100.9");
 			tx.success();

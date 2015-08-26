@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
 import com.gentics.mesh.graphdb.Trx;
@@ -18,7 +18,7 @@ public class MicroschemaGraphFieldTest extends AbstractDBTest {
 	@Ignore("Not yet implemented")
 	public void testSimpleMicroschema() {
 		try (Trx tx = new Trx(db)) {
-			NodeFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			GraphMicroschemaField gallery = container.createMicroschema("gallery");
 			assertNotNull(gallery);
 

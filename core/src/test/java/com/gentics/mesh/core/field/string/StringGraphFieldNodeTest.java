@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -44,7 +44,7 @@ public class StringGraphFieldNodeTest extends AbstractDBTest {
 			schema.addField(stringFieldSchema);
 			node.getSchemaContainer().setSchema(schema);
 
-			NodeFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			StringGraphField field = container.createString("stringField");
 			field.setString("someString");
 

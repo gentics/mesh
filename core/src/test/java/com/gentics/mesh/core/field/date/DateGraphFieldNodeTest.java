@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -44,7 +44,7 @@ public class DateGraphFieldNodeTest extends AbstractDBTest {
 			schema.addField(dateFieldSchema);
 			node.getSchemaContainer().setSchema(schema);
 
-			NodeFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			DateGraphField field = container.createDate("dateField");
 			field.setDate("01.01.1971");
 

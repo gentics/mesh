@@ -8,7 +8,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
@@ -60,7 +60,7 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		Node node;
 		try (Trx tx = new Trx(db)) {
 			node = folder("2015");
-			NodeFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			StringGraphField stringField = container.createString("stringField");
 			stringField.setString("someString");
 			tx.success();

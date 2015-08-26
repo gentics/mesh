@@ -10,7 +10,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -43,7 +43,7 @@ public class SelectGraphFieldNodeTest extends AbstractDBTest {
 		schema.addField(selectFieldSchema);
 		node.getSchemaContainer().setSchema(schema);
 
-		NodeFieldContainer container = node.getFieldContainer(english());
+		NodeGraphFieldContainer container = node.getFieldContainer(english());
 
 		GraphSelectField<?> selectField = container.createSelect("selectField");
 

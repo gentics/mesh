@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
@@ -165,7 +165,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		try (Trx tx = new Trx(db)) {
 			node = folder("2015");
 
-			NodeFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			GraphNodeFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", folder("news"));
 			tx.success();
@@ -188,7 +188,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			node = folder("2015");
 
 			// Create node list
-			NodeFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			GraphNodeFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", newsNode);
 			tx.success();

@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
@@ -838,7 +838,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNull(future.result());
 
 		try (Trx tx = new Trx(db)) {
-			NodeFieldContainer englishContainer = folder("2015").getOrCreateFieldContainer(english());
+			NodeGraphFieldContainer englishContainer = folder("2015").getOrCreateFieldContainer(english());
 			assertNotEquals(newName, englishContainer.getString("name").getString());
 		}
 

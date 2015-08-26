@@ -4,8 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.nesting.AbstractComplexGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
@@ -14,13 +14,13 @@ import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphFie
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class GraphMicroschemaFieldImpl extends AbstractComplexGraphField implements GraphMicroschemaField, FieldContainer {
+public class GraphMicroschemaFieldImpl extends AbstractComplexGraphField implements GraphMicroschemaField, GraphFieldContainer {
 
 	private static final Logger log = LoggerFactory.getLogger(GraphMicroschemaFieldImpl.class);
 	
 	@Override
 	public <T extends MicroschemaListableGraphField> List<? extends T> getFields() {
-		List<? extends NodeFieldContainer> list = out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class)
+		List<? extends NodeGraphFieldContainer> list = out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class)
 				.toListExplicit(NodeGraphFieldContainerImpl.class);
 		return null;
 	}

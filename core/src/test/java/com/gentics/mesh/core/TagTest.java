@@ -18,7 +18,7 @@ import org.junit.Test;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -85,7 +85,7 @@ public class TagTest extends AbstractBasicObjectTest {
 			Node parentNode = folder("2015");
 			Node node = parentNode.create(user(), getSchemaContainer(), project());
 			Language german = boot.languageRoot().findByLanguageTag("de");
-			NodeFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 
 			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 			germanContainer.createString("name").setString("german node name");
@@ -99,7 +99,7 @@ public class TagTest extends AbstractBasicObjectTest {
 				Tag reloadedTag = rh.result();
 				assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
 				Node contentFromTag = reloadedTag.getNodes().iterator().next();
-				NodeFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
+				NodeGraphFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
 
 				assertNotNull(contentFromTag);
 				assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());

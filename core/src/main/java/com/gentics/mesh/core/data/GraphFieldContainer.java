@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 
-public interface FieldContainer extends BasicFieldContainer {
+public interface GraphFieldContainer extends BasicFieldContainer {
 
 	StringGraphField getString(String key);
 

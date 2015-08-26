@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -68,7 +68,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (node.getParentNode() != null) {
 			addParentNodeInfo(map, node.getParentNode());
 		}
-		for (NodeFieldContainer container : node.getFieldContainers()) {
+		for (NodeGraphFieldContainer container : node.getFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
@@ -117,7 +117,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
-		for (NodeFieldContainer container : node.getFieldContainers()) {
+		for (NodeGraphFieldContainer container : node.getFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
@@ -154,7 +154,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private void addFields(Map<String, Object> map, NodeFieldContainer container, Schema schema) {
+	private void addFields(Map<String, Object> map, NodeGraphFieldContainer container, Schema schema) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : schema.getFields()) {
 			String name = fieldSchema.getName();
