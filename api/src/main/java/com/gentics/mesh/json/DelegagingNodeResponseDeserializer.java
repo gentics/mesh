@@ -14,6 +14,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * The deserializer will be used for node responses. We need to determine the schema first before we can deserialize the node. This deserializer will extract
  * the schema information from the json and delegate the deserialization to a different node mapper which will be able to handle the json using the schema
@@ -24,6 +27,8 @@ import com.gentics.mesh.core.rest.schema.SchemaStorage;
  * @param <T>
  */
 public class DelegagingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
+
+	private static final Logger log = LoggerFactory.getLogger(DelegagingNodeResponseDeserializer.class);
 
 	private ObjectMapper nodeMapper;
 	private Class<T> classOfT;
@@ -40,6 +45,9 @@ public class DelegagingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 
 		JsonNode schemaNode = rootNode.get("schema");
 		if (schemaNode == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Error while deserialisation of node json: {" + rootNode.toString() + "}");
+			}
 			throw new MeshJsonException(
 					"The schema reference field could not be found within the json that represents the node. This field is mandatory for deserialisation.");
 		}
