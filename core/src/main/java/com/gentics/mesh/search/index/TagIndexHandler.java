@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +19,12 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	@Override
 	String getIndex() {
-		return "tag";
+		return Tag.TYPE;
 	}
 
 	@Override
 	String getType() {
-		return "tag";
+		return Tag.TYPE;
 	}
 
 	public void store(Tag tag, Handler<AsyncResult<ActionResponse>> handler) {
@@ -58,7 +59,6 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		// TODO Auto-generated method stub
-
+		throw new NotImplementedException();
 	}
 }

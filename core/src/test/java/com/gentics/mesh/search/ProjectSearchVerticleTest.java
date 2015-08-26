@@ -20,7 +20,6 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.verticle.ProjectVerticle;
 
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 
 public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 
@@ -41,8 +40,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		QueryBuilder qb = QueryBuilders.queryStringQuery("dummy");
 		JSONObject request = new JSONObject();
-		request.put("query", new JsonObject(qb.toString()));
-
+		request.put("query", new JSONObject(qb.toString()));
 		Future<ProjectListResponse> future = getClient().searchProjects(request.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);

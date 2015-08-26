@@ -24,6 +24,7 @@ public class SpringTestConfiguration {
 	public void setup() {
 		MeshOptions options = new MeshOptions();
 		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
+		// The orientdb database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
 		Mesh.initalize(options);
 	}

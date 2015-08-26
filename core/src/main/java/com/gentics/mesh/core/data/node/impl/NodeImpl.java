@@ -102,7 +102,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getFieldContainers() {
+	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers() {
 		return out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class).toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
@@ -430,7 +430,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		for (Node child : getChildren()) {
 			child.delete();
 		}
-		for (NodeGraphFieldContainer container : getFieldContainers()) {
+		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
 			container.delete();
 		}
 		getElement().remove();

@@ -36,7 +36,6 @@ import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -91,11 +90,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testRemoveContent() throws InterruptedException, JSONException {
 		setupFullIndex();
 
-		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-
 		QueryBuilder qb = QueryBuilders.queryStringQuery("Großraumflugzeug");
 		JSONObject request = new JSONObject();
-		request.put("query", new JsonObject(qb.toString()));
+		request.put("query", new JSONObject(qb.toString()));
 
 		Future<NodeListResponse> future = getClient().searchNodes(request.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -105,14 +102,18 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		// Create a delete entry in the search queue
 		NodeResponse nodeResponse = response.getData().get(0);
-		searchQueue.put(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
+		try (Trx tx = new Trx(db)) {
+			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			searchQueue.put(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
+			tx.success();
+		}
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
-		failingLatch(latch);
+		failingLatch(latch, 10);
 
-		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(request.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();

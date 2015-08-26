@@ -78,7 +78,7 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	NodeGraphFieldContainer getOrCreateFieldContainer(Language language);
 
-	List<? extends NodeGraphFieldContainer> getFieldContainers();
+	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
 	Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException;
 

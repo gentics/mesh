@@ -135,7 +135,8 @@ public class MeshSpringConfiguration {
 		BodyHandler handler = BodyHandler.create();
 		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
 		// TODO check for windows issues
-		handler.setUploadsDirectory("target/" + BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
+		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
+		handler.setUploadsDirectory(tempDirectory);
 		return handler;
 	}
 

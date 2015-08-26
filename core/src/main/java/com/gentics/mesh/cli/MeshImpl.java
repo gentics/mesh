@@ -116,7 +116,7 @@ public class MeshImpl implements Mesh {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				close();
+				shutdown();
 			}
 		});
 	}
@@ -176,7 +176,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public void close() {
+	public void shutdown() {
 		log.info("Mesh shutting down...");
 		//Orientdb has a dedicated shutdown hook
 		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchNode().close();

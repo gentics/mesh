@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
@@ -97,12 +98,12 @@ public abstract class AbstractIndexHandler<T> {
 
 	abstract public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler);
 
-	protected Client getClient() {
+	protected Client getSearchClient() {
 		return elasticSearchNode.client();
 	}
 
 	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		getClient().prepareDelete(getIndex(), getType(), uuid).execute().addListener(new ActionListener<DeleteResponse>() {
+		getSearchClient().prepareDelete(getIndex(), getType(), uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 
 			@Override
 			public void onResponse(DeleteResponse response) {
@@ -123,7 +124,7 @@ public abstract class AbstractIndexHandler<T> {
 		if (log.isDebugEnabled()) {
 			log.debug("Updating object {" + uuid + ":" + getType() + "} to index.");
 		}
-		UpdateRequestBuilder builder = getClient().prepareUpdate(getIndex(), type, uuid);
+		UpdateRequestBuilder builder = getSearchClient().prepareUpdate(getIndex(), type, uuid);
 		builder.setDoc(map);
 		builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
@@ -152,7 +153,7 @@ public abstract class AbstractIndexHandler<T> {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + ":" + getType() + "} to index.");
 		}
-		IndexRequestBuilder builder = getClient().prepareIndex(getIndex(), getType(), uuid);
+		IndexRequestBuilder builder = getSearchClient().prepareIndex(getIndex(), getType(), uuid);
 		builder.setSource(map);
 		builder.execute().addListener(new ActionListener<IndexResponse>() {
 
@@ -209,21 +210,22 @@ public abstract class AbstractIndexHandler<T> {
 		tagFields.put("uuid", tagUuids);
 		tagFields.put("name", tagNames);
 		map.put("tags", tagFields);
-
 	}
 
 	public void handleEvent(String uuid, String actionName, Handler<AsyncResult<ActionResponse>> handler) {
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
-		switch (action) {
-		case CREATE_ACTION:
-			store(uuid, handler);
-			break;
-		case DELETE_ACTION:
-			delete(uuid, handler);
-			break;
-		case UPDATE_ACTION:
-			update(uuid, handler);
-			break;
+		try (Trx tx = new Trx(db)) {
+			switch (action) {
+			case CREATE_ACTION:
+				store(uuid, handler);
+				break;
+			case DELETE_ACTION:
+				delete(uuid, handler);
+				break;
+			case UPDATE_ACTION:
+				update(uuid, handler);
+				break;
+			}
 		}
 	}
 

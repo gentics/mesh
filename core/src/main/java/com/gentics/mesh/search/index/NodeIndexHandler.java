@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -13,15 +14,16 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
@@ -47,12 +49,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	String getIndex() {
-		return "node";
+		return Node.TYPE;
 	}
 
 	@Override
 	String getType() {
-		return "node";
+		return Node.TYPE;
 	}
 
 	@Override
@@ -68,7 +70,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (node.getParentNode() != null) {
 			addParentNodeInfo(map, node.getParentNode());
 		}
-		for (NodeGraphFieldContainer container : node.getFieldContainers()) {
+		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
@@ -117,7 +119,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
-		for (NodeGraphFieldContainer container : node.getFieldContainers()) {
+		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
 			removeFieldEntries(map);
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
@@ -135,19 +137,24 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		for (Language lang : BootstrapInitializer.getBoot().languageRoot().findAll()) {
-			String language = lang.getLanguageTag();
-			getClient().prepareDelete(getIndex(), getType() + "-" + language, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
-
+		Node node = BootstrapInitializer.getBoot().meshRoot().getNodeRoot().findByUuidBlocking(uuid);
+		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+			String language = container.getLanguage().getLanguageTag();
+			if (log.isDebugEnabled()) {
+				log.debug("Invoking removal of document {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
+			}
+			getSearchClient().prepareDelete(getIndex(), getType() + "-" + language, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 				@Override
 				public void onResponse(DeleteResponse response) {
-					// TODO log
+					if (log.isDebugEnabled()) {
+						log.debug("Removed element {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
+					}
 					handler.handle(Future.succeededFuture(response));
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					// TODO log
+					log.error("Failure while removing {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
 					handler.handle(Future.failedFuture(e));
 				}
 			});
@@ -218,9 +225,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						}
 						break;
 					case "boolean":
+						GraphBooleanFieldList graphBooleanList = container.getBooleanList(fieldSchema.getName());
+						if (graphBooleanList != null) {
+							List<String> booleanItems = new ArrayList<>();
+							for (BooleanGraphField listItem : graphBooleanList.getList()) {
+								booleanItems.add(String.valueOf(listItem.getBoolean()));
+							}
+							fieldsMap.put(fieldSchema.getName(), booleanItems);
+						}
 						break;
 					case "microschema":
-						break;
+						//TODO implement microschemas
+						throw new NotImplementedException();
+						//break;
 					case "string":
 						GraphStringFieldList graphStringList = container.getStringList(fieldSchema.getName());
 						if (graphStringList != null) {
@@ -251,10 +268,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// fieldsMap.put(name, htmlField.getHTML());
 				break;
 			case SELECT:
-				break;
+				//TODO implement lists
+				//break;
+				throw new NotImplementedException();
 			case MICROSCHEMA:
-				break;
+				//TODO implement microschemas
+				//break;
+				throw new NotImplementedException();
 			default:
+				//TODO error?
 				break;
 			}
 
@@ -268,7 +290,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
 		}
-		getClient().prepareIndex(getIndex(), type, uuid).setSource(map).execute().addListener(new ActionListener<IndexResponse>() {
+		getSearchClient().prepareIndex(getIndex(), type, uuid).setSource(map).execute().addListener(new ActionListener<IndexResponse>() {
 
 			@Override
 			public void onResponse(IndexResponse response) {

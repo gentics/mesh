@@ -268,13 +268,13 @@ public class NodeTest extends AbstractBasicObjectTest {
 			englishContainer.createString("name").setString("english.html");
 			assertNotNull(node.getUuid());
 
-			List<? extends GraphFieldContainer> allProperties = node.getFieldContainers();
+			List<? extends GraphFieldContainer> allProperties = node.getGraphFieldContainers();
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
 			NodeGraphFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
 			germanContainer.createString("content").setString("german content");
-			assertEquals(2, node.getFieldContainers().size());
+			assertEquals(2, node.getGraphFieldContainers().size());
 
 			NodeGraphFieldContainer container = node.getFieldContainer(english);
 			assertNotNull(container);
@@ -292,7 +292,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		String uuid;
 		try (Trx tx = new Trx(db)) {
 			Node node = folder("news");
-			for (GraphFieldContainer container : node.getFieldContainers()) {
+			for (GraphFieldContainer container : node.getGraphFieldContainers()) {
 				uuidToBeDeleted.put("container-" + container.getLanguage().getLanguageTag(), container.getUuid());
 			}
 

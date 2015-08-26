@@ -26,6 +26,15 @@ public class Neo4jDatabase extends AbstractDatabase {
 		Trx.setLocalGraph(null);
 	}
 
+	private void registerShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				graphDatabaseService.shutdown();
+			}
+		});
+	}
+
 	@Override
 	public void start() {
 		String DB_LOCATION = options.getDirectory();
@@ -38,7 +47,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 		// Setup neo4j blueprint implementation
 		Neo4j2Graph neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
-		registerShutdownHook(graphDatabaseService);
+		registerShutdownHook();
 
 		// Add some indices
 		// neo4jBlueprintGraph.createKeyIndex("name", Vertex.class);

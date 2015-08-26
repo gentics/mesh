@@ -70,6 +70,12 @@ public final class MeshAssert {
 		}
 	}
 
+	public static void failingLatch(CountDownLatch latch, int timeoutInSeconds) throws InterruptedException {
+		if (!latch.await(timeoutInSeconds, TimeUnit.SECONDS)) {
+			fail("Latch timeout reached");
+		}
+	}
+
 	public static void failingLatch(CountDownLatch latch) throws InterruptedException {
 		if (!latch.await(1, TimeUnit.SECONDS)) {
 			fail("Latch timeout reached");

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
@@ -21,12 +22,12 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
 	String getIndex() {
-		return "user";
+		return User.TYPE;
 	}
 
 	@Override
 	String getType() {
-		return "user";
+		return User.TYPE;
 	}
 
 	@Override
@@ -77,7 +78,6 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		// TODO Auto-generated method stub
-
+		throw new NotImplementedException();
 	}
 }

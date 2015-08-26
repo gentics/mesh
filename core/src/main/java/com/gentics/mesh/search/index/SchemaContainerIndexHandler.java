@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +49,6 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		// TODO Auto-generated method stub
-
+		throw new NotImplementedException();
 	}
 }

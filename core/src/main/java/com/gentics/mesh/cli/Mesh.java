@@ -86,7 +86,7 @@ public interface Mesh {
 	 * <p>
 	 * The instance cannot be used after it has been closed.
 	 */
-	void close();
+	void shutdown();
 
 	void run(Runnable startupHandler) throws Exception;
 
