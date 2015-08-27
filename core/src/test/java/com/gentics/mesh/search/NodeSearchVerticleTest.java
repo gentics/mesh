@@ -90,11 +90,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testRemoveContent() throws InterruptedException, JSONException {
 		setupFullIndex();
 
-		QueryBuilder qb = QueryBuilders.queryStringQuery("Großraumflugzeug");
-		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(qb.toString()));
-
-		Future<NodeListResponse> future = getClient().searchNodes(request.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
@@ -113,7 +109,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		});
 		failingLatch(latch, 10);
 
-		future = getClient().searchNodes(request.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -132,12 +128,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testCustomQuery() throws InterruptedException {
 		setupFullIndex();
 
-		QueryBuilder qb = QueryBuilders.termQuery("schema.name", "content");
-		String json = "{";
-		json += "	 \"query\":" + qb.toString();
-		json += "	}";
+	
 
-		Future<NodeListResponse> future = getClient().searchNodes(json);
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("schema.name", "content"));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
@@ -145,6 +138,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertFalse(response.getData().isEmpty());
 
 	}
+
 
 	@Test
 	public void testAddContent() throws InterruptedException, IOException {

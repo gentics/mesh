@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -101,7 +102,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 	public void testReadMultiple2() {
 		String uuid;
 		try (Trx tx = db.trx()) {
-			TagFamily tagFamily = data().getTagFamilies().get("colors");
+			TagFamily tagFamily = tagFamily("colors");
 			uuid = tagFamily.getUuid();
 		}
 		Future<TagListResponse> future = getClient().findTagsForTagFamilies(PROJECT_NAME, uuid);
@@ -413,6 +414,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 
 	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
 		int nJobs = 5;
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
@@ -428,6 +430,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 
 	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		String uuid = tagFamily("colors").getUuid();
@@ -441,6 +444,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 
 	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		String uuid = project().getUuid();
@@ -454,6 +458,7 @@ public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest 
 
 	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();

@@ -9,6 +9,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -54,6 +57,21 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	@AfterClass
 	public static void clean() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
+	}
+
+	protected String getSimpleQuery(String text) throws JSONException {
+		QueryBuilder qb = QueryBuilders.queryStringQuery(text);
+		JSONObject request = new JSONObject();
+		request.put("query", new JSONObject(qb.toString()));
+		return request.toString();
+	}
+
+	protected String getSimpleTermQuery(String key, String value) {
+		QueryBuilder qb = QueryBuilders.termQuery(key, value);
+		String json = "{";
+		json += "	 \"query\":" + qb.toString();
+		json += "	}";
+		return json;
 	}
 
 	protected void setupFullIndex() throws InterruptedException {

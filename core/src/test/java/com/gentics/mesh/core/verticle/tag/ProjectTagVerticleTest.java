@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -363,7 +364,9 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 	}
 
+	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
 		int nJobs = 5;
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -380,6 +383,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		String uuid = tag("red").getUuid();
@@ -393,6 +397,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		String uuid = tag("red").getUuid();
@@ -406,6 +411,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Not yet supported")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 
