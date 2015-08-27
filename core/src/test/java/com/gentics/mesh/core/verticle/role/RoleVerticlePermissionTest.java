@@ -20,7 +20,7 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
+public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private RoleVerticle verticle;
@@ -74,7 +74,7 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
-		
+
 		try (Trx tx = db.trx()) {
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 		}

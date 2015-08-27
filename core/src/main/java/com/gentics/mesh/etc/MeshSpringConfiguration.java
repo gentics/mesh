@@ -2,9 +2,6 @@ package com.gentics.mesh.etc;
 
 import javax.annotation.PostConstruct;
 
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +11,7 @@ import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.ElasticSearchProvider;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -74,19 +72,8 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
-	public Node elasticSearchNode() {
-		if (log.isDebugEnabled()) {
-			log.debug("Creating elasticsearch node");
-		}
-		long start = System.currentTimeMillis();
-		String dataDirectory =Mesh.mesh().getOptions().getSearchOptions().getDirectory();
-		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder().put("http.enabled", "false").put("path.data",
-				dataDirectory);
-		Node node = NodeBuilder.nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
-		if (log.isDebugEnabled()) {
-			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
-		}
-		return node;
+	public ElasticSearchProvider elasticSearchProvider() {
+		return new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
 	}
 
 	@Bean

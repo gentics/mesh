@@ -149,6 +149,7 @@ public class MeshImpl implements Mesh {
 		log.info("#---------------------------------------------------#");
 		//log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
+		log.info(infoLine("Name:" + MeshNameProvider.getName()));
 		log.info("#####################################################");
 	}
 
@@ -179,7 +180,7 @@ public class MeshImpl implements Mesh {
 	public void shutdown() {
 		log.info("Mesh shutting down...");
 		//Orientdb has a dedicated shutdown hook
-		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchNode().close();
+		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().stop();
 		getVertx().close();
 	}
 

@@ -247,11 +247,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testSearchContent() throws InterruptedException {
+	public void testSearchContent() throws InterruptedException, JSONException {
 		setupFullIndex();
 
-		QueryBuilder qb = QueryBuilders.queryStringQuery("the");
-		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();

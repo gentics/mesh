@@ -194,11 +194,6 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 
 	@Override
 	public boolean hasPermission(MeshVertex node, GraphPermission permission) {
-		//		for (VertexFrame vertex : getGraph().v().toList()) {
-		//			System.out.println(vertex.toString());
-		//		}
-		//		System.err.println("-----------------------");
-		//		TraversalHelper.debug(out(HAS_USER).in(HAS_ROLE).outE(permission.labels()).outV());
 		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
@@ -239,7 +234,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 
 	@Override
 	public void addGroup(Group group) {
-		linkOut(group.getImpl(), HAS_USER);
+		setLinkOutTo(group.getImpl(), HAS_USER);
 	}
 
 	@Override

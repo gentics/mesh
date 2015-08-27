@@ -45,12 +45,11 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	protected SearchVerticle searchVerticle;
 
 	@Autowired
-	protected org.elasticsearch.node.Node elasticSearchNode;
+	protected ElasticSearchProvider elasticSearchProvider;
 
 	@After
 	public void resetElasticSearch() {
-		elasticSearchNode.client().prepareDeleteByQuery("node").setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
-		elasticSearchNode.close();
+		elasticSearchProvider.reset();
 	}
 
 	@BeforeClass

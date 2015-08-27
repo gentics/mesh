@@ -296,8 +296,8 @@ public class VerticleHelper {
 		root.create(rc, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
-				transformAndResponde(rc, vertex);
 				triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
+				transformAndResponde(rc, vertex);
 			}
 		});
 	}

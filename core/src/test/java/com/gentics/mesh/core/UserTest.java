@@ -213,6 +213,26 @@ public class UserTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testUserGroup() {
+		try (Trx tx = db.trx()) {
+
+			User user = user();
+			assertEquals(1, user.getGroups().size());
+
+			for (int i = 0; i < 10; i++) {
+				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				// Multiple calls should not affect the result
+				user().addGroup(extraGroup);
+				user().addGroup(extraGroup);
+				user().addGroup(extraGroup);
+				user().addGroup(extraGroup);
+			}
+
+			assertEquals(11, user().getGroups().size());
+		}
+	}
+
+	@Test
 	@Override
 	public void testCreate() throws InterruptedException {
 		try (Trx tx = db.trx()) {

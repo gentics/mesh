@@ -35,6 +35,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -81,6 +82,27 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 			// TODO assert groups
 			// TODO assert perms
 		}
+	}
+
+	@Test
+	public void testReadUserWithMultipleGroups() {
+		try (Trx tx = db.trx()) {
+			User user = user();
+			assertEquals(1, user.getGroups().size());
+
+			for (int i = 0; i < 10; i++) {
+				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				user().addGroup(extraGroup);
+			}
+
+			assertEquals(11, user().getGroups().size());
+			tx.success();
+		}
+		Future<UserResponse> future = getClient().findUserByUuid(user().getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse response = future.result();
+		assertEquals(11, response.getGroups().size());
 	}
 
 	@Test

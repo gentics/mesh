@@ -49,7 +49,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
 
 	@Autowired
-	private org.elasticsearch.node.Node elasticSearchNode;
+	private ElasticSearchProvider elasticSearchProvider;
 
 	@Autowired
 	private Database db;
@@ -78,7 +78,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 			Handler<AsyncResult<JsonObject>> completeHandler = ach -> {
 				if (counter.decrementAndGet() == 0) {
-					elasticSearchNode.client().admin().indices().refresh(refreshRequest()).actionGet();
+					elasticSearchProvider.getNode().client().admin().indices().refresh(refreshRequest()).actionGet();
 					handler.handle(Future.succeededFuture());
 				}
 			};

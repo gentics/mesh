@@ -1,23 +1,21 @@
 package com.gentics.mesh.test;
 
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import com.gentics.mesh.etc.ElasticSearchOptions;
+import com.gentics.mesh.search.ElasticSearchProvider;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class SpringElasticSearchTestConfiguration extends SpringTestConfiguration {
 
 	@Bean
-	public Node elasticSearchNode() {
-		String dataDirectory = "target/elasticsearch_data_" + System.currentTimeMillis();
-		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder().put("http.enabled", "false").put("path.data",
-				dataDirectory);
-		Node node = NodeBuilder.nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
-		return node;
+	public ElasticSearchProvider elasticSearchProvider() {
+		ElasticSearchOptions options = new ElasticSearchOptions();
+		options.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
+		return new ElasticSearchProvider().init(options);
 	}
 
 }

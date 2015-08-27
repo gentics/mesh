@@ -57,8 +57,7 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 	}
 
 	public void addUser(User user) {
-		unlinkIn(user.getImpl(), HAS_USER);
-		linkIn(user.getImpl(), HAS_USER);
+		setLinkIn(user.getImpl(), HAS_USER);
 	}
 
 	public void removeUser(User user) {
@@ -70,8 +69,7 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 	}
 
 	public void addRole(Role role) {
-		unlinkIn(role.getImpl(), HAS_ROLE);
-		linkIn(role.getImpl(), HAS_ROLE);
+		setLinkInTo(role.getImpl(), HAS_ROLE);
 	}
 
 	public void removeRole(Role role) {

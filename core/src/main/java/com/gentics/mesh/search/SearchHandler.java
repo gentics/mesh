@@ -42,7 +42,7 @@ public class SearchHandler {
 	private static final Logger log = LoggerFactory.getLogger(SearchHandler.class);
 
 	@Autowired
-	private org.elasticsearch.node.Node elasticSearchNode;
+	private ElasticSearchProvider elasticSearchProvider;
 
 	@Autowired
 	private Database db;
@@ -61,7 +61,7 @@ public class SearchHandler {
 
 		RL listResponse = classOfRL.newInstance();
 		MeshAuthUser requestUser = getUser(rc);
-		Client client = elasticSearchNode.client();
+		Client client = elasticSearchProvider.getNode().client();
 
 		String searchQuery = rc.getBodyAsString();
 		if (log.isDebugEnabled()) {

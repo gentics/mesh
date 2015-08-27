@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.ElasticSearchProvider;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -45,7 +46,7 @@ public abstract class AbstractIndexHandler<T> {
 	public static final String INDEX_EVENT_ADDRESS_PREFIX = "search-index-action-";
 
 	@Autowired
-	protected org.elasticsearch.node.Node elasticSearchNode;
+	protected ElasticSearchProvider elasticSearchProvider;
 
 	@Autowired
 	protected BootstrapInitializer boot;
@@ -99,7 +100,7 @@ public abstract class AbstractIndexHandler<T> {
 	abstract public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler);
 
 	protected Client getSearchClient() {
-		return elasticSearchNode.client();
+		return elasticSearchProvider.getNode().client();
 	}
 
 	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
@@ -107,13 +108,15 @@ public abstract class AbstractIndexHandler<T> {
 
 			@Override
 			public void onResponse(DeleteResponse response) {
-				//TODO log
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted object {" + uuid + ":" + getType() + "} from index {" + getIndex() + "}");
+				}
 				handler.handle(Future.succeededFuture(response));
 			}
 
 			@Override
 			public void onFailure(Throwable e) {
-				//TODO log
+				log.error("Could not delete object {" + uuid + ":" + getType() + "} from index {" + getIndex() + "}");
 				handler.handle(Future.failedFuture(e));
 			}
 		});
@@ -194,7 +197,7 @@ public abstract class AbstractIndexHandler<T> {
 		userFields.put("emailadress", user.getEmailAddress());
 		userFields.put("firstname", user.getFirstname());
 		userFields.put("lastname", user.getLastname());
-		//TODO add disabled / enabled flag
+		userFields.put("enabled", String.valueOf(user.isEnabled()));
 		map.put(prefix, userFields);
 	}
 
